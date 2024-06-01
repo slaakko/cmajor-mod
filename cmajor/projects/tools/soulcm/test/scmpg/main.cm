@@ -1,0 +1,219 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+string Version()
+{
+    return "5.0.0";
+}
+
+void PrintHelp()
+{
+    Console.Out() << "SoulCm parser generator (scmpg) version " << Version() << endl();
+    Console.Out() << "Usage: scmpg [options] { FILE.scmpg }" << endl();
+    Console.Out() << "Options:" << endl();
+    Console.Out() << "--help | -h" << endl();
+    Console.Out() << "    Print help and exit." << endl();
+    Console.Out() << "--verbose | -v" << endl();
+    Console.Out() << "    Be verbose." << endl();
+    Console.Out() << "--optimize | -o" << endl();
+    Console.Out() << "    Do switch optimization." << endl();
+    Console.Out() << "--xml | -x" << endl();
+    Console.Out() << "    Generate XML info documents." << endl();
+}
+
+namespace scmpg
+{
+    public Result<bool> GenerateParsers(const string& scmpgFilePath, bool verbose, bool optimize, bool xml, const string& version)
+    {
+        System.Lex.FileMap fileMap;
+        auto existResult = System.IO.File.Exists(scmpgFilePath);
+        if (existResult.Error())
+        {
+            return Result<bool>(ErrorId(existResult.GetErrorId()));
+        }
+        bool exists = existResult.Value();
+        if (!exists)
+        {
+            string errorMessage = "file '" + scmpgFilePath + "' does not exist";
+            int errorId = AllocateError(errorMessage);
+            return Result<bool>(ErrorId(errorId));
+        }
+        auto result = scmpg.parser.ParseScmpgFile(scmpgFilePath);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        scmpg.ast.ScmpgFile* scmpgFile = result.Value().Get();
+        string projectName = scmpgFile->ProjectName();
+        if (verbose)
+        {
+            Console.Out() << "Generating parsers for project '" << projectName << "'..." << endl();
+        }
+        string root = System.IO.Path.GetDirectoryName(scmpgFilePath);
+        for (const auto& declaration : scmpgFile->Declarations())
+        {
+            if (declaration.Get() is scmpg.ast.ParserFileDeclaration*)
+            {
+                scmpg.ast.ParserFileDeclaration* parserFileDeclaration = cast<scmpg.ast.ParserFileDeclaration*>(declaration.Get());
+                string parserFilePath = System.IO.Path.Combine(root, parserFileDeclaration->FilePath());
+                auto existResult = System.IO.File.Exists(parserFilePath);
+                if (existResult.Error())
+                {
+                    return Result<bool>(ErrorId(existResult.GetErrorId()));
+                }
+                bool exists = existResult.Value();
+                if (!exists)
+                {
+                    string errorMessage = "parser file '" + parserFilePath + "' does not exist";
+                    int errorId = AllocateError(errorMessage);
+                    return Result<bool>(ErrorId(errorId));
+                }
+                auto result = scmpg.parser.ParseParserFile(parserFilePath, fileMap);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                UniquePtr<scmpg.ast.ParserFile> parserFile = Rvalue(result.Value());
+                scmpgFile->AddParserFile(parserFile.Release());
+            }
+        }
+        auto linkResult = Link(scmpgFile, verbose, fileMap);
+        if (linkResult.Error())
+        {
+            return Result<bool>(ErrorId(linkResult.GetErrorId()));
+        }
+        UniquePtr<scmpg.ast.ScmpgFile> optimizedSpgFile;
+        if (optimize)
+        {
+            auto optimizeResult = Optimize(scmpgFile, verbose, xml, fileMap);
+            if (optimizeResult.Error())
+            {
+                return Result<bool>(ErrorId(optimizeResult.GetErrorId()));
+            }
+            optimizedSpgFile = Rvalue(optimizeResult.Value());
+            scmpgFile = optimizedSpgFile.Get();
+        }
+        if (xml)
+        {
+            auto result = PrintXml(scmpgFile, verbose, optimize);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+        }
+        auto codeGenResult = GenerateCode(scmpgFile, verbose, version, fileMap);
+        if (codeGenResult.Error())
+        {
+            return Result<bool>(ErrorId(codeGenResult.GetErrorId()));
+        }
+        if (verbose)
+        {
+            Console.Out() << "Parsers for project '" << projectName << "' generated successfully." << endl();
+        }
+        return Result<bool>(true);
+    }
+
+} // namespace scmpg
+
+int main(int argc, const char** argv)
+{
+    List<string> files;
+    bool verbose = false;
+    bool optimize = false;
+    bool xml = false;
+    for (int i = 1; i < argc; ++i)
+    {
+        string arg = argv[i];
+        if (arg.StartsWith("--"))
+        {
+            if (arg == "--verbose")
+            {
+                verbose = true;
+            }
+            else if (arg == "--help")
+            {
+                PrintHelp();
+                return 0;
+            }
+            else if (arg == "--optimize")
+            {
+                optimize = true;
+            }
+            else if (arg == "--xml")
+            {
+                xml = true;
+            }
+            else
+            {
+                Console.Error() << "unknown option '" << arg << "'" << endl();
+                return 1;
+            }
+        }
+        else if (arg.StartsWith("-"))
+        {
+            string options = arg.Substring(1);
+            for (char o : options)
+            {
+                switch (o)
+                {
+                    case 'v':
+                    {
+                        verbose = true;
+                        break;
+                    }
+                    case 'h':
+                    {
+                        PrintHelp();
+                        return 0;
+                    }
+                    case 'o':
+                    {
+                        optimize = true;
+                        break;
+                    }
+                    case 'x':
+                    {
+                        xml = true;
+                        break;
+                    }
+                    default:
+                    {
+                        Console.Error() << "unknown option '-" << string(o) << "'" << endl();
+                        return 1;
+                    }
+                }
+            }
+        }
+        else
+        {
+            auto fullPathResult = GetFullPath(arg);
+            if (fullPathResult.Error())
+            {
+                Console.Error() << fullPathResult.GetErrorMessage() << endl();
+                return 1;
+            }
+            files.Add(fullPathResult.Value());
+        }
+    }
+    if (files.IsEmpty())
+    {
+        Console.Error() << "no files given" << endl();
+        return 1;
+    }
+    for (const auto& file : files)
+    {
+        auto result = scmpg.GenerateParsers(file, verbose, optimize, xml, Version());
+        if (result.Error())
+        {
+            Console.Error() << result.GetErrorMessage() << endl();
+            return 1;
+        }
+    }
+    return 0;
+}
+

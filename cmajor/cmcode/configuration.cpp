@@ -85,7 +85,7 @@ void RecentSolution::FromXml(soul::xml::Element* element)
 }
 
 BuildSettings::BuildSettings()
-     : singleThreadedCompile(), generateIntermediateCodeFiles(), linkWithDebugRuntime()
+     : singleThreadedCompile(), generateIntermediateCodeFiles()//, linkWithDebugRuntime()
 {
 }
 
@@ -151,7 +151,7 @@ soul::xml::Element* BuildSettings::ToXml(const std::string& fieldName) const
     soul::xml::Element* element = soul::xml::MakeElement(fieldName);
     element->AppendChild(soul::xml::serialization::ToXml(singleThreadedCompile, "singleThreadedCompile"));
     element->AppendChild(soul::xml::serialization::ToXml(generateIntermediateCodeFiles, "generateIntermediateCodeFiles"));
-    element->AppendChild(soul::xml::serialization::ToXml(linkWithDebugRuntime, "linkWithDebugRuntime"));
+    //element->AppendChild(soul::xml::serialization::ToXml(linkWithDebugRuntime, "linkWithDebugRuntime"));
     return element;
 }
 
@@ -159,7 +159,7 @@ void BuildSettings::FromXml(soul::xml::Element* element)
 {
     soul::xml::serialization::FromXml(element, "singleThreadedCompile", singleThreadedCompile);
     soul::xml::serialization::FromXml(element, "generateIntermediateCodeFiles", generateIntermediateCodeFiles);
-    soul::xml::serialization::FromXml(element, "linkWithDebugRuntime", linkWithDebugRuntime);
+    //soul::xml::serialization::FromXml(element, "linkWithDebugRuntime", linkWithDebugRuntime);
 }
 
 Options::Options()

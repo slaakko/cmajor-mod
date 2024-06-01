@@ -1,0 +1,119 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using scmlg.parser;
+using scmlg.ast;
+
+namespace scmlg
+{
+    public Result<bool> GenerateKeywordFile(scmlg.ast.KeywordFile* keywordFile, const string& scmlgVersion, bool verbose)
+    {
+        string cmFilePath = keywordFile->FilePath() + ".cm";
+        auto cmFileResult = System.IO.File.CreateText(cmFilePath);
+        if (cmFileResult.Error())
+        {
+            return Result<bool>(cmFileResult.GetErrorId());
+        }
+        scmlg.ast.KeywordCollection* keywordCollection = keywordFile->GetKeywordCollection();
+        System.IO.StreamWriter& writer = cmFileResult.Value();
+        System.Text.CodeFormatter formatter(writer);
+        formatter << "// this file has been generated from '" << keywordFile->FilePath() << "' using SoulCm lexer generator scmlg version " << scmlgVersion << endl() << endl();
+        formatter << "using System;" << endl();
+        formatter << "using System.Collections;" << endl();
+        for (const auto& u : keywordFile->Usings())
+        {
+            formatter << "using " << u << ";" << endl();
+        }
+        formatter << endl();
+        formatter << "namespace " << keywordCollection->Name() << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "public class Keywords" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "static Keywords() : instance(new Keywords())" << endl();
+        formatter << "{" << endl();
+        formatter << "}" << endl();
+        formatter << "public static Keywords& Instance()" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "return *instance;" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << "public System.Lex.KeywordMap* GetKeywordMap() const" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "return &keywordMap;" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << "private Keywords()" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        for (const auto& keyword : keywordCollection->Keywords())
+        {
+            auto utf32Result = ToUtf32(keyword->Str());
+            if (utf32Result.Error())
+            {
+                return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+            }
+            const ustring& str = utf32Result.Value();
+            auto stringStrResult = StringStr(str);
+            if (stringStrResult.Error())
+            {
+                return Result<bool>(ErrorId(stringStrResult.GetErrorId()));
+            }
+            auto utf8Result = ToUtf8(stringStrResult.Value());
+            if (utf8Result.Error())
+            {
+                return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+            }
+            formatter << "keywords.Add(System.Lex.Keyword(u\"" + utf8Result.Value() + "\", " + keyword->TokenName() + "));" << endl();
+        }
+        formatter << "keywordMap.SetKeywords(keywords);" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << "private List<System.Lex.Keyword> keywords;" << endl();
+        formatter << "private System.Lex.KeywordMap keywordMap;" << endl();
+        formatter << "private static UniquePtr<Keywords> instance;" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl() << endl();
+        formatter << "public System.Lex.KeywordMap* GetKeywordMap()" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "return Keywords.Instance().GetKeywordMap();" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl() << endl();
+        formatter.DecIndent();
+        formatter << "} // " << keywordCollection->Name() << endl();
+        if (verbose)
+        {
+            Console.Out() << "==> " << cmFilePath << endl();
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<bool> ProcessKeywordFile(scmlg.ast.ScmlgFile* scmlgFile, const string& keywordFilePath, const string& scmlgVersion, bool verbose)
+    {
+        if (verbose)
+        {
+            Console.Out() << "> " << keywordFilePath << endl();
+        }
+        auto result = ParseKeywordFile(keywordFilePath);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        scmlg.ast.KeywordFile* keywordFile = result.Value().Get();
+        auto genResult = GenerateKeywordFile(keywordFile, scmlgVersion, verbose);
+        if (genResult.Error())
+        {
+            return Result<bool>(ErrorId(genResult.GetErrorId()));
+        }
+        scmlgFile->AddKeywordFile(result.Value().Release());
+        return Result<bool>(true);
+    }
+}

@@ -1,0 +1,1409 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/scmlg.parser/lexer_file.parser' using SoulCm parser generator scmpg version 5.0.0
+
+using System;
+using System.Lex;
+using System.Parsing;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
+
+namespace scmlg.parser
+{
+    public static class LexerFileParser<LexerT>
+    {
+        public static System.Result<System.UniquePtr<scmlg.ast.LexerFile>> Parse(LexerT& lexer, cm.parser.Context* context)
+        {
+            System.UniquePtr<scmlg.ast.LexerFile> value;
+            auto incResult5 = ++lexer; 
+            if (incResult5.Error())
+            {
+                return System.Result<System.UniquePtr<scmlg.ast.LexerFile>>(System.ErrorId(incResult5.GetErrorId())); 
+            }
+            System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.LexerFile(lexer, context);
+            if (matchResult.Error())
+            {
+                return System.Result<System.UniquePtr<scmlg.ast.LexerFile>>(System.ErrorId(matchResult.GetErrorId()));
+            }
+            System.Parsing.Match match = matchResult.Value();
+            value.Reset(cast<scmlg.ast.LexerFile*>(match.value));
+            if (match.hit)
+            {
+                if (*lexer == System.Lex.END_TOKEN)
+                {
+                    return System.Result<System.UniquePtr<scmlg.ast.LexerFile>>(System.Rvalue(value)); 
+                }
+                else
+                {
+                    return System.Result<System.UniquePtr<scmlg.ast.LexerFile>>(lexer.GetFarthestError()); 
+                }
+            }
+            else
+            {
+                return System.Result<System.UniquePtr<scmlg.ast.LexerFile>>(lexer.GetFarthestError()); 
+            }
+        }
+        public static System.Result<System.Parsing.Match> LexerFile(LexerT& lexer, cm.parser.Context* context)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753281);
+            UniquePtr<scmlg.ast.LexerFile> lexerFile = UniquePtr<scmlg.ast.LexerFile>();
+            System.UniquePtr<scmlg.ast.Lexer> lexerDefinition;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                long pos = lexer.GetPos();
+                                System.Parsing.Match match(true);
+                                if (match.hit)
+                                {
+                                    lexerFile.Reset(new scmlg.ast.LexerFile(lexer.FileName()));
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch5 = &match;
+                            {
+                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Usings(lexer, lexerFile.Get());
+                                if (matchResult.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                }
+                                System.Parsing.Match match = matchResult.Value();
+                                *parentMatch5 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch6 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch7 = &match;
+                            {
+                                long pos = lexer.GetPos();
+                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.LexerDefinition(lexer, context);
+                                if (matchResult.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                }
+                                System.Parsing.Match match = matchResult.Value();
+                                lexerDefinition.Reset(cast<scmlg.ast.Lexer*>(match.value));
+                                if (match.hit)
+                                {
+                                    lexerFile->SetLexer(lexerDefinition.Release());
+                                }
+                                *parentMatch7 = match;
+                            }
+                            *parentMatch6 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, lexerFile.Release()));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> Usings(LexerT& lexer, scmlg.ast.LexerFile* lexerFile)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753282);
+            bool opaque = bool();
+            System.UniquePtr<System.Parsing.Value<string>> nsName;
+            System.Parsing.Match match(true);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                while (true)
+                {
+                    long save = lexer.GetPos();
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch1 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch2 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch3 = &match;
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch4 = &match;
+                                    {
+                                        System.Parsing.Match match(true);
+                                        long save = lexer.GetPos();
+                                        System.Parsing.Match* parentMatch5 = &match;
+                                        {
+                                            System.Parsing.Match match(false);
+                                            System.Parsing.Match* parentMatch6 = &match;
+                                            {
+                                                System.Parsing.Match match(false);
+                                                System.Parsing.Match* parentMatch7 = &match;
+                                                {
+                                                    long pos = lexer.GetPos();
+                                                    System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.OpaqueKeyword(lexer);
+                                                    if (matchResult.Error())
+                                                    {
+                                                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                    }
+                                                    System.Parsing.Match match = matchResult.Value();
+                                                    if (match.hit)
+                                                    {
+                                                        opaque = true;
+                                                    }
+                                                    *parentMatch7 = match;
+                                                }
+                                                *parentMatch6 = match;
+                                            }
+                                            if (match.hit)
+                                            {
+                                                *parentMatch5 = match;
+                                            }
+                                            else
+                                            {
+                                                lexer.SetPos(save);
+                                            }
+                                        }
+                                        *parentMatch4 = match;
+                                    }
+                                    if (match.hit)
+                                    {
+                                        System.Parsing.Match match(false);
+                                        System.Parsing.Match* parentMatch8 = &match;
+                                        {
+                                            System.Parsing.Match match(false);
+                                            if (*lexer == USING)
+                                            {
+                                                auto incResult0 = ++lexer;
+                                                if (incResult0.Error())
+                                                {
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                                }
+                                                match.hit = true;
+                                            }
+                                            *parentMatch8 = match;
+                                        }
+                                        *parentMatch4 = match;
+                                    }
+                                    *parentMatch3 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch9 = &match;
+                                    {
+                                        System.Result<System.Parsing.Match> matchResult = scm.parser.CommonParser<LexerT>.QualifiedUtf8Id(lexer);
+                                        if (matchResult.Error())
+                                        {
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                        }
+                                        System.Parsing.Match match = matchResult.Value();
+                                        nsName.Reset(cast<System.Parsing.Value<string>*>(match.value));
+                                        *parentMatch9 = match;
+                                    }
+                                    *parentMatch3 = match;
+                                }
+                                *parentMatch2 = match;
+                            }
+                            if (match.hit)
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch10 = &match;
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch11 = &match;
+                                    {
+                                        long pos = lexer.GetPos();
+                                        System.Parsing.Match match(false);
+                                        if (*lexer == SEMICOLON)
+                                        {
+                                            auto incResult1 = ++lexer;
+                                            if (incResult1.Error())
+                                            {
+                                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                            }
+                                            match.hit = true;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            lexerFile->AddUsing(scmlg.ast.Using(nsName->value, opaque));
+                                        }
+                                        *parentMatch11 = match;
+                                    }
+                                    *parentMatch10 = match;
+                                }
+                                *parentMatch2 = match;
+                            }
+                            *parentMatch1 = match;
+                        }
+                        if (match.hit)
+                        {
+                            *parentMatch0 = match;
+                        }
+                        else
+                        {
+                            lexer.SetPos(save);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> LexerDefinition(LexerT& lexer, cm.parser.Context* context)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753283);
+            UniquePtr<scmlg.ast.Lexer> lxr = UniquePtr<scmlg.ast.Lexer>();
+            System.UniquePtr<System.Parsing.Value<string>> lexerName;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch5 = &match;
+                                {
+                                    System.Result<System.Parsing.Match> matchResult = scm.parser.CommonParser<LexerT>.LexerKeyword(lexer);
+                                    if (matchResult.Error())
+                                    {
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                    }
+                                    System.Parsing.Match match = matchResult.Value();
+                                    *parentMatch5 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch6 = &match;
+                                    {
+                                        System.Parsing.Match match(false);
+                                        System.Parsing.Match* parentMatch7 = &match;
+                                        {
+                                            long pos = lexer.GetPos();
+                                            System.Result<System.Parsing.Match> matchResult = scm.parser.CommonParser<LexerT>.QualifiedUtf8Id(lexer);
+                                            if (matchResult.Error())
+                                            {
+                                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                            }
+                                            System.Parsing.Match match = matchResult.Value();
+                                            lexerName.Reset(cast<System.Parsing.Value<string>*>(match.value));
+                                            if (match.hit)
+                                            {
+                                                lxr.Reset(new scmlg.ast.Lexer(lexerName->value));
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        *parentMatch6 = match;
+                                    }
+                                    *parentMatch5 = match;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            if (match.hit)
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch8 = &match;
+                                {
+                                    System.Parsing.Match match(false);
+                                    if (*lexer == LBRACE)
+                                    {
+                                        auto incResult0 = ++lexer;
+                                        if (incResult0.Error())
+                                        {
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                        }
+                                        match.hit = true;
+                                    }
+                                    *parentMatch8 = match;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch9 = &match;
+                            {
+                                System.Parsing.Match match(true);
+                                System.Parsing.Match* parentMatch10 = &match;
+                                {
+                                    while (true)
+                                    {
+                                        long save = lexer.GetPos();
+                                        {
+                                            System.Parsing.Match match(false);
+                                            System.Parsing.Match* parentMatch11 = &match;
+                                            {
+                                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.LexerContent(lexer, context, lxr.Get());
+                                                if (matchResult.Error())
+                                                {
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                }
+                                                System.Parsing.Match match = matchResult.Value();
+                                                *parentMatch11 = match;
+                                            }
+                                            if (match.hit)
+                                            {
+                                                *parentMatch10 = match;
+                                            }
+                                            else
+                                            {
+                                                lexer.SetPos(save);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                *parentMatch9 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch12 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            if (*lexer == RBRACE)
+                            {
+                                auto incResult1 = ++lexer;
+                                if (incResult1.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                }
+                                match.hit = true;
+                            }
+                            *parentMatch12 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, lxr.Release()));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> LexerContent(LexerT& lexer, cm.parser.Context* context, scmlg.ast.Lexer* lxr)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753284);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    long save = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        long save = lexer.GetPos();
+                        System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Rules(lexer, context, lxr);
+                        if (matchResult.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                        }
+                        System.Parsing.Match match = matchResult.Value();
+                        *parentMatch2 = match;
+                        if (!match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch3 = &match;
+                            lexer.SetPos(save);
+                            {
+                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Variables(lexer, context, lxr);
+                                if (matchResult.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                }
+                                System.Parsing.Match match = matchResult.Value();
+                                *parentMatch3 = match;
+                            }
+                            *parentMatch2 = match;
+                        }
+                    }
+                    *parentMatch1 = match;
+                    if (!match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch4 = &match;
+                        lexer.SetPos(save);
+                        {
+                            System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Actions(lexer, context, lxr);
+                            if (matchResult.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                            }
+                            System.Parsing.Match match = matchResult.Value();
+                            *parentMatch4 = match;
+                        }
+                        *parentMatch1 = match;
+                    }
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> Rules(LexerT& lexer, cm.parser.Context* context, scmlg.ast.Lexer* lxr)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753285);
+            System.UniquePtr<scmlg.ast.Rule> rule;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.RulesKeyword(lexer);
+                            if (matchResult.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                            }
+                            System.Parsing.Match match = matchResult.Value();
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                if (*lexer == LBRACE)
+                                {
+                                    auto incResult0 = ++lexer;
+                                    if (incResult0.Error())
+                                    {
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                    }
+                                    match.hit = true;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch5 = &match;
+                        {
+                            System.Parsing.Match match(true);
+                            System.Parsing.Match* parentMatch6 = &match;
+                            {
+                                while (true)
+                                {
+                                    long save = lexer.GetPos();
+                                    {
+                                        System.Parsing.Match match(false);
+                                        System.Parsing.Match* parentMatch7 = &match;
+                                        {
+                                            System.Parsing.Match match(false);
+                                            System.Parsing.Match* parentMatch8 = &match;
+                                            {
+                                                long pos = lexer.GetPos();
+                                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Rule(lexer, context);
+                                                if (matchResult.Error())
+                                                {
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                }
+                                                System.Parsing.Match match = matchResult.Value();
+                                                rule.Reset(cast<scmlg.ast.Rule*>(match.value));
+                                                if (match.hit)
+                                                {
+                                                    lxr->AddRule(rule.Release());
+                                                }
+                                                *parentMatch8 = match;
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            *parentMatch6 = match;
+                                        }
+                                        else
+                                        {
+                                            lexer.SetPos(save);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch9 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        if (*lexer == RBRACE)
+                        {
+                            auto incResult1 = ++lexer;
+                            if (incResult1.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        *parentMatch9 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> Rule(LexerT& lexer, cm.parser.Context* context)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753286);
+            int line = int();
+            System.UniquePtr<System.Parsing.Value<string>> expr;
+            System.UniquePtr<System.Parsing.Value<int>> action;
+            System.UniquePtr<cm.ast.CompoundStatementNode> code;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                long pos = lexer.GetPos();
+                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.ExpressionFileParser<LexerT>.ExprString(lexer);
+                                if (matchResult.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                }
+                                System.Parsing.Match match = matchResult.Value();
+                                expr.Reset(cast<System.Parsing.Value<string>*>(match.value));
+                                if (match.hit)
+                                {
+                                    line = lexer.GetToken(pos).line;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch5 = &match;
+                            {
+                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Action(lexer);
+                                if (matchResult.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                }
+                                System.Parsing.Match match = matchResult.Value();
+                                action.Reset(cast<System.Parsing.Value<int>*>(match.value));
+                                *parentMatch5 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch6 = &match;
+                        {
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.StatementParser<LexerT>.CompoundStatement(lexer, context);
+                            if (matchResult.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                            }
+                            System.Parsing.Match match = matchResult.Value();
+                            code.Reset(cast<cm.ast.CompoundStatementNode*>(match.value));
+                            *parentMatch6 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.Rule(expr->value, code.Release(), action->value, line)));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> Variables(LexerT& lexer, cm.parser.Context* context, scmlg.ast.Lexer* lxr)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753287);
+            System.UniquePtr<scmlg.ast.Variable> variable;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.VariablesKeyword(lexer);
+                            if (matchResult.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                            }
+                            System.Parsing.Match match = matchResult.Value();
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                if (*lexer == LBRACE)
+                                {
+                                    auto incResult0 = ++lexer;
+                                    if (incResult0.Error())
+                                    {
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                    }
+                                    match.hit = true;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch5 = &match;
+                        {
+                            System.Parsing.Match match(true);
+                            System.Parsing.Match* parentMatch6 = &match;
+                            {
+                                while (true)
+                                {
+                                    long save = lexer.GetPos();
+                                    {
+                                        System.Parsing.Match match(false);
+                                        System.Parsing.Match* parentMatch7 = &match;
+                                        {
+                                            System.Parsing.Match match(false);
+                                            System.Parsing.Match* parentMatch8 = &match;
+                                            {
+                                                long pos = lexer.GetPos();
+                                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Variable(lexer, context);
+                                                if (matchResult.Error())
+                                                {
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                }
+                                                System.Parsing.Match match = matchResult.Value();
+                                                variable.Reset(cast<scmlg.ast.Variable*>(match.value));
+                                                if (match.hit)
+                                                {
+                                                    lxr->AddVariable(variable.Release());
+                                                }
+                                                *parentMatch8 = match;
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            *parentMatch6 = match;
+                                        }
+                                        else
+                                        {
+                                            lexer.SetPos(save);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch9 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        if (*lexer == RBRACE)
+                        {
+                            auto incResult1 = ++lexer;
+                            if (incResult1.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        *parentMatch9 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> Variable(LexerT& lexer, cm.parser.Context* context)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753288);
+            string varName = string();
+            System.UniquePtr<cm.ast.Node> type;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.TypeExprParser<LexerT>.TypeExpr(lexer, context);
+                            if (matchResult.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                            }
+                            System.Parsing.Match match = matchResult.Value();
+                            type.Reset(cast<cm.ast.Node*>(match.value));
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch5 = &match;
+                                {
+                                    long pos = lexer.GetPos();
+                                    System.Parsing.Match match(false);
+                                    if (*lexer == ID)
+                                    {
+                                        auto incResult0 = ++lexer;
+                                        if (incResult0.Error())
+                                        {
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                        }
+                                        match.hit = true;
+                                    }
+                                    if (match.hit)
+                                    {
+                                        ustring name = lexer.GetToken(pos).ToString();
+                                        auto result = ToUtf8(name);
+                                        if (result.Error())
+                                        {
+                                            return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
+                                        }
+                                        varName = result.Value();
+                                    }
+                                    *parentMatch5 = match;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch6 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            if (*lexer == SEMICOLON)
+                            {
+                                auto incResult1 = ++lexer;
+                                if (incResult1.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                }
+                                match.hit = true;
+                            }
+                            *parentMatch6 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.Variable(type.Release(), varName)));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> Actions(LexerT& lexer, cm.parser.Context* context, scmlg.ast.Lexer* lxr)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753289);
+            int actionId = int();
+            System.UniquePtr<System.Parsing.Value<int>> action;
+            System.UniquePtr<cm.ast.CompoundStatementNode> stmt;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.ActionsKeyword(lexer);
+                            if (matchResult.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                            }
+                            System.Parsing.Match match = matchResult.Value();
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                if (*lexer == LBRACE)
+                                {
+                                    auto incResult0 = ++lexer;
+                                    if (incResult0.Error())
+                                    {
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                    }
+                                    match.hit = true;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch5 = &match;
+                        {
+                            System.Parsing.Match match(true);
+                            System.Parsing.Match* parentMatch6 = &match;
+                            {
+                                while (true)
+                                {
+                                    long save = lexer.GetPos();
+                                    {
+                                        System.Parsing.Match match(false);
+                                        System.Parsing.Match* parentMatch7 = &match;
+                                        {
+                                            System.Parsing.Match match(false);
+                                            System.Parsing.Match* parentMatch8 = &match;
+                                            {
+                                                System.Parsing.Match match(false);
+                                                System.Parsing.Match* parentMatch9 = &match;
+                                                {
+                                                    System.Parsing.Match match(false);
+                                                    System.Parsing.Match* parentMatch10 = &match;
+                                                    {
+                                                        long pos = lexer.GetPos();
+                                                        bool pass = true;
+                                                        System.Result<System.Parsing.Match> matchResult = scmlg.parser.LexerFileParser<LexerT>.Action(lexer);
+                                                        if (matchResult.Error())
+                                                        {
+                                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                        }
+                                                        System.Parsing.Match match = matchResult.Value();
+                                                        action.Reset(cast<System.Parsing.Value<int>*>(match.value));
+                                                        if (match.hit)
+                                                        {
+                                                            actionId = action->value;
+                                                            pass = actionId != -1;
+                                                        }
+                                                        if (match.hit && !pass)
+                                                        {
+                                                            match = System.Parsing.Match(false);
+                                                        }
+                                                        *parentMatch10 = match;
+                                                    }
+                                                    *parentMatch9 = match;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    System.Parsing.Match match(false);
+                                                    System.Parsing.Match* parentMatch11 = &match;
+                                                    {
+                                                        System.Parsing.Match match(false);
+                                                        if (*lexer == ASSIGN)
+                                                        {
+                                                            auto incResult1 = ++lexer;
+                                                            if (incResult1.Error())
+                                                            {
+                                                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                                            }
+                                                            match.hit = true;
+                                                        }
+                                                        *parentMatch11 = match;
+                                                    }
+                                                    *parentMatch9 = match;
+                                                }
+                                                *parentMatch8 = match;
+                                            }
+                                            if (match.hit)
+                                            {
+                                                System.Parsing.Match match(false);
+                                                System.Parsing.Match* parentMatch12 = &match;
+                                                {
+                                                    System.Parsing.Match match(false);
+                                                    System.Parsing.Match* parentMatch13 = &match;
+                                                    {
+                                                        long pos = lexer.GetPos();
+                                                        System.Result<System.Parsing.Match> matchResult = cm.parser.StatementParser<LexerT>.CompoundStatement(lexer, context);
+                                                        if (matchResult.Error())
+                                                        {
+                                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                        }
+                                                        System.Parsing.Match match = matchResult.Value();
+                                                        stmt.Reset(cast<cm.ast.CompoundStatementNode*>(match.value));
+                                                        if (match.hit)
+                                                        {
+                                                            lxr->AddAction(new scmlg.ast.Action(actionId, stmt.Release()));
+                                                        }
+                                                        *parentMatch13 = match;
+                                                    }
+                                                    *parentMatch12 = match;
+                                                }
+                                                *parentMatch8 = match;
+                                            }
+                                            *parentMatch7 = match;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            *parentMatch6 = match;
+                                        }
+                                        else
+                                        {
+                                            lexer.SetPos(save);
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch2 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch14 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        if (*lexer == RBRACE)
+                        {
+                            auto incResult2 = ++lexer;
+                            if (incResult2.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        *parentMatch14 = match;
+                    }
+                    *parentMatch1 = match;
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> Action(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753290);
+            int actionId = int();
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
+                    {
+                        long save = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch3 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch4 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch5 = &match;
+                                {
+                                    System.Parsing.Match match(false);
+                                    if (*lexer == DOLLAR)
+                                    {
+                                        auto incResult0 = ++lexer;
+                                        if (incResult0.Error())
+                                        {
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                        }
+                                        match.hit = true;
+                                    }
+                                    *parentMatch5 = match;
+                                }
+                                if (match.hit)
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch6 = &match;
+                                    {
+                                        System.Parsing.Match match(false);
+                                        if (*lexer == LPAREN)
+                                        {
+                                            auto incResult1 = ++lexer;
+                                            if (incResult1.Error())
+                                            {
+                                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                            }
+                                            match.hit = true;
+                                        }
+                                        *parentMatch6 = match;
+                                    }
+                                    *parentMatch5 = match;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            if (match.hit)
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch7 = &match;
+                                {
+                                    System.Parsing.Match match(false);
+                                    System.Parsing.Match* parentMatch8 = &match;
+                                    {
+                                        long pos = lexer.GetPos();
+                                        System.Parsing.Match match(false);
+                                        if (*lexer == INTEGER_LITERAL)
+                                        {
+                                            auto incResult2 = ++lexer;
+                                            if (incResult2.Error())
+                                            {
+                                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
+                                            }
+                                            match.hit = true;
+                                        }
+                                        if (match.hit)
+                                        {
+                                            auto result = lexer.GetInt(pos);
+                                            if (result.Error())
+                                            {
+                                                return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
+                                            }
+                                            actionId = result.Value();
+                                        }
+                                        *parentMatch8 = match;
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                *parentMatch4 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        if (match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch9 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                if (*lexer == RPAREN)
+                                {
+                                    auto incResult3 = ++lexer;
+                                    if (incResult3.Error())
+                                    {
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult3.GetErrorId()));
+                                    }
+                                    match.hit = true;
+                                }
+                                *parentMatch9 = match;
+                            }
+                            *parentMatch3 = match;
+                        }
+                        *parentMatch2 = match;
+                        if (!match.hit)
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch10 = &match;
+                            lexer.SetPos(save);
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch11 = &match;
+                                {
+                                    long pos = lexer.GetPos();
+                                    System.Parsing.Match match(true);
+                                    if (match.hit)
+                                    {
+                                        actionId = -1;
+                                    }
+                                    *parentMatch11 = match;
+                                }
+                                *parentMatch10 = match;
+                            }
+                            *parentMatch2 = match;
+                        }
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<int>(actionId)));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> RulesKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753291);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"rules";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> VariablesKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753292);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"variables";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> ActionsKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753293);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"actions";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> OpaqueKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3806600759638753294);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"opaque";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+    }
+}
+
+new class scmlg.parser.LexerFileParser<cm.lexer.CmajorLexer>;
+

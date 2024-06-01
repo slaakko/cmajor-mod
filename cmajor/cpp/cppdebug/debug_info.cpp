@@ -28,9 +28,9 @@ std::string SourceSpan::ToString() const
     return s;
 }
 
-SourceSpan MakeSourceSpan(soul::lexer::FileMap& fileMap, const soul::ast::Span& span, int32_t fileIdex)
+SourceSpan MakeSourceSpan(soul::lexer::FileMap& fileMap, const soul::ast::Span& span, int32_t fileIndex)
 {
-    const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(fileIdex);
+    const std::vector<int>* lineStartIndeces = fileMap.LineStartIndeces(fileIndex);
     if (!lineStartIndeces) return SourceSpan();
     soul::ast::LineColLen lineColLen = soul::ast::SpanToLineColLen(span, *lineStartIndeces);
     SourceSpan sourceSpan(lineColLen.line, lineColLen.col, lineColLen.col + lineColLen.len);

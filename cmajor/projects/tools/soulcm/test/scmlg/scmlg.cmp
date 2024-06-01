@@ -1,0 +1,17 @@
+project scmlg;
+target=program;
+reference <../cm.ast/cm.ast.cmp>;
+reference <../cm.lexer/cm.lexer.cmp>;
+reference <../cm.parser/cm.parser.cmp>;
+reference <../scmlg.ast/scmlg.ast.cmp>;
+reference <../common.parser/common.parser.cmp>;
+reference <../re.ast/re.ast.cmp>;
+reference <../re.lexer/re.lexer.cmp>;
+reference <../re.parser/re.parser.cmp>;
+reference <../scmlg.parser/scmlg.parser.cmp>;
+source <generator.cm>;
+source <keyword_file_generator.cm>;
+source <lexer_generator.cm>;
+source <main.cm>;
+source <regular_expression_parser.cm>;
+source <token_file_generator.cm>;

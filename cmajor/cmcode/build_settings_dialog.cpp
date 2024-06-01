@@ -10,7 +10,7 @@ namespace cmcode {
 BuildSettingsDialog::BuildSettingsDialog() : wing::Window(wing::WindowCreateParams().WindowClassName("cmcode.BuildSettingsDialog").WindowStyle(wing::DialogWindowStyle()).
     Text("Build Settings").WindowClassBackgroundColor(wing::DefaultControlWindowClassBackgroundColor()).BackgroundColor(wing::DefaultControlBackgroundColor()).
     Location(wing::DefaultLocation()).SetSize(wing::Size(wing::ScreenMetrics::Get().MMToHorizontalPixels(120), wing::ScreenMetrics::Get().MMToVerticalPixels(60)))),
-    okButton(nullptr), cancelButton(nullptr), singleThreadedCompileCheckBox(nullptr), generateIntermediateCodeFilesCheckBox(nullptr), linkWithDebugRuntimeCheckBox(nullptr)
+    okButton(nullptr), cancelButton(nullptr), singleThreadedCompileCheckBox(nullptr), generateIntermediateCodeFilesCheckBox(nullptr)//, linkWithDebugRuntimeCheckBox(nullptr)
 {
     wing::Size s = GetSize();
     wing::Size defaultControlSpacing = wing::ScreenMetrics::Get().DefaultControlSpacing();
@@ -32,11 +32,13 @@ BuildSettingsDialog::BuildSettingsDialog() : wing::Window(wing::WindowCreatePara
     generateIntermediateCodeFilesCheckBox = generateIntermediateCodeCheckBoxPtr.get();
     AddChild(generateIntermediateCodeCheckBoxPtr.release());
 
+/*
     wing::Point linkWithDebugRuntimeCheckBoxLocation(16, 16 + 24 + 24);
     std::unique_ptr<wing::CheckBox> linkWithDebugRuntimeCheckBoxPtr(new wing::CheckBox(wing::CheckBoxCreateParams().Text("Link with debug runtime (cmajor.rtd.dll)").
         Location(linkWithDebugRuntimeCheckBoxLocation).SetSize(defaultCheckBoxSize).SetAnchors(wing::Anchors::top | wing::Anchors::left)));
     linkWithDebugRuntimeCheckBox = linkWithDebugRuntimeCheckBoxPtr.get();
     AddChild(linkWithDebugRuntimeCheckBoxPtr.release());
+*/
 
     int x = s.Width - defaultButtonSize.Width - defaultControlSpacing.Width;
     int y = s.Height - defaultButtonSize.Height - defaultControlSpacing.Height;
@@ -61,7 +63,7 @@ void BuildSettingsDialog::SetValuesFrom(const BuildSettings& buildSettings)
 {
     singleThreadedCompileCheckBox->SetChecked(buildSettings.singleThreadedCompile);
     generateIntermediateCodeFilesCheckBox->SetChecked(buildSettings.generateIntermediateCodeFiles);
-    linkWithDebugRuntimeCheckBox->SetChecked(buildSettings.linkWithDebugRuntime);
+    //linkWithDebugRuntimeCheckBox->SetChecked(buildSettings.linkWithDebugRuntime);
 }
 
 BuildSettings BuildSettingsDialog::GetValues() const
@@ -69,7 +71,7 @@ BuildSettings BuildSettingsDialog::GetValues() const
     BuildSettings buildSettings;
     buildSettings.singleThreadedCompile = singleThreadedCompileCheckBox->Checked();
     buildSettings.generateIntermediateCodeFiles = generateIntermediateCodeFilesCheckBox->Checked();
-    buildSettings.linkWithDebugRuntime = linkWithDebugRuntimeCheckBox->Checked();
+    //buildSettings.linkWithDebugRuntime = linkWithDebugRuntimeCheckBox->Checked();
     return buildSettings;
 }
 

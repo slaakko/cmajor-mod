@@ -1,4 +1,0 @@
-project a.lexer;
-tokens <a.token>;
-expressions <a.expr>;
-lexer <a.lexer>;

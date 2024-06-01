@@ -1,0 +1,35 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+using cm.parser;
+
+namespace scm.regex
+{
+    public Result<uchar> MakeEscapeValue(const string& fileName, const System.Lex.Token& token)
+    {
+        const uchar* p = token.match.begin;
+        const uchar* e = token.match.end;
+        if (p != e && *p == '\\')
+        {
+            ++p;
+        }
+        Result<uchar> escapeValue = ParseEscape(fileName, p, e, token);
+        if (p != e)
+        {
+            string escape;
+            auto utf8Result = ToUtf8(token.match.ToString());
+            if (!utf8Result.Error())
+            {
+                escape = utf8Result.Value();
+            }
+            string errorMessage = "invalid escape at " + fileName + ":" + ToString(token.line) + ": " + escape;
+            int errorId = AllocateError(errorMessage);
+            return Result<uchar>(ErrorId(errorId));
+        }
+        return escapeValue;
+    }
+}

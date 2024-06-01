@@ -20,6 +20,7 @@ source <interface.parser.cm>;
 source <literal.parser.cm>;
 source <operator.cm>;
 source <parameter.parser.cm>;
+source <parser.cm>;
 source <project_file.parser.cm>;
 source <solution_file.parser.cm>;
 source <source_file.parser.cm>;

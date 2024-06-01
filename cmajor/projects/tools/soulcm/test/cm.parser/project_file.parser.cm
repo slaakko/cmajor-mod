@@ -34,7 +34,8 @@ namespace cm.parser
                 else
                 {
                     return System.Result<System.UniquePtr<cm.ast.Project>>(lexer.GetFarthestError()); 
-                }}
+                }
+            }
             else
             {
                 return System.Result<System.UniquePtr<cm.ast.Project>>(lexer.GetFarthestError()); 

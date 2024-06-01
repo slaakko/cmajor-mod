@@ -1,0 +1,18 @@
+project scmpg;
+target=program;
+reference <../cm.ast/cm.ast.cmp>;
+reference <../cm.lexer/cm.lexer.cmp>;
+reference <../cm.parser/cm.parser.cmp>;
+reference <../common.parser/common.parser.cmp>;
+reference <../scmpg.ast/scmpg.ast.cmp>;
+reference <../scmpg.parser/scmpg.parser.cmp>;
+source <array_generator.cm>;
+source <code_generator.cm>;
+source <code_modifier.cm>;
+source <first_set_computer.cm>;
+source <linker.cm>;
+source <main.cm>;
+source <nonterminal_info.cm>;
+source <optimizer.cm>;
+source <util.cm>;
+source <xml_printer.cm>;

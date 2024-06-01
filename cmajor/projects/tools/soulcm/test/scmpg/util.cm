@@ -1,0 +1,106 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg
+{
+    public bool IsGetNode(cm.ast.Node* node)
+    {
+        cm.ast.Node* parent = node->Parent();
+        if (parent != null && parent is cm.ast.DotNode*)
+        {
+            cm.ast.DotNode* dotNode = cast<cm.ast.DotNode*>(parent);
+            if (dotNode->MemberId()->Str() == u"Get")
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public bool IsContainedBySwitchStatement(cm.ast.Node* node)
+    {
+        cm.ast.Node* parent = node->Parent();
+        while (parent != null)
+        {
+            if (parent is cm.ast.SwitchStatementNode*) return true;
+            parent = parent->Parent();
+        }
+        return false;
+    }
+
+    public bool IsListParserNonterminal(const NonterminalInfo& info)
+    {
+        if (info.count != 2)
+        {
+            return false;
+        }
+        scmpg.ast.NonterminalParser* nonterminalParser = info.nonterminalParser;
+        scmpg.ast.Parser* parent = nonterminalParser->Parent();
+        while (parent != null)
+        {
+            if (parent->IsListParser())
+            {
+                return true;
+            }
+            parent = parent->Parent();
+        }
+        return false;
+    }
+
+    public bool IsContainedByChoiceParser(scmpg.ast.Parser* parser)
+    {
+        scmpg.ast.Parser* parent = parser->Parent();
+        while (parent != null)
+        {
+            if (parent is scmpg.ast.ChoiceParser*)
+            {
+                return true;
+            }
+            parent = parent->Parent();
+        }
+        return false;
+    }
+
+    public class NonterminalCounter : cm.ast.DefaultVisitor
+    {
+        public NonterminalCounter(List<NonterminalInfo>& nonterminalInfos_, scmpg.ast.Parser* actionParser_) :
+            errorId(0), nonterminalInfos(nonterminalInfos_), actionParser(actionParser_)
+        {
+        }
+        public override void Visit(cm.ast.IdentifierNode& identifierNode)
+        {
+            auto utf8Result = ToUtf8(identifierNode.Str());
+            if (utf8Result.Error())
+            {
+                errorId = utf8Result.GetErrorId();
+                return;
+            }
+            const string& id = utf8Result.Value();
+            for (auto& info : nonterminalInfos)
+            {
+                if (info.nonterminalParser->InstanceName() == id)
+                {
+                    if (IsGetNode(&identifierNode)) continue;
+                    if (IsContainedBySwitchStatement(&identifierNode)) continue;
+                    if (IsContainedByChoiceParser(actionParser)) continue;
+                    ++info.count;
+                    info.spanFileIndeces.Add(SpanFileIndex(identifierNode.GetSpan(), identifierNode.FileIndex()));
+                }
+            }
+        }
+        private List<NonterminalInfo>& nonterminalInfos;
+        private scmpg.ast.Parser* actionParser;
+        private int errorId;
+    }
+
+    public void CountNonterminals(cm.ast.CompoundStatementNode* actionBlock, scmpg.ast.Parser* actionParser, List<NonterminalInfo>& nonterminalInfos)
+    {
+        NonterminalCounter counter(nonterminalInfos, actionParser);
+        actionBlock->Accept(counter);
+    }
+}

@@ -1,0 +1,68 @@
+<parserFile>
+ <grammar name="scmlg.parser.TokenFileParser">
+  <rule first="{ID}" name="TokenFile">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <sequence first="{ID}">
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="TokensKeyword"/>
+         </action>
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="QualifiedUtf8Id"/>
+         </action>
+        </sequence>
+        <token first="{LBRACE}" name="LBRACE"/>
+       </sequence>
+       <optional first="{#, LPAREN}">
+        <group first="{LPAREN}">
+         <list first="{LPAREN}">
+          <sequence first="{LPAREN}">
+           <action first="{LPAREN}">
+            <nonterminal first="{LPAREN}" ruleName="Token"/>
+           </action>
+           <kleene first="{#, COMMA}">
+            <sequence first="{COMMA}">
+             <token first="{COMMA}" name="COMMA"/>
+             <action first="{LPAREN}">
+              <nonterminal first="{LPAREN}" ruleName="Token"/>
+             </action>
+            </sequence>
+           </kleene>
+          </sequence>
+         </list>
+        </group>
+       </optional>
+      </sequence>
+      <token first="{RBRACE}" name="RBRACE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{LPAREN}" name="Token">
+   <action first="{LPAREN}">
+    <group first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <sequence first="{LPAREN}">
+        <sequence first="{LPAREN}">
+         <token first="{LPAREN}" name="LPAREN"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+        <token first="{COMMA}" name="COMMA"/>
+       </sequence>
+       <action first="{STRING_LITERAL}">
+        <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+       </action>
+      </sequence>
+      <token first="{RPAREN}" name="RPAREN"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

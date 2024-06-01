@@ -1,0 +1,122 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using scmpg.ast;
+
+namespace scmpg
+{
+    public class FirstSetComputer : scmpg.ast.DefaultVisitor
+    {
+        public FirstSetComputer() : changed(false)
+        {
+        }
+        public inline bool Changed() const
+        {
+            return changed;
+        }
+        public override void Visit(ChoiceParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(SequenceParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(DifferenceParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(ListParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(LookaheadParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(KleeneParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(PositiveParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(OptionalParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(ActionParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(NonterminalParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(EmptyParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(AnyParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(TokenParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(CharParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(StringParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(CharSetParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(GroupParser& parser)
+        {
+            parser.ComputeFirst(changed, visited);
+        }
+        public override void Visit(RuleParser& rule)
+        {
+            rule.ComputeFirst(changed, visited);
+        }
+        public override void Visit(GrammarParser& grammar)
+        {
+            grammar.ComputeFirst(changed, visited);
+        }
+        private bool changed;
+        private Set<scmpg.ast.Parser*> visited;
+    }
+
+    public void ComputeFirstSets(scmpg.ast.ScmpgFile* scmpgFile, bool verbose)
+    {
+        if (verbose)
+        {
+            Console.Out() << "computing first sets..." << endl();
+        }
+        int round = 1;
+        bool changed = true;
+        while (changed)
+        {
+            if (verbose)
+            {
+                Console.Out() << "round " << round << "..." << endl();
+            }
+            FirstSetComputer firstSetComputer;
+            scmpgFile->Accept(firstSetComputer);
+            changed = firstSetComputer.Changed();
+            ++round;
+        }
+    }
+}
+

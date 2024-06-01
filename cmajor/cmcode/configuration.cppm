@@ -45,7 +45,7 @@ public:
 public:
     bool singleThreadedCompile;
     bool generateIntermediateCodeFiles;
-    bool linkWithDebugRuntime;
+    //bool linkWithDebugRuntime;
 };
 
 export class Options

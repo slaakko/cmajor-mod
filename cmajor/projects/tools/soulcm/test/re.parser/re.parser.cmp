@@ -1,0 +1,9 @@
+project re.parser;
+target=library;
+reference <../cm.parser/cm.parser.cmp>;
+reference <../scmlg.ast/scmlg.ast.cmp>;
+reference <../re.ast/re.ast.cmp>;
+reference <../re.lexer/re.lexer.cmp>;
+source <re.parser.cm>;
+source <token_parser.cm>;
+text <re.parser>;

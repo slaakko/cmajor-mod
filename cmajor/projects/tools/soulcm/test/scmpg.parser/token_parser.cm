@@ -1,0 +1,151 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+using cm.parser;
+
+namespace scmpg.parser
+{
+    public Result<uchar> ParseCharLiteral(const string& fileName, const System.Lex.Token& token)
+    {
+        cm.ast.CharLiteralPrefix prefix;
+        Result<uchar> result = cm.parser.ParseCharacterLiteral(fileName, token, prefix);
+        return result;
+    }
+
+    public Result<UniquePtr<scmpg.ast.Parser>> ParseStrLiteralOrCharSet(const System.Lex.Span& span, int fileIndex, const string& fileName, const System.Lex.Token& token)
+    {
+        UniquePtr<scmpg.ast.CharSet> set;
+        ustring stringLiteral;
+        uchar* p = token.match.begin;
+        uchar* e = token.match.end;
+        if (p != e && *p == '"')
+        {
+            ++p;
+            if (p != e && *p == '[')
+            {
+                set.Reset(new scmpg.ast.CharSet());
+                ++p;
+                if (p != e && *p == '^')
+                {
+                    set->SetInverse();
+                    ++p;
+                }
+                while (p != e && *p != ']')
+                {
+                    uchar first = *p;
+                    uchar last = first;
+                    if (*p == '\\')
+                    {
+                        ++p;
+                        auto result = ParseEscape(fileName, p, e, token);
+                        if (result.Error())
+                        {
+                            return Result<UniquePtr<scmpg.ast.Parser>>(ErrorId(result.GetErrorId()));
+                        }
+                        first = result.Value();
+                        last = first;
+                    }
+                    else
+                    {
+                        ++p;
+                    }
+                    if (p != e && *p != ']')
+                    {
+                        if (*p == '-')
+                        {
+                            ++p;
+                            if (p != e && *p != ']')
+                            {
+                                last = *p;
+                                if (*p == '\\')
+                                {
+                                    ++p;
+                                    auto result = ParseEscape(fileName, p, e, token);
+                                    if (result.Error())
+                                    {
+                                        return Result<UniquePtr<scmpg.ast.Parser>>(ErrorId(result.GetErrorId()));
+                                    }
+                                    last = result.Value();
+                                }
+                                else
+                                {
+                                    ++p;
+                                }
+                            }
+                            else
+                            {
+                                scmpg.ast.Range range;
+                                range.first = cast<int>(first);
+                                range.last = cast<int>(last);
+                                set->AddRange(range);
+                                first = '-';
+                                last = '-';
+                            }
+                        }
+                    }
+                    scmpg.ast.Range range;
+                    range.first = cast<int>(first);
+                    range.last = cast<int>(last);
+                    set->AddRange(range);
+                }
+                if (p != e && *p == ']')
+                {
+                    ++p;
+                }
+                if (p != e && *p == '"')
+                {
+                    ++p;
+                }
+                if (p != e)
+                {
+                    string errorMessage = "invalid character set literal at " + fileName + ":" + ToString(token.line);
+                    int errorId = AllocateError(errorMessage);
+                    return Result<UniquePtr<scmpg.ast.Parser>>(ErrorId(errorId));
+                }
+                return Result<UniquePtr<scmpg.ast.Parser>>(UniquePtr<scmpg.ast.Parser>(new scmpg.ast.CharSetParser(span, fileIndex, set.Release())));
+            }
+            else
+            {
+                while (p != e && *p != '\r' && *p != '\n' && *p != '"')
+                {
+                    if (*p == '\\')
+                    {
+                        ++p;
+                        auto result = ParseEscape(fileName, p, e, token);
+                        if (result.Error())
+                        {
+                            return Result<UniquePtr<scmpg.ast.Parser>>(ErrorId(result.GetErrorId()));
+                        }
+                        stringLiteral.Append(result.Value());
+                    }
+                    else
+                    {
+                        stringLiteral.Append(*p);
+                        ++p;
+                    }
+                }
+                if (p != e && *p == '"')
+                {
+                    ++p;
+                }
+                if (p != e)
+                {
+                    string errorMessage = "invalid string literal at " + fileName + ":" + ToString(token.line);
+                    int errorId = AllocateError(errorMessage);
+                    return Result<UniquePtr<scmpg.ast.Parser>>(ErrorId(errorId));
+                }
+            }
+        }
+        else
+        {
+            string errorMessage = "invalid string literal at " + fileName + ":" + ToString(token.line);
+            int errorId = AllocateError(errorMessage);
+            return Result<UniquePtr<scmpg.ast.Parser>>(ErrorId(errorId));
+        }
+        return Result<UniquePtr<scmpg.ast.Parser>>(UniquePtr<scmpg.ast.Parser>(new scmpg.ast.StringParser(span, fileIndex, stringLiteral)));
+    }
+}

@@ -1,0 +1,110 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+using cm.ast;
+
+namespace cm.parser
+{
+    public Result<UniquePtr<cm.ast.SourceFileNode>> ParseSourceFile(const string& sourceFilePath, System.Lex.FileMap& fileMap)
+    {
+        auto sourceFileContentResult = File.ReadAllText(sourceFilePath);
+        if (sourceFileContentResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(sourceFileContentResult.GetErrorId()));
+        }
+        const string& sourceFileContent = sourceFileContentResult.Value();
+        auto utf32Result = ToUtf32(sourceFileContent);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* start = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        cm.lexer.CmajorLexer lexer(start, end, sourceFilePath);
+        if (lexer.Error())
+        {
+            return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(lexer.GetErrorId()));
+        }
+        int fileIndex = fileMap.MapFileName(sourceFilePath);
+        lexer.SetFileIndex(fileIndex);
+        cm.parser.Context context;
+        auto parseResult = SourceFileParser<cm.lexer.CmajorLexer>.Parse(lexer, &context);
+        if (parseResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(parseResult.GetErrorId()));
+        }
+        fileMap.AddSourceFile(fileIndex, Rvalue(utf32Result.Value()), lexer.GetLineStartIndeces());
+        return Result<UniquePtr<cm.ast.SourceFileNode>>(Rvalue(parseResult.Value()));
+    }
+
+    public Result<UniquePtr<cm.ast.Project>> ParseProjectFile(const string& projectFilePath)
+    {
+        auto projectFileContentResult = File.ReadAllText(projectFilePath);
+        if (projectFileContentResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.Project>>(ErrorId(projectFileContentResult.GetErrorId()));
+        }
+        const string& projectFileContent = projectFileContentResult.Value();
+        auto utf32Result = ToUtf32(projectFileContent);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<cm.ast.Project>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* start = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        cm.lexer.CmajorLexer lexer(start, end, projectFilePath);
+        if (lexer.Error())
+        {
+            return Result<UniquePtr<cm.ast.Project>>(ErrorId(lexer.GetErrorId()));
+        }
+        auto parseResult = ProjectFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
+        if (parseResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.Project>>(ErrorId(parseResult.GetErrorId()));
+        }
+        UniquePtr<cm.ast.Project> project = Rvalue(parseResult.Value());
+        auto resolutionResult = project->ResolveDeclarations();
+        if (resolutionResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.Project>>(ErrorId(resolutionResult.GetErrorId()));
+        }
+        return Result<UniquePtr<cm.ast.Project>>(Rvalue(project));
+    }
+
+    public Result<UniquePtr<cm.ast.Solution>> ParseSolutionFile(const string& solutionFilePath)
+    {
+        auto solutionFileContentResult = File.ReadAllText(solutionFilePath);
+        if (solutionFileContentResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.Solution>>(ErrorId(solutionFileContentResult.GetErrorId()));
+        }
+        const string& solutionFileContent = solutionFileContentResult.Value();
+        auto utf32Result = ToUtf32(solutionFileContent);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<cm.ast.Solution>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* start = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        cm.lexer.CmajorLexer lexer(start, end, solutionFilePath);
+        auto parseResult = SolutionFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
+        if (parseResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.Solution>>(ErrorId(parseResult.GetErrorId()));
+        }
+        UniquePtr<cm.ast.Solution> solution = Rvalue(parseResult.Value());
+        auto resolutionResult = solution->ResolveDeclarations();
+        if (resolutionResult.Error())
+        {
+            return Result<UniquePtr<cm.ast.Solution>>(ErrorId(resolutionResult.GetErrorId()));
+        }
+        return Result<UniquePtr<cm.ast.Solution>>(Rvalue(solution));
+    }
+}

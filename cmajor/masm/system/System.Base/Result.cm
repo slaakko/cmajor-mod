@@ -11,10 +11,11 @@ namespace System
         public int value;
     }
 
-//  The Result<T> class template will hold either a value T or an error identifier. An error identifier is a integer that represents an error instance contained by the run-time. 
-//  Error identifier 0 indicates success and positive integer indicates an error.    
+//  The Result<T> class template will hold either a value T or an error identifier.
+//  An error identifier is a integer that represents an error instance contained by the runtime.
+//  Error identifier 0 indicates success and positive integer indicates an error.
 
-    public class Result<T> 
+    public class Result<T>
     {
         public Result() : value(), errorId(0) {}
         public Result(const T& value_) : value(value_), errorId(0) {}
@@ -35,7 +36,7 @@ namespace System
 
     public bool operator==<T>(const Result<T>& left, const Result<T>& right)
     {
-        return left.Value() == right.Value() && left.GetErrorId() == right.GetErrorErrorId();
+        return left.Value() == right.Value() && left.GetErrorId() == right.GetErrorId();
     }
 
     public bool operator<<T>(const Result<T>& left, const Result<T>& right)
@@ -45,7 +46,7 @@ namespace System
         return left.GetErrorId() < right.GetErrorId();
     }
 
-//  AllocateError creates and returns an error identifier for an error message. 
+//  AllocateError creates and returns an error identifier for an error message.
 
     public int AllocateError(const string& errorMessage)
     {

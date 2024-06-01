@@ -1,0 +1,164 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg
+{
+    public class CodeModifier : cm.ast.DefaultVisitor
+    {
+        public CodeModifier(scmpg.ast.RuleParser* rule_, bool ptrType_, const List<NonterminalInfo>& nonterminalInfos_, cm.ast.Node* returnType_,
+            const string& ruleName_, System.Lex.FileMap& fileMap_) :
+            rule(rule_), ptrType(ptrType_), nonterminalInfos(nonterminalInfos_), returnType(returnType_), ruleName(ruleName_), fileMap(fileMap_), errorId(0)
+        {
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public override void Visit(cm.ast.IdentifierNode& identifier)
+        {
+            auto utf8Result = ToUtf8(identifier.Str());
+            if (utf8Result.Error())
+            {
+                errorId = utf8Result.GetErrorId();
+                return;
+            }
+            const string& id = utf8Result.Value();
+            for (const auto& info : nonterminalInfos)
+            {
+                if (info.nonterminalParser->InstanceName() == id)
+                {
+                    if (info.ptrType)
+                    {
+                        if (!IsGetNode(&identifier))
+                        {
+                            auto utf32Result = ToUtf32(info.nonterminalParser->InstanceName());
+                            if (utf32Result.Error())
+                            {
+                                errorId = utf32Result.GetErrorId();
+                                return;
+                            }
+                            ustring newId = utf32Result.Value();
+                            newId.Append(u".Release()");
+                            identifier.SetStr(newId);
+                        }
+                    }
+                    else
+                    {
+                        auto utf32Result = ToUtf32(info.nonterminalParser->InstanceName());
+                        if (utf32Result.Error())
+                        {
+                            errorId = utf32Result.GetErrorId();
+                            return;
+                        }
+                        ustring newId = utf32Result.Value();
+                        newId.Append(u"->value");
+                        identifier.SetStr(newId);
+                    }
+                }
+            }
+        }
+        public override void Visit(cm.ast.ReturnStatementNode& returnStatement)
+        {
+            if (Error()) return;
+            System.Lex.Span span = returnStatement.GetSpan();
+            int fileIndex = returnStatement.FileIndex();
+            base->Visit(returnStatement);
+            if (returnStatement.Expression() != null)
+            {
+                if (returnType == null)
+                {
+                    auto errorMessageResult = System.Lex.MakeMessage("error: rule does not return value", rule->Span(), rule->FileIndex(), fileMap);
+                    if (errorMessageResult.Error())
+                    {
+                        errorId = errorMessageResult.GetErrorId();
+                        return;
+                    }
+                    string errorMessage = errorMessageResult.Value();
+                    auto referenceMessageResult = System.Lex.MakeMessage("see reference", span, fileIndex, fileMap);
+                    if (referenceMessageResult.Error())
+                    {
+                        errorId = errorMessageResult.GetErrorId();
+                        return;
+                    }
+                    errorMessage.Append("\n").Append(referenceMessageResult.Value());
+                    errorId = AllocateError(errorMessage);
+                    return;
+                }
+                if (returnStatement.Expression() is cm.ast.InvokeNode*)
+                {
+                    cm.ast.InvokeNode* invoke = cast<cm.ast.InvokeNode*>(returnStatement.Expression());
+                    if (invoke->Subject() is cm.ast.IdentifierNode*)
+                    {
+                        cm.ast.IdentifierNode* id = cast<cm.ast.IdentifierNode*>(invoke->Subject());
+                        if (id->Str() == u"ErrorId" || id->Str() == u"System.ErrorId")
+                        {
+                            cm.ast.TemplateIdNode* result = new cm.ast.TemplateIdNode(span, fileIndex, new cm.ast.IdentifierNode(span, fileIndex, u"System.Result"));
+                            result->AddTemplateArgument(new cm.ast.IdentifierNode(span, fileIndex, u"System.Parsing.Match"));
+                            cm.ast.InvokeNode* invokeSystemResult = new cm.ast.InvokeNode(span, fileIndex, result);
+                            cm.ast.CloneContext cloneContext;
+                            invokeSystemResult->AddArgument(returnStatement.Expression()->Clone(cloneContext));
+                            returnStatement.SetExpression(invokeSystemResult);
+                            return;
+                        }
+                    }
+                }
+                cm.ast.TemplateIdNode* result = new cm.ast.TemplateIdNode(span, fileIndex, new cm.ast.IdentifierNode(span, fileIndex, u"System.Result"));
+                result->AddTemplateArgument(new cm.ast.IdentifierNode(span, fileIndex, u"System.Parsing.Match"));
+                cm.ast.InvokeNode* invokeSystemResult = new cm.ast.InvokeNode(span, fileIndex, result);
+                cm.ast.InvokeNode* invokeSystemParsingMatch = new cm.ast.InvokeNode(span, fileIndex, new cm.ast.IdentifierNode(span, fileIndex, u"System.Parsing.Match"));
+                List<cm.ast.Node*> invokeArgs;
+                invokeArgs.Add(new cm.ast.BooleanLiteralNode(span, fileIndex, true));
+                if (ptrType)
+                {
+                    cm.ast.CloneContext cloneContext;
+                    invokeArgs.Add(returnStatement.Expression()->Clone(cloneContext));
+                }
+                else
+                {
+                    cm.ast.TemplateIdNode* systemParsingValue = new cm.ast.TemplateIdNode(span, fileIndex,
+                        new cm.ast.IdentifierNode(span, fileIndex, u"System.Parsing.Value"));
+                    cm.ast.CloneContext cloneContext;
+                    systemParsingValue->AddTemplateArgument(returnType->Clone(cloneContext));
+                    cm.ast.NewNode* newNode = new cm.ast.NewNode(span, fileIndex, systemParsingValue);
+                    newNode->AddArgument(returnStatement.Expression()->Clone(cloneContext));
+                    invokeArgs.Add(newNode);
+                }
+                for (cm.ast.Node* arg : invokeArgs)
+                {
+                    invokeSystemParsingMatch->AddArgument(arg);
+                }
+                invokeSystemResult->AddArgument(invokeSystemParsingMatch);
+                returnStatement.SetExpression(invokeSystemResult);
+            }
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private scmpg.ast.RuleParser* rule;
+        private bool ptrType;
+        private const List<NonterminalInfo>& nonterminalInfos;
+        private cm.ast.Node* returnType;
+        private string ruleName;
+        private System.Lex.FileMap& fileMap;
+        private int errorId;
+    }
+    
+    public Result<bool> ModifyCode(scmpg.ast.RuleParser* rule, cm.ast.CompoundStatementNode* actionBlock, bool ptrType, const List<NonterminalInfo>& nonterminalInfos,
+        cm.ast.Node* returnType, const string& ruleName, System.Lex.FileMap& fileMap)
+    {
+        CodeModifier modifier(rule, ptrType, nonterminalInfos, returnType, ruleName, fileMap);
+        actionBlock->Accept(modifier);
+        if (modifier.Error())
+        {
+            return Result<bool>(ErrorId(modifier.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+}
+

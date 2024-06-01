@@ -1,0 +1,99 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
+
+parser scmlg.parser.ScmlgFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using scm.parser.CommonParser.ProjectKeyword;
+    using scm.parser.CommonParser.TokensKeyword;
+    using scm.parser.CommonParser.KeywordsKeyword;
+    using scm.parser.CommonParser.ExpressionsKeyword;
+    using scm.parser.CommonParser.LexerKeyword;
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using cm.parser.ContainerFileParser.FilePath;
+
+    ScmlgFile(var UniquePtr<scmlg.ast.ScmlgFile> scmlgFile) : scmlg.ast.ScmlgFile*
+        ::= 
+        (
+            empty{ lexer.vars.matchFilePath = true; }
+            ProjectKeyword:projectKeyword
+            QualifiedUtf8Id:projectName
+            SEMICOLON
+            {
+                scmlgFile.Reset(new scmlg.ast.ScmlgFile(lexer.FileName(), projectName));
+            }
+            (
+                ScmlgFileDeclaration:declaration{ scmlgFile->AddDeclaration(declaration); }
+            )*
+        )
+        {
+            return scmlgFile.Release();
+        }
+        ;
+
+    ScmlgFileDeclaration : scmlg.ast.ScmlgFileDeclaration*
+        ::= TokenFileDeclaration:tokenFileDeclaration{ return tokenFileDeclaration; }
+        |   KeywordFileDeclaration:keywordFileDeclaration{ return keywordFileDeclaration; }
+        |   ExpressionFileDeclaration:expressionFileDeclaration{ return expressionFileDeclaration; }
+        |   LexerFileDeclaration:lexerFileDeclaration{ return lexerFileDeclaration; }
+        ;
+
+    TokenFileDeclaration(var bool external) : scmlg.ast.ScmlgFileDeclaration*
+        ::= 
+        (
+            (EXTERN{ external = true; } | empty{ external = false; })
+            TokensKeyword:tokensKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new scmlg.ast.TokenFileDeclaration(filePath, external);
+        }
+        ;
+
+    KeywordFileDeclaration : scmlg.ast.ScmlgFileDeclaration*
+        ::=
+        (
+            KeywordsKeyword:keywordsKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new scmlg.ast.KeywordFileDeclaration(filePath);
+        }
+        ;
+
+    ExpressionFileDeclaration : scmlg.ast.ScmlgFileDeclaration*
+        ::=
+        (
+            ExpressionsKeyword:expressionsKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new scmlg.ast.ExpressionFileDeclaration(filePath);
+        }
+        ;
+
+    LexerFileDeclaration : scmlg.ast.ScmlgFileDeclaration*
+        ::=
+        (
+            LexerKeyword:lexerKeyword
+            FilePath:filePath
+            SEMICOLON
+        )
+        {
+            return new scmlg.ast.LexerFileDeclaration(filePath);
+        }
+        ;
+}

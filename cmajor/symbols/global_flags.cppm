@@ -19,7 +19,7 @@ enum class GlobalFlags : uint64_t
     debugParsing = 1 << 4,
     emitLlvm = 1 << 5,
     emitOptLlvm = 1 << 6,
-    linkWithDebugRuntime = 1 << 7,
+    //linkWithDebugRuntime = 1 << 7,
     linkUsingMsLink = 1 << 8,
     ide = 1 << 9,
     strictNothrow = 1 << 10,

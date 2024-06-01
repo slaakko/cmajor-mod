@@ -1,2 +1,2 @@
 @echo off
-scmlg -vde re.lexer.scmlg
+scmlg -vd re.lexer.scmlg

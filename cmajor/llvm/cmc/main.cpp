@@ -110,10 +110,12 @@ int main(int argc, const char** argv)
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
                 }
+/*
                 else if (arg == "--link-with-debug-runtime")
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                 }
+*/
                 else if (arg == "--gen-debug-info")
                 {
                     genDebugInfo = true;
@@ -242,11 +244,13 @@ int main(int argc, const char** argv)
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
                                 break;
                             }
+/*
                             case 'd':
                             {
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                                 break;
                             }
+*/
                             case 'm':
                             {
                                 useModuleCache = false;

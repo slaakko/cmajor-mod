@@ -124,10 +124,12 @@ int main(int argc, const char** argv)
                     {
                         cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
                     }
+/*
                     else if (arg == "--link-with-debug-runtime")
                     {
                         cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                     }
+*/
                     else if (arg == "--time")
                     {
                         cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::time);
@@ -283,11 +285,13 @@ int main(int argc, const char** argv)
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
                                 break;
                             }
+/*
                             case 'd':
                             {
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
                                 break;
                             }
+*/
                             case 't':
                             {
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::time);

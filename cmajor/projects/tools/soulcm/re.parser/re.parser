@@ -3,10 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-export module re.parser;
-
-import re.ast;
-import re.token;
+using re.ast;
+using re.token;
 
 parser RegExParser
 {

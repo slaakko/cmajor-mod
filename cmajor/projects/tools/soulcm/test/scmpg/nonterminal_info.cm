@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+using scmpg.ast;
+
+namespace scmpg
+{
+    public class SpanFileIndex
+    {
+        public SpanFileIndex(const System.Lex.Span& span_, int fileIndex_) : span(span_), fileIndex(fileIndex_)
+        {
+        }
+        public System.Lex.Span span;
+        public int fileIndex;
+    }
+    
+    public class NonterminalInfo
+    {
+        public NonterminalInfo(NonterminalParser* nonterminalParser_, bool ptrType_) : nonterminalParser(nonterminalParser_), ptrType(ptrType_), count(0)
+        {
+        }
+        public NonterminalParser* nonterminalParser;
+        public bool ptrType;
+        public int count;
+        public List<SpanFileIndex> spanFileIndeces;
+    }
+}

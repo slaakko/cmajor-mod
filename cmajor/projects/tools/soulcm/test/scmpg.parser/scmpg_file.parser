@@ -1,0 +1,58 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmpg.ast;
+
+parser scmpg.parser.ScmpgFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using scm.parser.CommonParser.ProjectKeyword;
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.ParserKeyword;
+    using cm.parser.ContainerFileParser.FilePath;
+
+    ScmpgFile(var UniquePtr<scmpg.ast.ScmpgFile> scmpgFile) : scmpg.ast.ScmpgFile*
+        ::= 
+        (
+            empty{ lexer.vars.matchFilePath = true; }
+            ProjectKeyword:projectKeyword
+            QualifiedUtf8Id:projectName
+            {
+                scmpgFile.Reset(new scmpg.ast.ScmpgFile(lexer.FileName(), projectName));
+            }
+            SEMICOLON
+            (
+                Declaration:declaration{ scmpgFile->AddDeclaration(declaration); }
+            )*
+        )
+        {
+            return scmpgFile.Release();
+        }
+        ;
+
+    Declaration : scmpg.ast.Declaration*
+        ::= ParserFileDeclaration:parserFileDeclaration{ return parserFileDeclaration; }
+        ;
+
+    ParserFileDeclaration(var System.Lex.Span span, var bool external) : scmpg.ast.Declaration*
+        ::= 
+        (
+            (
+                EXTERN{ external = true; } | empty{ external = false; }
+            ) 
+            ParserKeyword:parserKeyword{ span = lexer.GetSpan(pos); }
+            FilePath:filePath 
+            SEMICOLON
+        )
+        {
+            return new scmpg.ast.ParserFileDeclaration(span, filePath, external);
+        }
+        ;
+}

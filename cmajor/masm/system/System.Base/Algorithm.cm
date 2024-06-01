@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-// Algorithm implementations are based on SGI STL implementation.
+// Algorithm implementations are based on SGI STL implementation and code found from cppreference.com
 
 using System.Concepts;
 
@@ -321,6 +321,19 @@ namespace System
         return end;
     }
 
+    public constexpr I FindIfNot<I, P>(I begin, I end, P p) where I is InputIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
+    {
+        while (begin != end)
+        {
+            if (!p(*begin))
+            {
+                return begin;
+            }
+            ++begin;
+        }
+        return end;
+    }
+
     public constexpr long Count<I, T>(I begin, I end, const T& value) where I is InputIterator and T is Semiregular and EqualityComparable<T, I.ValueType>
     {
         long count = 0;
@@ -435,7 +448,7 @@ namespace System
         }
         return to;
     }
-    
+
     public long Log2(long n)
     {
         long k = 0;
@@ -447,323 +460,102 @@ namespace System
         return k;
     }
 
-    public const T& Median<T, R>(const T& a, const T& b, const T& c, R r) where R is Relation
-    {
-        if (r(a, b))
-        {
-            if (r(b, c))
-            {
-                return b;
-            }
-            else if (r(a, c))
-            {
-                return c;
-            }
-            else
-            {
-                return a;
-            }
-        }
-        else if (r(a, c))
-        {
-            return a;
-        }
-        else if (r(b, c))
-        {
-            return c;
-        }
-        else
-        {
-            return b;
-        }
-    }
-
-    public I UnguardedPartition<I, R, T>(I begin, I end, const T& pivot, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType
-    {
-        while (true)
-        {
-            while (r(*begin, pivot))
-            {
-                ++begin;
-            }
-            --end;
-            while (r(pivot, *end))
-            {
-                --end;
-            }
-            if (!(begin < end))
-            {
-                return begin;
-            }
-            Swap(*begin, *end);
-            ++begin;
-        }
-        return begin;
-    }
-
-    public void PushHeap<I, T, R>(I begin, long holeIndex, long topIndex, const T& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Copyable
-    {
-        long parent = (holeIndex - 1) / 2;
-        while (holeIndex > topIndex && r(*(begin + parent), value))
-        {
-            I p = begin + holeIndex;
-            *p = *(begin + parent);
-            holeIndex = parent;
-            parent = (holeIndex - 1) / 2;
-        }
-        I p = begin + holeIndex;
-        *p = value;
-    }
-
-    public void PushHeap<I, T, R>(I begin, long holeIndex, long topIndex, T& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Movable
-    {
-        long parent = (holeIndex - 1) / 2;
-        while (holeIndex > topIndex && r(*(begin + parent), value))
-        {
-            I p = begin + holeIndex;
-            *p = Rvalue(*(begin + parent));
-            holeIndex = parent;
-            parent = (holeIndex - 1) / 2;
-        }
-        I p = begin + holeIndex;
-        *p = Rvalue(value);
-    }
-
-    public void AdjustHeap<I, T, R>(I begin, long holeIndex, long len, const T& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Copyable
-    {
-        long topIndex = holeIndex;
-        long secondChild = 2 * holeIndex + 2;
-        while (secondChild < len)
-        {
-            if (r(*(begin + secondChild), *(begin + (secondChild - 1))))
-            {
-                --secondChild;
-            }
-            I p = begin + holeIndex;
-            *p = *(begin + secondChild);
-            holeIndex = secondChild;
-            secondChild = 2 * (secondChild + 1);
-        }
-        if (secondChild == len)
-        {
-            I p = begin + holeIndex;
-            *p = *(begin + (secondChild - 1));
-            holeIndex = secondChild - 1;
-        }
-        PushHeap(begin, holeIndex, topIndex, value, r);
-    }
-
-    public void AdjustHeap<I, T, R>(I begin, long holeIndex, long len, T& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Movable
-    {
-        long topIndex = holeIndex;
-        long secondChild = 2 * holeIndex + 2;
-        while (secondChild < len)
-        {
-            if (r(*(begin + secondChild), *(begin + (secondChild - 1))))
-            {
-                --secondChild;
-            }
-            I p = begin + holeIndex;
-            *p = Rvalue(*(begin + secondChild));
-            holeIndex = secondChild;
-            secondChild = 2 * (secondChild + 1);
-        }
-        if (secondChild == len)
-        {
-            I p = begin + holeIndex;
-            *p = Rvalue(*(begin + (secondChild - 1)));
-            holeIndex = secondChild - 1;
-        }
-        PushHeap(begin, holeIndex, topIndex, value, r);
-    }
-    public void PopHeap<I, T, R>(I begin, I end, I result, const T& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Copyable
-    {
-        *result = *begin;
-        AdjustHeap(begin, 0, end - begin, value, r);
-    }
-
-    public void PopHeap<I, T, R>(I begin, I end, I result, T& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Movable
-    {
-        *result = Rvalue(*begin);
-        AdjustHeap(begin, 0, end - begin, value, r);
-    }
-    
-    public void PopHeap<I, R>(I begin, I end, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
-    {
-        PopHeap(begin, end - 1, end - 1, *(end - 1), r);
-    }
-
-    public void MakeHeap<I, R>(I begin, I end, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
-    {
-        if (end - begin < 2) return;
-        long len = end - begin;
-        long parent = (len - 2) / 2;
-        while (true)
-        {
-            AdjustHeap(begin, parent, len, *(begin + parent), r);
-            if (parent == 0)
-            {
-                return;
-            }
-            --parent;
-        }
-    }
-
-    public void SortHeap<I, R>(I begin, I end, R r)
-    {
-        while (end - begin > 1)
-        {
-            PopHeap(begin, end--, r);
-        }
-    }
-
-    public void PartialSort<I, R>(I begin, I middle, I end, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
-    {
-        MakeHeap(begin, middle, r);
-        for (I i = middle; i < end; ++i)
-        {
-            if (r(*i, *begin))
-            {
-                PopHeap(begin, middle, i, *i, r);
-            }
-        }
-        SortHeap(begin, middle, r);
-    }
-
-    public const long insertionSortThreshold = 16;
-
-    public void IntroSortLoop<I, R>(I begin, I end, long depthLimit, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
-    {
-        while (end - begin > insertionSortThreshold)
-        {
-            if (depthLimit == 0)
-            {
-                PartialSort(begin, end, end, r);
-                return;
-            }
-            --depthLimit;
-            I cut = UnguardedPartition(begin, end, Median(*begin, *(begin + (end - begin) / 2), *(end - 1), r), r);
-            IntroSortLoop(cut, end, depthLimit, r);
-            end = cut;
-        }
-    }
-
-    public void UnguardedLinearInsert<I, T, R>(I last, const T& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Copyable
-    {
-        I next = last;
-        --next;
-        while (r(value, *next))
-        {
-            *last = *next;
-            last = next;
-            --next;
-        }
-        *last = value;
-    }
-
-    public void UnguardedLinearInsert<I, T, R>(I last, T&& value, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and T is I.ValueType and T is Movable
-    {
-        I next = last;
-        --next;
-        while (r(value, *next))
-        {
-            *last = Rvalue(*next);
-            last = next;
-            --next;
-        }
-        *last = Rvalue(value);
-    }
-
-    public void LinearInsert<I, R>(I first, I last, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
-    {
-        auto value = *last;
-        if (r(value, *first))
-        {
-            CopyBackward(first, last, last + 1);
-            *first = value;
-        }
-        else
-        {
-            UnguardedLinearInsert(last, value, r);
-        }
-    }
-
-    public void LinearInsert<I, R>(I first, I last, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and I.ValueType is Movable
-    {
-        I.ValueType value = Rvalue(*last);
-        if (r(value, *first))
-        {
-            MoveBackward(first, last, last + 1);
-            *first = Rvalue(value);
-        }
-        else
-        {
-            UnguardedLinearInsert(last, Rvalue(value), r);
-        }
-    }
-
     public void InsertionSort<I, R>(I begin, I end, R r)
         where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
     {
-        if (begin == end)
+        I i = begin;
+        while (i < end)
         {
-            return;
-        }
-        for (I i = begin + 1; i != end; ++i)
-        {
-            LinearInsert(begin, i, r);
+            I j = i;
+            while (j > begin && r(*j, *(j - 1)))
+            {
+                Swap(*j, *(j - 1));
+                --j;
+            }
+            ++i;
         }
     }
 
-    public void InsertionSort<I>(I begin, I end)
+    public inline void InsertionSort<I>(I begin, I end)
         where I is RandomAccessIterator and I.ValueType is TotallyOrdered
     {
         return InsertionSort(begin, end, Less<I.ValueType>());
     }
 
-    public void UnguardedInsertionSort<I, R>(I begin, I end, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
+    public I Partition<I, P>(I begin, I end, P p) where I is ForwardIterator and P is UnaryPredicate and P.ArgumentType is I.ValueType
     {
-        for (I i = begin; i != end; ++i)
+        begin = FindIfNot(begin, end, p);
+        if (begin == end)
         {
-            UnguardedLinearInsert(i, *i, r);
+            return begin;
         }
+        for (auto i = Next(begin, 1); i != end; ++i)
+        {
+            if (p(*i))
+            {
+                Swap(*i, *begin);
+                ++begin;
+            }
+        }
+        return begin;
     }
 
-    public void FinalInsertionSort<I, R>(I begin, I end, R r)
-        where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
+    public class OperandRelX<T, R> : UnaryPred<T> where R is Relation and R.Domain is T
     {
-        if (end - begin > insertionSortThreshold)
+        public OperandRelX(const T& x_, R r_) : x(x_), r(r_)
         {
-            InsertionSort(begin, begin + insertionSortThreshold, r);
-            UnguardedInsertionSort(begin + insertionSortThreshold, end, r);
         }
-        else
+        public inline bool operator()(const T& a) const
         {
-            InsertionSort(begin, end, r);
+            return r(a, x);
         }
+        private T x;
+        private R r;
+    }
+
+    public class NotXRelOperand<T, R> : UnaryPred<T> where R is Relation and R.Domain is T
+    {
+        public NotXRelOperand(const T& x_, R r_) : x(x_), r(r_)
+        {
+        }
+        public inline bool operator()(const T& a) const
+        {
+            return !r(x, a);
+        }
+        private T x;
+        private R r;
+    }
+
+    public void QuickSort<I, R>(I begin, I end, R r)
+        where I is ForwardIterator and R is Relation and R.Domain is I.ValueType and I.ValueType is Copyable
+    {
+        if (begin == end) return;
+        auto pivot = *Next(begin, Distance(begin, end) / 2);
+        auto mid1 = Partition(begin, end, OperandRelX<I.ValueType, R>(pivot, r));
+        auto mid2 = Partition(mid1, end, NotXRelOperand<I.ValueType, R>(pivot, r));
+        QuickSort(begin, mid1, r);
+        QuickSort(mid2, end, r);
     }
 
     public void Sort<I, R>(I begin, I end, R r) where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType
     {
         if (begin == end) return;
-        IntroSortLoop(begin, end, Log2(end - begin) * 2, r);
-        FinalInsertionSort(begin, end, r);
+        InsertionSort(begin, end, r);
+    }
+
+    public const int insertionSortThreshold = 16;
+
+    public void Sort<I, R>(I begin, I end, R r) where I is RandomAccessIterator and R is Relation and R.Domain is I.ValueType and I.ValueType is Copyable
+    {
+        if (begin == end) return;
+        if (end - begin <= insertionSortThreshold)
+        {
+            InsertionSort(begin, end, r);
+        }
+        else
+        {
+            QuickSort(begin, end, r);
+        }
     }
 
     public inline void Sort<I>(I begin, I end)

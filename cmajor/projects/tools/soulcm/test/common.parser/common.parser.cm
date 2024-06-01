@@ -1,0 +1,261 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/test/scmpg.parser/../common.parser/common.parser' using SoulCm parser generator scmpg version 5.0.0
+
+using System;
+using System.Lex;
+using System.Parsing;
+using cm.token;
+using cm.parser;
+
+namespace scm.parser
+{
+    public static class CommonParser<LexerT>
+    {
+        public static System.Result<System.Parsing.Match> TokensKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3430163609336938497);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"tokens";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> KeywordsKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3430163609336938498);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"keywords";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> ExpressionsKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3430163609336938499);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"expressions";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> ParserKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3430163609336938500);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"parser";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> LexerKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3430163609336938501);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"lexer";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> ProjectKeyword(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3430163609336938502);
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                bool pass = true;
+                System.Parsing.Match match(false);
+                if (*lexer == ID)
+                {
+                    auto incResult0 = ++lexer;
+                    if (incResult0.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                    }
+                    match.hit = true;
+                }
+                if (match.hit)
+                {
+                    pass = lexer.GetToken(pos).ToString() == u"project";
+                }
+                if (match.hit && !pass)
+                {
+                    match = System.Parsing.Match(false);
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> QualifiedUtf8Id(LexerT& lexer)
+        {
+            System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 3430163609336938503);
+            System.UniquePtr<System.Parsing.Value<ustring>> qid;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.QualifiedId(lexer);
+                    if (matchResult.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                    }
+                    System.Parsing.Match match = matchResult.Value();
+                    qid.Reset(cast<System.Parsing.Value<ustring>*>(match.value));
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    auto result = ToUtf8(qid->value);
+                    if (result.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
+                    }
+                    else
+                    {
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<string>(result.Value())));
+                    }
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+    }
+}
+
+new class scm.parser.CommonParser<cm.lexer.CmajorLexer>;
+

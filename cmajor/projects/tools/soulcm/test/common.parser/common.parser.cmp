@@ -1,0 +1,5 @@
+project common.parser;
+target=library;
+reference <../cm.parser/cm.parser.cmp>;
+source <common.parser.cm>;
+text <common.parser>;

@@ -4773,6 +4773,7 @@ void MainWindow::CppButtonClick()
     if (solutionData && solutionData->GetSolution())
     {
         solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::cpp);
+        solutionData->GetSolution()->Save();
     }
 }
 
@@ -4786,6 +4787,7 @@ void MainWindow::LlvmButtonClick()
     if (solutionData && solutionData->GetSolution())
     {
         solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::llvm);
+        solutionData->GetSolution()->Save();
     }
 }
 
@@ -4799,6 +4801,7 @@ void MainWindow::MasmButtonClick()
     if (solutionData && solutionData->GetSolution())
     {
         solutionData->GetSolution()->SetActiveBackEnd(cmajor::ast::BackEnd::masm);
+        solutionData->GetSolution()->Save();
     }
 }
 

@@ -1,6 +1,0 @@
-expressions a.expr
-{
-    ws = "[\n\r\t ]";
-    newline = "\r\n|\n|\r";
-    a = "a";
-}

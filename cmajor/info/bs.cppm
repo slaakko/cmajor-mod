@@ -22,7 +22,7 @@ struct BuildCommand
     bool clean;
     bool rebuild;
     bool emitIR;
-    bool linkWithDebugRuntime;
+    //bool linkWithDebugRuntime;
     bool disableModuleCache;
     bool singleThreadedCompile;
     bool buildAllDependencies;

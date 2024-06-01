@@ -180,10 +180,12 @@ void BuildService::ExecuteCommand()
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
         }
+/*
         if (buildCommand->linkWithDebugRuntime)
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
         }
+*/
         if (buildCommand->singleThreadedCompile)
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);

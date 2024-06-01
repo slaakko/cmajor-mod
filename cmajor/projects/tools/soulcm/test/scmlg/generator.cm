@@ -1,0 +1,139 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+using scmlg.parser;
+using scmlg.ast;
+
+namespace scmlg
+{
+    public Result<bool> ProcessScmlgFile(scmlg.ast.ScmlgFile* scmlgFile, const string& scmlgVersion, bool verbose, bool debug, bool empty)
+    {
+        if (verbose)
+        {
+            Console.Out() << "generating lexers for project '" << scmlgFile->ProjectName() << "'..." << endl();
+        }
+        string filePath = scmlgFile->FilePath();
+        string directory = Path.GetDirectoryName(filePath);
+        for (const auto& declaration : scmlgFile->Declarations())
+        {
+            switch (declaration->Kind())
+            {
+                case ScmlgFileDeclarationKind.tokenFileDeclaration:
+                {
+                    TokenFileDeclaration* tokenFileDeclaration = cast<TokenFileDeclaration*>(declaration.Get());
+                    auto tokenFilePathResult = GetFullPath(Path.Combine(directory, tokenFileDeclaration->FilePath()));
+                    if (tokenFilePathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(tokenFilePathResult.GetErrorId()));
+                    }
+                    const string& tokenFilePath = tokenFilePathResult.Value();
+                    auto tokenFileResult = ProcessTokenFile(scmlgFile, tokenFilePath, tokenFileDeclaration->IsExternal(), scmlgVersion, verbose);
+                    if (tokenFileResult.Error())
+                    {
+                        return Result<bool>(ErrorId(tokenFileResult.GetErrorId()));
+                    }
+                    break;
+                }
+                case ScmlgFileDeclarationKind.keywordFileDeclaration:
+                {
+                    KeywordFileDeclaration* keywordFileDeclaration = cast<KeywordFileDeclaration*>(declaration.Get());
+                    auto keywordFilePathResult = GetFullPath(Path.Combine(directory, keywordFileDeclaration->FilePath()));
+                    if (keywordFilePathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(keywordFilePathResult.GetErrorId()));
+                    }
+                    const string& keywordFilePath = keywordFilePathResult.Value();
+                    auto keywordFileResult = ProcessKeywordFile(scmlgFile, keywordFilePath, scmlgVersion, verbose);
+                    if (keywordFileResult.Error())
+                    {
+                        return Result<bool>(ErrorId(keywordFileResult.GetErrorId()));
+                    }
+                    break;
+                }
+                case ScmlgFileDeclarationKind.expressionFileDeclaration:
+                {
+                    ExpressionFileDeclaration* expressionFileDeclaration = cast<ExpressionFileDeclaration*>(declaration.Get());
+                    auto expressionFilePathResult = GetFullPath(Path.Combine(directory, expressionFileDeclaration->FilePath()));
+                    if (expressionFilePathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(expressionFilePathResult.GetErrorId()));
+                    }
+                    const string& expressionFilePath = expressionFilePathResult.Value();
+                    if (verbose)
+                    {
+                        Console.Out() << "> " << expressionFilePath << endl();
+                    }
+                    auto result = ParseExpressionFile(expressionFilePath);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    scmlgFile->AddExpressionFile(result.Value().Release());
+                    if (verbose)
+                    {
+                        Console.Out() << "expression file '" << expressionFilePath << "' parsed" << endl();
+                    }
+                    break;
+                }
+                case ScmlgFileDeclarationKind.lexerFileDeclaration:
+                {
+                    LexerFileDeclaration* lexerFileDeclaration = cast<LexerFileDeclaration*>(declaration.Get());
+                    auto lexerFilePathResult = GetFullPath(Path.Combine(directory, lexerFileDeclaration->FilePath()));
+                    if (lexerFilePathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(lexerFilePathResult.GetErrorId()));
+                    }
+                    const string& lexerFilePath = lexerFilePathResult.Value();
+                    auto result = ParseLexerFile(lexerFilePath);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    scmlgFile->AddLexerFile(result.Value().Release());
+                    if (verbose)
+                    {
+                        Console.Out() << "lexer file '" << lexerFilePath << "' parsed" << endl();
+                    }
+                    break;
+                }
+            }
+        }
+        for (const auto& lexerFile : scmlgFile->LexerFiles())
+        {
+            auto result = GenerateLexer(scmlgFile, lexerFile.Get(), scmlgVersion, verbose, debug, empty);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+        }
+        if (verbose)
+        {
+            Console.Out() << "lexers for project '" << scmlgFile->ProjectName() << "' generated" << endl();
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<bool> GenerateLexers(const string& scmlgFilePath, const string& scmlgVersion, bool verbose, bool debug, bool empty)
+    {
+        if (verbose)
+        {
+            Console.Out() << "> " << scmlgFilePath << endl();
+        }
+        auto result = ParseScmlgFile(scmlgFilePath);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        UniquePtr<scmlg.ast.ScmlgFile>& scmlgFile = result.Value();
+        auto processResult = ProcessScmlgFile(scmlgFile.Get(), scmlgVersion, verbose, debug, empty);
+        if (processResult.Error())
+        {
+            return Result<bool>(ErrorId(processResult.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+}

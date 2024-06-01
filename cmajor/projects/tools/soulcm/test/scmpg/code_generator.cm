@@ -1,0 +1,1256 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using scmpg.ast;
+
+namespace scmpg
+{
+    public enum CodeGenerationStage
+    {
+        generateCode, generateTokenSwitch, beginGenerateTokenSwitch, endGenerateTokenSwitch
+    }
+
+    public class CodeGenerator : scmpg.ast.DefaultVisitor
+    {
+        public CodeGenerator(scmpg.ast.ScmpgFile* scmpgFile_, bool verbose_, const string& version_, System.Lex.FileMap& fileMap_) :
+            scmpgFile(scmpgFile_), verbose(verbose_), version(version_), fileMap(fileMap_), formatter(null), stage(CodeGenerationStage.generateCode),
+            currentGrammar(null), currentRule(null), parentMatchNumber(0), setParentMatchNumber(-1), sn(0), incResultIndex(0), errorId(0)
+        {
+        }
+        public override void Visit(ChoiceParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateTokenSwitch)
+            {
+                parser.Left()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                parser.Right()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+            }
+            else
+            {
+                if (parser.IsTokenSwitch())
+                {
+                    CodeGenerationStage prevStage = stage;
+                    stage = CodeGenerationStage.generateTokenSwitch;
+                    sourceFormatter << "long pos = lexer.GetPos();" << endl();
+                    sourceFormatter << "switch (*lexer)" << endl();
+                    sourceFormatter << "{" << endl();
+                    sourceFormatter.IncIndent();
+                    parser.Left()->Accept(*this);
+                    if (Error() || sourceFormatter.Error()) return;
+                    parser.Right()->Accept(*this);
+                    if (Error() || sourceFormatter.Error()) return;
+                    sourceFormatter.DecIndent();
+                    sourceFormatter << "}" << endl();
+                    stage = prevStage;
+                }
+                else if (stage == CodeGenerationStage.generateCode)
+                {
+                    int prevSetParentMatchNumber0 = setParentMatchNumber;
+                    sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                    setParentMatchNumber = parentMatchNumber;
+                    sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                    sourceFormatter << "{" << endl();
+                    sourceFormatter.IncIndent();
+                    sourceFormatter << "long save = lexer.GetPos();" << endl();
+                    parser.Left()->Accept(*this);
+                    if (Error() || sourceFormatter.Error()) return;
+                    sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                    sourceFormatter << "if (!match.hit)" << endl();
+                    sourceFormatter << "{" << endl();
+                    sourceFormatter.IncIndent();
+                    int prevSetParentMatchNumber1 = setParentMatchNumber;
+                    sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                    setParentMatchNumber = parentMatchNumber;
+                    sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                    sourceFormatter << "lexer.SetPos(save);" << endl();
+                    sourceFormatter << "{" << endl();
+                    sourceFormatter.IncIndent();
+                    parser.Right()->Accept(*this);
+                    if (Error() || sourceFormatter.Error()) return;
+                    sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                    sourceFormatter.DecIndent();
+                    sourceFormatter << "}" << endl();
+                    setParentMatchNumber = prevSetParentMatchNumber1;
+                    sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                    sourceFormatter.DecIndent();
+                    sourceFormatter << "}" << endl();
+                    sourceFormatter.DecIndent();
+                    sourceFormatter << "}" << endl();
+                    setParentMatchNumber = prevSetParentMatchNumber0;
+                }
+            }
+        }
+        public override void Visit(SwitchParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                int prevSetParentMatchNumber0 = setParentMatchNumber;
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "switch (*lexer)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                for (const auto& caseParser : parser.CaseParsers())
+                {
+                    caseParser->Accept(*this);
+                    if (Error() || sourceFormatter.Error()) return;
+                }
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber0;
+            }
+        }
+        public override void Visit(CaseParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                for (const auto& token : parser.First().Tokens())
+                {
+                    sourceFormatter << "case " << token << ":" << endl();
+                }
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "break;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+            }
+        }
+        public override void Visit(SequenceParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                int prevSetParentMatchNumber0 = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Left()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                int prevSetParentMatchNumber1 = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Right()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber1;
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber0;
+            }
+        }
+        public override void Visit(DifferenceParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                int prevSetParentMatchNumber0 = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "long save = lexer.GetPos();" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Left()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                int prevSetParentMatchNumber1 = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "long tmp = lexer.GetPos();" << endl();
+                sourceFormatter << "lexer.SetPos(save);" << endl();
+                sourceFormatter << "save = tmp;" << endl();
+                parser.Right()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber1;
+                sourceFormatter << "if (!match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "lexer.SetPos(save);"<< endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = System.Parsing.Match(!match.hit, match.value);" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber0;
+            }
+        }
+        public override void Visit(ListParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                parser.Child()->Accept(*this);
+            }
+        }
+        public override void Visit(LookaheadParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(true);" << endl();
+                sourceFormatter << "long save = lexer.GetPos();" << endl();
+                int prevSetParentMatchNumber = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter << "lexer.SetPos(save);" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "else" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = System.Parsing.Match(false);" << endl();
+                sourceFormatter << "lexer.SetPos(save);" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber;
+            }
+        }
+        public override void Visit(KleeneParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(true);" << endl();
+                int prevSetParentMatchNumber = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "while (true)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "long save = lexer.GetPos();" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "else" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "lexer.SetPos(save);" << endl();
+                sourceFormatter << "break;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber;
+            }
+        }
+        public override void Visit(PositiveParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                int prevSetParentMatchNumber0 = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "System.Parsing.Match match(true);" << endl();
+                int prevSetParentMatchNumber1 = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "while (true)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "long save = lexer.GetPos();" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "else" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "lexer.SetPos(save);" << endl();
+                sourceFormatter << "break;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber1;
+                setParentMatchNumber = prevSetParentMatchNumber0;
+            }
+        }
+        public override void Visit(OptionalParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(true);" << endl();
+                sourceFormatter << "long save = lexer.GetPos();" << endl();
+                int prevSetParentMatchNumber = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Child()->Accept(*this);
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter <<"else" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "lexer.SetPos(save);" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber;
+            }
+        }
+        public override void Visit(ActionParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateTokenSwitch)
+            {
+                scmpg.ast.CodeEvaluator codeEvaluator;
+                parser.SuccessCode()->Accept(codeEvaluator);
+                bool hasPass = codeEvaluator.HasPass();
+                if (hasPass)
+                {
+                    auto errorMessageResult = System.Lex.MakeMessage("error: token switch does not support 'pass'", parser.Span(), parser.FileIndex(), fileMap);
+                    if (errorMessageResult.Error())
+                    {
+                        errorId = errorMessageResult.GetErrorId();
+                        return;
+                    }
+                    string errorMessage = errorMessageResult.Value();
+                    errorId = AllocateError(errorMessage);
+                    return;
+                }
+                if (codeEvaluator.HasReturn())
+                {
+                    currentRule->SetHasReturn();
+                }
+                stage = CodeGenerationStage.beginGenerateTokenSwitch;
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                bool nonterminalValue = parser.Child()->IsNonterminalParser();
+                bool ptrType = false;
+                if (currentRule->ReturnType() != null)
+                {
+                    ptrType = currentRule->ReturnType() is cm.ast.PointerNode*;
+                }
+                string nonterminalName;
+                cm.ast.Node* returnType = currentRule->ReturnType();
+                if (nonterminalValue)
+                {
+                    scmpg.ast.NonterminalParser* nt = cast<scmpg.ast.NonterminalParser*>(parser.Child());
+                    nonterminalName = nt->InstanceName();
+                }
+                CountNonterminals(parser.SuccessCode(), &parser, nonterminalInfos);
+                auto modificationResult = ModifyCode(currentRule, parser.SuccessCode(), ptrType, nonterminalInfos, returnType, currentRule->Name(), fileMap);
+                if (modificationResult.Error())
+                {
+                    errorId = modificationResult.GetErrorId();
+                    return;
+                }
+                cm.ast.SourceWriter sourceWriter(formatter);
+                parser.SuccessCode()->Accept(sourceWriter);
+                if (formatter->Error())
+                {
+                    errorId = formatter->GetErrorId();
+                    return;
+                }
+                stage = CodeGenerationStage.endGenerateTokenSwitch;
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                stage = CodeGenerationStage.generateTokenSwitch;
+            }
+            else if (stage == CodeGenerationStage.generateCode)
+            {
+                int prevSetParentMatchNumber = setParentMatchNumber;
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "long pos = lexer.GetPos();" << endl();
+                scmpg.ast.CodeEvaluator codeEvaluator;
+                parser.SuccessCode()->Accept(codeEvaluator);
+                if (codeEvaluator.HasReturn())
+                {
+                    currentRule->SetHasReturn();
+                }
+                bool hasPass = codeEvaluator.HasPass();
+                if (hasPass)
+                {
+                    sourceFormatter << "bool pass = true;" << endl();
+                }
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "if (match.hit)" << endl();
+                bool nonterminalValue = parser.Child()->IsNonterminalParser();
+                bool ptrType = false;
+                if (currentRule->ReturnType() != null)
+                {
+                    ptrType = currentRule->ReturnType() is cm.ast.PointerNode*;
+                }
+                string nonterminalName;
+                cm.ast.Node* returnType = currentRule->ReturnType();
+                if (nonterminalValue)
+                {
+                    scmpg.ast.NonterminalParser* nt = cast<scmpg.ast.NonterminalParser*>(parser.Child());
+                    nonterminalName = nt->InstanceName();
+                }
+                CountNonterminals(parser.SuccessCode(), &parser, nonterminalInfos);
+                auto modificationResult = ModifyCode(currentRule, parser.SuccessCode(), ptrType, nonterminalInfos, returnType, currentRule->Name(), fileMap);
+                if (modificationResult.Error())
+                {
+                    errorId = modificationResult.GetErrorId();
+                    return;
+                }
+                cm.ast.SourceWriter sourceWriter(formatter);
+                parser.SuccessCode()->Accept(sourceWriter);
+                if (formatter->Error())
+                {
+                    errorId = formatter->GetErrorId();
+                    return;
+                }
+                if (parser.FailureCode() != null)
+                {
+                    sourceFormatter << "else" << endl();
+                    parser.FailureCode()->Accept(sourceWriter);
+                    if (formatter->Error())
+                    {
+                        errorId = formatter->GetErrorId();
+                        return;
+                    }
+                }
+                if (hasPass)
+                {
+                    sourceFormatter << "if (match.hit && !pass)" << endl();
+                    sourceFormatter << "{" << endl();
+                    sourceFormatter.IncIndent();
+                    sourceFormatter << "match = System.Parsing.Match(false);" << endl();
+                    sourceFormatter.DecIndent();
+                    sourceFormatter << "}" << endl();
+                }
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber;
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+            }
+        }
+        public override void Visit(NonterminalParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                scmpg.ast.RuleParser* rule = parser.Rule();
+                string ruleName = rule->Grammar()->Name();
+                ruleName.Append("<LexerT>.").Append(rule->Name());
+                sourceFormatter << "System.Result<System.Parsing.Match> matchResult = " << ruleName << "(lexer";
+                if (parser.Args() != null)
+                {
+                    for (const auto& arg : parser.Args()->Arguments())
+                    {
+                        sourceFormatter << ", ";
+                        auto result = arg->ToString();
+                        if (result.Error())
+                        {
+                            errorId = result.GetErrorId();
+                            return;
+                        }
+                        const string& argStr = result.Value();
+                        sourceFormatter << argStr;
+                    }
+                }
+                sourceFormatter << ");" << endl();
+                sourceFormatter <<"if (matchResult.Error())" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "System.Parsing.Match match = matchResult.Value();" << endl();
+                scmpg.ast.RuleParser* calledRule = parser.Rule();
+                if (calledRule->ReturnType() != null)
+                {
+                    sourceFormatter << parser.InstanceName() << ".Reset(";
+                    if (calledRule->ReturnType() is cm.ast.PointerNode*)
+                    {
+                        sourceFormatter << "cast<";
+                        auto returnTypeStrResult = calledRule->ReturnType()->ToString();
+                        if (returnTypeStrResult.Error())
+                        {
+                            errorId = returnTypeStrResult.GetErrorId();
+                            return;
+                        }
+                        sourceFormatter << returnTypeStrResult.Value();
+                        sourceFormatter << ">(match.value));" << endl();
+                    }
+                    else
+                    {
+                        sourceFormatter << "cast<System.Parsing.Value<";
+                        auto returnTypeStrResult = calledRule->ReturnType()->ToString();
+                        if (returnTypeStrResult.Error())
+                        {
+                            errorId = returnTypeStrResult.GetErrorId();
+                            return;
+                        }
+                        sourceFormatter << returnTypeStrResult.Value();
+                        sourceFormatter << ">*>(match.value));" << endl();
+                    }
+                }
+            }
+        }
+        public override void Visit(EmptyParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(true);" << endl();
+            }
+        }
+        public override void Visit(AnyParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                sourceFormatter << "if (*lexer != System.Lex.END_TOKEN)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                GenIncLexerCode();
+                sourceFormatter << "match.hit = true;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+            }
+        }
+        public override void Visit(TokenParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.beginGenerateTokenSwitch)
+            {
+                sourceFormatter << "case " << parser.TokenName() << ":" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                GenIncLexerCode();
+            }
+            else if (stage == CodeGenerationStage.endGenerateTokenSwitch)
+            {
+                sourceFormatter << "break;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+            }
+            else if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                sourceFormatter << "if (*lexer == " << parser.TokenName() << ")" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                GenIncLexerCode();
+                sourceFormatter << "match.hit = true;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+            }
+        }
+        public override void Visit(CharParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            sourceFormatter << "System.Parsing.Match match(false);" << endl();
+            sourceFormatter << "if (*lexer == " << cast<int>(parser.Chr()) << ")" << endl();
+            sourceFormatter << "{" << endl();
+            sourceFormatter.IncIndent();
+            GenIncLexerCode();
+            sourceFormatter << "match.hit = true;" << endl();
+            sourceFormatter.DecIndent();
+            sourceFormatter << "}" << endl();
+        }
+        public override void Visit(StringParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            sourceFormatter << "System.Parsing.Match match(true);" << endl();
+            sourceFormatter << "for (int i : " << parser.ArrayName() << ")" << endl();
+            sourceFormatter << "{" << endl();
+            sourceFormatter.IncIndent();
+            sourceFormatter << "if (*lexer == i)" << endl();
+            sourceFormatter << "{" << endl();
+            sourceFormatter.IncIndent();
+            GenIncLexerCode();
+            sourceFormatter.DecIndent();
+            sourceFormatter << "}" << endl();
+            sourceFormatter << "else" << endl();
+            sourceFormatter << "{" << endl();
+            sourceFormatter.IncIndent();
+            sourceFormatter << "match.hit = false;" << endl();
+            sourceFormatter << "break;" << endl();
+            sourceFormatter.DecIndent();
+            sourceFormatter << "}" << endl();
+            sourceFormatter.DecIndent();
+            sourceFormatter << "}" << endl();
+        }
+        public override void Visit(CharSetParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (parser.GetCharSet()->Inverse())
+            {
+                sourceFormatter << "System.Parsing.Match match(lexer.Pos() != lexer.End());" << endl();
+                sourceFormatter << "for (const System.Parsing.Range& range : " << parser.ArrayName() << ")" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "if (*lexer >= range.first && *lexer <= range.last)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "match.hit = false;" << endl();
+                sourceFormatter << "break;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "if (match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                GenIncLexerCode();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+            }
+            else
+            {
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                sourceFormatter << "for (const System.Parsing.Range& range : " << parser.ArrayName() << ")" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "if (*lexer >= range.first && *lexer <= range.last)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "match.hit = true;" << endl();
+                GenIncLexerCode();
+                sourceFormatter << "break;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+            }
+        }
+        public override void Visit(GroupParser& parser)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                int prevSetParentMatchNumber = setParentMatchNumber;
+                setParentMatchNumber = parentMatchNumber;
+                sourceFormatter << "System.Parsing.Match* parentMatch" << parentMatchNumber++ << " = &match;" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                parser.Child()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "*parentMatch" << setParentMatchNumber << " = match;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                setParentMatchNumber = prevSetParentMatchNumber;
+            }
+        }
+        public override void Visit(RuleParser& rule)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            currentRule = &rule;
+            parentMatchNumber = 0;
+            setParentMatchNumber = -1;
+            incResultIndex = 0;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                sourceFormatter << "public static System.Result<System.Parsing.Match> " << rule.Name() << "(LexerT& lexer";
+                for (const auto& param : rule.Parameters())
+                {
+                    sourceFormatter << ", ";
+                    auto typeResult = param->Type()->ToString();
+                    if (typeResult.Error())
+                    {
+                        errorId = typeResult.GetErrorId();
+                        return;
+                    }
+                    string typeStr = typeResult.Value();
+                    sourceFormatter << typeStr << " " << param->Name();
+                }
+                sourceFormatter << ")" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "System.Lex.RuleGuard<LexerT> ruleGuard(lexer, " << rule.Id() << ");" << endl();
+                for (const auto& variable : rule.Variables())
+                {
+                    auto typeResult = variable->Type()->ToString();
+                    if (typeResult.Error())
+                    {
+                        errorId = typeResult.GetErrorId();
+                        return;
+                    }
+                    string typeStr = typeResult.Value();
+                    sourceFormatter << typeStr << " " << variable->Name() << " = ";
+                    if (variable->Type() is cm.ast.PointerNode*)
+                    {
+                        sourceFormatter << "null;" << endl();
+                    }
+                    else
+                    {
+                        sourceFormatter << typeStr;
+                        sourceFormatter << "();" << endl();
+                    }
+                }
+                nonterminalInfos.Clear();
+                for (NonterminalParser* nonterminal : rule.Nonterminals())
+                {
+                    bool found = false;
+                    for (const auto& info : nonterminalInfos)
+                    {
+                        if (info.nonterminalParser->InstanceName() == nonterminal->InstanceName())
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) continue;
+                    scmpg.ast.RuleParser* calledRule = nonterminal->Rule();
+                    if (calledRule == null)
+                    {
+                        string errorMessage = "rule not set";
+                        errorId = AllocateError(errorMessage);
+                        return;
+                    }
+                    if (calledRule->ReturnType() != null)
+                    {
+                        if (calledRule->ReturnType() is cm.ast.PointerNode*)
+                        {
+                            sourceFormatter << "System.UniquePtr<";
+                            cm.ast.PointerNode* ptrType = cast<cm.ast.PointerNode*>(calledRule->ReturnType());
+                            auto subjectStrResult = ptrType->Subject()->ToString();
+                            if (subjectStrResult.Error())
+                            {
+                                errorId = subjectStrResult.GetErrorId();
+                                return;
+                            }
+                            const string& subjectStr = subjectStrResult.Value();
+                            sourceFormatter << subjectStr;
+                            sourceFormatter << ">";
+                            nonterminalInfos.Add(NonterminalInfo(nonterminal, true));
+                        }
+                        else
+                        {
+                            sourceFormatter << "System.UniquePtr<System.Parsing.Value<";
+                            auto returnTypeStrResult = calledRule->ReturnType()->ToString();
+                            if (returnTypeStrResult.Error())
+                            {
+                                errorId = returnTypeStrResult.GetErrorId();
+                                return;
+                            }
+                            const string& returnTypeStr = returnTypeStrResult.Value();
+                            sourceFormatter << returnTypeStr;
+                            sourceFormatter << ">>";
+                            nonterminalInfos.Add(NonterminalInfo(nonterminal, false));
+                        }
+                        sourceFormatter << " " << nonterminal->InstanceName() << ";" << endl();
+                    }
+                }
+                if (rule.Definition()->IsTokenSwitch())
+                {
+                    sourceFormatter << "System.Parsing.Match match(false);" << endl();
+                }
+                rule.Definition()->Accept(*this);
+                if (Error() || sourceFormatter.Error()) return;
+                sourceFormatter << "if (!match.hit)" << endl();
+                sourceFormatter << "{" << endl();
+                sourceFormatter.IncIndent();
+                sourceFormatter << "match.value = null;" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                sourceFormatter << "return System.Result<System.Parsing.Match>(match);" << endl();
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                for (const auto& info : nonterminalInfos)
+                {
+                    if (info.ptrType && info.count > 1)
+                    {
+                        if (!IsListParserNonterminal(info))
+                        {
+                            auto messageResult = System.Lex.MakeMessage("warning: unique pointer value of nonterminal '" +
+                                info.nonterminalParser->InstanceName() + "' used " + ToString(info.count) + " times in semantic actions of rule '" +
+                                rule.Name() + "' of parser '" + rule.Grammar()->Name() + "'", rule.Span(), rule.FileIndex(), fileMap);
+                            if (messageResult.Error())
+                            {
+                                errorId = messageResult.GetErrorId();
+                                return;
+                            }
+                            string message = messageResult.Value();
+                            for (const auto& spanFileIndex : info.spanFileIndeces)
+                            {
+                                auto referenceResult = System.Lex.MakeMessage("see reference", spanFileIndex.span, spanFileIndex.fileIndex, fileMap);
+                                if (referenceResult.Error())
+                                {
+                                    errorId = referenceResult.GetErrorId();
+                                }
+                                message.Append("\n").Append(referenceResult.Value());
+                            }
+                            Console.Out() << message << endl();
+                        }
+                    }
+                }
+                if (rule.ReturnType() != null && !rule.HasReturn())
+                {
+                    auto messageResult = System.Lex.MakeMessage("warning: rule '" + rule.Name() + "' of parser '" + rule.Grammar()->Name() +
+                        "' returns value, but no semantic action has a return statement.", rule.Span(), rule.FileIndex(), fileMap);
+                    if (messageResult.Error())
+                    {
+                        errorId = messageResult.GetErrorId();
+                        return;
+                    }
+                    string message = messageResult.Value();
+                    Console.Out() << message << endl();
+                }
+            }
+        }
+        public override void Visit(GrammarParser& grammar)
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            if (Error() || sourceFormatter.Error()) return;
+            currentGrammar = &grammar;
+            if (stage == CodeGenerationStage.generateCode)
+            {
+                string namespaceName = grammar.NamespaceName();
+                if (!namespaceName.IsEmpty())
+                {
+                    sourceFormatter << "namespace " << namespaceName << endl();
+                    sourceFormatter.WriteLine("{");
+                    sourceFormatter.IncIndent();
+                }
+                sourceFormatter << "public static class " << grammar.CommonName() << "<LexerT>" << endl();
+                sourceFormatter.WriteLine("{");
+                sourceFormatter.IncIndent();
+                if (grammar.Main())
+                {
+                    if (!grammar.Rules().IsEmpty())
+                    {
+                        scmpg.ast.RuleParser* startRule = grammar.Rules().Front().Get();
+                        string startRuleReturnTypeStr;
+                        if (startRule->ReturnType() != null)
+                        {
+                            if (startRule->ReturnType() is cm.ast.PointerNode*)
+                            {
+                                cm.ast.PointerNode* ptrType = cast<cm.ast.PointerNode*>(startRule->ReturnType());
+                                auto subjectStrResult = ptrType->Subject()->ToString();
+                                if (subjectStrResult.Error())
+                                {
+                                    errorId = subjectStrResult.GetErrorId();
+                                    return;
+                                }
+                                const string& subjectStr = subjectStrResult.Value();
+                                startRuleReturnTypeStr = "System.Result<System.UniquePtr<" + subjectStr + ">>";
+                                sourceFormatter << "public static " << startRuleReturnTypeStr;
+                            }
+                            else
+                            {
+                                auto returnTypeStrResult = startRule->ReturnType()->ToString();
+                                if (returnTypeStrResult.Error())
+                                {
+                                    errorId = returnTypeStrResult.GetErrorId();
+                                    return;
+                                }
+                                const string& returnTypeStr = returnTypeStrResult.Value();
+                                startRuleReturnTypeStr = "System.Result<" + returnTypeStr + ">";
+                                sourceFormatter << "public static " << startRuleReturnTypeStr;
+                            }
+                            sourceFormatter << " Parse(LexerT& lexer";
+                        }
+                        else
+                        {
+                            sourceFormatter << "static System.Result<bool> Parse(LexerT& lexer";
+                        }
+                        for (const auto& param : startRule->Parameters())
+                        {
+                            sourceFormatter << ", ";
+                            auto paramTypeStrResult = param->Type()->ToString();
+                            if (paramTypeStrResult.Error())
+                            {
+                                errorId = paramTypeStrResult.GetErrorId();
+                                return;
+                            }
+                            const string& paramTypeStr = paramTypeStrResult.Value();
+                            sourceFormatter << paramTypeStr << " " << param->Name();
+                        }
+                        sourceFormatter.WriteLine(")");
+                        sourceFormatter.WriteLine("{");
+                        sourceFormatter.IncIndent();
+                        if (startRule->ReturnType() != null)
+                        {
+                            sourceFormatter << "System.UniquePtr<";
+                            if (startRule->ReturnType() is cm.ast.PointerNode*)
+                            {
+                                cm.ast.PointerNode* ptrType = cast<cm.ast.PointerNode*>(startRule->ReturnType());
+                                auto subjectStrResult = ptrType->Subject()->ToString();
+                                if (subjectStrResult.Error())
+                                {
+                                    errorId = subjectStrResult.GetErrorId();
+                                    return;
+                                }
+                                const string& subjectStr = subjectStrResult.Value();
+                                sourceFormatter << subjectStr << ">";
+                            }
+                            else
+                            {
+                                sourceFormatter << "System.Parsing.Value<";
+                                auto returnTypeStrResult = startRule->ReturnType()->ToString();
+                                if (returnTypeStrResult.Error())
+                                {
+                                    errorId = returnTypeStrResult.GetErrorId();
+                                    return;
+                                }
+                                const string& returnTypeStr = returnTypeStrResult.Value();
+                                sourceFormatter << returnTypeStr << ">>";
+                            }
+                            sourceFormatter << " value;" << endl();
+                        }
+                        string incResult = "incResult" + ToString(incResultIndex++);
+                        sourceFormatter << "auto " << incResult << " = ++lexer; " << endl();
+                        sourceFormatter << "if (" << incResult << ".Error())" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        sourceFormatter << "return " << startRuleReturnTypeStr << "(System.ErrorId(" << incResult << ".GetErrorId())); " << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        string ruleName = startRule->Grammar()->Name() + "<LexerT>." + startRule->Name();
+                        sourceFormatter << "System.Result<System.Parsing.Match> matchResult = " << ruleName << "(lexer";
+                        for (const auto& param : startRule->Parameters())
+                        {
+                            sourceFormatter << ", " << param->Name();
+                        }
+                        sourceFormatter << ");" << endl();
+                        sourceFormatter << "if (matchResult.Error())" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        sourceFormatter << "return " << startRuleReturnTypeStr << "(System.ErrorId(matchResult.GetErrorId()));" << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter << "System.Parsing.Match match = matchResult.Value();" << endl();
+                        scmpg.ast.RuleParser* calledRule = startRule;
+                        if (calledRule->ReturnType() != null)
+                        {
+                            sourceFormatter << "value.Reset(";
+                            if (calledRule->ReturnType() is cm.ast.PointerNode*)
+                            {
+                                sourceFormatter << "cast<";
+                                auto returnTypeStrResult = calledRule->ReturnType()->ToString();
+                                if (returnTypeStrResult.Error())
+                                {
+                                    errorId = returnTypeStrResult.GetErrorId();
+                                    return;
+                                }
+                                const string& returnTypeStr = returnTypeStrResult.Value();
+                                sourceFormatter << returnTypeStr;
+                                sourceFormatter << ">(match.value));" << endl();
+                            }
+                            else
+                            {
+                                sourceFormatter << "cast<System.Parsing.Value<";
+                                auto returnTypeStrResult = calledRule->ReturnType()->ToString();
+                                if (returnTypeStrResult.Error())
+                                {
+                                    errorId = returnTypeStrResult.GetErrorId();
+                                    return;
+                                }
+                                const string& returnTypeStr = returnTypeStrResult.Value();
+                                sourceFormatter << returnTypeStr;
+                                sourceFormatter << ">*>(match.value));" << endl();
+                            }
+                        }
+                        sourceFormatter << "if (match.hit)" << endl();
+                        sourceFormatter <<"{" << endl();
+                        sourceFormatter.IncIndent();
+                        sourceFormatter << "if (*lexer == System.Lex.END_TOKEN)" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        if (startRule->ReturnType() != null)
+                        {
+                            if (startRule->ReturnType() is cm.ast.PointerNode*)
+                            {
+                                sourceFormatter << "return " << startRuleReturnTypeStr << "(System.Rvalue(value)); " << endl();
+                            }
+                            else
+                            {
+                                sourceFormatter << "return " << startRuleReturnTypeStr << "(value->value);" << endl();
+                            }
+                        }
+                        else
+                        {
+                            sourceFormatter << "return System.Result<bool>(true);" << endl();
+                        }
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter << "else" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        if (startRule->ReturnType() != null)
+                        {
+                            sourceFormatter << "return " << startRuleReturnTypeStr << "(lexer.GetFarthestError()); " << endl();
+                        }
+                        else
+                        {
+                            sourceFormatter << "return System.Result<bool>(lexer.GetFarthestError());" << endl();
+                        }
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter << "else" << endl();
+                        sourceFormatter << "{" << endl();
+                        sourceFormatter.IncIndent();
+                        string ruleInfo = startRule->Info();
+                        if (ruleInfo.IsEmpty())
+                        {
+                            ruleInfo = startRule->Name();
+                        }
+                        if (startRule->ReturnType() != null)
+                        {
+                            sourceFormatter << "return " << startRuleReturnTypeStr << "(lexer.GetFarthestError()); " << endl();
+                        }
+                        else
+                        {
+                            sourceFormatter << "return System.Result<bool>(lexer.GetFarthestError());" << endl();
+                        }
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                        sourceFormatter.DecIndent();
+                        sourceFormatter << "}" << endl();
+                    }
+                }
+                for (const auto& rule : grammar.Rules())
+                {
+                    rule->Accept(*this);
+                    if (Error() || sourceFormatter.Error()) return;
+                }
+                sourceFormatter.DecIndent();
+                sourceFormatter << "}" << endl();
+                if (!namespaceName.IsEmpty())
+                {
+                    sourceFormatter.DecIndent();
+                    sourceFormatter << "}" << endl();
+                }
+            }
+        }
+        public override void Visit(ParserFile& parserFile)
+        {
+            if (Error()) return;
+            if (parserFile.IsExternal())
+            {
+                if (verbose)
+                {
+                    Console.Out() << "> " << parserFile.FilePath() << endl();
+                    Console.Out() << "skipping external file '" << parserFile.FilePath() << "'" << endl();
+                }
+            }
+            if (verbose)
+            {
+                Console.Out() << "> " << parserFile.FilePath() << endl();
+                Console.Out() << "generating code..." << endl();
+            }
+            sn = 0;
+            string fileName = parserFile.FilePath() + ".cm";
+            auto fileResult = System.IO.File.CreateText(fileName);
+            if (fileResult.Error())
+            {
+                errorId = fileResult.GetErrorId();
+                return;
+            }
+            System.IO.StreamWriter& writer = fileResult.Value();
+            System.Text.CodeFormatter sourceFormatter(writer);
+            formatter = &sourceFormatter;
+            sourceFormatter << "// this file has been generated from '" << parserFile.FilePath() <<
+                "' using SoulCm parser generator scmpg version " << version << endl();
+            sourceFormatter << endl();
+            sourceFormatter << "using System;" << endl();
+            sourceFormatter << "using System.Lex;" << endl();
+            sourceFormatter << "using System.Parsing;" << endl();
+            for (const auto& u : parserFile.Usings())
+            {
+                sourceFormatter << "using " << u.Ns() << ";" << endl();
+            }
+            sourceFormatter << endl();
+            auto arrayResult = GenerateArrays(parserFile, sourceFormatter, sn);
+            if (arrayResult.Error())
+            {
+                errorId = arrayResult.GetErrorId();
+                return;
+            }
+            for (const auto& grammar : parserFile.Grammars())
+            {
+                grammar->Accept(*this);
+                if (Error()) return;
+                if (sourceFormatter.Error())
+                {
+                    errorId = sourceFormatter.GetErrorId();
+                    return;
+                }
+            }
+            sourceFormatter << endl();
+            for (const auto& grammar : parserFile.Grammars())
+            {
+                for (const auto& lexer : grammar->Lexers())
+                {
+                    auto lexerTypeResult = lexer->ToString();
+                    if (lexerTypeResult.Error())
+                    {
+                        errorId = lexerTypeResult.GetErrorId();
+                        return;
+                    }
+                    const string& lexerTypeStr = lexerTypeResult.Value();
+                    sourceFormatter << "new class " << grammar->Name() << "<" << lexerTypeStr << ">;" << endl();
+                }
+            }
+            sourceFormatter << endl();
+            if (sourceFormatter.Error())
+            {
+                errorId = sourceFormatter.GetErrorId();
+            }
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private void GenIncLexerCode()
+        {
+            System.Text.CodeFormatter& sourceFormatter = *formatter;
+            string incResult = "incResult" + ToString(incResultIndex++);
+            sourceFormatter << "auto " << incResult << " = ++lexer;" << endl();
+            sourceFormatter << "if (" << incResult << ".Error())" << endl();
+            sourceFormatter << "{" << endl();
+            sourceFormatter.IncIndent();
+            sourceFormatter << "return System.Result<System.Parsing.Match>(System.ErrorId(" << incResult << ".GetErrorId()));" << endl();
+            sourceFormatter.DecIndent();
+            sourceFormatter << "}" << endl();
+        }
+        private scmpg.ast.ScmpgFile* scmpgFile;
+        private bool verbose;
+        private string version;
+        private System.Lex.FileMap& fileMap;
+        private System.Text.CodeFormatter* formatter;
+        private CodeGenerationStage stage;
+        private scmpg.ast.GrammarParser* currentGrammar;
+        private scmpg.ast.RuleParser* currentRule;
+        private List<NonterminalInfo> nonterminalInfos;
+        private int parentMatchNumber;
+        private int setParentMatchNumber;
+        private int sn;
+        private int incResultIndex;
+        private int errorId;
+    }
+
+    public Result<bool> GenerateCode(scmpg.ast.ScmpgFile* scmpgFile, bool verbose, const string& version, System.Lex.FileMap& fileMap)
+    {
+        CodeGenerator codeGenerator(scmpgFile, verbose, version, fileMap);
+        scmpgFile->Accept(codeGenerator);
+        if (codeGenerator.Error())
+        {
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+}
+

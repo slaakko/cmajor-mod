@@ -22,7 +22,7 @@ void StartBuild(const std::string& backend, const std::string& config, const std
     buildCommand->filePath = filePath;
     buildCommand->singleThreadedCompile = buildSettings.singleThreadedCompile;
     buildCommand->emitIR = buildSettings.generateIntermediateCodeFiles;
-    buildCommand->linkWithDebugRuntime = buildSettings.linkWithDebugRuntime;
+    //buildCommand->linkWithDebugRuntime = buildSettings.linkWithDebugRuntime;
     buildCommand->verbose = true;
     if ((requestKind & BuildRequestKind::clean) != BuildRequestKind::none)
     {

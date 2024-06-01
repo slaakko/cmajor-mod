@@ -1,0 +1,185 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
+
+parser scmlg.parser.LexerFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.LexerKeyword;
+    using scmlg.parser.ExpressionFileParser.ExprString;
+    using cm.parser.StatementParser.CompoundStatement;
+    using cm.parser.TypeExprParser.TypeExpr;
+
+    LexerFile(cm.parser.Context* context, var UniquePtr<scmlg.ast.LexerFile> lexerFile) : scmlg.ast.LexerFile*
+        ::=
+        (
+            empty{ lexerFile.Reset(new scmlg.ast.LexerFile(lexer.FileName())); }
+            Usings(lexerFile.Get()):usings
+            LexerDefinition(context):lexerDefinition{ lexerFile->SetLexer(lexerDefinition); }
+        )
+        {
+            return lexerFile.Release();
+        }
+        ;
+
+    Usings(scmlg.ast.LexerFile* lexerFile, var bool opaque)
+        ::=
+        (
+            (OpaqueKeyword:opaqueKeyword{ opaque = true; })?
+            USING
+            QualifiedUtf8Id:nsName
+            SEMICOLON
+            {
+                lexerFile->AddUsing(scmlg.ast.Using(nsName, opaque));
+            }
+        )*
+        ;
+
+    LexerDefinition(cm.parser.Context* context, var UniquePtr<scmlg.ast.Lexer> lxr) : scmlg.ast.Lexer*
+        ::=
+        (
+            LexerKeyword:lexerKeyword
+            QualifiedUtf8Id:lexerName
+            {
+                lxr.Reset(new scmlg.ast.Lexer(lexerName));
+            }
+            LBRACE
+            (
+                LexerContent(context, lxr.Get()):content
+            )*
+            RBRACE
+        )
+        {
+            return lxr.Release();
+        }
+        ;
+
+    LexerContent(cm.parser.Context* context, scmlg.ast.Lexer* lxr)
+        ::=
+        (   Rules(context, lxr):rules
+        |   Variables(context, lxr):variables
+        |   Actions(context, lxr):actions
+        )
+        ;
+
+    Rules(cm.parser.Context* context, scmlg.ast.Lexer* lxr)
+        ::=
+        (
+            RulesKeyword:rulesKeyword
+            LBRACE
+            (
+                Rule(context):rule{ lxr->AddRule(rule); }
+            )*
+            RBRACE
+        )
+        ;
+
+    Rule(cm.parser.Context* context, var int line) : scmlg.ast.Rule*
+        ::=
+        (
+            ExprString:expr{ line = lexer.GetToken(pos).line; }
+            Action:action
+            CompoundStatement(context):code
+        )
+        {
+            return new scmlg.ast.Rule(expr, code, action, line);
+        }
+        ;
+
+    Variables(cm.parser.Context* context, scmlg.ast.Lexer* lxr)
+        ::=
+        (
+            VariablesKeyword:variablesKeyword
+            LBRACE
+            (
+                Variable(context):variable{ lxr->AddVariable(variable); }
+            )*
+            RBRACE
+        )
+        ;
+
+    Variable(cm.parser.Context* context, var string varName) : scmlg.ast.Variable*
+        ::=
+        (
+            TypeExpr(context):type
+            ID
+            {
+                ustring name = lexer.GetToken(pos).ToString();
+                auto result = ToUtf8(name);
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                varName = result.Value();
+            }
+            SEMICOLON
+        )
+        {
+            return new scmlg.ast.Variable(type, varName);
+        }
+        ;
+
+    Actions(cm.parser.Context* context, scmlg.ast.Lexer* lxr, var int actionId)
+        ::=
+        (
+            ActionsKeyword:actionKeyword
+            LBRACE
+            (
+                Action:action{ actionId = action; pass = actionId != -1; }
+                ASSIGN
+                CompoundStatement(context):stmt
+                {
+                    lxr->AddAction(new scmlg.ast.Action(actionId, stmt));
+                }
+            )*
+            RBRACE
+        )
+        ;
+
+    Action(var int actionId) : int
+        ::=
+        (
+            DOLLAR
+            LPAREN
+            INTEGER_LITERAL
+            {
+                auto result = lexer.GetInt(pos);
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                actionId = result.Value();
+            }
+            RPAREN
+        |   empty{ actionId = -1; }
+        )
+        {
+            return actionId;
+        }
+        ;
+
+    RulesKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"rules"; }
+        ;
+
+    VariablesKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"variables"; }
+        ;
+
+    ActionsKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"actions"; }
+        ;
+
+    OpaqueKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"opaque"; }
+        ;
+}

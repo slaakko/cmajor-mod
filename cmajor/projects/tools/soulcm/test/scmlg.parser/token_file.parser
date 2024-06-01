@@ -1,0 +1,75 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
+
+parser scmlg.parser.TokenFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.TokensKeyword;
+
+    TokenFile(var UniquePtr<scmlg.ast.TokenFile> tokenFile, var UniquePtr<scmlg.ast.TokenCollection> tokenCollection) : scmlg.ast.TokenFile*
+        ::=
+        (
+            TokensKeyword:tokensKeyword
+            { 
+                tokenFile.Reset(new scmlg.ast.TokenFile(lexer.FileName())); 
+            }
+            QualifiedUtf8Id:tokenCollectionName
+            {
+                tokenCollection.Reset(new scmlg.ast.TokenCollection(tokenCollectionName));
+            }
+            LBRACE
+            (
+                Token:token{ tokenCollection->AddToken(token); } % COMMA
+            )?
+            RBRACE
+        )
+        {
+            tokenFile->SetTokenCollection(tokenCollection.Release());
+            return tokenFile.Release();
+        }
+        ;
+
+    Token(var ustring name, var ustring info) : scmlg.ast.Token*
+        ::=
+        (
+            LPAREN
+            ID{ name = lexer.GetToken(pos).ToString(); }
+            COMMA
+            STRING_LITERAL
+            {
+                cm.ast.StringLiteralPrefix prefix;
+                auto infoResult = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                if (infoResult.Error())
+                {
+                    return ErrorId(infoResult.GetErrorId());
+                }
+                info = infoResult.Value();
+            }
+            RPAREN
+        )
+        {
+            auto nameResult = ToUtf8(name);
+            if (nameResult.Error())
+            {
+                return ErrorId(nameResult.GetErrorId());
+            }
+            auto infoResult = ToUtf8(info);
+            if (infoResult.Error())
+            {
+                return ErrorId(infoResult.GetErrorId());
+            }
+            return new scmlg.ast.Token(nameResult.Value(), infoResult.Value());
+        }
+        ;
+}

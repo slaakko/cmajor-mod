@@ -1,0 +1,73 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
+
+parser scmlg.parser.ExpressionFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using scm.parser.CommonParser.QualifiedUtf8Id;    
+    using scm.parser.CommonParser.ExpressionsKeyword;
+
+    ExpressionFile(var UniquePtr<scmlg.ast.ExpressionFile> expressionFile, var UniquePtr<scmlg.ast.ExpressionCollection> expressionCollection) : scmlg.ast.ExpressionFile*
+        ::= 
+        (
+            empty{ expressionFile.Reset(new scmlg.ast.ExpressionFile(lexer.FileName())); }
+            ExpressionsKeyword:expressionsKeyword
+            QualifiedUtf8Id:expressionCollectionName
+            {
+                expressionCollection.Reset(new scmlg.ast.ExpressionCollection(expressionCollectionName));
+            }
+            LBRACE
+            (
+				Expression:expression{ expressionCollection->AddExpression(expression); }
+			)*
+            RBRACE
+        )
+        {
+            expressionFile->SetExpressionCollection(expressionCollection.Release());
+            return expressionFile.Release();
+        }
+        ;
+
+    Expression(var ustring name, var int line) : scmlg.ast.Expression*
+        ::= 
+        (
+            ID{ auto token = lexer.GetToken(pos); name = token.ToString(); line = token.line; }
+            ASSIGN
+            ExprString:exprString 
+            SEMICOLON
+        )
+        {
+            auto nameResult = ToUtf8(name);
+            if (nameResult.Error())
+            {
+                return ErrorId(nameResult.GetErrorId());
+            }
+            return new scmlg.ast.Expression(nameResult.Value(), exprString, line);
+        }
+        ;
+
+    ExprString : string
+        ::= 
+        (
+            STRING_LITERAL
+            {
+                auto result = MakeExprStringValue(lexer.FileName(), lexer.GetToken(pos)); 
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                return result.Value();
+            }
+        )
+        ;
+}

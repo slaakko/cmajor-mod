@@ -143,12 +143,16 @@ void LinkWindowsLLDLinkProcess(cmajor::ast::Project* project, cmajor::symbols::M
     args.push_back("/debug");
     args.push_back("/out:" + util::QuotedPath(project->ExecutableFilePath()));
     args.push_back("/stack:16777216");
+/*
     std::string rtLibName = "cmajor.rt.lib";
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime))
     {
         rtLibName = "cmajor.rtd.lib";
     }
+*/
+/*
     args.push_back(util::QuotedPath(util::GetFullPath(util::Path::Combine(util::Path::Combine(util::CmajorRoot(), "lib"), rtLibName))));
+*/
     int n = rootModule->LibraryFilePaths().size();
     for (int i = 0; i < n; ++i)
     {

@@ -1,0 +1,56 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.token;
+using cm.parser;
+
+parser scm.parser.CommonParser
+{
+    lexer cm.lexer.CmajorLexer;
+
+    using cm.parser.ContainerFileParser.QualifiedId;
+    
+    TokensKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"tokens"; }
+        ;
+
+    KeywordsKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"keywords"; }
+        ;
+
+    ExpressionsKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"expressions"; }
+        ;
+
+    ParserKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"parser"; }
+        ;
+
+    LexerKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"lexer"; }
+        ;
+
+    ProjectKeyword
+        ::= ID{ pass = lexer.GetToken(pos).ToString() == u"project"; }
+        ;
+
+    QualifiedUtf8Id : string
+        ::=
+        (
+            QualifiedId:qid
+        )
+        {
+            auto result = ToUtf8(qid);
+            if (result.Error())
+            {
+                return ErrorId(result.GetErrorId());
+            }
+            else
+            {
+                return result.Value();
+            }
+        }
+        ;
+}

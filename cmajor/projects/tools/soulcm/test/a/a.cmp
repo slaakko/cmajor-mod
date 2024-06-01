@@ -1,5 +1,0 @@
-project a;
-source <main.cm>;
-source <ALexer.cm>;
-source <a.token.cm>;
-rc <ALexer.classmap.rc>;

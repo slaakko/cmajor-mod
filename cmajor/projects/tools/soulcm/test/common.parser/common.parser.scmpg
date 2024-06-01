@@ -1,0 +1,3 @@
+project common.parser;
+parser <common.parser>;
+extern parser <../cm.parser/container_file.parser>;

@@ -1,0 +1,84 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
+
+parser scmlg.parser.KeywordFileParser
+{
+    lexer cm.lexer.CmajorLexer;
+    main;
+
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.KeywordsKeyword;
+
+    KeywordFile(var UniquePtr<scmlg.ast.KeywordFile> keywordFile, var UniquePtr<scmlg.ast.KeywordCollection> keywordCollection) : scmlg.ast.KeywordFile*
+        ::= 
+        (
+            empty{ keywordFile.Reset(new scmlg.ast.KeywordFile(lexer.FileName())); }
+            Usings(keywordFile.Get()):usings
+            KeywordsKeyword:keywordsKeyword
+            QualifiedUtf8Id:keywordCollectionName
+            {
+                keywordCollection.Reset(new scmlg.ast.KeywordCollection(keywordCollectionName));
+            }
+            LBRACE
+            (
+                Keyword:keyword{ keywordCollection->AddKeyword(keyword); } % COMMA
+            )?
+            RBRACE
+        )
+        {
+            keywordFile->SetKeywordCollection(keywordCollection.Release());
+            return keywordFile.Release();
+        }
+        ;
+
+    Usings(scmlg.ast.KeywordFile* keywordFile)
+        ::= 
+        (
+            USING QualifiedUtf8Id:qid SEMICOLON{ keywordFile->AddUsing(qid); }
+        )*
+        ;
+
+    Keyword(var ustring keywordString, var ustring tokenName) : scmlg.ast.Keyword*
+        ::= 
+        (
+            LPAREN
+            STRING_LITERAL
+            {
+                cm.ast.StringLiteralPrefix prefix;
+                auto keywordStringResult = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                if (keywordStringResult.Error())
+                {
+                    return ErrorId(keywordStringResult.GetErrorId());
+                }
+                keywordString = keywordStringResult.Value();
+            }
+            COMMA
+            ID
+            {
+                tokenName = lexer.GetToken(pos).ToString();
+            }
+            RPAREN
+        )
+        {
+            auto keywordStringResult = ToUtf8(keywordString);
+            if (keywordStringResult.Error())
+            {
+                return ErrorId(keywordStringResult.GetErrorId());
+            }
+            auto tokenNameResult = ToUtf8(tokenName);
+            if (tokenNameResult.Error())
+            {
+                return ErrorId(tokenNameResult.GetErrorId());
+            }
+            return new scmlg.ast.Keyword(keywordStringResult.Value(), tokenNameResult.Value());
+        }
+        ;
+}

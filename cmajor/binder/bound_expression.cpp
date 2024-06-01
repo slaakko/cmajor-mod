@@ -1957,7 +1957,7 @@ void BoundTypeIdExpression::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Opera
     if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp ||
         cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm)
     {
-        Assert(false, "MASM and C++ backends do not support typeid expression");
+        Assert(false, "MASM, C++ and LLVM backends do not support typeid expression");
         return;
     }
     classPtr->Load(emitter, cmajor::ir::OperationFlags::none);

@@ -6,7 +6,7 @@
 using re.token;
 using re.expr;
 
-lexer scm.re.RegExLexer
+lexer scm.regex.RegExLexer
 {
     rules
     {
