@@ -1,0 +1,257 @@
+<parserFile>
+ <grammar name="cm.parser.ProjectFileParser">
+  <rule first="{#, ID, SEMICOLON}" name="ProjectFile">
+   <action first="{#, ID, SEMICOLON}">
+    <group first="{#, ID, SEMICOLON}">
+     <sequence first="{#, ID, SEMICOLON}">
+      <sequence first="{#, ID, SEMICOLON}">
+       <sequence first="{#, ID}">
+        <sequence first="{#, ID}">
+         <action first="{#}">
+          <empty first="{#}"/>
+         </action>
+         <nonterminal first="{ID}" ruleName="ProjectKeyword"/>
+        </sequence>
+        <nonterminal first="{ID}" ruleName="QualifiedId"/>
+       </sequence>
+       <action first="{SEMICOLON}">
+        <token first="{SEMICOLON}" name="SEMICOLON"/>
+       </action>
+      </sequence>
+      <kleene first="{#, ID}">
+       <group first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="Declaration"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="Declaration">
+   <choice first="{ID}">
+    <choice first="{ID}">
+     <choice first="{ID}">
+      <choice first="{ID}">
+       <choice first="{ID}">
+        <choice first="{ID}">
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="ReferenceDeclaration"/>
+         </action>
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="SourceFileDeclaration"/>
+         </action>
+        </choice>
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="ResourceFileDeclaration"/>
+        </action>
+       </choice>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="ResourceScriptFileDeclaration"/>
+       </action>
+      </choice>
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="TextFileDeclaration"/>
+      </action>
+     </choice>
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="ActionFileDeclaration"/>
+     </action>
+    </choice>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="TargetDeclaration"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="ReferenceDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="ReferenceKeyword"/>
+       <nonterminal first="{FILE_PATH}" ruleName="FilePath"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="SourceFileDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="SourceKeyword"/>
+       <nonterminal first="{FILE_PATH}" ruleName="FilePath"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ResourceFileDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="ResourceKeyword"/>
+       <nonterminal first="{FILE_PATH}" ruleName="FilePath"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ResourceScriptFileDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="RcKeyword"/>
+       <nonterminal first="{FILE_PATH}" ruleName="FilePath"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="TextFileDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="TextKeyword"/>
+       <nonterminal first="{FILE_PATH}" ruleName="FilePath"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActionFileDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="ActionKeyword"/>
+       <nonterminal first="{FILE_PATH}" ruleName="FilePath"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="TargetDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <nonterminal first="{ID}" ruleName="TargetKeyword"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{ID}" ruleName="Target"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="Target">
+   <choice first="{ID}">
+    <choice first="{ID}">
+     <choice first="{ID}">
+      <choice first="{ID}">
+       <choice first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="ProgramKeyword"/>
+        </action>
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="WinGuiAppKeyword"/>
+        </action>
+       </choice>
+       <action first="{ID}">
+        <nonterminal first="{ID}" ruleName="WinAppKeyword"/>
+       </action>
+      </choice>
+      <action first="{ID}">
+       <nonterminal first="{ID}" ruleName="LibraryKeyword"/>
+      </action>
+     </choice>
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="WinLibKeyword"/>
+     </action>
+    </choice>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="UnitTestKeyword"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="ReferenceKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="SourceKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ResourceKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="RcKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="TextKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActionKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="TargetKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ProgramKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="WinGuiAppKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="WinAppKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="LibraryKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="WinLibKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="UnitTestKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

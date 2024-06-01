@@ -1,0 +1,84 @@
+<parserFile>
+ <grammar name="cm.parser.FundamentalTypeParser">
+  <rule first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="FundamentalType">
+   <choice first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <choice first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, WCHAR}">
+     <choice first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT, WCHAR}">
+      <choice first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+       <choice first="{AUTO, BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+        <choice first="{AUTO, BOOL, BYTE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+         <choice first="{AUTO, BOOL, BYTE, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+          <choice first="{AUTO, BOOL, BYTE, INT, LONG, SBYTE, SHORT, UINT, USHORT}">
+           <choice first="{AUTO, BOOL, BYTE, INT, SBYTE, SHORT, UINT, USHORT}">
+            <choice first="{AUTO, BOOL, BYTE, INT, SBYTE, SHORT, USHORT}">
+             <choice first="{AUTO, BOOL, BYTE, SBYTE, SHORT, USHORT}">
+              <choice first="{AUTO, BOOL, BYTE, SBYTE, SHORT}">
+               <choice first="{AUTO, BOOL, BYTE, SBYTE}">
+                <choice first="{AUTO, BOOL, SBYTE}">
+                 <choice first="{AUTO, BOOL}">
+                  <action first="{AUTO}">
+                   <token first="{AUTO}" name="AUTO"/>
+                  </action>
+                  <action first="{BOOL}">
+                   <token first="{BOOL}" name="BOOL"/>
+                  </action>
+                 </choice>
+                 <action first="{SBYTE}">
+                  <token first="{SBYTE}" name="SBYTE"/>
+                 </action>
+                </choice>
+                <action first="{BYTE}">
+                 <token first="{BYTE}" name="BYTE"/>
+                </action>
+               </choice>
+               <action first="{SHORT}">
+                <token first="{SHORT}" name="SHORT"/>
+               </action>
+              </choice>
+              <action first="{USHORT}">
+               <token first="{USHORT}" name="USHORT"/>
+              </action>
+             </choice>
+             <action first="{INT}">
+              <token first="{INT}" name="INT"/>
+             </action>
+            </choice>
+            <action first="{UINT}">
+             <token first="{UINT}" name="UINT"/>
+            </action>
+           </choice>
+           <action first="{LONG}">
+            <token first="{LONG}" name="LONG"/>
+           </action>
+          </choice>
+          <action first="{ULONG}">
+           <token first="{ULONG}" name="ULONG"/>
+          </action>
+         </choice>
+         <action first="{FLOAT}">
+          <token first="{FLOAT}" name="FLOAT"/>
+         </action>
+        </choice>
+        <action first="{DOUBLE}">
+         <token first="{DOUBLE}" name="DOUBLE"/>
+        </action>
+       </choice>
+       <action first="{CHAR}">
+        <token first="{CHAR}" name="CHAR"/>
+       </action>
+      </choice>
+      <action first="{WCHAR}">
+       <token first="{WCHAR}" name="WCHAR"/>
+      </action>
+     </choice>
+     <action first="{UCHAR}">
+      <token first="{UCHAR}" name="UCHAR"/>
+     </action>
+    </choice>
+    <action first="{VOID}">
+     <token first="{VOID}" name="VOID"/>
+    </action>
+   </choice>
+  </rule>
+ </grammar>
+</parserFile>

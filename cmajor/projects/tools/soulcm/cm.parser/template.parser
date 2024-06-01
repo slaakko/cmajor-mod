@@ -3,18 +3,16 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser TemplateParser
+parser cm.parser.TemplateParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using TypeExprParser.TypeExpr;
-    using IdentifierParser.Identifier;
-    using IdentifierParser.QualifiedId;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.IdentifierParser.QualifiedId;
 
     TemplateId(cm.parser.Context* context, var UniquePtr<cm.ast.TemplateIdNode> templateId) : cm.ast.TemplateIdNode*
         ::= empty{ context->BeginParsingTemplateId(); }

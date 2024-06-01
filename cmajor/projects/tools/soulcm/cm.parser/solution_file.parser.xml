@@ -1,0 +1,109 @@
+<parserFile>
+ <grammar name="cm.parser.SolutionFileParser">
+  <rule first="{#, ID, SEMICOLON}" name="SolutionFile">
+   <action first="{#, ID, SEMICOLON}">
+    <group first="{#, ID, SEMICOLON}">
+     <sequence first="{#, ID, SEMICOLON}">
+      <sequence first="{#, ID, SEMICOLON}">
+       <sequence first="{#, ID}">
+        <sequence first="{#, ID}">
+         <action first="{#}">
+          <empty first="{#}"/>
+         </action>
+         <nonterminal first="{ID}" ruleName="SolutionKeyword"/>
+        </sequence>
+        <nonterminal first="{ID}" ruleName="QualifiedId"/>
+       </sequence>
+       <action first="{SEMICOLON}">
+        <token first="{SEMICOLON}" name="SEMICOLON"/>
+       </action>
+      </sequence>
+      <kleene first="{#, ID}">
+       <group first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="Declaration"/>
+        </action>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="BackEnd">
+   <action first="{ID}">
+    <group first="{ID}">
+     <action first="{ID}">
+      <token first="{ID}" name="ID"/>
+     </action>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="Declaration">
+   <choice first="{ID}">
+    <choice first="{ID}">
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="SolutionProjectDeclaration"/>
+     </action>
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="ActiveProjectDeclaration"/>
+     </action>
+    </choice>
+    <action first="{ID}">
+     <nonterminal first="{ID}" ruleName="ActiveBackEndDeclaration"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{ID}" name="SolutionProjectDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="ProjectKeyword"/>
+       <nonterminal first="{FILE_PATH}" ruleName="FilePath"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActiveProjectDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <nonterminal first="{ID}" ruleName="ActiveProjectKeyword"/>
+       <nonterminal first="{ID}" ruleName="QualifiedId"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActiveBackEndDeclaration">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <nonterminal first="{ID}" ruleName="ActiveBackEndKeyword"/>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{ID}" ruleName="BackEnd"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActiveProjectKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ActiveBackEndKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

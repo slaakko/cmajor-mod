@@ -3,13 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.lexer;
+using cm.token;
+using cm.keyword;
+using cm.expr;
 
-import cm.token;
-import cm.keyword;
-import cm.expr;
-
-lexer CmajorLexer
+lexer cm.lexer.CmajorLexer
 {
     rules
     {

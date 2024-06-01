@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.lexer/cm.token' using soul lexer generator version 5.0.0
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.lexer/cm.token' using SoulCm lexer generator scmlg version 5.0.0
 
 using System;
 

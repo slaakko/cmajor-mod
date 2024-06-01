@@ -3,19 +3,17 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser GlobalVariableParser
+parser cm.parser.GlobalVariableParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using SpecifierParser.Specifiers;
-    using IdentifierParser.Identifier;
-    using TypeExprParser.TypeExpr;
-    using ExpressionParser.Expression;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ExpressionParser.Expression;
 
     GlobalVariable(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.GlobalVariableNode*
         ::=

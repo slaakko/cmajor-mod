@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.parser/identifier.parser' using soul parser generator spg version 5.0.0
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg.parser/../cm.parser/identifier.parser' using SoulCm parser generator scmpg version 5.0.0
 
 using System;
 using System.Lex;
@@ -10,7 +10,7 @@ namespace cm.parser
 {
     public static class IdentifierParser<LexerT>
     {
-        public static Result<System.Parsing.Match> Identifier(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> Identifier(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9148055026495651841);
             System.Parsing.Match match(false);
@@ -20,16 +20,16 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString())));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString())));
                 }
                 *parentMatch0 = match;
             }
@@ -37,9 +37,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> QualifiedId(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> QualifiedId(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9148055026495651842);
             ustring value = ustring();
@@ -60,10 +60,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == ID)
                             {
-                                auto incResult0 = ++lexer; 
+                                auto incResult0 = ++lexer;
                                 if (incResult0.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -96,10 +96,10 @@ namespace cm.parser
                                                 System.Parsing.Match match(false);
                                                 if (*lexer == DOT)
                                                 {
-                                                    auto incResult1 = ++lexer; 
+                                                    auto incResult1 = ++lexer;
                                                     if (incResult1.Error())
                                                     {
-                                                        return Result<System.Parsing.Match>(ErrorId(incResult1.GetErrorId()));
+                                                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
                                                     }
                                                     match.hit = true;
                                                 }
@@ -117,10 +117,10 @@ namespace cm.parser
                                                         System.Parsing.Match match(false);
                                                         if (*lexer == ID)
                                                         {
-                                                            auto incResult2 = ++lexer; 
+                                                            auto incResult2 = ++lexer;
                                                             if (incResult2.Error())
                                                             {
-                                                                return Result<System.Parsing.Match>(ErrorId(incResult2.GetErrorId()));
+                                                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
                                                             }
                                                             match.hit = true;
                                                         }
@@ -156,7 +156,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), value)));
                 }
                 *parentMatch0 = match;
             }
@@ -164,10 +164,10 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
     }
+}
 
-    new class IdentifierParser<CmajorLexer>;
+new class cm.parser.IdentifierParser<cm.lexer.CmajorLexer>;
 
-} // namespace cm.parser

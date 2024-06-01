@@ -21,7 +21,7 @@ int main(int argc, const char** argv)
         const ustring& content = utf32Result.Value();
         uchar* begin = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(begin, end, cmFile);
+        cm.lexer.CmajorLexer lexer(begin, end, cmFile);
         auto incResult = ++lexer;
         if (incResult.Error())
         {

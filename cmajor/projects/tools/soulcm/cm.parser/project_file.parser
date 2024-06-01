@@ -3,19 +3,17 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser ProjectFileParser
+parser cm.parser.ProjectFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using ContainerFileParser.QualifiedId;
-    using ContainerFileParser.FilePath;
-    using ContainerFileParser.ProjectKeyword;
+    using cm.parser.ContainerFileParser.QualifiedId;
+    using cm.parser.ContainerFileParser.FilePath;
+    using cm.parser.ContainerFileParser.ProjectKeyword;
 
     ProjectFile(var UniquePtr<cm.ast.Project> projectFile) : cm.ast.Project*
         ::= 

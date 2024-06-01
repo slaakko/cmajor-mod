@@ -25,8 +25,8 @@ namespace scmpg.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, scmpgFilePath);
-        auto parseResult = ScmpgFileParser<CmajorLexer>.Parse(lexer);
+        cm.lexer.CmajorLexer lexer(start, end, scmpgFilePath);
+        auto parseResult = scmpg.parser.ScmpgFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
             return Result<UniquePtr<scmpg.ast.ScmpgFile>>(ErrorId(parseResult.GetErrorId()));
@@ -50,11 +50,11 @@ namespace scmpg.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, parserFilePath);
+        cm.lexer.CmajorLexer lexer(start, end, parserFilePath);
         int fileIndex = fileMap.MapFileName(parserFilePath);
         lexer.SetFileIndex(fileIndex);
         cm.parser.Context context;
-        auto parseResult = ParserFileParser<CmajorLexer>.Parse(lexer, &context);
+        auto parseResult = scmpg.parser.ParserFileParser<cm.lexer.CmajorLexer>.Parse(lexer, &context);
         if (parseResult.Error())
         {
             return Result<UniquePtr<scmpg.ast.ParserFile>>(ErrorId(parseResult.GetErrorId()));

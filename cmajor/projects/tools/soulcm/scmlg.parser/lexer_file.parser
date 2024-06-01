@@ -3,23 +3,21 @@
 // Distributed under the MIT license
 // =================================
 
-export module scmlg.parser;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
 
-import cm.token;
-import cm.parser;
-import common.parser;
-import scmlg.ast;
-
-parser LexerFileParser
+parser scmlg.parser.LexerFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using CommonParser.QualifiedUtf8Id;
-    using CommonParser.LexerKeyword;
-    using ExpressionFileParser.ExprString;
-    using StatementParser.CompoundStatement;
-    using TypeExprParser.TypeExpr;
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.LexerKeyword;
+    using scmlg.parser.ExpressionFileParser.ExprString;
+    using cm.parser.StatementParser.CompoundStatement;
+    using cm.parser.TypeExprParser.TypeExpr;
 
     LexerFile(cm.parser.Context* context, var UniquePtr<scmlg.ast.LexerFile> lexerFile) : scmlg.ast.LexerFile*
         ::=

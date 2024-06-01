@@ -1,0 +1,487 @@
+<parserFile>
+ <grammar name="cm.parser.ConceptParser">
+  <rule first="{#, ABSTRACT, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CDECL, CHAR, COLON, CONCEPT, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, RBRACE, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, TILDE, TYPENAME, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}" name="Concept">
+   <sequence first="{#, ABSTRACT, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CDECL, CHAR, COLON, CONCEPT, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, RBRACE, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, TILDE, TYPENAME, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}">
+    <action first="{#}">
+     <empty first="{#}"/>
+    </action>
+    <action first="{#, ABSTRACT, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CDECL, CHAR, COLON, CONCEPT, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, RBRACE, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, TILDE, TYPENAME, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}">
+     <group first="{#, ABSTRACT, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CDECL, CHAR, COLON, CONCEPT, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, RBRACE, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, TILDE, TYPENAME, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}">
+      <sequence first="{#, ABSTRACT, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CDECL, CHAR, COLON, CONCEPT, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, RBRACE, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, TILDE, TYPENAME, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}">
+       <sequence first="{#, ABSTRACT, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CDECL, CHAR, COLON, CONCEPT, CONST, CONSTEXPR, DEFAULT, DOT, DOUBLE, EXPLICIT, EXTERN, FLOAT, ID, INLINE, INT, INTERNAL, LANGLE, LBRACE, LBRACKET, LONG, LPAREN, NEW, NOTHROW, OPERATOR, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, SBYTE, SEMICOLON, SHORT, STAR, STATIC, SUPPRESS, THROW, TILDE, TYPENAME, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}">
+        <sequence first="{#, ABSTRACT, CDECL, COLON, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LANGLE, LBRACE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WHERE, WINAPI}">
+         <sequence first="{#, ABSTRACT, CDECL, COLON, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LANGLE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WHERE, WINAPI}">
+          <sequence first="{#, ABSTRACT, CDECL, COLON, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LANGLE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+           <sequence first="{#, ABSTRACT, CDECL, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LANGLE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, RANGLE, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+            <sequence first="{#, ABSTRACT, CDECL, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LANGLE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+             <sequence first="{#, ABSTRACT, CDECL, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, LANGLE, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+              <sequence first="{#, ABSTRACT, CDECL, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, ID, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+               <sequence first="{#, ABSTRACT, CDECL, CONCEPT, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+                <action first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+                 <nonterminal first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifiers"/>
+                </action>
+                <token first="{CONCEPT}" name="CONCEPT"/>
+               </sequence>
+               <action first="{ID}">
+                <nonterminal first="{ID}" ruleName="Identifier"/>
+               </action>
+              </sequence>
+              <token first="{LANGLE}" name="LANGLE"/>
+             </sequence>
+             <group first="{ID}">
+              <list first="{ID}">
+               <sequence first="{ID}">
+                <action first="{ID}">
+                 <nonterminal first="{ID}" ruleName="Identifier"/>
+                </action>
+                <kleene first="{#, COMMA}">
+                 <sequence first="{COMMA}">
+                  <token first="{COMMA}" name="COMMA"/>
+                  <action first="{ID}">
+                   <nonterminal first="{ID}" ruleName="Identifier"/>
+                  </action>
+                 </sequence>
+                </kleene>
+               </sequence>
+              </list>
+             </group>
+            </sequence>
+            <token first="{RANGLE}" name="RANGLE"/>
+           </sequence>
+           <optional first="{#, COLON}">
+            <group first="{COLON}">
+             <action first="{COLON}">
+              <nonterminal first="{COLON}" ruleName="Refinement"/>
+             </action>
+            </group>
+           </optional>
+          </sequence>
+          <optional first="{#, WHERE}">
+           <group first="{WHERE}">
+            <action first="{WHERE}">
+             <nonterminal first="{WHERE}" ruleName="WhereConstraint"/>
+            </action>
+           </group>
+          </optional>
+         </sequence>
+         <token first="{LBRACE}" name="LBRACE"/>
+        </sequence>
+        <nonterminal first="{#, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}" ruleName="ConceptBody"/>
+       </sequence>
+       <token first="{RBRACE}" name="RBRACE"/>
+      </sequence>
+     </group>
+    </action>
+   </sequence>
+  </rule>
+  <rule first="{COLON}" name="Refinement">
+   <action first="{COLON}">
+    <group first="{COLON}">
+     <sequence first="{COLON}">
+      <sequence first="{COLON}">
+       <sequence first="{COLON}">
+        <sequence first="{COLON}">
+         <token first="{COLON}" name="COLON"/>
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="QualifiedId"/>
+         </action>
+        </sequence>
+        <token first="{LANGLE}" name="LANGLE"/>
+       </sequence>
+       <group first="{ID}">
+        <list first="{ID}">
+         <sequence first="{ID}">
+          <action first="{ID}">
+           <nonterminal first="{ID}" ruleName="Identifier"/>
+          </action>
+          <kleene first="{#, COMMA}">
+           <sequence first="{COMMA}">
+            <token first="{COMMA}" name="COMMA"/>
+            <action first="{ID}">
+             <nonterminal first="{ID}" ruleName="Identifier"/>
+            </action>
+           </sequence>
+          </kleene>
+         </sequence>
+        </list>
+       </group>
+      </sequence>
+      <token first="{RANGLE}" name="RANGLE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}" name="ConceptBody">
+   <kleene first="{#, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}">
+    <group first="{#, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}">
+     <choice first="{#, AMP, AMP_AMP, AUTO, AXIOM, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}">
+      <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}" ruleName="ConceptBodyConstraint"/>
+      <nonterminal first="{AXIOM}" ruleName="Axiom"/>
+     </choice>
+    </group>
+   </kleene>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}" name="ConceptBodyConstraint">
+   <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHERE}">
+    <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <action first="{TYPENAME}">
+      <nonterminal first="{TYPENAME}" ruleName="TypeNameConstraint"/>
+     </action>
+     <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="SignatureConstraint"/>
+     </action>
+    </choice>
+    <action first="{WHERE}">
+     <nonterminal first="{WHERE}" ruleName="EmbeddedConstraint"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{TYPENAME}" name="TypeNameConstraint">
+   <action first="{TYPENAME}">
+    <group first="{TYPENAME}">
+     <sequence first="{TYPENAME}">
+      <sequence first="{TYPENAME}">
+       <action first="{TYPENAME}">
+        <token first="{TYPENAME}" name="TYPENAME"/>
+       </action>
+       <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="SignatureConstraint">
+   <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, EXPLICIT, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, TILDE, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <choice first="{#, EXPLICIT, ID, LPAREN, SEMICOLON, TILDE}">
+       <action first="{#, EXPLICIT, ID, LPAREN, SEMICOLON}">
+        <nonterminal first="{#, EXPLICIT, ID, LPAREN, SEMICOLON}" ruleName="ConstructorConstraint"/>
+       </action>
+       <action first="{TILDE}">
+        <nonterminal first="{TILDE}" ruleName="DestructorConstraint"/>
+       </action>
+      </choice>
+      <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="MemberFunctionConstraint"/>
+      </action>
+     </choice>
+     <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="FunctionConstraint"/>
+     </action>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{#, EXPLICIT, ID, LPAREN, SEMICOLON}" name="ConstructorConstraint">
+   <action first="{#, EXPLICIT, ID, LPAREN, SEMICOLON}">
+    <group first="{#, EXPLICIT, ID, LPAREN, SEMICOLON}">
+     <sequence first="{#, EXPLICIT, ID, LPAREN, SEMICOLON}">
+      <sequence first="{#, EXPLICIT, ID, LPAREN}">
+       <sequence first="{#, EXPLICIT, ID}">
+        <optional first="{#, EXPLICIT}">
+         <token first="{EXPLICIT}" name="EXPLICIT"/>
+        </optional>
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="Identifier"/>
+        </action>
+       </sequence>
+       <nonterminal first="{LPAREN}" ruleName="ParameterList"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{TILDE}" name="DestructorConstraint">
+   <action first="{TILDE}">
+    <group first="{TILDE}">
+     <sequence first="{TILDE}">
+      <sequence first="{TILDE}">
+       <sequence first="{TILDE}">
+        <sequence first="{TILDE}">
+         <action first="{TILDE}">
+          <token first="{TILDE}" name="TILDE"/>
+         </action>
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="Identifier"/>
+         </action>
+        </sequence>
+        <token first="{LPAREN}" name="LPAREN"/>
+       </sequence>
+       <token first="{RPAREN}" name="RPAREN"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="MemberFunctionConstraint">
+   <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, OPERATOR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+        <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+         <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+          <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+           <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+          </action>
+          <nonterminal first="{ID}" ruleName="Identifier"/>
+         </sequence>
+         <token first="{DOT}" name="DOT"/>
+        </sequence>
+        <action first="{#, ID, OPERATOR}">
+         <nonterminal first="{#, ID, OPERATOR}" ruleName="FunctionGroupId"/>
+        </action>
+       </sequence>
+       <nonterminal first="{LPAREN}" ruleName="ParameterList"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="FunctionConstraint">
+   <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, OPERATOR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, OPERATOR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+        <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+         <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+        </action>
+        <action first="{#, ID, OPERATOR}">
+         <nonterminal first="{#, ID, OPERATOR}" ruleName="FunctionGroupId"/>
+        </action>
+       </sequence>
+       <nonterminal first="{LPAREN}" ruleName="ParameterList"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{WHERE}" name="EmbeddedConstraint">
+   <action first="{WHERE}">
+    <group first="{WHERE}">
+     <sequence first="{WHERE}">
+      <nonterminal first="{WHERE}" ruleName="WhereConstraint"/>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{WHERE}" name="WhereConstraint">
+   <action first="{WHERE}">
+    <group first="{WHERE}">
+     <sequence first="{WHERE}">
+      <action first="{WHERE}">
+       <token first="{WHERE}" name="WHERE"/>
+      </action>
+      <nonterminal first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ConstraintExpr"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="ConstraintExpr">
+   <action first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <nonterminal first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="DisjunctiveConstraintExpr"/>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="DisjunctiveConstraintExpr">
+   <action first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <action first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ConjunctiveConstraintExpr"/>
+      </action>
+      <kleene first="{#, OR}">
+       <group first="{OR}">
+        <sequence first="{OR}">
+         <token first="{OR}" name="OR"/>
+         <action first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+          <nonterminal first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ConjunctiveConstraintExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="ConjunctiveConstraintExpr">
+   <action first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="PrimaryConstraintExpr"/>
+      </action>
+      <kleene first="{#, AND}">
+       <group first="{AND}">
+        <sequence first="{AND}">
+         <token first="{AND}" name="AND"/>
+         <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+          <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="PrimaryConstraintExpr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="PrimaryConstraintExpr">
+   <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{LPAREN}">
+      <sequence first="{LPAREN}">
+       <action first="{LPAREN}">
+        <token first="{LPAREN}" name="LPAREN"/>
+       </action>
+       <nonterminal first="{#, AMP, AMP_AMP, AND, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, OR, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ConstraintExpr"/>
+      </sequence>
+      <action first="{RPAREN}">
+       <token first="{RPAREN}" name="RPAREN"/>
+      </action>
+     </sequence>
+     <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="AtomicConstraintExpr"/>
+     </action>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="AtomicConstraintExpr">
+   <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, LPAREN, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <action first="{#, DOT, ID, LPAREN}">
+       <nonterminal first="{#, DOT, ID, LPAREN}" ruleName="PredicateConstraint"/>
+      </action>
+      <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="IsConstraint"/>
+      </action>
+     </choice>
+     <action first="{ID}">
+      <nonterminal first="{ID}" ruleName="MultiParamConstraint"/>
+     </action>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{#, DOT, ID, LPAREN}" name="PredicateConstraint">
+   <action first="{#, DOT, ID, LPAREN}">
+    <nonterminal first="{#, DOT, ID, LPAREN}" ruleName="InvokeExpr"/>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="IsConstraint">
+   <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, IS, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+        <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+       </action>
+       <token first="{IS}" name="IS"/>
+      </sequence>
+      <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ConceptOrTypeName"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="ConceptOrTypeName">
+   <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="MultiParamConstraint">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <action first="{ID}">
+         <nonterminal first="{ID}" ruleName="QualifiedId"/>
+        </action>
+        <token first="{LANGLE}" name="LANGLE"/>
+       </sequence>
+       <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+        <list first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+         <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, COMMA, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+          <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+           <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+          </action>
+          <kleene first="{#, COMMA}">
+           <sequence first="{COMMA}">
+            <token first="{COMMA}" name="COMMA"/>
+            <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+             <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
+            </action>
+           </sequence>
+          </kleene>
+         </sequence>
+        </list>
+       </group>
+      </sequence>
+      <token first="{RANGLE}" name="RANGLE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{AXIOM}" name="Axiom">
+   <action first="{AXIOM}">
+    <group first="{AXIOM}">
+     <sequence first="{AXIOM}">
+      <sequence first="{AXIOM}">
+       <sequence first="{AXIOM}">
+        <sequence first="{AXIOM}">
+         <sequence first="{AXIOM}">
+          <sequence first="{AXIOM}">
+           <action first="{AXIOM}">
+            <token first="{AXIOM}" name="AXIOM"/>
+           </action>
+           <optional first="{#, ID}">
+            <nonterminal first="{ID}" ruleName="Identifier"/>
+           </optional>
+          </sequence>
+          <action first="{#}">
+           <empty first="{#}"/>
+          </action>
+         </sequence>
+         <optional first="{#, LPAREN}">
+          <nonterminal first="{LPAREN}" ruleName="ParameterList"/>
+         </optional>
+        </sequence>
+        <token first="{LBRACE}" name="LBRACE"/>
+       </sequence>
+       <nonterminal first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="AxiomBody"/>
+      </sequence>
+      <token first="{RBRACE}" name="RBRACE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="AxiomBody">
+   <kleene first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <action first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <nonterminal first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="AxiomStatement"/>
+     </action>
+    </group>
+   </kleene>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="AxiomStatement">
+   <action first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <action first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
+      </action>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

@@ -25,7 +25,7 @@ namespace cm.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, sourceFilePath);
+        cm.lexer.CmajorLexer lexer(start, end, sourceFilePath);
         if (lexer.Error())
         {
             return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(lexer.GetErrorId()));
@@ -33,7 +33,7 @@ namespace cm.parser
         int fileIndex = fileMap.MapFileName(sourceFilePath);
         lexer.SetFileIndex(fileIndex);
         cm.parser.Context context;
-        auto parseResult = SourceFileParser<CmajorLexer>.Parse(lexer, &context);
+        auto parseResult = SourceFileParser<cm.lexer.CmajorLexer>.Parse(lexer, &context);
         if (parseResult.Error())
         {
             return Result<UniquePtr<cm.ast.SourceFileNode>>(ErrorId(parseResult.GetErrorId()));
@@ -58,12 +58,12 @@ namespace cm.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, projectFilePath);
+        cm.lexer.CmajorLexer lexer(start, end, projectFilePath);
         if (lexer.Error())
         {
             return Result<UniquePtr<cm.ast.Project>>(ErrorId(lexer.GetErrorId()));
         }
-        auto parseResult = ProjectFileParser<CmajorLexer>.Parse(lexer);
+        auto parseResult = ProjectFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
             return Result<UniquePtr<cm.ast.Project>>(ErrorId(parseResult.GetErrorId()));
@@ -93,8 +93,8 @@ namespace cm.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, solutionFilePath);
-        auto parseResult = SolutionFileParser<CmajorLexer>.Parse(lexer);
+        cm.lexer.CmajorLexer lexer(start, end, solutionFilePath);
+        auto parseResult = SolutionFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
             return Result<UniquePtr<cm.ast.Solution>>(ErrorId(parseResult.GetErrorId()));

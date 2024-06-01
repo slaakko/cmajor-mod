@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.parser/specifier.parser' using soul parser generator spg version 5.0.0
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.parser/specifier.parser' using SoulCm parser generator scmpg version 5.0.0
 
 using System;
 using System.Lex;
@@ -10,11 +10,11 @@ namespace cm.parser
 {
     public static class SpecifierParser<LexerT>
     {
-        public static Result<System.Parsing.Match> Specifiers(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> Specifiers(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 8559150220632391681);
             cm.ast.Specifiers specifiers = cm.ast.Specifiers();
-            UniquePtr<System.Parsing.Value<cm.ast.Specifiers>> specifier;
+            System.UniquePtr<System.Parsing.Value<cm.ast.Specifiers>> specifier;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -36,10 +36,10 @@ namespace cm.parser
                                     System.Parsing.Match* parentMatch4 = &match;
                                     {
                                         long pos = lexer.GetPos();
-                                        Result<System.Parsing.Match> matchResult = SpecifierParser<LexerT>.Specifier(lexer);
+                                        System.Result<System.Parsing.Match> matchResult = cm.parser.SpecifierParser<LexerT>.Specifier(lexer);
                                         if (matchResult.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                         }
                                         System.Parsing.Match match = matchResult.Value();
                                         specifier.Reset(cast<System.Parsing.Value<cm.ast.Specifiers>*>(match.value));
@@ -67,7 +67,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(specifiers)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(specifiers)));
                 }
                 *parentMatch0 = match;
             }
@@ -75,252 +75,572 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> Specifier(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> Specifier(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 8559150220632391682);
             System.Parsing.Match match(false);
-            long pos = lexer.GetPos();
+            System.Parsing.Match* parentMatch0 = &match;
             switch (*lexer)
             {
                 case PUBLIC:
                 {
-                    auto incResult0 = ++lexer; 
-                    if (incResult0.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch1 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == PUBLIC)
+                        {
+                            auto incResult0 = ++lexer;
+                            if (incResult0.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.public_)));
+                        }
+                        *parentMatch1 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.public_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case PROTECTED:
                 {
-                    auto incResult1 = ++lexer; 
-                    if (incResult1.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch2 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult1.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == PROTECTED)
+                        {
+                            auto incResult1 = ++lexer;
+                            if (incResult1.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.protected_)));
+                        }
+                        *parentMatch2 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.protected_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case PRIVATE:
                 {
-                    auto incResult2 = ++lexer; 
-                    if (incResult2.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch3 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult2.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == PRIVATE)
+                        {
+                            auto incResult2 = ++lexer;
+                            if (incResult2.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.private_)));
+                        }
+                        *parentMatch3 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.private_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case INTERNAL:
                 {
-                    auto incResult3 = ++lexer; 
-                    if (incResult3.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch4 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult3.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == INTERNAL)
+                        {
+                            auto incResult3 = ++lexer;
+                            if (incResult3.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult3.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.internal_)));
+                        }
+                        *parentMatch4 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.internal_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case STATIC:
                 {
-                    auto incResult4 = ++lexer; 
-                    if (incResult4.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch5 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult4.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == STATIC)
+                        {
+                            auto incResult4 = ++lexer;
+                            if (incResult4.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult4.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.static_)));
+                        }
+                        *parentMatch5 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.static_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case VIRTUAL:
                 {
-                    auto incResult5 = ++lexer; 
-                    if (incResult5.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch6 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult5.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == VIRTUAL)
+                        {
+                            auto incResult5 = ++lexer;
+                            if (incResult5.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult5.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.virtual_)));
+                        }
+                        *parentMatch6 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.virtual_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case OVERRIDE:
                 {
-                    auto incResult6 = ++lexer; 
-                    if (incResult6.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch7 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult6.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == OVERRIDE)
+                        {
+                            auto incResult6 = ++lexer;
+                            if (incResult6.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult6.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.override_)));
+                        }
+                        *parentMatch7 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.override_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case ABSTRACT:
                 {
-                    auto incResult7 = ++lexer; 
-                    if (incResult7.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch8 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult7.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == ABSTRACT)
+                        {
+                            auto incResult7 = ++lexer;
+                            if (incResult7.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult7.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.abstract_)));
+                        }
+                        *parentMatch8 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.abstract_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case INLINE:
                 {
-                    auto incResult8 = ++lexer; 
-                    if (incResult8.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch9 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult8.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == INLINE)
+                        {
+                            auto incResult8 = ++lexer;
+                            if (incResult8.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult8.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.inline_)));
+                        }
+                        *parentMatch9 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.inline_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case EXPLICIT:
                 {
-                    auto incResult9 = ++lexer; 
-                    if (incResult9.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch10 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult9.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == EXPLICIT)
+                        {
+                            auto incResult9 = ++lexer;
+                            if (incResult9.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult9.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.explicit_)));
+                        }
+                        *parentMatch10 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.explicit_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case EXTERN:
                 {
-                    auto incResult10 = ++lexer; 
-                    if (incResult10.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch11 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult10.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == EXTERN)
+                        {
+                            auto incResult10 = ++lexer;
+                            if (incResult10.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult10.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.external_)));
+                        }
+                        *parentMatch11 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.external_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case SUPPRESS:
                 {
-                    auto incResult11 = ++lexer; 
-                    if (incResult11.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch12 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult11.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == SUPPRESS)
+                        {
+                            auto incResult11 = ++lexer;
+                            if (incResult11.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult11.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.suppress_)));
+                        }
+                        *parentMatch12 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.suppress_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case DEFAULT:
                 {
-                    auto incResult12 = ++lexer; 
-                    if (incResult12.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch13 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult12.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == DEFAULT)
+                        {
+                            auto incResult12 = ++lexer;
+                            if (incResult12.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult12.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.default_)));
+                        }
+                        *parentMatch13 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.default_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case CONSTEXPR:
                 {
-                    auto incResult13 = ++lexer; 
-                    if (incResult13.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch14 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult13.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == CONSTEXPR)
+                        {
+                            auto incResult13 = ++lexer;
+                            if (incResult13.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult13.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.constexpr_)));
+                        }
+                        *parentMatch14 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.constexpr_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case CDECL:
                 {
-                    auto incResult14 = ++lexer; 
-                    if (incResult14.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch15 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult14.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == CDECL)
+                        {
+                            auto incResult14 = ++lexer;
+                            if (incResult14.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult14.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.cdecl_)));
+                        }
+                        *parentMatch15 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.cdecl_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case NOTHROW:
                 {
-                    auto incResult15 = ++lexer; 
-                    if (incResult15.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch16 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult15.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == NOTHROW)
+                        {
+                            auto incResult15 = ++lexer;
+                            if (incResult15.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult15.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.nothrow_)));
+                        }
+                        *parentMatch16 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.nothrow_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case THROW:
                 {
-                    auto incResult16 = ++lexer; 
-                    if (incResult16.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch17 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult16.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == THROW)
+                        {
+                            auto incResult16 = ++lexer;
+                            if (incResult16.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult16.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.throw_)));
+                        }
+                        *parentMatch17 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.throw_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case NEW:
                 {
-                    auto incResult17 = ++lexer; 
-                    if (incResult17.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch18 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult17.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == NEW)
+                        {
+                            auto incResult17 = ++lexer;
+                            if (incResult17.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult17.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.new_)));
+                        }
+                        *parentMatch18 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.new_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case UNIT_TEST:
                 {
-                    auto incResult18 = ++lexer; 
-                    if (incResult18.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch19 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult18.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == UNIT_TEST)
+                        {
+                            auto incResult18 = ++lexer;
+                            if (incResult18.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult18.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.unit_test_)));
+                        }
+                        *parentMatch19 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.unit_test_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
                 case WINAPI:
                 {
-                    auto incResult19 = ++lexer; 
-                    if (incResult19.Error())
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch20 = &match;
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult19.GetErrorId()));
+                        long pos = lexer.GetPos();
+                        System.Parsing.Match match(false);
+                        if (*lexer == WINAPI)
+                        {
+                            auto incResult19 = ++lexer;
+                            if (incResult19.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult19.GetErrorId()));
+                            }
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.winapi_)));
+                        }
+                        *parentMatch20 = match;
                     }
+                    if (match.hit)
                     {
-                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Specifiers>(cm.ast.Specifiers.winapi_)));
+                        *parentMatch0 = match;
                     }
                     break;
                 }
@@ -329,10 +649,10 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
     }
+}
 
-    new class SpecifierParser<CmajorLexer>;
+new class cm.parser.SpecifierParser<cm.lexer.CmajorLexer>;
 
-} // namespace cm.parser

@@ -52,3 +52,4 @@ text <specifier.parser>;
 text <statement.parser>;
 text <template.parser>;
 text <type_expr.parser>;
+text <cm.parser.scmpg>;

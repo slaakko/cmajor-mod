@@ -3,16 +3,14 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser LiteralParser
+parser cm.parser.LiteralParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using ExpressionParser.Expression;
+    using cm.parser.ExpressionParser.Expression;
 
     Literal(cm.parser.Context* context) : cm.ast.LiteralNode*
         ::= SimpleLiteral(context):simpleLiteral{ return simpleLiteral; }

@@ -1,0 +1,90 @@
+<parserFile>
+ <grammar name="cm.parser.TypeExprParser">
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="TypeExpr">
+   <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="PrefixTypeExpr"/>
+   </action>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="PrefixTypeExpr">
+   <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <choice first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{CONST}">
+      <action first="{CONST}">
+       <token first="{CONST}" name="CONST"/>
+      </action>
+      <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="PostfixTypeExpr"/>
+      </action>
+     </sequence>
+     <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <nonterminal first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="PostfixTypeExpr"/>
+     </action>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="PostfixTypeExpr">
+   <action first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <group first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <sequence first="{#, AMP, AMP_AMP, AUTO, BOOL, BYTE, CHAR, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <action first="{#, AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+       <nonterminal first="{#, AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="PrimaryTypeExpr"/>
+      </action>
+      <kleene first="{#, AMP, AMP_AMP, DOT, LBRACKET, STAR}">
+       <group first="{AMP, AMP_AMP, DOT, LBRACKET, STAR}">
+        <choice first="{AMP, AMP_AMP, DOT, LBRACKET, STAR}">
+         <choice first="{AMP, AMP_AMP, DOT, STAR}">
+          <choice first="{AMP_AMP, DOT, STAR}">
+           <choice first="{DOT, STAR}">
+            <sequence first="{DOT}">
+             <token first="{DOT}" name="DOT"/>
+             <action first="{ID}">
+              <token first="{ID}" name="ID"/>
+             </action>
+            </sequence>
+            <action first="{STAR}">
+             <token first="{STAR}" name="STAR"/>
+            </action>
+           </choice>
+           <action first="{AMP_AMP}">
+            <token first="{AMP_AMP}" name="AMP_AMP"/>
+           </action>
+          </choice>
+          <action first="{AMP}">
+           <token first="{AMP}" name="AMP"/>
+          </action>
+         </choice>
+         <sequence first="{LBRACKET}">
+          <sequence first="{LBRACKET}">
+           <token first="{LBRACKET}" name="LBRACKET"/>
+           <optional first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+            <nonterminal first="{#, AMP, AMP_AMP, ARROW, AS, AUTO, BASE, BOOL, BYTE, CARET, CAST, CHAR, CHAR_LITERAL, CONSTRUCT, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATING_LITERAL, GEQ, ID, IMPLICATION, INT, INTEGER_LITERAL, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUS_MINUS, NEQ, NEW, NULL_LITERAL, PIPE, PLUS, PLUS_PLUS, RANGLE, REM, SBYTE, SHIFT_LEFT, SHIFT_RIGHT, SHORT, SIZEOF, STAR, STRING_LITERAL, THIS, TILDE, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
+           </optional>
+          </sequence>
+          <action first="{RBRACKET}">
+           <token first="{RBRACKET}" name="RBRACKET"/>
+          </action>
+         </sequence>
+        </choice>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{#, AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" name="PrimaryTypeExpr">
+   <choice first="{#, AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+    <choice first="{#, AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+     <action first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
+      <nonterminal first="{AUTO, BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="FundamentalType"/>
+     </action>
+     <action first="{#, ID}">
+      <nonterminal first="{#, ID}" ruleName="TemplateId"/>
+     </action>
+    </choice>
+    <action first="{ID}">
+     <token first="{ID}" name="ID"/>
+    </action>
+   </choice>
+  </rule>
+ </grammar>
+</parserFile>

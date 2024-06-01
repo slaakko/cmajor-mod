@@ -3,33 +3,31 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser ClassParser
+parser cm.parser.ClassParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using AttributeParser.Attributes;
-    using SpecifierParser.Specifiers;
-    using IdentifierParser.Identifier;
-    using IdentifierParser.QualifiedId;
-    using TypeExprParser.TypeExpr;
-    using ConceptParser.WhereConstraint;
-    using ExpressionParser.ArgumentList;
-    using StatementParser.CompoundStatement;
-    using ParameterParser.ParameterList;
-    using FunctionParser.FunctionGroupId;
-    using TemplateParser.TemplateId;
-    using TemplateParser.TemplateParameterList;
-    using AliasParser.UsingAlias;
-    using AliasParser.Typedef;
-    using EnumerationParser.EnumType;
-    using ConstantParser.Constant;
-    using DelegateParser.Delegate;
-    using DelegateParser.ClassDelegate;
+    using cm.parser.AttributeParser.Attributes;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.IdentifierParser.QualifiedId;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ConceptParser.WhereConstraint;
+    using cm.parser.ExpressionParser.ArgumentList;
+    using cm.parser.StatementParser.CompoundStatement;
+    using cm.parser.ParameterParser.ParameterList;
+    using cm.parser.FunctionParser.FunctionGroupId;
+    using cm.parser.TemplateParser.TemplateId;
+    using cm.parser.TemplateParser.TemplateParameterList;
+    using cm.parser.AliasParser.UsingAlias;
+    using cm.parser.AliasParser.Typedef;
+    using cm.parser.EnumerationParser.EnumType;
+    using cm.parser.ConstantParser.Constant;
+    using cm.parser.DelegateParser.Delegate;
+    using cm.parser.DelegateParser.ClassDelegate;
 
     Class(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ClassNode> classNode) : cm.ast.ClassNode*
         ::=

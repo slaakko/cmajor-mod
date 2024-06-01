@@ -3,26 +3,24 @@
 // Distributed under the MIT license
 // =================================
 
-export module scmlg.parser;
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
 
-import cm.ast;
-import cm.token;
-import cm.parser;
-import common.parser;
-import scmlg.ast;
-
-parser ScmlgFileParser
+parser scmlg.parser.ScmlgFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using CommonParser.ProjectKeyword;
-    using CommonParser.TokensKeyword;
-    using CommonParser.KeywordsKeyword;
-    using CommonParser.ExpressionsKeyword;
-    using CommonParser.LexerKeyword;
-    using CommonParser.QualifiedUtf8Id;
-    using ContainerFileParser.FilePath;
+    using scm.parser.CommonParser.ProjectKeyword;
+    using scm.parser.CommonParser.TokensKeyword;
+    using scm.parser.CommonParser.KeywordsKeyword;
+    using scm.parser.CommonParser.ExpressionsKeyword;
+    using scm.parser.CommonParser.LexerKeyword;
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using cm.parser.ContainerFileParser.FilePath;
 
     ScmlgFile(var UniquePtr<scmlg.ast.ScmlgFile> scmlgFile) : scmlg.ast.ScmlgFile*
         ::= 

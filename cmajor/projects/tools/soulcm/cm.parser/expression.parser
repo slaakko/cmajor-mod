@@ -3,20 +3,18 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser ExpressionParser
+parser cm.parser.ExpressionParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using TypeExprParser.TypeExpr;
-    using LiteralParser.Literal;
-    using FundamentalTypeParser.FundamentalType;
-    using TemplateParser.TemplateId;
-    using IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.LiteralParser.Literal;
+    using cm.parser.FundamentalTypeParser.FundamentalType;
+    using cm.parser.TemplateParser.TemplateId;
+    using cm.parser.IdentifierParser.Identifier;
 
     Expression(cm.parser.Context* context) : cm.ast.Node*
         ::=

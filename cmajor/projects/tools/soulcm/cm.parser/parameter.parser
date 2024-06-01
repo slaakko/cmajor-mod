@@ -3,19 +3,17 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser ParameterParser
+parser cm.parser.ParameterParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using SpecifierParser.Specifiers;
-    using IdentifierParser.Identifier;
-    using TypeExprParser.TypeExpr;
-    using ExpressionParser.Expression;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ExpressionParser.Expression;
 
     ParameterList(cm.parser.Context* context, cm.ast.Node* owner)
         ::=

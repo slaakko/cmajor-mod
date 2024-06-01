@@ -1,0 +1,40 @@
+<parserFile>
+ <grammar name="cm.parser.ContainerFileParser">
+  <rule first="{ID}" name="QualifiedId">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <action first="{ID}">
+       <token first="{ID}" name="ID"/>
+      </action>
+      <kleene first="{#, DOT}">
+       <group first="{DOT}">
+        <sequence first="{DOT}">
+         <token first="{DOT}" name="DOT"/>
+         <action first="{ID}">
+          <token first="{ID}" name="ID"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{FILE_PATH}" name="FilePath">
+   <action first="{FILE_PATH}">
+    <token first="{FILE_PATH}" name="FILE_PATH"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ProjectKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="SolutionKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

@@ -3,12 +3,10 @@
 // Distributed under the MIT license
 // =================================
 
-export module re.lexer;
+using re.token;
+using re.expr;
 
-import re.token;
-import re.expr;
-
-lexer RegExLexer
+lexer scm.regex.RegExLexer
 {
     rules
     {

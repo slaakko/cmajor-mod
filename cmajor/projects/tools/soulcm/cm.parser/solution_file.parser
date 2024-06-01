@@ -3,20 +3,18 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser SolutionFileParser
+parser cm.parser.SolutionFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using ContainerFileParser.QualifiedId;
-    using ContainerFileParser.FilePath;
-    using ContainerFileParser.ProjectKeyword;
-    using ContainerFileParser.SolutionKeyword;
+    using cm.parser.ContainerFileParser.QualifiedId;
+    using cm.parser.ContainerFileParser.FilePath;
+    using cm.parser.ContainerFileParser.ProjectKeyword;
+    using cm.parser.ContainerFileParser.SolutionKeyword;
 
     SolutionFile(var UniquePtr<cm.ast.Solution> solutionFile) : cm.ast.Solution*
         ::= 

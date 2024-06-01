@@ -3,14 +3,12 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser AttributeParser
+parser cm.parser.AttributeParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
     Attributes(cm.parser.Context* context, var UniquePtr<cm.ast.AttributesNode> attributesNode) : cm.ast.AttributesNode*
         ::=

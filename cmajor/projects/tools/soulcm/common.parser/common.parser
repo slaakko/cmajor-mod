@@ -3,16 +3,14 @@
 // Distributed under the MIT license
 // =================================
 
-export module common.parser;
+using cm.token;
+using cm.parser;
 
-import cm.token;
-import cm.parser;
-
-parser CommonParser
+parser scm.parser.CommonParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using ContainerFileParser.QualifiedId;
+    using cm.parser.ContainerFileParser.QualifiedId;
     
     TokensKeyword
         ::= ID{ pass = lexer.GetToken(pos).ToString() == u"tokens"; }

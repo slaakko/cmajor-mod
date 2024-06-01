@@ -1,0 +1,61 @@
+<parserFile>
+ <grammar name="scmlg.parser.ExpressionFileParser">
+  <rule first="{#, ID, LBRACE, RBRACE}" name="ExpressionFile">
+   <action first="{#, ID, LBRACE, RBRACE}">
+    <group first="{#, ID, LBRACE, RBRACE}">
+     <sequence first="{#, ID, LBRACE, RBRACE}">
+      <sequence first="{#, ID, LBRACE}">
+       <sequence first="{#, ID, LBRACE}">
+        <sequence first="{#, ID}">
+         <sequence first="{#, ID}">
+          <action first="{#}">
+           <empty first="{#}"/>
+          </action>
+          <nonterminal first="{ID}" ruleName="ExpressionsKeyword"/>
+         </sequence>
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="QualifiedUtf8Id"/>
+         </action>
+        </sequence>
+        <token first="{LBRACE}" name="LBRACE"/>
+       </sequence>
+       <kleene first="{#, ID}">
+        <group first="{ID}">
+         <action first="{ID}">
+          <nonterminal first="{ID}" ruleName="Expression"/>
+         </action>
+        </group>
+       </kleene>
+      </sequence>
+      <token first="{RBRACE}" name="RBRACE"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{ID}" name="Expression">
+   <action first="{ID}">
+    <group first="{ID}">
+     <sequence first="{ID}">
+      <sequence first="{ID}">
+       <sequence first="{ID}">
+        <action first="{ID}">
+         <token first="{ID}" name="ID"/>
+        </action>
+        <token first="{ASSIGN}" name="ASSIGN"/>
+       </sequence>
+       <nonterminal first="{STRING_LITERAL}" ruleName="ExprString"/>
+      </sequence>
+      <token first="{SEMICOLON}" name="SEMICOLON"/>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{STRING_LITERAL}" name="ExprString">
+   <group first="{STRING_LITERAL}">
+    <action first="{STRING_LITERAL}">
+     <token first="{STRING_LITERAL}" name="STRING_LITERAL"/>
+    </action>
+   </group>
+  </rule>
+ </grammar>
+</parserFile>

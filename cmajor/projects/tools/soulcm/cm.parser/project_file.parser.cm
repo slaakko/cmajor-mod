@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.parser/project_file.parser' using soul parser generator spg version 5.0.0
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/cm.parser/project_file.parser' using SoulCm parser generator scmpg version 5.0.0
 
 using System;
 using System.Lex;
@@ -10,18 +10,18 @@ namespace cm.parser
 {
     public static class ProjectFileParser<LexerT>
     {
-        public static Result<UniquePtr<cm.ast.Project>> Parse(LexerT& lexer)
+        public static System.Result<System.UniquePtr<cm.ast.Project>> Parse(LexerT& lexer)
         {
-            UniquePtr<cm.ast.Project> value;
+            System.UniquePtr<cm.ast.Project> value;
             auto incResult0 = ++lexer; 
             if (incResult0.Error())
             {
-                return Result<UniquePtr<cm.ast.Project>>(ErrorId(incResult0.GetErrorId())); 
+                return System.Result<System.UniquePtr<cm.ast.Project>>(System.ErrorId(incResult0.GetErrorId())); 
             }
-            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ProjectFile(lexer);
+            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ProjectFile(lexer);
             if (matchResult.Error())
             {
-                return Result<UniquePtr<cm.ast.Project>>(ErrorId(matchResult.GetErrorId()));
+                return System.Result<System.UniquePtr<cm.ast.Project>>(System.ErrorId(matchResult.GetErrorId()));
             }
             System.Parsing.Match match = matchResult.Value();
             value.Reset(cast<cm.ast.Project*>(match.value));
@@ -29,24 +29,24 @@ namespace cm.parser
             {
                 if (*lexer == System.Lex.END_TOKEN)
                 {
-                    return Result<UniquePtr<cm.ast.Project>>(Rvalue(value)); 
+                    return System.Result<System.UniquePtr<cm.ast.Project>>(System.Rvalue(value)); 
                 }
                 else
                 {
-                    return Result<UniquePtr<cm.ast.Project>>(lexer.GetFarthestError()); 
+                    return System.Result<System.UniquePtr<cm.ast.Project>>(lexer.GetFarthestError()); 
                 }
             }
             else
             {
-                return Result<UniquePtr<cm.ast.Project>>(lexer.GetFarthestError()); 
+                return System.Result<System.UniquePtr<cm.ast.Project>>(lexer.GetFarthestError()); 
             }
         }
-        public static Result<System.Parsing.Match> ProjectFile(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ProjectFile(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442881);
             UniquePtr<cm.ast.Project> projectFile = UniquePtr<cm.ast.Project>();
-            UniquePtr<System.Parsing.Value<ustring>> projectName;
-            UniquePtr<cm.ast.ProjectDeclaration> declaration;
+            System.UniquePtr<System.Parsing.Value<ustring>> projectName;
+            System.UniquePtr<cm.ast.ProjectDeclaration> declaration;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -84,10 +84,10 @@ namespace cm.parser
                                     System.Parsing.Match match(false);
                                     System.Parsing.Match* parentMatch7 = &match;
                                     {
-                                        Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.ProjectKeyword(lexer);
+                                        System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.ProjectKeyword(lexer);
                                         if (matchResult.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                         }
                                         System.Parsing.Match match = matchResult.Value();
                                         *parentMatch7 = match;
@@ -101,10 +101,10 @@ namespace cm.parser
                                 System.Parsing.Match match(false);
                                 System.Parsing.Match* parentMatch8 = &match;
                                 {
-                                    Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.QualifiedId(lexer);
+                                    System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.QualifiedId(lexer);
                                     if (matchResult.Error())
                                     {
-                                        return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                     }
                                     System.Parsing.Match match = matchResult.Value();
                                     projectName.Reset(cast<System.Parsing.Value<ustring>*>(match.value));
@@ -126,10 +126,10 @@ namespace cm.parser
                                     System.Parsing.Match match(false);
                                     if (*lexer == SEMICOLON)
                                     {
-                                        auto incResult0 = ++lexer; 
+                                        auto incResult0 = ++lexer;
                                         if (incResult0.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                         }
                                         match.hit = true;
                                     }
@@ -164,10 +164,10 @@ namespace cm.parser
                                             System.Parsing.Match* parentMatch14 = &match;
                                             {
                                                 long pos = lexer.GetPos();
-                                                Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.Declaration(lexer);
+                                                System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.Declaration(lexer);
                                                 if (matchResult.Error())
                                                 {
-                                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                                 }
                                                 System.Parsing.Match match = matchResult.Value();
                                                 declaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
@@ -199,7 +199,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, projectFile.Release()));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, projectFile.Release()));
                 }
                 *parentMatch0 = match;
             }
@@ -207,18 +207,18 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> Declaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> Declaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442882);
-            UniquePtr<cm.ast.ProjectDeclaration> referenceDeclaration;
-            UniquePtr<cm.ast.ProjectDeclaration> sourceFileDeclaration;
-            UniquePtr<cm.ast.ProjectDeclaration> resourceFileDeclaration;
-            UniquePtr<cm.ast.ProjectDeclaration> resourceScriptFileDeclaration;
-            UniquePtr<cm.ast.ProjectDeclaration> textFileDeclaration;
-            UniquePtr<cm.ast.ProjectDeclaration> actionFileDeclaration;
-            UniquePtr<cm.ast.ProjectDeclaration> targetDeclaration;
+            System.UniquePtr<cm.ast.ProjectDeclaration> referenceDeclaration;
+            System.UniquePtr<cm.ast.ProjectDeclaration> sourceFileDeclaration;
+            System.UniquePtr<cm.ast.ProjectDeclaration> resourceFileDeclaration;
+            System.UniquePtr<cm.ast.ProjectDeclaration> resourceScriptFileDeclaration;
+            System.UniquePtr<cm.ast.ProjectDeclaration> textFileDeclaration;
+            System.UniquePtr<cm.ast.ProjectDeclaration> actionFileDeclaration;
+            System.UniquePtr<cm.ast.ProjectDeclaration> targetDeclaration;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -247,16 +247,16 @@ namespace cm.parser
                                     System.Parsing.Match* parentMatch6 = &match;
                                     {
                                         long pos = lexer.GetPos();
-                                        Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ReferenceDeclaration(lexer);
+                                        System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ReferenceDeclaration(lexer);
                                         if (matchResult.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                         }
                                         System.Parsing.Match match = matchResult.Value();
                                         referenceDeclaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
                                         if (match.hit)
                                         {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, referenceDeclaration.Release()));
+                                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, referenceDeclaration.Release()));
                                         }
                                         *parentMatch6 = match;
                                     }
@@ -271,16 +271,16 @@ namespace cm.parser
                                             System.Parsing.Match* parentMatch8 = &match;
                                             {
                                                 long pos = lexer.GetPos();
-                                                Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.SourceFileDeclaration(lexer);
+                                                System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.SourceFileDeclaration(lexer);
                                                 if (matchResult.Error())
                                                 {
-                                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                                 }
                                                 System.Parsing.Match match = matchResult.Value();
                                                 sourceFileDeclaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
                                                 if (match.hit)
                                                 {
-                                                    return Result<System.Parsing.Match>(System.Parsing.Match(true, sourceFileDeclaration.Release()));
+                                                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, sourceFileDeclaration.Release()));
                                                 }
                                                 *parentMatch8 = match;
                                             }
@@ -300,16 +300,16 @@ namespace cm.parser
                                         System.Parsing.Match* parentMatch10 = &match;
                                         {
                                             long pos = lexer.GetPos();
-                                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ResourceFileDeclaration(lexer);
+                                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ResourceFileDeclaration(lexer);
                                             if (matchResult.Error())
                                             {
-                                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                             }
                                             System.Parsing.Match match = matchResult.Value();
                                             resourceFileDeclaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
                                             if (match.hit)
                                             {
-                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, resourceFileDeclaration.Release()));
+                                                return System.Result<System.Parsing.Match>(System.Parsing.Match(true, resourceFileDeclaration.Release()));
                                             }
                                             *parentMatch10 = match;
                                         }
@@ -329,16 +329,16 @@ namespace cm.parser
                                     System.Parsing.Match* parentMatch12 = &match;
                                     {
                                         long pos = lexer.GetPos();
-                                        Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ResourceScriptFileDeclaration(lexer);
+                                        System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ResourceScriptFileDeclaration(lexer);
                                         if (matchResult.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                         }
                                         System.Parsing.Match match = matchResult.Value();
                                         resourceScriptFileDeclaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
                                         if (match.hit)
                                         {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, resourceScriptFileDeclaration.Release()));
+                                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, resourceScriptFileDeclaration.Release()));
                                         }
                                         *parentMatch12 = match;
                                     }
@@ -358,16 +358,16 @@ namespace cm.parser
                                 System.Parsing.Match* parentMatch14 = &match;
                                 {
                                     long pos = lexer.GetPos();
-                                    Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.TextFileDeclaration(lexer);
+                                    System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.TextFileDeclaration(lexer);
                                     if (matchResult.Error())
                                     {
-                                        return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                     }
                                     System.Parsing.Match match = matchResult.Value();
                                     textFileDeclaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
                                     if (match.hit)
                                     {
-                                        return Result<System.Parsing.Match>(System.Parsing.Match(true, textFileDeclaration.Release()));
+                                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, textFileDeclaration.Release()));
                                     }
                                     *parentMatch14 = match;
                                 }
@@ -387,16 +387,16 @@ namespace cm.parser
                             System.Parsing.Match* parentMatch16 = &match;
                             {
                                 long pos = lexer.GetPos();
-                                Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ActionFileDeclaration(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ActionFileDeclaration(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 actionFileDeclaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
                                 if (match.hit)
                                 {
-                                    return Result<System.Parsing.Match>(System.Parsing.Match(true, actionFileDeclaration.Release()));
+                                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, actionFileDeclaration.Release()));
                                 }
                                 *parentMatch16 = match;
                             }
@@ -416,16 +416,16 @@ namespace cm.parser
                         System.Parsing.Match* parentMatch18 = &match;
                         {
                             long pos = lexer.GetPos();
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.TargetDeclaration(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.TargetDeclaration(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             targetDeclaration.Reset(cast<cm.ast.ProjectDeclaration*>(match.value));
                             if (match.hit)
                             {
-                                return Result<System.Parsing.Match>(System.Parsing.Match(true, targetDeclaration.Release()));
+                                return System.Result<System.Parsing.Match>(System.Parsing.Match(true, targetDeclaration.Release()));
                             }
                             *parentMatch18 = match;
                         }
@@ -438,12 +438,12 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ReferenceDeclaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ReferenceDeclaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442883);
-            UniquePtr<System.Parsing.Value<string>> filePath;
+            System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -457,10 +457,10 @@ namespace cm.parser
                         System.Parsing.Match match(false);
                         System.Parsing.Match* parentMatch3 = &match;
                         {
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ReferenceKeyword(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ReferenceKeyword(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             *parentMatch3 = match;
@@ -470,10 +470,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch4 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.FilePath(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.FilePath(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 filePath.Reset(cast<System.Parsing.Value<string>*>(match.value));
@@ -491,10 +491,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == SEMICOLON)
                             {
-                                auto incResult0 = ++lexer; 
+                                auto incResult0 = ++lexer;
                                 if (incResult0.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -506,7 +506,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ReferenceDeclaration(filePath->value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ReferenceDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
@@ -514,12 +514,12 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> SourceFileDeclaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> SourceFileDeclaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442884);
-            UniquePtr<System.Parsing.Value<string>> filePath;
+            System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -533,10 +533,10 @@ namespace cm.parser
                         System.Parsing.Match match(false);
                         System.Parsing.Match* parentMatch3 = &match;
                         {
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.SourceKeyword(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.SourceKeyword(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             *parentMatch3 = match;
@@ -546,10 +546,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch4 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.FilePath(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.FilePath(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 filePath.Reset(cast<System.Parsing.Value<string>*>(match.value));
@@ -567,10 +567,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == SEMICOLON)
                             {
-                                auto incResult0 = ++lexer; 
+                                auto incResult0 = ++lexer;
                                 if (incResult0.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -582,7 +582,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.SourceFileDeclaration(filePath->value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.SourceFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
@@ -590,12 +590,12 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ResourceFileDeclaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ResourceFileDeclaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442885);
-            UniquePtr<System.Parsing.Value<string>> filePath;
+            System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -609,10 +609,10 @@ namespace cm.parser
                         System.Parsing.Match match(false);
                         System.Parsing.Match* parentMatch3 = &match;
                         {
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ResourceKeyword(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ResourceKeyword(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             *parentMatch3 = match;
@@ -622,10 +622,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch4 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.FilePath(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.FilePath(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 filePath.Reset(cast<System.Parsing.Value<string>*>(match.value));
@@ -643,10 +643,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == SEMICOLON)
                             {
-                                auto incResult0 = ++lexer; 
+                                auto incResult0 = ++lexer;
                                 if (incResult0.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -658,7 +658,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ResourceFileDeclaration(filePath->value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ResourceFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
@@ -666,12 +666,12 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ResourceScriptFileDeclaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ResourceScriptFileDeclaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442886);
-            UniquePtr<System.Parsing.Value<string>> filePath;
+            System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -685,10 +685,10 @@ namespace cm.parser
                         System.Parsing.Match match(false);
                         System.Parsing.Match* parentMatch3 = &match;
                         {
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.RcKeyword(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.RcKeyword(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             *parentMatch3 = match;
@@ -698,10 +698,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch4 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.FilePath(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.FilePath(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 filePath.Reset(cast<System.Parsing.Value<string>*>(match.value));
@@ -719,10 +719,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == SEMICOLON)
                             {
-                                auto incResult0 = ++lexer; 
+                                auto incResult0 = ++lexer;
                                 if (incResult0.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -734,7 +734,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ResourceScriptFileDeclaration(filePath->value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ResourceScriptFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
@@ -742,12 +742,12 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> TextFileDeclaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> TextFileDeclaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442887);
-            UniquePtr<System.Parsing.Value<string>> filePath;
+            System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -761,10 +761,10 @@ namespace cm.parser
                         System.Parsing.Match match(false);
                         System.Parsing.Match* parentMatch3 = &match;
                         {
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.TextKeyword(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.TextKeyword(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             *parentMatch3 = match;
@@ -774,10 +774,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch4 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.FilePath(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.FilePath(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 filePath.Reset(cast<System.Parsing.Value<string>*>(match.value));
@@ -795,10 +795,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == SEMICOLON)
                             {
-                                auto incResult0 = ++lexer; 
+                                auto incResult0 = ++lexer;
                                 if (incResult0.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -810,7 +810,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TextFileDeclaration(filePath->value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TextFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
@@ -818,12 +818,12 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ActionFileDeclaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ActionFileDeclaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442888);
-            UniquePtr<System.Parsing.Value<string>> filePath;
+            System.UniquePtr<System.Parsing.Value<string>> filePath;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -837,10 +837,10 @@ namespace cm.parser
                         System.Parsing.Match match(false);
                         System.Parsing.Match* parentMatch3 = &match;
                         {
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ActionKeyword(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ActionKeyword(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             *parentMatch3 = match;
@@ -850,10 +850,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch4 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ContainerFileParser<LexerT>.FilePath(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ContainerFileParser<LexerT>.FilePath(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 filePath.Reset(cast<System.Parsing.Value<string>*>(match.value));
@@ -871,10 +871,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == SEMICOLON)
                             {
-                                auto incResult0 = ++lexer; 
+                                auto incResult0 = ++lexer;
                                 if (incResult0.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -886,7 +886,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ActionFileDeclaration(filePath->value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ActionFileDeclaration(filePath->value)));
                 }
                 *parentMatch0 = match;
             }
@@ -894,12 +894,12 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> TargetDeclaration(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> TargetDeclaration(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442889);
-            UniquePtr<System.Parsing.Value<cm.ast.Target>> target;
+            System.UniquePtr<System.Parsing.Value<cm.ast.Target>> target;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -916,10 +916,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch4 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.TargetKeyword(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.TargetKeyword(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 *parentMatch4 = match;
@@ -932,10 +932,10 @@ namespace cm.parser
                                     System.Parsing.Match match(false);
                                     if (*lexer == ASSIGN)
                                     {
-                                        auto incResult0 = ++lexer; 
+                                        auto incResult0 = ++lexer;
                                         if (incResult0.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                         }
                                         match.hit = true;
                                     }
@@ -950,10 +950,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             System.Parsing.Match* parentMatch6 = &match;
                             {
-                                Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.Target(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.Target(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 target.Reset(cast<System.Parsing.Value<cm.ast.Target>*>(match.value));
@@ -971,10 +971,10 @@ namespace cm.parser
                             System.Parsing.Match match(false);
                             if (*lexer == SEMICOLON)
                             {
-                                auto incResult1 = ++lexer; 
+                                auto incResult1 = ++lexer;
                                 if (incResult1.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult1.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -986,7 +986,7 @@ namespace cm.parser
                 }
                 if (match.hit)
                 {
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TargetDeclaration(target->value)));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.TargetDeclaration(target->value)));
                 }
                 *parentMatch0 = match;
             }
@@ -994,9 +994,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> Target(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> Target(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442890);
             System.Parsing.Match match(false);
@@ -1023,15 +1023,15 @@ namespace cm.parser
                                 System.Parsing.Match* parentMatch5 = &match;
                                 {
                                     long pos = lexer.GetPos();
-                                    Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.ProgramKeyword(lexer);
+                                    System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ProgramKeyword(lexer);
                                     if (matchResult.Error())
                                     {
-                                        return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                     }
                                     System.Parsing.Match match = matchResult.Value();
                                     if (match.hit)
                                     {
-                                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.program)));
+                                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.program)));
                                     }
                                     *parentMatch5 = match;
                                 }
@@ -1046,15 +1046,15 @@ namespace cm.parser
                                         System.Parsing.Match* parentMatch7 = &match;
                                         {
                                             long pos = lexer.GetPos();
-                                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.WinGuiAppKeyword(lexer);
+                                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.WinGuiAppKeyword(lexer);
                                             if (matchResult.Error())
                                             {
-                                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                             }
                                             System.Parsing.Match match = matchResult.Value();
                                             if (match.hit)
                                             {
-                                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.winguiapp)));
+                                                return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.winguiapp)));
                                             }
                                             *parentMatch7 = match;
                                         }
@@ -1074,15 +1074,15 @@ namespace cm.parser
                                     System.Parsing.Match* parentMatch9 = &match;
                                     {
                                         long pos = lexer.GetPos();
-                                        Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.WinAppKeyword(lexer);
+                                        System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.WinAppKeyword(lexer);
                                         if (matchResult.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                         }
                                         System.Parsing.Match match = matchResult.Value();
                                         if (match.hit)
                                         {
-                                            return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.winapp)));
+                                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.winapp)));
                                         }
                                         *parentMatch9 = match;
                                     }
@@ -1102,15 +1102,15 @@ namespace cm.parser
                                 System.Parsing.Match* parentMatch11 = &match;
                                 {
                                     long pos = lexer.GetPos();
-                                    Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.LibraryKeyword(lexer);
+                                    System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.LibraryKeyword(lexer);
                                     if (matchResult.Error())
                                     {
-                                        return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                     }
                                     System.Parsing.Match match = matchResult.Value();
                                     if (match.hit)
                                     {
-                                        return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.library)));
+                                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.library)));
                                     }
                                     *parentMatch11 = match;
                                 }
@@ -1130,15 +1130,15 @@ namespace cm.parser
                             System.Parsing.Match* parentMatch13 = &match;
                             {
                                 long pos = lexer.GetPos();
-                                Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.WinLibKeyword(lexer);
+                                System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.WinLibKeyword(lexer);
                                 if (matchResult.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                 }
                                 System.Parsing.Match match = matchResult.Value();
                                 if (match.hit)
                                 {
-                                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.winlib)));
+                                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.winlib)));
                                 }
                                 *parentMatch13 = match;
                             }
@@ -1158,15 +1158,15 @@ namespace cm.parser
                         System.Parsing.Match* parentMatch15 = &match;
                         {
                             long pos = lexer.GetPos();
-                            Result<System.Parsing.Match> matchResult = ProjectFileParser<LexerT>.UnitTestKeyword(lexer);
+                            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.UnitTestKeyword(lexer);
                             if (matchResult.Error())
                             {
-                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                             }
                             System.Parsing.Match match = matchResult.Value();
                             if (match.hit)
                             {
-                                return Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.unitTest)));
+                                return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<cm.ast.Target>(cm.ast.Target.unitTest)));
                             }
                             *parentMatch15 = match;
                         }
@@ -1179,9 +1179,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ReferenceKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ReferenceKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442891);
             System.Parsing.Match match(false);
@@ -1192,10 +1192,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1213,9 +1213,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> SourceKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> SourceKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442892);
             System.Parsing.Match match(false);
@@ -1226,10 +1226,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1247,9 +1247,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ResourceKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ResourceKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442893);
             System.Parsing.Match match(false);
@@ -1260,10 +1260,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1281,9 +1281,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> RcKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> RcKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442894);
             System.Parsing.Match match(false);
@@ -1294,10 +1294,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1315,9 +1315,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> TextKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> TextKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442895);
             System.Parsing.Match match(false);
@@ -1328,10 +1328,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1349,9 +1349,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ActionKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ActionKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442896);
             System.Parsing.Match match(false);
@@ -1362,10 +1362,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1383,9 +1383,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> TargetKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> TargetKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442897);
             System.Parsing.Match match(false);
@@ -1396,10 +1396,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1417,9 +1417,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> ProgramKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> ProgramKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442898);
             System.Parsing.Match match(false);
@@ -1430,10 +1430,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1451,9 +1451,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> WinGuiAppKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> WinGuiAppKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442899);
             System.Parsing.Match match(false);
@@ -1464,10 +1464,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1485,9 +1485,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> WinAppKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> WinAppKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442900);
             System.Parsing.Match match(false);
@@ -1498,10 +1498,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1519,9 +1519,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> LibraryKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> LibraryKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442901);
             System.Parsing.Match match(false);
@@ -1532,10 +1532,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1553,9 +1553,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> WinLibKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> WinLibKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442902);
             System.Parsing.Match match(false);
@@ -1566,10 +1566,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1587,9 +1587,9 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> UnitTestKeyword(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> UnitTestKeyword(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 9178507375416442903);
             System.Parsing.Match match(false);
@@ -1600,10 +1600,10 @@ namespace cm.parser
                 System.Parsing.Match match(false);
                 if (*lexer == ID)
                 {
-                    auto incResult0 = ++lexer; 
+                    auto incResult0 = ++lexer;
                     if (incResult0.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                     }
                     match.hit = true;
                 }
@@ -1621,10 +1621,10 @@ namespace cm.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
     }
+}
 
-    new class ProjectFileParser<CmajorLexer>;
+new class cm.parser.ProjectFileParser<cm.lexer.CmajorLexer>;
 
-} // namespace cm.parser

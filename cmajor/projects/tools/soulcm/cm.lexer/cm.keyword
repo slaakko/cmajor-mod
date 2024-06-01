@@ -3,7 +3,7 @@
 // Distributed under the MIT license
 // =================================
 
-import cm.token;
+using cm.token;
 
 keywords cm.keyword
 { 

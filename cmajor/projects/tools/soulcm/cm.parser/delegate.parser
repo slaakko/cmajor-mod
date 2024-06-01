@@ -3,19 +3,17 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser DelegateParser
+parser cm.parser.DelegateParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using SpecifierParser.Specifiers;
-    using IdentifierParser.Identifier;
-    using TypeExprParser.TypeExpr;
-    using ParameterParser.ParameterList;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ParameterParser.ParameterList;
 
     Delegate(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.DelegateNode> delegateNode) : cm.ast.DelegateNode*
         ::=

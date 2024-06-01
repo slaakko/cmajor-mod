@@ -3,19 +3,17 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser EnumerationParser
+parser cm.parser.EnumerationParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using SpecifierParser.Specifiers;
-    using IdentifierParser.Identifier;
-    using TypeExprParser.TypeExpr;
-    using ExpressionParser.Expression;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ExpressionParser.Expression;
 
     EnumType(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.EnumTypeNode> enumType) : cm.ast.EnumTypeNode*
         ::=

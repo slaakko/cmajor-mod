@@ -3,24 +3,22 @@
 // Distributed under the MIT license
 // =================================
 
-export module scmpg.parser;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmpg.ast;
 
-import cm.token;
-import cm.parser;
-import common.parser;
-import scmpg.ast;
-
-parser ParserFileParser
+parser scmpg.parser.ParserFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using CommonParser.QualifiedUtf8Id;
-    using CommonParser.LexerKeyword;
-    using CommonParser.ParserKeyword;
-    using StatementParser.CompoundStatement;
-    using TypeExprParser.TypeExpr;
-    using ExpressionParser.ExpressionList;
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.LexerKeyword;
+    using scm.parser.CommonParser.ParserKeyword;
+    using cm.parser.StatementParser.CompoundStatement;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.ExpressionParser.ExpressionList;
 
     ParserFile(cm.parser.Context* context, var UniquePtr<scmpg.ast.ParserFile> parserFile) : scmpg.ast.ParserFile*
         ::=

@@ -3,14 +3,12 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser ContainerFileParser
+parser cm.parser.ContainerFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
 	QualifiedId(var ustring str) : ustring
 		::= 

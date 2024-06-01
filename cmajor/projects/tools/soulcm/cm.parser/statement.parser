@@ -3,19 +3,17 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser StatementParser
+parser cm.parser.StatementParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using ExpressionParser.Expression;
-    using ExpressionParser.ArgumentList;
-    using TypeExprParser.TypeExpr;
-    using IdentifierParser.Identifier;
+    using cm.parser.ExpressionParser.Expression;
+    using cm.parser.ExpressionParser.ArgumentList;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.IdentifierParser.Identifier;
 
     Statement(cm.parser.Context* context) : cm.ast.StatementNode*
         ::=

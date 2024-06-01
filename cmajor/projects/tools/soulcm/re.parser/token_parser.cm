@@ -7,7 +7,7 @@ using System;
 
 using cm.parser;
 
-namespace re.parser
+namespace scm.regex
 {
     public Result<uchar> MakeEscapeValue(const string& fileName, const System.Lex.Token& token)
     {

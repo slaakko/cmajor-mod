@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg.parser/token_file.parser' using soul parser generator spg version 5.0.0
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmlg.parser/token_file.parser' using SoulCm parser generator scmpg version 5.0.0
 
 using System;
 using System.Lex;
@@ -6,25 +6,25 @@ using System.Parsing;
 using cm.ast;
 using cm.token;
 using cm.parser;
-using common.parser;
+using scm.parser;
 using scmlg.ast;
 
 namespace scmlg.parser
 {
     public static class TokenFileParser<LexerT>
     {
-        public static Result<UniquePtr<scmlg.ast.TokenFile>> Parse(LexerT& lexer)
+        public static System.Result<System.UniquePtr<scmlg.ast.TokenFile>> Parse(LexerT& lexer)
         {
-            UniquePtr<scmlg.ast.TokenFile> value;
+            System.UniquePtr<scmlg.ast.TokenFile> value;
             auto incResult1 = ++lexer; 
             if (incResult1.Error())
             {
-                return Result<UniquePtr<scmlg.ast.TokenFile>>(ErrorId(incResult1.GetErrorId())); 
+                return System.Result<System.UniquePtr<scmlg.ast.TokenFile>>(System.ErrorId(incResult1.GetErrorId())); 
             }
-            Result<System.Parsing.Match> matchResult = TokenFileParser<LexerT>.TokenFile(lexer);
+            System.Result<System.Parsing.Match> matchResult = scmlg.parser.TokenFileParser<LexerT>.TokenFile(lexer);
             if (matchResult.Error())
             {
-                return Result<UniquePtr<scmlg.ast.TokenFile>>(ErrorId(matchResult.GetErrorId()));
+                return System.Result<System.UniquePtr<scmlg.ast.TokenFile>>(System.ErrorId(matchResult.GetErrorId()));
             }
             System.Parsing.Match match = matchResult.Value();
             value.Reset(cast<scmlg.ast.TokenFile*>(match.value));
@@ -32,25 +32,25 @@ namespace scmlg.parser
             {
                 if (*lexer == System.Lex.END_TOKEN)
                 {
-                    return Result<UniquePtr<scmlg.ast.TokenFile>>(Rvalue(value)); 
+                    return System.Result<System.UniquePtr<scmlg.ast.TokenFile>>(System.Rvalue(value)); 
                 }
                 else
                 {
-                    return Result<UniquePtr<scmlg.ast.TokenFile>>(lexer.GetFarthestError()); 
+                    return System.Result<System.UniquePtr<scmlg.ast.TokenFile>>(lexer.GetFarthestError()); 
                 }
             }
             else
             {
-                return Result<UniquePtr<scmlg.ast.TokenFile>>(lexer.GetFarthestError()); 
+                return System.Result<System.UniquePtr<scmlg.ast.TokenFile>>(lexer.GetFarthestError()); 
             }
         }
-        public static Result<System.Parsing.Match> TokenFile(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> TokenFile(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1158510743117627393);
             UniquePtr<scmlg.ast.TokenFile> tokenFile = UniquePtr<scmlg.ast.TokenFile>();
             UniquePtr<scmlg.ast.TokenCollection> tokenCollection = UniquePtr<scmlg.ast.TokenCollection>();
-            UniquePtr<System.Parsing.Value<string>> tokenCollectionName;
-            UniquePtr<scmlg.ast.Token> token;
+            System.UniquePtr<System.Parsing.Value<string>> tokenCollectionName;
+            System.UniquePtr<scmlg.ast.Token> token;
             System.Parsing.Match match(false);
             System.Parsing.Match* parentMatch0 = &match;
             {
@@ -74,10 +74,10 @@ namespace scmlg.parser
                                     System.Parsing.Match* parentMatch6 = &match;
                                     {
                                         long pos = lexer.GetPos();
-                                        Result<System.Parsing.Match> matchResult = CommonParser<LexerT>.TokensKeyword(lexer);
+                                        System.Result<System.Parsing.Match> matchResult = scm.parser.CommonParser<LexerT>.TokensKeyword(lexer);
                                         if (matchResult.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                         }
                                         System.Parsing.Match match = matchResult.Value();
                                         if (match.hit)
@@ -97,10 +97,10 @@ namespace scmlg.parser
                                         System.Parsing.Match* parentMatch8 = &match;
                                         {
                                             long pos = lexer.GetPos();
-                                            Result<System.Parsing.Match> matchResult = CommonParser<LexerT>.QualifiedUtf8Id(lexer);
+                                            System.Result<System.Parsing.Match> matchResult = scm.parser.CommonParser<LexerT>.QualifiedUtf8Id(lexer);
                                             if (matchResult.Error())
                                             {
-                                                return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                             }
                                             System.Parsing.Match match = matchResult.Value();
                                             tokenCollectionName.Reset(cast<System.Parsing.Value<string>*>(match.value));
@@ -124,10 +124,10 @@ namespace scmlg.parser
                                     System.Parsing.Match match(false);
                                     if (*lexer == LBRACE)
                                     {
-                                        auto incResult0 = ++lexer; 
+                                        auto incResult0 = ++lexer;
                                         if (incResult0.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                         }
                                         match.hit = true;
                                     }
@@ -156,10 +156,10 @@ namespace scmlg.parser
                                             System.Parsing.Match* parentMatch14 = &match;
                                             {
                                                 long pos = lexer.GetPos();
-                                                Result<System.Parsing.Match> matchResult = TokenFileParser<LexerT>.Token(lexer);
+                                                System.Result<System.Parsing.Match> matchResult = scmlg.parser.TokenFileParser<LexerT>.Token(lexer);
                                                 if (matchResult.Error())
                                                 {
-                                                    return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                                 }
                                                 System.Parsing.Match match = matchResult.Value();
                                                 token.Reset(cast<scmlg.ast.Token*>(match.value));
@@ -189,10 +189,10 @@ namespace scmlg.parser
                                                                 System.Parsing.Match match(false);
                                                                 if (*lexer == COMMA)
                                                                 {
-                                                                    auto incResult1 = ++lexer; 
+                                                                    auto incResult1 = ++lexer;
                                                                     if (incResult1.Error())
                                                                     {
-                                                                        return Result<System.Parsing.Match>(ErrorId(incResult1.GetErrorId()));
+                                                                        return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
                                                                     }
                                                                     match.hit = true;
                                                                 }
@@ -207,10 +207,10 @@ namespace scmlg.parser
                                                                     System.Parsing.Match* parentMatch19 = &match;
                                                                     {
                                                                         long pos = lexer.GetPos();
-                                                                        Result<System.Parsing.Match> matchResult = TokenFileParser<LexerT>.Token(lexer);
+                                                                        System.Result<System.Parsing.Match> matchResult = scmlg.parser.TokenFileParser<LexerT>.Token(lexer);
                                                                         if (matchResult.Error())
                                                                         {
-                                                                            return Result<System.Parsing.Match>(ErrorId(matchResult.GetErrorId()));
+                                                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
                                                                         }
                                                                         System.Parsing.Match match = matchResult.Value();
                                                                         token.Reset(cast<scmlg.ast.Token*>(match.value));
@@ -265,10 +265,10 @@ namespace scmlg.parser
                             System.Parsing.Match match(false);
                             if (*lexer == RBRACE)
                             {
-                                auto incResult2 = ++lexer; 
+                                auto incResult2 = ++lexer;
                                 if (incResult2.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult2.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -281,7 +281,7 @@ namespace scmlg.parser
                 if (match.hit)
                 {
                     tokenFile->SetTokenCollection(tokenCollection.Release());
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, tokenFile.Release()));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, tokenFile.Release()));
                 }
                 *parentMatch0 = match;
             }
@@ -289,9 +289,9 @@ namespace scmlg.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
-        public static Result<System.Parsing.Match> Token(LexerT& lexer)
+        public static System.Result<System.Parsing.Match> Token(LexerT& lexer)
         {
             System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 1158510743117627394);
             ustring name = ustring();
@@ -318,10 +318,10 @@ namespace scmlg.parser
                                     System.Parsing.Match match(false);
                                     if (*lexer == LPAREN)
                                     {
-                                        auto incResult0 = ++lexer; 
+                                        auto incResult0 = ++lexer;
                                         if (incResult0.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(incResult0.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
                                         }
                                         match.hit = true;
                                     }
@@ -339,10 +339,10 @@ namespace scmlg.parser
                                             System.Parsing.Match match(false);
                                             if (*lexer == ID)
                                             {
-                                                auto incResult1 = ++lexer; 
+                                                auto incResult1 = ++lexer;
                                                 if (incResult1.Error())
                                                 {
-                                                    return Result<System.Parsing.Match>(ErrorId(incResult1.GetErrorId()));
+                                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
                                                 }
                                                 match.hit = true;
                                             }
@@ -366,10 +366,10 @@ namespace scmlg.parser
                                     System.Parsing.Match match(false);
                                     if (*lexer == COMMA)
                                     {
-                                        auto incResult2 = ++lexer; 
+                                        auto incResult2 = ++lexer;
                                         if (incResult2.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(incResult2.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
                                         }
                                         match.hit = true;
                                     }
@@ -391,10 +391,10 @@ namespace scmlg.parser
                                     System.Parsing.Match match(false);
                                     if (*lexer == STRING_LITERAL)
                                     {
-                                        auto incResult3 = ++lexer; 
+                                        auto incResult3 = ++lexer;
                                         if (incResult3.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(incResult3.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult3.GetErrorId()));
                                         }
                                         match.hit = true;
                                     }
@@ -404,7 +404,7 @@ namespace scmlg.parser
                                         auto infoResult = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
                                         if (infoResult.Error())
                                         {
-                                            return Result<System.Parsing.Match>(ErrorId(infoResult.GetErrorId()));
+                                            return System.Result<System.Parsing.Match>(ErrorId(infoResult.GetErrorId()));
                                         }
                                         info = infoResult.Value();
                                     }
@@ -424,10 +424,10 @@ namespace scmlg.parser
                             System.Parsing.Match match(false);
                             if (*lexer == RPAREN)
                             {
-                                auto incResult4 = ++lexer; 
+                                auto incResult4 = ++lexer;
                                 if (incResult4.Error())
                                 {
-                                    return Result<System.Parsing.Match>(ErrorId(incResult4.GetErrorId()));
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult4.GetErrorId()));
                                 }
                                 match.hit = true;
                             }
@@ -442,14 +442,14 @@ namespace scmlg.parser
                     auto nameResult = ToUtf8(name);
                     if (nameResult.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(nameResult.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(ErrorId(nameResult.GetErrorId()));
                     }
                     auto infoResult = ToUtf8(info);
                     if (infoResult.Error())
                     {
-                        return Result<System.Parsing.Match>(ErrorId(infoResult.GetErrorId()));
+                        return System.Result<System.Parsing.Match>(ErrorId(infoResult.GetErrorId()));
                     }
-                    return Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.Token(nameResult.Value(), infoResult.Value())));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new scmlg.ast.Token(nameResult.Value(), infoResult.Value())));
                 }
                 *parentMatch0 = match;
             }
@@ -457,10 +457,10 @@ namespace scmlg.parser
             {
                 match.value = null;
             }
-            return Result<System.Parsing.Match>(match);
+            return System.Result<System.Parsing.Match>(match);
         }
     }
+}
 
-    new class TokenFileParser<CmajorLexer>;
+new class scmlg.parser.TokenFileParser<cm.lexer.CmajorLexer>;
 
-} // namespace scmlg.parser

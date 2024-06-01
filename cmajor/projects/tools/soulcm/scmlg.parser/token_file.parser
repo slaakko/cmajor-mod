@@ -3,21 +3,19 @@
 // Distributed under the MIT license
 // =================================
 
-export module scmlg.parser;
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
 
-import cm.ast;
-import cm.token;
-import cm.parser;
-import common.parser;
-import scmlg.ast;
-
-parser TokenFileParser
+parser scmlg.parser.TokenFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using CommonParser.QualifiedUtf8Id;
-    using CommonParser.TokensKeyword;
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.TokensKeyword;
 
     TokenFile(var UniquePtr<scmlg.ast.TokenFile> tokenFile, var UniquePtr<scmlg.ast.TokenCollection> tokenCollection) : scmlg.ast.TokenFile*
         ::=

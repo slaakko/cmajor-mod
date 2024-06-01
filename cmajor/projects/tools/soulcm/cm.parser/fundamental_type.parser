@@ -3,14 +3,12 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser FundamentalTypeParser
+parser cm.parser.FundamentalTypeParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
     FundamentalType : cm.ast.Node*
         ::= AUTO{ return new cm.ast.AutoNode(lexer.GetSpan(pos), lexer.FileIndex()); }

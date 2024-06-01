@@ -1,0 +1,41 @@
+<parserFile>
+ <grammar name="scm.parser.CommonParser">
+  <rule first="{ID}" name="TokensKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="KeywordsKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ExpressionsKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ParserKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="LexerKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="ProjectKeyword">
+   <action first="{ID}">
+    <token first="{ID}" name="ID"/>
+   </action>
+  </rule>
+  <rule first="{ID}" name="QualifiedUtf8Id">
+   <action first="{ID}">
+    <group first="{ID}">
+     <nonterminal first="{ID}" ruleName="QualifiedId"/>
+    </group>
+   </action>
+  </rule>
+ </grammar>
+</parserFile>

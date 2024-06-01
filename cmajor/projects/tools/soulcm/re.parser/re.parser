@@ -6,9 +6,9 @@
 using re.ast;
 using re.token;
 
-parser RegExParser
+parser scm.regex.RegExParser
 {
-    lexer RegExLexer;
+    lexer scm.regex.RegExLexer;
     main;
 
     RegularExpression(Context* context) : Nfa
@@ -146,20 +146,27 @@ parser RegExParser
         |   CHARACTER{ auto match = lexer.GetToken(pos).ToString(); return match[0]; }
         ;
 
+    ExpressionRefChar : string
+        ::= 
+        (
+            CHARACTER
+            { 
+                auto utf8Result = ToUtf8(lexer.GetToken(pos).ToString());
+                if (utf8Result.Error())
+                {
+                    return ErrorId(utf8Result.GetErrorId());
+                }
+                return utf8Result.Value();
+            }
+        )
+        ;
+
     ExpressionReference(var string s) : string
         ::= 
         (
             LBRACE
             (
-                CHARACTER
-                { 
-                    auto utf8Result = ToUtf8(lexer.GetToken(pos).ToString());
-                    if (utf8Result.Error())
-                    {
-                        return ErrorId(utf8Result.GetErrorId());
-                    }
-                    s.Append(utf8Result.Value()); 
-                }
+                ExpressionRefChar:chr{ s.Append(chr); }
             )+
             RBRACE
         )

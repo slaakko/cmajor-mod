@@ -3,14 +3,12 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser SpecifierParser
+parser cm.parser.SpecifierParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
     Specifiers(var cm.ast.Specifiers specifiers) : cm.ast.Specifiers
         ::= 

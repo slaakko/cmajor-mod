@@ -25,8 +25,8 @@ namespace scmlg.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, scmlgFilePath);
-        auto parseResult = ScmlgFileParser<CmajorLexer>.Parse(lexer);
+        cm.lexer.CmajorLexer lexer(start, end, scmlgFilePath);
+        auto parseResult = scmlg.parser.ScmlgFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.ScmlgFile>>(ErrorId(parseResult.GetErrorId()));
@@ -50,8 +50,8 @@ namespace scmlg.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, tokenFilePath);
-        auto parseResult = TokenFileParser<CmajorLexer>.Parse(lexer);
+        cm.lexer.CmajorLexer lexer(start, end, tokenFilePath);
+        auto parseResult = scmlg.parser.TokenFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.TokenFile>>(ErrorId(parseResult.GetErrorId()));
@@ -75,8 +75,8 @@ namespace scmlg.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, keywordFilePath);
-        auto parseResult = KeywordFileParser<CmajorLexer>.Parse(lexer);
+        cm.lexer.CmajorLexer lexer(start, end, keywordFilePath);
+        auto parseResult = scmlg.parser.KeywordFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.KeywordFile>>(ErrorId(parseResult.GetErrorId()));
@@ -100,8 +100,8 @@ namespace scmlg.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, expressionFilePath);
-        auto parseResult = ExpressionFileParser<CmajorLexer>.Parse(lexer);
+        cm.lexer.CmajorLexer lexer(start, end, expressionFilePath);
+        auto parseResult = scmlg.parser.ExpressionFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.ExpressionFile>>(ErrorId(parseResult.GetErrorId()));
@@ -125,9 +125,9 @@ namespace scmlg.parser
         const ustring& content = utf32Result.Value();
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
-        CmajorLexer lexer(start, end, lexerFilePath);
+        cm.lexer.CmajorLexer lexer(start, end, lexerFilePath);
         cm.parser.Context context;
-        auto parseResult = LexerFileParser<CmajorLexer>.Parse(lexer, &context);
+        auto parseResult = scmlg.parser.LexerFileParser<cm.lexer.CmajorLexer>.Parse(lexer, &context);
         if (parseResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.LexerFile>>(ErrorId(parseResult.GetErrorId()));

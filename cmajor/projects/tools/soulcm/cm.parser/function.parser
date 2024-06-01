@@ -3,23 +3,21 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser FunctionParser
+parser cm.parser.FunctionParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using AttributeParser.Attributes;
-    using SpecifierParser.Specifiers;
-    using TypeExprParser.TypeExpr;
-    using TemplateParser.TemplateParameterList;
-    using ConceptParser.WhereConstraint;
-    using ParameterParser.ParameterList;
-    using IdentifierParser.Identifier;
-    using StatementParser.CompoundStatement;
+    using cm.parser.AttributeParser.Attributes;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.TemplateParser.TemplateParameterList;
+    using cm.parser.ConceptParser.WhereConstraint;
+    using cm.parser.ParameterParser.ParameterList;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.StatementParser.CompoundStatement;
 
     Function(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.FunctionNode> functionNode) : cm.ast.FunctionNode*
         ::=

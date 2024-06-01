@@ -3,21 +3,19 @@
 // Distributed under the MIT license
 // =================================
 
-export module scmlg.parser;
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
 
-import cm.ast;
-import cm.token;
-import cm.parser;
-import common.parser;
-import scmlg.ast;
-
-parser KeywordFileParser
+parser scmlg.parser.KeywordFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using CommonParser.QualifiedUtf8Id;
-    using CommonParser.KeywordsKeyword;
+    using scm.parser.CommonParser.QualifiedUtf8Id;
+    using scm.parser.CommonParser.KeywordsKeyword;
 
     KeywordFile(var UniquePtr<scmlg.ast.KeywordFile> keywordFile, var UniquePtr<scmlg.ast.KeywordCollection> keywordCollection) : scmlg.ast.KeywordFile*
         ::= 

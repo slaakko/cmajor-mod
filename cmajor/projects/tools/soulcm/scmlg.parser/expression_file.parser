@@ -3,21 +3,19 @@
 // Distributed under the MIT license
 // =================================
 
-export module scmlg.parser;
+using cm.ast;
+using cm.token;
+using cm.parser;
+using scm.parser;
+using scmlg.ast;
 
-import cm.ast;
-import cm.token;
-import cm.parser;
-import common.parser;
-import scmlg.ast;
-
-parser ExpressionFileParser
+parser scmlg.parser.ExpressionFileParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
     main;
 
-    using CommonParser.QualifiedUtf8Id;    
-    using CommonParser.ExpressionsKeyword;
+    using scm.parser.CommonParser.QualifiedUtf8Id;    
+    using scm.parser.CommonParser.ExpressionsKeyword;
 
     ExpressionFile(var UniquePtr<scmlg.ast.ExpressionFile> expressionFile, var UniquePtr<scmlg.ast.ExpressionCollection> expressionCollection) : scmlg.ast.ExpressionFile*
         ::= 

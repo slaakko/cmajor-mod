@@ -3,18 +3,16 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser AliasParser
+parser cm.parser.AliasParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using SpecifierParser.Specifiers;
-    using IdentifierParser.Identifier;
-    using TypeExprParser.TypeExpr;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.TypeExprParser.TypeExpr;
 
     UsingAlias(cm.parser.Context* context, var System.Lex.Span span) : cm.ast.Node*
         ::=

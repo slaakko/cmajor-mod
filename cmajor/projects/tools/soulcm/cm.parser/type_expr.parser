@@ -3,18 +3,16 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser TypeExprParser
+parser cm.parser.TypeExprParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using FundamentalTypeParser.FundamentalType;
-    using ExpressionParser.Expression;
-    using TemplateParser.TemplateId;
+    using cm.parser.FundamentalTypeParser.FundamentalType;
+    using cm.parser.ExpressionParser.Expression;
+    using cm.parser.TemplateParser.TemplateId;
 
     TypeExpr(cm.parser.Context* context) : cm.ast.Node*
         ::= PrefixTypeExpr(context):prefixTypeExpr{ return prefixTypeExpr; }

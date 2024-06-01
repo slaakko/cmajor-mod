@@ -5,7 +5,7 @@
 
 using System;
 using re.ast;
-using re.parser;
+using scm.regex;
 
 namespace scmlg
 {

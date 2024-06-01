@@ -3,23 +3,21 @@
 // Distributed under the MIT license
 // =================================
 
-export module cm.parser;
+using cm.ast;
+using cm.token;
 
-import cm.ast;
-import cm.token;
-
-parser ConceptParser
+parser cm.parser.ConceptParser
 {
-    lexer CmajorLexer;
+    lexer cm.lexer.CmajorLexer;
 
-    using SpecifierParser.Specifiers;
-    using IdentifierParser.Identifier;
-    using IdentifierParser.QualifiedId;
-    using ParameterParser.ParameterList;
-    using ExpressionParser.Expression;
-    using ExpressionParser.InvokeExpr;
-    using TypeExprParser.TypeExpr;
-    using FunctionParser.FunctionGroupId;
+    using cm.parser.SpecifierParser.Specifiers;
+    using cm.parser.IdentifierParser.Identifier;
+    using cm.parser.IdentifierParser.QualifiedId;
+    using cm.parser.ParameterParser.ParameterList;
+    using cm.parser.ExpressionParser.Expression;
+    using cm.parser.ExpressionParser.InvokeExpr;
+    using cm.parser.TypeExprParser.TypeExpr;
+    using cm.parser.FunctionParser.FunctionGroupId;
 
     Concept(cm.parser.Context* context, var System.Lex.Span span, var UniquePtr<cm.ast.ConceptNode> conceptNode,
         var UniquePtr<cm.ast.WhereConstraintNode> constraintNode) :  cm.ast.ConceptNode*

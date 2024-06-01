@@ -1,2 +1,2 @@
 @echo off
-scmlg -v cm.scmlg
+scmlg -vd cm.scmlg
