@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.XPath
+{
+    public class Context
+    {
+        public Context(System.Xml.Node* node_, int pos_, int size_) : node(node_), pos(pos_), size(size_)
+        {
+        }
+        public inline System.Xml.Node* Node() const
+        {
+            return node;
+        }
+        public inline int Pos() const
+        {
+            return pos;
+        }
+        public inline int Size() const
+        {
+            return size;
+        }
+        private System.Xml.Node* node;
+        private int pos;
+        private int size;
+    }
+}
+        

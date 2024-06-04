@@ -36,6 +36,10 @@ namespace System.Xml
             formatter << " " << Name() << "=" << result.Value();
             return Result<bool>(true);
         }
+        public override Node* Clone(bool deep) const
+        {
+            return new AttributeNode(Span(), FileIndex(), Name(), value);
+        }
         private string value;
     }
 

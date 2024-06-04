@@ -30,6 +30,10 @@ namespace System.Xml
             formatter.Write(" -->");
             return Result<bool>(true);
         }
+        public override Node* Clone(bool deep) const
+        {
+            return new Comment(Span(), FileIndex(), Data());
+        }
     }
 
     public Comment* MakeComment(const string& comment)

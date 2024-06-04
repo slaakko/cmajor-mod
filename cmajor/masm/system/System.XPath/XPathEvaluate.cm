@@ -1,0 +1,110 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.XPath
+{
+    public class ExprCounter
+    {
+        public static int GetExprCount()
+        {
+            return exprCount++;
+        }
+        private static int exprCount;
+    }
+
+    public Result<UniquePtr<Expr>> ParseXPathExpr(const string& xpathExpr)
+    {
+        auto utf32Result = ToUtf32(xpathExpr);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<Expr>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& xpathExprString = utf32Result.Value();
+        int exprCount = ExprCounter.GetExprCount();
+        XPathLexer lexer(xpathExprString.Chars(), xpathExprString.Chars() + xpathExprString.Length(), "xpath_expression_" + ToString(exprCount));
+        lexer.SetFileIndex(exprCount);
+        System.Lex.XmlParsingLog log(Console.Error());
+        if (System.XPath.DebugParse())
+        {
+            lexer.SetLog(&log);
+        }
+        Result<UniquePtr<Expr>> exprResult = XPathParser<XPathLexer>.Parse(lexer);
+        if (exprResult.Error())
+        {
+            return exprResult;
+        }
+        if (System.XPath.Debug())
+        {
+            Expr* expr = exprResult.Value().Get();
+            System.Xml.Document exprDoc;
+            exprDoc.AppendChild(expr->ToXmlElement());
+            System.Text.CodeFormatter formatter(Console.Error());
+            formatter.SetIndentSize(1);
+            exprDoc.Write(formatter);
+        }
+        return exprResult;
+    }
+
+    public Result<UniquePtr<Object>> Evaluate(Expr* expr, System.Xml.Node* node)
+    {
+        Context context(node, 1, 1);
+        auto result = expr->Evaluate(context);
+        if (result.Error())
+        {
+            return result;
+        }
+        if (System.XPath.Debug())
+        {
+            System.Xml.Document resultDoc;
+            resultDoc.AppendChild(result.Value()->ToXmlElement());
+            System.Text.CodeFormatter formatter(Console.Error());
+            formatter.SetIndentSize(1);
+            resultDoc.Write(formatter);
+        }
+        return result;
+    }
+
+    public Result<UniquePtr<Object>> Evaluate(const string& xpathExpr, System.Xml.Node* node)
+    {
+        Result<UniquePtr<Expr>> exprResult = ParseXPathExpr(xpathExpr);
+        if (exprResult.Error())
+        {
+            return Result<UniquePtr<Object>>(ErrorId(exprResult.GetErrorId()));
+        }
+        Expr* expr = exprResult.Value().Get();
+        return Evaluate(expr, node);
+    }
+
+    public Result<UniquePtr<NodeSet>> EvaluateToNodeSet(Expr* expr, System.Xml.Node* node)
+    {
+        Result<UniquePtr<Object>> result = Evaluate(expr, node);
+        if (result.Error())
+        {
+            return Result<UniquePtr<NodeSet>>(ErrorId(result.GetErrorId()));
+        }
+        if (result.Value()->IsNodeSet())
+        {
+            return Result<UniquePtr<NodeSet>>(UniquePtr<NodeSet>(result.Value().Release()));
+        }
+        else
+        {
+            int errorId = AllocateError("node-set expected");
+            return Result<UniquePtr<NodeSet>>(ErrorId(errorId));
+        }
+    }
+
+    public Result<UniquePtr<NodeSet>> EvaluateToNodeSet(const string& xpathExpr, System.Xml.Node* node)
+    {
+        Result<UniquePtr<Expr>> exprResult = ParseXPathExpr(xpathExpr);
+        if (exprResult.Error())
+        {
+            return Result<UniquePtr<NodeSet>>(ErrorId(exprResult.GetErrorId()));
+        }
+        Expr* expr = exprResult.Value().Get();
+        return EvaluateToNodeSet(expr, node);
+    }
+}

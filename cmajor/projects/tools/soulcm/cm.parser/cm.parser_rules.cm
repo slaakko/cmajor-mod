@@ -1,0 +1,216 @@
+using System;
+using System.Collections;
+
+namespace cm.parser
+{
+    public class RuleNameMap
+    {
+        static RuleNameMap() : instance(new RuleNameMap())
+        {
+        }
+        public static RuleNameMap& Instance()
+        {
+            return *instance;
+        }
+        public Map<long, string>* GetRuleNameMap() const
+        {
+            return &ruleNameMap;
+        }
+        private RuleNameMap()
+        {
+            ruleNameMap[6190807448622727169] = "cm.parser.AliasParser.UsingAlias";
+            ruleNameMap[6190807448622727170] = "cm.parser.AliasParser.Typedef";
+            ruleNameMap[9159366711927898113] = "cm.parser.AttributeParser.Attributes";
+            ruleNameMap[9159366711927898114] = "cm.parser.AttributeParser.Attribute";
+            ruleNameMap[6062887121931206657] = "cm.parser.ClassParser.Class";
+            ruleNameMap[6062887121931206658] = "cm.parser.ClassParser.InheritanceAndInterfaces";
+            ruleNameMap[6062887121931206659] = "cm.parser.ClassParser.BaseClassOrInterface";
+            ruleNameMap[6062887121931206660] = "cm.parser.ClassParser.ClassContent";
+            ruleNameMap[6062887121931206661] = "cm.parser.ClassParser.ClassMember";
+            ruleNameMap[6062887121931206662] = "cm.parser.ClassParser.StaticConstructor";
+            ruleNameMap[6062887121931206663] = "cm.parser.ClassParser.Constructor";
+            ruleNameMap[6062887121931206664] = "cm.parser.ClassParser.Destructor";
+            ruleNameMap[6062887121931206665] = "cm.parser.ClassParser.Initializer";
+            ruleNameMap[6062887121931206666] = "cm.parser.ClassParser.MemberFunction";
+            ruleNameMap[6062887121931206667] = "cm.parser.ClassParser.ConversionFunction";
+            ruleNameMap[6062887121931206668] = "cm.parser.ClassParser.MemberVariable";
+            ruleNameMap[2218785959154024449] = "cm.parser.ConceptParser.Concept";
+            ruleNameMap[2218785959154024450] = "cm.parser.ConceptParser.Refinement";
+            ruleNameMap[2218785959154024451] = "cm.parser.ConceptParser.ConceptBody";
+            ruleNameMap[2218785959154024452] = "cm.parser.ConceptParser.ConceptBodyConstraint";
+            ruleNameMap[2218785959154024453] = "cm.parser.ConceptParser.TypeNameConstraint";
+            ruleNameMap[2218785959154024454] = "cm.parser.ConceptParser.SignatureConstraint";
+            ruleNameMap[2218785959154024455] = "cm.parser.ConceptParser.ConstructorConstraint";
+            ruleNameMap[2218785959154024456] = "cm.parser.ConceptParser.DestructorConstraint";
+            ruleNameMap[2218785959154024457] = "cm.parser.ConceptParser.MemberFunctionConstraint";
+            ruleNameMap[2218785959154024458] = "cm.parser.ConceptParser.FunctionConstraint";
+            ruleNameMap[2218785959154024459] = "cm.parser.ConceptParser.EmbeddedConstraint";
+            ruleNameMap[2218785959154024460] = "cm.parser.ConceptParser.WhereConstraint";
+            ruleNameMap[2218785959154024461] = "cm.parser.ConceptParser.ConstraintExpr";
+            ruleNameMap[2218785959154024462] = "cm.parser.ConceptParser.DisjunctiveConstraintExpr";
+            ruleNameMap[2218785959154024463] = "cm.parser.ConceptParser.ConjunctiveConstraintExpr";
+            ruleNameMap[2218785959154024464] = "cm.parser.ConceptParser.PrimaryConstraintExpr";
+            ruleNameMap[2218785959154024465] = "cm.parser.ConceptParser.AtomicConstraintExpr";
+            ruleNameMap[2218785959154024466] = "cm.parser.ConceptParser.PredicateConstraint";
+            ruleNameMap[2218785959154024467] = "cm.parser.ConceptParser.IsConstraint";
+            ruleNameMap[2218785959154024468] = "cm.parser.ConceptParser.ConceptOrTypeName";
+            ruleNameMap[2218785959154024469] = "cm.parser.ConceptParser.MultiParamConstraint";
+            ruleNameMap[2218785959154024470] = "cm.parser.ConceptParser.Axiom";
+            ruleNameMap[2218785959154024471] = "cm.parser.ConceptParser.AxiomBody";
+            ruleNameMap[2218785959154024472] = "cm.parser.ConceptParser.AxiomStatement";
+            ruleNameMap[6144467603357171713] = "cm.parser.ConstantParser.Constant";
+            ruleNameMap[1044754359574855681] = "cm.parser.ContainerFileParser.QualifiedId";
+            ruleNameMap[1044754359574855682] = "cm.parser.ContainerFileParser.FilePath";
+            ruleNameMap[1044754359574855683] = "cm.parser.ContainerFileParser.ProjectKeyword";
+            ruleNameMap[1044754359574855684] = "cm.parser.ContainerFileParser.SolutionKeyword";
+            ruleNameMap[4805340046490075137] = "cm.parser.DelegateParser.Delegate";
+            ruleNameMap[4805340046490075138] = "cm.parser.DelegateParser.ClassDelegate";
+            ruleNameMap[3399273135097249793] = "cm.parser.EnumerationParser.EnumType";
+            ruleNameMap[3399273135097249794] = "cm.parser.EnumerationParser.UnderlyingType";
+            ruleNameMap[3399273135097249795] = "cm.parser.EnumerationParser.EnumConstants";
+            ruleNameMap[3399273135097249796] = "cm.parser.EnumerationParser.EnumConstant";
+            ruleNameMap[1106159468351062017] = "cm.parser.ExpressionParser.Expression";
+            ruleNameMap[1106159468351062018] = "cm.parser.ExpressionParser.Equivalence";
+            ruleNameMap[1106159468351062019] = "cm.parser.ExpressionParser.Implication";
+            ruleNameMap[1106159468351062020] = "cm.parser.ExpressionParser.Disjunction";
+            ruleNameMap[1106159468351062021] = "cm.parser.ExpressionParser.Conjunction";
+            ruleNameMap[1106159468351062022] = "cm.parser.ExpressionParser.BitOr";
+            ruleNameMap[1106159468351062023] = "cm.parser.ExpressionParser.BitXor";
+            ruleNameMap[1106159468351062024] = "cm.parser.ExpressionParser.BitAnd";
+            ruleNameMap[1106159468351062025] = "cm.parser.ExpressionParser.Equality";
+            ruleNameMap[1106159468351062026] = "cm.parser.ExpressionParser.EqualityOp";
+            ruleNameMap[1106159468351062027] = "cm.parser.ExpressionParser.Relational";
+            ruleNameMap[1106159468351062028] = "cm.parser.ExpressionParser.RelationalOp";
+            ruleNameMap[1106159468351062029] = "cm.parser.ExpressionParser.Shift";
+            ruleNameMap[1106159468351062030] = "cm.parser.ExpressionParser.ShiftOp";
+            ruleNameMap[1106159468351062031] = "cm.parser.ExpressionParser.Additive";
+            ruleNameMap[1106159468351062032] = "cm.parser.ExpressionParser.AdditiveOp";
+            ruleNameMap[1106159468351062033] = "cm.parser.ExpressionParser.Multiplicative";
+            ruleNameMap[1106159468351062034] = "cm.parser.ExpressionParser.MultiplicativeOp";
+            ruleNameMap[1106159468351062035] = "cm.parser.ExpressionParser.Prefix";
+            ruleNameMap[1106159468351062036] = "cm.parser.ExpressionParser.PrefixOp";
+            ruleNameMap[1106159468351062037] = "cm.parser.ExpressionParser.Postfix";
+            ruleNameMap[1106159468351062038] = "cm.parser.ExpressionParser.Primary";
+            ruleNameMap[1106159468351062039] = "cm.parser.ExpressionParser.ArgumentList";
+            ruleNameMap[1106159468351062040] = "cm.parser.ExpressionParser.ExpressionList";
+            ruleNameMap[1106159468351062041] = "cm.parser.ExpressionParser.SizeOfExpr";
+            ruleNameMap[1106159468351062042] = "cm.parser.ExpressionParser.TypeNameExpr";
+            ruleNameMap[1106159468351062043] = "cm.parser.ExpressionParser.TypeIdExpr";
+            ruleNameMap[1106159468351062044] = "cm.parser.ExpressionParser.CastExpr";
+            ruleNameMap[1106159468351062045] = "cm.parser.ExpressionParser.ConstructExpr";
+            ruleNameMap[1106159468351062046] = "cm.parser.ExpressionParser.NewExpr";
+            ruleNameMap[1106159468351062047] = "cm.parser.ExpressionParser.InvokeExpr";
+            ruleNameMap[6925491583475253249] = "cm.parser.FunctionParser.Function";
+            ruleNameMap[6925491583475253250] = "cm.parser.FunctionParser.FunctionGroupId";
+            ruleNameMap[6925491583475253251] = "cm.parser.FunctionParser.OperatorFunctionGroupId";
+            ruleNameMap[6112958198560325633] = "cm.parser.FundamentalTypeParser.FundamentalType";
+            ruleNameMap[5477013540776706049] = "cm.parser.GlobalVariableParser.GlobalVariable";
+            ruleNameMap[9148055026495651841] = "cm.parser.IdentifierParser.Identifier";
+            ruleNameMap[9148055026495651842] = "cm.parser.IdentifierParser.QualifiedId";
+            ruleNameMap[1582658563396861953] = "cm.parser.InterfaceParser.Interface";
+            ruleNameMap[1582658563396861954] = "cm.parser.InterfaceParser.InterfaceContent";
+            ruleNameMap[1582658563396861955] = "cm.parser.InterfaceParser.InterfaceMemberFunction";
+            ruleNameMap[1582658563396861956] = "cm.parser.InterfaceParser.InterfaceFunctionGroupId";
+            ruleNameMap[1060778478829305857] = "cm.parser.LiteralParser.Literal";
+            ruleNameMap[1060778478829305858] = "cm.parser.LiteralParser.SimpleLiteral";
+            ruleNameMap[1060778478829305859] = "cm.parser.LiteralParser.ComplexLiteral";
+            ruleNameMap[1060778478829305860] = "cm.parser.LiteralParser.ArrayLiteral";
+            ruleNameMap[1060778478829305861] = "cm.parser.LiteralParser.StructuredLiteral";
+            ruleNameMap[5654279880603336705] = "cm.parser.ParameterParser.ParameterList";
+            ruleNameMap[5654279880603336706] = "cm.parser.ParameterParser.Parameter";
+            ruleNameMap[9178507375416442881] = "cm.parser.ProjectFileParser.ProjectFile";
+            ruleNameMap[9178507375416442882] = "cm.parser.ProjectFileParser.Declaration";
+            ruleNameMap[9178507375416442883] = "cm.parser.ProjectFileParser.ReferenceDeclaration";
+            ruleNameMap[9178507375416442884] = "cm.parser.ProjectFileParser.SourceFileDeclaration";
+            ruleNameMap[9178507375416442885] = "cm.parser.ProjectFileParser.ResourceFileDeclaration";
+            ruleNameMap[9178507375416442886] = "cm.parser.ProjectFileParser.ResourceScriptFileDeclaration";
+            ruleNameMap[9178507375416442887] = "cm.parser.ProjectFileParser.TextFileDeclaration";
+            ruleNameMap[9178507375416442888] = "cm.parser.ProjectFileParser.ActionFileDeclaration";
+            ruleNameMap[9178507375416442889] = "cm.parser.ProjectFileParser.TargetDeclaration";
+            ruleNameMap[9178507375416442890] = "cm.parser.ProjectFileParser.Target";
+            ruleNameMap[9178507375416442891] = "cm.parser.ProjectFileParser.ReferenceKeyword";
+            ruleNameMap[9178507375416442892] = "cm.parser.ProjectFileParser.SourceKeyword";
+            ruleNameMap[9178507375416442893] = "cm.parser.ProjectFileParser.ResourceKeyword";
+            ruleNameMap[9178507375416442894] = "cm.parser.ProjectFileParser.RcKeyword";
+            ruleNameMap[9178507375416442895] = "cm.parser.ProjectFileParser.TextKeyword";
+            ruleNameMap[9178507375416442896] = "cm.parser.ProjectFileParser.ActionKeyword";
+            ruleNameMap[9178507375416442897] = "cm.parser.ProjectFileParser.TargetKeyword";
+            ruleNameMap[9178507375416442898] = "cm.parser.ProjectFileParser.ProgramKeyword";
+            ruleNameMap[9178507375416442899] = "cm.parser.ProjectFileParser.WinGuiAppKeyword";
+            ruleNameMap[9178507375416442900] = "cm.parser.ProjectFileParser.WinAppKeyword";
+            ruleNameMap[9178507375416442901] = "cm.parser.ProjectFileParser.LibraryKeyword";
+            ruleNameMap[9178507375416442902] = "cm.parser.ProjectFileParser.WinLibKeyword";
+            ruleNameMap[9178507375416442903] = "cm.parser.ProjectFileParser.UnitTestKeyword";
+            ruleNameMap[6011636063167053825] = "cm.parser.SolutionFileParser.SolutionFile";
+            ruleNameMap[6011636063167053826] = "cm.parser.SolutionFileParser.BackEnd";
+            ruleNameMap[6011636063167053827] = "cm.parser.SolutionFileParser.Declaration";
+            ruleNameMap[6011636063167053828] = "cm.parser.SolutionFileParser.SolutionProjectDeclaration";
+            ruleNameMap[6011636063167053829] = "cm.parser.SolutionFileParser.ActiveProjectDeclaration";
+            ruleNameMap[6011636063167053830] = "cm.parser.SolutionFileParser.ActiveBackEndDeclaration";
+            ruleNameMap[6011636063167053831] = "cm.parser.SolutionFileParser.ActiveProjectKeyword";
+            ruleNameMap[6011636063167053832] = "cm.parser.SolutionFileParser.ActiveBackEndKeyword";
+            ruleNameMap[686527724579192833] = "cm.parser.SourceFileParser.SourceFile";
+            ruleNameMap[686527724579192834] = "cm.parser.SourceFileParser.NamespaceContent";
+            ruleNameMap[686527724579192835] = "cm.parser.SourceFileParser.UsingDirectives";
+            ruleNameMap[686527724579192836] = "cm.parser.SourceFileParser.Definitions";
+            ruleNameMap[686527724579192837] = "cm.parser.SourceFileParser.Definition";
+            ruleNameMap[686527724579192838] = "cm.parser.SourceFileParser.Namespace";
+            ruleNameMap[8559150220632391681] = "cm.parser.SpecifierParser.Specifiers";
+            ruleNameMap[8559150220632391682] = "cm.parser.SpecifierParser.Specifier";
+            ruleNameMap[8886062459526316033] = "cm.parser.StatementParser.Statement";
+            ruleNameMap[8886062459526316034] = "cm.parser.StatementParser.Label";
+            ruleNameMap[8886062459526316035] = "cm.parser.StatementParser.LabeledStatement";
+            ruleNameMap[8886062459526316036] = "cm.parser.StatementParser.ControlStatement";
+            ruleNameMap[8886062459526316037] = "cm.parser.StatementParser.CompoundStatement";
+            ruleNameMap[8886062459526316038] = "cm.parser.StatementParser.ReturnStatement";
+            ruleNameMap[8886062459526316039] = "cm.parser.StatementParser.IfStatement";
+            ruleNameMap[8886062459526316040] = "cm.parser.StatementParser.WhileStatement";
+            ruleNameMap[8886062459526316041] = "cm.parser.StatementParser.DoStatement";
+            ruleNameMap[8886062459526316042] = "cm.parser.StatementParser.RangeForStatement";
+            ruleNameMap[8886062459526316043] = "cm.parser.StatementParser.ForStatement";
+            ruleNameMap[8886062459526316044] = "cm.parser.StatementParser.ForInitStatement";
+            ruleNameMap[8886062459526316045] = "cm.parser.StatementParser.ForLoopStatementExpr";
+            ruleNameMap[8886062459526316046] = "cm.parser.StatementParser.BreakStatement";
+            ruleNameMap[8886062459526316047] = "cm.parser.StatementParser.ContinueStatement";
+            ruleNameMap[8886062459526316048] = "cm.parser.StatementParser.GotoStatement";
+            ruleNameMap[8886062459526316049] = "cm.parser.StatementParser.SwitchStatement";
+            ruleNameMap[8886062459526316050] = "cm.parser.StatementParser.CaseStatement";
+            ruleNameMap[8886062459526316051] = "cm.parser.StatementParser.DefaultStatement";
+            ruleNameMap[8886062459526316052] = "cm.parser.StatementParser.GotoCaseStatement";
+            ruleNameMap[8886062459526316053] = "cm.parser.StatementParser.GotoDefaultStatement";
+            ruleNameMap[8886062459526316054] = "cm.parser.StatementParser.ExpressionStatement";
+            ruleNameMap[8886062459526316055] = "cm.parser.StatementParser.AssignmentStatement";
+            ruleNameMap[8886062459526316056] = "cm.parser.StatementParser.AssignmentStatementExpr";
+            ruleNameMap[8886062459526316057] = "cm.parser.StatementParser.ConstructionStatement";
+            ruleNameMap[8886062459526316058] = "cm.parser.StatementParser.DeleteStatement";
+            ruleNameMap[8886062459526316059] = "cm.parser.StatementParser.DestroyStatement";
+            ruleNameMap[8886062459526316060] = "cm.parser.StatementParser.EmptyStatement";
+            ruleNameMap[8886062459526316061] = "cm.parser.StatementParser.ThrowStatement";
+            ruleNameMap[8886062459526316062] = "cm.parser.StatementParser.TryStatement";
+            ruleNameMap[8886062459526316063] = "cm.parser.StatementParser.Catch";
+            ruleNameMap[8886062459526316064] = "cm.parser.StatementParser.AssertStatement";
+            ruleNameMap[8886062459526316065] = "cm.parser.StatementParser.ConditionalCompilationStatement";
+            ruleNameMap[8886062459526316066] = "cm.parser.StatementParser.ConditionalCompilationExpression";
+            ruleNameMap[8886062459526316067] = "cm.parser.StatementParser.ConditionalCompilationDisjunction";
+            ruleNameMap[8886062459526316068] = "cm.parser.StatementParser.ConditionalCompilationConjunction";
+            ruleNameMap[8886062459526316069] = "cm.parser.StatementParser.ConditionalCompilationPrefix";
+            ruleNameMap[8886062459526316070] = "cm.parser.StatementParser.ConditionalCompilationPrimary";
+            ruleNameMap[8781986653095854081] = "cm.parser.TemplateParser.TemplateId";
+            ruleNameMap[8781986653095854082] = "cm.parser.TemplateParser.TemplateParameterList";
+            ruleNameMap[8781986653095854083] = "cm.parser.TemplateParser.TemplateParameter";
+            ruleNameMap[8781986653095854084] = "cm.parser.TemplateParser.InstantiationRequest";
+            ruleNameMap[6032173986891169793] = "cm.parser.TypeExprParser.TypeExpr";
+            ruleNameMap[6032173986891169794] = "cm.parser.TypeExprParser.PrefixTypeExpr";
+            ruleNameMap[6032173986891169795] = "cm.parser.TypeExprParser.PostfixTypeExpr";
+            ruleNameMap[6032173986891169796] = "cm.parser.TypeExprParser.PrimaryTypeExpr";
+        }
+        private Map<long, string> ruleNameMap; 
+        private static UniquePtr<RuleNameMap> instance;
+    }
+
+    public Map<long, string>* GetRuleNameMapPtr()
+    {
+        return RuleNameMap.Instance().GetRuleNameMap();
+    }
+
+}

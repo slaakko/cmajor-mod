@@ -5,6 +5,7 @@ reference <../cm.lexer/cm.lexer.cmp>;
 source <alias.parser.cm>;
 source <attribute.parser.cm>;
 source <class.parser.cm>;
+source <cm.parser_rules.cm>;
 source <concept.parser.cm>;
 source <constant.parser.cm>;
 source <container_file.parser.cm>;

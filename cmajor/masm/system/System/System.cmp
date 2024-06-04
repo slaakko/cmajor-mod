@@ -8,5 +8,6 @@ reference <../System.Lex/System.Lex.cmp>;
 reference <../System.Net.Sockets/System.Net.Sockets.cmp>;
 reference <../System.Parsing/System.Parsing.cmp>;
 reference <../System.Runtime/System.Runtime.cmp>;
+reference <../System.XPath/System.XPath.cmp>;
 reference <../System.Xml/System.Xml.cmp>;
 source <System.cm>;

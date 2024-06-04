@@ -68,6 +68,7 @@ public extern cdecl double RtmArcCos(double x);
 public extern cdecl double RtmArcSin(double x);
 public extern cdecl double RtmAtan2(double y, double x);
 public extern cdecl double RtmEpsilon();
+public extern cdecl double RtmRemainder(double x, double y);
 public extern cdecl int RtmGetCurrentWorkingDirectoryHandle(int& errorId);
 public extern cdecl const char* RtmGetCurrentWorkingDirectory(int handle);
 public extern cdecl void RtmFreeCurrentWorkingDirectoryHandle(int handle);

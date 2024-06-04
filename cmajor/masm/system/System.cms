@@ -9,6 +9,7 @@ project <System.Lex/System.Lex.cmp>;
 project <System.Net.Sockets/System.Net.Sockets.cmp>;
 project <System.Parsing/System.Parsing.cmp>;
 project <System.Runtime/System.Runtime.cmp>;
+project <System.XPath/System.XPath.cmp>;
 project <System.Xml/System.Xml.cmp>;
-activeProject System;
+activeProject System.XPath;
 activeBackEnd=llvm;

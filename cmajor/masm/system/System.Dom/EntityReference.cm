@@ -29,6 +29,10 @@ namespace System.Xml
             formatter << "&" << Data() << ";";
             return Result<bool>(true);
         }
+        public override Node* Clone(bool deep) const
+        {
+            return new EntityReference(Span(), FileIndex(), Data());
+        }
     }
 
     public EntityReference* MakeEntityReference(const string& entityReference)

@@ -13,6 +13,25 @@ namespace System.Xml
         processingInstructionNode, textNode, cdataSectionNode, commentNode
     }
 
+    public string NodeKindStr(NodeKind kind)
+    {
+        switch (kind)
+        {
+            case NodeKind.attributeNode: return "attributeNode";
+            case NodeKind.documentFragmentNode: return "documentFragementNode";
+            case NodeKind.documentNode: return "documentNode";
+            case NodeKind.elementNode: return "elementNode";
+            case NodeKind.entityNode: return "entityNode";
+            case NodeKind.entityReferenceNode: return "entityReferenceNode";
+            case NodeKind.notationNode: return "notationNode";
+            case NodeKind.processingInstructionNode: return "processingInstructionNode";
+            case NodeKind.textNode: return "textNode";
+            case NodeKind.cdataSectionNode: return "cdataSectionNode";
+            case NodeKind.commentNode: return "commentNode";
+        }
+        return "<unknown node kind>";
+    }
+
     public abstract class Node
     {
         public Node(NodeKind kind_, const System.Lex.Span& span_, int fileIndex_, const string& name_) :
@@ -222,6 +241,7 @@ namespace System.Xml
         {
             return false;
         }
+        public abstract Node* Clone(bool deep) const;
         public abstract Result<bool> Write(System.Text.CodeFormatter& formatter);
         public void Walk(NodeOperation& operation, Axis axis)
         {

@@ -131,6 +131,24 @@ namespace System.Xml
             }
             return Result<bool>(true);
         }
+        public override Node* Clone(bool deep) const
+        {
+            Element* clone = new Element(Span(), FileIndex(), Name());
+            for (const auto& a : attributeMap)
+            {
+                clone->AddAttribute(cast<AttributeNode*>(a.second->Clone(deep)));
+            }
+            if (deep)
+            {
+                Node* child = FirstChild();
+                while (child != null)
+                {
+                    clone->AppendChild(child->Clone(deep));
+                    child = child->Next();
+                }
+            }
+            return clone;
+        }
         public void WriteAttributes(System.Text.CodeFormatter& formatter)
         {
             for (const auto& a : attributeMap)

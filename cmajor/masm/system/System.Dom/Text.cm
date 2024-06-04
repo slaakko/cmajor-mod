@@ -25,6 +25,10 @@ namespace System.Xml
         {
             visitor.Visit(*this);
         }
+        public override Node* Clone(bool deep) const
+        {
+            return new Text(Span(), FileIndex(), Data());
+        }
     }
 
     public Text* MakeText(const string& text)

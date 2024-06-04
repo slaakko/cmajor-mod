@@ -26,6 +26,7 @@ namespace scmpg.parser
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, scmpgFilePath);
+        lexer.SetRuleNameMapPtr(scmpg.parser.GetRuleNameMapPtr());
         auto parseResult = scmpg.parser.ScmpgFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
@@ -51,6 +52,7 @@ namespace scmpg.parser
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, parserFilePath);
+        lexer.SetRuleNameMapPtr(scmpg.parser.GetRuleNameMapPtr());
         int fileIndex = fileMap.MapFileName(parserFilePath);
         lexer.SetFileIndex(fileIndex);
         cm.parser.Context context;

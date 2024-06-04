@@ -12,6 +12,20 @@ namespace System.Xml
         public DocumentFragment(const System.Lex.Span& span_, int fileIndex_) : base(NodeKind.documentFragmentNode, span_, fileIndex_, "document_fragment")
         {
         }
+        public override Node* Clone(bool deep) const
+        {
+            DocumentFragment* clone = new DocumentFragment(Span(), FileIndex());
+            if (deep)
+            {
+                Node* child = FirstChild();
+                while (child != null)
+                {
+                    clone->AppendChild(child->Clone(deep));
+                    child = child->Next();
+                }
+            }
+            return clone;
+        }
     }
 
     public DocumentFragment* MakeDocumentFragment()

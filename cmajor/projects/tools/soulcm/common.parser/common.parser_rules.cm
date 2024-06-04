@@ -1,0 +1,42 @@
+using System;
+using System.Collections;
+
+namespace scm.parser
+{
+    public class RuleNameMap
+    {
+        static RuleNameMap() : instance(new RuleNameMap())
+        {
+        }
+        public static RuleNameMap& Instance()
+        {
+            return *instance;
+        }
+        public Map<long, string>* GetRuleNameMap() const
+        {
+            return &ruleNameMap;
+        }
+        private RuleNameMap()
+        {
+            ruleNameMap[3430163609336938497] = "scm.parser.CommonParser.TokensKeyword";
+            ruleNameMap[3430163609336938498] = "scm.parser.CommonParser.KeywordsKeyword";
+            ruleNameMap[3430163609336938499] = "scm.parser.CommonParser.ExpressionsKeyword";
+            ruleNameMap[3430163609336938500] = "scm.parser.CommonParser.ParserKeyword";
+            ruleNameMap[3430163609336938501] = "scm.parser.CommonParser.LexerKeyword";
+            ruleNameMap[3430163609336938502] = "scm.parser.CommonParser.ProjectKeyword";
+            ruleNameMap[3430163609336938503] = "scm.parser.CommonParser.QualifiedUtf8Id";
+            ruleNameMap[1044754359574855681] = "cm.parser.ContainerFileParser.QualifiedId";
+            ruleNameMap[1044754359574855682] = "cm.parser.ContainerFileParser.FilePath";
+            ruleNameMap[1044754359574855683] = "cm.parser.ContainerFileParser.ProjectKeyword";
+            ruleNameMap[1044754359574855684] = "cm.parser.ContainerFileParser.SolutionKeyword";
+        }
+        private Map<long, string> ruleNameMap; 
+        private static UniquePtr<RuleNameMap> instance;
+    }
+
+    public Map<long, string>* GetRuleNameMapPtr()
+    {
+        return RuleNameMap.Instance().GetRuleNameMap();
+    }
+
+}

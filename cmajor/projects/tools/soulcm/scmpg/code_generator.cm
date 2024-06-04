@@ -886,7 +886,7 @@ namespace scmpg
                 sourceFormatter << "}" << endl();
                 sourceFormatter.DecIndent();
                 sourceFormatter << "}" << endl();
-                sourceFormatter << "else" << endl(); 
+                sourceFormatter << "else" << endl();
                 sourceFormatter << "{" << endl();
                 sourceFormatter.IncIndent();
                 sourceFormatter << "auto result = System.Lex.WriteFailureToLog(lexer, u\"" << rule.Name() << "\");" << endl();

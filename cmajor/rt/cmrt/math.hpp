@@ -17,5 +17,6 @@ extern "C" double RtmArcCos(double x);
 extern "C" double RtmArcSin(double x);
 extern "C" double RtmAtan2(double y, double x);
 extern "C" double RtmEpsilon();
+extern "C" double RtmRemainder(double x, double y);
 
 #endif // CMRT_CPP_MATH_INCLUDED

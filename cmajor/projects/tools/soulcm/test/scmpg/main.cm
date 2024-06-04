@@ -111,6 +111,11 @@ namespace scmpg
         {
             return Result<bool>(ErrorId(codeGenResult.GetErrorId()));
         }
+        auto ruleNameMapResult = GenerateRuleMapFile(scmpgFile, verbose);
+        if (ruleNameMapResult.Error())
+        {
+            return Result<bool>(ErrorId(ruleNameMapResult.GetErrorId()));
+        }
         if (verbose)
         {
             Console.Out() << "Parsers for project '" << projectName << "' generated successfully." << endl();

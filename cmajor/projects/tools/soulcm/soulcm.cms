@@ -14,5 +14,5 @@ project <scmlg.parser/scmlg.parser.cmp>;
 project <scmpg/scmpg.cmp>;
 project <scmpg.ast/scmpg.ast.cmp>;
 project <scmpg.parser/scmpg.parser.cmp>;
-activeProject scmlg;
+activeProject scmpg;
 activeBackEnd=llvm;

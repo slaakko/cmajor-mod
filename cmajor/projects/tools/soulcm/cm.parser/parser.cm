@@ -35,6 +35,7 @@ namespace cm.parser
         {
             lexer.SetLog(&log);
         }
+        lexer.SetRuleNameMapPtr(cm.parser.GetRuleNameMapPtr());
         int fileIndex = fileMap.MapFileName(sourceFilePath);
         lexer.SetFileIndex(fileIndex);
         cm.parser.Context context;
@@ -68,6 +69,7 @@ namespace cm.parser
         {
             return Result<UniquePtr<cm.ast.Project>>(ErrorId(lexer.GetErrorId()));
         }
+        lexer.SetRuleNameMapPtr(cm.parser.GetRuleNameMapPtr());
         auto parseResult = ProjectFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {
@@ -99,6 +101,7 @@ namespace cm.parser
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, solutionFilePath);
+        lexer.SetRuleNameMapPtr(cm.parser.GetRuleNameMapPtr());
         auto parseResult = SolutionFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
         if (parseResult.Error())
         {

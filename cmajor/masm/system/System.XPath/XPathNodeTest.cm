@@ -1,0 +1,221 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Xml;
+
+namespace System.XPath
+{
+    public enum NodeTestKind
+    {
+        piLiteralTest, commentNodeTest, textNodeTest, piNodeTest, anyNodeTest, principalNodeTest, prefixTest, nameTest
+    }
+
+    public string NodeTestStr(NodeTestKind kind)
+    {
+        switch (kind)
+        {
+            case NodeTestKind.piLiteralTest: return "pi-literal-test";
+            case NodeTestKind.commentNodeTest: return "comment-node-test";
+            case NodeTestKind.textNodeTest: return "text-node-test";
+            case NodeTestKind.piNodeTest: return "pi-node-test";
+            case NodeTestKind.anyNodeTest: return "any-node-test";
+            case NodeTestKind.principalNodeTest: return "principal-node-test";
+            case NodeTestKind.prefixTest: return "prefix-node-test";
+            case NodeTestKind.nameTest: return "name-node-test";
+        }
+        return "<unknown node-test>";
+    }
+
+    public class NodeTest
+    {
+        public NodeTest(NodeTestKind kind_) : kind(kind_)
+        {
+        }
+        public inline NodeTestKind Kind() const
+        {
+            return kind;
+        }
+        public default virtual ~NodeTest();
+        public virtual bool Select(System.Xml.Node* node, System.Xml.Axis axis) const
+        {
+            switch (kind)
+            {
+                case NodeTestKind.commentNodeTest:
+                {
+                    return node->IsCommentNode();
+                }
+                case NodeTestKind.textNodeTest:
+                {
+                    return node->IsTextNode();
+                }
+                case NodeTestKind.piNodeTest:
+                {
+                    return node->IsProcessingInstructionNode();
+                }
+                case NodeTestKind.anyNodeTest:
+                {
+                    return true;
+                }
+                case NodeTestKind.principalNodeTest:
+                {
+                    if (axis == System.Xml.Axis.attribute)
+                    {
+                        return node->IsAttributeNode();
+                    }
+                    else if (axis == System.Xml.Axis.ns)
+                    {
+                        #assert(false); // todo: namespace axis not supported
+                    }
+                    else
+                    {
+                        return node->IsElementNode();
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+        public virtual System.Xml.Element* ToXmlElement() const
+        {
+            System.Xml.Element* element = System.Xml.MakeElement("node-test");
+            element->SetAttribute("kind", NodeTestStr(kind));
+            return element;
+        }
+        private NodeTestKind kind;
+    }
+
+    public class PILiteralNodeTest : NodeTest
+    {
+        public PILiteralNodeTest(Literal* literal_) : base(NodeTestKind.piLiteralTest), literal(literal_)
+        {
+        }
+        public inline Literal* GetLiteral() const
+        {
+            return literal.Get();
+        }
+        public override bool Select(System.Xml.Node* node, System.Xml.Axis axis) const
+        {
+            if (node->IsProcessingInstructionNode())
+            {
+                System.Xml.ProcessingInstruction* pi = cast<System.Xml.ProcessingInstruction*>(node);
+                if (pi->Target() == literal->Value())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public override System.Xml.Element* ToXmlElement() const
+        {
+            System.Xml.Element* element = base->ToXmlElement();
+            element->AppendChild(literal->ToXmlElement());
+            return element;
+        }
+        private UniquePtr<Literal> literal;
+    }
+
+    public class PrefixNodeTest : NodeTest
+    {
+        public PrefixNodeTest(const string& prefix_) : base(NodeTestKind.prefixTest), prefix(prefix_)
+        {
+        }
+        public override bool Select(System.Xml.Node* node, System.Xml.Axis axis) const
+        {
+            if (axis == System.Xml.Axis.attribute)
+            {
+                if (node->IsAttributeNode())
+                {
+                    if (node->Prefix() == prefix)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (axis == System.Xml.Axis.ns)
+            {
+                #assert(false); // todo: namespace axis not supported
+            }
+            else if (node->IsElementNode())
+            {
+                if (node->Prefix() == prefix)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public override System.Xml.Element* ToXmlElement() const
+        {
+            System.Xml.Element* element = base->ToXmlElement();
+            element->SetAttribute("prefix", prefix);
+            return element;
+        }
+        private string prefix;
+    }
+
+    public class NameNodeTest : NodeTest
+    {
+        public NameNodeTest(const string& name_) : base(NodeTestKind.nameTest), name(name_)
+        {
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public override bool Select(System.Xml.Node* node, System.Xml.Axis axis) const
+        {
+            if (axis == System.Xml.Axis.attribute)
+            {
+                if (node->IsAttributeNode())
+                {
+                    if (node->Name() == name)
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (axis == System.Xml.Axis.ns)
+            {
+                #assert(false); // todo: namespace axis not supported
+            }
+            else
+            {
+                if (node->IsElementNode())
+                {
+                    if (node->Name() == name)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        public override System.Xml.Element* ToXmlElement() const
+        {
+            System.Xml.Element* element = base->ToXmlElement();
+            element->SetAttribute("name", name);
+            return element;
+        }
+        private string name;
+    }
+
+    public class NodeSelectionOperation : System.Xml.NodeOperation
+    {
+        public NodeSelectionOperation(NodeTest* nodeTest_, NodeSet& nodeSet_, System.Xml.Axis axis_) : nodeTest(nodeTest_), nodeSet(nodeSet_), axis(axis_)
+        {
+        }
+        public override void Apply(System.Xml.Node* node)
+        {
+            if (nodeTest->Select(node, axis))
+            {
+                nodeSet.Add(node);
+            }
+        }
+        private NodeTest* nodeTest;
+        private NodeSet& nodeSet;
+        private System.Xml.Axis axis;
+    }
+}

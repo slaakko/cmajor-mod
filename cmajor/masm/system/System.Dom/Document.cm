@@ -135,11 +135,19 @@ namespace System.Xml
             }
             return Result<bool>(true);
         }
+        public override Node* Clone(bool deep) const
+        {
+            Document* clone = new Document(Span(), FileIndex());
+            if (deep)
+            {
+                clone->AppendChild(documentElement->Clone(deep));
+            }
+            return clone;
+        }
         public void InvalidateIndex()
         {
             indexValid = false;
         }
-
         private Element* documentElement;
         private bool indexValid;
         private bool xmlStandalone;

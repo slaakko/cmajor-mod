@@ -1,0 +1,83 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using scmpg.ast;
+
+namespace scmpg
+{
+    public Result<bool> GenerateRuleMapFile(scmpg.ast.ScmpgFile* scmpgFile, bool verbose)
+    {
+        const List<RuleParser*>& rules = scmpgFile->Rules();
+        if (rules.IsEmpty()) return Result<bool>(true);
+        string rulesFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(scmpgFile->FilePath()),
+            System.IO.Path.GetFileNameWithoutExtension(scmpgFile->FilePath()) + "_rules.cm");
+        auto rulesFileResult = System.IO.File.CreateText(rulesFilePath);
+        if (rulesFileResult.Error())
+        {
+            return Result<bool>(ErrorId(rulesFileResult.GetErrorId()));
+        }
+        System.IO.StreamWriter& rulesFileWriter = rulesFileResult.Value();
+        System.Text.CodeFormatter rulesFormatter(rulesFileWriter);
+        rulesFormatter << "using System;" << endl();
+        rulesFormatter << "using System.Collections;" << endl();
+        rulesFormatter << endl();
+        RuleParser* firstRule = rules[0];
+        rulesFormatter << "namespace " << firstRule->Grammar()->NamespaceName() << endl();
+        rulesFormatter << "{" << endl();
+        rulesFormatter.IncIndent();
+        rulesFormatter << "public class RuleNameMap" << endl();
+        rulesFormatter << "{" << endl();
+        rulesFormatter.IncIndent();
+        rulesFormatter << "static RuleNameMap() : instance(new RuleNameMap())" << endl();
+        rulesFormatter << "{" << endl();
+        rulesFormatter << "}" << endl();
+        rulesFormatter << "public static RuleNameMap& Instance()" << endl();
+        rulesFormatter << "{" << endl();
+        rulesFormatter.IncIndent();
+        rulesFormatter << "return *instance;" << endl();
+        rulesFormatter.DecIndent();
+        rulesFormatter << "}" << endl();
+        rulesFormatter << "public Map<long, string>* GetRuleNameMap() const" << endl();
+        rulesFormatter << "{" << endl();
+        rulesFormatter.IncIndent();
+        rulesFormatter << "return &ruleNameMap;" << endl();
+        rulesFormatter.DecIndent();
+        rulesFormatter << "}" << endl();
+        rulesFormatter << "private RuleNameMap()" << endl();
+        rulesFormatter << "{" << endl();
+        rulesFormatter.IncIndent();
+        long n = rules.Count();
+        for (long i = 0; i < n; ++i)
+        {
+            RuleParser* rule = rules[i];
+            rulesFormatter << "ruleNameMap[" << rule->Id() << "] = \"" << rule->Grammar()->Name() << "." << rule->Name() << "\";" << endl();
+        }
+        rulesFormatter.DecIndent();
+        rulesFormatter << "}" << endl();
+        rulesFormatter << "private Map<long, string> ruleNameMap; " << endl();
+        rulesFormatter << "private static UniquePtr<RuleNameMap> instance;" << endl();
+        rulesFormatter.DecIndent();
+        rulesFormatter << "}" << endl();
+        rulesFormatter << endl();
+        rulesFormatter << "public Map<long, string>* GetRuleNameMapPtr()" << endl();
+        rulesFormatter << "{" << endl();
+        rulesFormatter.IncIndent();
+        rulesFormatter << "return RuleNameMap.Instance().GetRuleNameMap();" << endl();
+        rulesFormatter.DecIndent();
+        rulesFormatter << "}" << endl();
+        rulesFormatter << endl();
+        rulesFormatter.DecIndent();
+        rulesFormatter << "}" << endl();
+        if (verbose)
+        {
+            Console.Out() << "==> " << rulesFilePath << endl();
+        }
+        return Result<bool>(true);
+    }
+}
+
+

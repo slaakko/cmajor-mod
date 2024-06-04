@@ -1,0 +1,41 @@
+using System;
+using System.Collections;
+
+namespace scm.regex
+{
+    public class RuleNameMap
+    {
+        static RuleNameMap() : instance(new RuleNameMap())
+        {
+        }
+        public static RuleNameMap& Instance()
+        {
+            return *instance;
+        }
+        public Map<long, string>* GetRuleNameMap() const
+        {
+            return &ruleNameMap;
+        }
+        private RuleNameMap()
+        {
+            ruleNameMap[1474718497580777473] = "scm.regex.RegExParser.RegularExpression";
+            ruleNameMap[1474718497580777474] = "scm.regex.RegExParser.Alternative";
+            ruleNameMap[1474718497580777475] = "scm.regex.RegExParser.Catenation";
+            ruleNameMap[1474718497580777476] = "scm.regex.RegExParser.Repetition";
+            ruleNameMap[1474718497580777477] = "scm.regex.RegExParser.Primary";
+            ruleNameMap[1474718497580777478] = "scm.regex.RegExParser.Class";
+            ruleNameMap[1474718497580777479] = "scm.regex.RegExParser.Range";
+            ruleNameMap[1474718497580777480] = "scm.regex.RegExParser.Char";
+            ruleNameMap[1474718497580777481] = "scm.regex.RegExParser.ExpressionRefChar";
+            ruleNameMap[1474718497580777482] = "scm.regex.RegExParser.ExpressionReference";
+        }
+        private Map<long, string> ruleNameMap; 
+        private static UniquePtr<RuleNameMap> instance;
+    }
+
+    public Map<long, string>* GetRuleNameMapPtr()
+    {
+        return RuleNameMap.Instance().GetRuleNameMap();
+    }
+
+}

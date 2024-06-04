@@ -5,5 +5,6 @@ reference <../scmlg.ast/scmlg.ast.cmp>;
 reference <../re.ast/re.ast.cmp>;
 reference <../re.lexer/re.lexer.cmp>;
 source <re.parser.cm>;
+source <re.parser_rules.cm>;
 source <token_parser.cm>;
 text <re.parser>;

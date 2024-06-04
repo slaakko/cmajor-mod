@@ -59,3 +59,8 @@ double RtmEpsilon()
 {
     return std::numeric_limits<double>::epsilon();
 }
+
+double RtmRemainder(double x, double y)
+{
+    return std::remainder(x, y);
+}

@@ -29,6 +29,18 @@ namespace System.Xml
             formatter << "<?" << target << " " << data << "?>" << endl();
             return Result<bool>(true);
         }
+        public override Node* Clone(bool deep) const
+        {
+            return new ProcessingInstruction(Span(), FileIndex(), target, data);
+        }
+        public inline const string& Target() const
+        {
+            return target;
+        }
+        public inline const string& Data() const
+        {
+            return data;
+        }
         private string target;
         private string data;
     }

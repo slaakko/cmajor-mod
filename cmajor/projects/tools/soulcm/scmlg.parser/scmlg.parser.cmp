@@ -10,6 +10,7 @@ source <keyword_file.parser.cm>;
 source <lexer_file.parser.cm>;
 source <parser.cm>;
 source <scmlg_file.parser.cm>;
+source <scmlg.parser_rules.cm>;
 source <token_file.parser.cm>;
 source <token_value_parser.cm>;
 text <expression_file.parser>;

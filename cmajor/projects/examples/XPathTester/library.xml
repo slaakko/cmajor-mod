@@ -1,0 +1,191 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<library>
+    <objects>
+        <object kind="person" id="bjarne-stroustrup">
+            <name value="Bjarne Stroustrup"/>
+            <date-of-birth value="1950-12-30"/>
+            <artworks>
+                <item objectID="the-cpp-programming-language"/>
+                <item objectID="programming-principles-and-practice-using-cpp"/>
+                <item objectID="a-tour-of-cpp"/>
+            </artworks>
+        </object>
+        <object kind="book" id="the-cpp-programming-language">
+            <name value="The C++ Programming Language"/>
+            <created value="2013-01-01"/>
+            <author objectID="bjarne-stroustrup"/>
+        </object>
+        <object kind="book" id="programming-principles-and-practice-using-cpp">
+            <name value="Programming: Principles and Practice Using C++"/>
+            <created value="2009-01-01"/>
+            <author objectID="bjarne-stroustrup"/>
+        </object>
+        <object kind="book" id="a-tour-of-cpp">
+            <name value="A Tour of C++"/>
+            <created value="2018-01-01"/>
+            <author objectID="bjarne-stroustrup"/>
+        </object>
+        <object kind="group" id="gof">
+            <name value="The 'Gang of Four'"/>
+            <artworks>
+                <item objectID="design-patterns"/>
+            </artworks>
+            <members>
+                <item objectID="eric-gamma"/>
+                <item objectID="richard-helm"/>
+                <item objectID="ralph-johnson"/>
+                <item objectID="john-vlissides"/>
+            </members>
+        </object>
+        <object kind="person" id="eric-gamma">
+            <name value="Eric Gamma"/>
+            <date-of-birth value="1961-01-01"/>
+            <groups>
+                <item objectID="gof"/>
+            </groups>
+        </object>
+        <object kind="person" id="richard-helm">
+            <name value="Richard Helm"/>
+            <date-of-birth value="1901-01-01"/>
+            <groups>
+                <item objectID="gof"/>
+            </groups>
+        </object>
+        <object kind="person" id="ralph-johnson">
+            <name value="Ralph Johnson"/>
+            <date-of-birth value="1955-07-10"/>
+            <groups>
+                <item objectID="gof"/>
+            </groups>
+        </object>
+        <object kind="person" id="john-vlissides">
+            <name value="John Vlissides"/>
+            <artworks>
+                <item objectID="pattern-hatching"/>
+            </artworks>
+            <date-of-birth value="1961-08-02"/>
+            <groups>
+                <item objectID="gof"/>
+            </groups>
+        </object>
+        <object kind="book" id="design-patterns">
+            <name value="Design Patterns"/>
+            <created value="1995-01-01"/>
+            <author objectID="gof"/>
+        </object>
+        <object kind="person" id="donald-knuth">
+            <name value="Donald Knuth"/>
+            <date-of-birth value="1938-01-10"/>
+            <artworks>
+                <item objectID="taocp"/>
+            </artworks>
+        </object>
+        <object kind="book" id="taocp">
+            <name value="The Art of Computer Programming"/>
+            <created value="1997-01-01"/>
+            <author objectID="donald-knuth"/>
+        </object>
+        <object kind="group" id="compilers-writers">
+            <name value="Compilers writers"/>
+            <artworks>
+                <item objectID="compilers-principles-techniques-and-tools"/>
+            </artworks>
+            <members>
+                <item objectID="monica-s-lam"/>
+                <item objectID="ravi-sethi"/>
+                <item objectID="jeffrey-d-ullman"/>
+                <item objectID="alfred-v-aho"/>
+            </members>
+        </object>
+        <object kind="person" id="monica-s-lam">
+            <name value="Monica S. Lam"/>
+            <date-of-birth value="1900-01-01"/>
+            <groups>
+                <item objectID="compilers-writers"/>
+            </groups>
+        </object>
+        <object kind="person" id="ravi-sethi">
+            <name value="Ravi Sethi"/>
+            <date-of-birth value="1947-01-01="/>
+            <groups>
+                <item objectID="compilers-writers"/>
+            </groups>
+        </object>
+        <object kind="person" id="jeffrey-d-ullman">
+            <name value="Jeffrey D. Ullman"/>
+            <date-of-birth value="1942-10-22"/>
+            <groups>
+                <item objectID="compilers-writers"/>
+            </groups>
+        </object>
+        <object kind="person" id="alfred-v-aho">
+            <name value="Alfred V. Aho"/>
+            <date-of-birth value="1941-08-09"/>
+            <groups>
+                <item objectID="compilers-writers"/>
+            </groups>
+        </object>
+        <object kind="book" id="compilers-principles-techniques-and-tools">
+            <name value="Compilers: Principles, Techniques &amp; Tools"/>
+            <created value="1986-01-01"/>
+            <author objectID="compilers-writers"/>
+        </object>
+        <object kind="group" id="stepanov-and-mcjones">
+            <name value="Stepanov &amp; McJones"/>
+            <artworks>
+                <item objectID="elements-of-programming"/>
+            </artworks>
+            <members>
+                <item objectID="alexander-stepanov"/>
+                <item objectID="paul-mcjones"/>
+            </members>
+        </object>
+        <object kind="group" id="stepanov-and-rose">
+            <name value="Stepanov &amp; Rose"/>
+            <artworks>
+                <item objectID="from-mathematics-to-generic-programming"/>
+            </artworks>
+            <members>
+                <item objectID="alexander-stepanov"/>
+                <item objectID="daniel-e-rose"/>
+            </members>
+        </object>
+        <object kind="person" id="alexander-stepanov">
+            <name value="Alexander Stepanov"/>
+            <date-of-birth value="1900-01-01"/>
+            <groups >
+                <item objectID="stepanov-and-mcjones"/>
+                <item objectID="stepanov-and-rose"/>
+            </groups>
+        </object>
+        <object kind="person" id="paul-mcjones">
+            <name value="Paul McJones"/>
+            <date-of-birth value="1900-01-01"/>
+            <groups >
+                <item objectID="stepanov-and-mcjones"/>
+            </groups>
+        </object>
+        <object kind="person" id="daniel-e-rose">
+            <name value="Daniel E. Rose"/>
+            <date-of-birth value="1900-01-01"/>
+            <groups>
+                <item objectID="stepanov-and-rose"/>
+            </groups>
+        </object>
+        <object kind="book" id="elements-of-progmming">
+            <name value="Elements of Programming"/>
+            <created value="2009-01-01"/>
+            <author objectID="stepanov-and-mcjones"/>
+        </object>
+        <object kind="book" id="from-mathematics-to-generic-programming">
+            <name value="From Mathematics to Generic Programming"/>
+            <created value="2015-01-01"/>
+            <author objectID="stepanov-and-rose"/>
+        </object>
+        <object kind="book" id="pattern-hatching">
+            <name value="Pattern Hatching, Design Patterns Applied"/>
+            <created value="1998-01-01"/>
+            <author objectID="john-vlissides"/>
+        </object>
+    </objects>
+</library>
