@@ -1,0 +1,91 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.RegularExpressions
+{
+    public class Context
+    {
+        public Context() : any(), epsilon(eps), count(0)
+        {
+        }
+        public ~Context()
+        {
+            for (NfaState* state : nfaStates)
+            {
+                delete state;
+            }
+            for (Symbol* symbol : symbols)
+            {
+                delete symbol;
+            }
+        }
+        public Symbol* MakeAny()
+        {
+            return &any;
+        }
+        public Symbol* MakeEpsilon()
+        {
+            return &epsilon;
+        }
+        public NfaState* MakeNfaState()
+        {
+            NfaState* state = new NfaState();
+            nfaStates.Add(state);
+            return state;
+        }
+        public Symbol* MakeChar(uchar c)
+        {
+            auto it = charSymbols.Find(c);
+            if (it != charSymbols.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                Symbol* symbol = new Char(c);
+                symbols.Add(symbol);
+                charSymbols[c] = symbol;
+                return symbol;
+            }
+        }
+        public Symbol* MakeRange(uchar start, uchar end)
+        {
+            Range range(start, end);
+            auto it = rangeSymbols.Find(range);
+            if (it != rangeSymbols.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                Symbol* symbol = new Range(start, end);
+                symbols.Add(symbol);
+                rangeSymbols[range] = symbol;
+                return symbol;
+            }
+        }
+        public Class* MakeClass()
+        {
+            Class* cls = new Class();
+            symbols.Add(cls);
+            return cls;
+        }
+        public int GetNextRegExCount() 
+        {
+            return count++;
+        }
+        private List<NfaState*> nfaStates;
+        private List<Symbol*> symbols;
+        private Any any;
+        private Char epsilon;
+        private Map<uchar, Symbol*> charSymbols;
+        private Map<Range, Symbol*> rangeSymbols;
+        private int count;
+    }
+
+} // namespace System.RegularExpressions

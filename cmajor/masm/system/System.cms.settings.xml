@@ -1,13 +1,9 @@
 <solutionSettings>
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
-    <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/masm/system/System.XPath/XPathExpr.cm"/>
-    </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/masm/system/System.XPath/XPathExpr.cm"/>
-    <currentCursorLine value="316"/>
+    <openFiles/>
+    <currentOpenFile value=""/>
+    <currentCursorLine value="69"/>
     <breakpoints/>
-    <expandedProjects>
-        <item value="System.XPath"/>
-    </expandedProjects>
+    <expandedProjects/>
 </solutionSettings>

@@ -1,4 +1,4 @@
 <projectSettings>
-    <programArguments value="DirList.exe"/>
+    <programArguments value="-h"/>
     <breakpoints/>
 </projectSettings>

@@ -1,0 +1,82 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.RegularExpressions
+{
+    public ustring MakeRegularExpressionPatternFromFilePattern(const ustring& filePattern)
+    {
+        ustring pattern;
+        for (uchar c : filePattern)
+        {
+            switch (c)
+            {
+                case '.':
+                {
+                    pattern.Append(u"\\.");
+                    break;
+                }
+                case '*':
+                {
+                    pattern.Append(u".*");
+                    break;
+                }
+                case '?':
+                {
+                    pattern.Append(u".");
+                    break;
+                }
+                default:
+                {
+                    pattern.Append(c, 1);
+                    break;
+                }
+            }
+        }
+        return pattern;
+    }
+
+    public Result<bool> FilePatternMatch(const ustring& filePath, const ustring& filePattern)
+    {
+        return PatternMatch(filePath, MakeRegularExpressionPatternFromFilePattern(filePattern));
+    }
+
+    public Result<bool> PatternMatch(const ustring& str, const ustring& regularExpressionPattern)
+    {
+        Context context;
+        Result<Nfa> nfa = CompileRegularExpressionPattern(context, regularExpressionPattern);
+        if (nfa.Error())
+        {
+            return Result<bool>(ErrorId(nfa.GetErrorId()));
+        }
+        return Result<bool>(PatternMatch(str, nfa.Value()));
+    }
+
+    public Result<Nfa> CompileRegularExpressionPattern(Context& context, const ustring& regularExpressionPattern)
+    {
+        int count = context.GetNextRegExCount();
+        re.lexer.RegExLexer lexer(regularExpressionPattern.Chars(), regularExpressionPattern.Chars() + regularExpressionPattern.Length(),
+            "regular_expression_" + ToString(count));
+        System.Lex.XmlParsingLog log(Console.Error());
+        if (System.RegularExpressions.DebugParsing())
+        {
+            lexer.SetLog(&log);
+        }
+        return re.parser.RegExParser<re.lexer.RegExLexer>.Parse(lexer, &context);
+    }
+
+    public Result<Nfa> CompileFilePattern(Context& context, const ustring& filePattern)
+    {
+        return CompileRegularExpressionPattern(context, MakeRegularExpressionPatternFromFilePattern(filePattern));
+    }
+
+    public bool PatternMatch(const ustring& str, Nfa& nfa)
+    {
+        return Match(nfa, str);
+    }
+
+} // namespace System.RegularExpressions

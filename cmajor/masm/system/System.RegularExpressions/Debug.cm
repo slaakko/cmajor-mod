@@ -1,0 +1,23 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.RegularExpressions
+{
+    internal bool debugParsing = false;
+
+    public bool DebugParsing()
+    {
+        return debugParsing;
+    }
+
+    public void SetDebugParsing(bool debugParsing_)
+    {
+        debugParsing = debugParsing_;
+    }
+    
+}
+

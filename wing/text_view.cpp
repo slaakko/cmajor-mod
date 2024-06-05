@@ -930,7 +930,7 @@ void TextView::InsertText(int lineIndex, int columnIndex, const std::u32string& 
         RemoveSelection();
     }
     std::vector<std::u32string> linesToInsert = SplitTextIntoLines(text);
-    if (linesToInsert.size() == 1 && !IsEmptyOrSpaceLine(*lines[lineIndex]))
+    if (linesToInsert.size() == 1 && !lines.empty() && !IsEmptyOrSpaceLine(*lines[lineIndex]))
     {
         AddInsertIntoLineCommand(lineIndex, columnIndex, linesToInsert.front());
         InsertIntoLine(lineIndex, columnIndex, linesToInsert.front());

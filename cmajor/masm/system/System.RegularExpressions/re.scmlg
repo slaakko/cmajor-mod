@@ -1,0 +1,9 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+project re;
+tokens <re.token>;
+expressions <re.expr>;
+lexer <re.lexer>;

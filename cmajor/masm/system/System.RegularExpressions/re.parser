@@ -1,0 +1,105 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System.RegularExpressions;
+using re.token;
+using re.lexer;
+
+parser re.parser.RegExParser
+{
+    lexer re.lexer.RegExLexer;
+    main;
+
+    RegularExpression(System.RegularExpressions.Context* context) : System.RegularExpressions.Nfa
+        ::= Alternative(context):alternative{ return alternative; }
+        ;
+
+    Alternative(System.RegularExpressions.Context* context, var System.RegularExpressions.Nfa value) : System.RegularExpressions.Nfa
+        ::= (Catenation(context):left{ value = left; } (ALT Catenation(context):right{ value = System.RegularExpressions.Alt(*context, value, right); })*)
+        {
+            return value;
+        }
+        ;
+
+    Catenation(System.RegularExpressions.Context* context, var System.RegularExpressions.Nfa value) : System.RegularExpressions.Nfa
+        ::= (Repetition(context):left{ value = left; } (Repetition(context):right{ value = System.RegularExpressions.Cat(value, right); })*)
+        {
+            return value;
+        }
+        ;
+
+    Repetition(System.RegularExpressions.Context* context, var System.RegularExpressions.Nfa value) : System.RegularExpressions.Nfa
+        ::=
+        (   Primary(context):left{ value = left; }
+            (   STAR{ value = System.RegularExpressions.Kleene(*context, value); }
+            |   PLUS{ value = System.RegularExpressions.Pos(*context, value); }
+            |   QUEST{ value = System.RegularExpressions.Opt(*context, value); }
+            )?
+        )
+        {
+            return value;
+        }
+        ;
+
+    Primary(System.RegularExpressions.Context* context, var System.RegularExpressions.Nfa value) : System.RegularExpressions.Nfa
+        ::=
+        (   LPAREN Alternative(context):alt{ value = alt; } RPAREN
+        |   ESCAPE
+            { 
+                auto escape = System.RegularExpressions.MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos));
+                if (escape.Error())
+                {
+                    return ErrorId(escape.GetErrorId());
+                }
+                value = System.RegularExpressions.MakeNfa(*context, context->MakeChar(escape.Value())); 
+            }
+        |   INVERSE{ value = System.RegularExpressions.MakeNfa(*context, context->MakeChar('^')); }
+        |   MINUS{ value = System.RegularExpressions.MakeNfa(*context, context->MakeChar('-')); }
+        |   CHAR{ ustring match = lexer.GetToken(pos).ToString(); value = System.RegularExpressions.MakeNfa(*context, context->MakeChar(match[0])); }
+        |   DOT{ value = System.RegularExpressions.MakeNfa(*context, context->MakeAny()); }
+        |   Class(context):cls{ value = System.RegularExpressions.MakeNfa(*context, cls); }
+        )
+        {
+            return value; 
+        }
+        ;
+
+    Class(System.RegularExpressions.Context* context, var System.RegularExpressions.Class* cls) : System.RegularExpressions.Class*
+        ::= (LBRACKET{ cls = context->MakeClass(); } ((INVERSE{ cls->SetInverse(); })? (Range(context):r{ cls->AddSymbol(r); })*) RBRACKET)
+        {
+            return cls;
+        }
+        ;
+
+    Range(System.RegularExpressions.Context* context, var System.RegularExpressions.Symbol* symbol) : System.RegularExpressions.Symbol*
+        ::= (Char:s (MINUS Char:e{ symbol = context->MakeRange(s, e); } | empty{ symbol = context->MakeChar(s); }))
+        {
+            return symbol;
+        }
+        ;
+
+    Char : uchar
+        ::= LPAREN{ return '('; }
+        |   RPAREN{ return ')'; }
+        |   LBRACKET{ return '['; }
+        |   ALT{ return '|'; }
+        |   STAR{ return '*'; }
+        |   PLUS{ return '+'; }
+        |   QUEST{ return '?'; }
+        |   DOT{ return '.'; }
+        |   ESCAPE
+            { 
+                auto escape = System.RegularExpressions.MakeEscapeValue(lexer.FileName(), lexer.GetToken(pos));
+                if (escape.Error())
+                {
+                    return ErrorId(escape.GetErrorId());
+                }
+                return escape.Value();
+            }
+        |   INVERSE{ return '^'; }
+        |   MINUS{ return '-'; }
+        |   CHAR{ ustring match = lexer.GetToken(pos).ToString(); return match[0]; }
+        ;
+}

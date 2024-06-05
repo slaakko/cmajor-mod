@@ -1,0 +1,27 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using re.token;
+using re.expr;
+
+lexer re.lexer.RegExLexer
+{
+	rules
+	{
+		"\(" { return LPAREN; }
+		"\)" { return RPAREN; }
+		"\[" { return LBRACKET; }
+		"\]" { return RBRACKET; }
+		"\|" { return ALT; }
+		"\*" { return STAR; }
+		"\+" { return PLUS; }
+		"\?" { return QUEST; }
+		"\." { return DOT; }
+		"{escape}" { return ESCAPE; }
+		"^" { return INVERSE; }
+		"-" { return MINUS; }
+		"[^\x0\r\n{}\\()[\]|*+?.^-]" { return CHAR; }
+	}
+}

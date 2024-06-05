@@ -175,19 +175,23 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     tryIndex = 0;
     prevLineNumber = 0;
     prevControlFlowGraphNodeId = -1;
+    soul::ast::FullSpan prevFullSpan = fullSpan;
+    int prevFileIndex = fileIndex;
     if (functionSymbol->HasSource() && cmajor::symbols::GetConfig() != "release" && module->Name() != U"System.Runtime" && module->Name() != U"System.Core")
     {
         generateLineNumbers = true;
         emitter->SetGenerateLocationInfo(true);
-        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundFunction.Body()->GetSpan(), fileIndex); 
-        emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
         fullSpan = functionSymbol->GetFullSpan();
+        fileIndex = fullSpan.fileIndex;
+        cmajor::debug::SourceSpan span = cmajor::debug::MakeSourceSpan(module->FileMap(), boundFunction.Body()->GetSpan(), fileIndex);
+        emitter->SetCurrentSourcePos(span.line, span.scol, span.ecol);
     }
     else
     {
         generateLineNumbers = false;
         emitter->SetCurrentSourcePos(0, 0, 0);
         fullSpan = soul::ast::FullSpan();
+        fileIndex = -1;
     }
     function = emitter->GetOrInsertFunction(util::ToUtf8(functionSymbol->MangledName()), functionType, functionSymbol->DontThrow());
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && functionSymbol->IsInline())
@@ -395,6 +399,8 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     {
         emitter->EndScope();
     }
+    fullSpan = prevFullSpan;
+    fileIndex = prevFileIndex;
 }
 
 void CppCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompoundStatement)
