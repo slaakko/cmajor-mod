@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_UNIT_TEST_INCLUDED
-#define CMRT_CPP_UNIT_TEST_INCLUDED
+#ifndef CMRT_UNIT_TEST_INCLUDED
+#define CMRT_UNIT_TEST_INCLUDED
 #include <stdint.h>
 
 extern "C" void RtmBeginUnitTest(int numAssertions, const char* unitTestFilePath);
@@ -17,4 +17,4 @@ extern "C" float RtmEvaluateFloatBinaryOp(float left, float right, int operation
 extern "C" double RtmEvaluateDoubleUnaryOp(double operand, int operation);
 extern "C" double RtmEvaluateDoubleBinaryOp(double left, double right, int operation);
 
-#endif // CMRT_CPP_UNIT_TEST_INCLUDED
+#endif // CMRT_UNIT_TEST_INCLUDED

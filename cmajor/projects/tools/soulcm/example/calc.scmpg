@@ -1,0 +1,2 @@
+project calc.parser;
+parser <calc.parser>;

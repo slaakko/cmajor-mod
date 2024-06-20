@@ -1,0 +1,180 @@
+using System;
+
+public enum Operator
+{
+    plus, minus, mul, div
+}
+
+public abstract class Node
+{
+    public default virtual ~Node();
+    public abstract void Accept(Visitor& visitor);
+}
+
+public class NumberNode : Node
+{
+    public NumberNode(double value_) : value(value_)
+    {
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    public double Value() const
+    {
+        return value;
+    }
+    private double value;
+}
+
+public class BinaryExprNode : Node
+{
+    public BinaryExprNode(Node* left_, Node* right_, Operator op_) : left(left_), right(right_), op(op_)
+    {
+    }
+    public Node* Left() const 
+    {
+        return left.Get();
+    }
+    public Node* Right() const 
+    {
+        return right.Get();
+    }
+    public Operator Op() const
+    {
+        return op;
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    private UniquePtr<Node> left;
+    private UniquePtr<Node> right;
+    private Operator op;
+}
+
+public class UnaryExprNode : Node
+{
+    public UnaryExprNode(Node* operand_, Operator op_) : operand(operand_), op(op_)
+    {
+    }
+    public Node* Operand() const
+    {
+        return operand.Get();
+    }
+    public Operator Op() const
+    {
+        return op;
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    private UniquePtr<Node> operand;
+    private Operator op;
+}
+
+public class ParenExprNode : Node
+{
+    public ParenExprNode(Node* expr_) : expr(expr_)
+    {
+    }
+    public Node* Expr() const
+    {
+        return expr.Get();
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    private UniquePtr<Node> expr;
+}
+
+public Result<double> ParseNumber(const ustring& str)
+{
+    auto utf8Result = ToUtf8(str);
+    if (utf8Result.Error()) return Result<double>(ErrorId(utf8Result.GetErrorId()));
+    const string& s = utf8Result.Value();
+    return System.ParseDouble(s);
+}
+
+public class Visitor
+{
+    public virtual void Visit(NumberNode& node) {}
+    public virtual void Visit(BinaryExprNode& node) {}
+    public virtual void Visit(UnaryExprNode& node) {}
+    public virtual void Visit(ParenExprNode& node) {}
+}
+
+public class EvaluatorVisitor : Visitor
+{
+    public EvaluatorVisitor() : value(0)
+    {
+    }
+    public override void Visit(NumberNode& node)
+    {
+        value = node.Value();
+    }
+    public override void Visit(BinaryExprNode& node) 
+    {
+        node.Left()->Accept(*this);
+        double leftValue = value;
+        node.Right()->Accept(*this);
+        double rightValue = value;
+        switch (node.Op())
+        {
+            case Operator.plus:
+            {
+                value = leftValue + rightValue;
+                break;
+            }
+            case Operator.minus:
+            {
+                value = leftValue - rightValue;
+                break;
+            }
+            case Operator.mul:
+            {
+                value = leftValue * rightValue;
+                break;
+            }
+            case Operator.div:
+            {
+                value = leftValue / rightValue;
+                break;
+            }
+        }
+    }
+    public override void Visit(UnaryExprNode& node)
+    {
+        node.Operand()->Accept(*this);
+        switch (node.Op())
+        {
+            case Operator.plus: 
+            {
+                break;
+            }
+            case Operator.minus:
+            {
+                value = -value;
+                break;
+            }
+        }
+    }
+    public override void Visit(ParenExprNode& node) 
+    {
+        node.Expr()->Accept(*this);
+    }
+    public double Value() const
+    {
+        return value;
+    }
+    private double value;
+}
+
+public double Evaluate(Node* node)
+{
+    EvaluatorVisitor visitor;
+    node->Accept(visitor);
+    return visitor.Value();
+}

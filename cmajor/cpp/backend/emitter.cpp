@@ -1060,7 +1060,7 @@ void* CppEmitter::GetOrInsertGlobal(const std::string& name, void* type)
 
 void* CppEmitter::GetOrInsertAnyComdat(const std::string& name, void* global)
 {
-    static_cast<cmajor::cpp::ir::GlobalVariable*>(global)->SetLinkOnce();
+    //static_cast<cmajor::cpp::ir::GlobalVariable*>(global)->SetLinkOnce();
     return nullptr;
 }
 
@@ -1536,7 +1536,7 @@ void CppEmitter::SetFunctionLinkage(void* function, bool setInline)
 
 void CppEmitter::SetFunctionLinkageToLinkOnceODRLinkage(void* function)
 {
-    static_cast<cmajor::cpp::ir::Function*>(function)->SetLinkOnce();
+    //static_cast<cmajor::cpp::ir::Function*>(function)->SetLinkOnce();
 }
 
 void CppEmitter::SetFunctionCallConventionToStdCall(void* function)

@@ -1,14 +1,13 @@
 <solutionSettings>
     <callStackOpen value="false"/>
-    <localsViewOpen value="false"/>
+    <localsViewOpen value="true"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/examples/DirList/main.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/examples/HelloGUI/Hello.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/DirList/main.cm"/>
-    <currentCursorLine value="16"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/examples/HelloGUI/Hello.cm"/>
+    <currentCursorLine value="60"/>
     <breakpoints/>
     <expandedProjects>
         <item value="HelloGUI"/>
-        <item value="XPathTester"/>
     </expandedProjects>
 </solutionSettings>

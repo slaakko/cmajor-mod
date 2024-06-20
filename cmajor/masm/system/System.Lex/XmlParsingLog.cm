@@ -24,6 +24,7 @@ namespace System.Lex
         {
             return formatter;
         }
+        [nodiscard]
         public Result<bool> WriteElement(const ustring& elementName, const ustring& elementContent)
         {
             if (formatter.Error())
@@ -46,6 +47,7 @@ namespace System.Lex
             }
             return Write(u"<" + elementName + u">" + s + u"</" + elementName + u">");
         }
+        [nodiscard]
         public Result<bool> Write(const ustring& s)
         {
             if (formatter.Error())
@@ -67,22 +69,27 @@ namespace System.Lex
         {
             formatter.DecIndent();
         }
+        [nodiscard]
         public override Result<bool> WriteBeginRule(const ustring& ruleName)
         {
             return Write(u"<" + ruleName + u">");
         }
+        [nodiscard]
         public override Result<bool> WriteEndRule(const ustring& ruleName)
         {
             return Write(u"</" + ruleName + u">");
         }
+        [nodiscard]
         public override Result<bool> WriteTry(const ustring& s)
         {
             return WriteElement(u"try", s);
         }
+        [nodiscard]
         public override Result<bool> WriteSuccess(const ustring& match)
         {
             return WriteElement(u"success", match);
         }
+        [nodiscard]
         public override Result<bool> WriteFail()
         {
             return Write(u"<fail/>");
@@ -90,6 +97,7 @@ namespace System.Lex
         private CodeFormatter formatter;
     }
 
+    [nodiscard]
     public Result<ustring> XmlHexEscape(uchar c)
     {
         StringWriter writer;
@@ -111,6 +119,7 @@ namespace System.Lex
         return Result<ustring>(result.Value());
     }
 
+    [nodiscard]
     public Result<ustring> XmlCharStr(uchar c)
     {
         switch (c)
@@ -140,6 +149,7 @@ namespace System.Lex
         return Result<ustring>();
     }
 
+    [nodiscard]
     public Result<ustring> XmlEscape(const ustring& s)
     {
         ustring result;

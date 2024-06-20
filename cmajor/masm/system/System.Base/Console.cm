@@ -14,206 +14,449 @@ namespace System
             FileStream* inStream = new FileStream(stdin);
             in.SetStream(inStream);
             in.Own(inStream);
+            if (in.Error())
+            {
+                SetErrorId(in.GetErrorId());
+                return;
+            }
             FileStream* outStream = new FileStream(stdout);
             out.SetStream(outStream);
             out.Own(outStream);
+            if (out.Error())
+            {
+                SetErrorId(out.GetErrorId());
+                return;
+            }
             FileStream* errStream = new FileStream(stderr);
             err.SetStream(errStream);
             err.Own(errStream);
+            if (err.Error())
+            {
+                SetErrorId(err.GetErrorId());
+                return;
+            }
         }
         public static void Write(const char* s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(const wchar* s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(const uchar* s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(const string& s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(const wstring& s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(const ustring& s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(bool b)
         {
-            out.Write(b);
+            auto result = out.Write(b);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(sbyte s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(byte b)
         {
-            out.Write(b);
+            auto result = out.Write(b);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(short s)
         {
-            out.Write(s);
+            auto result = out.Write(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(ushort u)
         {
-            out.Write(u);
+            auto result = out.Write(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(int i)
         {
-            out.Write(i);
+            auto result = out.Write(i);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(uint u)
         {
-            out.Write(u);
+            auto result = out.Write(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(long l)
         {
-            out.Write(l);
+            auto result = out.Write(l);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(ulong u)
         {
-            out.Write(u);
+            auto result = out.Write(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(float f)
         {
-            out.Write(f);
+            auto result = out.Write(f);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(double d)
         {
-            out.Write(d);
+            auto result = out.Write(d);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(char c)
         {
-            out.Write(c);
+            auto result = out.Write(c);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(wchar w)
         {
-            out.Write(w);
+            auto result = out.Write(w);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(uchar u)
         {
-            out.Write(u);
+            auto result = out.Write(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(const Date& date)
         {
-            out.Write(date);
+            auto result = out.Write(date);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void Write(const DateTime& dateTime)
         {
-            out.Write(dateTime);
+            auto result = out.Write(dateTime);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine()
         {
-            out.WriteLine();
+            auto result = out.WriteLine();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const char* s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const wchar* s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const uchar* s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const string& s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const wstring& s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const ustring& s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(bool b)
         {
-            out.WriteLine(b);
+            auto result = out.WriteLine(b);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(sbyte s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(byte b)
         {
-            out.WriteLine(b);
+            auto result = out.WriteLine(b);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(short s)
         {
-            out.WriteLine(s);
+            auto result = out.WriteLine(s);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(ushort u)
         {
-            out.WriteLine(u);
+            auto result = out.WriteLine(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(int i)
         {
-            out.WriteLine(i);
+            auto result = out.WriteLine(i);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(uint u)
         {
-            out.WriteLine(u);
+            auto result = out.WriteLine(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(long l)
         {
-            out.WriteLine(l);
+            auto result = out.WriteLine(l);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(ulong u)
         {
-            out.WriteLine(u);
+            auto result = out.WriteLine(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(float f)
         {
-            out.WriteLine(f);
+            auto result = out.WriteLine(f);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(double d)
         {
-            out.WriteLine(d);
+            auto result = out.WriteLine(d);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(char c)
         {
-            out.WriteLine(c);
+            auto result = out.WriteLine(c);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(wchar w)
         {
-            out.WriteLine(w);
+            auto result = out.WriteLine(w);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(uchar u)
         {
-            out.WriteLine(u);
+            auto result = out.WriteLine(u);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const Date& date)
         {
-            out.WriteLine(date);
+            auto result = out.WriteLine(date);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public static void WriteLine(const DateTime& dateTime)
         {
-            out.WriteLine(dateTime);
+            auto result = out.WriteLine(dateTime);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
+        [nodiscard]
         public static Result<int> Read()
         {
             return in.Read();
         }
+        [nodiscard]
         public static Result<string> ReadLine()
         {
             return in.ReadLine();
         }
+        [nodiscard]
         public static Result<string> ReadToEnd()
         {
             return in.ReadToEnd();
         }
-        public static StreamReader& In() 
+        public static StreamReader& In()
         {
             return in;
         }
@@ -237,8 +480,21 @@ namespace System
         {
             err = err_;
         }
+        public static bool HasError()
+        {
+            return errorId != 0;
+        }
+        public static int ErrorId() const
+        {
+            return errorId;
+        }
+        public static void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
         private static StreamReader in;
         private static StreamWriter out;
         private static StreamWriter err;
+        private static int errorId;
     }
 }

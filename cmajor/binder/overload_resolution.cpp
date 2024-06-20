@@ -1187,7 +1187,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(destructorSymbol->Parent());
                 if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
                 {
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                     {
                         cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                         boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
@@ -1468,7 +1468,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
                 }
                 else
                 {
-                    cmajor::symbols::Warning warning(module->GetCurrentProjectName(), "a nothrow function calls a function that can throw and does not handle exceptions");
+                    cmajor::symbols::Warning warning(cmajor::symbols::nothrowWarning, module->GetCurrentProjectName(), "a nothrow function calls a function that can throw and does not handle exceptions");
                     warning.SetDefined(node->GetFullSpan());
                     warning.SetReferences(references);
                     module->WarningCollection().AddWarning(warning);
@@ -1592,7 +1592,8 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
             }
             else
             {
-                cmajor::symbols::Warning warning(module->GetCurrentProjectName(), "a nothrow function calls a function that can throw and does not handle exceptions");
+                cmajor::symbols::Warning warning(cmajor::symbols::nothrowWarning, module->GetCurrentProjectName(), 
+                    "a nothrow function calls a function that can throw and does not handle exceptions");
                 warning.SetDefined(node->GetFullSpan());
                 warning.SetReferences(references);
                 module->WarningCollection().AddWarning(warning);

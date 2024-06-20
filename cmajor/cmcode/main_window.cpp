@@ -1134,6 +1134,7 @@ void MainWindow::StartBuilding()
     SetEditorsReadOnly();
     SetState(MainWindowState::building);
     GetErrorView()->Clear();
+    GetWarningsView()->Clear();
     ClearOutput();
     ResetEditModuleCache();
     buildProgressCounter = 0;
@@ -1707,6 +1708,12 @@ void MainWindow::HandleBuildResult(const cmajor::info::bs::BuildResult& buildRes
     StopBuilding();
     if (buildResult.success)
     {
+        if (!buildResult.warnings.empty())
+        {
+            cmajor::view::WarningsView* view = GetWarningsView();
+            view->Clear();
+            view->SetWarnings(std::move(buildResult.warnings));
+        }
         if (debugRequest)
         {
             StartDebugging();
@@ -3817,8 +3824,9 @@ void MainWindow::BuildSolutionClick()
         {
             throw std::runtime_error("no solution open");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3838,8 +3846,9 @@ void MainWindow::RebuildSolutionClick()
         {
             throw std::runtime_error("no solution open");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3859,8 +3868,9 @@ void MainWindow::CleanSolutionClick()
         {
             throw std::runtime_error("no solution open");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), BuildRequestKind::clean);
+        StartBuild(backend, config, solutionData->GetSolution()->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean);
     }
     catch (const std::exception& ex)
     {
@@ -3880,8 +3890,9 @@ void MainWindow::BuildProject(cmajor::ast::Project* project)
         {
             throw std::runtime_error("no solution open");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, project->FilePath(), BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3901,8 +3912,9 @@ void MainWindow::RebuildProject(cmajor::ast::Project* project)
         {
             throw std::runtime_error("no solution open");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, project->FilePath(), BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -3922,8 +3934,9 @@ void MainWindow::CleanProject(cmajor::ast::Project* project)
         {
             throw std::runtime_error("no solution open");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, project->FilePath(), BuildRequestKind::clean | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, project->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -4340,8 +4353,9 @@ void MainWindow::BuildActiveProjectClick()
         {
             throw std::runtime_error("no active project set for the solution");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -4366,8 +4380,9 @@ bool MainWindow::BuildActiveProject()
         {
             throw std::runtime_error("no active project set for the solution");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), BuildRequestKind::build | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::build | BuildRequestKind::buildDependencies);
         return true;
     }
     catch (const std::exception& ex)
@@ -4394,8 +4409,9 @@ void MainWindow::RebuildActiveProjectClick()
         {
             throw std::runtime_error("no active project set for the solution");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::rebuild | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -4420,8 +4436,9 @@ void MainWindow::CleanActiveProjectClick()
         {
             throw std::runtime_error("no active project set for the solution");
         }
+        const BuildSettings& buildSettings = GetBuildSettings();
         StartBuilding();
-        StartBuild(backend, config, activeProject->FilePath(), BuildRequestKind::clean | BuildRequestKind::buildDependencies);
+        StartBuild(backend, config, activeProject->FilePath(), buildSettings.disabledWarnings, BuildRequestKind::clean | BuildRequestKind::buildDependencies);
     }
     catch (const std::exception& ex)
     {
@@ -5499,6 +5516,22 @@ cmajor::view::ErrorView* MainWindow::GetErrorView()
     return errorView;
 }
 
+cmajor::view::WarningsView* MainWindow::GetWarningsView()
+{
+    if (!warningsView)
+    {
+        std::unique_ptr<wing::TabPage> warningsTabPagePtr(new wing::TabPage("Warnings", "warnings"));
+        warningsTabPage = warningsTabPagePtr.get();
+        std::unique_ptr<cmajor::view::WarningsView> warningsViewPtr(new cmajor::view::WarningsView(cmajor::view::WarningsViewCreateParams().Defaults()));
+        warningsView = warningsViewPtr.get();
+        warningsView->ViewWarning().AddHandler(this, &MainWindow::ViewWarning);
+        warningsTabPage->AddChild(warningsViewPtr.release());
+        outputTabControl->AddTabPage(warningsTabPagePtr.release());
+    }
+    warningsTabPage->Select();
+    return warningsView;
+}
+
 void MainWindow::ViewError(cmajor::view::ViewErrorArgs& args)
 {
     try
@@ -5531,6 +5564,59 @@ void MainWindow::ViewError(cmajor::view::ViewErrorArgs& args)
                 int line = error->line;
                 int scol = error->scol;
                 int ecol = error->ecol;
+                textView->EnsureLineVisible(line);
+                textView->SetCaretLineCol(std::min(line, static_cast<int>(textView->Lines().size())), 1 + textView->LineNumberFieldLength());
+                textView->ScrollToCaret();
+                textView->SetFocus();
+                textView->Invalidate();
+                if (scol != 0 && ecol != 0 && scol != ecol)
+                {
+                    textView->ResetSelection();
+                    soul::ast::SourcePos start(line, scol);
+                    soul::ast::SourcePos end(line, ecol);
+                    textView->ExtendSelection(start, end);
+                }
+            }
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        wing::ShowErrorMessageBox(Handle(), ex.what());
+    }
+}
+
+void MainWindow::ViewWarning(cmajor::view::ViewWarningArgs& args)
+{
+    try
+    {
+        cmajor::info::bs::Warning* warning = args.warning;
+        if (warning)
+        {
+            wing::TabPage* tabPage = codeTabControl->GetTabPageByKey(warning->file);
+            cmajor::view::Editor* editor = nullptr;
+            if (tabPage)
+            {
+                editor = GetEditorByTabPage(tabPage);
+                tabPage->Select();
+            }
+            if (!editor)
+            {
+                SolutionTreeViewNodeData* data = solutionData->GetSolutionTreeViewNodeDataByKey(warning->file);
+                if (data)
+                {
+                    editor = AddCmajorEditor(data->fileName, data->key, data->filePath, data->project);
+                }
+                else
+                {
+                    editor = AddCmajorEditor(util::Path::GetFileName(warning->file), warning->file, warning->file, nullptr);
+                }
+            }
+            wing::TextView* textView = editor->GetTextView();
+            if (textView)
+            {
+                int line = warning->line;
+                int scol = warning->scol;
+                int ecol = warning->ecol;
                 textView->EnsureLineVisible(line);
                 textView->SetCaretLineCol(std::min(line, static_cast<int>(textView->Lines().size())), 1 + textView->LineNumberFieldLength());
                 textView->ScrollToCaret();

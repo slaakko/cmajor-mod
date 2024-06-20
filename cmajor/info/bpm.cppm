@@ -5,7 +5,6 @@ export module cmajor.binary.portmap.message;
 import std.core;
 import util;
 import cmajor.binary.message.protocol;
-import cmajor.binary.message.number;
 
 export namespace bpm {
 

@@ -203,6 +203,8 @@
     <ClCompile Include="instantiation_guard.cppm" />
     <ClCompile Include="json_attribute_processor.cpp" />
     <ClCompile Include="json_attribute_processor.cppm" />
+    <ClCompile Include="nodiscard_attribute_processor.cpp" />
+    <ClCompile Include="nodiscard_attribute_processor.cppm" />
     <ClCompile Include="operation_repository.cpp" />
     <ClCompile Include="operation_repository.cppm" />
     <ClCompile Include="overload_resolution.cpp" />

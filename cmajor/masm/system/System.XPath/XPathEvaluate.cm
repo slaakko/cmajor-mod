@@ -16,6 +16,7 @@ namespace System.XPath
         private static int exprCount;
     }
 
+    [nodiscard]
     public Result<UniquePtr<Expr>> ParseXPathExpr(const string& xpathExpr)
     {
         auto utf32Result = ToUtf32(xpathExpr);
@@ -44,11 +45,16 @@ namespace System.XPath
             exprDoc.AppendChild(expr->ToXmlElement());
             System.Text.CodeFormatter formatter(Console.Error());
             formatter.SetIndentSize(1);
-            exprDoc.Write(formatter);
+            auto result = exprDoc.Write(formatter);
+            if (result.Error())
+            {
+                return Result<UniquePtr<Expr>>(ErrorId(result.GetErrorId()));
+            }
         }
         return exprResult;
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> Evaluate(Expr* expr, System.Xml.Node* node)
     {
         Context context(node, 1, 1);
@@ -63,11 +69,16 @@ namespace System.XPath
             resultDoc.AppendChild(result.Value()->ToXmlElement());
             System.Text.CodeFormatter formatter(Console.Error());
             formatter.SetIndentSize(1);
-            resultDoc.Write(formatter);
+            auto writeResult = resultDoc.Write(formatter);
+            if (writeResult.Error())
+            {
+                return Result<UniquePtr<Object>>(ErrorId(writeResult.GetErrorId()));
+            }
         }
         return result;
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> Evaluate(const string& xpathExpr, System.Xml.Node* node)
     {
         Result<UniquePtr<Expr>> exprResult = ParseXPathExpr(xpathExpr);
@@ -79,6 +90,7 @@ namespace System.XPath
         return Evaluate(expr, node);
     }
 
+    [nodiscard]
     public Result<UniquePtr<NodeSet>> EvaluateToNodeSet(Expr* expr, System.Xml.Node* node)
     {
         Result<UniquePtr<Object>> result = Evaluate(expr, node);
@@ -97,6 +109,7 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<UniquePtr<NodeSet>> EvaluateToNodeSet(const string& xpathExpr, System.Xml.Node* node)
     {
         Result<UniquePtr<Expr>> exprResult = ParseXPathExpr(xpathExpr);

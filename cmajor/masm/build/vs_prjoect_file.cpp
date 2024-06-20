@@ -24,7 +24,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
 {
     std::string vsProjectFilePath = util::Path::ChangeExtension(project->ModuleFilePath(), ".vcxproj");
 
-    if (project->GetTarget() == cmajor::ast::Target::program)
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
     {
         if (!classIndexFilePath.empty() && !traceDataFilePath.empty())
         {
@@ -121,13 +121,13 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     debugPropertyGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Debug|x64'");
     debugPropertyGroup->SetAttribute("Label", "Configuration");
     soul::xml::Element* debugConfigurationType = soul::xml::MakeElement("ConfigurationType");
-    if (project->GetTarget() == cmajor::ast::Target::program)
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
     {
         soul::xml::Text* debugConfigurationTypeText = soul::xml::MakeText("Application");
         debugConfigurationType->AppendChild(debugConfigurationTypeText);
         debugPropertyGroup->AppendChild(debugConfigurationType);
     }
-    else if (project->GetTarget() == cmajor::ast::Target::library)
+    else if (project->GetTarget() == cmajor::ast::Target::library || project->GetTarget() == cmajor::ast::Target::winlib)
     {
         soul::xml::Text* debugConfigurationTypeText = soul::xml::MakeText("StaticLibrary");
         debugConfigurationType->AppendChild(debugConfigurationTypeText);
@@ -151,13 +151,13 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     releasePropertyGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
     releasePropertyGroup->SetAttribute("Label", "Configuration");
     soul::xml::Element* releaseConfigurationType = soul::xml::MakeElement("ConfigurationType");
-    if (project->GetTarget() == cmajor::ast::Target::program)
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
     {
         soul::xml::Text* releaseConfigurationTypeText = soul::xml::MakeText("Application");
         releaseConfigurationType->AppendChild(releaseConfigurationTypeText);
         releasePropertyGroup->AppendChild(releaseConfigurationType);
     }
-    else if (project->GetTarget() == cmajor::ast::Target::library)
+    else if (project->GetTarget() == cmajor::ast::Target::library || project->GetTarget() == cmajor::ast::Target::winlib)
     {
         soul::xml::Text* releaseConfigurationTypeText = soul::xml::MakeText("StaticLibrary");
         releaseConfigurationType->AppendChild(releaseConfigurationTypeText);
@@ -248,7 +248,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     debugSdlCheck->AppendChild(debugSdlCheckText);
     debugClCompile->AppendChild(debugSdlCheck);
     soul::xml::Element* debugPreprocessor = soul::xml::MakeElement("PreprocessorDefinitions");
-    soul::xml::Text* debugPreprocessorText = soul::xml::MakeText("_DEBUG;_CONSOLE;%(PreprocessorDefinitions)");
+    soul::xml::Text* debugPreprocessorText = soul::xml::MakeText("WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)");
     debugPreprocessor->AppendChild(debugPreprocessorText);
     debugClCompile->AppendChild(debugPreprocessor);
     soul::xml::Element* debugConformanceMode = soul::xml::MakeElement("ConformanceMode");
@@ -258,9 +258,14 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     debugItemDefinitionGroup->AppendChild(debugClCompile);
     soul::xml::Element* debugLink = soul::xml::MakeElement("Link");
     soul::xml::Element* debugSubSystem = soul::xml::MakeElement("SubSystem");
-    if (project->GetTarget() == cmajor::ast::Target::program)
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winapp)
     {
         soul::xml::Text* debugSubSystemText = soul::xml::MakeText("Console");
+        debugSubSystem->AppendChild(debugSubSystemText);
+    }
+    else if (project->GetTarget() == cmajor::ast::Target::winguiapp)
+    {
+        soul::xml::Text* debugSubSystemText = soul::xml::MakeText("Windows");
         debugSubSystem->AppendChild(debugSubSystemText);
     }
     debugLink->AppendChild(debugSubSystem);
@@ -268,6 +273,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     soul::xml::Text* debugGenDebugInfoText = soul::xml::MakeText("true");
     debugGenDebugInfo->AppendChild(debugGenDebugInfoText);
     debugLink->AppendChild(debugGenDebugInfo);
+    std::string cmrtmasmwin_release = "cmrtmasmwin.lib";
     std::string cmrtmasm_release = "cmrtmasm.lib";
     std::string xpath_release = "soul.xml.xpath.lib";
     std::string dom_parser_release = "soul.dom.parser.lib";
@@ -278,6 +284,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     std::string soul_ast_release = "soul.ast.lib";
     std::string soul_common_release = "soul.common.lib";
     std::string util_release = "util.lib";
+    std::string cmrtmasmwin_debug = "cmrtmasmwind.lib";
     std::string cmrtmasm_debug = "cmrtmasmd.lib";
     std::string xpath_debug = "soul.xml.xpathd.lib";
     std::string dom_parser_debug = "soul.dom.parserd.lib";
@@ -297,6 +304,19 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         soul::xml::Element* debugDependencies = soul::xml::MakeElement("AdditionalDependencies");
         soul::xml::Text* debugDependenciesText = soul::xml::MakeText(
             cmrtmasm_debug + ";" + xpath_debug + ";" + xml_parser_debug + ";" + xml_processor_debug + ";" + dom_parser_debug + ";" + dom_debug + ";" + 
+            soul_lexer_debug + ";" + soul_common_debug + ";" + soul_ast_debug + ";" + util_debug + ";" + references);
+        debugDependencies->AppendChild(debugDependenciesText);
+        debugLink->AppendChild(debugDependencies);
+    }
+    else if (project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
+    {
+        soul::xml::Element* debugLibraryDirs = soul::xml::MakeElement("AdditionalLibraryDirectories");
+        soul::xml::Text* debugLibraryDirsText = soul::xml::MakeText(libraryDirs);
+        debugLibraryDirs->AppendChild(debugLibraryDirsText);
+        debugLink->AppendChild(debugLibraryDirs);
+        soul::xml::Element* debugDependencies = soul::xml::MakeElement("AdditionalDependencies");
+        soul::xml::Text* debugDependenciesText = soul::xml::MakeText(
+            cmrtmasmwin_debug + ";" + cmrtmasm_debug + ";" + xpath_debug + ";" + xml_parser_debug + ";" + xml_processor_debug + ";" + dom_parser_debug + ";" + dom_debug + ";" +
             soul_lexer_debug + ";" + soul_common_debug + ";" + soul_ast_debug + ";" + util_debug + ";" + references);
         debugDependencies->AppendChild(debugDependenciesText);
         debugLink->AppendChild(debugDependencies);
@@ -325,7 +345,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     releaseSdlCheck->AppendChild(releaseSdlCheckText);
     releaseClCompile->AppendChild(releaseSdlCheck);
     soul::xml::Element* releasePreprocessor = soul::xml::MakeElement("PreprocessorDefinitions");
-    soul::xml::Text* releasePreprocessorText = soul::xml::MakeText("NDEBUG;_CONSOLE;%(PreprocessorDefinitions)");
+    soul::xml::Text* releasePreprocessorText = soul::xml::MakeText("WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)");
     releasePreprocessor->AppendChild(releasePreprocessorText);
     releaseClCompile->AppendChild(releasePreprocessor);
     soul::xml::Element* releaseConformanceMode = soul::xml::MakeElement("ConformanceMode");
@@ -335,9 +355,14 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     releaseItemDefinitionGroup->AppendChild(releaseClCompile);
     soul::xml::Element* releaseLink = soul::xml::MakeElement("Link");
     soul::xml::Element* releaseSubSystem = soul::xml::MakeElement("SubSystem");
-    if (project->GetTarget() == cmajor::ast::Target::program)
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winapp)
     {
         soul::xml::Text* releaseSubSystemText = soul::xml::MakeText("Console");
+        releaseSubSystem->AppendChild(releaseSubSystemText);
+    }
+    else if (project->GetTarget() == cmajor::ast::Target::winguiapp)
+    {
+        soul::xml::Text* releaseSubSystemText = soul::xml::MakeText("Windows");
         releaseSubSystem->AppendChild(releaseSubSystemText);
     }
     releaseLink->AppendChild(releaseSubSystem);
@@ -366,6 +391,19 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
         releaseDependencies->AppendChild(releaseDepenciesText);
         releaseLink->AppendChild(releaseDependencies);
     }
+    else if (project->GetTarget() == cmajor::ast::Target::winguiapp || project->GetTarget() == cmajor::ast::Target::winapp)
+    {
+        soul::xml::Element* releaseLibraryDirs = soul::xml::MakeElement("AdditionalLibraryDirectories");
+        soul::xml::Text* releaseLibraryDirsText = soul::xml::MakeText(libraryDirs);
+        releaseLibraryDirs->AppendChild(releaseLibraryDirsText);
+        releaseLink->AppendChild(releaseLibraryDirs);
+        soul::xml::Element* releaseDependencies = soul::xml::MakeElement("AdditionalDependencies");
+        soul::xml::Text* releaseDepenciesText = soul::xml::MakeText(
+            cmrtmasmwin_release + ";" + cmrtmasm_release + ";" + xpath_release + ";" + xml_parser_release + ";" + xml_processor_release + ";" + dom_parser_release + ";" + 
+            dom_release + ";" + soul_lexer_release + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
+        releaseDependencies->AppendChild(releaseDepenciesText);
+        releaseLink->AppendChild(releaseDependencies);
+    }
     releaseItemDefinitionGroup->AppendChild(releaseLink);
 
     rootElement->AppendChild(releaseItemDefinitionGroup);
@@ -388,7 +426,7 @@ std::string MakeVSProjectFile(cmajor::ast::Project* project, cmajor::symbols::Mo
     }
     rootElement->AppendChild(clItemGroup);
 
-    if (project->GetTarget() == cmajor::ast::Target::program)
+    if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winapp || project->GetTarget() == cmajor::ast::Target::winguiapp)
     {
         soul::xml::Element* rcItemGroup = soul::xml::MakeElement("ItemGroup");
         soul::xml::Element* rcCompile = soul::xml::MakeElement("ResourceCompile");

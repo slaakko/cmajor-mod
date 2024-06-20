@@ -51,7 +51,8 @@ void JsonAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cm
                     }
                     if (!baseClassHasJsonAttribute)
                     {
-                        cmajor::symbols::Warning warning(module->GetCurrentProjectName(), "base class '" + util::ToUtf8(baseClass->FullName()) + "' of json-attributed class '" +
+                        cmajor::symbols::Warning warning(cmajor::symbols::jsonAttributeWarning, 
+                            module->GetCurrentProjectName(), "base class '" + util::ToUtf8(baseClass->FullName()) + "' of json-attributed class '" +
                             util::ToUtf8(classTypeSymbol->FullName()) + "' does not explicitly declare 'json' attribute value to \"true\" or \"false\"");
                         warning.SetDefined(classTypeSymbol->GetFullSpan());
                         std::vector<soul::ast::FullSpan> references;

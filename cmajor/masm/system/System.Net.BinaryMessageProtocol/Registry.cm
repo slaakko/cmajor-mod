@@ -1,0 +1,64 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Net.BinaryMessageProtocol
+{
+    public delegate Result<BinaryMessage*> FactoryFunction(uint messageId);
+
+    public class MessageRegistry
+    {
+        static MessageRegistry() : instance(new MessageRegistry())
+        {
+        }
+        public static MessageRegistry& Instance()
+        {
+            return *instance;
+        }
+        private MessageRegistry()
+        {
+        }
+        [nodiscard]
+        public Result<bool> Register(const string& className, FactoryFunction factoryFunc)
+        {
+            ulong hashCode = GetHashCode(className);
+            uint messageId = MakeMessageId(hashCode);
+            auto it = factoryMap.Find(messageId);
+            if (it == factoryMap.End())
+            {
+                factoryMap[messageId] = factoryFunc;
+            }
+            else
+            {
+                int errorId = AllocateError("cmajor.binary.message.protocol: error: message id '" +
+                    ToString(messageId) + "' already in use, please change the message name");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        public Result<BinaryMessage*> Create(uint messageId)
+        {
+            auto it = factoryMap.Find(messageId);
+            if (it != factoryMap.End())
+            {
+                FactoryFunction factoryFunction = it->second;
+                return factoryFunction(messageId);
+            }
+            else
+            {
+                int errorId = AllocateError("cmajor.binary.message.protocol: error: message id '" + ToString(messageId) + "' not registered");
+                return Result<BinaryMessage*>(ErrorId(errorId));
+            }
+        }
+        private static UniquePtr<MessageRegistry> instance;
+        private Map<uint, FactoryFunction> factoryMap;
+    }
+
+    public Result<bool> RegisterMessage<T>()
+    {
+        return MessageRegistry.Instance().Register(T.ClassName(), T.Create);
+    }
+}

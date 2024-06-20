@@ -1287,6 +1287,13 @@ bool Overrides(FunctionSymbol* f, FunctionSymbol* g)
                 ParameterSymbol* q = g->Parameters()[i];
                 if (!TypesEqual(p->GetType(), q->GetType())) return false;
             }
+            if (f->ReturnType() && g->ReturnType())
+            {
+                if (!TypesEqual(f->ReturnType(), g->ReturnType()))
+                {
+                    throw Exception("the return type of the overriding function differs from the return type of the base class function", f->GetFullSpan(), g->GetFullSpan());
+                }
+            }
             return true;
         }
     }
@@ -1330,12 +1337,6 @@ void ClassTypeSymbol::InitVmt(std::vector<FunctionSymbol*>& vmtToInit)
                 {
                     throw Exception("overriding function should be declared with override specifier", f->GetFullSpan());
                 }
-/* TODO exception handling
-                if (f->DontThrow() != v->DontThrow())
-                {
-                    throw Exception("overriding function has conflicting nothrow specification compared to the base class virtual function", f->GetFullSpan(), v->GetFullSpan());
-                }
-*/
                 f->SetVmtIndex(j);
                 vmtToInit[j] = f;
                 found = true;
@@ -1708,7 +1709,7 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
         emitter.SetVmtObjectType(this, localVmtObjectType);
     }
     void* className = nullptr;
-    if (GetBackEnd() != BackEnd::masm)
+    if (GetBackEnd() != BackEnd::masm && GetBackEnd() != BackEnd::cpp)
     {
         if (!emitter.IsVmtObjectCreated(this) && create)
         {
@@ -1788,7 +1789,8 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
                 else
                 {
-                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter), virtualFunction->DontThrow());
+                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->InstantiatedName()), virtualFunction->IrType(emitter), 
+                        virtualFunction->DontThrow());
                     vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
                 }
             }
@@ -1818,7 +1820,8 @@ void* ClassTypeSymbol::VmtObject(cmajor::ir::Emitter& emitter, bool create)
                 }
                 else
                 {
-                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter), virtualFunction->DontThrow());
+                    void* functionObject = emitter.GetOrInsertFunction(util::ToUtf8(virtualFunction->MangledName()), virtualFunction->IrType(emitter), 
+                        virtualFunction->DontThrow());
                     vmtArray.push_back(emitter.GetConversionValue(emitter.GetIrTypeForVoidPtrType(), functionObject));
                 }
             }

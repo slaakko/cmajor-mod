@@ -41,7 +41,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TypeExpr");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TypeExpr");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, prefixTypeExpr.Release()));
                 }
@@ -144,7 +148,11 @@ namespace cm.parser
                                 if (match.hit)
                                 {
                                     #if (DEBUG)
-                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrefixTypeExpr");
+                                        if (parser_debug_write_to_log)
+                                        {
+                                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrefixTypeExpr");
+                                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                        }
                                     #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ConstNode(span, lexer.FileIndex(), constTypeExpr.Release())));
                                 }
@@ -175,7 +183,11 @@ namespace cm.parser
                                 if (match.hit)
                                 {
                                     #if (DEBUG)
-                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrefixTypeExpr");
+                                        if (parser_debug_write_to_log)
+                                        {
+                                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrefixTypeExpr");
+                                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                        }
                                     #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, postfixTypeExpr.Release()));
                                 }
@@ -530,7 +542,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PostfixTypeExpr");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PostfixTypeExpr");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, typeExpr.Release()));
                 }
@@ -603,7 +619,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryTypeExpr");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryTypeExpr");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, fundamentalType.Release()));
                         }
@@ -630,7 +650,11 @@ namespace cm.parser
                                 if (match.hit)
                                 {
                                     #if (DEBUG)
-                                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryTypeExpr");
+                                        if (parser_debug_write_to_log)
+                                        {
+                                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryTypeExpr");
+                                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                        }
                                     #endif
                                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, templateId.Release()));
                                 }
@@ -665,7 +689,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryTypeExpr");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"PrimaryTypeExpr");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IdentifierNode(lexer.GetSpan(pos), lexer.FileIndex(), lexer.GetToken(pos).ToString())));
                             }

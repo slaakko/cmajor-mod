@@ -49,7 +49,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.AutoNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -80,7 +84,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BoolNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -111,7 +119,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.SByteNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -142,7 +154,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ByteNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -173,7 +189,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ShortNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -204,7 +224,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UShortNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -235,7 +259,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.IntNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -266,7 +294,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UIntNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -297,7 +329,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.LongNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -328,7 +364,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.ULongNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -359,7 +399,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.FloatNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -390,7 +434,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.DoubleNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -421,7 +469,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.CharNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -452,7 +504,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.WCharNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -483,7 +539,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.UCharNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }
@@ -514,7 +574,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"FundamentalType");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.VoidNode(lexer.GetSpan(pos), lexer.FileIndex())));
                         }

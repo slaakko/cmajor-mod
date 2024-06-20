@@ -251,7 +251,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         Assert(parent->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol, "class template specialization expected"); 
         cmajor::symbols::ClassTemplateSpecializationSymbol* classTemplateSpecialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(parent);
         std::pair<util::uuid, int> classIdMemFunIndexPair = std::make_pair(classTemplateSpecialization->TypeId(), memberFunction->GetIndex());
-        if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::masm)
+        if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::masm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
         {
             if (classIdMemberFunctionIndexSet.find(classIdMemFunIndexPair) != classIdMemberFunctionIndexSet.cend())
             {
@@ -378,7 +378,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         symbolTable.SetCurrentCompileUnit(boundCompileUnit.GetCompileUnitNode());
         InstantiationGuard instantiationGuard(symbolTable, classTemplate->FileIndex(), classTemplate->ModuleId());
         cmajor::symbols::SymbolCreatorVisitor symbolCreatorVisitor(symbolTable);
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
         {
             cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
             if (compileUnitNode)
@@ -436,7 +436,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
         statementBinder.GenerateEnterAndExitFunctionCode(boundFunction.get());
         std::u32string instantiatedMemberFunctionMangledName = boundFunction->GetFunctionSymbol()->MangledName();
         boundClass->AddMember(std::move(boundFunction));
-        if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::masm)
+        if (cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::masm && cmajor::symbols::GetBackEnd() != cmajor::symbols::BackEnd::cpp)
         {
             classIdMemberFunctionIndexSet.insert(classIdMemFunIndexPair);
         }

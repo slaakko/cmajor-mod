@@ -18,6 +18,7 @@ namespace System.Net.Sockets
                 SetErrorId(result.GetErrorId());
             }
         }
+        [nodiscard]
         public Result<bool> Start()
         {
             if (Error())
@@ -26,6 +27,7 @@ namespace System.Net.Sockets
             }
             return Start(256);
         }
+        [nodiscard]
         public Result<bool> Start(int backlog)
         {
             if (Error())
@@ -39,6 +41,7 @@ namespace System.Net.Sockets
             }
             return listenResult;
         }
+        [nodiscard]
         public Result<bool> Stop()
         {
             if (Error())
@@ -60,6 +63,7 @@ namespace System.Net.Sockets
             }
             return result;
         }
+        [nodiscard]
         public Result<TcpSocket> AcceptSocket()
         {
             if (Error())

@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_PROCESS_INCLUDED
-#define CMRT_CPP_PROCESS_INCLUDED
+#ifndef CMRT_PROCESS_INCLUDED
+#define CMRT_PROCESS_INCLUDED
 #include <stdint.h>
 
 extern "C" void* RtmCreateProcess(const char* command, int32_t redirections, int32_t & errorId);
@@ -18,4 +18,4 @@ extern "C" int32_t RtmProcessReadLine(void* process, int handle, int32_t & error
 extern "C" int32_t RtmProcessReadToEnd(void* process, int handle, int32_t & errorId);
 extern "C" bool RtmProcessWriteLine(void* process, const char* line, int32_t & errorId);
 
-#endif // CMRT_CPP_PROCESS_INCLUDED
+#endif // CMRT_PROCESS_INCLUDED

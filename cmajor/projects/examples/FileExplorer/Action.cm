@@ -1,0 +1,48 @@
+using System;
+using System.Windows;
+
+namespace FileExplorer
+{
+    public class OpenAndExpandAction : ClickAction
+    {
+        public OpenAndExpandAction(Node* node_) : base(), node(node_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Execute()
+        {
+            MainWindow* mainWindow = node->GetMainWindow();
+            if (mainWindow != null)
+            {
+                auto result = mainWindow->HideContextMenu();
+                if (result.Error()) return result;
+                result = node->OpenAndExpand();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private Node* node;
+    }
+
+    public class OpenAction : ClickAction
+    {
+        public nothrow OpenAction(Node* node_) : base(), node(node_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Execute()
+        {
+            MainWindow* mainWindow = node->GetMainWindow();
+            if (mainWindow != null)
+            {
+                auto result = mainWindow->HideContextMenu();
+                if (result.Error()) return result;
+                result = node->Open();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private Node* node;
+    }
+}
+

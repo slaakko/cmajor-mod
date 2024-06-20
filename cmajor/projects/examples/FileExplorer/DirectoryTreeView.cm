@@ -1,0 +1,218 @@
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace FileExplorer
+{
+    public System.Windows.Color DefaultDirectoryTreeViewFrameColor()
+    {
+        return System.Windows.Color(204u, 206u, 219u);
+    }
+
+    public Padding DefaultDirectoryTreeViewNodeImagePadding()
+    {
+        return Padding(2, 2, 2, 2);
+    }
+
+    public float DefaultDirectoryTreeViewNodeIndentPercent()
+    {
+        return 100.0f;
+    }
+
+    public class DirectoryTreeView : ContainerControl
+    {
+        public DirectoryTreeView(ImageList* imageList, ComputerNode* computer_) :
+            base(ControlCreateParams().SetWindowClassName("FileExplorer.DirectoryTreeView").
+            SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.White()).SetDock(Dock.fill)),
+            computer(computer_)
+        {
+            UniquePtr<TreeView> treeViewPtr(new TreeView(TreeViewCreateParams(TreeViewControlCreateParams(ControlCreateParams().Defaults())).
+                SetNodeImagePadding(DefaultDirectoryTreeViewNodeImagePadding()).SetNodeIndentPercent(DefaultDirectoryTreeViewNodeIndentPercent())));
+            if (treeViewPtr->Error())
+            {
+                SetErrorId(treeViewPtr->GetErrorId());
+                return;
+            }
+            treeView = treeViewPtr.Get();
+            treeView->SetDoubleBuffered();
+            treeView->SetScrollSubject();
+            treeView->SetImageList(imageList);
+            treeView->NodeClickEvent().AddHandler(TreeViewNodeClick);
+            treeView->NodeDoubleClickEvent().AddHandler(TreeViewNodeDoubleClick);
+            UniquePtr<PaddedControl> paddedTreeViewPtr(new PaddedControl(
+                PaddedControlCreateParams(
+                    PaddedControlControlCreateParams(
+                        ControlCreateParams().Defaults(), treeView),
+                    treeViewPtr.Release()).Defaults()));
+            if (paddedTreeViewPtr->Error())
+            {
+                SetErrorId(paddedTreeViewPtr->GetErrorId());
+                return;
+            }
+            PaddedControl* paddedTreeView = paddedTreeViewPtr.Get();
+            UniquePtr<BorderedControl> borderedTreeViewPtr(new BorderedControl(
+                BorderedControlCreateParams(
+                    BorderedControlControlCreateParams(
+                        ControlCreateParams().Defaults(), paddedTreeView),
+                    paddedTreeViewPtr.Release()).SetNormalBorderColor(DefaultDirectoryTreeViewFrameColor())));
+            if (borderedTreeViewPtr->Error())
+            {
+                SetErrorId(borderedTreeViewPtr->GetErrorId());
+                return;
+            }
+            BorderedControl* borderedTreeView = borderedTreeViewPtr.Get();
+            UniquePtr<ScrollableControl> scrollableTreeViewPtr(new ScrollableControl(
+                ScrollableControlCreateParams(
+                    ScrollableControlControlCreateParams(
+                        ControlCreateParams().SetDock(Dock.fill), borderedTreeView),
+                    borderedTreeViewPtr.Release()).Defaults()));
+            if (scrollableTreeViewPtr->Error())
+            {
+                SetErrorId(scrollableTreeViewPtr->GetErrorId());
+                return;
+            }
+            child = scrollableTreeViewPtr.Get();
+            auto result = AddChild(scrollableTreeViewPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = PopulateTreeView(imageList);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public void SetMainWindow(MainWindow* mainWindow_)
+        {
+            mainWindow = mainWindow_;
+        }
+        [nodiscard]
+        public Result<bool> Open(Node* node)
+        {
+            TreeViewNode* treeViewNode = node->GetTreeViewNode();
+            if (treeViewNode != null)
+            {
+                TreeView* treeView = treeViewNode->GetTreeView();
+                treeView->SetContentLocation(Point(0, 0));
+                TreeViewNode* parentNode = treeViewNode->Parent();
+                while (parentNode != null)
+                {
+                    auto result = parentNode->Expand();
+                    if (result.Error()) return result;
+                    parentNode = parentNode->Parent();
+                }
+                treeViewNode->Select();
+            }
+            return Result<bool>(true);
+        }
+        public Node* SelectedNode() const
+        {
+            if (treeView != null)
+            {
+                TreeViewNode* selectedNode = treeView->SelectedNode();
+                if (selectedNode != null)
+                {
+                    void* data = selectedNode->Data();
+                    if (data != null)
+                    {
+                        Node* node = cast<Node*>(data);
+                        return node;
+                    }
+                }
+            }
+            return null;
+        }
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            auto result = treeView->Invalidate();
+            if (result.Error()) return result;
+            result = child->Invalidate();
+            if (result.Error()) return result;
+            return base->OnPaint(args);
+        }
+        [nodiscard]
+        private Result<bool> PopulateTreeView(ImageList* imageList)
+        {
+            Result<UniquePtr<TreeViewNode>> rootPtrResult(computer->ToTreeViewNode(true, imageList));
+            if (rootPtrResult.Error())
+            {
+                return Result<bool>(ErrorId(rootPtrResult.GetErrorId()));
+            }
+            TreeViewNode* root = rootPtrResult.Value().Get();
+            auto result = treeView->SetRoot(rootPtrResult.Value().Release());
+            if (result.Error()) return result;
+            result = root->Expand();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private void TreeViewNodeClick(TreeViewNodeMouseClickEventArgs& args)
+        {
+            if (mainWindow != null)
+            {
+                TreeViewNode* treeViewNode = args.node;
+                if (treeViewNode != null)
+                {
+                    void* data = treeViewNode->Data();
+                    if (data != null)
+                    {
+                        Node* node = cast<Node*>(data);
+                        ContentView* contentView = mainWindow->GetContentView();
+                        if (contentView != null)
+                        {
+                            auto result = contentView->ViewContent(node);
+                            if (result.Error())
+                            {
+                                args.errorId = result.GetErrorId();
+                                return;
+                            }
+                            result= node->SetCurrentPathNode();
+                            if (result.Error())
+                            {
+                                args.errorId = result.GetErrorId();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        private void TreeViewNodeDoubleClick(TreeViewNodeMouseClickEventArgs& args)
+        {
+            TreeViewNode* treeViewNode = args.node;
+            if (treeViewNode != null)
+            {
+                Node* node = null;
+                if (treeViewNode->Data() != null)
+                {
+                    node = cast<Node*>(treeViewNode->Data());
+                }
+                if (treeViewNode->GetState() == TreeViewNode.State.collapsed)
+                {
+                    auto result = treeViewNode->ExpandAll();
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                else if (treeViewNode->GetState() == TreeViewNode.State.expanded)
+                {
+                    auto result = treeViewNode->CollapseAll();
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+            }
+        }
+        private MainWindow* mainWindow;
+        private TreeView* treeView;
+        private Control* child;
+        private ComputerNode* computer;
+    }
+}
+

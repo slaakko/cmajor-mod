@@ -36,6 +36,7 @@ namespace System.IO
         {
             streams.Add(UniquePtr<Stream>(strm));
         }
+        [nodiscard]
         public Result<bool> ReadBool()
         {
             if (Error())
@@ -49,6 +50,7 @@ namespace System.IO
             }
             return Result<bool>(cast<bool>(result.Value()));
         }
+        [nodiscard]
         public Result<char> ReadChar()
         {
             if (Error())
@@ -62,6 +64,7 @@ namespace System.IO
             }
             return Result<char>(cast<char>(result.Value()));
         }
+        [nodiscard]
         public Result<wchar> ReadWChar()
         {
             if (Error())
@@ -75,6 +78,7 @@ namespace System.IO
             }
             return Result<wchar>(cast<wchar>(result.Value()));
         }
+        [nodiscard]
         public Result<uchar> ReadUChar()
         {
             if (Error())
@@ -88,6 +92,7 @@ namespace System.IO
             }
             return Result<uchar>(cast<uchar>(result.Value()));
         }
+        [nodiscard]
         public Result<sbyte> ReadSByte()
         {
             if (Error())
@@ -101,6 +106,7 @@ namespace System.IO
             }
             return Result<sbyte>(cast<sbyte>(result.Value()));
         }
+        [nodiscard]
         public Result<int> ReadByteOrEnd()
         {
             if (Error())
@@ -121,6 +127,7 @@ namespace System.IO
             }
             return result;
         }
+        [nodiscard]
         public Result<byte> ReadByte()
         {
             if (Error())
@@ -148,6 +155,7 @@ namespace System.IO
             }
             return Result<byte>(cast<byte>(x));
         }
+        [nodiscard]
         public Result<short> ReadShort()
         {
             if (Error())
@@ -161,6 +169,7 @@ namespace System.IO
             }
             return Result<short>(cast<short>(result.Value()));
         }
+        [nodiscard]
         public Result<ushort> ReadUShort()
         {
             if (Error())
@@ -180,6 +189,7 @@ namespace System.IO
             ushort x = cast<ushort>(x0.Value()) << 8u | cast<ushort>(x1.Value());
             return Result<ushort>(x);
         }
+        [nodiscard]
         public Result<int> ReadInt()
         {
             if (Error())
@@ -193,6 +203,7 @@ namespace System.IO
             }
             return Result<int>(cast<int>(x.Value()));
         }
+        [nodiscard]
         public Result<uint> ReadUInt()
         {
             if (Error())
@@ -222,6 +233,7 @@ namespace System.IO
             uint x = cast<uint>(x0.Value()) << 24u | cast<uint>(x1.Value()) << 16u | cast<uint>(x2.Value()) << 8u | cast<uint>(x3.Value());
             return Result<uint>(x);
         }
+        [nodiscard]
         public Result<long> ReadLong()
         {
             if (Error())
@@ -235,6 +247,7 @@ namespace System.IO
             }
             return Result<long>(cast<long>(x.Value()));
         }
+        [nodiscard]
         public Result<ulong> ReadULong()
         {
             if (Error())
@@ -285,6 +298,7 @@ namespace System.IO
                 cast<ulong>(x4.Value()) << 24u | cast<ulong>(x5.Value()) << 16u | cast<ulong>(x6.Value()) << 8u | cast<ulong>(x7.Value());
             return Result<ulong>(x);
         }
+        [nodiscard]
         public Result<float> ReadFloat()
         {
             if (Error())
@@ -299,6 +313,7 @@ namespace System.IO
             void* u = &x;
             return Result<float>(*cast<float*>(u));
         }
+        [nodiscard]
         public Result<double> ReadDouble()
         {
             if (Error())
@@ -313,6 +328,7 @@ namespace System.IO
             void* u = &x;
             return Result<double>(*cast<double*>(u));
         }
+        [nodiscard]
         public Result<string> ReadString()
         {
             if (Error())
@@ -336,6 +352,7 @@ namespace System.IO
             }
             return Result<string>(s);
         }
+        [nodiscard]
         public Result<wstring> ReadWString()
         {
             if (Error())
@@ -349,6 +366,7 @@ namespace System.IO
             }
             return Result<wstring>(ToUtf16(s.Value()));
         }
+        [nodiscard]
         public Result<ustring> ReadUString()
         {
             if (Error())
@@ -362,6 +380,7 @@ namespace System.IO
             }
             return Result<ustring>(ToUtf32(s.Value()));
         }
+        [nodiscard]
         public Result<Uuid> ReadUuid()
         {
             if (Error())
@@ -380,6 +399,7 @@ namespace System.IO
             }
             return Result<Uuid>(uuid);
         }
+        [nodiscard]
         public Result<bool> Read(byte* buffer, int size)
         {
             if (Error())
@@ -397,6 +417,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Seek(long pos, Origin origin)
         {
             if (Error())
@@ -417,6 +438,7 @@ namespace System.IO
             }
             return result;
         }
+        [nodiscard]
         public Result<long> Tell()
         {
             if (Error())
@@ -437,6 +459,7 @@ namespace System.IO
             }
             return result;
         }
+        [nodiscard]
         public Result<long> Size()
         {
             if (Error())

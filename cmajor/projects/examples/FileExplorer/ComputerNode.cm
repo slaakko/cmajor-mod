@@ -1,0 +1,111 @@
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace FileExplorer
+{
+    public class ComputerNode : Node
+    {
+        public ComputerNode() : base("Computer")
+        {
+        }
+        public void AddDrive(DriveNode* drive)
+        {
+            drive->SetParent(this);
+            drives.Add(UniquePtr<DriveNode>(drive));
+        }
+        public inline const List<UniquePtr<DriveNode>>& Drives() const
+        {
+            return drives;
+        }
+        public override MainWindow* GetMainWindow() const
+        {
+            return mainWindow;
+        }
+        public void SetMainWindow(MainWindow* mainWindow_)
+        {
+            mainWindow = mainWindow_;
+        }
+        public override string ImageName() const
+        {
+            return "computer.bitmap";
+        }
+        [nodiscard]
+        public override Result<UniquePtr<TreeViewNode>> ToTreeViewNode(bool createChildren, ImageList* imageList)
+        {
+            UniquePtr<TreeViewNode> rootPtr(new TreeViewNode(Name()));
+            if (rootPtr->Error())
+            {
+                return Result<UniquePtr<TreeViewNode>>(ErrorId(rootPtr->GetErrorId()));
+            }
+            TreeViewNode* root = rootPtr.Get();
+            auto result = root->SetImageIndex(imageList->GetImageIndex(ImageName()));
+            if (result.Error())
+            {
+                return Result<UniquePtr<TreeViewNode>>(ErrorId(result.GetErrorId()));
+            }
+            result = SetTreeViewNode(root);
+            if (result.Error())
+            {
+                return Result<UniquePtr<TreeViewNode>>(ErrorId(result.GetErrorId()));
+            }
+            if (createChildren)
+            {
+                for (const UniquePtr<DriveNode>& drive : drives)
+                {
+                    Result<UniquePtr<TreeViewNode>> childPtrResult(drive->ToTreeViewNode(false, imageList));
+                    if (childPtrResult.Error()) return childPtrResult;
+                    TreeViewNode* child = childPtrResult.Value().Get();
+                    if (imageList != null)
+                    {
+                        int imageIndex = imageList->GetImageIndex(drive->ImageName());
+                        if (imageIndex != -1)
+                        {
+                            auto imageIndexResult = child->SetImageIndex(imageIndex);
+                            if (imageIndexResult.Error())
+                            {
+                                return Result<UniquePtr<TreeViewNode>>(ErrorId(imageIndexResult.GetErrorId()));
+                            }
+                        }
+                    }
+                    auto addResult = root->AddChild(childPtrResult.Value().Release());
+                    if (addResult.Error())
+                    {
+                        return Result<UniquePtr<TreeViewNode>>(ErrorId(addResult.GetErrorId()));
+                    }
+                }
+            }
+            return Result<UniquePtr<TreeViewNode>>(Rvalue(rootPtr));
+        }
+        public override Result<Control*> CreateView(ImageList* imageList)
+        {
+            ListView* listView = new ListView(ListViewCreateParams(ListViewControlCreateParams(ControlCreateParams().Defaults())).Defaults());
+            if (listView->Error())
+            {
+                return Result<Control*>(ErrorId(listView->GetErrorId()));
+            }
+            listView->SetData(this);
+            MainWindow* mainWindow = GetMainWindow();
+            if (mainWindow != null)
+            {
+                mainWindow->AddListViewEventHandlers(listView);
+            }
+            listView->SetDoubleBuffered();
+            listView->SetImageList(imageList);
+            listView->AddColumn("Drive", 200);
+            for (const UniquePtr<DriveNode>& drive : drives)
+            {
+                ListViewItem* driveItem = listView->AddItem();
+                auto result = drive->SetData(driveItem, imageList);
+                if (result.Error())
+                {
+                    return Result<Control*>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<Control*>(listView);
+        }
+        private List<UniquePtr<DriveNode>> drives;
+        private MainWindow* mainWindow;
+    }
+}
+

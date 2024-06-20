@@ -44,12 +44,12 @@ void PrintHelp()
     std::cout << "  Clean." << "\n";
     std::cout << "--disable-module-cache | -m\n";
     std::cout << "  Do not cache recently built modules.\n";
-    std::cout << "--link-with-debug-runtime | -d\n";
-    std::cout << "  Link with debug runtime." << "\n";
     std::cout << "--config=CONFIG | -c=CONFIG" << "\n";
     std::cout << "  Compile using CONFIG configuration. CONFIG=('debug'|'release'), default is 'debug'" << "\n";
     std::cout << "--opt-level=LEVEL| -O=LEVEL" << "\n";
     std::cout << "  Set optimization level to LEVEL (0-3). Defaults: LEVEL=0 for 'debug' configuration and LEVEL=2 for 'release' configuration." << "\n";
+    std::cout << "--disable-warnings=WARNING_LIST | -w=WARNING_LIST" << "\n";
+    std::cout << "  Disable warning messages for specified warnings in WARNING_LIST that is a semicolon-separated list of warning numbers." << "\n";
     std::cout << "--emit-llvm | -l" << "\n";
     std::cout << "  Emit intermediate LLVM code to FILE.ll files" << "\n";
     std::cout << "--gen-debug-info | -g" << "\n";
@@ -110,12 +110,6 @@ int main(int argc, const char** argv)
                 {
                     cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
                 }
-/*
-                else if (arg == "--link-with-debug-runtime")
-                {
-                    cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
-                }
-*/
                 else if (arg == "--gen-debug-info")
                 {
                     genDebugInfo = true;
@@ -155,6 +149,20 @@ int main(int argc, const char** argv)
                             {
                                 throw std::runtime_error("unknown optimization level '" + components[1] + "'");
                             }
+                        }
+                        else if (components[0] == "--disable-warnings")
+                        {
+                            std::string warningList = components[1];
+                            std::vector<std::string> warnings = util::Split(warningList, ';');
+                            for (const auto& warning : warnings)
+                            {
+                                int warningNumber = std::stoi(warning);
+                                cmajor::symbols::DisableWarning(warningNumber);
+                            }
+                        }
+                        else
+                        {
+                            throw std::runtime_error("unknown option '" + arg + "'");
                         }
                     }
                     else
@@ -198,6 +206,21 @@ int main(int argc, const char** argv)
                                 throw std::runtime_error("unknown optimization level '" + components[1] + "'");
                             }
                         }
+                        else if (components[0] == "w")
+                        {
+                            std::string warningList = components[1];
+                            std::vector<std::string> warnings = util::Split(warningList, ';');
+                            for (const auto& warning : warnings)
+                            {
+                                int warningNumber = std::stoi(warning);
+                                cmajor::symbols::DisableWarning(warningNumber);
+                            }
+                        }
+                        else
+                        {
+                            throw std::runtime_error("unknown option '" + arg + "'");
+                        }
+
                     }
                     else
                     {
@@ -244,13 +267,6 @@ int main(int argc, const char** argv)
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
                                 break;
                             }
-/*
-                            case 'd':
-                            {
-                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
-                                break;
-                            }
-*/
                             case 'm':
                             {
                                 useModuleCache = false;

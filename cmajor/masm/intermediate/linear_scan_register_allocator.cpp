@@ -54,7 +54,7 @@ LiveRange GetLiveRange(Instruction* inst)
 }
 
 LinearScanRegisterAllocator::LinearScanRegisterAllocator(Function& function, Context* context_) : 
-    frame(), liveRanges(), active(), frameLocations(), registerGroups(), context(context_)
+    frame(), liveRanges(), activeInteger(), activeFP(), frameLocations(), registerGroups(), context(context_)
 {
     ComputeLiveRanges(function);
 }
@@ -87,9 +87,16 @@ void LinearScanRegisterAllocator::AddFreeRegGroupToPool(Instruction* inst)
     }
 }
 
-void LinearScanRegisterAllocator::RemoveFromActive(const LiveRange& range)
+void LinearScanRegisterAllocator::RemoveFromActive(const LiveRange& range, bool integer)
 {
-    active.erase(range);
+    if (integer)
+    {
+        activeInteger.erase(range);
+    }
+    else
+    {
+        activeFP.erase(range);
+    }
     for (Instruction* inst : GetInstructions(range))
     {
         locations[inst] = locations[inst] & ~Locations::reg;
@@ -150,7 +157,14 @@ void LinearScanRegisterAllocator::AllocateRegister(Instruction* inst)
         registerGroups[inst] = context->AssemblyContext()->GetRegisterPool()->GetLocalRegisterGroup();
     }
     LiveRange range = GetLiveRange(inst);
-    active.insert(range);
+    if (inst->IsFloatingPointInstruction())
+    {
+        activeFP.insert(range);
+    }
+    else
+    {
+        activeInteger.insert(range);
+    }
     locations[inst] = locations[inst] | Locations::reg;
 }
 
@@ -193,7 +207,17 @@ void LinearScanRegisterAllocator::AllocateFrameLocation(Instruction* inst, bool 
 void LinearScanRegisterAllocator::Spill(Instruction* inst)
 {
     spillDataVec.clear();
-    LiveRange spill = *--active.cend();
+    LiveRange spill;
+    bool integer = false;
+    if (inst->IsFloatingPointInstruction())
+    {
+        spill = *--activeFP.cend();
+    }
+    else
+    {
+        spill = *--activeInteger.cend();
+        integer = true;
+    }
     LiveRange range = GetLiveRange(inst);
     for (Instruction* instToSpill : GetInstructions(spill))
     {
@@ -201,8 +225,16 @@ void LinearScanRegisterAllocator::Spill(Instruction* inst)
         AllocateFrameLocation(instToSpill, true);
         locations[instToSpill] = Locations::frame;
         locations[inst] = locations[inst] | Locations::reg;
-        active.erase(spill);
-        active.insert(range);
+        if (integer)
+        {
+            activeInteger.erase(spill);
+            activeInteger.insert(range);
+        }
+        else
+        {
+            activeFP.erase(spill);
+            activeFP.insert(range);
+        }
         SpillData spillData;
         spillData.registerGroupToSpill = registerGroups[instToSpill];
         spillData.spillToFrameLocation = frameLocations[instToSpill];
@@ -265,7 +297,7 @@ void LinearScanRegisterAllocator::ComputeLiveRanges(Function& function)
 void LinearScanRegisterAllocator::ExpireOldRanges(const LiveRange& range)
 {
     std::vector<LiveRange> toRemove;
-    for (const auto& activeRange : active)
+    for (const auto& activeRange : activeInteger)
     {
         if (activeRange.end >= range.start) break;
         toRemove.push_back(activeRange);
@@ -276,7 +308,21 @@ void LinearScanRegisterAllocator::ExpireOldRanges(const LiveRange& range)
     }
     for (const auto& r : toRemove)
     {
-        RemoveFromActive(r);
+        RemoveFromActive(r, true);
+    }
+    toRemove.clear();
+    for (const auto& activeRange : activeFP)
+    {
+        if (activeRange.end >= range.start) break;
+        toRemove.push_back(activeRange);
+        for (Instruction* inst : GetInstructions(activeRange))
+        {
+            AddFreeRegGroupToPool(inst);
+        }
+    }
+    for (const auto& r : toRemove)
+    {
+        RemoveFromActive(r, false);
     }
 }
 

@@ -12,17 +12,17 @@ import cmajor.info;
 
 namespace cmcode {
 
-void StartBuild(const std::string& backend, const std::string& config, const std::string& filePath, BuildRequestKind requestKind)
+void StartBuild(const std::string& backend, const std::string& config, const std::string& filePath, const std::string& disabledWarnings, BuildRequestKind requestKind)
 {
     std::unique_ptr<cmajor::info::bs::BuildCommand> buildCommand(new cmajor::info::bs::BuildCommand());
     const BuildSettings& buildSettings = GetBuildSettings();
     buildCommand->backend = backend;
     buildCommand->config = config;
     buildCommand->optimizationLevel = "default";
+    buildCommand->disabledWarnings = disabledWarnings;
     buildCommand->filePath = filePath;
     buildCommand->singleThreadedCompile = buildSettings.singleThreadedCompile;
     buildCommand->emitIR = buildSettings.generateIntermediateCodeFiles;
-    //buildCommand->linkWithDebugRuntime = buildSettings.linkWithDebugRuntime;
     buildCommand->verbose = true;
     if ((requestKind & BuildRequestKind::clean) != BuildRequestKind::none)
     {

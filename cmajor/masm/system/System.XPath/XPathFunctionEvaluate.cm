@@ -7,6 +7,7 @@ using System;
 
 namespace System.XPath
 {
+    [nodiscard]
     public Result<NodeSet*> NodeSetCast(Object* object, Function* function)
     {
         if (object->IsNodeSet())
@@ -19,7 +20,8 @@ namespace System.XPath
             return Result<NodeSet*>(ErrorId(errorId));
         }
     }
-    
+
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToString(NodeSet* nodeSet)
     {
         if (nodeSet->Count() == 0)
@@ -32,6 +34,7 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToString(Boolean* boolean)
     {
         if (boolean->Value())
@@ -44,36 +47,43 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToString(Number* number)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Str(ToString(number->Value()))));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToString(Str* string)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Str(string->Value())));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToBoolean(NodeSet* nodeSet)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(nodeSet->Count() != 0)));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToBoolean(Boolean* boolean)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(boolean->Value())));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToBoolean(Number* number)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(number->Value() != 0)));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToBoolean(Str* string)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(!string->Value().IsEmpty())));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToNumber(NodeSet* nodeSet)
     {
         Result<UniquePtr<Object>> stringResult = EvaluateToString(nodeSet);
@@ -89,6 +99,7 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToNumber(Boolean* boolean)
     {
         if (boolean->Value())
@@ -101,11 +112,13 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToNumber(Number* number)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(number->Value())));
     }
-    
+
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateToNumber(Str* string)
     {
         Result<double> result = ParseDouble(string->Value());

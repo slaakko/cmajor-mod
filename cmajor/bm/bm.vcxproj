@@ -165,7 +165,6 @@
     <ClCompile Include="ast.cppm" />
     <ClCompile Include="schema_rules.cpp" />
     <ClCompile Include="schema_rules.cppm" />
-    <ClCompile Include="number.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\soul\ast\ast.vcxproj">

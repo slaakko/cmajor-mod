@@ -238,7 +238,9 @@ private:
     wing::LogView* GetOutputLogView();
     wing::LogView* GetDebugLog();
     cmajor::view::ErrorView* GetErrorView();
+    cmajor::view::WarningsView* GetWarningsView();
     void ViewError(cmajor::view::ViewErrorArgs& args);
+    void ViewWarning(cmajor::view::ViewWarningArgs& args);
     cmajor::view::Editor* CurrentEditor() const;
     cmajor::view::SearchResultsView* GetSearchResultsView();
     cmajor::view::CallStackView* GetCallStackView();
@@ -323,7 +325,9 @@ private:
     wing::TabPage* outputTabPage;
     wing::LogView* outputLogView;
     wing::TabPage* errorTabPage;
+    wing::TabPage* warningsTabPage;
     cmajor::view::ErrorView* errorView;
+    cmajor::view::WarningsView* warningsView;
     wing::TabPage* logTabPage;
     wing::LogView* log;
     wing::TabPage* consoleTabPage;
@@ -341,7 +345,6 @@ private:
     wing::StatusBarTextItem* editorReadWriteIndicatorStatusBarItem;
     wing::StatusBarTextItem* editorDirtyIndicatorStatusBarItem;
     wing::StatusBarTextItem* sourceFilePathStatusBarItem;
-    //wing::StatusBarTextItem* codeCompletionStatusBarItem;
     wing::StatusBarTextItem* lineStatusBarItem;
     wing::StatusBarTextItem* columnStatusBarItem;
     int buildProgressCounter;

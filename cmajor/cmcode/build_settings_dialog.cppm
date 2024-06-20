@@ -17,12 +17,14 @@ public:
     BuildSettingsDialog();
     void SetValuesFrom(const BuildSettings& buildSettings);
     BuildSettings GetValues() const;
+    bool Valid() const;
 private:
+    void TextBoxTextChanged();
     wing::Button* okButton;
     wing::Button* cancelButton;
     wing::CheckBox* singleThreadedCompileCheckBox;
     wing::CheckBox* generateIntermediateCodeFilesCheckBox;
-    //wing::CheckBox* linkWithDebugRuntimeCheckBox;
+    wing::TextBox* disabledWarningsTextBox;
 };
 
 } // namespace cmcode

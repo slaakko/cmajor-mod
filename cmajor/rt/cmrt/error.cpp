@@ -134,7 +134,7 @@ namespace cmajor::rt {
 
 const char* RtmGetErrorMessage(int errorId)
 {
-    if (errorId == 0) return "";
+    if (errorId == 0) return "unknown error";
     return cmajor::rt::Errors::Instance().GetErrorMessage(errorId);
 }
 

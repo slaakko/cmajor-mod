@@ -8,6 +8,7 @@ using System.Collections;
 
 namespace System.RegularExpressions
 {
+    [nodiscard]
     public Result<bool> ParseHexChar(const string& fileName, uchar& value, const uchar*& p, const uchar* e, const System.Lex.Token& token)
     {
         if (p != e)
@@ -54,6 +55,7 @@ namespace System.RegularExpressions
         return Result<bool>(true);
     }
 
+    [nodiscard]
     public Result<uchar> ParseEscape(const string& fileName, const uchar*& p, const uchar* e, const System.Lex.Token& token)
     {
         uchar value;
@@ -173,6 +175,7 @@ namespace System.RegularExpressions
         return Result<uchar>(value);
     }
 
+    [nodiscard]
     public Result<uchar> MakeEscapeValue(const string& fileName, const System.Lex.Token& token)
     {
         uchar* p = token.match.begin;

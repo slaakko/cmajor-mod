@@ -1,0 +1,17 @@
+using calc.token;
+using calc.expr;
+
+lexer calc.lexer
+{
+	rules
+	{
+		"{ws}" {}
+		"{number}" { return NUMBER; }
+		"\+" { return PLUS; }
+		"-" { return MINUS; }
+		"\*" { return MUL; }
+		"/" { return DIV; }
+		"\(" { return LPAREN; }
+		"\)" { return RPAREN; }
+	}
+}

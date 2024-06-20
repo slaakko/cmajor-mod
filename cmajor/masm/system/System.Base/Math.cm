@@ -3,8 +3,6 @@
 // Distributed under the MIT license
 // =================================
 
-using System;
-
 namespace System
 {
     public double Pow(double x, int exponent)
@@ -63,7 +61,7 @@ namespace System
     {
         return RtmArcSin(x);
     }
-    
+
     public double Atan2(double y, double x)
     {
         return RtmAtan2(y, x);

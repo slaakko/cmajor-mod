@@ -1,0 +1,206 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public inline int DefaultControlPadding()
+    {
+        return 4;
+    }
+
+    public ControlCreateParams& PaddedControlControlCreateParams(ControlCreateParams& controlCreateParams, Control* child)
+    {
+        return controlCreateParams.SetWindowClassName("System.Windows.PaddedControl").SetBackgroundColor(child->BackgroundColor());
+    }
+
+    public class PaddedControlCreateParams
+    {
+        public PaddedControlCreateParams(ControlCreateParams& controlCreateParams_, Control* child_) :
+            controlCreateParams(controlCreateParams_),
+            child(child_),
+            padding(Padding(DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding()))
+        {
+        }
+        public PaddedControlCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public PaddedControlCreateParams& SetPadding(const Padding& padding_)
+        {
+            padding = padding_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public Control* child;
+        public Padding padding;
+    }
+
+    public class PaddedControl : Control
+    {
+        public PaddedControl(Control* child_, const Padding& padding_, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("System.Windows.PaddedControl", DefaultWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(),
+            child_->BackgroundColor(), "paddedControl", location, size, dock, anchors), container(this), child(child_), padding(padding_)
+        {
+            auto result = container.AddChild(child);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = SetChildPos();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public PaddedControl(Control* child) : this(child, Padding(DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding()),
+            Point(), Size(), Dock.none, Anchors.none)
+        {
+        }
+        public PaddedControl(PaddedControlCreateParams& createParams) :
+            base(createParams.controlCreateParams),
+            container(this),
+            child(createParams.child),
+            padding(createParams.padding)
+        {
+            auto result = container.AddChild(child);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = SetChildPos();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        protected override bool IsDecoratorControl() const
+        {
+            return true;
+        }
+        public override Padding DefaultPadding() const
+        {
+            return padding;
+        }
+        [nodiscard]
+        protected override Result<bool> OnLocationChanged()
+        {
+            auto result = base->OnLocationChanged();
+            if (result.Error()) return result;
+            result = SetChildPos();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
+        {
+            auto result = base->OnSizeChanged(args);
+            if (result.Error()) return result;
+            result = SetChildPos();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        protected override void OnChildContentChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentChanged(args);
+            }
+        }
+        protected override void OnChildContentLocationChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentLocationChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentLocationChanged(args);
+            }
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildContentSizeChanged(ControlEventArgs& args)
+        {
+            auto result = base->OnChildContentSizeChanged(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildContentSizeChanged(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildGotFocus(ControlEventArgs& args)
+        {
+            auto result = base->OnChildGotFocus(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildGotFocus(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildLostFocus(ControlEventArgs& args)
+        {
+            auto result = base->OnChildLostFocus(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildLostFocus(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            auto result = args.graphics.Clear(BackgroundColor());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return base->OnPaint(args);
+        }
+        internal override Control* GetFirstEnabledTabStopControl() const
+        {
+            return child->GetFirstEnabledTabStopControl();
+        }
+        internal override Control* GetLastEnabledTabStopControl() const
+        {
+            return child->GetLastEnabledTabStopControl();
+        }
+        [nodiscard]
+        private Result<bool> SetChildPos()
+        {
+            Point loc;
+            Size size = GetSize();
+            Rect childRect(loc, size);
+            childRect.location.x = loc.x + padding.left;
+            childRect.location.y = loc.x + padding.top;
+            childRect.size.w = size.w - padding.Horizontal();
+            childRect.size.h = size.h - padding.Vertical();
+            auto result = child->SetLocation(childRect.location);
+            if (result.Error()) return result;
+            result = child->SetSize(childRect.size);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private Container container;
+        private Control* child;
+        private Padding padding;
+    }
+}

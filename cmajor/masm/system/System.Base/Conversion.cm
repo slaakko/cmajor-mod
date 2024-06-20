@@ -131,6 +131,7 @@ namespace System
         return string(c);
     }
 
+    [nodiscard]
     public Result<string> ToString(wchar c)
     {
         wstring s(c);
@@ -142,6 +143,7 @@ namespace System
         return Result<string>(result.Value());
     }
 
+    [nodiscard]
     public Result<string> ToString(uchar c)
     {
         ustring s(c);
@@ -162,6 +164,7 @@ namespace System
         return "false";
     }
 
+    [nodiscard]
     public inline Result<char> HexChar(byte nibble)
     {
         if ((nibble & ~0x0Fu) != 0u)
@@ -173,6 +176,7 @@ namespace System
         return Result<char>(hex[nibble]);
     }
 
+    [nodiscard]
     public Result<string> ToHexString<U>(U x) where U is UnsignedInteger and ExplicitlyConvertible<U, byte>
     {
         string s;
@@ -198,6 +202,7 @@ namespace System
         return Result<string>(s);
     }
 
+    [nodiscard]
     public Result<string> ToHexString(byte b)
     {
         string s;
@@ -216,26 +221,31 @@ namespace System
         return Result<string>(s);
     }
 
+    [nodiscard]
     public Result<string> ToHexString(ushort u)
     {
         return ToHexString<ushort>(u);
     }
 
+    [nodiscard]
     public Result<string> ToHexString(uint u)
     {
         return ToHexString<uint>(u);
     }
 
+    [nodiscard]
     public Result<string> ToHexString(ulong u)
     {
         return ToHexString<ulong>(u);
     }
 
+    [nodiscard]
     public Result<string> ToOctalString(ulong x)
     {
         return ToOctalString(x, 0);
     }
 
+    [nodiscard]
     public Result<string> ToOctalString(ulong x, int minDigits)
     {
         if (minDigits < 0)
@@ -523,6 +533,7 @@ namespace System
         return ParseSigned<sbyte>(s, x);
     }
 
+    [nodiscard]
     public Result<sbyte> ParseSByte(const string& s)
     {
         sbyte x;
@@ -544,6 +555,7 @@ namespace System
         return ParseUnsigned<byte>(s, x);
     }
 
+    [nodiscard]
     public Result<byte> ParseByte(const string& s)
     {
         byte x;
@@ -565,6 +577,7 @@ namespace System
         return ParseSigned<short>(s, x);
     }
 
+    [nodiscard]
     public Result<short> ParseShort(const string& s)
     {
         short x;
@@ -586,6 +599,7 @@ namespace System
         return ParseUnsigned<ushort>(s, x);
     }
 
+    [nodiscard]
     public Result<ushort> ParseUShort(const string& s)
     {
         ushort x;
@@ -607,6 +621,7 @@ namespace System
         return ParseSigned<int>(s, x);
     }
 
+    [nodiscard]
     public Result<int> ParseInt(const string& s)
     {
         int x;
@@ -628,6 +643,7 @@ namespace System
         return ParseUnsigned<uint>(s, x);
     }
 
+    [nodiscard]
     public Result<uint> ParseUInt(const string& s)
     {
         uint x;
@@ -649,6 +665,7 @@ namespace System
         return ParseSigned<long>(s, x);
     }
 
+    [nodiscard]
     public Result<long> ParseLong(const string& s)
     {
         long x;
@@ -670,6 +687,7 @@ namespace System
         return ParseUnsigned<ulong>(s, x);
     }
 
+    [nodiscard]
     public Result<ulong> ParseULong(const string& s)
     {
         ulong x;
@@ -691,6 +709,7 @@ namespace System
         return ParseFloating<float>(s, x);
     }
 
+    [nodiscard]
     public Result<float> ParseFloat(const string& s)
     {
         float x;
@@ -712,6 +731,7 @@ namespace System
         return ParseFloating<double>(s, x);
     }
 
+    [nodiscard]
     public Result<double> ParseDouble(const string& s)
     {
         double x;
@@ -747,6 +767,7 @@ namespace System
         }
     }
 
+    [nodiscard]
     public Result<bool> ParseBool(const string& s)
     {
         bool x;
@@ -768,6 +789,7 @@ namespace System
         return ParseHex<byte>(s, x);
     }
 
+    [nodiscard]
     public Result<byte> ParseHexByte(const string& s)
     {
         byte x;
@@ -789,6 +811,7 @@ namespace System
         return ParseHex<ushort>(s, x);
     }
 
+    [nodiscard]
     public Result<ushort> ParseHexUShort(const string& s)
     {
         ushort x;
@@ -810,6 +833,7 @@ namespace System
         return ParseHex<uint>(s, x);
     }
 
+    [nodiscard]
     public Result<uint> ParseHexUInt(const string& s)
     {
         uint x;
@@ -831,6 +855,7 @@ namespace System
         return ParseHex<ulong>(s, x);
     }
 
+    [nodiscard]
     public Result<ulong> ParseHexULong(const string& s)
     {
         ulong x;
@@ -864,6 +889,7 @@ namespace System
         return true;
     }
 
+    [nodiscard]
     public Result<ulong> ParseOctal(const string& s)
     {
         ulong x = 0u;
@@ -938,6 +964,7 @@ namespace System
         return true;
     }
 
+    [nodiscard]
     public Result<Date> ParseDate(const string& s)
     {
         Date date;
@@ -1013,6 +1040,7 @@ namespace System
         return true;
     }
 
+    [nodiscard]
     public Result<DateTime> ParseDateTime(const string& s)
     {
         DateTime dateTime;

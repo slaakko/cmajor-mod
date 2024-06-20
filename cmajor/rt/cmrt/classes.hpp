@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_CLASSES_INCLUDED
-#define CMRT_CPP_CLASSES_INCLUDED
+#ifndef CMRT_CLASSES_INCLUDED
+#define CMRT_CLASSES_INCLUDED
 
 namespace cmajor::rt {
 
@@ -18,4 +18,4 @@ extern "C" void RtmBeginStaticInitCriticalSection();
 extern "C" void RtmEndtaticInitCriticalSection();
 extern "C" void RtmEnqueueDestruction(void* destructor, void* destructorThisArg);
 
-#endif // CMRT_CPP_CLASSES_INCLUDED
+#endif // CMRT_CLASSES_INCLUDED

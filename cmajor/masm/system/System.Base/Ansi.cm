@@ -2,11 +2,12 @@
 // Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
- 
+
 namespace System
 {
     public class delegate void ColorCharOutputMethod(Color.Constant textColor, Color.Constant backColor, int handle, uchar c);
 
+    [nodiscard]
     public Result<bool> AnsiProcess(int handle, const string& text, const ColorCharOutputMethod& writeOutputChar)
     {
         if (handle == 1)
@@ -26,7 +27,7 @@ namespace System
         return Result<bool>(true);
     }
 
-    public class AnsiEngine
+    public class AnsiEngine : IOBase
     {
         static AnsiEngine() :
             out(new AnsiEngine(1)),
@@ -772,7 +773,12 @@ namespace System
         }
         private void Emit(char c, const ColorCharOutputMethod& writeOutputChar)
         {
-            unicodeEngine.Put(cast<byte>(c));
+            auto result = unicodeEngine.Put(cast<byte>(c));
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
             if (unicodeEngine.ResultReady())
             {
                 writeOutputChar(textColor, backColor, handle, unicodeEngine.Get());

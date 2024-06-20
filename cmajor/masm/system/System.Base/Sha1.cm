@@ -13,7 +13,7 @@ namespace System.Security
     {
         return (x << n) ^ (x >> (32u - n));
     }
-    
+
     public class Sha1
     {
         public Sha1()
@@ -41,12 +41,13 @@ namespace System.Security
             {
                 Process(*begin);
                 ++begin;
-            }            
+            }
         }
         public void Process(byte* buf, long count)
         {
             Process(buf, buf + count);
         }
+        [nodiscard]
         public Result<string> GetDigest()
         {
             ProcessByte(0x80u);
@@ -179,20 +180,23 @@ namespace System.Security
         private ulong bitCount;
     }
 
+    [nodiscard]
     public Result<string> GetSha1MessageDigest(const string& message)
     {
         byte* data = cast<byte*>(cast<void*>(message.Chars()));
         long count = message.Length();
         return GetSha1MessageDigest(data, count);
     }
-    
+
+    [nodiscard]
     public Result<string> GetSha1MessageDigest(byte* data, long count)
     {
         Sha1 sha1;
         sha1.Process(data, count);
         return sha1.GetDigest();
     }
-    
+
+    [nodiscard]
     public Result<string> GetSha1FileDigest(const string& filePath)
     {
         Sha1 sha1;
@@ -219,10 +223,11 @@ namespace System.Security
                 }
                 sha1.Process(result.Value());
             }
-        }        
+        }
         return sha1.GetDigest();
     }
 
+    [nodiscard]
     public Result<string> GetCumulativeSha1FileDigest(const List<string>& filePaths)
     {
         Sha1 sha1;

@@ -24,7 +24,7 @@ namespace System
         }
         return s.Substring(0, i);
     }
-    
+
     public string Trim(const string& s)
     {
         long b = 0;
@@ -40,6 +40,7 @@ namespace System
         return s.Substring(b, e - b + 1);
     }
 
+    [nodiscard]
     public Result<wstring> Trim(const wstring& s)
     {
         auto result = ToUtf32(s);
@@ -55,6 +56,7 @@ namespace System
         return ToUtf16(trimResult.Value());
     }
 
+    [nodiscard]
     public Result<ustring> Trim(const ustring& s)
     {
         long b = 0;
@@ -135,6 +137,7 @@ namespace System
         return result;
     }
 
+    [nodiscard]
     public Result<wstring> TrimAll(const wstring& s)
     {
         auto result = ToUtf32(s);
@@ -150,6 +153,7 @@ namespace System
         return ToUtf16(trimResult.Value());
     }
 
+    [nodiscard]
     public Result<ustring> TrimAll(const ustring& s)
     {
         ustring result;
@@ -210,6 +214,7 @@ namespace System
         return Result<ustring>(result);
     }
 
+    [nodiscard]
     public Result<string> HexEscape(char c)
     {
         auto result = ToHexString(cast<byte>(c));
@@ -220,6 +225,7 @@ namespace System
         return "\\x" + result.Value();
     }
 
+    [nodiscard]
     public Result<string> HexEscape(wchar c)
     {
         auto result = ToHexString(cast<ushort>(c));
@@ -230,6 +236,7 @@ namespace System
         return "\\x" + result.Value();
     }
 
+    [nodiscard]
     public Result<string> HexEscape(uchar c)
     {
         auto result = ToHexString(cast<uint>(c));
@@ -240,6 +247,7 @@ namespace System
         return "\\x" + result.Value();
     }
 
+    [nodiscard]
     public Result<string> CharStr(char c)
     {
         switch (c)
@@ -270,6 +278,7 @@ namespace System
         return Result<string>(string());
     }
 
+    [nodiscard]
     public Result<string> MakeCharLiteral(char c)
     {
         if (c == '"')
@@ -284,7 +293,7 @@ namespace System
         return Result<string>("'" + charStrResult.Value() + "'");
     }
 
-
+    [nodiscard]
     public Result<wstring> CharStr(wchar c)
     {
         Result<string> hexEscapeResult;
@@ -321,6 +330,7 @@ namespace System
         return Result<wstring>(wstring());
     }
 
+    [nodiscard]
     public Result<ustring> CharStr(uchar c)
     {
         Result<string> hexEscapeResult;
@@ -357,6 +367,7 @@ namespace System
         return Result<ustring>(ustring());
     }
 
+    [nodiscard]
     public Result<string> StringStr(const string& s)
     {
         string result;
@@ -379,6 +390,7 @@ namespace System
         return Result<string>(result);
     }
 
+    [nodiscard]
     public Result<ustring> StringStr(const ustring& s)
     {
         ustring result;
@@ -401,6 +413,7 @@ namespace System
         return Result<ustring>(result);
     }
 
+    [nodiscard]
     public Result<string> MakeStringLiteral(const string& s)
     {
         string result = "\"";
@@ -414,6 +427,7 @@ namespace System
         return Result<string>(result);
     }
 
+    [nodiscard]
     public Result<ustring> MakeStringLiteral(const ustring& s)
     {
         ustring result = u"\"";

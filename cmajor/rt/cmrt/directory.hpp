@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_DIRECTORY_INCLUDED
-#define CMRT_CPP_DIRECTORY_INCLUDED
+#ifndef CMRT_DIRECTORY_INCLUDED
+#define CMRT_DIRECTORY_INCLUDED
 #include <stdint.h>
 
 extern "C" bool RtmDirectoryExists(const char* directoryPath);
@@ -14,4 +14,4 @@ extern "C" const char* RtmGetNextFilePath(int32_t directoryIterationHandle);
 extern "C" const char* RtmGetNextDirectoryPath(int32_t directoryIterationHandle);
 extern "C" void RtmEndIterateDirectory(int32_t directoryIterationHandle);
 
-#endif // CMRT_CPP_DIRECTORY_INCLUDED
+#endif // CMRT_DIRECTORY_INCLUDED

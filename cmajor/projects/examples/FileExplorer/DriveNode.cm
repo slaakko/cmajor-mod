@@ -1,0 +1,64 @@
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace FileExplorer
+{
+    public class DriveNode : Node
+    {
+        public DriveNode(const string& name_) : base(name_)
+        {
+        }
+        public void SetRootDirectory(DirectoryNode* rootDirectory_)
+        {
+            rootDirectory.Reset(rootDirectory_);
+            rootDirectory->SetParent(this);
+            rootDirectory->SetRootDirectory();
+        }
+        public inline DirectoryNode* RootDirectory() const
+        {
+            return rootDirectory.Get();
+        }
+        public override string ImageName() const
+        {
+            return "hard_drive.bitmap";
+        }
+        [nodiscard]
+        public override Result<UniquePtr<TreeViewNode>> ToTreeViewNode(bool createChildren, ImageList* imageList)
+        {
+            UniquePtr<TreeViewNode> treeViewNodePtr(new TreeViewNode(Name()));
+            TreeViewNode* treeViewNode = treeViewNodePtr.Get();
+            auto result = SetTreeViewNode(treeViewNode);
+            if (result.Error())
+            {
+                return Result<UniquePtr<TreeViewNode>>(ErrorId(result.GetErrorId()));
+            }
+            if (imageList != null)
+            {
+                int imageIndex = imageList->GetImageIndex(ImageName());
+                if (imageIndex != -1)
+                {
+                    auto result = treeViewNode->SetImageIndex(imageIndex);
+                    if (result.Error())
+                    {
+                        return Result<UniquePtr<TreeViewNode>>(ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            return Result<UniquePtr<TreeViewNode>>(Rvalue(treeViewNodePtr));
+        }
+        public override Result<Control*> CreateView(ImageList* imageList)
+        {
+            if (!rootDirectory.IsNull())
+            {
+                return rootDirectory->CreateView(imageList);
+            }
+            else
+            {
+                return Result<Control*>();
+            }
+        }
+        private UniquePtr<DirectoryNode> rootDirectory;
+    }
+}
+

@@ -20,13 +20,13 @@ public:
     ConstantValue* Initializer() const { return initializer; }
     void SetInitializer(ConstantValue* initializer_) { initializer = initializer_; }
     void Write(Context& context, util::CodeFormatter& formatter);
-    void SetLinkOnce() { linkOnce = true; }
+    //void SetLinkOnce() { linkOnce = true; }
     void SetStringPtr() { stringPtr = true; }
 private:
     Type* type;
     std::string name;
     ConstantValue* initializer;
-    bool linkOnce;
+    //bool linkOnce;
     bool stringPtr;
 };
 

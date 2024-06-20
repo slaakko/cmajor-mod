@@ -54,7 +54,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Literal");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Literal");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, simpleLiteral.Release()));
                         }
@@ -83,7 +87,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Literal");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Literal");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, complexLiteral.Release()));
                         }
@@ -165,7 +173,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), true)));
                             }
@@ -196,7 +208,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.BooleanLiteralNode(lexer.GetSpan(pos), lexer.FileIndex(), false)));
                             }
@@ -227,7 +243,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 bool floatLiteral = false;
                                 Result<double> result = ParseFloatingLiteral(lexer.FileName(), lexer.GetToken(pos), floatLiteral);
@@ -264,7 +284,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 bool unsignedSuffix = false;
                                 Result<ulong> result = ParseIntegerLiteral(lexer.FileName(), lexer.GetToken(pos), unsignedSuffix);
@@ -301,7 +325,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 cm.ast.CharLiteralPrefix prefix;
                                 Result<uchar> result = ParseCharacterLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
@@ -338,7 +366,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 cm.ast.StringLiteralPrefix prefix;
                                 Result<ustring> result = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
@@ -380,7 +412,11 @@ namespace cm.parser
                             if (match.hit)
                             {
                                 #if (DEBUG)
-                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                    if (parser_debug_write_to_log)
+                                    {
+                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"SimpleLiteral");
+                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                    }
                                 #endif
                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.NullLiteralNode(lexer.GetSpan(pos), lexer.FileIndex())));
                             }
@@ -460,7 +496,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ComplexLiteral");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ComplexLiteral");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, arrayLiteral.Release()));
                         }
@@ -488,7 +528,11 @@ namespace cm.parser
                         if (match.hit)
                         {
                             #if (DEBUG)
-                                if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ComplexLiteral");
+                                if (parser_debug_write_to_log)
+                                {
+                                    auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ComplexLiteral");
+                                    if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                }
                             #endif
                             return System.Result<System.Parsing.Match>(System.Parsing.Match(true, structuredLiteral.Release()));
                         }
@@ -725,7 +769,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ArrayLiteral");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"ArrayLiteral");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, literalNode.Release()));
                 }
@@ -955,7 +1003,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"StructuredLiteral");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"StructuredLiteral");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, literalNode.Release()));
                 }

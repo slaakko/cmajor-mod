@@ -8,12 +8,16 @@ module cmajor.info.bs;
 namespace cmajor::info::bs {
 
 BuildCommand::BuildCommand() :
-    verbose(false), quiet(false), clean(false), rebuild(false), emitIR(false), /*linkWithDebugRuntime(false), */disableModuleCache(false),
+    verbose(false), quiet(false), clean(false), rebuild(false), emitIR(false), disableModuleCache(false),
     singleThreadedCompile(false), buildAllDependencies(false)
 {
 }
 
 CompileError::CompileError() : line(0), scol(0), ecol(0)
+{
+}
+
+Warning::Warning() : number(-1), line(0), scol(0), ecol(0)
 {
 }
 

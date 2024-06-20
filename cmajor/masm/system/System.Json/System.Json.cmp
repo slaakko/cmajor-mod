@@ -1,0 +1,14 @@
+project System.Json;
+target=library;
+reference <../System.Lex/System.Lex.cmp>;
+reference <../System.Parsing/System.Parsing.cmp>;
+source <Json.cm>;
+source <Json.token.cm>;
+source <JsonLexer.cm>;
+source <Json.parser.cm>;
+source <Json_rules.cm>;
+source <TokenValueParsers.cm>;
+rc <JsonLexer.classmap.rc>;
+text <Json.expr>;
+text <Json.lexer>;
+text <Json.parser>;

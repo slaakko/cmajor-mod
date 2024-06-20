@@ -8,6 +8,7 @@ module cmajor.binder.attribute.binder;
 import cmajor.binder.json.attribute.processor;
 import cmajor.binder.xml.attribute.processor;
 import cmajor.binder.system_default.attribute.processor;
+import cmajor.binder.nodiscard.attribute.processor;
 
 import util;
 
@@ -46,6 +47,8 @@ AttributeBinder::AttributeBinder(cmajor::symbols::Module* module)
     attributeProcessors.push_back(std::unique_ptr<AttributeProcessor>(systemDefaultAttributeProcessor));
     XmlAttributeProcessor* xmlAttributeProcessor = new XmlAttributeProcessor();
     attributeProcessors.push_back(std::unique_ptr<AttributeProcessor>(xmlAttributeProcessor));
+    NoDiscardAttributeProcessor* nodiscardAttributeProcessor = new NoDiscardAttributeProcessor();
+    attributeProcessors.push_back(std::unique_ptr<AttributeProcessor>(nodiscardAttributeProcessor));
     for (const std::unique_ptr<AttributeProcessor>& attributeProcessor : attributeProcessors)
     {
         attributeProcessorMap[attributeProcessor->AttributeName()] = attributeProcessor.get();

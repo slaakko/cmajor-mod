@@ -10,7 +10,7 @@ import util;
 
 namespace cmajor::cpp::ir {
 
-GlobalVariable::GlobalVariable(Type* type_, const std::string& name_) : type(type_), name(name_), initializer(nullptr), linkOnce(false), stringPtr(false)
+GlobalVariable::GlobalVariable(Type* type_, const std::string& name_) : type(type_), name(name_), initializer(nullptr), /*linkOnce(false), */stringPtr(false)
 {
 }
 
@@ -33,10 +33,12 @@ Type* GlobalVariable::GetType(Context& context)
 
 void GlobalVariable::Write(Context& context, util::CodeFormatter& formatter)
 {
+/*
     if (linkOnce)
     {
         formatter.Write("inline ");
     }
+*/
     if (!initializer)
     {
         formatter.Write("extern ");
@@ -107,10 +109,12 @@ void GlobalVariable::Write(Context& context, util::CodeFormatter& formatter)
             formatter.Write(initializer->Name(context));
         }
     }
+/*
     else if (linkOnce)
     {
         throw std::runtime_error("global variable '" + name + "' with inline linkage has no initializer");
     }
+*/
     formatter.WriteLine(";");
     if (stringPtr)
     {

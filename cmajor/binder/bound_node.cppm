@@ -49,6 +49,7 @@ public:
     bool IsWhileStatement() const { return boundNodeType == BoundNodeType::boundWhileStatement; }
     bool IsDoStatement() const { return boundNodeType == BoundNodeType::boundDoStatement; }
     bool IsForStatement() const { return boundNodeType == BoundNodeType::boundForStatement; }
+    bool IsBoundFunctionCall() const { return boundNodeType == BoundNodeType::boundFunctionCall; }
 private:
     soul::ast::Span span;
     BoundNodeType boundNodeType;

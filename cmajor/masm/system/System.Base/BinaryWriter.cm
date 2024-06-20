@@ -42,6 +42,7 @@ namespace System.IO
         {
             streams.Add(UniquePtr<Stream>(strm));
         }
+        [nodiscard]
         public Result<bool> Write(bool x)
         {
             if (Error())
@@ -50,6 +51,7 @@ namespace System.IO
             }
             return Write(cast<byte>(x));
         }
+        [nodiscard]
         public Result<bool> Write(char x)
         {
             if (Error())
@@ -58,6 +60,7 @@ namespace System.IO
             }
             return Write(cast<byte>(x));
         }
+        [nodiscard]
         public Result<bool> Write(wchar x)
         {
             if (Error())
@@ -66,6 +69,7 @@ namespace System.IO
             }
             return Write(cast<ushort>(x));
         }
+        [nodiscard]
         public Result<bool> Write(uchar x)
         {
             if (Error())
@@ -74,6 +78,7 @@ namespace System.IO
             }
             return Write(cast<uint>(x));
         }
+        [nodiscard]
         public Result<bool> Write(sbyte x)
         {
             if (Error())
@@ -82,6 +87,7 @@ namespace System.IO
             }
             return Write(cast<byte>(x));
         }
+        [nodiscard]
         public Result<bool> Write(byte x)
         {
             if (Error())
@@ -101,6 +107,7 @@ namespace System.IO
             }
             return result;
         }
+        [nodiscard]
         public Result<bool> Write(short x)
         {
             if (Error())
@@ -109,6 +116,7 @@ namespace System.IO
             }
             return Write(cast<ushort>(x));
         }
+        [nodiscard]
         public Result<bool> Write(ushort x)
         {
             if (Error())
@@ -129,6 +137,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Write(int x)
         {
             if (Error())
@@ -137,6 +146,7 @@ namespace System.IO
             }
             return Write(cast<uint>(x));
         }
+        [nodiscard]
         public Result<bool> Write(uint x)
         {
             if (Error())
@@ -169,6 +179,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Write(long x)
         {
             if (Error())
@@ -177,6 +188,7 @@ namespace System.IO
             }
             return Write(cast<ulong>(x));
         }
+        [nodiscard]
         public Result<bool> Write(ulong x)
         {
             if (Error())
@@ -233,6 +245,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Write(float x)
         {
             if (Error())
@@ -243,6 +256,7 @@ namespace System.IO
             uint* u = cast<uint*>(v);
             return Write(*u);
         }
+        [nodiscard]
         public Result<bool> Write(double x)
         {
             if (Error())
@@ -253,6 +267,7 @@ namespace System.IO
             ulong* u = cast<ulong*>(v);
             return Write(*u);
         }
+        [nodiscard]
         public Result<bool> Write(const string& x)
         {
             if (Error())
@@ -274,6 +289,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Write(const wstring& x)
         {
             if (Error())
@@ -287,6 +303,7 @@ namespace System.IO
             }
             return Write(result.Value());
         }
+        [nodiscard]
         public Result<bool> Write(const ustring& x)
         {
             if (Error())
@@ -300,6 +317,7 @@ namespace System.IO
             }
             return Write(result.Value());
         }
+        [nodiscard]
         public Result<bool> Write(const Uuid& uuid)
         {
             if (Error())
@@ -316,6 +334,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Write(byte* buffer, int size)
         {
             if (Error())
@@ -332,6 +351,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Seek(long pos, Origin origin)
         {
             if (Error())
@@ -351,6 +371,7 @@ namespace System.IO
             }
             return result;
         }
+        [nodiscard]
         public Result<long> Tell()
         {
             if (Error())

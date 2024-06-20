@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_MATH_INCLUDED
-#define CMRT_CPP_MATH_INCLUDED
+#ifndef CMRT_MATH_INCLUDED
+#define CMRT_MATH_INCLUDED
 #include <stdint.h>
 
 extern "C" double RtmPow(double x, int32_t exponent);
@@ -19,4 +19,4 @@ extern "C" double RtmAtan2(double y, double x);
 extern "C" double RtmEpsilon();
 extern "C" double RtmRemainder(double x, double y);
 
-#endif // CMRT_CPP_MATH_INCLUDED
+#endif // CMRT_MATH_INCLUDED

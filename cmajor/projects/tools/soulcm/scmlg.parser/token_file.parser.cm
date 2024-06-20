@@ -316,7 +316,11 @@ namespace scmlg.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TokenFile");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"TokenFile");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     tokenFile->SetTokenCollection(tokenCollection.Release());
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, tokenFile.Release()));
@@ -512,7 +516,11 @@ namespace scmlg.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Token");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Token");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     auto nameResult = ToUtf8(name);
                     if (nameResult.Error())

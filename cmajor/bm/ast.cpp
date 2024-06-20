@@ -194,15 +194,6 @@ void StringNode::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
-NumberNode::NumberNode(const soul::ast::SourcePos& sourcePos_) : TypeNode(NodeKind::numberNode, sourcePos_)
-{
-}
-
-void NumberNode::Accept(Visitor& visitor)
-{
-    visitor.Visit(*this);
-}
-
 UuidNode::UuidNode(const soul::ast::SourcePos& sourcePos_) : TypeNode(NodeKind::uuidNode, sourcePos_)
 {
 }

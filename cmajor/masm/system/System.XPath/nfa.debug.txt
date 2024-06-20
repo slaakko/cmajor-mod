@@ -36,7 +36,7 @@ NFA begin
     EPS -> 13
     EPS -> 10
 13 : RULE=1 : ACCEPT : prev: 12 5 11
-14 : prev: 16 15
+14 : prev: 15 16
     #00006:[U00000030..U00000039:0..9]
      -> 15
 15 : prev: 14
@@ -56,13 +56,13 @@ NFA begin
 21 : prev: 20
     EPS -> 23
     EPS -> 20
-23 : prev: 18 19 17 22 21
+23 : prev: 18 19 22 17 21
     EPS -> 31
 24 : prev: 30
     . -> 25
 25 : prev: 24
     EPS -> 26
-26 : prev: 27 28 25
+26 : prev: 25 28 27
     #00008:[U00000030..U00000039:0..9]
      -> 27
 27 : prev: 26
@@ -73,19 +73,19 @@ NFA begin
 30 : prev: 106
     EPS -> 16
     EPS -> 24
-31 : RULE=2 : ACCEPT : prev: 29 23
+31 : RULE=2 : ACCEPT : prev: 23 29
 32 : prev: 106
     \" -> 33
 33 : prev: 32
     EPS -> 37
     EPS -> 34
-34 : prev: 33 36 35
+34 : prev: 35 33 36
     #00009:U00000022:\"
      -> 35
 35 : prev: 34
     EPS -> 37
     EPS -> 34
-37 : prev: 33 36 35
+37 : prev: 35 33 36
     \" -> 39
 39 : RULE=3 : ACCEPT : prev: 37 38
 40 : prev: 106
@@ -93,13 +93,13 @@ NFA begin
 41 : prev: 40
     EPS -> 45
     EPS -> 42
-42 : prev: 43 44 41
+42 : prev: 44 41 43
     #00010:U00000027:\'
      -> 43
 43 : prev: 42
     EPS -> 45
     EPS -> 42
-45 : prev: 43 44 41
+45 : prev: 44 41 43
     \' -> 47
 47 : RULE=4 : ACCEPT : prev: 46 45
 48 : prev: 106
@@ -109,12 +109,12 @@ NFA begin
     ! -> 51
 51 : prev: 50
     = -> 53
-53 : RULE=6 : ACCEPT : prev: 52 51
+53 : RULE=6 : ACCEPT : prev: 51 52
 54 : prev: 106
     < -> 55
 55 : prev: 54
     = -> 57
-57 : RULE=7 : ACCEPT : prev: 55 56
+57 : RULE=7 : ACCEPT : prev: 56 55
 58 : prev: 106
     > -> 59
 59 : prev: 58
@@ -142,7 +142,7 @@ NFA begin
     / -> 75
 75 : prev: 74
     / -> 77
-77 : RULE=15 : ACCEPT : prev: 75 76
+77 : RULE=15 : ACCEPT : prev: 76 75
 78 : prev: 106
     / -> 79
 79 : RULE=16 : ACCEPT : prev: 78
@@ -158,7 +158,7 @@ NFA begin
     : -> 87
 87 : prev: 86
     : -> 89
-89 : RULE=19 : ACCEPT : prev: 87 88
+89 : RULE=19 : ACCEPT : prev: 88 87
 90 : prev: 106
     : -> 91
 91 : RULE=20 : ACCEPT : prev: 90

@@ -1,0 +1,98 @@
+using System;
+using System.Json;
+
+Result<JsonArray*> MakePhilosophers()
+{
+    JsonArray* philosophers = new JsonArray();
+    JsonObject* aristotle = new JsonObject();
+    auto result = aristotle->AddField("name", new JsonString(u"Aristotles"));
+    if (result.Error()) return Result<JsonArray*>(ErrorId(result.GetErrorId()));
+    philosophers->AddItem(aristotle);
+
+    JsonObject* plato = new JsonObject();
+    result = plato->AddField("name", new JsonString(u"Plato"));
+    if (result.Error()) return Result<JsonArray*>(ErrorId(result.GetErrorId()));
+    philosophers->AddItem(plato);
+
+    JsonObject* socrates = new JsonObject();
+    result = socrates->AddField("name", new JsonString(u"Socrates"));
+    if (result.Error()) return Result<JsonArray*>(ErrorId(result.GetErrorId()));
+    philosophers->AddItem(socrates);
+    return Result<JsonArray*>(philosophers);
+}
+
+int main()
+{
+    Result<JsonArray*> philosopherResult = MakePhilosophers();
+    if (philosopherResult.Error())
+    {
+        Console.Error() << philosopherResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    JsonArray* philosophers = philosopherResult.Value();
+    System.Text.CodeFormatter formatter(Console.Out());
+    auto result = philosophers->Write(formatter);
+    if (result.Error())
+    {
+        Console.Error() << result.GetErrorMessage() << endl();
+        return 1;
+    }
+    Result<string> toStringResult = philosophers->ToString();
+    if (toStringResult.Error())
+    {
+        Console.Error() << toStringResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    string json = Rvalue(toStringResult.Value());
+    Result<UniquePtr<JsonValue>> valueResult = ParseJson(json);
+    if (valueResult.Error())
+    {
+        Console.Error() << valueResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    JsonValue* jsonValue = valueResult.Value().Get();
+    if (jsonValue is JsonArray*)
+    {
+        JsonArray* a = cast<JsonArray*>(jsonValue);
+        long n = a->Count();
+        for (long i = 0; i < n; ++i)
+        {
+            JsonValue* item = a->GetItem(i);
+            if (item is JsonObject*)
+            {
+                JsonObject* o = cast<JsonObject*>(item);
+                Result<JsonValue*> vr = o->GetField("name");
+                if (vr.Error())
+                {
+                    Console.Error() << vr.GetErrorMessage() << endl();
+                    return 1;
+                }
+                JsonValue* v = vr.Value();
+                if (v != null)
+                {
+                    if (v is JsonString*)
+                    {
+                        JsonString* s = cast<JsonString*>(v);
+                        Console.Out() << s->Value() << endl();
+                    }
+                    else
+                    {
+                        Console.Error() << "JSON string expected" << endl();
+                        return 1;
+                    }
+                }
+                else
+                {
+                    Console.Error() << "'name' field not found" << endl();
+                    return 1;
+                }
+            }
+        }
+    }
+    else
+    {
+        Console.Error() << "JSON array expected" << endl();
+        return 1;
+    }
+    return 0;
+}

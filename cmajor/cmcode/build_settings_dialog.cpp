@@ -5,12 +5,15 @@
 
 module cmcode.build.settings.dialog;
 
+import cmajor.symbols;
+import util;
+
 namespace cmcode {
 
 BuildSettingsDialog::BuildSettingsDialog() : wing::Window(wing::WindowCreateParams().WindowClassName("cmcode.BuildSettingsDialog").WindowStyle(wing::DialogWindowStyle()).
     Text("Build Settings").WindowClassBackgroundColor(wing::DefaultControlWindowClassBackgroundColor()).BackgroundColor(wing::DefaultControlBackgroundColor()).
-    Location(wing::DefaultLocation()).SetSize(wing::Size(wing::ScreenMetrics::Get().MMToHorizontalPixels(120), wing::ScreenMetrics::Get().MMToVerticalPixels(60)))),
-    okButton(nullptr), cancelButton(nullptr), singleThreadedCompileCheckBox(nullptr), generateIntermediateCodeFilesCheckBox(nullptr)//, linkWithDebugRuntimeCheckBox(nullptr)
+    Location(wing::DefaultLocation()).SetSize(wing::Size(wing::ScreenMetrics::Get().MMToHorizontalPixels(120), wing::ScreenMetrics::Get().MMToVerticalPixels(80)))),
+    okButton(nullptr), cancelButton(nullptr), singleThreadedCompileCheckBox(nullptr), generateIntermediateCodeFilesCheckBox(nullptr), disabledWarningsTextBox(nullptr)
 {
     wing::Size s = GetSize();
     wing::Size defaultControlSpacing = wing::ScreenMetrics::Get().DefaultControlSpacing();
@@ -32,13 +35,23 @@ BuildSettingsDialog::BuildSettingsDialog() : wing::Window(wing::WindowCreatePara
     generateIntermediateCodeFilesCheckBox = generateIntermediateCodeCheckBoxPtr.get();
     AddChild(generateIntermediateCodeCheckBoxPtr.release());
 
-/*
-    wing::Point linkWithDebugRuntimeCheckBoxLocation(16, 16 + 24 + 24);
-    std::unique_ptr<wing::CheckBox> linkWithDebugRuntimeCheckBoxPtr(new wing::CheckBox(wing::CheckBoxCreateParams().Text("Link with debug runtime (cmajor.rtd.dll)").
-        Location(linkWithDebugRuntimeCheckBoxLocation).SetSize(defaultCheckBoxSize).SetAnchors(wing::Anchors::top | wing::Anchors::left)));
-    linkWithDebugRuntimeCheckBox = linkWithDebugRuntimeCheckBoxPtr.get();
-    AddChild(linkWithDebugRuntimeCheckBoxPtr.release());
-*/
+    wing::Point warningsLabelLocation(16, 16 + defaultControlSpacing.Height + 24 + 24);
+    std::unique_ptr<wing::Label> warningsLabelPtr(new wing::Label(wing::LabelCreateParams().Text("Disabled warnings: (semicolon-separated list of warning numbers)").
+        Location(warningsLabelLocation).SetSize(defaultLabelSize).
+        SetAnchors(wing::Anchors::left | wing::Anchors::top)));
+    AddChild(warningsLabelPtr.release());
+
+    std::unique_ptr<wing::TextBox> disabledWarningsTextBoxPtr(new wing::TextBox(wing::TextBoxCreateParams().Defaults().
+        SetSize(wing::Size(wing::ScreenMetrics::Get().MMToHorizontalPixels(60), wing::ScreenMetrics::Get().MMToHorizontalPixels(5)))));
+    disabledWarningsTextBox = disabledWarningsTextBoxPtr.get();
+    disabledWarningsTextBox->TextChanged().AddHandler(this, &BuildSettingsDialog::TextBoxTextChanged);
+    std::unique_ptr<wing::Control> paddedTextBox(new wing::PaddedControl(wing::PaddedControlCreateParams(disabledWarningsTextBoxPtr.release()).
+        SetSize(wing::PaddedSize(disabledWarningsTextBox->GetSize(), wing::DefaultPadding()))));
+    std::unique_ptr<wing::Control> borderedTextBox(new wing::BorderedControl(wing::BorderedControlCreateParams(paddedTextBox.release()).Location(
+        wing::Point(16, 16 + 24 + 24 + 24)).
+        SetSize(BorderedSize(wing::PaddedSize(disabledWarningsTextBox->GetSize(), wing::DefaultPadding()), wing::BorderStyle::single)).
+        SetAnchors(wing::Anchors::top | wing::Anchors::left)));
+    AddChild(borderedTextBox.release());
 
     int x = s.Width - defaultButtonSize.Width - defaultControlSpacing.Width;
     int y = s.Height - defaultButtonSize.Height - defaultControlSpacing.Height;
@@ -52,18 +65,60 @@ BuildSettingsDialog::BuildSettingsDialog() : wing::Window(wing::WindowCreatePara
     okButton = okButtonPtr.get();
     okButton->SetDefault();
     okButton->SetDialogResult(wing::DialogResult::ok);
+    okButton->Disable();
     AddChild(okButtonPtr.release());
     AddChild(cancelButtonPtr.release());
     SetDefaultButton(okButton);
     SetCancelButton(cancelButton);
     singleThreadedCompileCheckBox->SetFocus();
+    if (Valid())
+    {
+        okButton ->Enable();
+    }
+    else
+    {
+        okButton->Disable();
+    }
+}
+
+bool BuildSettingsDialog::Valid() const
+{
+    if (disabledWarningsTextBox->Text().empty()) return true;
+    std::string warnings = disabledWarningsTextBox->Text();
+    std::vector<std::string> warningTexts = util::Split(warnings, ';');
+    for (const auto& warningText : warningTexts)
+    {
+        if (warningText.empty()) return false;
+        for (const auto c : warningText)
+        {
+            if (c < '0' || c > '9') return false;
+        }
+        int warning = std::stoi(warningText);
+        if (warning <= 0 || warning >= cmajor::symbols::maxWarningNumber)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void BuildSettingsDialog::TextBoxTextChanged()
+{
+    if (Valid())
+    {
+        okButton->Enable();
+    }
+    else
+    {
+        okButton->Disable();
+    }
 }
 
 void BuildSettingsDialog::SetValuesFrom(const BuildSettings& buildSettings)
 {
     singleThreadedCompileCheckBox->SetChecked(buildSettings.singleThreadedCompile);
     generateIntermediateCodeFilesCheckBox->SetChecked(buildSettings.generateIntermediateCodeFiles);
-    //linkWithDebugRuntimeCheckBox->SetChecked(buildSettings.linkWithDebugRuntime);
+    disabledWarningsTextBox->SetText(buildSettings.disabledWarnings);
 }
 
 BuildSettings BuildSettingsDialog::GetValues() const
@@ -71,7 +126,7 @@ BuildSettings BuildSettingsDialog::GetValues() const
     BuildSettings buildSettings;
     buildSettings.singleThreadedCompile = singleThreadedCompileCheckBox->Checked();
     buildSettings.generateIntermediateCodeFiles = generateIntermediateCodeFilesCheckBox->Checked();
-    //buildSettings.linkWithDebugRuntime = linkWithDebugRuntimeCheckBox->Checked();
+    buildSettings.disabledWarnings = disabledWarningsTextBox->Text();
     return buildSettings;
 }
 

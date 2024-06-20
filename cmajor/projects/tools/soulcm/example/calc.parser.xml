@@ -1,0 +1,112 @@
+<parserFile>
+ <grammar name="calc.parser">
+  <rule first="{LPAREN, MINUS, NUMBER, PLUS}" name="expression">
+   <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+    <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="additive_expr"/>
+   </action>
+  </rule>
+  <rule first="{LPAREN, MINUS, NUMBER, PLUS}" name="additive_expr">
+   <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+    <group first="{LPAREN, MINUS, NUMBER, PLUS}">
+     <sequence first="{LPAREN, MINUS, NUMBER, PLUS}">
+      <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+       <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="multiplicative_expr"/>
+      </action>
+      <kleene first="{#, MINUS, PLUS}">
+       <group first="{MINUS, PLUS}">
+        <sequence first="{MINUS, PLUS}">
+         <nonterminal first="{MINUS, PLUS}" ruleName="additive_op"/>
+         <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+          <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="multiplicative_expr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{MINUS, PLUS}" name="additive_op">
+   <choice first="{MINUS, PLUS}">
+    <action first="{PLUS}">
+     <token first="{PLUS}" name="PLUS"/>
+    </action>
+    <action first="{MINUS}">
+     <token first="{MINUS}" name="MINUS"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{LPAREN, MINUS, NUMBER, PLUS}" name="multiplicative_expr">
+   <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+    <group first="{LPAREN, MINUS, NUMBER, PLUS}">
+     <sequence first="{LPAREN, MINUS, NUMBER, PLUS}">
+      <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+       <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="unary_expr"/>
+      </action>
+      <kleene first="{#, DIV, MUL}">
+       <group first="{DIV, MUL}">
+        <sequence first="{DIV, MUL}">
+         <nonterminal first="{DIV, MUL}" ruleName="multiplicative_op"/>
+         <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+          <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="unary_expr"/>
+         </action>
+        </sequence>
+       </group>
+      </kleene>
+     </sequence>
+    </group>
+   </action>
+  </rule>
+  <rule first="{DIV, MUL}" name="multiplicative_op">
+   <choice first="{DIV, MUL}">
+    <action first="{MUL}">
+     <token first="{MUL}" name="MUL"/>
+    </action>
+    <action first="{DIV}">
+     <token first="{DIV}" name="DIV"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{LPAREN, MINUS, NUMBER, PLUS}" name="unary_expr">
+   <group first="{LPAREN, MINUS, NUMBER, PLUS}">
+    <choice first="{LPAREN, MINUS, NUMBER, PLUS}">
+     <sequence first="{MINUS, PLUS}">
+      <nonterminal first="{MINUS, PLUS}" ruleName="unary_op"/>
+      <action first="{LPAREN, MINUS, NUMBER, PLUS}">
+       <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="unary_expr"/>
+      </action>
+     </sequence>
+     <action first="{LPAREN, NUMBER}">
+      <nonterminal first="{LPAREN, NUMBER}" ruleName="primary_expr"/>
+     </action>
+    </choice>
+   </group>
+  </rule>
+  <rule first="{MINUS, PLUS}" name="unary_op">
+   <choice first="{MINUS, PLUS}">
+    <action first="{PLUS}">
+     <token first="{PLUS}" name="PLUS"/>
+    </action>
+    <action first="{MINUS}">
+     <token first="{MINUS}" name="MINUS"/>
+    </action>
+   </choice>
+  </rule>
+  <rule first="{LPAREN, NUMBER}" name="primary_expr">
+   <choice first="{LPAREN, NUMBER}">
+    <action first="{NUMBER}">
+     <token first="{NUMBER}" name="NUMBER"/>
+    </action>
+    <sequence first="{LPAREN}">
+     <sequence first="{LPAREN}">
+      <token first="{LPAREN}" name="LPAREN"/>
+      <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="expression"/>
+     </sequence>
+     <action first="{RPAREN}">
+      <token first="{RPAREN}" name="RPAREN"/>
+     </action>
+    </sequence>
+   </choice>
+  </rule>
+ </grammar>
+</parserFile>

@@ -39,3 +39,4 @@ export import cmajor.binder.type.binding;
 export import cmajor.binder.type.resolver;
 export import cmajor.binder.uuid.repository;
 export import cmajor.binder.xml.attribute.processor;
+export import cmajor.binder.nodiscard.attribute.processor;

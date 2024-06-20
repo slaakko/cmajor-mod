@@ -784,7 +784,14 @@ parser System.Xml.XmlParser
         ;
 
     AttValueDQ(System.Xml.XmlProcessor* processor) : ustring
-        ::= '"'{ processor->BeginAttributeValue(); }
+        ::= '"'
+            {
+                auto result = processor->BeginAttributeValue();
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+            }
             (   "[^<&\"]"{ processor->AttValue().Append(lexer.GetToken(pos).ToString()); }
             |   Reference(processor):reference)* '"'
             {

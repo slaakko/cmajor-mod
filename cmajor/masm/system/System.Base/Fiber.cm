@@ -48,6 +48,7 @@ namespace System.Threading.Fibers
             void* startAddress = cast<void*>(runFiber);
             handle = RtmCreateFiber(stackSize, startAddress, new FiberData(function, param));
         }
+        [nodiscard]
         public Result<bool> SwitchTo()
         {
             if (handle != null)
@@ -92,9 +93,10 @@ namespace System.Threading.Fibers
         private bool main;
     }
 
-    public void SwitchToFiber(const Fiber& fiber)
+    [nodiscard]
+    public Result<bool> SwitchToFiber(const Fiber& fiber)
     {
-        fiber.SwitchTo();
+        return fiber.SwitchTo();
     }
 
     internal delegate void FiberRunFunction();

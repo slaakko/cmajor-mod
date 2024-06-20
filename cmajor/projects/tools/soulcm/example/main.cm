@@ -1,0 +1,56 @@
+using System;
+
+int main()
+{
+    Console.WriteLine("desk calculator");
+#if (WINDOWS)
+    Console.WriteLine("enter arithmetic expression, or CTRL-Z to end:");
+#else
+    Console.WriteLine("enter arithmetic expression, or CTRL-D to end:");
+#endif
+    Console.Write("> ");
+    auto lineResult = Console.ReadLine();
+    if (lineResult.Error())
+    {
+        Console.Out() << lineResult.GetErrorMessage() << endl();
+    }
+    else
+    {
+        string line = lineResult.Value();
+        while (!Console.In().EndOfStream())
+        {
+            auto utf32Result = ToUtf32(line);
+            if (utf32Result.Error())
+            {
+                Console.Out() << utf32Result.GetErrorMessage() << endl();
+            }
+            else
+            {
+                ustring uline = utf32Result.Value();
+                calc.lexer lexer(uline.Chars(), uline.Chars() + uline.Length(), "expression");
+                Result<UniquePtr<Node>> result = calc.parser<calc.lexer>.Parse(lexer);
+                if (result.Error())
+                {
+                    Console.Out() << result.GetErrorMessage() << endl();
+                }
+                else
+                {
+                    Node* node = result.Value().Get();
+                    double value = Evaluate(node);
+                    Console.Out() << "= " << value << endl();
+                }
+            }
+            Console.Write("> ");
+            lineResult = Console.ReadLine();
+            if (lineResult.Error())
+            {
+                Console.Out() << lineResult.GetErrorMessage() << endl();
+            }
+            else
+            {
+                line = lineResult.Value();
+            }
+        }
+    }
+    return 0;
+}

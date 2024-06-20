@@ -46,6 +46,11 @@ void MakeLightTheme()
     lightTheme->SetColor("error.view.node.selected", wing::Color(201, 222, 245));
     lightTheme->SetColor("error.view.state.indicator", wing::Color::Red);
 
+    lightTheme->SetColor("warnings.view.background", wing::Color::White);
+    lightTheme->SetColor("warnings.view.text", wing::Color::Black);
+    lightTheme->SetColor("warnings.view.node.selected", wing::Color(201, 222, 245));
+    lightTheme->SetColor("warnings.view.state.indicator", wing::Color::Red);
+
     lightTheme->SetColor("search.results.background", wing::Color::White);
     lightTheme->SetColor("search.results.text", wing::Color::Black);
     lightTheme->SetColor("search.results.node.selected", wing::Color(201, 222, 245));
@@ -202,6 +207,11 @@ void MakeDarkTheme()
     darkTheme->SetColor("error.view.text", wing::Color(220, 220, 220));
     darkTheme->SetColor("error.view.node.selected", wing::Color(38, 79, 120));
     darkTheme->SetColor("error.view.state.indicator", wing::Color(122, 193, 255));
+
+    darkTheme->SetColor("warnings.view.background", wing::Color(37, 37, 38));
+    darkTheme->SetColor("warnings.view.text", wing::Color(220, 220, 220));
+    darkTheme->SetColor("warnings.view.node.selected", wing::Color(38, 79, 120));
+    darkTheme->SetColor("warnings.view.state.indicator", wing::Color(122, 193, 255));
 
     darkTheme->SetColor("search.results.background", wing::Color(37, 37, 38));
     darkTheme->SetColor("search.results.text", wing::Color(220, 220, 220));

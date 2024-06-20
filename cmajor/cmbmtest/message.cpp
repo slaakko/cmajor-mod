@@ -54,7 +54,7 @@ AllFieldsMessage::AllFieldsMessage()
 }
 
 AllFieldsMessage::AllFieldsMessage(uint32_t id_)
-     : cmajor::bmp::BinaryMessage(id_), f0(), f1(), f2(), f3(), f4(), f5(), f6(), f7(), f8(), f9(), f10(), f11(), f12(), f13(), f14(), f15(), f16(), f17(), f18()
+     : cmajor::bmp::BinaryMessage(id_), f0(), f1(), f2(), f3(), f4(), f5(), f6(), f7(), f8(), f9(), f10(), f11(), f12(), f13(), f14(), f16(), f17(), f18()
 {
 }
 
@@ -91,7 +91,6 @@ uint32_t AllFieldsMessage::Length() const
     length += cmajor::bmp::Length(f12);
     length += cmajor::bmp::Length(f13);
     length += cmajor::bmp::Length(f14);
-    length += cmajor::bmp::Length(f15);
     length += cmajor::bmp::Length(f16);
     length += cmajor::bmp::Length(f17);
     length += cmajor::bmp::Length(f18);
@@ -115,7 +114,6 @@ void AllFieldsMessage::Write(util::MemoryWriter& writer) const
     cmajor::bmp::Write(writer, f12);
     cmajor::bmp::Write(writer, f13);
     cmajor::bmp::Write(writer, f14);
-    cmajor::bmp::Write(writer, f15);
     cmajor::bmp::Write(writer, f16);
     cmajor::bmp::Write(writer, f17);
     cmajor::bmp::Write(writer, f18);
@@ -138,7 +136,6 @@ void AllFieldsMessage::Read(util::MemoryReader& reader)
     cmajor::bmp::Read(reader, f12);
     cmajor::bmp::Read(reader, f13);
     cmajor::bmp::Read(reader, f14);
-    cmajor::bmp::Read(reader, f15);
     cmajor::bmp::Read(reader, f16);
     cmajor::bmp::Read(reader, f17);
     cmajor::bmp::Read(reader, f18);

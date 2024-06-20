@@ -71,6 +71,7 @@ namespace System.IO.Compression
                 RtmDoneZlib(mode, handle);
             }
         }
+        [nodiscard]
         public override Result<int> ReadByte()
         {
             byte x = 0u;
@@ -86,6 +87,7 @@ namespace System.IO.Compression
             }
             return Result<int>(x);
         }
+        [nodiscard]
         public override Result<long> Read(byte* buf, long count)
         {
             if (mode != CompressionMode.decompress)
@@ -146,10 +148,12 @@ namespace System.IO.Compression
             }
             return Result<long>(bytesRead);
         }
+        [nodiscard]
         public override Result<bool> Write(byte x)
         {
             return this->Write(&x, 1);
         }
+        [nodiscard]
         public override Result<bool> Write(byte* buf, long count)
         {
             if (mode != CompressionMode.compress)

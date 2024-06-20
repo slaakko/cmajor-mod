@@ -21,6 +21,7 @@ namespace System.Lex
         {
             return lineStartIndeces;
         }
+        [nodiscard]
         public Result<string> GetLine(int lineNumber) const
         {
             int start = lineStartIndeces[lineNumber];
@@ -90,6 +91,7 @@ namespace System.Lex
         private Map<int, SourceFile> sourceFileMap;
     }
 
+    [nodiscard]
     public Result<string> MakeMessage(const string& message, const Span& span, int fileIndex, FileMap& fileMap)
     {
         string msg = message;

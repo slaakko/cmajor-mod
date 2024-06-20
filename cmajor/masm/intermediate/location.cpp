@@ -65,7 +65,7 @@ int64_t Frame::Size() const
     else
     {
         const FrameLocation& last = frameLocations.back();
-        return util::Align(32 + last.offset + last.size + numUsedXMMRegs * 16, 16);
+        return util::Align(calleeParamAreaSize + last.offset + last.size + numUsedXMMRegs * 16, 16);
     }
 }
 

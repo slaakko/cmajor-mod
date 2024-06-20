@@ -140,7 +140,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         cmajor::symbols::FunctionSymbol* result = functionSymbol.get();
         boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::move(functionSymbol));
         boundCompileUnit.AddGlobalNs(std::move(globalNs));
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
         {
             cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
             if (compileUnitNode)
@@ -227,7 +227,7 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
         {
             boundCompileUnit.RemoveLastFileScope();
         }
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
         {
             cmajor::ast::CompileUnitNode* compileUnitNode = boundCompileUnit.GetCompileUnitNode();
             if (compileUnitNode)

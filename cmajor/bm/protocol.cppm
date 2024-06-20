@@ -5,7 +5,6 @@
 
 export module cmajor.binary.message.protocol;
 
-import cmajor.binary.message.number;
 import std.core;
 import util;
 

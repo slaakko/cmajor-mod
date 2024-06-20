@@ -198,13 +198,6 @@ public:
     void Accept(Visitor& visitor) override;
 };
 
-class NumberNode : public TypeNode
-{
-public:
-    NumberNode(const soul::ast::SourcePos& sourcePos_);
-    void Accept(Visitor& visitor) override;
-};
-
 class UuidNode : public TypeNode
 {
 public:
@@ -350,7 +343,6 @@ public:
     virtual void Visit(WCharNode& node) {}
     virtual void Visit(UCharNode& node) {}
     virtual void Visit(StringNode& node) {}
-    virtual void Visit(NumberNode& node) {}
     virtual void Visit(UuidNode& node) {}
     virtual void Visit(DateNode& node) {}
     virtual void Visit(DateTimeNode& node) {}

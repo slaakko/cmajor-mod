@@ -36,7 +36,6 @@ public:
     void Visit(cmajor::binary::message::schema::ast::UCharNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::UuidNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::StringNode& node) override;
-    void Visit(cmajor::binary::message::schema::ast::NumberNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::DateNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::DateTimeNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::EnumConstantNode& node) override;
@@ -148,11 +147,6 @@ void MessageFileGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::St
     formatter.Write("string");
 }
 
-void MessageFileGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::NumberNode& node)
-{
-    formatter.Write("System.Net.Bmp.Number");
-}
-
 void MessageFileGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::DateNode& node)
 {
     formatter.Write("Date");
@@ -242,14 +236,14 @@ void WriteRegisterFunction(util::CodeFormatter& formatter, cmajor::binary::messa
     formatter.WriteLine("public static void Register()");
     formatter.WriteLine("{");
     formatter.IncIndent();
-    formatter.WriteLine("System.Net.Bmp.RegisterMessage<" + node.Id() + ">();");
+    formatter.WriteLine("System.Net.BinaryMessageProtocol.RegisterMessage<" + node.Id() + ">();");
     formatter.DecIndent();
     formatter.WriteLine("}");
 }
 
 void WriteFactoryFunction(util::CodeFormatter& formatter, cmajor::binary::message::schema::ast::ClassNode& node)
 {
-    formatter.WriteLine("public static System.Net.Bmp.BinaryMessage* Create(uint messageId)");
+    formatter.WriteLine("public static System.Net.BinaryMessageProtocolBmp.BinaryMessage* Create(uint messageId)");
     formatter.WriteLine("{");
     formatter.IncIndent();
     formatter.WriteLine("return new " + node.Id() + "(messageId);");
@@ -268,7 +262,7 @@ void WriteLengthFunction(util::CodeFormatter& formatter, cmajor::binary::message
         if (n->IsMemberVariableNode())
         {
             cmajor::binary::message::schema::ast::MemberVariableNode* memVar = static_cast<cmajor::binary::message::schema::ast::MemberVariableNode*>(n.get());
-            formatter.WriteLine("length = length + System.Net.Bmp.Length(" + memVar->Id() + ");");
+            formatter.WriteLine("length = length + System.Net.BinaryMessageProtocol.Length(" + memVar->Id() + ");");
         }
     }
     formatter.WriteLine("return length;");
@@ -286,7 +280,7 @@ void WriteWriteFunction(util::CodeFormatter& formatter, cmajor::binary::message:
         if (n->IsMemberVariableNode())
         {
             cmajor::binary::message::schema::ast::MemberVariableNode* memVar = static_cast<cmajor::binary::message::schema::ast::MemberVariableNode*>(n.get());
-            formatter.WriteLine("System.Net.Bmp.Write(writer, " + memVar->Id() + ");");
+            formatter.WriteLine("System.Net.BinaryMessageProtocol.Write(writer, " + memVar->Id() + ");");
         }
     }
     formatter.DecIndent();
@@ -303,7 +297,7 @@ void WriteReadFunction(util::CodeFormatter& formatter, cmajor::binary::message::
         if (n->IsMemberVariableNode())
         {
             cmajor::binary::message::schema::ast::MemberVariableNode* memVar = static_cast<cmajor::binary::message::schema::ast::MemberVariableNode*>(n.get());
-            formatter.WriteLine("System.Net.Bmp.Read(reader, " + memVar->Id() + ");");
+            formatter.WriteLine("System.Net.BinaryMessageProtocol.Read(reader, " + memVar->Id() + ");");
         }
     }
     formatter.DecIndent();
@@ -315,7 +309,7 @@ void MessageFileGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::Cl
     formatter.WriteLine("public const uint " + node.MessageIdConstantName() + " = " + std::to_string(node.MessageId()) + "u;");
     formatter.WriteLine();
     formatter.Write("public class " + node.Id());
-    formatter.WriteLine(" : System.Net.Bmp.BinaryMessage");
+    formatter.WriteLine(" : System.Net.BinaryMessageProtocol.BinaryMessage");
     formatter.WriteLine("{");
     formatter.IncIndent();
     WriteDefaultConstructor(formatter, node);
@@ -431,7 +425,7 @@ void MessageFileGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::So
         cmajor::bmp::Version());
     formatter.WriteLine();
     formatter.WriteLine("using System;");
-    formatter.WriteLine("using System.Net.Bmp;");
+    formatter.WriteLine("using System.Net.BinaryMessageProtocol;");
     for (const auto& import : node.Imports())
     {
         if (import->Prefix() == cmajor::binary::message::schema::ast::ImportPrefix::interfacePrefix)

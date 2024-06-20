@@ -103,6 +103,7 @@ namespace System.XPath
         {
             return operand.Get();
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context)
         {
             switch (op)
@@ -148,6 +149,7 @@ namespace System.XPath
         {
             return right.Get();
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context)
         {
             switch (op)
@@ -209,6 +211,7 @@ namespace System.XPath
         public Root() : base(ExprKind.root)
         {
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context) const
         {
             UniquePtr<NodeSet> nodeSet = new NodeSet();
@@ -237,6 +240,7 @@ namespace System.XPath
         {
             return predicate.Get();
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context) const
         {
             auto subjectResult = subject->Evaluate(context);
@@ -328,6 +332,7 @@ namespace System.XPath
         {
             return predicates;
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context) const
         {
             UniquePtr<NodeSet> nodeSet(new NodeSet());
@@ -407,6 +412,7 @@ namespace System.XPath
         {
             return variableName;
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context) const
         {
             #assert(false); // todo: variable references not implemented
@@ -430,6 +436,7 @@ namespace System.XPath
         {
             return value;
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context) const
         {
             return Result<UniquePtr<Object>>(UniquePtr<Object>(new Str(value)));
@@ -448,6 +455,7 @@ namespace System.XPath
         public NumberExpr(double value_) : base(ExprKind.numberExpr), value(value_)
         {
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context) const
         {
             return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(value)));
@@ -474,6 +482,7 @@ namespace System.XPath
         {
             arguments.Add(UniquePtr<Expr>(argument));
         }
+        [nodiscard]
         public override Result<UniquePtr<Object>> Evaluate(Context& context) const
         {
             auto functionResult = GetFunction(functionName);

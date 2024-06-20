@@ -463,7 +463,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundCompoundStatement& boundCompou
         emitter->EndInstructionFlag(static_cast<int16_t>(cmajor::debug::InstructionFlags::endBrace));
     }
     ExitBlocks(prevBlock);
-    GenerateCodeForCleanups();
+    //GenerateCodeForCleanups(); EXCEPTION HANDLING REMOVED
     for (int i = 0; i < numTriesInCurrentBlock; ++i)
     {
         emitter->PopParentBlock();
@@ -1189,6 +1189,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);
                     if (classType->Destructor())
                     {
+/*                      EXCEPTION HANDLING REMOVED
                         void* cleanupTry = emitter->CreateBasicBlock("cleanupTry");
                         emitter->CreateBr(cleanupTry);
                         emitter->SetCurrentBasicBlock(cleanupTry);
@@ -1196,10 +1197,25 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
                         emitter->CreateBeginTry();
                         tryIndexMap[numTriesInCurrentBlock] = tryIndex;
                         tryIndexCleanupTryBlockMap[tryIndex] = cleanupTry;
+*/
+
+                        cmajor::symbols::DestructorSymbol* destructor = classType->Destructor();
+                        if (destructor->IsGeneratedFunction() || destructor->IsTemplateSpecialization())
+                        {
+                            destructor = static_cast<cmajor::symbols::DestructorSymbol*>(classType->Destructor()->Copy());
+                            compileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(destructor));
+                            cmajor::ast::CompileUnitNode* compileUnitNode = compileUnit->GetCompileUnitNode();
+                            if (compileUnitNode)
+                            {
+                                destructor->SetCompileUnitId(compileUnitNode->Id());
+                                destructor->ComputeMangledName();
+                            }
+                        }
+
                         std::unique_ptr<cmajor::binder::BoundExpression> classPtrArgument(firstArgument->Clone());
                         std::unique_ptr<cmajor::binder::BoundFunctionCall> destructorCall(new cmajor::binder::BoundFunctionCall(currentBlock->EndSpan(), classType->Destructor()));
                         destructorCall->AddArgument(std::move(classPtrArgument));
-                        GenerateCleanup(tryIndex, destructorCall.get());
+                        // GenerateCleanup(tryIndex, destructorCall.get()); EXCEPTION HANDLING REMOVED
                         Assert(currentBlock, "current block not set");
                         auto it = blockDestructionMap.find(currentBlock);
                         if (it != blockDestructionMap.cend())
@@ -1211,8 +1227,10 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
                         {
                             Assert(false, "block destruction not found");
                         }
+/*                      EXCEPTION HANDLING REMOVED
                         ++numTriesInCurrentBlock;
                         ++tryIndex;
+*/
                     }
                 }
             }

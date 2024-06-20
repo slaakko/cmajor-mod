@@ -57,7 +57,7 @@ void BoundFunction::AddTemporaryDestructorCall(std::unique_ptr<BoundFunctionCall
                 if (!boundCompileUnit->IsGeneratedDestructorInstantiated(destructorSymbol))
                 {
                     boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
-                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                    if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                     {
                         cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                         boundCompileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));

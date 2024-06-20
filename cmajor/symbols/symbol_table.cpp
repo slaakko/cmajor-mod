@@ -84,6 +84,7 @@ void MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* identifierNode
     if (identifierNode->IsInternal()) return;
     if (!identifierNode->GetSpan().IsValid()) return;
     if (identifierNode->ModuleId().is_nil()) return;
+    if (!symbol) return;
     if (symbol->ModuleId().is_nil()) return;
     if (!symbol->GetSpan().IsValid()) return;
     Module* module = GetModuleById(identifierNode->ModuleId());

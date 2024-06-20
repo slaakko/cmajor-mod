@@ -7,6 +7,7 @@ using System;
 
 namespace System.XPath
 {
+    [nodiscard]
     public Result<bool> ParseHexChar(const string& fileName, uchar& value, const uchar*& p, const uchar* e, const System.Lex.Token& token)
     {
         if (p != e)
@@ -53,6 +54,7 @@ namespace System.XPath
         return Result<bool>(true);
     }
 
+    [nodiscard]
     public Result<uchar> ParseEscape(const string& fileName, const uchar*& p, const uchar* e, const System.Lex.Token& token)
     {
         uchar value;
@@ -172,6 +174,7 @@ namespace System.XPath
         return Result<uchar>(value);
     }
 
+    [nodiscard]
     public Result<string> ParseDQString(const string& fileName, const System.Lex.Token& token)
     {
         ustring stringLiteral;
@@ -233,6 +236,7 @@ namespace System.XPath
         return Result<string>(utf8Result.Value());
     }
 
+    [nodiscard]
     public Result<string> ParseSQString(const string& fileName, const System.Lex.Token& token)
     {
         ustring stringLiteral;

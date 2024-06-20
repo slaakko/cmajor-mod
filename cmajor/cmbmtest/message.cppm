@@ -5,7 +5,6 @@ export module bm_test_message;
 import std.core;
 import util;
 import cmajor.binary.message.protocol;
-import cmajor.binary.message.number;
 
 export namespace BmTest {
 
@@ -55,7 +54,6 @@ public:
     char16_t f12;
     char32_t f13;
     std::string f14;
-    cmajor::bmp::Number f15;
     util::uuid f16;
     util::Date f17;
     util::DateTime f18;

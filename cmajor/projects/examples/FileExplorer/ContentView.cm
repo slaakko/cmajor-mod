@@ -1,0 +1,113 @@
+using System;
+using System.Windows;
+
+namespace FileExplorer
+{
+    public System.Windows.Color DefaultContentViewFrameColor()
+    {
+        return System.Windows.Color(204u, 206u, 219u);
+    }
+
+    public class ContentView : ContainerControl
+    {
+        public ContentView(ImageList* imageList_) : base(ControlCreateParams().SetWindowClassName("FileExplorer.ContentView").
+            SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.White()).SetDock(Dock.fill)),
+            imageList(imageList_)
+        {
+            auto framedControlResult = MakeFramedControl(new EmptyView(EmptyViewControlCreateParams(ControlCreateParams().Defaults())));
+            if (framedControlResult.Error())
+            {
+                SetErrorId(framedControlResult.GetErrorId());
+                return;
+            }
+            auto result = AddChild(framedControlResult.Value().Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public void SetMainWindow(MainWindow* mainWindow_)
+        {
+            mainWindow = mainWindow_;
+        }
+        [nodiscard]
+        public Result<bool> ViewContent(Node* node)
+        {
+            if (framedChild != null)
+            {
+                auto removeResult = RemoveChild(framedChild);
+                if (removeResult.Error())
+                {
+                    return Result<bool>(ErrorId(removeResult.GetErrorId()));
+                }
+                framedChild = null;
+                child = null;
+            }
+            Result<Control*> viewResult = node->CreateView(imageList);
+            if (viewResult.Error()) return Result<bool>(ErrorId(viewResult.GetErrorId()));
+            Control* view = viewResult.Value();
+            if (view == null)
+            {
+                view = new EmptyView(EmptyViewControlCreateParams(ControlCreateParams().Defaults()));
+                if (view->Error())
+                {
+                    return Result<bool>(ErrorId(view->GetErrorId()));
+                }
+            }
+            auto framedControlResult = MakeFramedControl(view);
+            if (framedControlResult.Error())
+            {
+                return Result<bool>(ErrorId(framedControlResult.GetErrorId()));
+            }
+            auto result = AddChild(framedControlResult.Value().Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            auto result = child->Invalidate();
+            if (result.Error()) return result;
+            result = framedChild->Invalidate();
+            if (result.Error()) return result;
+            return base->OnPaint(args);
+        }
+        [nodiscard]
+        private Result<UniquePtr<Control>> MakeFramedControl(Control* child_)
+        {
+            child = child_;
+            if (child->Error())
+            {
+                return Result<UniquePtr<Control>>(ErrorId(child->GetErrorId()));
+            }
+            child->SetScrollSubject();
+            PaddedControl* paddedControl = new PaddedControl(PaddedControlCreateParams(PaddedControlControlCreateParams(
+                ControlCreateParams().Defaults(), child), child).Defaults());
+            if (paddedControl->Error())
+            {
+                return Result<UniquePtr<Control>>(ErrorId(paddedControl->GetErrorId()));
+            }
+            BorderedControl* borderedControl = new BorderedControl(BorderedControlCreateParams(BorderedControlControlCreateParams(
+                ControlCreateParams().Defaults(), paddedControl), paddedControl).SetNormalBorderColor(DefaultContentViewFrameColor()));
+            if (borderedControl->Error())
+            {
+                return Result<UniquePtr<Control>>(ErrorId(borderedControl->GetErrorId()));
+            }
+            ScrollableControl* scrollableControl = new ScrollableControl(ScrollableControlCreateParams(ScrollableControlControlCreateParams(
+                ControlCreateParams().SetDock(Dock.fill), borderedControl), borderedControl).Defaults());
+            if (scrollableControl->Error())
+            {
+                return Result<UniquePtr<Control>>(ErrorId(scrollableControl->GetErrorId()));
+            }
+            framedChild = scrollableControl;
+            return Result<UniquePtr<Control>>(UniquePtr<Control>(scrollableControl));
+        }
+        private ImageList* imageList;
+        private MainWindow* mainWindow;
+        private Control* framedChild;
+        private Control* child;
+    }
+}
+
+

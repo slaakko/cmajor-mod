@@ -1,0 +1,1247 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public class delegate void TabPageSelectedEventHandler();
+
+    public Color DefaultTabControlFrameColor()
+    {
+        return Color(204u, 206u, 219u);
+    }
+
+    public Color DefaultTabTextColor()
+    {
+        return Color.Black();
+    }
+
+    public Color DefaultTabNormalBackgroundColor()
+    {
+        return Color.White();
+    }
+
+    public Color DefaultTabSelectedBackgroundColor()
+    {
+        return Color(255u, 255u, 215u);
+    }
+
+    public Color DefaultTabCloseBoxSelectedColor()
+    {
+        return Color(222u, 238u, 245u);
+    }
+
+    public inline int DefaultTabLeadingWidth()
+    {
+        return 0;
+    }
+
+    public inline int DefaultTabControlTopMarginHeight()
+    {
+        return 4;
+    }
+
+    public Padding DefaultTabPadding()
+    {
+        return Padding(8, 2, 8, 2);
+    }
+
+    public Padding DefaultTabCloseBoxPadding()
+    {
+        return Padding(8, 6, 8, 0);
+    }
+
+    public inline int DefaultTabOverlapWidth()
+    {
+        return 2;
+    }
+
+    public inline float DefaultTabRoundingRadius()
+    {
+        return 8;
+    }
+
+    public inline float DefaultTabCloseBoxPenWidth()
+    {
+        return 1.0f;
+    }
+
+    internal class Tab
+    {
+        public enum State
+        {
+            normal, closeBoxSelected
+        }
+        public bool visible;
+        public State state;
+        public float textHeight;
+        public float textWidth;
+        public float closeBoxWidth;
+        public int height;
+        public int width;
+        public int left;
+        public RectF leftRoundingRect;
+        public RectF rightRoundingRect;
+        public RectF topRect;
+        public RectF bottomRect;
+        public RectF textRect;
+        public RectF closeBoxRect;
+        public Rect selectRect;
+        public Rect closeRect;
+    }
+
+    public ControlCreateParams& TabControlControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowClassName("System.Windows.TabControl");
+    }
+
+    public class TabControlCreateParams
+    {
+        public TabControlCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_),
+            fontFamilyName("Segoe UI"),
+            fontSize(9.0f),
+            frameColor(DefaultTabControlFrameColor()),
+            textColor(DefaultTabTextColor()),
+            leadingWidth(DefaultTabLeadingWidth()),
+            topMarginHeight(DefaultTabControlTopMarginHeight()),
+            headerHeight(0),
+            tabPadding(DefaultTabPadding()),
+            tabCloseBoxPadding(DefaultTabCloseBoxPadding()),
+            overlapWidth(DefaultTabOverlapWidth()),
+            tabNormalBackgroundColor(DefaultTabNormalBackgroundColor()),
+            tabSelectedBackgroundColor(DefaultTabSelectedBackgroundColor()),
+            roundingRadius(DefaultTabRoundingRadius()),
+            closeBoxPenWidth(DefaultTabCloseBoxPenWidth()),
+            closeBoxSelectedColor(DefaultTabCloseBoxSelectedColor())
+        {
+        }
+        public TabControlCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public TabControlCreateParams& SetFontFamilyName(const string& fontFamilyName_)
+        {
+            fontFamilyName = fontFamilyName_;
+            return *this;
+        }
+        public TabControlCreateParams& SetFontSize(float fontSize_)
+        {
+            fontSize = fontSize_;
+            return *this;
+        }
+        public TabControlCreateParams& SetFrameColor(const Color& frameColor_)
+        {
+            frameColor = frameColor_;
+            return *this;
+        }
+        public TabControlCreateParams& SetTextColor(const Color& textColor_)
+        {
+            textColor = textColor_;
+            return *this;
+        }
+        public TabControlCreateParams& SetLeadingWidth(int leadingWidth_)
+        {
+            leadingWidth = leadingWidth_;
+            return *this;
+        }
+        public TabControlCreateParams& SetTopMarginHeight(int topMarginHeight_)
+        {
+            topMarginHeight = topMarginHeight_;
+            return *this;
+        }
+        public TabControlCreateParams& SetHeaderHeight(int headerHeight_)
+        {
+            headerHeight = headerHeight_;
+            return *this;
+        }
+        public TabControlCreateParams& SetTabPadding(const Padding& tabPadding_)
+        {
+            tabPadding = tabPadding_;
+            return *this;
+        }
+        public TabControlCreateParams& SetTabCloseBoxPadding(const Padding& tabCloseBoxPadding_)
+        {
+            tabCloseBoxPadding = tabCloseBoxPadding_;
+            return *this;
+        }
+        public TabControlCreateParams& SetOverlapWidth(int overlapWidth_)
+        {
+            overlapWidth = overlapWidth_;
+            return *this;
+        }
+        public TabControlCreateParams& SetRoundingRadius(float roundingRadius_)
+        {
+            roundingRadius = roundingRadius_;
+            return *this;
+        }
+        public TabControlCreateParams& SetTabNormalBackgroundColor(const Color& tabNormalBackgroundColor_)
+        {
+            tabNormalBackgroundColor = tabNormalBackgroundColor_;
+            return *this;
+        }
+        public TabControlCreateParams& SetTabSelectedBackgroundColor(const Color& tabSelectedBackgroundColor_)
+        {
+            tabSelectedBackgroundColor = tabSelectedBackgroundColor_;
+            return *this;
+        }
+        public TabControlCreateParams& SetCloseBoxPenWidth(float closeBoxPenWidth_)
+        {
+            closeBoxPenWidth = closeBoxPenWidth_;
+            return *this;
+        }
+        public TabControlCreateParams& SetCloseBoxSelectedColor(const Color& closeBoxSelectedColor_)
+        {
+            closeBoxSelectedColor = closeBoxSelectedColor_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public string fontFamilyName;
+        public float fontSize;
+        public Color frameColor;
+        public Color textColor;
+        public int leadingWidth;
+        public int topMarginHeight;
+        public int headerHeight;
+        public Padding tabPadding;
+        public Padding tabCloseBoxPadding;
+        public int overlapWidth;
+        public float roundingRadius;
+        public Color tabNormalBackgroundColor;
+        public Color tabSelectedBackgroundColor;
+        public float closeBoxPenWidth;
+        public Color closeBoxSelectedColor;
+    }
+
+    public class TabControl : Control
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, changed = 1 << 0
+        }
+        public TabControl(const Font& font_, const Color& frameColor_, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("System.Windows.TabControl", DefaultWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(),
+            DefaultControlBackgroundColor(), "tabControl", location, size, dock, anchors), flags(Flags.none), font(font_), frameColor(frameColor_),
+            textColor(DefaultTabTextColor()), tabPages(this), selectedTabPage(null), leadingWidth(DefaultTabLeadingWidth()),
+            topMarginHeight(DefaultTabControlTopMarginHeight()), headerHeight(0), tabPadding(DefaultTabPadding()),
+            tabCloseBoxPadding(DefaultTabCloseBoxPadding()),
+            overlapWidth(DefaultTabOverlapWidth()), roundingRadius(DefaultTabRoundingRadius()), stringFormat(),
+            centerFormat(StringAlignment.center, StringAlignment.center), framePen(frameColor), textBrush(textColor),
+            tabNormalBackgroundColor(DefaultTabNormalBackgroundColor()), tabNormalBackgroundBrush(tabNormalBackgroundColor),
+            tabSelectedBackgroundColor(DefaultTabSelectedBackgroundColor()), tabSelectedBackgroundBrush(tabSelectedBackgroundColor),
+            closeBoxPenWidth(DefaultTabCloseBoxPenWidth()), closeBoxPen(textColor, closeBoxPenWidth), closeStateTabPage(null),
+            closeBoxSelectedColor(DefaultTabCloseBoxSelectedColor()), closeBoxSelectedBrush(closeBoxSelectedColor)
+        {
+            Init();
+        }
+        public TabControl(const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this(Font(FontFamily("Segoe UI"), 9.0f), DefaultTabControlFrameColor(), location, size, dock, anchors)
+        {
+        }
+        public TabControl(TabControlCreateParams& createParams) :
+            base(createParams.controlCreateParams),
+            flags(Flags.none), font(FontFamily(createParams.fontFamilyName), createParams.fontSize),
+            frameColor(createParams.frameColor),
+            textColor(createParams.textColor),
+            tabPages(this), selectedTabPage(null),
+            leadingWidth(createParams.leadingWidth),
+            topMarginHeight(createParams.topMarginHeight),
+            headerHeight(createParams.headerHeight),
+            tabPadding(createParams.tabPadding),
+            tabCloseBoxPadding(createParams.tabCloseBoxPadding),
+            overlapWidth(createParams.overlapWidth),
+            roundingRadius(createParams.roundingRadius),
+            stringFormat(),
+            centerFormat(StringAlignment.center, StringAlignment.center), framePen(frameColor), textBrush(textColor),
+            tabNormalBackgroundColor(createParams.tabNormalBackgroundColor), tabNormalBackgroundBrush(tabNormalBackgroundColor),
+            tabSelectedBackgroundColor(createParams.tabSelectedBackgroundColor), tabSelectedBackgroundBrush(tabSelectedBackgroundColor),
+            closeBoxPenWidth(createParams.closeBoxPenWidth), closeBoxPen(textColor, closeBoxPenWidth), closeStateTabPage(null),
+            closeBoxSelectedColor(createParams.closeBoxSelectedColor), closeBoxSelectedBrush(closeBoxSelectedColor)
+        {
+        }
+        private void Init()
+        {
+            if (framePen.Error())
+            {
+                SetErrorId(framePen.GetErrorId());
+                return;
+            }
+            if (textBrush.Error())
+            {
+                SetErrorId(textBrush.GetErrorId());
+                return;
+            }
+            if (closeBoxPen.Error())
+            {
+                SetErrorId(closeBoxPen.GetErrorId());
+                return;
+            }
+            if (closeBoxSelectedBrush.Error())
+            {
+                SetErrorId(closeBoxSelectedBrush.GetErrorId());
+                return;
+            }
+            if (tabNormalBackgroundBrush.Error())
+            {
+                SetErrorId(tabNormalBackgroundBrush.GetErrorId());
+                return;
+            }
+            if (tabSelectedBackgroundBrush.Error())
+            {
+                SetErrorId(tabSelectedBackgroundBrush.GetErrorId());
+                return;
+            }
+            SetChanged();
+        }
+        [nodiscard]
+        public Result<bool> SetTextColor(const Color& textColor_)
+        {
+            if (textColor_ != textColor)
+            {
+                textColor = textColor_;
+                textBrush = SolidBrush(textColor);
+                if (textBrush.Error())
+                {
+                    return Result<bool>(ErrorId(textBrush.GetErrorId()));
+                }
+                auto result = Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetTabNormalBackgroundColor(const Color& tabNormalBackgroundColor_)
+        {
+            if (tabNormalBackgroundColor_ != tabNormalBackgroundColor)
+            {
+                tabNormalBackgroundColor = tabNormalBackgroundColor_;
+                tabNormalBackgroundBrush = SolidBrush(tabNormalBackgroundColor);
+                if (tabNormalBackgroundBrush.Error())
+                {
+                    return Result<bool>(ErrorId(tabNormalBackgroundBrush.GetErrorId()));
+                }
+                auto result = Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetTabSelectedBackgroundColor(const Color& tabSelectedBackgroundColor_)
+        {
+            if (tabSelectedBackgroundColor_ != tabSelectedBackgroundColor)
+            {
+                tabSelectedBackgroundColor = tabSelectedBackgroundColor_;
+                tabSelectedBackgroundBrush = SolidBrush(tabSelectedBackgroundColor);
+                if (tabSelectedBackgroundBrush.Error())
+                {
+                    return Result<bool>(ErrorId(tabSelectedBackgroundBrush.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        public const Container& TabPages() const
+        {
+            return tabPages;
+        }
+        [nodiscard]
+        public Result<bool> AddTabPage(TabPage* tabPage)
+        {
+            AddTabPageToTabPageMap(tabPage);
+            auto result = tabPages.AddChild(tabPage);
+            if (result.Error()) return result;
+            result = SetSelectedTabPage(tabPage);
+            if (result.Error()) return result;
+            SetChanged();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddTabPage(const string& text, const string& key)
+        {
+            return AddTabPage(new TabPage(text, key));
+        }
+        [nodiscard]
+        public Result<bool> AddTabPage(const string& text)
+        {
+            return AddTabPage(text, string());
+        }
+        [nodiscard]
+        public Result<bool> CloseTabPage(TabPage* tabPage)
+        {
+            auto result = tabPage->Hide();
+            if (result.Error()) return result;
+            RemoveTabPageFromTabPageMap(tabPage);
+            if (tabPage == selectedTabPage)
+            {
+                if (selectedTabPage->NextSibling() != null)
+                {
+                    result = SetSelectedTabPage(cast<TabPage*>(selectedTabPage->NextSibling()));
+                    if (result.Error()) return result;
+                }
+                else if (selectedTabPage->PrevSibling() != null)
+                {
+                    result = SetSelectedTabPage(cast<TabPage*>(selectedTabPage->PrevSibling()));
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    result = SetSelectedTabPage(null);
+                    if (result.Error()) return result;
+                }
+            }
+            UniquePtr<Component> component = tabPages.RemoveChild(tabPage);
+            TabPage* tb = cast<TabPage*>(component.Get());
+            ControlEventArgs args(tb);
+            result = OnControlRemoved(args);
+            if (result.Error()) return result;
+            SetChanged();
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> CloseAllTabPages()
+        {
+            if (selectedTabPage != null)
+            {
+                auto result = selectedTabPage->Hide();
+                if (result.Error()) return result;
+                selectedTabPage = null;
+            }
+            Component* component = tabPages.FirstChild();
+            while (component != null)
+            {
+                Component* next = component->NextSibling();
+                UniquePtr<Component> comp = tabPages.RemoveChild(component);
+                TabPage* tabPage = cast<TabPage*>(comp.Get());
+                RemoveTabPageFromTabPageMap(tabPage);
+                ControlEventArgs args(tabPage);
+                auto result = OnControlRemoved(args);
+                if (result.Error()) return result;
+                component = next;
+            }
+            SetChanged();
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public int IndexOf(TabPage* tabPage) const
+        {
+            int index = 0;
+            Component* component = tabPages.FirstChild();
+            while (component != null)
+            {
+                if (component == tabPage)
+                {
+                    return index;
+                }
+                component = component->NextSibling();
+                ++index;
+            }
+            return -1;
+        }
+        public TabPage* GetTabPageByKey(const string& key) const
+        {
+            auto it = tabPageMap.Find(key);
+            if (it != tabPageMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            if (Debug.Paint())
+            {
+                Rect r(Point(), GetSize());
+                LogView* log = Application.GetLogView();
+                if (log != null)
+                {
+                    auto result = log->WriteLine("TabControl.OnPaint: " + r.ToString());
+                    if (result.Error()) return result;
+                }
+            }
+            auto smoothingModeResult = args.graphics.GetSmoothingMode();
+            if (smoothingModeResult.Error())
+            {
+                return Result<bool>(ErrorId(smoothingModeResult.GetErrorId()));
+            }
+            SmoothingMode prevSmoothingMode = smoothingModeResult.Value();
+            auto result = args.graphics.SetSmoothingMode(SmoothingMode.highQuality);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            if (Changed())
+            {
+                ResetChanged();
+                auto result = Measure(args.graphics);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            result = args.graphics.Clear(BackgroundColor());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = DrawTabs(args.graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = DrawSelectedTabPage(args.clipRect);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = DrawFrame(args.graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = args.graphics.SetSmoothingMode(prevSmoothingMode);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return base->OnPaint(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseEnter()
+        {
+            auto result = base->OnMouseEnter();
+            if (result.Error()) return result;
+            closeStateTabPage = null;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseLeave()
+        {
+            auto result = base->OnMouseLeave();
+            if (result.Error()) return result;
+            if (closeStateTabPage != null)
+            {
+                closeStateTabPage->tab.state = Tab.State.normal;
+                result = Invalidate(closeStateTabPage->tab.closeRect.ToWinRect());
+                if (result.Error()) return result;
+                closeStateTabPage = null;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseMove(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseMove(args);
+            if (result.Error()) return result;
+            Component* component = tabPages.FirstChild();
+            while (component != null)
+            {
+                TabPage* tabPage = cast<TabPage*>(component);
+                if (tabPage->tab.closeRect.Contains(args.location))
+                {
+                    if (tabPage->tab.state == Tab.State.normal)
+                    {
+                        tabPage->tab.state = Tab.State.closeBoxSelected;
+                        closeStateTabPage = tabPage;
+                        result = Invalidate(tabPage->tab.closeRect.ToWinRect());
+                        if (result.Error()) return result;
+                        return Result<bool>(true);
+                    }
+                }
+                else if (closeStateTabPage != null)
+                {
+                    if (tabPage->tab.state == Tab.State.closeBoxSelected)
+                    {
+                        closeStateTabPage->tab.state = Tab.State.normal;
+                        result = Invalidate(closeStateTabPage->tab.closeRect.ToWinRect());
+                        if (result.Error()) return result;
+                        closeStateTabPage = null;
+                        return Result<bool>(true);
+                    }
+                }
+                component = component->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseDown(args);
+            if (result.Error()) return result;
+            Component* component = tabPages.FirstChild();
+            while (component != null)
+            {
+                TabPage* tabPage = cast<TabPage*>(component);
+                if (tabPage->tab.selectRect.Contains(args.location))
+                {
+                    result = tabPage->Select();
+                    if (result.Error()) return result;
+                    return Result<bool>(true);
+                }
+                else if (tabPage->tab.closeRect.Contains(args.location))
+                {
+                    result = tabPage->Close();
+                    if (result.Error()) return result;
+                    return Result<bool>(true);
+                }
+                component = component->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        public inline TabPage* SelectedTabPage() const
+        {
+            return selectedTabPage;
+        }
+        [nodiscard]
+        public Result<bool> SetSelectedTabPage(TabPage* tabPage)
+        {
+            if (selectedTabPage != tabPage)
+            {
+                if (selectedTabPage != null)
+                {
+                    auto result = selectedTabPage->Hide();
+                    if (result.Error()) return result;
+                }
+                selectedTabPage = tabPage;
+                if (selectedTabPage != null)
+                {
+                    auto result = selectedTabPage->Show();
+                    if (result.Error()) return result;
+                    Control* control = selectedTabPage->GetFirstEnabledTabStopControl();
+                    if (control != null)
+                    {
+                        control->SetFocus();
+                    }
+                    OnTabPageSelected();
+                }
+                auto result = Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SelectNextTabPage()
+        {
+            if (selectedTabPage == null) return Result<bool>(false);
+            TabPage* nextTabPage = cast<TabPage*>(selectedTabPage->NextSibling());
+            if (nextTabPage != null)
+            {
+                auto result = SetSelectedTabPage(nextTabPage);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                TabPage* firstTabPage = cast<TabPage*>(tabPages.FirstChild());
+                if (firstTabPage != null)
+                {
+                    auto result = SetSelectedTabPage(firstTabPage);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SelectPreviousTabPage()
+        {
+            if (selectedTabPage == null) return Result<bool>(false);
+            TabPage* prevTabPage = cast<TabPage*>(selectedTabPage->PrevSibling());
+            if (prevTabPage != null)
+            {
+                auto result = SetSelectedTabPage(prevTabPage);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                TabPage* lastTabPage = cast<TabPage*>(tabPages.LastChild());
+                if (lastTabPage != null)
+                {
+                    auto result = SetSelectedTabPage(lastTabPage);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected virtual void OnTabPageSelected()
+        {
+            tabPageSelectedEvent.Fire();
+        }
+        public Event<TabPageSelectedEventHandler>& TabPageSelectedEvent()
+        {
+            return tabPageSelectedEvent;
+        }
+        private Result<bool> DrawTabs(Graphics& graphics)
+        {
+            Component* component = tabPages.FirstChild();
+            int left = leadingWidth;
+            while (component != null)
+            {
+                TabPage* tabPage = cast<TabPage*>(component);
+                if (tabPage != selectedTabPage)
+                {
+                    auto result = tabPage->DrawTab(graphics, this);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+                component = component->NextSibling();
+            }
+            if (selectedTabPage != null)
+            {
+                auto result = selectedTabPage->DrawTab(graphics, this);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnLocationChanged()
+        {
+            auto result = base->OnLocationChanged();
+            if (result.Error()) return result;
+            result = SetSelectedTabPagePos();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
+        {
+            auto result = base->OnSizeChanged(args);
+            if (result.Error()) return result;
+            result = SetSelectedTabPagePos();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> SetSelectedTabPagePos()
+        {
+            if (selectedTabPage == null) return Result<bool>(false);
+            Point loc(1, headerHeight + 1);
+            auto result = selectedTabPage->SetLocation(loc);
+            if (result.Error()) return result;
+            Size size = GetSize();
+            size.w = size.w - 2;
+            size.h = size.h - headerHeight - 2;
+            result = selectedTabPage->SetSize(size);
+            if (result.Error()) return result;
+            result = selectedTabPage->DockChildren();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawSelectedTabPage(const Rect& clipRect)
+        {
+            if (selectedTabPage == null) return Result<bool>(false);
+            auto result = SetSelectedTabPagePos();
+            if (result.Error()) return result;
+            auto locationResult = selectedTabPage->Location();
+            if (locationResult.Error())
+            {
+                return Result<bool>(ErrorId(locationResult.GetErrorId()));
+            }
+            Rect r(locationResult.Value(), selectedTabPage->GetSize());
+            if (!r.IntersectsWith(clipRect)) return Result<bool>(false);
+            result = selectedTabPage->Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawFrame(Graphics& graphics)
+        {
+            if (selectedTabPage == null) return Result<bool>(false);
+            Size size = GetSize();
+            auto result = graphics.DrawLine(framePen,
+                PointF(0, headerHeight),
+                PointF(selectedTabPage->tab.left, headerHeight));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(framePen,
+                PointF(selectedTabPage->tab.left + selectedTabPage->tab.width, headerHeight),
+                PointF(size.w - 1, headerHeight));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(framePen,
+                PointF(size.w - 1, headerHeight),
+                PointF(size.w - 1, size.h - 1));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(framePen,
+                PointF(size.w - 1, size.h - 1),
+                PointF(0, size.h - 1));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(framePen,
+                PointF(0, size.h - 1),
+                PointF(0, headerHeight));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        internal void AddTabPageToTabPageMap(TabPage* tabPage)
+        {
+            if (!tabPage->Key().IsEmpty())
+            {
+                tabPageMap[tabPage->Key()] = tabPage;
+            }
+        }
+        internal void RemoveTabPageFromTabPageMap(TabPage* tabPage)
+        {
+            if (!tabPage->Key().IsEmpty())
+            {
+                tabPageMap.Remove(tabPage->Key());
+            }
+        }
+        private Result<bool> Measure(Graphics& graphics)
+        {
+            headerHeight = 0;
+            auto result = MeasureWidthsAndHeight(graphics);
+            if (result.Error()) return result;
+            SetVisibility(graphics);
+            CalculateMetrics(graphics);
+            return Result<bool>(true);
+        }
+        private Result<bool> MeasureWidthsAndHeight(Graphics& graphics)
+        {
+            Component* component = tabPages.FirstChild();
+            while (component != null)
+            {
+                TabPage* tabPage = cast<TabPage*>(component);
+                auto result = tabPage->MeasureWidthAndHeight(graphics, this);
+                if (result.Error()) return result;
+                component = component->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        private void SetVisibility(Graphics& graphics)
+        {
+            Component* component = tabPages.FirstChild();
+            TabPage* firstVisibleTabPage = cast<TabPage*>(component);
+            int width = GetSize().w;
+            int sum = leadingWidth;
+            bool selectedPassed = false;
+            while (component != null)
+            {
+                TabPage* tabPage = cast<TabPage*>(component);
+                int w = tabPage->tab.width;
+                sum = sum + w;
+                if (tabPage == selectedTabPage)
+                {
+                    if (sum < width)
+                    {
+                        firstVisibleTabPage->tab.visible = true;
+                        while (firstVisibleTabPage != selectedTabPage)
+                        {
+                            firstVisibleTabPage = cast<TabPage*>(firstVisibleTabPage->NextSibling());
+                            firstVisibleTabPage->tab.visible = true;
+                        }
+                        selectedPassed = true;
+                    }
+                    else
+                    {
+                        sum = sum - firstVisibleTabPage->tab.width;
+                        firstVisibleTabPage->tab.visible = false;
+                        component = firstVisibleTabPage;
+                    }
+                }
+                else if (selectedPassed)
+                {
+                    if (sum < width)
+                    {
+                        tabPage->tab.visible = true;
+                    }
+                    else
+                    {
+                        tabPage->tab.visible = false;
+                    }
+                }
+                sum = sum - overlapWidth;
+                component = component->NextSibling();
+            }
+        }
+        private void CalculateMetrics(Graphics& graphics)
+        {
+            Component* component = tabPages.FirstChild();
+            int left = leadingWidth;
+            while (component != null)
+            {
+                TabPage* tabPage = cast<TabPage*>(component);
+                tabPage->CalculateMetrics(graphics, this, left);
+                component = component->NextSibling();
+            }
+        }
+        internal inline const Font& GetFont() const
+        {
+            return font;
+        }
+        internal inline const Pen& FramePen() const
+        {
+            return framePen;
+        }
+        internal inline const Pen& CloseBoxPen() const
+        {
+            return closeBoxPen;
+        }
+        internal inline const SolidBrush& TextBrush() const
+        {
+            return textBrush;
+        }
+        internal inline const SolidBrush& TabNormalBackgroundBrush() const
+        {
+            return tabNormalBackgroundBrush;
+        }
+        internal inline const SolidBrush& TabSelectedBackgroundBrush() const
+        {
+            return tabSelectedBackgroundBrush;
+        }
+        internal inline const SolidBrush& CloseBoxSelectedBrush() const
+        {
+            return closeBoxSelectedBrush;
+        }
+        internal inline int LeadingWidth() const
+        {
+            return leadingWidth;
+        }
+        internal inline int TopMarginHeight() const
+        {
+            return topMarginHeight;
+        }
+        internal inline int HeaderHeight() const
+        {
+            return headerHeight;
+        }
+        internal void SetHeaderHeight(int headerHeight_)
+        {
+            headerHeight = headerHeight_;
+        }
+        internal inline const Padding& TabPadding() const
+        {
+            return tabPadding;
+        }
+        internal inline const Padding& TabCloseBoxPadding() const
+        {
+            return tabCloseBoxPadding;
+        }
+        internal inline int OverlapWidth() const
+        {
+            return overlapWidth;
+        }
+        internal inline float RoundingRadius() const
+        {
+            return roundingRadius;
+        }
+        internal inline const StringFormat& GetStringFormat() const
+        {
+            return stringFormat;
+        }
+        internal inline const StringFormat& CenterFormat() const
+        {
+            return centerFormat;
+        }
+        private inline bool Changed() const
+        {
+            return (flags & Flags.changed) != Flags.none;
+        }
+        internal inline void SetChanged()
+        {
+            flags = cast<Flags>(flags | Flags.changed);
+        }
+        private inline void ResetChanged()
+        {
+            flags = cast<Flags>(flags & ~Flags.changed);
+        }
+        private Flags flags;
+        private Font font;
+        private Color frameColor;
+        private Color textColor;
+        private Container tabPages;
+        private HashMap<string, TabPage*> tabPageMap;
+        private TabPage* selectedTabPage;
+        private int leadingWidth;
+        private int topMarginHeight;
+        private int headerHeight;
+        private Padding tabPadding;
+        private Padding tabCloseBoxPadding;
+        private int overlapWidth;
+        private float roundingRadius;
+        private StringFormat stringFormat;
+        private StringFormat centerFormat;
+        private Color tabNormalBackgroundColor;
+        private Color tabSelectedBackgroundColor;
+        private Pen framePen;
+        private float closeBoxPenWidth;
+        private Pen closeBoxPen;
+        private SolidBrush textBrush;
+        private SolidBrush tabNormalBackgroundBrush;
+        private SolidBrush tabSelectedBackgroundBrush;
+        private Color closeBoxSelectedColor;
+        private SolidBrush closeBoxSelectedBrush;
+        private TabPage* closeStateTabPage;
+        private Event<TabPageSelectedEventHandler> tabPageSelectedEvent;
+    }
+
+    public class TabPage : Panel
+    {
+        public TabPage(const string& text, const string& key_) :
+            base("System.Windows.TabPage", text, Point(), Size(), Dock.none, Anchors.none, Color.White()), key(key_), tab()
+        {
+        }
+        public inline const string& Key() const
+        {
+            return key;
+        }
+        public void SetKey(const string& key_)
+        {
+            TabControl* tabControl = GetTabControl();
+            if (tabControl != null)
+            {
+                tabControl->RemoveTabPageFromTabPageMap(this);
+            }
+            key = key_;
+            if (tabControl != null)
+            {
+                tabControl->AddTabPageToTabPageMap(this);
+            }
+        }
+        [nodiscard]
+        public Result<bool> Select()
+        {
+            TabControl* tabControl = GetTabControl();
+            if (tabControl != null)
+            {
+                auto result = tabControl->SetSelectedTabPage(this);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Close()
+        {
+            TabControl* tabControl = GetTabControl();
+            if (tabControl != null)
+            {
+                auto result = tabControl->CloseTabPage(this);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SelectNextTabPage()
+        {
+            TabControl* tabControl = GetTabControl();
+            if (tabControl != null)
+            {
+                auto result = tabControl->SelectNextTabPage();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SelectPreviousTabPage()
+        {
+            TabControl* tabControl = GetTabControl();
+            if (tabControl != null)
+            {
+                auto result = tabControl->SelectPreviousTabPage();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public nothrow TabControl* GetTabControl() const
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null && parentControl is TabControl*)
+            {
+                return cast<TabControl*>(parentControl);
+            }
+            return null;
+        }
+        [nodiscard]
+        protected override Result<bool> OnLocationChanged()
+        {
+            return base->OnLocationChanged();
+        }
+        [nodiscard]
+        protected override Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
+        {
+            return base->OnSizeChanged(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnTextChanged()
+        {
+            auto result = base->OnTextChanged();
+            if (result.Error()) return result;
+            tab.width = 0;
+            TabControl* tabControl = GetTabControl();
+            if (tabControl != null)
+            {
+                tabControl->SetChanged();
+                result = tabControl->Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnKeyDown(KeyEventArgs& args)
+        {
+            auto result = base->OnKeyDown(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0) return Result<bool>(ErrorId(args.errorId));
+            if (!args.handled)
+            {
+                switch (args.key)
+                {
+                    case cast<Keys>(Keys.controlModifier | Keys.f4):
+                    {
+                        result = Close();
+                        if (result.Error()) return result;
+                        args.handled = true;
+                        break;
+                    }
+                    case cast<Keys>(Keys.controlModifier | Keys.tab):
+                    {
+                        result = SelectNextTabPage();
+                        if (result.Error()) return result;
+                        args.handled = true;
+                        break;
+                    }
+                    case cast<Keys>(Keys.controlModifier | Keys.shiftModifier | Keys.tab):
+                    {
+                        result = SelectPreviousTabPage();
+                        if (result.Error()) return result;
+                        args.handled = true;
+                        break;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        internal Result<bool> MeasureWidthAndHeight(Graphics& graphics, TabControl* tabControl)
+        {
+            if (tab.width == 0)
+            {
+                auto result = graphics.MeasureStringRectF(Text(), tabControl->GetFont(), PointF(), tabControl->GetStringFormat());
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                RectF textRect = result.Value();
+                result = graphics.MeasureStringRectF("x", tabControl->GetFont(), PointF(), tabControl->GetStringFormat());
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                RectF closeRect = result.Value();
+                tab.textHeight = textRect.size.h;
+                tab.textWidth = textRect.size.w;
+                tab.closeBoxWidth = closeRect.size.w;
+                tab.height = cast<int>(tabControl->TabPadding().Vertical() + tabControl->TabCloseBoxPadding().Vertical() + tab.textHeight);
+                tab.width = cast<int>(tabControl->TabPadding().Horizontal() + tab.textWidth + tabControl->OverlapWidth() +
+                    tabControl->TabCloseBoxPadding().Horizontal() + tab.closeBoxWidth);
+            }
+            tabControl->SetHeaderHeight(Max(tabControl->HeaderHeight(), tab.height + tabControl->TopMarginHeight()));
+            return Result<bool>(true);
+        }
+        internal void CalculateMetrics(Graphics& graphics, TabControl* tabControl, int& left)
+        {
+            if (!tab.visible) return;
+            float roundingRadius = tabControl->RoundingRadius();
+            int topMarginHeight = tabControl->TopMarginHeight();
+            tab.left = left;
+            tab.leftRoundingRect = RectF(PointF(), SizeF(2 * roundingRadius, 2 * roundingRadius));
+            tab.leftRoundingRect.Offset(left, topMarginHeight);
+            tab.rightRoundingRect = RectF(PointF(), SizeF(2 * roundingRadius, 2 * roundingRadius));
+            tab.rightRoundingRect.Offset(left + tab.width - 2 * roundingRadius, topMarginHeight);
+            tab.topRect = RectF(PointF(), SizeF(tab.width - 2 * roundingRadius, roundingRadius));
+            tab.topRect.Offset(left + roundingRadius, topMarginHeight);
+            tab.bottomRect = RectF(PointF(), SizeF(tab.width, tab.height - roundingRadius + 1));
+            tab.bottomRect.Offset(left, topMarginHeight + roundingRadius);
+            tab.textRect = RectF(PointF(), SizeF(tab.width - (tabControl->TabCloseBoxPadding().Horizontal() + tab.closeBoxWidth), tab.height));
+            tab.textRect.Offset(left, topMarginHeight);
+            tab.selectRect = Rect(Point(tab.left, topMarginHeight),
+                Size(cast<int>(tab.width - (tab.closeBoxWidth + tabControl->TabCloseBoxPadding().right)), tab.height));
+            tab.closeBoxRect = RectF(
+                PointF(tab.left + tab.selectRect.size.w,
+                    topMarginHeight + tabControl->TabPadding().top + tabControl->TabCloseBoxPadding().top),
+                SizeF(tab.closeBoxWidth, tab.closeBoxWidth));
+            tab.closeRect = Rect(Point(cast<int>(tab.closeBoxRect.location.x), cast<int>(tab.closeBoxRect.location.y)),
+                Size(cast<int>(tab.closeBoxRect.size.w), cast<int>(tab.closeBoxRect.size.h)));
+            tab.closeRect.Inflate(3, 3);
+            tab.closeBoxRect.Inflate(-1, -1);
+            left = left + tab.width - tabControl->OverlapWidth();
+        }
+        internal Result<bool> DrawTab(Graphics& graphics, TabControl* tabControl)
+        {
+            if (!tab.visible) return Result<bool>(false);
+            Brush* backgroundBrush = null;
+            if (this == tabControl->SelectedTabPage())
+            {
+                const Brush& brush = tabControl->TabSelectedBackgroundBrush();
+                backgroundBrush = &brush;
+            }
+            else
+            {
+                const Brush& brush = tabControl->TabNormalBackgroundBrush();
+                backgroundBrush = &brush;
+            }
+            const Pen& framePen = tabControl->FramePen();
+            const Pen& closeBoxPen = tabControl->CloseBoxPen();
+            int topMarginHeight = tabControl->TopMarginHeight();
+            float roundingRadius = tabControl->RoundingRadius();
+            auto result = graphics.FillEllipse(*backgroundBrush, tab.leftRoundingRect);
+            if (result.Error()) return result;
+            result = graphics.FillEllipse(*backgroundBrush, tab.rightRoundingRect);
+            if (result.Error()) return result;
+            result = graphics.FillRectangle(*backgroundBrush, tab.topRect);
+            if (result.Error()) return result;
+            result = graphics.FillRectangle(*backgroundBrush, tab.bottomRect);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(framePen, PointF(tab.left, tab.bottomRect.location.y + tab.bottomRect.size.h), PointF(tab.left, tab.bottomRect.location.y));
+            if (result.Error()) return result;
+            result = graphics.DrawArc(framePen, tab.leftRoundingRect, -180.0f, 90.0f);
+            if (result.Error()) return result;
+            result = graphics.DrawString(Text(), tabControl->GetFont(), tab.textRect, tabControl->CenterFormat(), tabControl->TextBrush());
+            if (result.Error()) return result;
+            result = graphics.DrawLine(framePen,
+                PointF(tab.leftRoundingRect.location.x + roundingRadius, topMarginHeight),
+                PointF(tab.rightRoundingRect.location.x + roundingRadius, topMarginHeight));
+            if (result.Error()) return result;
+            result = graphics.DrawArc(framePen, tab.rightRoundingRect, -90.0f, 90.0f);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(framePen,
+                PointF(tab.left + tab.width, tab.bottomRect.location.y),
+                PointF(tab.left + tab.width, tab.bottomRect.location.y + tab.bottomRect.size.h - 1));
+                if (result.Error()) return result;
+            if (tab.state == Tab.State.normal)
+            {
+                RectF r = tab.closeBoxRect;
+                r.Inflate(3, 3);
+                result = graphics.FillRectangle(*backgroundBrush, r);
+                if (result.Error()) return result;
+            }
+            else if (tab.state == Tab.State.closeBoxSelected)
+            {
+                RectF r = tab.closeBoxRect;
+                r.Inflate(3, 3);
+                const Brush& selectedBrush = tabControl->CloseBoxSelectedBrush();
+                result = graphics.FillRectangle(selectedBrush, r);
+                if (result.Error()) return result;
+            }
+            result = graphics.DrawLine(closeBoxPen,
+                tab.closeBoxRect.location, PointF(tab.closeBoxRect.location.x + tab.closeBoxRect.size.w, tab.closeBoxRect.location.y + tab.closeBoxRect.size.h));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(closeBoxPen,
+                PointF(tab.closeBoxRect.location.x, tab.closeBoxRect.location.y + tab.closeBoxRect.size.h),
+                PointF(tab.closeBoxRect.location.x + tab.closeBoxRect.size.w, tab.closeBoxRect.location.y));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private string key;
+        internal Tab tab;
+    }
+}

@@ -5,6 +5,21 @@ class HelloWindow : Window
 {
     public HelloWindow() : base("Hello"), numHellos(0), color(0u, 0x5au, 0xb4u), brush(color), fontFamily(FontFamily.GenericSansSerif()), font(fontFamily, 14.0f)
     {
+        if (brush.Error())
+        {
+            SetErrorId(brush.GetErrorId());
+            return;
+        }
+        if (fontFamily.Error())
+        {
+            SetErrorId(fontFamily.GetErrorId());
+            return;
+        }
+        if (font.Error())
+        {
+            SetErrorId(font.GetErrorId());
+            return;
+        }
         Size s = GetSize();
         Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
         Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
@@ -14,29 +29,47 @@ class HelloWindow : Window
         UniquePtr<Button> helloButton(new Button(ButtonCreateParams(ButtonControlCreateParams(
             ControlCreateParams().SetText("Hello").SetLocation(Point(x, y)).SetSize(defaultButtonSize).
             SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right))))));
+        if (helloButton->Error())
+        {
+            SetErrorId(helloButton->GetErrorId());
+            return;
+        }
         helloButton->ClickEvent().AddHandler(HelloButtonClick);
-        AddChild(helloButton.Release());
+        auto result = AddChild(helloButton.Release());
+        if (result.Error())
+        {
+            SetErrorId(result.GetErrorId());
+            return;
+        }
         PaintEvent().AddHandler(Paint);
     }
-    private void HelloButtonClick()
+    private void HelloButtonClick(ClickEventArgs& args)
     {
         ++numHellos;
-        Invalidate();
+        auto result = Invalidate();
+        if (result.Error())
+        {
+            args.errorId = result.GetErrorId();
+            return;
+        }
     }
     private void Paint(PaintEventArgs& args)
     {
-        try
+        PointF origin(10.0f, 10.0f);
+	       float height = font.GetHeight(args.graphics);
+        for (int i = 0; i < numHellos; ++i)
         {
-            PointF origin(10.0f, 10.0f);
-            for (int i = 0; i < numHellos; ++i)
+            auto drawStringResult = args.graphics.DrawString("Hello, World!", font, origin, brush);
+            if (drawStringResult.Error())
             {
-                args.graphics.DrawStringChecked("Hello, World!", font, origin, brush);
-                origin.y = origin.y + font.GetHeight(args.graphics);
+                string errorMessage = drawStringResult.GetErrorMessage();
+                MessageBox.Show(errorMessage, "error");
+                return;
             }
-        }
-        catch (const Exception& ex)
-        {
-            MessageBox.Show(ex.Message(), "Error", this, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
+            else
+            {
+                origin.y = origin.y + height;
+            }
         }
     }
     private int numHellos;
@@ -49,23 +82,12 @@ class HelloWindow : Window
 
 int main()
 {
-    try
+    HelloWindow helloWindow;
+    if (helloWindow.Error())
     {
-        HelloWindow helloWindow;
-        return Application.Run(helloWindow);
-    }
-    catch (const Exception& ex)
-    {
-        MessageBox.Show(ex.Message(), "Error", null, cast<MessageBoxType>(MessageBoxType.MB_OK | MessageBoxType.MB_ICONSTOP));
-        try
-        {
-            System.IO.StreamWriter errorWriter = System.IO.File.CreateText("error.txt");
-            errorWriter << ex.ToString() << endl();
-        }
-        catch (const Exception& innerEx)
-        {
-        }
+        string errorMessage = GetErrorMessage(helloWindow.GetErrorId());
+        MessageBox.Show(errorMessage, "error");
         return 1;
     }
-    return 0;
+    return Application.Run(helloWindow);
 }

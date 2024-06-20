@@ -5,7 +5,6 @@
 
 export module cmajor.binary.message.io;
 
-import cmajor.binary.message.number;
 import std.core;
 import soul.ast.source.pos;
 import util;
@@ -100,11 +99,6 @@ inline uint32_t Length(const std::string& x)
 inline uint32_t Length(const util::uuid& x)
 {
     return 16;
-}
-
-inline uint32_t Length(const cmajor::bmp::Number& x)
-{
-    return x.Length();
 }
 
 template<typename T>
@@ -236,11 +230,6 @@ inline void Write(util::MemoryWriter& writer, const util::uuid& x)
     writer.Write(x);
 }
 
-inline void Write(util::MemoryWriter& writer, const cmajor::bmp::Number& x)
-{
-    x.Write(writer);
-}
-
 template<typename T>
 concept WritableEnumType = std::is_enum_v<T>;
 
@@ -358,11 +347,6 @@ inline void Read(util::MemoryReader& reader, std::string& value)
 inline void Read(util::MemoryReader& reader, util::uuid& value)
 {
     value = reader.ReadUuid();
-}
-
-inline void Read(util::MemoryReader& reader, cmajor::bmp::Number& value)
-{
-    value.Read(reader);
 }
 
 template<typename T>

@@ -10,6 +10,7 @@ using System.Security;
 
 namespace System.Lex
 {
+    [nodiscard]
     public Result<int*> GetClassMap(const string& classMapName)
     {
         int errorId = 0;
@@ -118,6 +119,7 @@ namespace System.Lex
         {
             separatorChar = separatorChar_;
         }
+        [nodiscard]
         public Result<bool> operator++()
         {
             if (Error())
@@ -158,6 +160,7 @@ namespace System.Lex
             current = tokens.Begin() + cast<int>(pos);
             line = cast<int>(pos >> 32);
         }
+        [nodiscard]
         public Result<bool> NextToken()
         {
             if (Error())
@@ -300,6 +303,7 @@ namespace System.Lex
             Token token = GetToken(pos);
             return *token.match.begin;
         }
+        [nodiscard]
         public Result<int> GetInt(long pos)
         {
             Token token = GetToken(pos);
@@ -311,6 +315,7 @@ namespace System.Lex
             }
             return ParseInt(utf8.Value());
         }
+        [nodiscard]
         public Result<double> GetDouble(long pos)
         {
             Token token = GetToken(pos);
@@ -582,6 +587,7 @@ namespace System.Lex
         return p;
     }
 
+    [nodiscard]
     public Result<bool> WriteBeginRuleToLog(Lexer& lexer, const ustring& ruleName)
     {
         auto result0 = lexer.Log()->WriteBeginRule(ruleName);
@@ -599,6 +605,7 @@ namespace System.Lex
         return Result<bool>(true);
     }
 
+    [nodiscard]
     public Result<bool> WriteSuccessToLog(Lexer& lexer, long pos, const ustring& ruleName)
     {
         lexer.Log()->DecIndent();
@@ -612,6 +619,7 @@ namespace System.Lex
         return lexer.Log()->WriteEndRule(ruleName);
     }
 
+    [nodiscard]
     public Result<bool> WriteFailureToLog(Lexer& lexer, const ustring& ruleName)
     {
         lexer.Log()->DecIndent();

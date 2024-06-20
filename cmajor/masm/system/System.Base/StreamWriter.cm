@@ -15,12 +15,16 @@ namespace System.IO
         }
         public StreamWriter(Stream* stream_) : base(), stream(stream_)
         {
+            if (stream != null && stream->Error())
+            {
+                SetErrorId(stream->GetErrorId());
+            }
         }
         public override ~StreamWriter()
         {
             if (stream != null)
             {
-                Flush();
+                auto result = Flush();
             }
             long n = streams.Count();
             for (long i = n - 1; i >= 0; --i)
@@ -37,11 +41,16 @@ namespace System.IO
         public void SetStream(Stream* stream_)
         {
             stream = stream_;
+            if (stream != null && stream->Error())
+            {
+                SetErrorId(stream->GetErrorId());
+            }
         }
         public void Own(Stream* strm)
         {
             streams.Add(UniquePtr<Stream>(strm));
         }
+        [nodiscard]
         public Result<bool> Write(const char* x, long length)
         {
             if (Error())
@@ -62,10 +71,12 @@ namespace System.IO
             }
             return result;
         }
+        [nodiscard]
         public override Result<bool> Write(const string& x)
         {
             return Write(x.Chars(), x.Length());
         }
+        [nodiscard]
         public override Result<bool> Write(const wstring& x)
         {
             auto result = ToUtf8(x);
@@ -75,6 +86,7 @@ namespace System.IO
             }
             return Write(result.Value());
         }
+        [nodiscard]
         public override Result<bool> Write(const ustring& x)
         {
             auto result = ToUtf8(x);
@@ -84,14 +96,17 @@ namespace System.IO
             }
             return Write(result.Value());
         }
+        [nodiscard]
         public override Result<bool> Write(bool x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(char x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(wchar x)
         {
             auto result = ToString(x);
@@ -101,6 +116,7 @@ namespace System.IO
             }
             return Write(result.Value());
         }
+        [nodiscard]
         public override Result<bool> Write(uchar x)
         {
             auto result = ToString(x);
@@ -110,153 +126,186 @@ namespace System.IO
             }
             return Write(result.Value());
         }
+        [nodiscard]
         public override Result<bool> Write(sbyte x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(byte x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(short x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(ushort x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(int x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(uint x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(long x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(ulong x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(float x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(double x)
         {
             return Write(ToString(x));
         }
+        [nodiscard]
         public override Result<bool> Write(const Date& date)
         {
             return Write(date.ToString());
         }
+        [nodiscard]
         public override Result<bool> Write(const DateTime& dateTime)
         {
             return Write(dateTime.ToString());
         }
+        [nodiscard]
         public override Result<bool> WriteLine()
         {
             return Write("\n", 1);
         }
+        [nodiscard]
         public override Result<bool> WriteLine(const string& x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(const wstring& x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(const ustring& x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(bool x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(char x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(wchar x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(uchar x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(sbyte x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(byte x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(short x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(ushort x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(int x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(uint x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(long x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(ulong x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(float x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(double x)
         {
             auto result = Write(x);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(const Date& date)
         {
             auto result = Write(date);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public override Result<bool> WriteLine(const DateTime& dateTime)
         {
             auto result = Write(dateTime);
             return result.AndThen(WriteLine());
         }
+        [nodiscard]
         public Result<bool> Flush()
         {
             if (stream == null)

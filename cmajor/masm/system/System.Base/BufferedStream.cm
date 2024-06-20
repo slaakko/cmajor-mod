@@ -9,7 +9,7 @@ namespace System.IO
 {
     public class IOBuffer
     {
-        public IOBuffer(long size_) : size(size_), mem(RtmMemAlloc(size)) {}
+        public IOBuffer(long size_) : size(size_), mem(MemAlloc(size)) {}
         suppress IOBuffer(const IOBuffer&);
         suppress void operator=(const IOBuffer&);
         public IOBuffer(IOBuffer&& that): size(that.size), mem(that.mem)
@@ -68,6 +68,7 @@ namespace System.IO
         {
             Flush();
         }
+        [nodiscard]
         public override Result<int> ReadByte()
         {
             auto flushResult = Flush();
@@ -93,6 +94,7 @@ namespace System.IO
             --bytesAvailable;
             return Result<int>(value);
         }
+        [nodiscard]
         public override Result<long> Read(byte* buf, long count)
         {
             if (count < 0)
@@ -126,6 +128,7 @@ namespace System.IO
             }
             return Result<long>(bytesRead);
         }
+        [nodiscard]
         public override Result<bool> Write(byte x)
         {
             if (end >= buffer.Size())
@@ -140,6 +143,7 @@ namespace System.IO
             buffer[end++] = x;
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Write(byte* buf, long count)
         {
             if (count < 0)
@@ -185,6 +189,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Seek(long pos, Origin origin)
         {
             auto flushResult = Flush();
@@ -208,6 +213,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<long> Tell()
         {
             auto flushResult = Flush();
@@ -230,6 +236,7 @@ namespace System.IO
             }
             return Result<long>(tellResult.Value() - bytesAvailable);
         }
+        [nodiscard]
         private Result<bool> FillBuf()
         {
             if (baseStream == null)

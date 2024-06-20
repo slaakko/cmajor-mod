@@ -461,7 +461,11 @@ namespace scm.parser
                     else
                     {
                         #if (DEBUG)
-                            if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"QualifiedUtf8Id");
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"QualifiedUtf8Id");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
                         #endif
                         return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<string>(result.Value())));
                     }

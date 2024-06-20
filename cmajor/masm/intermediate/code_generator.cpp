@@ -2576,6 +2576,10 @@ void CodeGenerator::Visit(Function& function)
         std::string fullFunctionName = function.ResolveFullName();
         file.GetDeclarationSection().AddPublicDataDeclaration(new cmajor::masm::assembly::PublicDataDeclaration(function.Name()));
         currentFunction = &function;
+        if (function.Name() == "constructor_Window_9C3ED26C5344C6C42A90C8A7DE7F01E73F0A6FA6")
+        {
+            int x = 0;
+        }
         context->AssemblyContext()->ResetRegisterPool();
         assemblyFunction = file.GetCodeSection().CreateFunction(function.Name());
         if (!fullFunctionName.empty())

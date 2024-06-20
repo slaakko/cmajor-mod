@@ -15,7 +15,7 @@ namespace System.IO
         }
         public MemoryStream(byte* data, long count) : content(), readPos(0)
         {
-            this->Write(data, count);
+            auto result = this->Write(data, count);
         }
         suppress MemoryStream(const MemoryStream&);
         suppress void operator=(const MemoryStream&);
@@ -33,6 +33,7 @@ namespace System.IO
         {
             return readPos;
         }
+        [nodiscard]
         public override Result<int> ReadByte()
         {
             if (readPos < content.Count())
@@ -42,6 +43,7 @@ namespace System.IO
             }
             return Result<int>(-1);
         }
+        [nodiscard]
         public override Result<long> Read(byte* buf, long count)
         {
             long bytesRead = 0;
@@ -54,11 +56,13 @@ namespace System.IO
             }
             return Result<long>(bytesRead);
         }
+        [nodiscard]
         public override Result<bool> Write(byte x)
         {
             content.Add(x);
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Write(byte* buf, long count)
         {
             while (count > 0)
@@ -68,6 +72,7 @@ namespace System.IO
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Seek(long pos, Origin origin)
         {
             switch (origin)

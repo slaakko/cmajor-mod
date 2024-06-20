@@ -1106,7 +1106,6 @@ soul::parser::Match BinaryMessageSchemaParser<LexerT>::Type(LexerT& lexer)
                         case FLOAT:
                         case INT:
                         case LONG:
-                        case NUMBER:
                         case SBYTE:
                         case SHORT:
                         case STRING:
@@ -1707,39 +1706,10 @@ soul::parser::Match BinaryMessageSchemaParser<LexerT>::ScalarType(LexerT& lexer)
             }
             break;
         }
-        case NUMBER:
-        {
-            soul::parser::Match match(false);
-            soul::parser::Match* parentMatch16 = &match;
-            {
-                int64_t pos = lexer.GetPos();
-                soul::parser::Match match(false);
-                if (*lexer == NUMBER)
-                {
-                    ++lexer;
-                    match.hit = true;
-                }
-                if (match.hit)
-                {
-                    {
-                        #ifdef SOUL_PARSER_DEBUG_SUPPORT
-                        if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "ScalarType");
-                        #endif
-                        return soul::parser::Match(true, new cmajor::binary::message::schema::ast::NumberNode(lexer.GetSourcePos(pos)));
-                    }
-                }
-                *parentMatch16 = match;
-            }
-            if (match.hit)
-            {
-                *parentMatch0 = match;
-            }
-            break;
-        }
         case UUID:
         {
             soul::parser::Match match(false);
-            soul::parser::Match* parentMatch17 = &match;
+            soul::parser::Match* parentMatch16 = &match;
             {
                 int64_t pos = lexer.GetPos();
                 soul::parser::Match match(false);
@@ -1757,7 +1727,7 @@ soul::parser::Match BinaryMessageSchemaParser<LexerT>::ScalarType(LexerT& lexer)
                         return soul::parser::Match(true, new cmajor::binary::message::schema::ast::UuidNode(lexer.GetSourcePos(pos)));
                     }
                 }
-                *parentMatch17 = match;
+                *parentMatch16 = match;
             }
             if (match.hit)
             {
@@ -1768,7 +1738,7 @@ soul::parser::Match BinaryMessageSchemaParser<LexerT>::ScalarType(LexerT& lexer)
         case DATE:
         {
             soul::parser::Match match(false);
-            soul::parser::Match* parentMatch18 = &match;
+            soul::parser::Match* parentMatch17 = &match;
             {
                 int64_t pos = lexer.GetPos();
                 soul::parser::Match match(false);
@@ -1786,7 +1756,7 @@ soul::parser::Match BinaryMessageSchemaParser<LexerT>::ScalarType(LexerT& lexer)
                         return soul::parser::Match(true, new cmajor::binary::message::schema::ast::DateNode(lexer.GetSourcePos(pos)));
                     }
                 }
-                *parentMatch18 = match;
+                *parentMatch17 = match;
             }
             if (match.hit)
             {
@@ -1797,7 +1767,7 @@ soul::parser::Match BinaryMessageSchemaParser<LexerT>::ScalarType(LexerT& lexer)
         case DATETIME:
         {
             soul::parser::Match match(false);
-            soul::parser::Match* parentMatch19 = &match;
+            soul::parser::Match* parentMatch18 = &match;
             {
                 int64_t pos = lexer.GetPos();
                 soul::parser::Match match(false);
@@ -1815,7 +1785,7 @@ soul::parser::Match BinaryMessageSchemaParser<LexerT>::ScalarType(LexerT& lexer)
                         return soul::parser::Match(true, new cmajor::binary::message::schema::ast::DateTimeNode(lexer.GetSourcePos(pos)));
                     }
                 }
-                *parentMatch19 = match;
+                *parentMatch18 = match;
             }
             if (match.hit)
             {

@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/cmcode/configuration.xml-schema' by xmlsergen version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/cmcode/configuration.xml-schema' by xmlsergen version 5.0.0
 
 export module cmcode.configuration;
 
@@ -45,7 +45,7 @@ public:
 public:
     bool singleThreadedCompile;
     bool generateIntermediateCodeFiles;
-    //bool linkWithDebugRuntime;
+    std::string disabledWarnings;
 };
 
 export class Options
@@ -65,11 +65,11 @@ public:
     virtual void FromXml(soul::xml::Element* element);
 public:
     bool defined;
-    //bool codeCompletionDefined;
+    bool codeCompletionDefined;
     bool showStartupDialog;
     int32_t numberOfRecentSolutions;
-    //bool codeCompletion;
-    //int32_t parsingFrequency;
+    bool codeCompletion;
+    int32_t parsingFrequency;
     bool themeDefined;
     std::string theme;
 };

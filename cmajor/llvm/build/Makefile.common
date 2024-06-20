@@ -2,9 +2,6 @@ CXX=clang++
 CC=clang
 AR=llvm-lib
 
-BOOST_INCLUDE_DIR=C:/boost/include/boost-1_80
-BOOST_LIB_DIR=C:/boost/lib
-
 PLATFORM=windows
 RM=del
 CP=copy /Y

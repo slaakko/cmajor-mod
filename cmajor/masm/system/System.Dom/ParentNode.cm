@@ -151,6 +151,7 @@ namespace System.Xml
                 child = child->Next();
             }
         }
+        [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
             if (formatter.Error())

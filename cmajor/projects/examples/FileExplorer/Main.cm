@@ -1,0 +1,30 @@
+using System;
+using System.Windows;
+using FileExplorer;
+
+int main()
+{
+    MainWindow mainWindow("File Explorer");
+    if (mainWindow.Error())
+    {
+        string errorMessage = GetErrorMessage(mainWindow.GetErrorId());
+        MessageBox.Show(errorMessage, "error");
+        return 1;
+    }
+    auto iconResult = Application.GetResourceManager().GetIcon("file_explorer.icon");
+    if (iconResult.Error())
+    {
+        string errorMessage = iconResult.GetErrorMessage();
+        MessageBox.Show(errorMessage, "error");
+        return 1;
+    }
+    auto result = mainWindow.SetSmallIcon(*iconResult.Value());
+    if (result.Error())
+    {
+        string errorMessage = result.GetErrorMessage();
+        MessageBox.Show(errorMessage, "error");
+        return 1;
+    }
+    return Application.Run(mainWindow);
+}
+

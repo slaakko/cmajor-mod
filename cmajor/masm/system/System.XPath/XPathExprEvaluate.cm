@@ -110,6 +110,7 @@ namespace System.XPath
         return string();
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> ToNumber(Object* object, Context& context)
     {
         auto numberFunctionResult = GetFunction(FunctionKind.number);
@@ -122,12 +123,14 @@ namespace System.XPath
         return numberFunction->Evaluate(context, args);
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> ToNumber(System.Xml.Node* node, Context& context)
     {
         UniquePtr<Object> stringValue(new Str(StringValue(node)));
         return ToNumber(stringValue.Get(), context);
     }
 
+    [nodiscard]
     public Result<Number*> NumberCast(Object* object)
     {
         if (object->IsNumber())
@@ -141,6 +144,7 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> ToBoolean(Object* object, Context& context)
     {
         auto booleanFunctionResult = GetFunction(FunctionKind.boolean);
@@ -153,6 +157,7 @@ namespace System.XPath
         return booleanFunction->Evaluate(context, args);
     }
 
+    [nodiscard]
     public Result<Boolean*> BooleanCast(Object* object)
     {
         if (object->IsBoolean())
@@ -166,6 +171,7 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<NodeSet*> NodeSetCast(Object* object)
     {
         if (object->IsNodeSet())
@@ -179,6 +185,7 @@ namespace System.XPath
         }
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateUnaryMinusExpr(Expr* operand, Context& context)
     {
         auto operandResult = operand->Evaluate(context);
@@ -200,11 +207,13 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(-number->Value())));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateParenExpr(Expr* operand, Context& context)
     {
         return operand->Evaluate(context);
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateOrExpr(Expr* left, Expr* right, Context& context)
     {
         auto booleanFunctionResult = GetFunction(FunctionKind.boolean);
@@ -243,6 +252,7 @@ namespace System.XPath
         return booleanFunction->Evaluate(context, rightArgs);
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateAndExpr(Expr* left, Expr* right, Context& context)
     {
         auto booleanFunctionResult = GetFunction(FunctionKind.boolean);
@@ -377,7 +387,8 @@ namespace System.XPath
         return false;
     }
 
-    Result<UniquePtr<Object>> Compare(NodeSet* left, NodeSet* right, Operator op)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(NodeSet* left, NodeSet* right, Operator op)
     {
         int n = left->Count();
         for (int i = 0; i < n; ++i)
@@ -398,7 +409,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
     }
 
-    Result<UniquePtr<Object>> Compare(NodeSet* left, Boolean* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(NodeSet* left, Boolean* right, Operator op, Context& context)
     {
         auto leftAsBoolean = ToBoolean(left, context);
         if (leftAsBoolean.Error())
@@ -414,7 +426,8 @@ namespace System.XPath
         return Compare(leftBoolean, right, op);
     }
 
-    Result<UniquePtr<Object>> Compare(Boolean* left, NodeSet* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Boolean* left, NodeSet* right, Operator op, Context& context)
     {
         auto rightAsBoolean = ToBoolean(right, context);
         if (rightAsBoolean.Error())
@@ -430,7 +443,8 @@ namespace System.XPath
         return Compare(left, rightBoolean, op);
     }
 
-    Result<UniquePtr<Object>> Compare(NodeSet* left, Number* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(NodeSet* left, Number* right, Operator op, Context& context)
     {
         int n = left->Count();
         for (int i = 0; i < n; ++i)
@@ -455,7 +469,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
     }
 
-    Result<UniquePtr<Object>> Compare(NodeSet* left, Str* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(NodeSet* left, Str* right, Operator op, Context& context)
     {
         int n = left->Count();
         for (int i = 0; i < n; ++i)
@@ -470,7 +485,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
     }
 
-    Result<UniquePtr<Object>> Compare(Str* left, NodeSet* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Str* left, NodeSet* right, Operator op, Context& context)
     {
         int n = right->Count();
         for (int i = 0; i < n; ++i)
@@ -485,7 +501,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
     }
 
-    Result<UniquePtr<Object>> Compare(Number* left, NodeSet* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Number* left, NodeSet* right, Operator op, Context& context)
     {
         int n = right->Count();
         for (int i = 0; i < n; ++i)
@@ -510,12 +527,14 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
     }
 
-    Result<UniquePtr<Object>> Compare(Boolean* left, Boolean* right, Operator op)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Boolean* left, Boolean* right, Operator op)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareBooleans(left->Value(), right->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Boolean* left, Number* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Boolean* left, Number* right, Operator op, Context& context)
     {
         auto rightAsBoolean = ToBoolean(right, context);
         if (rightAsBoolean.Error())
@@ -531,7 +550,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareBooleans(left->Value(), rightBoolean->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Number* left, Boolean* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Number* left, Boolean* right, Operator op, Context& context)
     {
         auto leftAsBoolean = ToBoolean(left, context);
         if (leftAsBoolean.Error())
@@ -547,7 +567,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareBooleans(leftBoolean->Value(), right->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Boolean* left, Str* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Boolean* left, Str* right, Operator op, Context& context)
     {
         auto rightAsBoolean = ToBoolean(right, context);
         if (rightAsBoolean.Error())
@@ -563,7 +584,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareBooleans(left->Value(), rightBoolean->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Str* left, Boolean* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Str* left, Boolean* right, Operator op, Context& context)
     {
         auto leftAsBoolean = ToBoolean(left, context);
         if (leftAsBoolean.Error())
@@ -579,12 +601,14 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareBooleans(leftBoolean->Value(), right->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Number* left, Number* right, Operator op)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Number* left, Number* right, Operator op)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareNumbers(left->Value(), right->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Number* left, Str* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Number* left, Str* right, Operator op, Context& context)
     {
         auto rightAsNumber = ToNumber(right, context);
         if (rightAsNumber.Error())
@@ -600,7 +624,8 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareNumbers(left->Value(), rightNumber->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Str* left, Number* right, Operator op, Context& context)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Str* left, Number* right, Operator op, Context& context)
     {
         auto leftAsNumber = ToNumber(left, context);
         if (leftAsNumber.Error())
@@ -616,11 +641,13 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareNumbers(leftNumber->Value(), right->Value(), op))));
     }
 
-    Result<UniquePtr<Object>> Compare(Str* left, Str* right, Operator op)
+    [nodiscard]
+    public Result<UniquePtr<Object>> Compare(Str* left, Str* right, Operator op)
     {
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(CompareStrings(left->Value(), right->Value(), op))));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> Compare(Expr* left, Expr* right, Operator op, Context& context)
     {
         Result<UniquePtr<Object>> leftOperand = left->Evaluate(context);
@@ -753,6 +780,7 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateArithmeticOp(Expr* left, Expr* right, Operator op, Context& context)
     {
         Result<UniquePtr<Object>> leftOperand = left->Evaluate(context);
@@ -816,6 +844,7 @@ namespace System.XPath
         return Result<UniquePtr<Object>>(ErrorId(errorId));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateUnionExpr(Expr* left, Expr* right, Context& context)
     {
         Result<UniquePtr<Object>> leftOperand = left->Evaluate(context);
@@ -857,6 +886,7 @@ namespace System.XPath
         return result;
     }
 
+    [nodiscard]
     public Result<UniquePtr<Object>> EvaluateCombineStepExpr(Expr* left, Expr* right, Context& context)
     {
         Result<UniquePtr<Object>> leftOperand = left->Evaluate(context);

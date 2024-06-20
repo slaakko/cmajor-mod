@@ -1,0 +1,4 @@
+project calc.lexer;
+tokens <calc.token>;
+expressions <calc.expr>;
+lexer <calc.lexer>;

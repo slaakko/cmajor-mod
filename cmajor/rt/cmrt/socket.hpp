@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_SOCKET_INCLUDED
-#define CMRT_CPP_SOCKET_INCLUDED
+#ifndef CMRT_SOCKET_INCLUDED
+#define CMRT_SOCKET_INCLUDED
 #include <stdint.h>
 
 namespace cmajor::rt {
@@ -30,4 +30,4 @@ extern "C" int32_t RtmSendSocket(void* socketHandle, uint8_t * buf, int32_t len,
 extern "C" int32_t RtmReceiveSocket(void* socketHandle, uint8_t * buf, int32_t len, int32_t flags, int32_t & errorId);
 extern "C" void RtmDestroySocket(void* socketHandle);
 
-#endif // CMRT_CPP_SOCKET_INCLUDED
+#endif // CMRT_SOCKET_INCLUDED

@@ -10,6 +10,7 @@ using System.Threading;
 
 namespace System.Unicode
 {
+    [nodiscard]
     public Result<string> PathToUnicodeDirectory()
     {
         string cmajorRoot = RtmGetEnvironmentVariable("CMAJOR_ROOT");
@@ -21,6 +22,7 @@ namespace System.Unicode
         return Result<string>(Path.Combine(cmajorRoot, "unicode"));
     }
 
+    [nodiscard]
     public Result<string> PathToUcdBinFile()
     {
         auto unicodeDir = PathToUnicodeDirectory();
@@ -31,6 +33,7 @@ namespace System.Unicode
         return Result<string>(Path.Combine(unicodeDir.Value(), "cmajor_ucd.bin"));
     }
 
+    [nodiscard]
     public Result<string> MakeCanonicalPropertyName(const string& s)
     {
         string result;
@@ -139,6 +142,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public Result<const BinaryProperty*> GetBinaryProperty(BinaryPropertyId id) const
         {
             if (Error())
@@ -153,6 +157,7 @@ namespace System.Unicode
             const BinaryProperty* n = null;
             return Result<const BinaryProperty*>(n);
         }
+        [nodiscard]
         public Result<const BinaryProperty*> GetBinaryPropertyByShortName(const string& shortName) const
         {
             if (Error())
@@ -171,6 +176,7 @@ namespace System.Unicode
             }
             return Result<const BinaryProperty*>(null);
         }
+        [nodiscard]
         public Result<const BinaryProperty*> GetBinaryPropertyByLongName(const string& longName) const
         {
             if (Error())
@@ -284,16 +290,19 @@ namespace System.Unicode
         private static UniquePtr<BinaryPropertyTable> instance;
     }
 
+    [nodiscard]
     public Result<const BinaryProperty*> GetBinaryProperty(BinaryPropertyId id)
     {
         return BinaryPropertyTable.Instance().GetBinaryProperty(id);
     }
 
+    [nodiscard]
     public Result<const BinaryProperty*> GetBinaryPropertyByShortName(const string& shortName)
     {
         return BinaryPropertyTable.Instance().GetBinaryPropertyByShortName(shortName);
     }
 
+    [nodiscard]
     public Result<const BinaryProperty*> GetBinaryPropertyByLongName(const string& longName)
     {
         return BinaryPropertyTable.Instance().GetBinaryPropertyByLongName(longName);
@@ -375,6 +384,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public inline Result<const Block*> GetBlock(BlockId id) const
         {
             if (Error())
@@ -389,6 +399,7 @@ namespace System.Unicode
             const Block* n = null;
             return Result<const Block*>(n);
         }
+        [nodiscard]
         public inline Result<const Block*> GetBlockByShortName(const string& shortName) const
         {
             if (Error())
@@ -407,6 +418,7 @@ namespace System.Unicode
             }
             return Result<const Block*>(null);
         }
+        [nodiscard]
         public inline Result<const Block*> GetBlockByLongName(const string& longName) const
         {
             if (Error())
@@ -760,16 +772,19 @@ namespace System.Unicode
         private Map<string, void*> longNameMap;
     }
 
+    [nodiscard]
     public Result<const Block*> GetBlock(BlockId id)
     {
         return BlockTable.Instance().GetBlock(id);
     }
 
+    [nodiscard]
     public Result<const Block*> GetBlockByShortName(const string& shortName)
     {
         return BlockTable.Instance().GetBlockByShortName(shortName);
     }
 
+    [nodiscard]
     public Result<const Block*> GetBlockByLongName(const string& longName)
     {
         return BlockTable.Instance().GetBlockByLongName(longName);
@@ -828,6 +843,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public Result<const GeneralCategory*> GetGeneralCategory(GeneralCategoryId id) const
         {
             if (Error())
@@ -842,6 +858,7 @@ namespace System.Unicode
             const GeneralCategory* n = null;
             return Result<const GeneralCategory*>(n);
         }
+        [nodiscard]
         public Result<const GeneralCategory*> GetGeneralCategoryByShortName(const string& shortName) const
         {
             if (Error())
@@ -860,6 +877,7 @@ namespace System.Unicode
             }
             return Result<const GeneralCategory*>(null);
         }
+        [nodiscard]
         public Result<const GeneralCategory*> GetGeneralCategoryByLongName(const string& longName) const
         {
             if (Error())
@@ -953,16 +971,19 @@ namespace System.Unicode
         private Map<string, void*> longNameMap;
     }
 
+    [nodiscard]
     public Result<const GeneralCategory*> GetGeneralCategory(GeneralCategoryId id)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategory(id);
     }
 
+    [nodiscard]
     public Result<const GeneralCategory*> GetGeneralCategoryByShortName(const string& shortName)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategoryByShortName(shortName);
     }
 
+    [nodiscard]
     public Result<const GeneralCategory*> GetGeneralCategoryByLongName(const string& longName)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategoryByLongName(longName);
@@ -1144,6 +1165,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public Result<const Script*> GetScript(ScriptId id) const
         {
             if (Error())
@@ -1158,6 +1180,7 @@ namespace System.Unicode
             const Script* n = null;
             return Result<const Script*>(n);
         }
+        [nodiscard]
         public Result<const Script*> GetScriptByShortName(const string& shortName) const
         {
             if (Error())
@@ -1176,6 +1199,7 @@ namespace System.Unicode
             }
             return Result<const Script*>(null);
         }
+        [nodiscard]
         public Result<const Script*> GetScriptByLongName(const string& longName) const
         {
             if (Error())
@@ -1383,16 +1407,19 @@ namespace System.Unicode
         private Map<string, void*> longNameMap;
     }
 
+    [nodiscard]
     public Result<const Script*> GetScript(ScriptId id)
     {
         return ScriptTable.Instance().GetScript(id);
     }
 
+    [nodiscard]
     public Result<const Script*> GetScriptByShortName(const string& shortName)
     {
         return ScriptTable.Instance().GetScriptByShortName(shortName);
     }
 
+    [nodiscard]
     public Result<const Script*> GetScriptByLongName(const string& longName)
     {
         return ScriptTable.Instance().GetScriptByLongName(longName);
@@ -1446,6 +1473,7 @@ namespace System.Unicode
         {
             return script;
         }
+        [nodiscard]
         public Result<bool> Read(BinaryReader& reader)
         {
             auto ulongResult = reader.ReadULong();
@@ -1556,6 +1584,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public Result<const NumericType*> GetNumericType(NumericTypeId id) const
         {
             if (Error())
@@ -1570,6 +1599,7 @@ namespace System.Unicode
             const NumericType* n = null;
             return Result<const NumericType*>(n);
         }
+        [nodiscard]
         public Result<const NumericType*> GetNumericTypeByShortName(const string& shortName) const
         {
             if (Error())
@@ -1588,6 +1618,7 @@ namespace System.Unicode
             }
             return Result<const NumericType*>(null);
         }
+        [nodiscard]
         public Result<const NumericType*> GetNumericTypeByLongName(const string& longName) const
         {
             if (Error())
@@ -1645,16 +1676,19 @@ namespace System.Unicode
         private static UniquePtr<NumericTypeTable> instance;
     }
 
+    [nodiscard]
     public Result<const NumericType*> GetNumericType(NumericTypeId id)
     {
         return NumericTypeTable.Instance().GetNumericType(id);
     }
 
+    [nodiscard]
     public Result<const NumericType*> GetNumericTypeByShortName(const string& shortName)
     {
         return NumericTypeTable.Instance().GetNumericTypeByShortName(shortName);
     }
 
+    [nodiscard]
     public Result<const NumericType*> GetNumericTypeByLongName(const string& longName)
     {
         return NumericTypeTable.Instance().GetNumericTypeByLongName(longName);
@@ -1697,6 +1731,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public Result<const BidiClass*> GetBidiClass(BidiClassId id) const
         {
             if (Error())
@@ -1711,6 +1746,7 @@ namespace System.Unicode
             const BidiClass* n = null;
             return Result<const BidiClass*>(n);
         }
+        [nodiscard]
         public Result<const BidiClass*> GetBidiClassByShortName(const string& shortName) const
         {
             if (Error())
@@ -1729,6 +1765,7 @@ namespace System.Unicode
             }
             return Result<const BidiClass*>(null);
         }
+        [nodiscard]
         public Result<const BidiClass*> GetBidiClassByLongName(const string& longName) const
         {
             if (Error())
@@ -1805,16 +1842,19 @@ namespace System.Unicode
         private Map<string, void*> longNameMap;
     }
 
+    [nodiscard]
     public Result<const BidiClass*> GetBidiClass(BidiClassId id)
     {
         return BidiClassTable.Instance().GetBidiClass(id);
     }
 
+    [nodiscard]
     public Result<const BidiClass*> GetBidiClassByShortName(const string& shortName)
     {
         return BidiClassTable.Instance().GetBidiClassByShortName(shortName);
     }
 
+    [nodiscard]
     public Result<const BidiClass*> GetBidiClassByLongName(const string& longName)
     {
         return BidiClassTable.Instance().GetBidiClassByLongName(longName);
@@ -1858,6 +1898,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public Result<const BidiPairedBracketType*> GetBidiPairedBracketType(BidiPairedBracketTypeId id) const
         {
             if (Error())
@@ -1872,6 +1913,7 @@ namespace System.Unicode
             const BidiPairedBracketType* n = null;
             return Result<const BidiPairedBracketType*>(n);
         }
+        [nodiscard]
         public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByShortName(const string& shortName) const
         {
             if (Error())
@@ -1890,6 +1932,7 @@ namespace System.Unicode
             }
             return Result<const BidiPairedBracketType*>(null);
         }
+        [nodiscard]
         public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByLongName(const string& longName) const
         {
             if (Error())
@@ -1946,16 +1989,19 @@ namespace System.Unicode
         private Map<string, void*> longNameMap;
     }
 
+    [nodiscard]
     public Result<const BidiPairedBracketType*> GetBidiPairedBracketType(BidiPairedBracketTypeId id)
     {
         return BidiPairedBracketTypeTable.Instance().GetBidiPairedBracketType(id);
     }
 
+    [nodiscard]
     public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByShortName(const string& shortName)
     {
         return BidiPairedBracketTypeTable.Instance().GetBidiPairedBracketTypeByShortName(shortName);
     }
 
+    [nodiscard]
     public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByLongName(const string& longName)
     {
         return BidiPairedBracketTypeTable.Instance().GetBidiPairedBracketTypeByLongName(longName);
@@ -2063,6 +2109,7 @@ namespace System.Unicode
         {
             return name;
         }
+        [nodiscard]
         public Result<bool> Read(BinaryReader& reader)
         {
             auto result = reader.ReadByte();
@@ -2147,6 +2194,7 @@ namespace System.Unicode
         {
             return bidiPairedBracket;
         }
+        [nodiscard]
         public Result<bool> Read(BinaryReader& reader)
         {
             auto characterNameResult = reader.ReadString();
@@ -2311,6 +2359,7 @@ namespace System.Unicode
         {
             return characterInfos[index].Get();
         }
+        [nodiscard]
         public Result<bool> Read(BinaryReader& reader)
         {
             for (long i = 0; i < numInfosInPage; ++i)
@@ -2342,6 +2391,7 @@ namespace System.Unicode
         {
             return extendedCharacterInfos[index].Get();
         }
+        [nodiscard]
         public Result<bool> Read(BinaryReader& reader)
         {
             for (long i = 0; i < numInfosInPage; ++i)
@@ -2368,6 +2418,7 @@ namespace System.Unicode
         {
             return extendedPageStarts[index];
         }
+        [nodiscard]
         public Result<bool> Read(BinaryReader& reader)
         {
             auto nResult = reader.ReadUInt();
@@ -2405,6 +2456,7 @@ namespace System.Unicode
         {
             return *instance;
         }
+        [nodiscard]
         public Result<const CharacterInfo*> GetCharacterInfo(uchar codePoint)
         {
             if (codePoint > cast<uchar>(0x10FFFF))
@@ -2482,6 +2534,7 @@ namespace System.Unicode
             const CharacterInfo* info = page->Get(infoIndex);
             return Result<const CharacterInfo*>(info);
         }
+        [nodiscard]
         public Result<const ExtendedCharacterInfo*> GetExtendedCharacterInfo(uchar codePoint)
         {
             if (codePoint > cast<uchar>(0x10FFFF))
@@ -2587,6 +2640,7 @@ namespace System.Unicode
                 }
             }
         }
+        [nodiscard]
         private Result<bool> ReadHeader(BinaryReader& reader)
         {
             headerRead = true;
@@ -2632,6 +2686,7 @@ namespace System.Unicode
             extendedHeaderEnd = extendedHeaderEndResult.Value();
             return Result<bool>(true);
         }
+        [nodiscard]
         private Result<bool> ReadExtendedHeader(BinaryReader& reader)
         {
             extendedHeader.Reset(new ExtendedCharacterInfoHeader());
@@ -2657,16 +2712,19 @@ namespace System.Unicode
         private RecursiveMutex characterTableLock;
     }
 
+    [nodiscard]
     public Result<const CharacterInfo*> GetCharacterInfo(uchar codePoint)
     {
         return CharacterTable.Instance().GetCharacterInfo(codePoint);
     }
 
+    [nodiscard]
     public Result<const ExtendedCharacterInfo*> GetExtendedCharacterInfo(uchar codePoint)
     {
         return CharacterTable.Instance().GetExtendedCharacterInfo(codePoint);
     }
 
+    [nodiscard]
     public Result<GeneralCategoryId> GetGeneralCategory(uchar c)
     {
         auto result = GetCharacterInfo(c);
@@ -2678,6 +2736,7 @@ namespace System.Unicode
         return Result<GeneralCategoryId>(characterInfo->GeneralCategoryValue());
     }
 
+    [nodiscard]
     public Result<bool> HasGeneralCategory(uchar c, GeneralCategoryId generalCategory)
     {
         auto result = GetCharacterInfo(c);

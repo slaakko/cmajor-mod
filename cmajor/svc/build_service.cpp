@@ -28,6 +28,52 @@ cmajor::info::bs::CompileError ToError(const soul::lexer::ParsingException& ex)
     return error;
 }
 
+void AddWarnings(std::vector<cmajor::info::bs::Warning>& warnings)
+{
+    cmajor::symbols::CompileWarningCollection& warningCollection = cmajor::symbols::GetGlobalWarningCollection();
+    for (const auto& symbolsWarning : warningCollection.Warnings())
+    {
+        cmajor::info::bs::Warning warning;
+        warning.number = symbolsWarning.Number();
+        warning.message = symbolsWarning.Message();
+        warning.project = util::ToUtf8(symbolsWarning.Project());
+        soul::ast::FullSpan defined = symbolsWarning.Defined();
+        if (defined.IsValid())
+        {
+            cmajor::symbols::Module* module = cmajor::symbols::GetModuleById(defined.moduleId);
+            if (module)
+            {
+                warning.file = module->GetFilePath(defined.fileIndex);
+                soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(defined);
+                warning.line = lineColLen.line;
+                warning.scol = lineColLen.col;
+                warning.ecol = lineColLen.col + lineColLen.len;
+            }
+        }
+        warnings.push_back(warning);
+        for (const auto& reference : symbolsWarning.References())
+        {
+            cmajor::info::bs::Warning warning;
+            warning.number = symbolsWarning.Number();
+            warning.message = "see reference";
+            warning.project = util::ToUtf8(symbolsWarning.Project());
+            if (reference.IsValid())
+            {
+                cmajor::symbols::Module* module = cmajor::symbols::GetModuleById(reference.moduleId);
+                if (module)
+                {
+                    warning.file = module->GetFilePath(reference.fileIndex);
+                    soul::ast::LineColLen lineColLen = cmajor::symbols::GetLineColLen(reference);
+                    warning.line = lineColLen.line;
+                    warning.scol = lineColLen.col;
+                    warning.ecol = lineColLen.col + lineColLen.len;
+                    warnings.push_back(warning);
+                }
+            }
+        }
+    }
+}
+
 BuildResultMessage::BuildResultMessage(const cmajor::info::bs::BuildResult& result_) : ServiceMessage(ServiceMessageKind::buildResult), result(result_)
 {
 }
@@ -160,6 +206,16 @@ void BuildService::ExecuteCommand()
         {
             throw std::runtime_error("unknown configuration '" + buildCommand->config);
         }
+        cmajor::symbols::ClearDisabledWarnings();
+        if (!buildCommand->disabledWarnings.empty())
+        {
+            std::vector<std::string> disabledWarnings = util::Split(buildCommand->disabledWarnings, ';');
+            for (const auto warning : disabledWarnings)
+            {
+                int warningNumber = std::stoi(warning);
+                cmajor::symbols::DisableWarning(warningNumber);
+            }
+        }
         if (buildCommand->verbose)
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::verbose);
@@ -180,12 +236,6 @@ void BuildService::ExecuteCommand()
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::emitLlvm);
         }
-/*
-        if (buildCommand->linkWithDebugRuntime)
-        {
-            cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
-        }
-*/
         if (buildCommand->singleThreadedCompile)
         {
             cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
@@ -236,6 +286,8 @@ void BuildService::ExecuteCommand()
                 break;
             }
         }
+        cmajor::symbols::ClearGlobalWarningCollection();
+        cmajor::symbols::SetUseGlobalWarningCollection(true);
         if (buildCommand->filePath.ends_with(".cms"))
         {
             cmajor::build::BuildSolution(util::GetFullPath(buildCommand->filePath), rootModules);
@@ -249,6 +301,7 @@ void BuildService::ExecuteCommand()
             throw std::runtime_error("file path has unknown extension (not .cms or .cmp)");
         }
         result.success = true;
+        AddWarnings(result.warnings);
     }
     catch (const soul::lexer::ParsingException& ex)
     {

@@ -130,7 +130,6 @@ parser BinaryMessageSchemaParser
 		|	WCHAR{ return new cmajor::binary::message::schema::ast::WCharNode(lexer.GetSourcePos(pos)); }
 		|	UCHAR{ return new cmajor::binary::message::schema::ast::UCharNode(lexer.GetSourcePos(pos)); }
 		|	STRING{ return new cmajor::binary::message::schema::ast::StringNode(lexer.GetSourcePos(pos)); }
-		|	NUMBER{ return new cmajor::binary::message::schema::ast::NumberNode(lexer.GetSourcePos(pos)); }
 		|	UUID{ return new cmajor::binary::message::schema::ast::UuidNode(lexer.GetSourcePos(pos)); }
 		|	DATE{ return new cmajor::binary::message::schema::ast::DateNode(lexer.GetSourcePos(pos)); }
 		|	DATETIME{ return new cmajor::binary::message::schema::ast::DateTimeNode(lexer.GetSourcePos(pos)); }

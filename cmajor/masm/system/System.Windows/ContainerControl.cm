@@ -1,0 +1,464 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    public abstract class ContainerControl : Control
+    {
+        public ContainerControl(const string& windowClassName, WindowClassStyle windowClassStyle, WindowStyle style, ExtendedWindowStyle exStyle,
+            const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base(windowClassName, windowClassStyle, style, exStyle, backgroundColor, text, location, size, dock, anchors), children(this)
+        {
+        }
+        public ContainerControl(ControlCreateParams& createParams) : base(createParams), children(this)
+        {
+        }
+        [nodiscard]
+        public Result<bool> AddChild(Control* child)
+        {
+            auto result = children.AddChild(child);
+            if (result.Error()) return result;
+            ControlEventArgs args(child);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<UniquePtr<Control>> RemoveChild(Control* child)
+        {
+            UniquePtr<Component> childComponent = children.RemoveChild(child);
+            ControlEventArgs args(child);
+            auto result = OnControlRemoved(args);
+            if (result.Error())
+            {
+                return Result<UniquePtr<Control>>(ErrorId(result.GetErrorId()));
+            }
+            return UniquePtr<Control>(childComponent.Release() as Control*);
+        }
+        [nodiscard]
+        public Result<bool> InsertChildBefore(Control* child, Control* before)
+        {
+            auto result = children.InsertBefore(child, before);
+            if (result.Error()) return result;
+            ControlEventArgs args(child);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> InsertChildAfter(Control* child, Control* after)
+        {
+            auto result = children.InsertAfter(child, after);
+            if (result.Error()) return result;
+            ControlEventArgs args(child);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        public const Container& Children() const
+        {
+            return children;
+        }
+        public override ContainerControl* GetContainerControl() const
+        {
+            return this;
+        }
+        internal override Control* GetFirstEnabledTabStopControl() const
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* control = cast<Control*>(child);
+                    Control* tabStopChild = control->GetFirstEnabledTabStopControl();
+                    if (tabStopChild != null)
+                    {
+                        return tabStopChild;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        internal override Control* GetLastEnabledTabStopControl() const
+        {
+            Component* child = children.LastChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* control = cast<Control*>(child);
+                    Control* tabStopChild = control->GetLastEnabledTabStopControl();
+                    if (tabStopChild != null)
+                    {
+                        return tabStopChild;
+                    }
+                }
+                child = child->PrevSibling();
+            }
+            return null;
+        }
+        [nodiscard]
+        protected override Result<bool> OnSizeChanging(SizeChangingEventArgs& args)
+        {
+            auto result = base->OnSizeChanging(args);
+            if (result.Error()) return result;
+            int dx = args.newSize.w - args.oldSize.w;
+            int dy = args.newSize.h - args.oldSize.h;
+            result = MoveChildren(dx, dy);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildSizeChanged(ControlEventArgs& args)
+        {
+            auto result = base->OnChildSizeChanged(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->FireChildSizeChanged(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        protected override void OnChildContentLocationChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentLocationChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentLocationChanged(args);
+            }
+        }
+        protected override void OnChildContentChanged(ControlEventArgs& args)
+        {
+            base->OnChildContentChanged(args);
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->OnChildContentChanged(args);
+            }
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildContentSizeChanged(ControlEventArgs& args)
+        {
+            auto result = base->OnChildContentSizeChanged(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildContentSizeChanged(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildGotFocus(ControlEventArgs& args)
+        {
+            auto result = base->OnChildGotFocus(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildGotFocus(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildLostFocus(ControlEventArgs& args)
+        {
+            auto result = base->OnChildLostFocus(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildLostFocus(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                else
+                {
+                    const string& handleStr = handleResult.Value();
+                    auto parentTextResult = ParentText();
+                    if (parentTextResult.Error())
+                    {
+                        return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                    }
+                    else
+                    {
+                        const string& parentText = parentTextResult.Value();
+                        auto result = log->WriteLine(string(' ', level) + "ContainerControl." + Text() + ".handle=" + handleStr + " " +
+                            parentText + "[" + Rect(Point(), GetSize()).ToString() + "]");
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    auto result = childControl->PrintWindowTree(level + 1);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> ProcessMessage(Message& message)
+        {
+            switch (message.msg)
+            {
+                case WM_SIZE:
+                {
+                    Size newSize = message.LParamSize();
+                    Size oldSize = GetSize();
+                    if (newSize != oldSize)
+                    {
+                        Rect parentRect(Point(), newSize);
+                        int dx = newSize.w - oldSize.w;
+                        int dy = newSize.h - oldSize.h;
+                        auto result = MoveChildren(dx, dy);
+                        if (result.Error()) return result;
+                        uint windowState = cast<uint>(message.wparam);
+                        result = SetSizeInternal(newSize, windowState);
+                        if (result.Error()) return result;
+                        result = DockChildren();
+                        if (result.Error()) return result;
+                        result = OnSizeChanged(windowState);
+                        if (result.Error()) return result;
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_PAINT: case WM_MOVE: case WM_MOUSEMOVE: case WM_MOUSELEAVE: case WM_LBUTTONDOWN: case WM_LBUTTONUP: case WM_LBUTTONDBLCLK: case WM_RBUTTONDOWN: case WM_RBUTTONUP:
+                case WM_CHAR: case WM_KEYDOWN: case WM_KEYUP: case WM_SYSCOMMAND: case WM_HSCROLL: case WM_VSCROLL: case WM_MOUSEWHEEL:
+                case WM_SETFOCUS: case WM_KILLFOCUS: case WM_TIMER: case WM_COMMAND: case WM_SHOWWINDOW: case WM_CLIPBOARDUPDATE:
+                {
+                    return base->ProcessMessage(message);
+                }
+            }
+            return Result<bool>(false);
+        }
+        [nodiscard]
+        public Result<bool> MoveChildren(int dx, int dy)
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    if (childControl->GetDock() == Dock.none)
+                    {
+                        auto result = childControl->MoveWindow(dx, dy);
+                        if (result.Error()) return result;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DockChildren()
+        {
+            Rect parentRect(Point(), GetSize());
+            return DockChildren(parentRect);
+        }
+        [nodiscard]
+        public Result<bool> DockChildren(Rect& parentRect)
+        {
+            List<Control*> filledControls;
+            List<ContainerControl*> containers;
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    switch (childControl->GetDock())
+                    {
+                        case Dock.none: break;
+                        case Dock.fill: filledControls.Add(childControl); break;
+                        default:
+                        {
+                            auto result = childControl->DockWindow(parentRect);
+                            if (result.Error()) return result;
+                            break;
+                        }
+                    }
+                    if (childControl is ContainerControl*)
+                    {
+                        ContainerControl* containerChild = cast<ContainerControl*>(childControl);
+                        containers.Add(containerChild);
+                    }
+                }
+                child = child->NextSibling();
+            }
+            for (Control* filledControl : filledControls)
+            {
+                auto result = filledControl->DockWindow(parentRect);
+                if (result.Error()) return result;
+            }
+            for (ContainerControl* container : containers)
+            {
+                auto result = container->DockChildren();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal override Result<bool> PaintAll(PaintEventArgs& args, bool skipMenuBar)
+        {
+            auto baseResult = base->PaintAll(args, skipMenuBar);
+            if (baseResult.Error())
+            {
+                return Result<bool>(ErrorId(baseResult.GetErrorId()));
+            }
+            Control* topControl = TopControl();
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    if (childControl != topControl)
+                    {
+                        bool skip = false;
+                        if (skipMenuBar)
+                        {
+                            if (childControl is MenuBar*)
+                            {
+                                skip = true;
+                            }
+                            else if (childControl is MenuBox*)
+                            {
+                                MenuBox* menuBox = cast<MenuBox*>(childControl);
+                                if (!menuBox->PaintThisMenuBox())
+                                {
+                                    skip = true;
+                                }
+                            }
+                        }
+                        if (!skip)
+                        {
+                            auto saveResult = args.graphics.Save();
+                            if (saveResult.Error())
+                            {
+                                return Result<bool>(ErrorId(saveResult.GetErrorId()));
+                            }
+                            GraphicsState state = saveResult.Value();
+                            Result<Point> locResult = childControl->Location();
+                            if (locResult.Error())
+                            {
+                                return Result<bool>(ErrorId(locResult.GetErrorId()));
+                            }
+                            Point loc = locResult.Value();
+                            auto childLocResult = childControl->Location();
+                            if (childLocResult.Error())
+                            {
+                                return Result<bool>(ErrorId(childLocResult.GetErrorId()));
+                            }
+                            Point childLoc = childLocResult.Value();
+                            auto setClipResult = args.graphics.SetClip(Rect(childLoc, childControl->GetSize()));
+                            if (setClipResult.Error())
+                            {
+                                return Result<bool>(ErrorId(setClipResult.GetErrorId()));
+                            }
+                            auto translateResult = args.graphics.TranslateTransform(loc.x, loc.y);
+                            if (translateResult.Error())
+                            {
+                                return Result<bool>(ErrorId(translateResult.GetErrorId()));
+                            }
+                            auto childResult = childControl->PaintAll(args, skipMenuBar);
+                            if (childResult.Error())
+                            {
+                                return Result<bool>(ErrorId(childResult.GetErrorId()));
+                            }
+                            auto restoreResult = args.graphics.Restore(state);
+                            if (restoreResult.Error())
+                            {
+                                return Result<bool>(ErrorId(restoreResult.GetErrorId()));
+                            }
+                        }
+                    }
+                }
+                child = child->NextSibling();
+            }
+            if (topControl != null)
+            {
+                auto saveResult = args.graphics.Save();
+                if (saveResult.Error())
+                {
+                    return Result<bool>(ErrorId(saveResult.GetErrorId()));
+                }
+                GraphicsState state = saveResult.Value();
+                auto locResult = topControl->Location();
+                if (locResult.Error())
+                {
+                    return Result<bool>(ErrorId(locResult.GetErrorId()));
+                }
+                Point loc = locResult.Value();
+                auto setClipResult = args.graphics.SetClip(Rect(loc, topControl->GetSize()));
+                if (setClipResult.Error())
+                {
+                    return Result<bool>(ErrorId(setClipResult.GetErrorId()));
+                }
+                auto translateResult = args.graphics.TranslateTransform(loc.x, loc.y);
+                if (translateResult.Error())
+                {
+                    return Result<bool>(ErrorId(translateResult.GetErrorId()));
+                }
+                auto topResult = topControl->PaintAll(args, skipMenuBar);
+                if (topResult.Error())
+                {
+                    return Result<bool>(ErrorId(topResult.GetErrorId()));
+                }
+                auto restoreResult = args.graphics.Restore(state);
+                if (restoreResult.Error())
+                {
+                    return Result<bool>(ErrorId(restoreResult.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        private Container children;
+    }
+}

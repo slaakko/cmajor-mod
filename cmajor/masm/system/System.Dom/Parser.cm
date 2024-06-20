@@ -8,6 +8,7 @@ using System.Collections;
 
 namespace System.Xml
 {
+    [nodiscard]
     public Result<UniquePtr<Document>> ParseXmlDocument(const string& xmlFilePath, System.Lex.FileMap& fileMap)
     {
         DocumentHandler documentHandler;
@@ -19,6 +20,7 @@ namespace System.Xml
         return Result<UniquePtr<Document>>(UniquePtr<Document>(documentHandler.GetDocument()));
     }
 
+    [nodiscard]
     public Result<UniquePtr<Document>> ParseXmlDocumentContent(const string& xmlContent, const string& systemId, System.Lex.FileMap& fileMap)
     {
         DocumentHandler documentHandler;

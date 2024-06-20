@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_TRACE_INCLUDED
-#define CMRT_CPP_TRACE_INCLUDED
+#ifndef CMRT_TRACE_INCLUDED
+#define CMRT_TRACE_INCLUDED
 #include <stdint.h>
 #include <vector>
 #include <string>
@@ -36,4 +36,4 @@ StackTrace GetStackTrace();
 extern "C" void RtmPushFunction(void* traceInfo);
 extern "C" void RtmPopFunction(void* traceInfo);
 
-#endif // CMRT_CPP_TRACE_INCLUDED
+#endif // CMRT_TRACE_INCLUDED

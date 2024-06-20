@@ -13,6 +13,7 @@ namespace System.Unicode
         public UnicodeEngine() : resultReady(false), result('\0'), state(0)
         {
         }
+        [nodiscard]
         public Result<bool> Put(byte x)
         {
             switch (state)

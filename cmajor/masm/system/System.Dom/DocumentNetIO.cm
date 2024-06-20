@@ -9,6 +9,7 @@ using System.Net.Sockets;
 
 namespace System.Xml
 {
+    [nodiscard]
     public Result<bool> SendDocument(TcpSocket& socket, Document* document)
     {
         StringWriter writer;
@@ -28,6 +29,7 @@ namespace System.Xml
         return Result<bool>(true);
     }
 
+    [nodiscard]
     public Result<UniquePtr<Document>> ReceiveDocument(TcpSocket& socket, System.Lex.FileMap& fileMap, int& documentCount)
     {
         auto receiveResult = ReceiveString(socket);

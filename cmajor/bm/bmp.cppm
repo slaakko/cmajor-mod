@@ -12,4 +12,3 @@ export import cmajor.binary.message.protocol;
 export import cmajor.binary.message.schema.lexer;
 export import cmajor.binary.message.schema.parser;
 export import cmajor.binary.message.schema.token;
-export import cmajor.binary.message.number;

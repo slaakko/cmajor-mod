@@ -232,7 +232,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EnumType");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EnumType");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, enumType.Release()));
                 }
@@ -325,7 +329,11 @@ namespace cm.parser
                 if (match.hit)
                 {
                     #if (DEBUG)
-                        if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"UnderlyingType");
+                        if (parser_debug_write_to_log)
+                        {
+                            auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"UnderlyingType");
+                            if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                        }
                     #endif
                     return System.Result<System.Parsing.Match>(System.Parsing.Match(true, underlyingType.Release()));
                 }
@@ -589,7 +597,11 @@ namespace cm.parser
                                             if (match.hit)
                                             {
                                                 #if (DEBUG)
-                                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EnumConstant");
+                                                    if (parser_debug_write_to_log)
+                                                    {
+                                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EnumConstant");
+                                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                    }
                                                 #endif
                                                 cm.ast.EnumConstantNode* enumConstant = new cm.ast.EnumConstantNode(span, lexer.FileIndex(), id.Release(), value.Release());
                                                 enumConstant->SetHasValue();
@@ -616,7 +628,11 @@ namespace cm.parser
                                             if (match.hit)
                                             {
                                                 #if (DEBUG)
-                                                    if (parser_debug_write_to_log) System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EnumConstant");
+                                                    if (parser_debug_write_to_log)
+                                                    {
+                                                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"EnumConstant");
+                                                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                                                    }
                                                 #endif
                                                 return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new cm.ast.EnumConstantNode(span, lexer.FileIndex(), id.Release(), cm.ast.MakeNextEnumConstantValue(span, lexer.FileIndex(), enumType))));
                                             }

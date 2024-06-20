@@ -1,0 +1,2845 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public class Point
+    {
+        public Point() : x(0), y(0)
+        {
+        }
+        public Point(int x_, int y_) : x(x_), y(y_)
+        {
+        }
+        public default Point(const Point&);
+        public default void operator=(const Point&);
+        public static Point Default()
+        {
+            return Point(CW_USEDEFAULT, CW_USEDEFAULT);
+        }
+        public string ToString() const
+        {
+            return "(" + ToString(x) + ", " + ToString(y) + ")";
+        }
+        public inline void Offset(int dx, int dy)
+        {
+            x = x + dx;
+            y = y + dy;
+        }
+        public int x;
+        public int y;
+    }
+
+    public inline bool operator==(const Point& left, const Point& right)
+    {
+        return left.x == right.x && left.y == right.y;
+    }
+
+    public class Size
+    {
+        public Size() : h(0), w(0)
+        {
+        }
+        public Size(int w_, int h_) : w(w_), h(h_)
+        {
+        }
+        public default Size(const Size&);
+        public default void operator=(const Size&);
+        public static Size Default()
+        {
+            return Size(CW_USEDEFAULT, CW_USEDEFAULT);
+        }
+        public string ToString() const
+        {
+            return "(" + ToString(w) + ", " + ToString(h) + ")";
+        }
+        public int w;
+        public int h;
+    }
+
+    public inline bool operator==(const Size& left, const Size& right)
+    {
+        return left.w == right.w && left.h == right.h;
+    }
+
+    public class PointF
+    {
+        public PointF() : x(0.0f), y(0.0f)
+        {
+        }
+        public PointF(float x_, float y_) : x(x_), y(y_)
+        {
+        }
+        public string ToString() const
+        {
+            return "(" + ToString(x) + ", " + ToString(y) + ")";
+        }
+        public inline void Offset(float dx, float dy)
+        {
+            x = x + dx;
+            y = y + dy;
+        }
+        public float x;
+        public float y;
+    }
+
+    public inline bool operator==(const PointF& left, const PointF& right)
+    {
+        return left.x == right.x && left.y == right.y;
+    }
+
+    public float Distance(const PointF& start, const PointF& end)
+    {
+        float dx = Abs(start.x - end.x);
+        float dy = Abs(start.y - end.y);
+        float distance = cast<float>(Sqrt(dx * dx + dy * dy));
+        return distance;
+    }
+
+    public class Vector
+    {
+        public Vector() : x(0), y(0)
+        {
+        }
+        public Vector(float x_, float y_) : x(x_), y(y_)
+        {
+        }
+        public explicit Vector(const PointF& point) : x(point.x), y(point.y)
+        {
+        }
+        public float Length() const
+        {
+            return cast<float>(Sqrt(x * x + y * y));
+        }
+        public PointF ToPoint() const
+        {
+            return PointF(x, y);
+        }
+        public float x;
+        public float y;
+    }
+
+    public inline bool operator==(const Vector& v, const Vector& u)
+    {
+        return v.x == u.x && v.y == u.y;
+    }
+
+    public Vector operator*(const Vector& v, float a)
+    {
+        return Vector(v.x * a, v.y * a);
+    }
+
+    public Vector operator*(float a, const Vector& v)
+    {
+        return Vector(v.x * a, v.y * a);
+    }
+
+    public Vector operator+(const Vector& left, const Vector& right)
+    {
+        return Vector(left.x + right.x, left.y + right.y);
+    }
+
+    public Vector operator-(const Vector& left, const Vector& right)
+    {
+        return Vector(left.x - right.x, left.y - right.y);
+    }
+
+    public Vector UnitVector(const Vector& v)
+    {
+        float length = v.Length();
+        return v * (1 / length);
+    }
+
+    // Dot product of vectors u and v:
+
+    public float Dot(const Vector& u, const Vector& v)
+    {
+        return u.x * v.x + u.y * v.y;
+    }
+
+    public float ProjectionFactor(const Vector& a, const Vector& b)
+    {
+        return Dot(a, b * (1 / b.Length()));
+    }
+
+    // Projection of vector a onto b:
+
+    public Vector Projection(const Vector& a, const Vector& b)
+    {
+        return UnitVector(b) * ProjectionFactor(a, b);
+    }
+
+    //  MainDirection returns:
+    //      0, if angle between vector v and positive x axis is between 315 and 45 degrees clockwise
+    //      90, if angle between vector v and positive x axis is between 45 and 135 degrees clockwise
+    //      180, if angle between vector v and positive x axis is between 135 and 225 degrees clockwise
+    //      270, if angle between vector v and positive x axis is between 225 and 315 degrees clockwise
+    //      In this coordinate system x axis points to the right and y axis points downwards.
+
+    public int MainDirection(const Vector& v)
+    {
+        if (v.x >= 0)
+        {
+            if (v.y >= 0)
+            {
+                Vector u(1, -1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return 90;
+                }
+            }
+            else
+            {
+                Vector u(-1, -1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 270;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+        else
+        {
+            if (v.y >= 0)
+            {
+                Vector u(1, 1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 90;
+                }
+                else
+                {
+                    return 180;
+                }
+            }
+            else
+            {
+                Vector u(-1, 1);
+                if (Dot(v, u) >= 0)
+                {
+                    return 180;
+                }
+                else
+                {
+                    return 270;
+                }
+            }
+        }
+    }
+
+    public Vector Rotate(const Vector& v, double angleRad)
+    {
+        float cosTheta = cast<float>(Cos(angleRad));
+        float sinTheta = cast<float>(Sin(angleRad));
+        Vector r(v.x * cosTheta - v.y * sinTheta, v.x * sinTheta + v.y * cosTheta);
+        return r;
+    }
+
+    public class Line
+    {
+        public Line() : start(), end()
+        {
+        }
+        public Line(const PointF& start_, const PointF& end_) : start(start_), end(end_)
+        {
+        }
+        public Line(const PointF& start_, const Vector& v) : start(start_), end(Vector(Vector(start) + v).ToPoint())
+        {
+        }
+        public float Length() const
+        {
+            return Distance(start, end);
+        }
+        public Vector ToVector() const
+        {
+            return Vector(end.x - start.x, end.y - start.y);
+        }
+        public PointF start;
+        public PointF end;
+    }
+
+    public inline bool operator==(const Line& left, const Line& right)
+    {
+        return left.start == right.start && left.end == right.end;
+    }
+
+    public Line Rotate(const Line& line, double angleDeg)
+    {
+        double angleRad = PI() / 180.0 * angleDeg;
+        Vector v = line.ToVector();
+        Vector r = Rotate(v, angleRad);
+        Line result(line.start, r);
+        return result;
+    }
+
+    public class SizeF
+    {
+        public SizeF() : w(0.0f), h(0.0f)
+        {
+        }
+        public SizeF(float w_, float h_) : w(w_), h(h_)
+        {
+        }
+        public string ToString() const
+        {
+            return "(" + ToString(w) + ", " + ToString(h) + ")";
+        }
+        public float w;
+        public float h;
+    }
+
+    public inline bool operator==(const SizeF& left, const SizeF& right)
+    {
+        return left.w == right.w && left.h == right.h;
+    }
+
+    public class Rect
+    {
+        public Rect() : location(), size()
+        {
+        }
+        public Rect(const Point& location_, const Size& size_) : location(location_), size(size_)
+        {
+        }
+        public Rect(const WinRect& winRect) : location(winRect.left, winRect.top), size(winRect.right - winRect.left, winRect.bottom - winRect.top)
+        {
+        }
+        public WinRect ToWinRect() const
+        {
+            return WinRect(location.x, location.y, location.x + size.w, location.y + size.h);
+        }
+        public inline bool IsEmpty() const
+        {
+            return size.w == 0 && size.h == 0;
+        }
+        public inline int Left() const
+        {
+            return location.x;
+        }
+        public inline int Right() const
+        {
+            return location.x + size.w;
+        }
+        public inline int Top() const
+        {
+            return location.y;
+        }
+        public inline int Bottom() const
+        {
+            return location.y + size.h;
+        }
+        public inline bool Contains(const Point& p)
+        {
+            return p.x >= location.x && p.x < location.x + size.w && p.y >= location.y && p.y < location.y + size.h;
+        }
+        public inline void Inflate(int dx, int dy)
+        {
+            location.x = location.x - dx;
+            location.y = location.y - dy;
+            size.w = size.w + 2 * dx;
+            size.h = size.h + 2 * dy;
+        }
+        public inline void Offset(int dx, int dy)
+        {
+            location.Offset(dx, dy);
+        }
+        public bool IntersectsWith(const Rect& that) const
+        {
+            return Left() < that.Right() && Top() < that.Bottom() && Right() > that.Left() && Bottom() > that.Top();
+        }
+        public static Rect Union(const Rect& a, const Rect& b)
+        {
+            int right = Max(a.Right(), b.Right());
+            int bottom = Max(a.Bottom(), b.Bottom());
+            int left = Min(a.Left(), b.Left());
+            int top = Min(a.Top(), b.Top());
+            return Rect(Point(left, top), Size(right - left, bottom - top));
+        }
+        public string ToString() const
+        {
+            return "(" + ToString(location.x) + ", " + ToString(location.y) + ", " + ToString(size.w) + ", " + ToString(size.h) + ")";
+        }
+        public Point location;
+        public Size size;
+    }
+
+    public inline bool operator==(const Rect& left, const Rect& right)
+    {
+        return left.location == right.location && left.size == right.size;
+    }
+
+    public class RectF
+    {
+        public RectF() : location(), size()
+        {
+        }
+        public RectF(const PointF& location_, const SizeF& size_) : location(location_), size(size_)
+        {
+        }
+        public inline float Left() const
+        {
+            return location.x;
+        }
+        public inline float Right() const
+        {
+            return location.x + size.w;
+        }
+        public inline float Top() const
+        {
+            return location.y;
+        }
+        public inline float Bottom() const
+        {
+            return location.y + size.h;
+        }
+        public string ToString() const
+        {
+            return "(" + ToString(location.x) + ", " + ToString(location.y) + ", " + ToString(size.w) + ", " + ToString(size.h) + ")";
+        }
+        public inline bool IsEmpty() const
+        {
+            return size.w == 0 && size.h == 0;
+        }
+        public inline bool Contains(const PointF& p)
+        {
+            return p.x >= location.x && p.x < location.x + size.w && p.y >= location.y && p.y < location.y + size.h;
+        }
+        public inline void Inflate(float dx, float dy)
+        {
+            location.x = location.x - dx;
+            location.y = location.y - dy;
+            size.w = size.w + 2 * dx;
+            size.h = size.h + 2 * dy;
+        }
+        public inline void Offset(float dx, float dy)
+        {
+            location.Offset(dx, dy);
+        }
+        public bool IntersectsWith(const RectF& that) const
+        {
+            return Left() < that.Right() && Top() < that.Bottom() && Right() > that.Left() && Bottom() > that.Top();
+        }
+        public static RectF Union(const RectF& a, const RectF& b)
+        {
+            float right = Max(a.Right(), b.Right());
+            float bottom = Max(a.Bottom(), b.Bottom());
+            float left = Min(a.Left(), b.Left());
+            float top = Min(a.Top(), b.Top());
+            return RectF(PointF(left, top), SizeF(right - left, bottom - top));
+        }
+        public PointF location;
+        public SizeF size;
+    }
+
+    public enum LineCap : int
+    {
+        flat = 0,
+        square = 1,
+        round = 2,
+        triangle = 3,
+        noAnchor = 0x10,
+        squareAnchor = 0x11,
+        roundAnchopr = 0x12,
+        diamondAnchor = 0x13,
+        arrowAnchor = 0x14,
+        custom = 0xff,
+        anchorMask = 0xf0
+    }
+
+    public enum LineJoin : int
+    {
+        miter = 0,
+        bevel = 1,
+        round = 2,
+        miterClipped = 3
+    }
+
+    public enum DashCap : int
+    {
+        flat = 0,
+        round = 2,
+        triangle = 3
+    }
+
+    public enum DashStyle : int
+    {
+        solid = 0,
+        dash = 1,
+        dot = 2,
+        dashDot = 3,
+        dashDotDot = 4,
+        custom = 5
+    }
+
+    public string ToString(DashStyle dashStyle)
+    {
+        switch (dashStyle)
+        {
+            case DashStyle.solid: return "solid";
+            case DashStyle.dash: return "dash";
+            case DashStyle.dot: return "dot";
+            case DashStyle.dashDot: return "dashDot";
+            case DashStyle.dashDotDot: return "dashDotDot";
+            case DashStyle.custom: return "custom";
+        }
+        return string();
+    }
+
+    public class Pen : GraphicsObject
+    {
+        public enum Alignment : int
+        {
+            center = 0, inset = 1
+        }
+        public Pen(const Color& color, float width) : base(), nativePen(WinGraphicsCreatePen(color.alpha, color.red, color.green, color.blue, width))
+        {
+            int status = WinGraphicsPenGetLastStatus(nativePen);
+            if (status != 0)
+            {
+                SetErrorId(WinAllocateGdiPlusError("Pen constructor failed", status));
+                return;
+            }
+        }
+        public Pen(const Color& color) : this(color, 1.0f)
+        {
+        }
+        public Pen(const Pen& that) : nativePen(WinGraphicsClonePen(that.nativePen))
+        {
+            int status = WinGraphicsPenGetLastStatus(nativePen);
+            if (status != 0)
+            {
+                SetErrorId(WinAllocateGdiPlusError("Pen copy constructor failed", status));
+                return;
+            }
+        }
+        public Pen(Pen&& that) : nativePen(that.nativePen)
+        {
+            that.nativePen = null;
+        }
+        public void operator=(const Pen& that)
+        {
+            if (nativePen != that.nativePen)
+            {
+                if (nativePen != null)
+                {
+                    WinGraphicsDeletePen(nativePen);
+                }
+                nativePen = WinGraphicsClonePen(that.nativePen);
+                int status = WinGraphicsPenGetLastStatus(nativePen);
+                if (status != 0)
+                {
+                    SetErrorId(WinAllocateGdiPlusError("Pen copy assignment failed", status));
+                    return;
+                }
+            }
+        }
+        public default void operator=(Pen&& that);
+        public ~Pen()
+        {
+            if (nativePen != null)
+            {
+                WinGraphicsDeletePen(nativePen);
+            }
+        }
+        public Alignment GetAlignment() const
+        {
+            return cast<Alignment>(WinGraphicsPenGetAlignment(nativePen));
+        }
+        [nodiscard]
+        public Result<bool> SetAlignment(Alignment alignment)
+        {
+            int status = WinGraphicsPenSetAlignment(nativePen, cast<int>(alignment));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetAlignment failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public Brush GetBrush() const
+        {
+            Brush brush;
+            brush.SetNativeBrush(WinGraphicsPenGetBrush(nativePen));
+            return brush;
+        }
+        [nodiscard]
+        public Result<bool> SetBrush(const Brush& brush)
+        {
+            int status = WinGraphicsPenSetBrush(nativePen, brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetBrush failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<Color> GetColor() const
+        {
+            Color color;
+            int status = WinGraphicsPenGetColor(nativePen, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.GetColor failed", status);
+                return Result<Color>(ErrorId(errorId));
+            }
+            return Result<Color>(color);
+        }
+        [nodiscard]
+        public Result<bool> SetColor(const Color& color)
+        {
+            return WinGraphicsPenSetColor(nativePen, color.alpha, color.red, color.green, color.blue);
+        }
+        public LineCap GetStartCap() const
+        {
+            return cast<LineCap>(WinGraphicsPenGetStartCap(nativePen));
+        }
+        [nodiscard]
+        public Result<bool> SetStartCap(LineCap startCap)
+        {
+            int status = WinGraphicsPenSetStartCap(nativePen, cast<int>(startCap));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetStartCap failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public LineCap GetEndCap() const
+        {
+            return cast<LineCap>(WinGraphicsPenGetEndCap(nativePen));
+        }
+        [nodiscard]
+        public Result<bool> SetEndCap(LineCap endCap)
+        {
+            int status = WinGraphicsPenSetEndCap(nativePen, cast<int>(endCap));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetEndCap failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public DashCap GetDashCap() const
+        {
+            return cast<DashCap>(WinGraphicsPenGetDashCap(nativePen));
+        }
+        [nodiscard]
+        public Result<bool> SetDashCap(DashCap dashCap)
+        {
+            int status = WinGraphicsPenSetDashCap(nativePen, cast<int>(dashCap));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetDashCap failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public float GetDashOffset() const
+        {
+            return WinGraphicsPenGetDashOffset(nativePen);
+        }
+        [nodiscard]
+        public Result<bool> SetDashOffset(float dashOffset)
+        {
+            int status = WinGraphicsPenSetDashOffset(nativePen, dashOffset);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetDashOffset failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public DashStyle GetDashStyle() const
+        {
+            return cast<DashStyle>(WinGraphicsPenGetDashStyle(nativePen));
+        }
+        [nodiscard]
+        public Result<bool> SetDashStyle(DashStyle dashStyle)
+        {
+            int status = WinGraphicsPenSetDashStyle(nativePen, cast<int>(dashStyle));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetDashStyle failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public LineJoin GetLineJoin() const
+        {
+            return cast<LineJoin>(WinGraphicsPenGetLineJoin(nativePen));
+        }
+        [nodiscard]
+        public Result<bool> SetLineJoin(LineJoin lineJoin)
+        {
+            int status = WinGraphicsPenSetLineJoin(nativePen, cast<int>(lineJoin));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetLineJoin failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public inline void* NativePen() const
+        {
+            return nativePen;
+        }
+        private void* nativePen;
+    }
+
+    public class PenKey
+    {
+        public PenKey(const Color& color_, float width_, DashStyle dashStyle_) : color(color_), width(width_), dashStyle(dashStyle_)
+        {
+        }
+        public string ToString() const
+        {
+            return color.ToString() + ":" + System.ToString(width) + ":" + ToString(dashStyle);
+        }
+        public Color color;
+        public float width;
+        public DashStyle dashStyle;
+    }
+
+    public bool operator==(const PenKey& left, const PenKey& right)
+    {
+        return left.color == right.color && left.width == right.width && left.dashStyle == right.dashStyle;
+    }
+
+    public ulong GetHashCode(const PenKey& penKey)
+    {
+        return GetHashCode(penKey.ToString());
+    }
+
+    public abstract class Brush : GraphicsObject
+    {
+        public Brush() : base(), nativeBrush(null)
+        {
+        }
+        public void SetNativeBrush(const void* nativeBrush_)
+        {
+            nativeBrush = nativeBrush_;
+        }
+        public virtual ~Brush()
+        {
+        }
+        public virtual const void* NativeBrush() const
+        {
+            return nativeBrush;
+        }
+        private const void* nativeBrush;
+    }
+
+    public class SolidBrush : Brush
+    {
+        public SolidBrush(const Color& color) : nativeSolidBrush(WinGraphicsCreateSolidBrush(color.alpha, color.red, color.green, color.blue))
+        {
+            int status = WinGraphicsBrushGetLastStatus(nativeSolidBrush);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("SolidBrush constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+            SetNativeBrush(nativeSolidBrush);
+        }
+        public SolidBrush(const SolidBrush& that) : nativeSolidBrush(WinGraphicsCloneSolidBrush(that.nativeSolidBrush))
+        {
+            int status = WinGraphicsBrushGetLastStatus(nativeSolidBrush);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("SolidBrush copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+            SetNativeBrush(nativeSolidBrush);
+        }
+        public SolidBrush(SolidBrush&& that) : nativeSolidBrush(that.nativeSolidBrush)
+        {
+            that.SetNativeBrush(null);
+            that.nativeSolidBrush = null;
+        }
+        public void operator=(const SolidBrush& that)
+        {
+            if (nativeSolidBrush != that.nativeSolidBrush)
+            {
+                if (nativeSolidBrush != null)
+                {
+                    WinGraphicsDeleteSolidBrush(nativeSolidBrush);
+                }
+                nativeSolidBrush = WinGraphicsCloneSolidBrush(that.nativeSolidBrush);
+                int status = WinGraphicsBrushGetLastStatus(nativeSolidBrush);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("SolidBrush copy assignment failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
+                SetNativeBrush(nativeSolidBrush);
+            }
+        }
+        public void operator=(SolidBrush&& that)
+        {
+            const void* thatNativeBrush = that.NativeBrush();
+            const void* nativeBrush = NativeBrush();
+            Swap(thatNativeBrush, nativeBrush);
+            that.SetNativeBrush(thatNativeBrush);
+            SetNativeBrush(nativeBrush);
+            Swap(nativeSolidBrush, that.nativeSolidBrush);
+        }
+        public ~SolidBrush()
+        {
+            if (nativeSolidBrush != null)
+            {
+                WinGraphicsDeleteSolidBrush(nativeSolidBrush);
+            }
+        }
+        public override const void* NativeBrush() const
+        {
+            return nativeSolidBrush;
+        }
+        private void* nativeSolidBrush;
+    }
+
+    public class NativeHandle
+    {
+        public explicit NativeHandle(const void* handle_) : handle(handle_)
+        {
+        }
+        public void* handle;
+    }
+
+    public class FontFamily : GraphicsObject
+    {
+        public FontFamily() : base(), nativeFontFamily(WinGraphicsCreateEmptyFontFamily()), owned(true)
+        {
+            int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("FontFamily constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public FontFamily(const string& familyName) : nativeFontFamily(WinGraphicsCreateFontFamily(familyName.Chars())), owned(true)
+        {
+            int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("FontFamily string constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public explicit FontFamily(const NativeHandle& nativeHandle_) : nativeFontFamily(nativeHandle_.handle), owned(false) // stock font family not owned
+        {
+        }
+        public FontFamily(const FontFamily& that) : nativeFontFamily(null), owned(that.owned)
+        {
+            if (owned)
+            {
+                nativeFontFamily = WinGraphicsCloneFontFamily(that.nativeFontFamily);
+                int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("FontFamily copy constructor failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            else
+            {
+                nativeFontFamily = that.nativeFontFamily; // stock font family not cloned
+            }
+        }
+        public FontFamily(FontFamily&& that) : nativeFontFamily(that.nativeFontFamily), owned(that.owned)
+        {
+            that.nativeFontFamily = null;
+            that.owned = false;
+        }
+        public void operator=(const FontFamily& that)
+        {
+            if (nativeFontFamily != that.nativeFontFamily)
+            {
+                if (nativeFontFamily != null && owned)
+                {
+                    WinGraphicsDeleteFontFamily(nativeFontFamily);
+                }
+                if (that.owned)
+                {
+                    nativeFontFamily = WinGraphicsCloneFontFamily(that.nativeFontFamily);
+                    int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+                    if (status != 0)
+                    {
+                        int errorId = WinAllocateGdiPlusError("FontFamily copy assignment failed", status);
+                        SetErrorId(errorId);
+                        return;
+                    }
+                    else
+                    {
+                        owned = true;
+                    }
+                }
+                else
+                {
+                    nativeFontFamily = that.nativeFontFamily; // stock font family not cloned
+                    owned = false;
+                }
+            }
+        }
+        public default void operator=(FontFamily&&);
+        public ~FontFamily()
+        {
+            if (nativeFontFamily != null && owned)
+            {
+                WinGraphicsDeleteFontFamily(nativeFontFamily);
+            }
+        }
+        [nodiscard]
+        public Result<string> GetFamilyName() const
+        {
+            void* str = null;
+            int status = WinGraphicsGetFontFamilyName(nativeFontFamily, str);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("FontFamily.GetFamilyName failed", status);
+                return Result<string>(ErrorId(errorId));
+            }
+            auto familyNameResult = ToUtf8(cast<wchar*>(str));
+            if (familyNameResult.Error())
+            {
+                return Result<string>(ErrorId(familyNameResult.GetErrorId()));
+            }
+            return Result<string>(familyNameResult.Value());
+        }
+        public static FontFamily GenericMonospace()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericMonospaceFontFamily());
+            return FontFamily(nativeHandle);
+        }
+        public static FontFamily GenericSansSerif()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericSansSerifFontFamily());
+            return FontFamily(nativeHandle);
+        }
+        public static FontFamily GenericSerif()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericSerifFontFamily());
+            return FontFamily(nativeHandle);
+        }
+        public inline void* NativeFontFamily() const
+        {
+            return nativeFontFamily;
+        }
+        private void* nativeFontFamily;
+        private bool owned;
+    }
+
+    public enum FontStyle : int
+    {
+        regular = 0,
+        bold = 1 << 0,
+        italic = 1 << 1,
+        boldItalic = bold | italic,
+        underline = 1 << 2,
+        strikeOut = 1 << 3
+    }
+
+    public ulong GetHashCode(FontStyle fontStyle)
+    {
+        return cast<ulong>(cast<int>(fontStyle));
+    }
+
+    public enum Unit : int
+    {
+        world = 0,
+        display = 1,
+        pixel = 2,
+        point = 3,
+        inch = 4,
+        document = 5,
+        millimeter = 6
+    }
+
+    public class FontHandle
+    {
+        public FontHandle(void* hfont_) : hfont(hfont_)
+        {
+        }
+        suppress FontHandle(const FontHandle&);
+        suppress void operator=(const FontHandle&);
+        public FontHandle(FontHandle&& that) : hfont(that.hfont)
+        {
+            that.hfont = null;
+        }
+        public default void operator=(FontHandle&&);
+        public ~FontHandle()
+        {
+            if (hfont != null)
+            {
+                WinDeleteObject(hfont);
+            }
+        }
+        public inline bool IsNull() const
+        {
+            return hfont == null;
+        }
+        public inline void* HFont() const
+        {
+            return hfont;
+        }
+        private void* hfont;
+    }
+
+    public class Font : GraphicsObject
+    {
+        public Font(const FontFamily& family, float emSize, FontStyle style, Unit unit) :
+            base(), nativeFont(WinGraphicsCreateFont(family.NativeFontFamily(), emSize, style, unit))
+        {
+            int status = WinGraphicsFontGetLastStatus(nativeFont);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Font(const FontFamily& family, float emSize) : this(family, emSize, FontStyle.regular, Unit.point)
+        {
+        }
+        public Font(void* nativeFont_) : nativeFont(nativeFont_)
+        {
+        }
+        public Font() : this(null)
+        {
+        }
+        public Font(const Font& that) : nativeFont(WinGraphicsCloneFont(that.nativeFont))
+        {
+            int status = WinGraphicsFontGetLastStatus(nativeFont);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Font(Font&& that) : nativeFont(that.nativeFont)
+        {
+            that.nativeFont = null;
+        }
+        public void operator=(const Font& that)
+        {
+            if (nativeFont != that.nativeFont)
+            {
+                if (nativeFont != null)
+                {
+                    WinGraphicsDeleteFont(nativeFont);
+                }
+                nativeFont = WinGraphicsCloneFont(that.nativeFont);
+            }
+        }
+        public default void operator=(Font&&);
+        public ~Font()
+        {
+            if (nativeFont != null)
+            {
+                WinGraphicsDeleteFont(nativeFont);
+            }
+        }
+        public bool IsNull() const
+        {
+            return nativeFont == null;
+        }
+        public float GetSize() const
+        {
+            return WinGraphicsGetFontSize(nativeFont);
+        }
+        public float GetHeight(const Graphics& graphics) const
+        {
+            return WinGraphicsGetFontHeight(nativeFont, graphics.NativeGraphics());
+        }
+        public FontStyle GetStyle() const
+        {
+            return cast<FontStyle>(WinGraphicsGetFontStyle(nativeFont));
+        }
+        [nodiscard]
+        public Result<FontFamily> GetFamily()
+        {
+            FontFamily fontFamily;
+            int status = WinGraphicsGetFontFamily(nativeFont, fontFamily.NativeFontFamily());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font.GetFamily failed", status);
+                return Result<FontFamily>(ErrorId(errorId));
+            }
+            return Result<FontFamily>(fontFamily);
+        }
+        [nodiscard]
+        public static Result<Font> FromHFont(void* hdc, void* hfont)
+        {
+            Font font(WinGraphicsCreateFontFromHFont(hdc, hfont));
+            int status = WinGraphicsFontGetLastStatus(font.NativeFont());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font.FromHFont failed", status);
+                return Result<Font>(ErrorId(errorId));
+            }
+            return Result<Font>(font);
+        }
+        [nodiscard]
+        public Result<FontHandle> ToHFont(const Graphics& graphics)
+        {
+            void* hfont = null;
+            int status = WinGraphicsFontToHFont(nativeFont, graphics.NativeGraphics(), hfont);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font.ToHFont failed", status);
+                return Result<FontHandle>(FontHandle(), ErrorId(errorId));
+            }
+            else
+            {
+                FontHandle fontHandle = FontHandle(hfont);
+                return Result<FontHandle>(Rvalue(fontHandle));
+            }
+        }
+        public inline void* NativeFont() const
+        {
+            return nativeFont;
+        }
+        private void* nativeFont;
+    }
+
+    public string ToString(FontStyle style)
+    {
+        string s;
+        if (style == FontStyle.regular)
+        {
+            s.Append("regular");
+        }
+        else
+        {
+            if ((style & FontStyle.bold) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("bold");
+            }
+            if ((style & FontStyle.italic) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("italic");
+            }
+            if ((style & FontStyle.underline) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("underline");
+            }
+            if ((style & FontStyle.strikeOut) != 0)
+            {
+                if (!s.IsEmpty())
+                {
+                    s.Append('.');
+                }
+                s.Append("strikeOut");
+            }
+        }
+        return s;
+    }
+
+    public FontStyle ParseFontStyle(const string& fontStyleStr)
+    {
+        FontStyle fontStyle = FontStyle.regular;
+        List<string> components = fontStyleStr.Split('.');
+        for (const string& component : components)
+        {
+            if (component == "bold")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.bold);
+            }
+            else if (component == "italic")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.italic);
+            }
+            else if (component == "underline")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.underline);
+            }
+            else if (component == "strikeOut")
+            {
+                fontStyle = cast<FontStyle>(fontStyle | FontStyle.strikeOut);
+            }
+        }
+        return fontStyle;
+    }
+
+    public class FontKey
+    {
+        public FontKey(const string& family_, float size_, FontStyle style_) : family(family_), size(size_), style(style_)
+        {
+        }
+        [nodiscard]
+        public Result<string> ToString()
+        {
+            auto toLowerResult = ToLower(family);
+            if (toLowerResult.Error())
+            {
+                return Result<string>(ErrorId(toLowerResult.GetErrorId()));
+            }
+            string s = Rvalue(toLowerResult.Value());
+            s.Append('.').Append(System.ToString(size)).Append('.').Append(ToString(style));
+            return s;
+        }
+        public string family;
+        public float size;
+        public FontStyle style;
+    }
+
+    public bool operator==(const FontKey& left, const FontKey& right)
+    {
+        return ToLower(left.family) == ToLower(right.family) && left.size == right.size && left.style == right.style;
+    }
+
+    [nodiscard]
+    public Result<ulong> GetHashCode(const FontKey& fontKey)
+    {
+        auto fontKeyResult = fontKey.ToString();
+        if (fontKeyResult.Error())
+        {
+            return Result<ulong>(ErrorId(fontKeyResult.GetErrorId()));
+        }
+        return Result<ulong>(GetHashCode(fontKeyResult.Value()));
+    }
+
+    public enum StringAlignment : int
+    {
+        near, center, far
+    }
+
+    public enum HotKeyPrefix : int
+    {
+        none, show, hide
+    }
+
+    public class StringFormat : GraphicsObject
+    {
+        public StringFormat() : nativeFormat(WinGraphicsCreateDefaultStringFormat()), owned(true)
+        {
+            int status = WinGraphicsStringFormatGetLastStatus(nativeFormat);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public StringFormat(const NativeHandle& nativeHandle_) : nativeFormat(nativeHandle_.handle), owned(false) // generic stock string formats are not owned
+        {
+        }
+        public StringFormat(const StringFormat& that) : nativeFormat(null), owned(that.owned)
+        {
+            if (owned)
+            {
+                nativeFormat = WinGraphicsCloneStringFormat(that.nativeFormat);
+                int status = WinGraphicsStringFormatGetLastStatus(nativeFormat);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("StringFormat copy constructor failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            else
+            {
+                nativeFormat = that.nativeFormat;
+            }
+        }
+        public StringFormat(StringAlignment horizontalAlignment, StringAlignment verticalAlignment, HotKeyPrefix hotKeyPrefix) : this()
+        {
+            auto setAlignmentResult = SetAlignment(horizontalAlignment);
+            if (setAlignmentResult.Error())
+            {
+                SetErrorId(setAlignmentResult.GetErrorId());
+                return;
+            }
+            auto setLineAlignmentResult = SetLineAlignment(verticalAlignment);
+            if (setLineAlignmentResult.Error())
+            {
+                SetErrorId(setLineAlignmentResult.GetErrorId());
+                return;
+            }
+            auto setHotKeyPrefixResult = SetHotKeyPrefix(hotKeyPrefix);
+            if (setHotKeyPrefixResult.Error())
+            {
+                SetErrorId(setHotKeyPrefixResult.GetErrorId());
+                return;
+            }
+        }
+        public StringFormat(StringAlignment horizontalAlignment, StringAlignment verticalAlignment) : this(horizontalAlignment, verticalAlignment, HotKeyPrefix.none)
+        {
+        }
+        public StringFormat(StringFormat&& that) : nativeFormat(that.nativeFormat), owned(that.owned)
+        {
+            that.nativeFormat = null;
+            that.owned = false;
+        }
+        public void operator=(const StringFormat& that)
+        {
+            if (nativeFormat != that.nativeFormat)
+            {
+                if (nativeFormat != null && owned)
+                {
+                    WinGraphicsDeleteStringFormat(nativeFormat);
+                }
+                if (that.owned)
+                {
+                    nativeFormat = WinGraphicsCloneStringFormat(that.nativeFormat);
+                    int status = WinGraphicsStringFormatGetLastStatus(nativeFormat);
+                    if (status != 0)
+                    {
+                        int errorId = WinAllocateGdiPlusError("StringFormat copy assignment failed", status);
+                        SetErrorId(errorId);
+                        return;
+                    }
+                    owned = true;
+                }
+                else
+                {
+                    nativeFormat = that.nativeFormat;
+                    owned = false;
+                }
+            }
+        }
+        public default void operator=(StringFormat&&);
+        public ~StringFormat()
+        {
+            if (nativeFormat != null && owned)
+            {
+                WinGraphicsDeleteStringFormat(nativeFormat);
+            }
+        }
+        [nodiscard]
+        public Result<bool> SetAlignment(StringAlignment alignment)
+        {
+            int status = WinGraphicsStringFormatSetAlignment(nativeFormat, alignment);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat.SetAlignment failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetLineAlignment(StringAlignment alignment)
+        {
+            int status = WinGraphicsStringFormatSetLineAlignment(nativeFormat, alignment);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat.SetLineAlignment failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetHotKeyPrefix(HotKeyPrefix hotKeyPrefix)
+        {
+            int status = WinGraphicsStringFormatSetHotKeyPrefix(nativeFormat, hotKeyPrefix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat.SetHotKeyPrefix failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public inline void* NativeFormat() const
+        {
+            return nativeFormat;
+        }
+        public static StringFormat GenericDefault()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericDefaultStringFormat());
+            return StringFormat(nativeHandle);
+        }
+        public static StringFormat GenericTypographic()
+        {
+            NativeHandle nativeHandle(WinGraphicsGetGenericTypographicStringFormat());
+            return StringFormat(nativeHandle);
+        }
+        private void* nativeFormat;
+        private bool owned;
+    }
+
+    public enum TextRenderingHint : int
+    {
+        systemDefault = 0,
+        singleBitPerPixelGridFit = 1,
+        singleBitPerPixel = 2,
+        antiAliasGridFit = 3,
+        antiAlias = 4,
+        clearTypeGridFit = 5
+    }
+
+    internal class PaintGuard
+    {
+        public PaintGuard(void* hdc_, void* paintStruct_) : hdc(hdc_), paintStruct(paintStruct_)
+        {
+        }
+        public ~PaintGuard()
+        {
+            if (hdc != null)
+            {
+                EndPaint(hdc, paintStruct);
+            }
+        }
+        private void* hdc;
+        private void* paintStruct;
+    }
+
+    public enum CombineMode : int
+    {
+        replace, intersect, union, xor, exclude, complement
+    }
+
+    public class Region : GraphicsObject
+    {
+        public Region() : nativeRegion(WinGraphicsCreateRegion())
+        {
+            int status = WinGraphicsRegionGetLastStatus(nativeRegion);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Region constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Region(const Region& that) : nativeRegion(WinGraphicsCloneRegion(that.nativeRegion))
+        {
+            int status = WinGraphicsRegionGetLastStatus(nativeRegion);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Region copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Region(Region&& that) : nativeRegion(that.nativeRegion)
+        {
+            that.nativeRegion = null;
+        }
+        public void operator=(const Region& that)
+        {
+            if (nativeRegion != null)
+            {
+                WinGraphicsDeleteRegion(nativeRegion);
+            }
+            nativeRegion = WinGraphicsCloneRegion(that.nativeRegion);
+            int status = WinGraphicsRegionGetLastStatus(nativeRegion);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Region copy assignment failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public default void operator=(Region&&);
+        public ~Region()
+        {
+            if (nativeRegion != null)
+            {
+                WinGraphicsDeleteRegion(nativeRegion);
+            }
+        }
+        public inline void* NativeRegion() const
+        {
+            return nativeRegion;
+        }
+        private void* nativeRegion;
+    }
+
+    // image formats: image/bmp, image/jpeg, image/gif, image/tiff, image/png
+
+    public enum ImageFormat : int
+    {
+        bmp, jpeg, gif, tiff, png
+    }
+
+    public const char* GetImageFormat(ImageFormat format)
+    {
+        switch (format)
+        {
+            case ImageFormat.bmp: return "image/bmp";
+            case ImageFormat.jpeg: return "image/jpeg";
+            case ImageFormat.gif: return "image/gif";
+            case ImageFormat.tiff: return "image/tiff";
+            case ImageFormat.png: return "image/png";
+        }
+        return "";
+    }
+
+    [nodiscard]
+    public Result<Uuid> GetEncoderClsId(const char* imageFormat)
+    {
+        Uuid clsid;
+        int status = WinGraphicsGetEncoderClsId(imageFormat, &clsid);
+        if (status != 0)
+        {
+            int errorId = WinAllocateGdiPlusError("get encoder clsid failed", status);
+            return Result<Uuid>(ErrorId(errorId));
+        }
+        return Result<Uuid>(clsid);
+    }
+
+    public class Image : GraphicsObject
+    {
+        public Image() : base(), nativeImage(null)
+        {
+        }
+        public Image(void* nativeImage_) : base(), nativeImage(nativeImage_)
+        {
+        }
+        public Image(const string& fileName, bool useEmbeddedColorManagement) : base(), nativeImage(WinGraphicsCreateImage(fileName.Chars(), useEmbeddedColorManagement))
+        {
+            int status = WinGraphicsImageGetLastStatus(nativeImage);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Image(const Image& that) : nativeImage(WinGraphicsCloneImage(that.nativeImage))
+        {
+            int status = WinGraphicsImageGetLastStatus(nativeImage);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Image(Image&& that) : nativeImage(that.nativeImage)
+        {
+            that.nativeImage = null;
+        }
+        public void operator=(const Image& that)
+        {
+            if (nativeImage != null)
+            {
+                WinGraphicsDeleteImage(nativeImage);
+            }
+            nativeImage = WinGraphicsCloneImage(that.nativeImage);
+            int status = WinGraphicsImageGetLastStatus(nativeImage);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image copy assignment failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public default void operator=(Image&&);
+        public virtual ~Image()
+        {
+            if (nativeImage != null)
+            {
+                WinGraphicsDeleteImage(nativeImage);
+            }
+        }
+        public uint GetHeight() const
+        {
+            return WinGraphicsImageGetHeight(nativeImage);
+        }
+        public uint GetWidth() const
+        {
+            return WinGraphicsImageGetWidth(nativeImage);
+        }
+        [nodiscard]
+        public Result<bool> Save(const char* fileName, const Uuid& encoderClsId)
+        {
+            int status = WinGraphicsImageSave(nativeImage, fileName, &encoderClsId);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image.Save failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public void* NativeImage() const
+        {
+            return nativeImage;
+        }
+        private void* nativeImage;
+    }
+
+    public const int pixelFormatIndexed = 0x00010000;
+    public const int pixelFormatGDI = 0x00020000;
+    public const int pixelFormatAlpha = 0x00040000;
+    public const int pixelFormatPAlpha = 0x00080000;
+    public const int pixelFormatExtended = 0x00100000;
+    public const int pixelFormatCanonical = 0x00200000;
+
+    public enum PixelFormat : int
+    {
+        pixelFormat1bppIndexed = 1 | (1 << 8) | pixelFormatIndexed | pixelFormatGDI,
+        pixelFormat4bppIndexed = 2 | (4 << 8) | pixelFormatIndexed | pixelFormatGDI,
+        pixelFormat8bppIndexed = 3 | ( 8 << 8) | pixelFormatIndexed | pixelFormatGDI,
+        pixelFormat16bppGrayScale = 4 | (16 << 8) | pixelFormatExtended,
+        pixelFormat16bppRGB555 = 5 | (16 << 8) | pixelFormatGDI,
+        pixelFormat16bppRGB565 = 6 | (16 << 8) | pixelFormatGDI,
+        pixelFormat16bppARGB1555 = 7 | (16 << 8) | pixelFormatAlpha | pixelFormatGDI,
+        pixelFormat24bppRGB = 8 | (24 << 8) | pixelFormatGDI,
+        pixelFormat32bppRGB = 9 | (32 << 8) | pixelFormatGDI,
+        pixelFormat32bppARGB = 10 | (32 << 8) | pixelFormatAlpha | pixelFormatGDI | pixelFormatCanonical,
+        pixelFormat32bppPARGB = 11 | (32 << 8) | pixelFormatAlpha | pixelFormatPAlpha | pixelFormatGDI,
+        pixelFormat48bppRGB = 12 | (48 << 8) | pixelFormatExtended,
+        pixelFormat64bppARGB = 13 | (64 << 8) | pixelFormatAlpha | pixelFormatCanonical | pixelFormatExtended,
+        pixelFormat64bppPARGB = 14 | (64 << 8) | pixelFormatAlpha | pixelFormatPAlpha | pixelFormatExtended,
+        pixelFormat32bppCMYK = 15 | (32 << 8),
+        pixelFormatMax = 16
+    }
+
+    public class Bitmap : Image
+    {
+        public Bitmap() : base()
+        {
+        }
+        public Bitmap(void* nativeHandle_) : base(nativeHandle_)
+        {
+        }
+        public Bitmap(const string& fileName, bool useEmbeddedColorManagement) : base(WinGraphicsCreateBitmap(fileName.Chars(), useEmbeddedColorManagement))
+        {
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(string, bool) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Bitmap(int width, int height, const Graphics& graphics) : base(WinGraphicsCreateBitmapWidthHeight(width, height, graphics.NativeGraphics()))
+        {
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(int, int) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Bitmap(const WinBitmap& winBitmap, void* palette) : base(WinGraphicsCreateBitmapWinBitmap(winBitmap.Handle(), palette))
+        {
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(WinBitmap, void*) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Bitmap(const Icon& icon) : base(WinGraphicsCreateBitmapIcon(icon.Handle()))
+        {
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(Icon) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        [nodiscard]
+        public static Result<Bitmap> FromResource(const string& resourceName)
+        {
+            Bitmap bitmap(WinGraphicsCreateBitmapResource(resourceName.Chars()));
+            if (bitmap.Error())
+            {
+                return Result<Bitmap>(ErrorId(bitmap.GetErrorId()));
+            }
+            int status = WinGraphicsImageGetLastStatus(bitmap.NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap.FromResource failed", status);
+                return Result<Bitmap>(ErrorId(errorId));
+            }
+            return Result<Bitmap>(Rvalue(bitmap));
+        }
+        [nodiscard]
+        public Result<Color> GetPixel(int x, int y) const
+        {
+            Color color;
+            int status = WinGraphicsBitmapGetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap.GetPixel failed", status);
+                return Result<Color>(ErrorId(errorId));
+            }
+            return Result<Color>(color);
+        }
+        [nodiscard]
+        public Result<bool> SetPixel(int x, int y, const Color& color)
+        {
+            int status = WinGraphicsBitmapSetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap.SetPixel failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<Bitmap> ToGrayBitmap(PixelFormat pixelFormat, const Color& bitmapTransparentColor)
+        {
+            int w = cast<int>(GetWidth());
+            int h = cast<int>(GetHeight());
+            Bitmap grayBitmap(WinGraphicsCloneBitmap(NativeImage(), 0, 0, w, h, pixelFormat));
+            if (grayBitmap.Error())
+            {
+                return Result<Bitmap>(ErrorId(grayBitmap.GetErrorId()));
+            }
+            for (int y = 0; y < h; ++y)
+            {
+                for(int x = 0; x < w; ++x)
+                {
+                    Result<Color> colorResult = grayBitmap.GetPixel(x, y);
+                    if (colorResult.Error())
+                    {
+                        return Result<Bitmap>(ErrorId(colorResult.GetErrorId()));
+                    }
+                    Color color = colorResult.Value();
+                    Color gray = color.ToGray(bitmapTransparentColor);
+                    auto setPixelResult = grayBitmap.SetPixel(x, y, gray);
+                    if (setPixelResult.Error())
+                    {
+                        return Result<Bitmap>(ErrorId(setPixelResult.GetErrorId()));
+                    }
+                }
+            }
+            return Result<Bitmap>(grayBitmap);
+        }
+        [nodiscard]
+        public Result<Bitmap> ToGrayBitmap()
+        {
+            return ToGrayBitmap(PixelFormat.pixelFormat24bppRGB, Color.DefaultBitmapTransparent());
+        }
+        public ~Bitmap()
+        {
+        }
+    }
+
+    public enum MatrixOrder
+    {
+        prepend, append
+    }
+
+    public class Matrix : GraphicsObject
+    {
+        public Matrix() : nativeMatrix(WinGraphicsCreateMatrix())
+        {
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Matrix(const Rect& rect, const Point& pt) : nativeMatrix(WinGraphicsCreateMatrixRectPoint(rect.location.x, rect.location.y, rect.size.w, rect.size.h, pt.x, pt.y))
+        {
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix(Rect, Point) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Matrix(const RectF& rect, const PointF& pt) : nativeMatrix(WinGraphicsCreateMatrixRectFPointF(rect.location.x, rect.location.y, rect.size.w, rect.size.h, pt.x, pt.y))
+        {
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix(RectF, PointF) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Matrix(const Matrix& that) : nativeMatrix(WinGraphicsCloneMatrix(that.nativeMatrix))
+        {
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Matrix(Matrix&& that) : nativeMatrix(that.nativeMatrix)
+        {
+            that.nativeMatrix = null;
+        }
+        public void operator=(const Matrix& that)
+        {
+            if (nativeMatrix != null)
+            {
+                WinGraphicsDeleteMatrix(nativeMatrix);
+            }
+            nativeMatrix = WinGraphicsCloneMatrix(that.nativeMatrix);
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix copy assignment failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public default void operator=(Matrix&&);
+        public ~Matrix()
+        {
+            if (nativeMatrix != null)
+            {
+                WinGraphicsDeleteMatrix(nativeMatrix);
+            }
+        }
+        [nodiscard]
+        public Result<bool> Multiply(const Matrix& that, MatrixOrder order)
+        {
+            int status = WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Multiply(Matrix, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Multiply(const Matrix& that)
+        {
+            int status = WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(MatrixOrder.prepend));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Multiply(Matrix) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Reset()
+        {
+            int status = WinGraphicsResetMatrix(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Reset failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Invert()
+        {
+            int status = WinGraphicsInvertMatrix(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Invert failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public float OffsetX() const
+        {
+            return WinGraphicsMatrixOffsetX(nativeMatrix);
+        }
+        public float OffsetY() const
+        {
+            return WinGraphicsMatrixOffsetY(nativeMatrix);
+        }
+        [nodiscard]
+        public Result<bool> Rotate(float angle, MatrixOrder order)
+        {
+            int status = WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Rotate(float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Rotate(float angle)
+        {
+            int status = WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(MatrixOrder.prepend));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Rotate(float) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> RotateAt(float angle, const PointF& center, MatrixOrder order)
+        {
+            int status = WinGraphicsMatrixRotateAt(nativeMatrix, angle, center.x, center.y, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.RotateAt(float, PointF, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> RotateAt(float angle, const PointF& center)
+        {
+            return RotateAt(angle, center, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<bool> Scale(float scaleX, float scaleY, MatrixOrder order)
+        {
+            int status = WinGraphicsMatrixScale(nativeMatrix, scaleX, scaleY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Scale failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Scale(float scaleX, float scaleY)
+        {
+            return Scale(scaleX, scaleY, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<bool> Shear(float shearX, float shearY, MatrixOrder order)
+        {
+            int status = WinGraphicsMatrixShear(nativeMatrix, shearX, shearY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Shear failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Shear(float shearX, float shearY)
+        {
+            return Shear(shearX, shearY, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<bool> Translate(float offsetX, float offsetY, MatrixOrder order)
+        {
+            int status = WinGraphicsMatrixTranslate(nativeMatrix, offsetX, offsetY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Translate failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Translate(float offsetX, float offsetY)
+        {
+            return Translate(offsetX, offsetY, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<bool> SetElements(float m11, float m12, float m21, float m22, float dx, float dy)
+        {
+            int status = WinGraphicsMatrixSetElements(nativeMatrix, m11, m12, m21, m22, dx, dy);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.SetElements failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> TransformPoints(List<Point>& points)
+        {
+            int status = WinGraphicsMatrixTransformPoints(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count()));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.TransformPoints(List<Point>) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> TransformPoints(List<PointF>& points)
+        {
+            int status = WinGraphicsMatrixTransformPointsF(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count()));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.TransformPoints(List<PointF>) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public inline void* NativeMatrix() const
+        {
+            return nativeMatrix;
+        }
+        private void* nativeMatrix;
+    }
+
+    [nodiscard]
+    public Result<Matrix> operator*(const Matrix& left, const Matrix& right) // multiply matrix 'right' from left by matrix 'left' and return result
+    {
+        Matrix product(right);
+        if (product.Error())
+        {
+            return Result<Matrix>(ErrorId(product.GetErrorId()));
+        }
+        auto result = product.Multiply(left);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(product));
+    }
+
+    [nodiscard]
+    public Result<Matrix> Rotate(const Matrix& m, float angle) // create clockwise rotation matrix from given matrix and angle in degrees and return it
+    {
+        Matrix rm(m);
+        if (rm.Error())
+        {
+            return Result<Matrix>(ErrorId(rm.GetErrorId()));
+        }
+        auto result = rm.Rotate(angle);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(rm));
+    }
+
+    [nodiscard]
+    public Result<Matrix> RotateAt(const Matrix& m, float angle, const PointF& center) // create clockwise rotation matrix of rotation about point 'center' and return it
+    {
+        Matrix rm(m);
+        if (rm.Error())
+        {
+            return Result<Matrix>(ErrorId(rm.GetErrorId()));
+        }
+        auto result = rm.RotateAt(angle, center);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(rm));
+    }
+
+    [nodiscard]
+    public Result<Matrix> Scale(const Matrix& m, float scaleX, float scaleY) // create scaling matrix from given matrix and scale factors in X and Y direction and return it
+    {
+        Matrix sm(m);
+        if (sm.Error())
+        {
+            return Result<Matrix>(ErrorId(sm.GetErrorId()));
+        }
+        auto result = sm.Scale(scaleX, scaleY);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(sm));
+    }
+
+    [nodiscard]
+    public Result<Matrix> Shear(const Matrix& m, float shearX, float shearY) // create shearing matrix from given matrix and horizontal and vertical shearing factors and return it
+    {
+        Matrix sm(m);
+        if (sm.Error())
+        {
+            return Result<Matrix>(ErrorId(sm.GetErrorId()));
+        }
+        auto result = sm.Shear(shearX, shearY);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(sm));
+    }
+
+    [nodiscard]
+    public Result<Matrix> Translate(const Matrix& m, float offsetX, float offsetY) // create translation matrix from given matrix and horizontal and vertical offsets and return it
+    {
+        Matrix tm(m);
+        if (tm.Error())
+        {
+            return Result<Matrix>(ErrorId(tm.GetErrorId()));
+        }
+        auto result = tm.Translate(offsetX, offsetY);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(tm));
+    }
+
+    [nodiscard]
+    public Result<Matrix> Invert(const Matrix& m)
+    {
+        Matrix im(m);
+        if (im.Error())
+        {
+            return Result<Matrix>(ErrorId(im.GetErrorId()));
+        }
+        auto result = im.Invert();
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(im));
+    }
+
+    public enum GraphicsState : uint
+    {
+        state = 0u
+    }
+
+    public enum SmoothingMode : int
+    {
+        invalid = -1,
+        default_ = 0,
+        highSpeed = 1,
+        highQuality = 2,
+        none = 3,
+        antiAlias = 4
+    }
+
+    public enum ColorAdjustType : int
+    {
+        default_ = 0,
+        bitmap = 1,
+        brush = 2,
+        pen = 3,
+        text = 4,
+        count = 5,
+        any = 6
+    }
+
+    public class ImageAttributes : GraphicsObject
+    {
+        public ImageAttributes() : nativeImageAttributes(WinGraphicsCreateDefaultImageAttributes())
+        {
+            int status = WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("ImageAttributes constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public ImageAttributes(const ImageAttributes& that) : nativeImageAttributes(WinGraphicsCloneImageAttributes(that.nativeImageAttributes))
+        {
+            int status = WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("ImageAttributes copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public ImageAttributes(ImageAttributes&& that) : nativeImageAttributes(that.nativeImageAttributes)
+        {
+            that.nativeImageAttributes = null;
+        }
+        public void operator=(const ImageAttributes& that)
+        {
+            if (nativeImageAttributes != that.nativeImageAttributes)
+            {
+                if (that.nativeImageAttributes != null)
+                {
+                    WinGraphicsDeleteImageAttributes(that.nativeImageAttributes);
+                }
+                nativeImageAttributes = WinGraphicsCloneImageAttributes(that.nativeImageAttributes);
+                int status = WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("ImageAttributes copy assignment failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+        }
+        public default void operator=(ImageAttributes&&);
+        public ~ImageAttributes()
+        {
+            if (nativeImageAttributes != null)
+            {
+                WinGraphicsDeleteImageAttributes(nativeImageAttributes);
+            }
+        }
+        [nodiscard]
+        public Result<bool> SetColorKey(const Color& colorLow, const Color& colorHigh, ColorAdjustType type)
+        {
+            int status = WinGraphicsImageAttributesSetColorKey(nativeImageAttributes, colorLow.alpha, colorLow.red, colorLow.green, colorLow.blue,
+                colorHigh.alpha, colorHigh.red, colorHigh.green, colorHigh.blue, cast<int>(type));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("ImageAttributes.SetColorKey failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public void* NativeImageAttributes() const
+        {
+            return nativeImageAttributes;
+        }
+        private void* nativeImageAttributes;
+    }
+
+    public class Graphics : GraphicsObject
+    {
+        public Graphics() : nativeGraphics(null)
+        {
+        }
+        public Graphics(void* hdc) : nativeGraphics(WinCreateGraphics(hdc))
+        {
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public Graphics(const NativeHandle& nativeHandle) : nativeGraphics(nativeHandle.handle)
+        {
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics(NativeHandle) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        [nodiscard]
+        public static Result<Graphics> FromWindowHandle(void* windowHandle)
+        {
+            NativeHandle nativeHandle = WinCreateGraphicsFromWindowHandle(windowHandle);
+            Graphics graphics(nativeHandle);
+            if (graphics.Error())
+            {
+                return Result<Graphics>(ErrorId(graphics.GetErrorId()));
+            }
+            return Result<Graphics>(Rvalue(graphics));
+        }
+        [nodiscard]
+        public static Result<Graphics> FromImage(const Image& image)
+        {
+            NativeHandle nativeHandle = WinCreateGraphicsFromImage(image.NativeImage());
+            Graphics graphics(nativeHandle);
+            if (graphics.Error())
+            {
+                return Result<Graphics>(ErrorId(graphics.GetErrorId()));
+            }
+            return Result<Graphics>(Rvalue(graphics));
+        }
+        suppress Graphics(const Graphics&);
+        public Graphics(Graphics&& that) : nativeGraphics(that.nativeGraphics)
+        {
+            that.nativeGraphics = null;
+        }
+        suppress void operator=(const Graphics&);
+        public default void operator=(Graphics&&);
+        public ~Graphics()
+        {
+            if (nativeGraphics != null)
+            {
+                WinDeleteGraphics(nativeGraphics);
+            }
+        }
+        public void* GetHDC() const
+        {
+            return WinGraphicsGetHDC(nativeGraphics);
+        }
+        [nodiscard]
+        public Result<bool> DrawLine(const Pen& pen, const Point& start, const Point& end)
+        {
+            int status = WinGraphicsDrawLine(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLine(Pen, Point, Point) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawLine(const Pen& pen, const PointF& start, const PointF& end)
+        {
+            int status = WinGraphicsDrawLineF(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLine(Pen, PointF, PointF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawLines(const Pen& pen, int numPoints, const Point* points)
+        {
+            int status = WinGraphicsDrawLines(nativeGraphics, pen.NativePen(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLines(Pen, int, Point*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawLines(const Pen& pen, int numPoints, const PointF* points)
+        {
+            int status = WinGraphicsDrawLinesF(nativeGraphics, pen.NativePen(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLines(Pen, int, PointF*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawString(const string& str, const Font& font, const PointF& origin, const Brush& brush)
+        {
+            int status = WinGraphicsDrawString(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawString(string, Font, PointF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawString(const string& str, const Font& font, const PointF& origin, const StringFormat& format, const Brush& brush)
+        {
+            int status = WinGraphicsDrawStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(),
+                origin.x, origin.y, format.NativeFormat(), brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawString(string, Font, PointF, StringFormat, Brush) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawString(const string& str, const Font& font, const RectF& rect, const StringFormat& format, const Brush& brush)
+        {
+            int status = WinGraphicsDrawStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+                rect.location.x, rect.location.y, rect.size.w, rect.size.h,
+                format.NativeFormat(), brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawString(string, Font, RectF, StringFormat, Brush) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<SizeF> MeasureStringSizeF(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format,
+            int* codePointsFitted, int* linesFilled)
+        {
+            SizeF size;
+            int status = WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRectSize.w, layoutRectSize.h, format.NativeFormat(),
+                size.w, size.h, codePointsFitted, linesFilled);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureString(string, Font, SizeF, StringFormat, int*, int*) failed", status);
+                return Result<SizeF>(ErrorId(errorId));
+            }
+            return Result<SizeF>(Rvalue(size));
+        }
+        [nodiscard]
+        public Result<SizeF> MeasureStringSizeF(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format)
+        {
+            SizeF size;
+            int status = WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRectSize.w, layoutRectSize.h, format.NativeFormat(), size.w, size.h, null, null);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringSizeF(string, Font, SizeF, StringFormat) failed", status);
+                return Result<SizeF>(ErrorId(errorId));
+            }
+            return Result<SizeF>(Rvalue(size));
+        }
+        [nodiscard]
+        public Result<RectF> MeasureStringRectF(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format,
+            int* codePointsFitted, int* linesFilled)
+        {
+            RectF boundingBox;
+            int status = WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRect.location.x, layoutRect.location.y, layoutRect.size.w, layoutRect.size.h, format.NativeFormat(),
+                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h,
+                codePointsFitted, linesFilled);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringRectF(string, Font, RectF, StringFormat, int* int*) failed", status);
+                return Result<RectF>(ErrorId(errorId));
+            }
+            return Result<RectF>(Rvalue(boundingBox));
+        }
+        [nodiscard]
+        public Result<RectF> MeasureStringRectF(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format)
+        {
+            RectF boundingBox;
+            int status = WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRect.location.x, layoutRect.location.y, layoutRect.size.w, layoutRect.size.h, format.NativeFormat(),
+                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h,
+                null, null);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringRectF(string, Font, RectF, StringFormat) failed", status);
+                return Result<RectF>(ErrorId(errorId));
+            }
+            return Result<RectF>(Rvalue(boundingBox));
+        }
+        [nodiscard]
+        public Result<RectF> MeasureStringRectF(const string& str, const Font& font, const PointF& origin, const StringFormat& format)
+        {
+            RectF boundingBox;
+            int status = WinGraphicsMeasureStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, format.NativeFormat(),
+                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringRectF(string, Font, PointF, StringFormat) failed", status);
+                return Result<RectF>(ErrorId(errorId));
+            }
+            return Result<RectF>(Rvalue(boundingBox));
+        }
+        public TextRenderingHint GetTextRenderingHint()
+        {
+            return cast<TextRenderingHint>(WinGraphicsGetTextRenderingHint(nativeGraphics));
+        }
+        [nodiscard]
+        public Result<bool> SetTextRenderingHint(TextRenderingHint textRenderingHint)
+        {
+            int status = WinGraphicsSetTextRenderingHint(nativeGraphics, cast<int>(textRenderingHint));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetTextRenderingHint failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Clear(const Color& color)
+        {
+            int status = WinGraphicsClear(nativeGraphics, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.Clear failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawRectangle(const Pen& pen, const Rect& rect)
+        {
+            int status = WinGraphicsDrawRectangle(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawRectangle(Pen, Rect) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawRectangle(const Pen& pen, const RectF& rect)
+        {
+            int status = WinGraphicsDrawRectangleF(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawRectangle(Pen, RectF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> FillRectangle(const Brush& brush, const Rect& rect)
+        {
+            int status = WinGraphicsFillRectangle(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillRectangle(Brush, Rect) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> FillRectangle(const Brush& brush, const RectF& rect)
+        {
+            int status = WinGraphicsFillRectangleF(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillRectangle(Brush, RectF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> FillPolygon(const Brush& brush, int numPoints, const Point* points)
+        {
+            int status = WinGraphicsFillPolygon(nativeGraphics, brush.NativeBrush(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillPolygon(Brush, int, Point*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> FillPolygon(const Brush& brush, int numPoints, const PointF* points)
+        {
+            int status = WinGraphicsFillPolygonF(nativeGraphics, brush.NativeBrush(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillPolygon(Brush, int, PointF*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawArc(const Pen& pen, const RectF& rect, float startAngle, float sweepAngle)
+        {
+            int status = WinGraphicsDrawArc(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h, startAngle, sweepAngle);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawArc failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawEllipse(const Pen& pen, const RectF& rect)
+        {
+            int status = WinGraphicsDrawEllipse(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawEllipse failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> FillEllipse(const Brush& brush, const RectF& rect)
+        {
+            int status = WinGraphicsFillEllipse(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillEllipse failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const PointF& point)
+        {
+            int status = WinGraphicsDrawImagePoint(nativeGraphics, image.NativeImage(), point.x, point.y);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, PointF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const RectF& rect)
+        {
+            int status = WinGraphicsDrawImageRect(nativeGraphics, image.NativeImage(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, RectF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const Rect& destRect, int srcX, int srcY, int srcW, int srcH, Unit srcUnit, const ImageAttributes& attributes)
+        {
+            int status = WinGraphicsDrawImageWithAttributes(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
+                srcX, srcY, srcW, srcH, srcUnit, attributes.NativeImageAttributes());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, Rect, int, int, int, int, Unit, ImageAttributes) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const RectF& destRect, const RectF& sourceRect, Unit srcUnit, const ImageAttributes& attributes)
+        {
+            int status = WinGraphicsDrawImageWithAttributesF(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
+                sourceRect.location.x, sourceRect.location.y, sourceRect.size.w, sourceRect.size.h, srcUnit, attributes.NativeImageAttributes());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, RectF, RectF, Unit, ImageAttributes) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<Region> GetClip()
+        {
+            Region region;
+            int status = WinGraphicsGetClip(nativeGraphics, region.NativeRegion());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetClip failed", status);
+                return Result<Region>(ErrorId(errorId));
+            }
+            return Result<Region>(Rvalue(region));
+        }
+        [nodiscard]
+        public Result<bool> SetClip(const Rect& rect, CombineMode combineMode)
+        {
+            int status = WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, combineMode);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetClip(Rect, CombineMode) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetClip(const Rect& rect)
+        {
+            int status = WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, CombineMode.replace);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetClip(Rect) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetClip(const Region& region)
+        {
+            int status = WinGraphicsSetClipRegion(nativeGraphics, region.NativeRegion());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetClip(Region) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<GraphicsState> Save()
+        {
+            GraphicsState state = cast<GraphicsState>(WinGraphicsSave(nativeGraphics));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.Save failed", status);
+                return Result<GraphicsState>(ErrorId(errorId));
+            }
+            return Result<GraphicsState>(state);
+        }
+        [nodiscard]
+        public Result<bool> Restore(GraphicsState graphicsState)
+        {
+            int status = WinGraphicsRestore(nativeGraphics, cast<uint>(graphicsState));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.Restore failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> GetTransform(Matrix& m)
+        {
+            int status = WinGraphicsGetTransform(nativeGraphics, m.NativeMatrix());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetTransform failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetTransform(Matrix& m)
+        {
+            int status = WinGraphicsSetTransform(nativeGraphics, m.NativeMatrix());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetTransform failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> MultiplyTransform(const Matrix& matrix, MatrixOrder order)
+        {
+            int status = WinGraphicsMultiplyTransform(nativeGraphics, matrix.NativeMatrix(), cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MultiplyTransform(Matrix, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> MultiplyTransform(const Matrix& matrix)
+        {
+            return MultiplyTransform(matrix, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<bool> ResetTransform()
+        {
+            int status = WinGraphicsResetTransform(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.ResetTransform failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> RotateTransform(float angle, MatrixOrder order)
+        {
+            int status = WinGraphicsRotateTransform(nativeGraphics, angle, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.RotateTransform(float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> RotateTransform(float angle)
+        {
+            return RotateTransform(angle, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<bool> ScaleTransform(float scaleX, float scaleY, MatrixOrder order)
+        {
+            int status = WinGraphicsScaleTransform(nativeGraphics, scaleX, scaleY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.ScaleTransform(float, float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> ScaleTransform(float scaleX, float scaleY)
+        {
+            return ScaleTransform(scaleX, scaleY, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<bool> TranslateTransform(float offsetX, float offsetY, MatrixOrder order)
+        {
+            int status = WinGraphicsTranslateTransform(nativeGraphics, offsetX, offsetY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.TranslateTransform(float, float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> TranslateTransform(float offsetX, float offsetY)
+        {
+            return TranslateTransform(offsetX, offsetY, MatrixOrder.prepend);
+        }
+        [nodiscard]
+        public Result<Unit> GetPageUnit()
+        {
+            Unit unit = cast<Unit>(WinGraphicsGetPageUnit(nativeGraphics));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetPageUnit failed", status);
+                return Result<Unit>(ErrorId(errorId));
+            }
+            return Result<Unit>(unit);
+        }
+        [nodiscard]
+        public Result<bool> SetPageUnit(Unit unit)
+        {
+            int status = WinGraphicsSetPageUnit(nativeGraphics, cast<int>(unit));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetPageUnit failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<float> GetPageScale()
+        {
+            float pageScale = WinGraphicsGetPageScale(nativeGraphics);
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetPageScale failed", status);
+                return Result<float>(ErrorId(errorId));
+            }
+            return Result<float>(pageScale);
+        }
+        [nodiscard]
+        public Result<bool> SetPageScale(float scale)
+        {
+            int status = WinGraphicsSetPageScale(nativeGraphics, scale);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetPageScale failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public float GetDpiX()
+        {
+            return WinGraphicsGetDpiX(nativeGraphics);
+        }
+        public float GetDpiY()
+        {
+            return WinGraphicsGetDpiY(nativeGraphics);
+        }
+        [nodiscard]
+        public Result<SmoothingMode> GetSmoothingMode()
+        {
+            SmoothingMode smoothingMode = cast<SmoothingMode>(WinGraphicsGetSmoothingMode(nativeGraphics));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetSmoothingMode failed", status);
+                return Result<SmoothingMode>(ErrorId(errorId));
+            }
+            return Result<SmoothingMode>(smoothingMode);
+        }
+        [nodiscard]
+        public Result<bool> SetSmoothingMode(SmoothingMode smoothingMode)
+        {
+            int status = WinGraphicsSetSmoothingMode(nativeGraphics, smoothingMode);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetSmoothingMode failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public inline const void* NativeGraphics() const
+        {
+            return nativeGraphics;
+        }
+        private void* nativeGraphics;
+    }
+}
+

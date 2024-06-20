@@ -231,6 +231,11 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 std::vector<std::string> asmFilePaths;
                 std::vector<std::string> cppFilePaths;
                 Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+                for (const auto& warning : rootModule->WarningCollection().Warnings())
+                {
+                    cmajor::symbols::LogWarning(rootModule->LogStreamId(), warning);
+                }
+                AddResources(project, rootModule.get(), objectFilePaths);
                 for (const auto& rcFilePath : project->ResourceScriptFilePaths())
                 {
                     rootModule->AddResourceScriptFilePath(rcFilePath);
@@ -253,7 +258,6 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     util::LogMessage(project->LogStreamId(), "==> " + project->ModuleFilePath());
                 }
                 RunBuildActions(*project, variables);
-                AddResources(project, rootModule.get(), objectFilePaths);
                 if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
                 {
                     std::vector<std::string> resourceScriptFiles;
@@ -264,7 +268,9 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     }
                     std::string classIndexFilePath;
                     std::string traceDataFilePath;
-                    if (project->GetTarget() == cmajor::ast::Target::program)
+                    if (project->GetTarget() == cmajor::ast::Target::program || 
+                        project->GetTarget() == cmajor::ast::Target::winguiapp || 
+                        project->GetTarget() == cmajor::ast::Target::winapp)
                     {
                         classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
                         cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);
@@ -273,14 +279,18 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                     }
                     cmajor::masm::build::VSBuild(project, rootModule.get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
                         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
-                    if (project->GetTarget() == cmajor::ast::Target::program)
+                    if (project->GetTarget() == cmajor::ast::Target::program ||
+                        project->GetTarget() == cmajor::ast::Target::winguiapp ||
+                        project->GetTarget() == cmajor::ast::Target::winapp)
                     {
                         cmajor::masm::build::Install(project);
                     }
                 }
                 else if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::llvm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
-                    if (project->GetTarget() == cmajor::ast::Target::program)
+                    if (project->GetTarget() == cmajor::ast::Target::program ||
+                        project->GetTarget() == cmajor::ast::Target::winguiapp ||
+                        project->GetTarget() == cmajor::ast::Target::winapp)
                     {
                         std::string classIndexFilePath = util::Path::Combine(util::Path::GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
                         cmajor::symbols::MakeClassIndexFile(rootModule->GetSymbolTable().PolymorphicClasses(), classIndexFilePath);

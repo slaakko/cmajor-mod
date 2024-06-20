@@ -16,3 +16,4 @@ source <nonterminal_info.cm>;
 source <optimizer.cm>;
 source <util.cm>;
 source <xml_printer.cm>;
+source <rulemap.cm>;

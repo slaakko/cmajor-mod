@@ -7,6 +7,7 @@ using System;
 
 namespace System.Xml
 {
+    [nodiscard]
     public Result<bool> ParseXmlFile(const string& xmlFilePath, XmlContentHandler* contentHandler, System.Lex.FileMap& fileMap)
     {
         auto result = System.IO.File.ReadAllText(xmlFilePath);
@@ -17,6 +18,7 @@ namespace System.Xml
         return ParseXmlContent(result.Value(), xmlFilePath, contentHandler, fileMap);
     }
 
+    [nodiscard]
     public Result<bool> ParseXmlContent(const string& xmlContent, const string& systemId, XmlContentHandler* contentHandler, System.Lex.FileMap& fileMap)
     {
         auto utf32Result = ToUtf32(xmlContent);
@@ -27,6 +29,7 @@ namespace System.Xml
         return ParseXmlContent(Rvalue(utf32Result.Value()), systemId, contentHandler, fileMap);
     }
 
+    [nodiscard]
     public Result<bool> ParseXmlContent(ustring&& xmlContent, const string& systemId, XmlContentHandler* contentHandler, System.Lex.FileMap& fileMap)
     {
         System.Lex.TrivialLexer lexer(xmlContent.Chars(), xmlContent.Chars() + xmlContent.Length(), systemId);

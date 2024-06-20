@@ -13,6 +13,7 @@ namespace System.Net.Sockets
         public NetworkStream(TcpSocket&& socket_) : socket(socket_)
         {
         }
+        [nodiscard]
         public override Result<int> ReadByte()
         {
             byte buf;
@@ -31,6 +32,7 @@ namespace System.Net.Sockets
                 return Result<int>(buf);
             }
         }
+        [nodiscard]
         public override Result<long> Read(byte* buf, long count)
         {
             auto receiveResult = socket.Receive(buf, cast<int>(count));
@@ -41,10 +43,12 @@ namespace System.Net.Sockets
             int bytesReceived = receiveResult.Value();
             return Result<long>(bytesReceived);
         }
+        [nodiscard]
         public override Result<bool> Write(byte x)
         {
             return Write(&x, 1);
         }
+        [nodiscard]
         public override Result<bool> Write(byte* buf, long count)
         {
             return socket.SendAll(buf, cast<int>(count));

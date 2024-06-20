@@ -40,11 +40,13 @@ namespace System.RegularExpressions
         return pattern;
     }
 
+    [nodiscard]
     public Result<bool> FilePatternMatch(const ustring& filePath, const ustring& filePattern)
     {
         return PatternMatch(filePath, MakeRegularExpressionPatternFromFilePattern(filePattern));
     }
 
+    [nodiscard]
     public Result<bool> PatternMatch(const ustring& str, const ustring& regularExpressionPattern)
     {
         Context context;
@@ -56,19 +58,21 @@ namespace System.RegularExpressions
         return Result<bool>(PatternMatch(str, nfa.Value()));
     }
 
+    [nodiscard]
     public Result<Nfa> CompileRegularExpressionPattern(Context& context, const ustring& regularExpressionPattern)
     {
         int count = context.GetNextRegExCount();
-        re.lexer.RegExLexer lexer(regularExpressionPattern.Chars(), regularExpressionPattern.Chars() + regularExpressionPattern.Length(),
+        System.RegularExpressions.RegExLexer lexer(regularExpressionPattern.Chars(), regularExpressionPattern.Chars() + regularExpressionPattern.Length(),
             "regular_expression_" + ToString(count));
         System.Lex.XmlParsingLog log(Console.Error());
         if (System.RegularExpressions.DebugParsing())
         {
             lexer.SetLog(&log);
         }
-        return re.parser.RegExParser<re.lexer.RegExLexer>.Parse(lexer, &context);
+        return System.RegularExpressions.RegExParser<System.RegularExpressions.RegExLexer>.Parse(lexer, &context);
     }
 
+    [nodiscard]
     public Result<Nfa> CompileFilePattern(Context& context, const ustring& filePattern)
     {
         return CompileRegularExpressionPattern(context, MakeRegularExpressionPatternFromFilePattern(filePattern));

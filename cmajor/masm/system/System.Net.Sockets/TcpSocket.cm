@@ -12,7 +12,7 @@ namespace System.Net.Sockets
     {
         receive = 0, send = 1, both = 2
     }
-        
+
     public class TcpSocket : IOBase
     {
         public TcpSocket() : handle(null), connected(false), shutdown(false)
@@ -61,7 +61,7 @@ namespace System.Net.Sockets
             {
                 if (connected && !shutdown)
                 {
-                    Shutdown(ShutdownMode.both);
+                    auto result = Shutdown(ShutdownMode.both);
                 }
                 if (connected)
                 {
@@ -71,6 +71,7 @@ namespace System.Net.Sockets
                 RtmDestroySocket(handle);
             }
         }
+        [nodiscard]
         public Result<bool> Close()
         {
             if (Error())
@@ -81,7 +82,11 @@ namespace System.Net.Sockets
             {
                 if (connected && !shutdown)
                 {
-                    Shutdown(ShutdownMode.both);
+                    auto result = Shutdown(ShutdownMode.both);
+                    if (result.Error())
+                    {
+                        return result;
+                    }
                 }
                 if (connected)
                 {
@@ -98,6 +103,7 @@ namespace System.Net.Sockets
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Connect(const string& node, int port)
         {
             if (Error())
@@ -106,6 +112,7 @@ namespace System.Net.Sockets
             }
             return Connect(node, ToString(port));
         }
+        [nodiscard]
         public Result<bool> Connect(const string& node, const string& service)
         {
             if (Error())
@@ -127,6 +134,7 @@ namespace System.Net.Sockets
             connected = true;
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Bind(int port)
         {
             if (Error())
@@ -142,6 +150,7 @@ namespace System.Net.Sockets
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Listen(int backlog)
         {
             if (Error())
@@ -157,6 +166,7 @@ namespace System.Net.Sockets
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<TcpSocket> Accept()
         {
             if (Error())
@@ -172,6 +182,7 @@ namespace System.Net.Sockets
             }
             return Result<TcpSocket>(TcpSocket(acceptedHandle));
         }
+        [nodiscard]
         public Result<bool> Shutdown(ShutdownMode mode)
         {
             if (Error())
@@ -188,6 +199,7 @@ namespace System.Net.Sockets
             shutdown = true;
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<int> Send(byte* buffer, int count)
         {
             if (Error())
@@ -203,6 +215,7 @@ namespace System.Net.Sockets
             }
             return Result<int>(result);
         }
+        [nodiscard]
         public Result<bool> SendAll(byte* buffer, int count)
         {
             if (Error())
@@ -223,6 +236,7 @@ namespace System.Net.Sockets
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<int> Receive(byte* buffer, int count)
         {
             if (Error())

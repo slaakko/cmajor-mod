@@ -311,7 +311,7 @@ void StatementBinder::Visit(cmajor::ast::ClassNode& classNode)
         if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
         {
             boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
-            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
             {
                 cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                 boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
@@ -347,7 +347,7 @@ void StatementBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
             {
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                     boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
@@ -1407,7 +1407,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
             {
                 boundCompileUnit.SetGeneratedDestructorInstantiated(destructorSymbol);
                 std::unique_ptr<BoundClass> boundClass(new BoundClass(classType));
-                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+                if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm || cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::cpp)
                 {
                     cmajor::symbols::DestructorSymbol* copy = static_cast<cmajor::symbols::DestructorSymbol*>(destructorSymbol->Copy());
                     boundCompileUnit.GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copy));
@@ -1614,6 +1614,29 @@ void StatementBinder::Visit(cmajor::ast::ExpressionStatementNode& expressionStat
 {
     bool exceptionCapture = false;
     std::unique_ptr<BoundExpression> expression = BindExpression(expressionStatementNode.Expression(), boundCompileUnit, currentFunction, containerScope, this);
+    cmajor::symbols::FunctionSymbol* functionSymbol = expression->GetFunctionSymbol();
+    if (functionSymbol)
+    {
+        cmajor::ast::AttributesNode* attributes = functionSymbol->GetAttributes();
+        if (attributes)
+        {
+            cmajor::ast::AttributeNode* nodiscardAttribute = attributes->GetAttribute(U"nodiscard");
+            if (nodiscardAttribute && nodiscardAttribute->Value() == U"true")
+            {
+                if (!cmajor::symbols::IsWarningDisabled(cmajor::symbols::nodiscardWarning))
+                {
+                    cmajor::symbols::Module& module = GetBoundCompileUnit().GetModule();
+                    cmajor::symbols::Warning warning(
+                        cmajor::symbols::nodiscardWarning, module.GetCurrentProjectName(), "discarding return value of function with [nodiscard] attribute");
+                    warning.SetDefined(expressionStatementNode.GetFullSpan());
+                    std::vector<soul::ast::FullSpan> references;
+                    references.push_back(functionSymbol->GetFullSpan());
+                    warning.SetReferences(references);
+                    module.WarningCollection().AddWarning(warning);
+                }
+            }
+        }
+    }
     if (insideCatch && expression->ContainsExceptionCapture())
     {
         exceptionCapture = true;

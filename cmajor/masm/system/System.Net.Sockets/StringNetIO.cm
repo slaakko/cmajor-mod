@@ -8,12 +8,17 @@ using System.IO;
 
 namespace System.Net.Sockets
 {
+    [nodiscard]
     public Result<bool> SendString(TcpSocket& socket, const string& s)
     {
         int length = cast<int>(s.Length());
         byte[4] lengthBuffer;
         MemoryWriter writer(&lengthBuffer[0], 4);
-        writer.Write(length);
+        auto result = writer.Write(length);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
         auto lengthResult = socket.SendAll(&lengthBuffer[0], 4);
         if (lengthResult.Error())
         {
@@ -28,6 +33,7 @@ namespace System.Net.Sockets
         return Result<bool>(true);
     }
 
+    [nodiscard]
     public Result<string> ReceiveString(TcpSocket& socket)
     {
         byte[4] lengthBuffer;
@@ -55,7 +61,7 @@ namespace System.Net.Sockets
         {
             return Result<string>(string());
         }
-        UniquePtr<byte> mem(cast<byte*>(RtmMemAlloc(length)));
+        UniquePtr<byte> mem(cast<byte*>(MemAlloc(length)));
         offset = 0;
         bytesToReceive = length;
         while (bytesToReceive > 0)

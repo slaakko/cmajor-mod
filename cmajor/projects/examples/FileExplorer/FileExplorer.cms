@@ -1,0 +1,4 @@
+solution FileExplorer;
+project <FileExplorer.cmp>;
+activeProject FileExplorer;
+activeBackEnd=llvm;

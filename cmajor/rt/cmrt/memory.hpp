@@ -3,11 +3,11 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_MEMORY_INCLUDED
-#define CMRT_CPP_MEMORY_INCLUDED
+#ifndef CMRT_MEMORY_INCLUDED
+#define CMRT_MEMORY_INCLUDED
 #include <stdint.h>
 
 extern "C" void* RtmMemAlloc(int64_t size);
 extern "C" void RtmMemFree(void* ptr);
 
-#endif // CMRT_CPP_MEMORY_INCLUDED
+#endif // CMRT_MEMORY_INCLUDED

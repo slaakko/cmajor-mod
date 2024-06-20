@@ -1,0 +1,3605 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public Color DefaultMenuBackgroundColor()
+    {
+        return GetSystemColor(SystemColor.COLOR_MENU);
+    }
+
+    public Color DefaultMenuTextColor()
+    {
+        return GetSystemColor(SystemColor.COLOR_MENUTEXT);
+    }
+
+    public Color DefaultDisabledMenuTextColor()
+    {
+        Color color = GetSystemColor(SystemColor.COLOR_GRAYTEXT);
+        if (color == Color.Black())
+        {
+            return Color(195u, 195u, 198u);
+        }
+        return color;
+    }
+
+    public Color DefaultMenuMouseOverColor()
+    {
+        return Color(201u, 222u, 245u);
+    }
+
+    public Color DefaultMenuOpenColor()
+    {
+        return Color.White();
+    }
+
+    public ControlCreateParams& MenuControlControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowClassBackgroundColor(SystemColor.COLOR_MENU).SetBackgroundColor(DefaultMenuBackgroundColor());
+    }
+
+    public class MenuControlCreateParams
+    {
+        public MenuControlCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_),
+            fontFamilyName("Segoe UI"),
+            fontSize(9.0f),
+            textColor(DefaultMenuTextColor()),
+            disabledTextColor(DefaultDisabledMenuTextColor()),
+            mouseOverColor(DefaultMenuMouseOverColor()),
+            menuOpenColor(DefaultMenuOpenColor())
+        {
+        }
+        public MenuControlCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public string fontFamilyName;
+        public float fontSize;
+        public Color textColor;
+        public Color disabledTextColor;
+        public Color mouseOverColor;
+        public Color menuOpenColor;
+    }
+
+    public abstract class MenuControl : Control
+    {
+        public MenuControl(const Font& font_, const string& windowClassName, WindowClassStyle windowClassStyle, WindowStyle style,
+            ExtendedWindowStyle exStyle,
+            const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base(windowClassName, windowClassStyle, style, exStyle, backgroundColor, text, location, size, dock, anchors),
+            font(font_), textColor(DefaultMenuTextColor()), disabledTextColor(DefaultDisabledMenuTextColor()), mouseOverColor(201u, 222u, 245u),
+            menuOpenColor(Color.White()), shadowColor(ShadowColor()), textBrush(textColor), disabledTextBrush(disabledTextColor),
+            backgroundBrush(BackgroundColor()), mouseOverBrush(mouseOverColor), menuOpenBrush(menuOpenColor),
+            shadowBrush(shadowColor), blackBrush(Color.Black()), blackPen(Color.Black()), darkPen(Color.DarkGray()),
+            format(StringAlignment.near, StringAlignment.near, HotKeyPrefix.show)
+        {
+        }
+        public MenuControl(MenuControlCreateParams& createParams) :
+            base(createParams.controlCreateParams),
+            font(FontFamily(createParams.fontFamilyName), createParams.fontSize),
+            textColor(createParams.textColor),
+            disabledTextColor(createParams.disabledTextColor),
+            mouseOverColor(createParams.mouseOverColor),
+            menuOpenColor(createParams.menuOpenColor),
+            shadowColor(ShadowColor()),
+            textBrush(textColor), disabledTextBrush(disabledTextColor),
+            backgroundBrush(BackgroundColor()), mouseOverBrush(mouseOverColor), menuOpenBrush(menuOpenColor),
+            shadowBrush(shadowColor), blackBrush(Color.Black()), blackPen(Color.Black()), darkPen(Color.DarkGray()),
+            format(StringAlignment.near, StringAlignment.near, HotKeyPrefix.show)
+        {
+        }
+        public override Padding DefaultPadding() const
+        {
+            return Padding(6, 2, 6, 2);
+        }
+        public inline const Font& GetFont() const
+        {
+            return font;
+        }
+        public inline const Color& TextColor() const
+        {
+            return textColor;
+        }
+        public inline const Color& DisabledTextColor() const
+        {
+            return disabledTextColor;
+        }
+        public inline const Color& MouseOverColor() const
+        {
+            return mouseOverColor;
+        }
+        public inline const Color& MenuOpenColor() const
+        {
+            return menuOpenColor;
+        }
+        public inline const Color& ShadowColor() const
+        {
+            return shadowColor;
+        }
+        public inline const Brush& TextBrush() const
+        {
+            return textBrush;
+        }
+        public inline const Brush& DisabledTextBrush() const
+        {
+            return disabledTextBrush;
+        }
+        public inline const Brush& BackgroundBrush() const
+        {
+            return backgroundBrush;
+        }
+        public inline const Brush& MouseOverBrush() const
+        {
+            return mouseOverBrush;
+        }
+        public inline const Brush& MenuOpenBrush() const
+        {
+            return menuOpenBrush;
+        }
+        public inline const Brush& ShadowBrush() const
+        {
+            return shadowBrush;
+        }
+        public inline const Brush& BlackBrush() const
+        {
+            return blackBrush;
+        }
+        public inline const Pen& BlackPen() const
+        {
+            return blackPen;
+        }
+        public inline const Pen& DarkPen() const
+        {
+            return darkPen;
+        }
+        public inline const StringFormat& Format() const
+        {
+            return format;
+        }
+        internal virtual MenuItem* GetMenuItemByAccessKey(wchar accessKey)
+        {
+            return null;
+        }
+        internal virtual MenuItem* GetOpenedMenuItem() const
+        {
+            return null;
+        }
+        internal virtual MenuItem* GetSelectedMenuItem() const
+        {
+            return null;
+        }
+        internal virtual void SetSelectedMenuItem(MenuItem* selectedMenuItem_)
+        {
+        }
+        internal virtual bool IsOpen() const
+        {
+            return false;
+        }
+        public virtual void SetOpen()
+        {
+        }
+        [nodiscard]
+        internal virtual Result<bool> SetClosed()
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal virtual Result<bool> SetMenuInvalidated()
+        {
+            return Result<bool>(true);
+        }
+        internal virtual MenuItem* GetFirstMenuItem() const
+        {
+            return null;
+        }
+        internal virtual MenuItem* GetLastMenuItem() const
+        {
+            return null;
+        }
+        internal virtual MenuItem* LatestOpenedMenuItem() const
+        {
+            return null;
+        }
+        internal virtual void SetLatestOpenedMenuItem(MenuItem* menuItem)
+        {
+        }
+        internal virtual MenuItem* GetLatestMouseDownMenuItem() const
+        {
+            return null;
+        }
+        internal virtual void SetLatestMouseDownMenuItem(MenuItem* menuItem)
+        {
+        }
+        [nodiscard]
+        internal virtual Result<bool> InvalidateMenu()
+        {
+            return Result<bool>(true);
+        }
+        internal virtual void SetMenuChanged()
+        {
+        }
+        private Font font;
+        private Color textColor;
+        private Color disabledTextColor;
+        private Color mouseOverColor;
+        private Color menuOpenColor;
+        private Color shadowColor;
+        private SolidBrush textBrush;
+        private SolidBrush disabledTextBrush;
+        private SolidBrush backgroundBrush;
+        private SolidBrush mouseOverBrush;
+        private SolidBrush menuOpenBrush;
+        private SolidBrush shadowBrush;
+        private SolidBrush blackBrush;
+        private Pen blackPen;
+        private Pen darkPen;
+        private StringFormat format;
+    }
+
+    public const int initialMenuBarHeight = 20;
+
+    public ControlCreateParams& MenuBarControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowClassBackgroundColor(SystemColor.COLOR_MENU).SetBackgroundColor(DefaultMenuBackgroundColor()).
+            SetWindowClassName("System.Windows.MenuBar").SetDock(Dock.top).SetSize(Size(0, initialMenuBarHeight));
+    }
+
+    public class MenuBarCreateParams
+    {
+        public MenuBarCreateParams(MenuControlCreateParams& menuControlCreateParams_) : menuControlCreateParams(menuControlCreateParams_)
+        {
+        }
+        public MenuBarCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public MenuControlCreateParams& menuControlCreateParams;
+    }
+
+    public class MenuBar : MenuControl
+    {
+        private enum Flags : sbyte
+        {
+            none, open = 1 << 0, menuChanged = 1 << 1, menuBoxAdded = 1 << 2, menuInvalidated = 1 << 3, menuKeyDisabled = 1 << 4
+        }
+
+        internal Color ShadowColor()
+        {
+            Color shadowColor = GetSystemColor(SystemColor.COLOR_BTNSHADOW);
+            shadowColor.alpha = 196u;
+            return shadowColor;
+        }
+
+        public MenuBar(const Font& font_) : base(font_, "System.Windows.MenuBar", DefaultWindowClassStyle(), DefaultChildWindowStyle(),
+            DefaultExtendedWindowStyle(), DefaultMenuBackgroundColor(), "menuBar", Point(), Size(0, initialMenuBarHeight), Dock.top, Anchors.none),
+            flags(Flags.none), children(this), latestOpenedMenuItem(null), selectedMenuItem(null), latestMouseDownMenuItem(null)
+        {
+            SetMenuChanged();
+        }
+        public MenuBar() : this(Font(FontFamily("Segoe UI"), 9.0f))
+        {
+        }
+        public MenuBar(MenuBarCreateParams& createParams) :
+            base(createParams.menuControlCreateParams),
+            flags(Flags.none), children(this), latestOpenedMenuItem(null), selectedMenuItem(null), latestMouseDownMenuItem(null)
+        {
+            SetMenuChanged();
+        }
+        [nodiscard]
+        public Result<bool> CloseMenu()
+        {
+            if (!IsOpen()) return Result<bool>(false);
+            auto result = SetClosed();
+            if (result.Error()) return result;
+            SetLatestOpenedMenuItem(null);
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    result = menuItem->SetState(MenuItem.State.closed, this);
+                    if (result.Error()) return result;
+                }
+                child = child->NextSibling();
+            }
+            return InvalidateMenu();
+        }
+        [nodiscard]
+        public Result<bool> AddMenuItem(MenuItem* menuItem)
+        {
+            auto result = children.AddChild(menuItem);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            SetMenuChanged();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                const string& handleStr = handleResult.Value();
+                auto parentTextResult = ParentText();
+                if (parentTextResult.Error())
+                {
+                    return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                }
+                const string& parentText = parentTextResult.Value();
+                auto result = log->WriteLine(string(' ', level) + "MenuBar." + Text() + ".handle=" + handleStr + " " + parentText + "[" +
+                    Rect(Point(), GetSize()).ToString() + "]");
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            if (Debug.Paint())
+            {
+                auto locResult = Location();
+                if (locResult.Error())
+                {
+                    return Result<bool>(ErrorId(locResult.GetErrorId()));
+                }
+                else
+                {
+                    Point loc = locResult.Value();
+                    Rect r(loc, GetSize());
+                    LogView* log = Application.GetLogView();
+                    if (log != null)
+                    {
+                        auto result = log->WriteLine("MenuBar.OnPaint: " + r.ToString());
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            if (!MenuBoxAdded())
+            {
+                SetMenuBoxAdded();
+                auto result = AddMenuBox();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            auto clearResult = args.graphics.Clear(BackgroundColor());
+            if (clearResult.Error())
+            {
+                return Result<bool>(ErrorId(clearResult.GetErrorId()));
+            }
+            if (MenuChanged())
+            {
+                ResetMenuChanged();
+                CollectShortcuts();
+                Size size = GetSize();
+                size.h = cast<int>(GetFont().GetHeight(args.graphics));
+                size.h = size.h + DefaultPadding().Vertical();
+                auto result = SetSize(size);
+                if (result.Error()) return result;
+                auto locateResult = LocateMenuItems(args.graphics, size);
+                if (locateResult.Error())
+                {
+                    return Result<bool>(ErrorId(locateResult.GetErrorId()));
+                }
+            }
+            auto locResult = Location();
+            if (locResult.Error())
+            {
+                return Result<bool>(ErrorId(locResult.GetErrorId()));
+            }
+            Point loc = locResult.Value();
+            auto drawResult = DrawMenuItems(args, false, loc);
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
+            auto paintResult = base->OnPaint(args);
+            if (paintResult.Error())
+            {
+                return Result<bool>(ErrorId(paintResult.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        private Result<bool> LocateMenuItems(Graphics& graphics, const Size& size)
+        {
+            auto locResult = Location();
+            if (locResult.Error())
+            {
+                return Result<bool>(ErrorId(locResult.GetErrorId()));
+            }
+            Point loc = locResult.Value();
+            Rect itemRect(loc, Size(0, size.h));
+            Padding padding = DefaultPadding();
+            PointF origin(0, 0);
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    Padding menuItemPadding = menuItem->DefaultPadding();
+                    auto measureResult = graphics.MeasureStringRectF(menuItem->Text(), GetFont(), origin, Format());
+                    if (measureResult.Error())
+                    {
+                        return Result<bool>(ErrorId(measureResult.GetErrorId()));
+                    }
+                    RectF r = Rvalue(measureResult.Value());
+                    int w = cast<int>(r.size.w) + padding.Horizontal() + menuItemPadding.Horizontal();
+                    itemRect.size.w = w;
+                    menuItem->SetLocation(itemRect.location);
+                    menuItem->SetSize(itemRect.size);
+                    menuItem->CalculateChildRect(graphics, GetFont(), Format(), Point(itemRect.location.x, itemRect.location.y + itemRect.size.h));
+                    itemRect.location.x = itemRect.location.x + w;
+                }
+                child = child->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        private Control* ParentControl() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null && (parent is Control*))
+                {
+                    return cast<Control*>(parent);
+                }
+            }
+            return null;
+        }
+        [nodiscard]
+        private Result<bool> InvalidateParentRect(const Rect& parentRect)
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                auto result = parentControl->Invalidate(parentRect.ToWinRect());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        internal Result<bool> DrawMenuItems(PaintEventArgs& args, bool drawSubItems, const Point& origin)
+        {
+            Padding padding = DefaultPadding();
+            Size size = GetSize();
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    auto drawResult = menuItem->Draw(
+                        args.graphics, padding, TextBrush(), DisabledTextBrush(), BackgroundBrush(), MouseOverBrush(), MenuOpenBrush(), ShadowBrush(),
+                        BlackBrush(), BlackPen(), DarkPen(), GetFont(), Format(), MenuOpenColor(), this, drawSubItems, origin);
+                    if (drawResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> DoKeyDown(KeyEventArgs& args)
+        {
+            return OnKeyDown(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnKeyDown(KeyEventArgs& args)
+        {
+            auto result = base->OnKeyDown(args);
+            if (result.Error()) return result;
+            if (!args.handled)
+            {
+                auto it = shortcuts.Find(args.key);
+                if (it != shortcuts.End())
+                {
+                    MenuItem* menuItem = it->second;
+                    if (menuItem->IsEnabled())
+                    {
+                        result = menuItem->DoClick();
+                        if (result.Error()) return result;
+                        args.handled = true;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> MouseEnterInternal()
+        {
+            return OnMouseEnter();
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseEnter()
+        {
+            return base->OnMouseEnter();
+        }
+        [nodiscard]
+        internal Result<bool> MouseMoveInternal(MouseEventArgs& args)
+        {
+            return OnMouseMove(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseMove(MouseEventArgs& args)
+        {
+            ResetMenuInvalidated();
+            auto result = base->OnMouseMove(args);
+            if (result.Error()) return result;
+            bool handled = false;
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (!menuItem->Contains(args.location))
+                    {
+                        result = menuItem->ResetSelected(this);
+                        if (result.Error()) return result;
+                        if (menuItem->MouseInClient())
+                        {
+                            menuItem->ResetMouseInClient();
+                            result = menuItem->DoMouseLeave(this);
+                            if (result.Error()) return result;
+                        }
+                    }
+                }
+                child = child->NextSibling();
+            }
+            child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (menuItem->Contains(args.location))
+                    {
+                        auto result = menuItem->SetSelected(this);
+                        if (result.Error()) return result;
+                        if (!menuItem->MouseInClient())
+                        {
+                            menuItem->SetMouseInClient();
+                            result = menuItem->DoMouseEnter(IsOpen(), this);
+                            if (result.Error()) return result;
+                        }
+                        else
+                        {
+                            result = menuItem->DoMouseMove(args);
+                            if (result.Error()) return result;
+                        }
+                        handled = true;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            if (!handled)
+            {
+                if (IsOpen())
+                {
+                    if (latestOpenedMenuItem != null)
+                    {
+                        Component* child = children.FirstChild();
+                        while (child != null && !handled)
+                        {
+                            if (child is MenuItem*)
+                            {
+                                MenuItem* menuItem = cast<MenuItem*>(child);
+                                if (menuItem->IsSameOrParentOf(latestOpenedMenuItem))
+                                {
+                                    auto result = menuItem->DispatchMouseMove(args, handled, this);
+                                    if (result.Error()) return result;
+                                }
+                            }
+                            child = child->NextSibling();
+                        }
+                    }
+                }
+            }
+            if (MenuInvalidated())
+            {
+                auto result = InvalidateMenu();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> MouseLeaveInternal()
+        {
+            return OnMouseLeave();
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseLeave()
+        {
+            ResetMenuInvalidated();
+            auto result = base->OnMouseLeave();
+            if (result.Error()) return result;
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (menuItem->MouseInClient() || menuItem->Children().IsEmpty())
+                    {
+                        result = menuItem->ResetSelected(this);
+                        if (result.Error()) return result;
+                        menuItem->ResetMouseInClient();
+                        Point mousePos;
+                        WinGetMessagePos(mousePos.x, mousePos.y);
+                        auto clientMousePosResult = ScreenToClient(mousePos);
+                        if (clientMousePosResult.Error())
+                        {
+                            return Result<bool>(ErrorId(clientMousePosResult.GetErrorId()));
+                        }
+                        else
+                        {
+                            mousePos = clientMousePosResult.Value();
+                            if (menuItem != latestOpenedMenuItem || !menuItem->UnionRectContains(mousePos))
+                            {
+                                auto result = menuItem->DoMouseLeave(this);
+                                if (result.Error()) return result;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        result = menuItem->ResetSelected(this);
+                        if (result.Error()) return result;
+                        menuItem->ResetMouseInClient();
+                    }
+                }
+                child = child->NextSibling();
+            }
+            if (MenuInvalidated())
+            {
+                auto result = InvalidateMenu();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal override Result<bool> InvalidateMenu()
+        {
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            Rect menuRect;
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (menuItem->GetState() == MenuItem.State.open)
+                    {
+                        menuItem->GetOpenRect(menuRect);
+                    }
+                }
+                child = child->NextSibling();
+            }
+            if (IsOpen())
+            {
+                if (menuBox != null)
+                {
+                    menuBox->SetPaintThisMenuBox(true);
+                    auto locResult = Location();
+                    if (locResult.Error())
+                    {
+                        return Result<bool>(ErrorId(locResult.GetErrorId()));
+                    }
+                    Point loc = locResult.Value();
+                    auto result = menuBox->SetLocation(Point(loc.x + menuRect.location.x, loc.y + menuRect.location.y));
+                    if (result.Error()) return result;
+                    result = menuBox->SetSize(menuRect.size);
+                    if (result.Error()) return result;
+                    Control* parentControl = ParentControl();
+                    Control* topControl = null;
+                    if (parentControl != null)
+                    {
+                        topControl = parentControl->TopControl();
+                    }
+                    result = menuBox->BringToFront();
+                    if (result.Error()) return result;
+                    result = menuBox->Show();
+                    if (result.Error()) return result;
+                    result = menuBox->Invalidate();
+                    if (result.Error()) return result;
+                    menuBox->Update();
+                    if (topControl != null)
+                    {
+                        result = topControl->BringToFront();
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            else
+            {
+                if (menuBox != null)
+                {
+                    menuBox->SetPaintThisMenuBox(false);
+                    auto result = menuBox->Hide();
+                    if (result.Error()) return result;
+                }
+                auto result = InvalidateParentRect(menuRect);
+                if (result.Error()) return result;
+                Control* parentControl = ParentControl();
+                if (parentControl != null)
+                {
+                    parentControl->Update();
+                }
+            }
+            return Result<bool>(true);
+        }
+        private void CollectShortcuts()
+        {
+            shortcuts.Clear();
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    menuItem->CollectShortcuts(shortcuts);
+                }
+                child = child->NextSibling();
+            }
+        }
+        internal Result<bool> HandleAccessKey(wchar accessKey, Keys keyCode, bool& wantsKeys)
+        {
+            ResetMenuInvalidated();
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                auto accessKeyHexResult = ToHexString(cast<ushort>(accessKey));
+                if (accessKeyHexResult.Error())
+                {
+                    return Result<bool>(ErrorId(accessKeyHexResult.GetErrorId()));
+                }
+                auto accessKeyStrResult = ToString(accessKey);
+                if (accessKeyStrResult.Error())
+                {
+                    return Result<bool>(ErrorId(accessKeyStrResult.GetErrorId()));
+                }
+                string s = "MENUBAR: access key = '" + accessKeyStrResult.Value() + "' " + accessKeyHexResult.Value() + ", key code = " +
+                    KeyCodeStrings.Instance().GetKeyCodeString(keyCode);
+                auto result = logView->WriteLine(s);
+                if (result.Error()) return result;
+            }
+            if (accessKey == '\0' && keyCode == Keys.none)
+            {
+                if (!MenuKeyDisabled())
+                {
+                    if (selectedMenuItem == null)
+                    {
+                        MenuItem* firstMenuItem = GetFirstMenuItem();
+                        if (firstMenuItem != null)
+                        {
+                            SetOpen();
+                            SetSelectedMenuItem(firstMenuItem);
+                            wantsKeys = true;
+                            auto result = InvalidateMenu();
+                            if (result.Error()) return result;
+                            return Result<bool>(true);
+                        }
+                    }
+                    else
+                    {
+                        auto result = SetClosed();
+                        if (result.Error()) return result;
+                        MenuItem* openedMenuItem = GetOpenedMenuItem();
+                        if (openedMenuItem != null)
+                        {
+                            result = openedMenuItem->SetState(MenuItem.State.closed, this);
+                            if (result.Error()) return result;
+                        }
+                        result = selectedMenuItem->ResetSelected(this);
+                        if (result.Error()) return result;
+                        SetSelectedMenuItem(null);
+                        wantsKeys = false;
+                        result = InvalidateMenu();
+                        if (result.Error()) return result;
+                        return Result<bool>(true);
+                    }
+                }
+            }
+            else if (accessKey != '\0' && keyCode == Keys.none)
+            {
+                MenuItem* menuItem = GetMenuItemByAccessKey(accessKey);
+                if (menuItem != null)
+                {
+                    MenuItem* firstMenuItem = menuItem->GetFirstMenuItem();
+                    if (firstMenuItem != null)
+                    {
+                        if (selectedMenuItem != null)
+                        {
+                            MenuItem* openedMenuItem = GetOpenedMenuItem();
+                            if (openedMenuItem != null)
+                            {
+                                auto result = openedMenuItem->SetState(MenuItem.State.closed, this);
+                                if (result.Error()) return result;
+                            }
+                        }
+                        SetOpen();
+                        auto result = menuItem->SetState(MenuItem.State.open, this);
+                        if (result.Error()) return result;
+                        SetSelectedMenuItem(firstMenuItem);
+                        wantsKeys = true;
+                        result = InvalidateMenu();
+                        if (result.Error()) return result;
+                        return Result<bool>(true);
+                    }
+                }
+            }
+            else if (accessKey == '\0' && keyCode != Keys.none)
+            {
+                if (keyCode == Keys.menu)
+                {
+                    wantsKeys = true;
+                    return Result<bool>(true);
+                }
+                else
+                {
+                    if (selectedMenuItem != null)
+                    {
+                        MenuItem* parentItem = selectedMenuItem->GetParentMenuItem();
+                        Result<bool> handled = selectedMenuItem->HandleKey(keyCode, wantsKeys, parentItem, this);
+                        if (MenuInvalidated())
+                        {
+                            auto result = InvalidateMenu();
+                            if (result.Error()) return result;
+                        }
+                        return Result<bool>(handled.Value());
+                    }
+                }
+            }
+            if (MenuInvalidated())
+            {
+                auto result = InvalidateMenu();
+                if (result.Error()) return result;
+            }
+            wantsKeys = false;
+            return Result<bool>(false);
+        }
+        [nodiscard]
+        internal Result<bool> MouseDownInternal(MouseEventArgs& args)
+        {
+            return OnMouseDown(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseDown(args);
+            if (result.Error()) return result;
+            SetLatestMouseDownMenuItem(null);
+            bool handled = false;
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    result = menuItem->DoMouseDown(args, handled, this);
+                    if (result.Error()) return result;
+                    if (handled)
+                    {
+                        auto result = InvalidateMenu();
+                        if (result.Error()) return result;
+                        return Result<bool>(true);
+                    }
+                }
+                child = child->NextSibling();
+            }
+            if (IsOpen())
+            {
+                auto result = SetClosed();
+                if (result.Error()) return result;
+                SetLatestOpenedMenuItem(null);
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is MenuItem*)
+                    {
+                        MenuItem* menuItem = cast<MenuItem*>(child);
+                        result = menuItem->SetState(MenuItem.State.closed, this);
+                        if (result.Error()) return result;
+                    }
+                    child = child->NextSibling();
+                }
+                result = InvalidateMenu();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> MouseUpInternal(MouseEventArgs& args)
+        {
+            return OnMouseUp(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseUp(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseUp(args);
+            if (result.Error()) return result;
+            bool handled = false;
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (menuItem->IsEnabled())
+                    {
+                        auto result = menuItem->DoMouseUp(args, handled, this);
+                        if (result.Error()) return result;
+                        if (handled)
+                        {
+                            result = InvalidateMenu();
+                            if (result.Error()) return result;
+                            return Result<bool>(true);
+                        }
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        internal override void SetLatestOpenedMenuItem(MenuItem* menuItem)
+        {
+            latestOpenedMenuItem = menuItem;
+        }
+        internal override MenuItem* LatestOpenedMenuItem() const
+        {
+            return latestOpenedMenuItem;
+        }
+        internal override MenuItem* GetOpenedMenuItem() const
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* childItem = cast<MenuItem*>(child);
+                    if (childItem->GetState() == MenuItem.State.open)
+                    {
+                        return childItem;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        internal override MenuItem* GetFirstMenuItem() const
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    return menuItem;
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        internal override MenuItem* GetLastMenuItem() const
+        {
+            Component* child = children.LastChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    return menuItem;
+                }
+                child = child->PrevSibling();
+            }
+            return null;
+        }
+        internal override MenuItem* GetMenuItemByAccessKey(wchar accessKey)
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (menuItem->AccessKey() == accessKey)
+                    {
+                        return menuItem;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        internal override MenuItem* GetSelectedMenuItem() const
+        {
+            return selectedMenuItem;
+        }
+        internal override void SetSelectedMenuItem(MenuItem* selectedMenuItem_)
+        {
+            selectedMenuItem = selectedMenuItem_;
+        }
+        internal override MenuItem* GetLatestMouseDownMenuItem() const
+        {
+            return latestMouseDownMenuItem;
+        }
+        internal override void SetLatestMouseDownMenuItem(MenuItem* menuItem)
+        {
+            latestMouseDownMenuItem = menuItem;
+        }
+        public void DisableMenuKey()
+        {
+            flags = cast<Flags>(flags | Flags.menuKeyDisabled);
+        }
+        public inline bool MenuKeyDisabled() const
+        {
+            return (flags & Flags.menuKeyDisabled) != Flags.none;
+        }
+        private inline bool MenuChanged()
+        {
+            return (flags & Flags.menuChanged) != Flags.none;
+        }
+        internal override void SetMenuChanged()
+        {
+            flags = cast<Flags>(flags | Flags.menuChanged);
+        }
+        private inline void ResetMenuChanged()
+        {
+            flags = cast<Flags>(flags & ~Flags.menuChanged);
+        }
+        private inline bool MenuInvalidated() const
+        {
+            return (flags & Flags.menuInvalidated) != Flags.none;
+        }
+        internal override Result<bool> SetMenuInvalidated()
+        {
+            flags = cast<Flags>(flags | Flags.menuInvalidated);
+            return Result<bool>(true);
+        }
+        private inline void ResetMenuInvalidated()
+        {
+            flags = cast<Flags>(flags & ~Flags.menuInvalidated);
+        }
+        internal override bool IsOpen() const
+        {
+            return (flags & Flags.open) != Flags.none;
+        }
+        public override void SetOpen()
+        {
+            flags = cast<Flags>(flags | Flags.open);
+        }
+        [nodiscard]
+        public override Result<bool> SetClosed()
+        {
+            if (IsOpen())
+            {
+                flags = cast<Flags>(flags & ~Flags.open);
+                auto result = InvalidateMenu();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private bool MenuBoxAdded() const
+        {
+            return (flags & Flags.menuBoxAdded) != Flags.none;
+        }
+        private void SetMenuBoxAdded()
+        {
+            flags = cast<Flags>(flags | Flags.menuBoxAdded);
+        }
+        private Result<bool> AddMenuBox()
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null && parentControl is ContainerControl*)
+            {
+                menuBox = new MenuBox(GetFont(), this, null);
+                if (menuBox->Error())
+                {
+                    return Result<bool>(ErrorId(menuBox->GetErrorId()));
+                }
+                ContainerControl* containerControl = cast<ContainerControl*>(parentControl);
+                auto result = containerControl->InsertChildAfter(menuBox, this);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        private Flags flags;
+        private Container children;
+        private MenuItem* latestOpenedMenuItem;
+        private MenuItem* selectedMenuItem;
+        private MenuItem* latestMouseDownMenuItem;
+        private HashMap<Keys, MenuItem*> shortcuts;
+        private MenuBox* menuBox;
+    }
+
+    public ControlCreateParams& MenuBoxControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowStyle(HiddenChildWindowStyle()).
+            SetWindowClassBackgroundColor(SystemColor.COLOR_MENU).SetBackgroundColor(DefaultMenuBackgroundColor()).
+            SetWindowClassName("System.Windows.MenuBox");
+    }
+
+    public class MenuBoxCreateParams
+    {
+        public MenuBoxCreateParams(MenuControlCreateParams& menuControlCreateParams_) : menuControlCreateParams(menuControlCreateParams_)
+        {
+        }
+        public MenuBoxCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public MenuControlCreateParams& menuControlCreateParams;
+    }
+
+    public class MenuBox : MenuControl
+    {
+        public MenuBox(const Font& font, MenuBar* menuBar_, MenuItem* rootItem_) :
+            base(font, "System.Windows.MenuBox", DefaultWindowClassStyle(), HiddenChildWindowStyle(), DefaultExtendedWindowStyle(),
+            Color.White(), "menuBox", Point(), Size(), Dock.none, Anchors.none), menuBar(menuBar_), rootItem(rootItem_), paintThisMenuBox(false)
+        {
+            if (rootItem != null && rootItem->Error())
+            {
+                SetErrorId(rootItem->GetErrorId());
+                return;
+            }
+        }
+        public MenuBox(MenuBoxCreateParams& createParams, MenuBar* menuBar_, MenuItem* rootItem_) :
+            base(createParams.menuControlCreateParams), menuBar(menuBar_), rootItem(rootItem_), paintThisMenuBox(false)
+        {
+            if (rootItem != null && rootItem->Error())
+            {
+                SetErrorId(rootItem->GetErrorId());
+                return;
+            }
+        }
+        public void SetPaintThisMenuBox(bool paintThisMenuBox_)
+        {
+            paintThisMenuBox = paintThisMenuBox_;
+        }
+        public inline bool PaintThisMenuBox() const
+        {
+            return paintThisMenuBox;
+        }
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                const string& handleStr = handleResult.Value();
+                auto parentTextResult = ParentText();
+                if (parentTextResult.Error())
+                {
+                    return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                }
+                const string& parentText = parentTextResult.Value();
+                auto result = log->WriteLine(string(' ', level) + "MenuBox." + Text() + ".handle=" + handleStr + " " + parentText +
+                    "[" + Rect(Point(), GetSize()).ToString() + "]");
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        protected virtual Result<Point> GetBoxLocation() const
+        {
+            return Location();
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            if (Debug.Paint())
+            {
+                Rect r(Point(), GetSize());
+                LogView* log = Application.GetLogView();
+                if (log != null)
+                {
+                    auto result = log->WriteLine("MenuBox.OnPaint: " + r.ToString());
+                    if (result.Error()) return result;
+                }
+            }
+            auto locResult = Location();
+            if (locResult.Error())
+            {
+                return Result<bool>(ErrorId(locResult.GetErrorId()));
+            }
+            Point loc = locResult.Value();
+            if (!paintMenu)
+            {
+                if (paintThisMenuBox)
+                {
+                    Control* parentControl = ParentControl();
+                    if (parentControl != null)
+                    {
+                        Bitmap menuBoxBitmap(args.clipRect.size.w, args.clipRect.size.h, args.graphics);
+                        auto menuBoxBitmapResult = Graphics.FromImage(menuBoxBitmap);
+                        if (menuBoxBitmapResult.Error())
+                        {
+                            return Result<bool>(ErrorId(menuBoxBitmapResult.GetErrorId()));
+                        }
+                        Graphics& menuBoxGraphics = menuBoxBitmapResult.Value();
+                        Rect menuBoxClipRect(Point(0, 0), Size(args.clipRect.size.w, args.clipRect.size.h));
+                        auto setClipResult = menuBoxGraphics.SetClip(menuBoxClipRect);
+                        if (setClipResult.Error())
+                        {
+                            return Result<bool>(ErrorId(setClipResult.GetErrorId()));
+                        }
+                        auto translateResult = menuBoxGraphics.TranslateTransform(-loc.x, -loc.y);
+                        if (translateResult.Error())
+                        {
+                            return Result<bool>(ErrorId(translateResult.GetErrorId()));
+                        }
+                        PaintEventArgs paintMenuBoxArgs(menuBoxGraphics, menuBoxClipRect);
+                        bool prevPaintMenu = paintMenu;
+                        paintMenu = true;
+                        bool skipMenuBar = this is ContextMenu*;
+                        auto paintResult = parentControl->PaintAll(paintMenuBoxArgs, skipMenuBar);
+                        if (paintResult.Error())
+                        {
+                            return Result<bool>(ErrorId(paintResult.GetErrorId()));
+                        }
+                        paintMenu = prevPaintMenu;
+                        auto drawImageResult = args.graphics.DrawImage(menuBoxBitmap, PointF(0, 0));
+                        if (drawImageResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawImageResult.GetErrorId()));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (menuBar != null)
+                {
+                    auto drawResult = menuBar->DrawMenuItems(args, true, loc);
+                    if (drawResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                    }
+                }
+                else if (rootItem != null)
+                {
+                    auto drawResult = rootItem->Draw(args.graphics, DefaultPadding(), TextBrush(), DisabledTextBrush(), BackgroundBrush(), MouseOverBrush(),
+                        MenuOpenBrush(), ShadowBrush(), BlackBrush(), BlackPen(),
+                        DarkPen(), GetFont(), Format(), MenuOpenColor(), this, true, Point());
+                    if (drawResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        private Control* ParentControl() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null && (parent is Control*))
+                {
+                    return cast<Control*>(parent);
+                }
+            }
+            return null;
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseEnter()
+        {
+            auto result = base->OnMouseEnter();
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                result = menuBar->MouseEnterInternal();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseMove(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseMove(args);
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                auto locResult = Location();
+                if (locResult.Error())
+                {
+                    return Result<bool>(ErrorId(locResult.GetErrorId()));
+                }
+                Point loc = locResult.Value();
+                args.location.x = args.location.x + loc.x;
+                args.location.y = args.location.y + loc.y;
+                auto result = menuBar->MouseMoveInternal(args);
+                if (result.Error()) return result;
+            }
+            else if (rootItem != null)
+            {
+                bool handled = false;
+                auto result = rootItem->DispatchMouseMove(args, handled, this);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseLeave()
+        {
+            auto result = base->OnMouseLeave();
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                result = menuBar->MouseLeaveInternal();
+                if (result.Error()) return result;
+            }
+            else if (rootItem != null)
+            {
+                result = rootItem->LeaveChildren(this);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseDown(args);
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                auto locResult = Location();
+                if (locResult.Error())
+                {
+                    return Result<bool>(ErrorId(locResult.GetErrorId()));
+                }
+                Point loc = locResult.Value();
+                args.location.x = args.location.x + loc.x;
+                args.location.y = args.location.y + loc.y;
+                result = menuBar->MouseDownInternal(args);
+                if (result.Error()) return result;
+            }
+            else if (rootItem != null)
+            {
+                SetLatestMouseDownMenuItem(null);
+                bool handled = false;
+                auto result = rootItem->DoMouseDown(args, handled, this);
+                if (result.Error()) return result;
+                if (handled)
+                {
+                    result = Invalidate();
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseUp(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseUp(args);
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                auto locResult = Location();
+                if (locResult.Error())
+                {
+                    return Result<bool>(ErrorId(locResult.GetErrorId()));
+                }
+                Point loc = locResult.Value();
+                args.location.x = args.location.x + loc.x;
+                args.location.y = args.location.y + loc.y;
+                result = menuBar->MouseUpInternal(args);
+                if (result.Error()) return result;
+            }
+            else if (rootItem != null)
+            {
+                bool handled = false;
+                auto result = rootItem->DoMouseUp(args, handled, this);
+                if (result.Error()) return result;
+                if (handled)
+                {
+                    result = Invalidate();
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected inline MenuItem* GetRootItem() const
+        {
+            return rootItem;
+        }
+        private MenuBar* menuBar;
+        private MenuItem* rootItem;
+        private bool paintThisMenuBox;
+        private bool paintMenu;
+    }
+
+    public abstract class ClickAction
+    {
+        public ClickAction()
+        {
+            clickEventHandler = Click;
+        }
+        public default virtual ~ClickAction();
+        public void AddHandlerTo(MenuItem& menuItem)
+        {
+            menuItem.ClickEvent().AddHandler(clickEventHandler);
+        }
+        private void Click(ClickEventArgs& args)
+        {
+            auto result = Execute();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+            }
+        }
+        [nodiscard]
+        protected abstract Result<bool> Execute();
+        private ClickEventHandler clickEventHandler;
+    }
+
+    public class ClickActions
+    {
+        public void Add(ClickAction* action)
+        {
+            clickActions.Add(UniquePtr<ClickAction>(action));
+        }
+        private List<UniquePtr<ClickAction>> clickActions;
+    }
+
+    public ControlCreateParams& ContextMenuControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowStyle(HiddenChildWindowStyle()).
+            SetWindowClassBackgroundColor(SystemColor.COLOR_MENU).SetBackgroundColor(DefaultMenuBackgroundColor()).
+            SetWindowClassName("System.Windows.ContextMenu");
+    }
+
+    public MenuBoxCreateParams& ContextMenuMenuBoxCreateParams(MenuBoxCreateParams& menuBoxCreateParams)
+    {
+        return menuBoxCreateParams;
+    }
+
+    public class ContextMenuCreateParams
+    {
+        public ContextMenuCreateParams(MenuBoxCreateParams& menuBoxCreateParams_) : menuBoxCreateParams(menuBoxCreateParams_)
+        {
+        }
+        public ContextMenuCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public MenuBoxCreateParams& menuBoxCreateParams;
+    }
+
+    public class ContextMenu : MenuBox
+    {
+        public ContextMenu(const Font& font) :
+            base(font, null, new MenuItem("root")),
+            rootItemPtr(GetRootItem()), latestOpenedMenuItem(null), selectedMenuItem(null), latestMouseDownMenuItem(null)
+        {
+        }
+        public ContextMenu() : this(Font(FontFamily("Segoe UI"), 9.0f))
+        {
+        }
+        public ContextMenu(ContextMenuCreateParams& createParams) :
+            base(createParams.menuBoxCreateParams, null, new MenuItem("root")),
+            rootItemPtr(GetRootItem()), latestOpenedMenuItem(null), selectedMenuItem(null), latestMouseDownMenuItem(null)
+        {
+        }
+        [nodiscard]
+        public Result<bool> AddMenuItem(MenuItemBase* menuItem)
+        {
+            return rootItemPtr->AddMenuItem(menuItem);
+        }
+        [nodiscard]
+        public Result<bool> AddMenuItemAction(MenuItem* menuItem, ClickAction* action)
+        {
+            auto result = rootItemPtr->AddMenuItem(menuItem);
+            if (result.Error()) return result;
+            action->AddHandlerTo(*menuItem);
+            clickActions.Add(action);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> CalculateSize()
+        {
+            auto result = rootItemPtr->SetState(MenuItem.State.open, this);
+            if (result.Error()) return result;
+            auto windowHandleGraphicsResult = Graphics.FromWindowHandle(Handle());
+            if (windowHandleGraphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(windowHandleGraphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = windowHandleGraphicsResult.Value();
+            rootItemPtr->CalculateChildRect(graphics, GetFont(), Format(), Point(0, 0));
+            Rect menuRect;
+            rootItemPtr->GetOpenRect(menuRect);
+            result = SetSize(menuRect.size);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public bool HasMenuItems()
+        {
+            return !rootItemPtr->Children().IsEmpty();
+        }
+        protected override Result<Point> GetBoxLocation() const
+        {
+            return Result<Point>(Point(0, 0));
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            SetPaintThisMenuBox(true);
+            return base->OnPaint(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnVisibleChanged()
+        {
+            auto result = base->OnVisibleChanged();
+            if (result.Error()) return result;
+            if (!IsVisible())
+            {
+                result = rootItemPtr->SetState(MenuItem.State.closed, this);
+                if (result.Error()) return result;
+                SetPaintThisMenuBox(false);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal override Result<bool> SetMenuInvalidated()
+        {
+            return Invalidate();
+        }
+        internal override bool IsOpen() const
+        {
+            return rootItemPtr->GetState() == MenuItem.State.open;
+        }
+        internal override MenuItem* GetSelectedMenuItem() const
+        {
+            return selectedMenuItem;
+        }
+        internal override void SetSelectedMenuItem(MenuItem* selectedMenuItem_)
+        {
+            selectedMenuItem = selectedMenuItem_;
+        }
+        internal override MenuItem* LatestOpenedMenuItem() const
+        {
+            return latestOpenedMenuItem;
+        }
+        internal override void SetLatestOpenedMenuItem(MenuItem* menuItem)
+        {
+            latestOpenedMenuItem = menuItem;
+        }
+        internal override MenuItem* GetLatestMouseDownMenuItem() const
+        {
+            return latestMouseDownMenuItem;
+        }
+        internal override void SetLatestMouseDownMenuItem(MenuItem* menuItem)
+        {
+            latestMouseDownMenuItem = menuItem;
+        }
+        internal override MenuItem* GetOpenedMenuItem() const
+        {
+            return rootItemPtr.Get();
+        }
+        private UniquePtr<MenuItem> rootItemPtr;
+        private MenuItem* latestOpenedMenuItem;
+        private MenuItem* selectedMenuItem;
+        private MenuItem* latestMouseDownMenuItem;
+        private ClickActions clickActions;
+    }
+
+    public abstract class MenuItemBase : Component
+    {
+        public MenuItemBase() : location(), size()
+        {
+        }
+        public abstract Result<bool> Draw(Graphics& graphics, const Padding& parentPadding, const Brush& textBrush, const Brush& disabledTextBrush,
+            const Brush& backgroundBrush, const Brush& mouseOverBrush, const Brush& menuOpenBrush, const Brush& shadowBrush, const Brush& blackBrush,
+            const Pen& blackPen, const Pen& darkPen, const Font& font, const StringFormat& format, const Color& menuOpenColor,
+            MenuControl* menuControl, bool drawSubItems, const Point& origin);
+        internal MenuItem* GetParentMenuItem() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null)
+                {
+                    if (parent is MenuItem*)
+                    {
+                        MenuItem* parentMenuItem = cast<MenuItem*>(parent);
+                        return parentMenuItem;
+                    }
+                }
+            }
+            return null;
+        }
+        public virtual Padding DefaultPadding() const
+        {
+            return Padding(0, 0, 0, 0);
+        }
+        public int Level() const
+        {
+            MenuItem* parent = GetParentMenuItem();
+            if (parent == null)
+            {
+                return 0;
+            }
+            else
+            {
+                return parent->Level() + 1;
+            }
+        }
+        public const Point& Location() const
+        {
+            return location;
+        }
+        public void SetLocation(const Point& location_)
+        {
+            location = location_;
+        }
+        public const Size& GetSize() const
+        {
+            return size;
+        }
+        public void SetSize(const Size& size_)
+        {
+            size = size_;
+        }
+        public abstract Size MeasureItem(Graphics& graphics, const Font& font, const StringFormat& format, int& maxShortcutWidth, int& childIndicatorWidth);
+        private Point location;
+        private Size size;
+    }
+
+    public class MenuItem : MenuItemBase
+    {
+        public enum State : sbyte
+        {
+            closed = 0, open = 1
+        }
+        private enum Flags : sbyte
+        {
+            none = 0, disabled = 1 << 0, selected = 1 << 1, mouseInClient = 1 << 2, lbuttonPressed = 1 << 3
+        }
+        public MenuItem(const string& text_) :
+            base(), text(text_), children(this), state(State.closed), childRect(), unionRect(), flags(Flags.none), accessKey('\0'), shortcut(Keys.none), shortcutFieldWidth(0)
+        {
+            SetAccessKey();
+        }
+        [nodiscard]
+        public Result<bool> AddMenuItem(MenuItemBase* menuItem)
+        {
+            return children.AddChild(menuItem);
+        }
+        public MenuItem* GetFirstMenuItem() const
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* childMenuItem = cast<MenuItem*>(child);
+                    return childMenuItem;
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        public MenuItem* GetLastMenuItem() const
+        {
+            Component* child = children.LastChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* childMenuItem = cast<MenuItem*>(child);
+                    return childMenuItem;
+                }
+                child = child->PrevSibling();
+            }
+            return null;
+        }
+        public MenuItem* GetNextMenuItem() const
+        {
+            Component* next = NextSibling();
+            while (next != null)
+            {
+                if (next is MenuItem*)
+                {
+                    MenuItem* nextMenuItem = cast<MenuItem*>(next);
+                    return nextMenuItem;
+                }
+                next = next->NextSibling();
+            }
+            return null;
+        }
+        public MenuItem* GetPrevMenuItem() const
+        {
+            Component* prev = PrevSibling();
+            while (prev != null)
+            {
+                if (prev is MenuItem*)
+                {
+                    MenuItem* prevMenuItem = cast<MenuItem*>(prev);
+                    return prevMenuItem;
+                }
+                prev = prev->PrevSibling();
+            }
+            return null;
+        }
+        public MenuItem* GetParentMenuItem() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null)
+                {
+                    if (parent is MenuItem*)
+                    {
+                        MenuItem* parentItem = cast<MenuItem*>(parent);
+                        return parentItem;
+                    }
+                }
+            }
+            return null;
+        }
+        private MenuControl* GetMenuControl() const
+        {
+            Container* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null)
+                {
+                    if (parent is MenuItem*)
+                    {
+                        MenuItem* parentItem = cast<MenuItem*>(parent);
+                        return parentItem->GetMenuControl();
+                    }
+                    else if (parent is MenuControl*)
+                    {
+                        MenuControl* menuControl = cast<MenuControl*>(parent);
+                        return menuControl;
+                    }
+                }
+            }
+            return null;
+        }
+        [nodiscard]
+        internal Result<bool> HandleKey(Keys key, bool& wantsKeys, MenuItem* parentMenuItem, MenuControl* menuControl)
+        {
+            if (key >= Keys.a && key <= Keys.z || key >= Keys.d0 && key <= Keys.d9)
+            {
+                wchar accessKey = cast<wchar>(cast<int>(key));
+                MenuItem* childItem = null;
+                if (parentMenuItem != null)
+                {
+                    childItem = parentMenuItem->GetChildItemByAccessKey(accessKey);
+                }
+                else
+                {
+                    childItem = menuControl->GetMenuItemByAccessKey(accessKey);
+                }
+                if (childItem != null && childItem->IsEnabled())
+                {
+                    auto result = childItem->Execute(parentMenuItem, wantsKeys, menuControl);
+                    if (result.Error()) return result;
+                    return Result<bool>(true);
+                }
+                else
+                {
+                    wantsKeys = true;
+                    return Result<bool>(false);
+                }
+            }
+            else
+            {
+                switch (key)
+                {
+                    case Keys.enter:
+                    {
+                        if (IsEnabled())
+                        {
+                            auto result = Execute(parentMenuItem, wantsKeys, menuControl);
+                            if (result.Error()) return result;
+                            return Result<bool>(true);
+                        }
+                        else
+                        {
+                            wantsKeys = true;
+                            return Result<bool>(false);
+                        }
+                    }
+                    case Keys.escape:
+                    {
+                        MenuItem* openedMenuItem = menuControl->GetOpenedMenuItem();
+                        if (openedMenuItem != null)
+                        {
+                            auto result = openedMenuItem->SetState(State.closed, menuControl);
+                            if (result.Error()) return result;
+                        }
+                        wantsKeys = false;
+                        menuControl->SetSelectedMenuItem(null);
+                        auto result = menuControl->SetClosed();
+                        if (result.Error()) return result;
+                        result = menuControl->SetMenuInvalidated();
+                        if (result.Error()) return result;
+                        return Result<bool>(true);
+                    }
+                    case Keys.home:
+                    {
+                        if (Level() == 0)
+                        {
+                            MenuItem* firstMenuItem = menuControl->GetFirstMenuItem();
+                            if (firstMenuItem != null)
+                            {
+                                menuControl->SetSelectedMenuItem(firstMenuItem);
+                                wantsKeys = true;
+                                auto result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                        }
+                        else
+                        {
+                            MenuItem* parentMenuItem = GetParentMenuItem();
+                            if (parentMenuItem != null)
+                            {
+                                MenuItem* firstMenuItem = parentMenuItem->GetFirstMenuItem();
+                                if (firstMenuItem != null)
+                                {
+                                    menuControl->SetSelectedMenuItem(firstMenuItem);
+                                    wantsKeys = true;
+                                    auto result = menuControl->SetMenuInvalidated();
+                                    if (result.Error()) return result;
+                                    return Result<bool>(true);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.end:
+                    {
+                        if (Level() == 0)
+                        {
+                            MenuItem* lastMenuItem = menuControl->GetLastMenuItem();
+                            if (lastMenuItem != null)
+                            {
+                                menuControl->SetSelectedMenuItem(lastMenuItem);
+                                wantsKeys = true;
+                                auto result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                        }
+                        else
+                        {
+                            MenuItem* parentMenuItem = GetParentMenuItem();
+                            if (parentMenuItem != null)
+                            {
+                                MenuItem* lastMenuItem = parentMenuItem->GetLastMenuItem();
+                                if (lastMenuItem != null)
+                                {
+                                    menuControl->SetSelectedMenuItem(lastMenuItem);
+                                    wantsKeys = true;
+                                    auto result = menuControl->SetMenuInvalidated();
+                                    if (result.Error()) return result;
+                                    return Result<bool>(true);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.down:
+                    {
+                        if (Level() == 0)
+                        {
+                            auto result = SetState(state.open, menuControl);
+                            if (result.Error()) return result;
+                            MenuItem* firstChild = GetFirstMenuItem();
+                            if (firstChild != null)
+                            {
+                                menuControl->SetSelectedMenuItem(firstChild);
+                                wantsKeys = true;
+                                result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                        }
+                        else
+                        {
+                            MenuItem* nextMenuItem = GetNextMenuItem();
+                            if (nextMenuItem != null)
+                            {
+                                menuControl->SetSelectedMenuItem(nextMenuItem);
+                                wantsKeys = true;
+                                auto result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                            else
+                            {
+                                if (parentMenuItem != null)
+                                {
+                                    MenuItem* firstMenuItem = parentMenuItem->GetFirstMenuItem();
+                                    if (firstMenuItem != null)
+                                    {
+                                        menuControl->SetSelectedMenuItem(firstMenuItem);
+                                        wantsKeys = true;
+                                        auto result = menuControl->SetMenuInvalidated();
+                                        if (result.Error()) return result;
+                                        return Result<bool>(true);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.up:
+                    {
+                        if (Level() == 0)
+                        {
+                            auto result = SetState(state.open, menuControl);
+                            if (result.Error()) return result;
+                            MenuItem* lastChild = GetLastMenuItem();
+                            if (lastChild != null)
+                            {
+                                menuControl->SetSelectedMenuItem(lastChild);
+                                wantsKeys = true;
+                                result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                        }
+                        else
+                        {
+                            MenuItem* prevMenuItem = GetPrevMenuItem();
+                            if (prevMenuItem != null)
+                            {
+                                menuControl->SetSelectedMenuItem(prevMenuItem);
+                                wantsKeys = true;
+                                auto result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                            else
+                            {
+                                if (parentMenuItem != null)
+                                {
+                                    MenuItem* lastMenuItem = parentMenuItem->GetLastMenuItem();
+                                    if (lastMenuItem != null)
+                                    {
+                                        menuControl->SetSelectedMenuItem(lastMenuItem);
+                                        wantsKeys = true;
+                                        auto result = menuControl->SetMenuInvalidated();
+                                        if (result.Error()) return result;
+                                        return Result<bool>(true);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.right:
+                    {
+                        if (Level() == 0)
+                        {
+                            MenuItem* nextMenuItem = GetNextMenuItem();
+                            if (nextMenuItem != null)
+                            {
+                                menuControl->SetSelectedMenuItem(nextMenuItem);
+                                wantsKeys = true;
+                                auto result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                            else
+                            {
+                                MenuItem* firstMenuItem = menuControl->GetFirstMenuItem();
+                                if (firstMenuItem != null)
+                                {
+                                    menuControl->SetSelectedMenuItem(firstMenuItem);
+                                    wantsKeys = true;
+                                    auto result = menuControl->SetMenuInvalidated();
+                                    if (result.Error()) return result;
+                                    return Result<bool>(true);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            MenuItem* firstChild = GetFirstMenuItem();
+                            if (firstChild != null)
+                            {
+                                auto result = SetState(State.open, menuControl);
+                                if (result.Error()) return result;
+                                menuControl->SetSelectedMenuItem(firstChild);
+                                wantsKeys = true;
+                                result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                            else
+                            {
+                                while (parentMenuItem != null)
+                                {
+                                    if (parentMenuItem->Level() == 0)
+                                    {
+                                        MenuItem* nextMenuItem = parentMenuItem->GetNextMenuItem();
+                                        if (nextMenuItem != null)
+                                        {
+                                            auto result = parentMenuItem->SetState(State.closed, menuControl);
+                                            if (result.Error()) return result;
+                                            result = nextMenuItem->SetState(State.open, menuControl);
+                                            if (result.Error()) return result;
+                                            MenuItem* firstChild = nextMenuItem->GetFirstMenuItem();
+                                            if (firstChild != null)
+                                            {
+                                                menuControl->SetSelectedMenuItem(firstChild);
+                                                wantsKeys = true;
+                                                result = menuControl->SetMenuInvalidated();
+                                                if (result.Error()) return result;
+                                                return Result<bool>(true);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            MenuItem* firstMenuItem = menuControl->GetFirstMenuItem();
+                                            if (firstMenuItem != null)
+                                            {
+                                                auto result = parentMenuItem->SetState(State.closed, menuControl);
+                                                if (result.Error()) return result;
+                                                result = firstMenuItem->SetState(State.open, menuControl);
+                                                if (result.Error()) return result;
+                                                MenuItem* firstChild = firstMenuItem->GetFirstMenuItem();
+                                                if (firstChild != null)
+                                                {
+                                                    menuControl->SetSelectedMenuItem(firstChild);
+                                                    wantsKeys = true;
+                                                    result = menuControl->SetMenuInvalidated();
+                                                    if (result.Error()) return result;
+                                                    return Result<bool>(true);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        MenuItem* grandParentMenuItem = parentMenuItem->GetParentMenuItem();
+                                        MenuItem* nextMenuItem = grandParentMenuItem->GetNextMenuItem();
+                                        if (nextMenuItem != null)
+                                        {
+                                            auto result = parentMenuItem->SetState(State.closed, menuControl);
+                                            if (result.Error()) return result;
+                                            result = grandParentMenuItem->SetState(State.closed, menuControl);
+                                            if (result.Error()) return result;
+                                            result = nextMenuItem->SetState(State.open, menuControl);
+                                            if (result.Error()) return result;
+                                            MenuItem* firstChild = nextMenuItem->GetFirstMenuItem();
+                                            if (firstChild != null)
+                                            {
+                                                menuControl->SetSelectedMenuItem(firstChild);
+                                                wantsKeys = true;
+                                                result = menuControl->SetMenuInvalidated();
+                                                if (result.Error()) return result;
+                                                return Result<bool>(true);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            parentMenuItem = grandParentMenuItem; // up one level and loop again
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.left:
+                    {
+                        if (Level() == 0)
+                        {
+                            MenuItem* prevMenuItem = GetPrevMenuItem();
+                            if (prevMenuItem != null)
+                            {
+                                menuControl->SetSelectedMenuItem(prevMenuItem);
+                                wantsKeys = true;
+                                auto result = menuControl->SetMenuInvalidated();
+                                if (result.Error()) return result;
+                                return Result<bool>(true);
+                            }
+                            else
+                            {
+                                MenuItem* lastMenuItem = menuControl->GetLastMenuItem();
+                                if (lastMenuItem != null)
+                                {
+                                    menuControl->SetSelectedMenuItem(lastMenuItem);
+                                    wantsKeys = true;
+                                    auto result = menuControl->SetMenuInvalidated();
+                                    if (result.Error()) return result;
+                                    return Result<bool>(true);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (parentMenuItem != null)
+                            {
+                                MenuItem* prevMenuItem = parentMenuItem->GetPrevMenuItem();
+                                if (prevMenuItem != null)
+                                {
+                                    auto result = parentMenuItem->SetState(State.closed, menuControl);
+                                    if (result.Error()) return result;
+                                    result = prevMenuItem->SetState(State.open, menuControl);
+                                    if (result.Error()) return result;
+                                    MenuItem* firstChild = prevMenuItem->GetFirstMenuItem();
+                                    if (firstChild != null)
+                                    {
+                                        menuControl->SetSelectedMenuItem(firstChild);
+                                        wantsKeys = true;
+                                        result = menuControl->SetMenuInvalidated();
+                                        if (result.Error()) return result;
+                                        return Result<bool>(true);
+                                    }
+                                }
+                                else
+                                {
+                                    MenuItem* grandParentMenuItem = parentMenuItem->GetParentMenuItem();
+                                    if (grandParentMenuItem != null)
+                                    {
+                                        auto result = grandParentMenuItem->SetState(State.open, menuControl);
+                                        if (result.Error()) return result;
+                                        MenuItem* firstMenuItem = grandParentMenuItem->GetFirstMenuItem();
+                                        if (firstMenuItem != null)
+                                        {
+                                            result = firstMenuItem->SetState(State.closed, menuControl);
+                                            if (result.Error()) return result;
+                                            menuControl->SetSelectedMenuItem(firstMenuItem);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        MenuItem* lastMenuItem = menuControl->GetLastMenuItem();
+                                        if (lastMenuItem != null)
+                                        {
+                                            auto result = parentMenuItem->SetState(State.closed, menuControl);
+                                            if (result.Error()) return result;
+                                            result = lastMenuItem->SetState(State.open, menuControl);
+                                            if (result.Error()) return result;
+                                            MenuItem* firstChild = lastMenuItem->GetFirstMenuItem();
+                                            if (firstChild != null)
+                                            {
+                                                menuControl->SetSelectedMenuItem(firstChild);
+                                                wantsKeys = true;
+                                                result = menuControl->SetMenuInvalidated();
+                                                if (result.Error()) return result;
+                                                return Result<bool>(true);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            wantsKeys = true;
+            return Result<bool>(false);
+        }
+        [nodiscard]
+        private Result<bool> Close(MenuControl* menuControl)
+        {
+            auto result = SetState(State.closed, menuControl);
+            if (result.Error()) return result;
+            MenuItem* parentItem = GetParentMenuItem();
+            while (parentItem != null)
+            {
+                result = parentItem->SetState(State.closed, menuControl);
+                if (result.Error()) return result;
+                parentItem = parentItem->GetParentMenuItem();
+            }
+            menuControl->SetSelectedMenuItem(null);
+            result = menuControl->SetClosed();
+            if (result.Error()) return result;
+            result = menuControl->SetMenuInvalidated();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> Execute(MenuItem* parentMenuItem, bool& wantsKeys, MenuControl* menuControl)
+        {
+            if (children.IsEmpty())
+            {
+                if (IsEnabled())
+                {
+                    auto result = Close(menuControl);
+                    if (result.Error()) return result;
+                    wantsKeys = false;
+                    result = DoClick();
+                    if (result.Error()) return result;
+                }
+            }
+            else
+            {
+                if (IsEnabled())
+                {
+                    auto result = SetState(State.open, menuControl);
+                    if (result.Error()) return result;
+                    MenuItem* firstMenuItem = GetFirstMenuItem();
+                    if (firstMenuItem != null)
+                    {
+                        menuControl->SetSelectedMenuItem(firstMenuItem);
+                        wantsKeys = true;
+                        result = menuControl->SetMenuInvalidated();
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> DoMouseDown(MouseEventArgs& args, bool& handled, MenuControl* menuControl)
+        {
+            if (Level() == 0)
+            {
+                if (Contains(args.location))
+                {
+                    SetMouseInClient();
+                    if (menuControl->IsOpen())
+                    {
+                        auto result = menuControl->SetClosed();
+                        if (result.Error()) return result;
+                        menuControl->SetLatestOpenedMenuItem(null);
+                        result = SetState(State.closed, menuControl);
+                        if (result.Error()) return result;
+                        result = DoMouseDown(args, menuControl);
+                        if (result.Error()) return result;
+                        handled = true;
+                    }
+                    else
+                    {
+                        menuControl->SetOpen();
+                        auto result = SetState(State.open, menuControl);
+                        if (result.Error()) return result;
+                        menuControl->SetLatestOpenedMenuItem(this);
+                        result = DoMouseDown(args, menuControl);
+                        if (result.Error()) return result;
+                        handled = true;
+                    }
+                }
+                else
+                {
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is MenuItem*)
+                        {
+                            MenuItem* childItem = cast<MenuItem*>(child);
+                            auto result = childItem->DoMouseDown(args, handled, menuControl);
+                            if (result.Error()) return result;
+                            if (handled) return Result<bool>(true);
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+            else
+            {
+                if (menuControl->IsOpen())
+                {
+                    MenuItem* parentMenuItem = GetParentMenuItem();
+                    if (parentMenuItem != null)
+                    {
+                        if (parentMenuItem->state == State.open)
+                        {
+                            if (Contains(args.location))
+                            {
+                                if (!children.IsEmpty())
+                                {
+                                    if (state == State.closed)
+                                    {
+                                        auto result = SetState(State.open, menuControl);
+                                        if (result.Error()) return result;
+                                        menuControl->SetLatestOpenedMenuItem(this);
+                                        result = DoMouseDown(args, menuControl);
+                                        if (result.Error()) return result;
+                                        handled = true;
+                                    }
+                                    else if (state == State.open)
+                                    {
+                                        auto result = SetState(State.closed, menuControl);
+                                        if (result.Error()) return result;
+                                        menuControl->SetLatestOpenedMenuItem(null);
+                                        result = DoMouseDown(args, menuControl);
+                                        if (result.Error()) return result;
+                                        handled = true;
+                                    }
+                                }
+                                else
+                                {
+                                    auto result = DoMouseDown(args, menuControl);
+                                    if (result.Error()) return result;
+                                    if ((args.buttons & MouseButtons.lbutton) != 0)
+                                    {
+                                        SetLButtonPressed();
+                                    }
+                                    handled = true;
+                                }
+                            }
+                        }
+                    }
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is MenuItem*)
+                        {
+                            MenuItem* childItem = cast<MenuItem*>(child);
+                            auto result = childItem->DoMouseDown(args, handled, menuControl);
+                            if (result.Error()) return result;
+                            if (handled) return Result<bool>(true);
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> DoMouseUp(MouseEventArgs& args, bool& handled, MenuControl* menuControl)
+        {
+            if (Level() == 0)
+            {
+                if (Contains(args.location))
+                {
+                    auto result = DoMouseUp(args, menuControl);
+                    if (result.Error()) return result;
+                    handled = true;
+                }
+                else
+                {
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is MenuItem*)
+                        {
+                            MenuItem* childItem = cast<MenuItem*>(child);
+                            if (childItem->IsEnabled())
+                            {
+                                auto result = childItem->DoMouseUp(args, handled, menuControl);
+                                if (result.Error()) return result;
+                                if (handled) return Result<bool>(true);
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+            else
+            {
+                if (menuControl->IsOpen())
+                {
+                    MenuItem* parentMenuItem = GetParentMenuItem();
+                    if (parentMenuItem != null)
+                    {
+                        if (parentMenuItem->state == State.open)
+                        {
+                            if (Contains(args.location))
+                            {
+                                auto result = DoMouseUp(args, menuControl);
+                                if (result.Error()) return result;
+                                handled = true;
+                                if (handled) return Result<bool>(true);
+                            }
+                        }
+                    }
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is MenuItem*)
+                        {
+                            MenuItem* childItem = cast<MenuItem*>(child);
+                            if (childItem->IsEnabled())
+                            {
+                                auto result = childItem->DoMouseUp(args, handled, menuControl);
+                                if (result.Error()) return result;
+                                if (handled) return Result<bool>(true);
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseDown(MouseEventArgs& args, MenuControl* menuControl)
+        {
+            menuControl->SetLatestMouseDownMenuItem(this);
+            ResetLButtonPressed();
+            return OnMouseDown(args);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseDown(MouseEventArgs& args)
+        {
+            mouseDownEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseUp(MouseEventArgs& args, MenuControl* menuControl)
+        {
+            if (!IsEnabled()) return Result<bool>(false);
+            OnMouseUp(args);
+            bool isMenuBar = menuControl is MenuBar*;
+            MenuItem* latestMouseDownMenuItem = menuControl->GetLatestMouseDownMenuItem();
+            if ((args.buttons & MouseButtons.lbutton) != 0)
+            {
+                if (LButtonPressed())
+                {
+                    ResetLButtonPressed();
+                    if (latestMouseDownMenuItem == this && children.IsEmpty())
+                    {
+                        auto result = ResetSelected(menuControl);
+                        if (result.Error()) return result;
+                        ResetMouseInClient();
+                        result = this->DoMouseLeave(menuControl);
+                        if (result.Error()) return result;
+                        result = LeaveChildren(menuControl);
+                        if (result.Error()) return result;
+                        result = Close(menuControl);
+                        if (result.Error()) return result;
+                        result = DoClick();
+                        if (result.Error()) return result;
+                    }
+                    if (isMenuBar)
+                    {
+                        MenuItem* openedMenuItem = menuControl->GetOpenedMenuItem();
+                        if (openedMenuItem != null)
+                        {
+                            auto result = openedMenuItem->SetState(State.closed, menuControl);
+                            if (result.Error()) return result;
+                        }
+                        auto result = menuControl->SetClosed();
+                        if (result.Error()) return result;
+                        result = menuControl->SetMenuInvalidated();
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected virtual void OnMouseUp(MouseEventArgs& args)
+        {
+            mouseUpEvent.Fire(args);
+        }
+        [nodiscard]
+        internal Result<bool> DoMouseEnter(bool parentIsOpen, MenuControl* menuControl)
+        {
+            if (parentIsOpen)
+            {
+                Component* prev = PrevSibling();
+                while (prev != null)
+                {
+                    if (prev is MenuItem*)
+                    {
+                        MenuItem* prevItem = cast<MenuItem*>(prev);
+                        auto result = prevItem->DoMouseLeave(menuControl);
+                        if (result.Error()) return result;
+                    }
+                    prev = prev->PrevSibling();
+                }
+                Component* next = NextSibling();
+                while (next != null)
+                {
+                    if (next is MenuItem*)
+                    {
+                        MenuItem* nextItem = cast<MenuItem*>(next);
+                        auto result = nextItem->DoMouseLeave(menuControl);
+                        if (result.Error()) return result;
+                    }
+                    next = next->NextSibling();
+                }
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is MenuItem*)
+                    {
+                        MenuItem* childMenuItem = cast<MenuItem*>(child);
+                        auto result = childMenuItem->ResetSelected(menuControl);
+                        if (result.Error()) return result;
+                        if (childMenuItem->MouseInClient())
+                        {
+                            childMenuItem->ResetMouseInClient();
+                            result = childMenuItem->DoMouseLeave(menuControl);
+                            if (result.Error()) return result;
+                        }
+                    }
+                    child = child->NextSibling();
+                }
+            }
+            if (parentIsOpen)
+            {
+                auto result = SetState(State.open, menuControl);
+                if (result.Error()) return result;
+                menuControl->SetLatestOpenedMenuItem(this);
+            }
+            OnMouseEnter();
+            auto result = menuControl->SetMenuInvalidated();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> DoMouseMove(MouseEventArgs& args)
+        {
+            auto result = OnMouseMove(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        protected virtual void OnMouseEnter()
+        {
+            mouseEnterEvent.Fire();
+        }
+        [nodiscard]
+        internal Result<bool> LeaveChildren(MenuControl* menuControl)
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* childMenuItem = cast<MenuItem*>(child);
+                    auto result = childMenuItem->ResetSelected(menuControl);
+                    if (result.Error()) return result;
+                    childMenuItem->ResetMouseInClient();
+                    result = childMenuItem->DoMouseLeave(menuControl);
+                    if (result.Error()) return result;
+                    result = childMenuItem->LeaveChildren(menuControl);
+                    if (result.Error()) return result;
+                }
+                child = child->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> DoMouseLeave(MenuControl* menuControl)
+        {
+            ResetLButtonPressed();
+            if (state == State.open)
+            {
+                auto result = SetState(State.closed, menuControl);
+                if (result.Error()) return result;
+                result = LeaveChildren(menuControl);
+                if (result.Error()) return result;
+                OnMouseLeave();
+            }
+            else if (Level() == 0)
+            {
+                OnMouseLeave();
+            }
+            return Result<bool>(true);
+        }
+        protected virtual void OnMouseLeave()
+        {
+            mouseLeaveEvent.Fire();
+        }
+        [nodiscard]
+        internal Result<bool> DispatchMouseMove(MouseEventArgs& args, bool& handled, MenuControl* menuControl)
+        {
+            if (unionRect.Contains(args.location))
+            {
+                if (Contains(args.location))
+                {
+                    auto result = SetSelected(menuControl);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    auto result = ResetSelected(menuControl);
+                    if (result.Error()) return result;
+                    ResetMouseInClient();
+                }
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is MenuItem*)
+                    {
+                        MenuItem* childMenuItem = cast<MenuItem*>(child);
+                        if (childMenuItem->Contains(args.location))
+                        {
+                            auto result = childMenuItem->SetSelected(menuControl);
+                            if (result.Error()) return result;
+                            if (!childMenuItem->MouseInClient())
+                            {
+                                childMenuItem->SetMouseInClient();
+                                result = childMenuItem->DoMouseEnter(true, menuControl);
+                                if (result.Error()) return result;
+                                handled = true;
+                            }
+                            else
+                            {
+                                result = childMenuItem->DoMouseMove(args);
+                                if (result.Error()) return result;
+                            }
+                        }
+                        else
+                        {
+                            auto result = childMenuItem->ResetSelected(menuControl);
+                            if (result.Error()) return result;
+                            if (childMenuItem->MouseInClient())
+                            {
+                                childMenuItem->ResetMouseInClient();
+                                if (!childMenuItem->IsSameOrParentOf(menuControl->LatestOpenedMenuItem()))
+                                {
+                                    result = childMenuItem->DoMouseLeave(menuControl);
+                                    if (result.Error()) return result;
+                                }
+                            }
+                        }
+                    }
+                    child = child->NextSibling();
+                }
+            }
+            else
+            {
+                Component* child = children.FirstChild();
+                while (child != null)
+                {
+                    if (child is MenuItem*)
+                    {
+                        MenuItem* childMenuItem = cast<MenuItem*>(child);
+                        if (childMenuItem->IsSameOrParentOf(menuControl->LatestOpenedMenuItem()))
+                        {
+                            auto result = childMenuItem->DispatchMouseMove(args, handled, menuControl);
+                            if (result.Error()) return result;
+                            if (handled) return Result<bool>(true);
+                        }
+                    }
+                    child = child->NextSibling();
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseMove(MouseEventArgs& args)
+        {
+            mouseMoveEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> DoClick()
+        {
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                auto result = logView->WriteLine("MENUITEM: " + text + " CLICK!");
+                if (result.Error()) return result;
+            }
+            ClickEventArgs args;
+            auto result = OnClick(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnClick(ClickEventArgs& args)
+        {
+            clickEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        public void CalculateChildRect(Graphics& graphics, const Font& font, const StringFormat& format, const Point& location)
+        {
+            childRect = Rect();
+            childRect.location = location;
+            Component* child = children.FirstChild();
+            shortcutFieldWidth = 0;
+            childIndicatorFieldWidth = 0;
+            while (child != null)
+            {
+                if (child is MenuItemBase*)
+                {
+                    MenuItemBase* item = cast<MenuItemBase*>(child);
+                    Size size = item->MeasureItem(graphics, font, format, shortcutFieldWidth, childIndicatorFieldWidth);
+                    childRect.size.w = Max(childRect.size.w, size.w);
+                    childRect.size.h = childRect.size.h + size.h;
+                }
+                child = child->NextSibling();
+            }
+            childRect.size.w = childRect.size.w + shortcutFieldWidth + childIndicatorFieldWidth;
+            Rect itemRect(childRect.location, Size(childRect.size.w, 0));
+            child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItemBase*)
+                {
+                    MenuItemBase* item = cast<MenuItemBase*>(child);
+                    item->SetLocation(itemRect.location);
+                    itemRect.size.h = item->GetSize().h;
+                    item->SetSize(itemRect.size);
+                    itemRect.location.y = itemRect.location.y + itemRect.size.h;
+                }
+                child = child->NextSibling();
+            }
+            int shadowWidth = ShadowWidth();
+            childRect.size.h = childRect.size.h + shadowWidth;
+            childRect.size.w = childRect.size.w + shadowWidth;
+            child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* item = cast<MenuItem*>(child);
+                    if (!item->Children().IsEmpty())
+                    {
+                        Point itemLocation = item->Location();
+                        Size itemSize = item->GetSize();
+                        item->CalculateChildRect(graphics, font, format, Point(itemLocation.x + itemSize.w - shadowWidth, itemLocation.y));
+                    }
+                }
+                child = child->NextSibling();
+            }
+            Rect r(Location(), GetSize());
+            unionRect = Rect.Union(r, childRect);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics, const Padding& parentPadding, const Brush& textBrush, const Brush& disabledTextBrush,
+            const Brush& backgroundBrush, const Brush& mouseOverBrush, const Brush& menuOpenBrush, const Brush& shadowBrush, const Brush& blackBrush,
+            const Pen& blackPen, const Pen& darkPen, const Font& font, const StringFormat& format,
+            const Color& menuOpenColor, MenuControl* menuControl, bool drawSubItems, const Point& origin)
+        {
+            switch (state)
+            {
+                case State.closed:
+                {
+                    auto drawResult = DrawClosed(graphics, parentPadding, textBrush, disabledTextBrush, mouseOverBrush, backgroundBrush, menuOpenBrush,
+                        blackBrush, blackPen, font, format, menuOpenColor, menuControl, drawSubItems, origin);
+                    if (drawResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                    }
+                    break;
+                }
+                case State.open:
+                {
+                    auto drawResult = DrawOpen(graphics, parentPadding, textBrush, disabledTextBrush, backgroundBrush, mouseOverBrush, menuOpenBrush,
+                        shadowBrush, blackBrush, blackPen, darkPen, font, format, menuOpenColor, menuControl, drawSubItems, origin);
+                    if (drawResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                    }
+                    break;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public const string& Text() const
+        {
+            return text;
+        }
+        [nodiscard]
+        public Result<bool> SetText(const string& text_, MenuControl* menuControl)
+        {
+            text = text_;
+            SetAccessKey();
+            auto result = menuControl->InvalidateMenu();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline wchar AccessKey() const
+        {
+            return accessKey;
+        }
+        private Result<bool> SetAccessKey()
+        {
+            auto utf16Result = ToUtf16(text);
+            if (utf16Result.Error())
+            {
+                return Result<bool>(ErrorId(utf16Result.GetErrorId()));
+            }
+            wstring s = Rvalue(utf16Result.Value());
+            long ampPos = s.Find('&');
+            if (ampPos != -1 && ampPos < s.Length() - 1)
+            {
+                auto upperResult = ToUpper(cast<uchar>(s[ampPos + 1]));
+                if (upperResult.Error())
+                {
+                    return Result<bool>(ErrorId(upperResult.GetErrorId()));
+                }
+                accessKey = cast<wchar>(upperResult.Value());
+            }
+            else
+            {
+                accessKey = '\0';
+            }
+            return Result<bool>(true);
+        }
+        public void SetShortcut(Keys shortcut_)
+        {
+            shortcut = shortcut_;
+            MenuControl* menuControl = GetMenuControl();
+            if (menuControl != null)
+            {
+                menuControl->SetMenuChanged();
+            }
+        }
+        private MenuItem* GetChildItemByAccessKey(wchar accessKey)
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (menuItem->AccessKey() == accessKey)
+                    {
+                        return menuItem;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        internal void CollectShortcuts(HashMap<Keys, MenuItem*>& shortcuts)
+        {
+            if (shortcut != Keys.none)
+            {
+                shortcuts[shortcut] = this;
+            }
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    menuItem->CollectShortcuts(shortcuts);
+                }
+                child = child->NextSibling();
+            }
+        }
+        public const Container& Children() const
+        {
+            return children;
+        }
+        public override Padding DefaultPadding() const
+        {
+            if (Level() == 0)
+            {
+                return Padding(4, 0, 4, 0);
+            }
+            else
+            {
+                return Padding(32, 4, 32, 4);
+            }
+        }
+        public Padding ShortcutPadding() const
+        {
+            if (Level() == 0)
+            {
+                return Padding(0, 0, 0, 0);
+            }
+            else
+            {
+                return Padding(4, 0, 4, 0);
+            }
+        }
+        public virtual int ShadowWidth() const
+        {
+            return 3;
+        }
+        public virtual int ChildIndicatorIndent() const
+        {
+            return 9;
+        }
+        public virtual int ChildIndicatorWidth() const
+        {
+            return 6;
+        }
+        public bool Contains(const Point& p)
+        {
+            Rect r(Location(), GetSize());
+            if (r.Contains(p))
+            {
+                return true;
+            }
+            return false;
+        }
+        public bool UnionRectContains(const Point& p)
+        {
+            return unionRect.Contains(p);
+        }
+        public inline const Rect& UnionRect() const
+        {
+            return unionRect;
+        }
+        public void GetOpenRect(Rect& parentRect)
+        {
+            if (!childRect.IsEmpty())
+            {
+                if (parentRect.IsEmpty())
+                {
+                    parentRect = childRect;
+                }
+                else
+                {
+                    parentRect = Rect.Union(parentRect, childRect);
+                }
+            }
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is MenuItem*)
+                {
+                    MenuItem* menuItem = cast<MenuItem*>(child);
+                    if (menuItem->GetState() == MenuItem.State.open)
+                    {
+                        menuItem->GetOpenRect(parentRect);
+                    }
+                }
+                child = child->NextSibling();
+            }
+        }
+        public inline State GetState() const
+        {
+            return state;
+        }
+        [nodiscard]
+        internal Result<bool> SetState(State state_, MenuControl* menuControl)
+        {
+            if (state != state_)
+            {
+                state = state_;
+                auto result = menuControl->SetMenuInvalidated();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public override Size MeasureItem(Graphics& graphics, const Font& font, const StringFormat& format, int& shortcutFieldWidth, int& childIndicatorFieldWidth)
+        {
+            Padding padding = DefaultPadding();
+            auto measureStringResult = graphics.MeasureStringRectF(text, font, PointF(0, 0), format);
+            if (measureStringResult.Error())
+            {
+                SetErrorId(measureStringResult.GetErrorId());
+                return Size();
+            }
+            RectF rect = Rvalue(measureStringResult.Value());
+            int w = cast<int>(rect.size.w);
+            w = w + padding.Horizontal();
+            if (shortcut != Keys.none)
+            {
+                string shortcutText = ToString(shortcut);
+                auto shortcutTextResult = graphics.MeasureStringRectF(shortcutText, font, PointF(0, 0), format);
+                if (shortcutTextResult.Error())
+                {
+                    SetErrorId(measureStringResult.GetErrorId());
+                    return Size();
+                }
+                RectF shortcutRect = Rvalue(shortcutTextResult.Value());
+                Padding shortcutPadding = ShortcutPadding();
+                int shortcutWidth = cast<int>(shortcutRect.size.w + shortcutPadding.Horizontal());
+                shortcutFieldWidth = Max(shortcutFieldWidth, shortcutWidth);
+            }
+            if (Level() > 0 && !children.IsEmpty())
+            {
+                childIndicatorFieldWidth = Max(childIndicatorFieldWidth, ChildIndicatorIndent());
+            }
+            int h = cast<int>(rect.size.h);
+            h = h + padding.Vertical();
+            Size size(w, h);
+            SetSize(size);
+            return size;
+        }
+        private Result<bool> DrawClosed(Graphics& graphics, const Padding& parentPadding, const Brush& textBrush, const Brush& disabledTextBrush,
+            const Brush& mouseOverBrush, const Brush& backgroundBrush,
+            const Brush& menuOpenBrush, const Brush& blackBrush, const Pen& blackPen, const Font& font, const StringFormat& format, const Color& menuOpenColor,
+            MenuControl* menuControl, bool drawSubItems, const Point& origin)
+        {
+            Point loc = Location();
+            loc.x = loc.x - origin.x;
+            loc.y = loc.y - origin.y;
+            Size size = GetSize();
+            Rect r(loc, size);
+            r.size.w = r.size.w - 1;
+            r.size.h = r.size.h - 1;
+            MenuItem* selectedMenuItem = menuControl->GetSelectedMenuItem();
+            if (Selected() || this == selectedMenuItem)
+            {
+                auto fillRectangleResult = graphics.FillRectangle(mouseOverBrush, r);
+                if (fillRectangleResult.Error())
+                {
+                    return Result<bool>(ErrorId(fillRectangleResult.GetErrorId()));
+                }
+                auto drawRectangleResult = graphics.DrawRectangle(blackPen, r);
+                if (drawRectangleResult.Error())
+                {
+                    return Result<bool>(ErrorId(drawRectangleResult.GetErrorId()));
+                }
+            }
+            if (Level() == 0)
+            {
+                if (!drawSubItems)
+                {
+                    if (!Selected() && this != selectedMenuItem)
+                    {
+                        auto fillRectangleResult = graphics.FillRectangle(backgroundBrush, r);
+                        if (fillRectangleResult.Error())
+                        {
+                            return Result<bool>(ErrorId(fillRectangleResult.GetErrorId()));
+                        }
+                    }
+                    StringFormat textFormat(format);
+                    auto setAlignmentResult = textFormat.SetAlignment(StringAlignment.center);
+                    if (setAlignmentResult.Error())
+                    {
+                        return Result<bool>(ErrorId(setAlignmentResult.GetErrorId()));
+                    }
+                    RectF rect(PointF(loc.x, loc.y), SizeF(size.w, size.h));
+                    if (IsEnabled())
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, rect, textFormat, textBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                    }
+                    else
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, rect, textFormat, disabledTextBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (drawSubItems)
+                {
+                    Padding padding = DefaultPadding();
+                    if (IsEnabled())
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, PointF(loc.x + padding.left, loc.y + padding.top), format, textBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                        DrawShortcut(graphics, textBrush, font, format, origin);
+                    }
+                    else
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, PointF(loc.x + padding.left, loc.y + padding.top), format, disabledTextBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                        DrawShortcut(graphics, disabledTextBrush, font, format, origin);
+                    }
+                    DrawChildIndicator(graphics, blackBrush, origin);
+                }
+            }
+            return Result<bool>(true);
+        }
+        private Result<bool> DrawOpen(Graphics& graphics, const Padding& parentPadding, const Brush& textBrush,
+            const Brush& disabledTextBrush, const Brush& backgroundBrush, const Brush& mouseOverBrush,
+            const Brush& menuOpenBrush, const Brush& shadowBrush, const Brush& blackBrush, const Pen& blackPen, const Pen& darkPen, const Font& font,
+            const StringFormat& format, const Color& menuOpenColor, MenuControl* menuControl, bool drawSubItems, const Point& origin)
+        {
+            Point loc = Location();
+            loc.x = loc.x - origin.x;
+            loc.y = loc.y - origin.y;
+            Size size = GetSize();
+            Rect r(loc, size);
+            r.size.w = r.size.w - 1;
+            r.size.h = r.size.h - 1;
+            int shadowWidth = ShadowWidth();
+            if (Level() == 0)
+            {
+                if (!drawSubItems)
+                {
+                    auto fillRectangleResult = graphics.FillRectangle(menuOpenBrush, r);
+                    if (fillRectangleResult.Error())
+                    {
+                        return Result<bool>(ErrorId(fillRectangleResult.GetErrorId()));
+                    }
+                    auto drawLineResult = graphics.DrawLine(blackPen, r.location, Point(r.location.x + r.size.w, r.location.y));
+                    if (drawLineResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                    }
+                    drawLineResult = graphics.DrawLine(blackPen, r.location, Point(r.location.x, r.location.y + r.size.h));
+                    if (drawLineResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                    }
+                    drawLineResult = graphics.DrawLine(blackPen, Point(r.location.x + r.size.w, r.location.y), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+                    if (drawLineResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                    }
+                    if (children.IsEmpty())
+                    {
+                        drawLineResult = graphics.DrawLine(blackPen, Point(r.location.x, r.location.y + r.size.h), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                    }
+                    StringFormat textFormat(format);
+                    if (textFormat.Error()) return Result<bool>(ErrorId(textFormat.GetErrorId()));
+                    auto result = textFormat.SetAlignment(StringAlignment.center);
+                    if (result.Error()) return result;
+                    RectF rect(PointF(loc.x, loc.y), SizeF(size.w, size.h));
+                    if (IsEnabled())
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, rect, textFormat, textBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                    }
+                    else
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, rect, textFormat, disabledTextBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (drawSubItems)
+                {
+                    MenuItem* selectedMenuItem = menuControl->GetSelectedMenuItem();
+                    if (Selected() || this == selectedMenuItem)
+                    {
+                        auto fillRectangleResult = graphics.FillRectangle(mouseOverBrush, r);
+                        if (fillRectangleResult.Error())
+                        {
+                            return Result<bool>(ErrorId(fillRectangleResult.GetErrorId()));
+                        }
+                        auto drawRectangleResult = graphics.DrawRectangle(blackPen, r);
+                        if (drawRectangleResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawRectangleResult.GetErrorId()));
+                        }
+                    }
+                    else
+                    {
+                        Rect inside = r;
+                        inside.Inflate(-1, -1);
+                        auto fillRectangleResult = graphics.FillRectangle(menuOpenBrush, inside);
+                        if (fillRectangleResult.Error())
+                        {
+                            return Result<bool>(ErrorId(fillRectangleResult.GetErrorId()));
+                        }
+                    }
+                    Padding padding = DefaultPadding();
+                    if (IsEnabled())
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, PointF(loc.x + padding.left, loc.y + padding.top), format, textBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                        auto drawShortcutResult = DrawShortcut(graphics, textBrush, font, format, origin);
+                        if (drawShortcutResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawShortcutResult.GetErrorId()));
+                        }
+                    }
+                    else
+                    {
+                        auto drawStringResult = graphics.DrawString(text, font, PointF(loc.x + padding.left, loc.y + padding.top), format, disabledTextBrush);
+                        if (drawStringResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                        }
+                        auto drawShortcutResult = DrawShortcut(graphics, disabledTextBrush, font, format, origin);
+                        if (drawShortcutResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawShortcutResult.GetErrorId()));
+                        }
+                    }
+                    auto drawIndicatorResult = DrawChildIndicator(graphics, blackBrush, origin);
+                    if (drawIndicatorResult.Error())
+                    {
+                        return Result<bool>(ErrorId(drawIndicatorResult.GetErrorId()));
+                    }
+                }
+            }
+            if (!childRect.IsEmpty())
+            {
+                if (drawSubItems)
+                {
+                    auto getClipResult = graphics.GetClip();
+                    if (getClipResult.Error())
+                    {
+                        return Result<bool>(ErrorId(getClipResult.GetErrorId()));
+                    }
+                    Region prevClipRegion = getClipResult.Value();
+                    Rect menuBox = childRect;
+                    menuBox.location.x = menuBox.location.x - origin.x;
+                    menuBox.location.y = menuBox.location.y - origin.y;
+                    menuBox.size.h = menuBox.size.h - shadowWidth;
+                    menuBox.size.w = menuBox.size.w - shadowWidth;
+                    auto setClipResult = graphics.SetClip(menuBox);
+                    if (setClipResult.Error())
+                    {
+                        return Result<bool>(ErrorId(setClipResult.GetErrorId()));
+                    }
+                    auto clearResult = graphics.Clear(menuOpenColor);
+                    if (clearResult.Error())
+                    {
+                        return Result<bool>(ErrorId(clearResult.GetErrorId()));
+                    }
+                    Rect cr(childRect);
+                    cr.location.x = cr.location.x - origin.x;
+                    cr.location.y = cr.location.y - origin.y;
+                    setClipResult = graphics.SetClip(cr);
+                    if (setClipResult.Error())
+                    {
+                        return Result<bool>(ErrorId(setClipResult.GetErrorId()));
+                    }
+                    Rect bottomShadowRect(
+                        Point(cr.location.x + shadowWidth, cr.location.y + cr.size.h - shadowWidth),
+                        Size(cr.size.w - shadowWidth, shadowWidth));
+                    auto fillRectangleResult = graphics.FillRectangle(shadowBrush, bottomShadowRect);
+                    if (fillRectangleResult.Error())
+                    {
+                        return Result<bool>(ErrorId(fillRectangleResult.GetErrorId()));
+                    }
+                    Rect rightShadowRect(
+                        Point(cr.location.x + cr.size.w - shadowWidth, cr.location.y + shadowWidth),
+                        Size(shadowWidth, cr.size.h - shadowWidth));
+                    fillRectangleResult = graphics.FillRectangle(shadowBrush, rightShadowRect);
+                    if (fillRectangleResult.Error())
+                    {
+                        return Result<bool>(ErrorId(fillRectangleResult.GetErrorId()));
+                    }
+                    Rect rect = childRect;
+                    rect.location.x = rect.location.x - origin.x;
+                    rect.location.y = rect.location.y - origin.y;
+                    rect.size.w = rect.size.w - 1;
+                    rect.size.h = rect.size.h - 1;
+                    if (Level() == 0)
+                    {
+                        auto drawLineResult = graphics.DrawLine(blackPen, rect.location, Point(rect.location.x, rect.location.y + rect.size.h - shadowWidth));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                        drawLineResult = graphics.DrawLine(blackPen, Point(rect.location.x, rect.location.y + rect.size.h - shadowWidth),
+                            Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y + rect.size.h - shadowWidth));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                        drawLineResult = graphics.DrawLine(blackPen, Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y + rect.size.h - shadowWidth),
+                            Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                        drawLineResult = graphics.DrawLine(blackPen,
+                            Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y), Point(r.location.x + r.size.w, rect.location.y));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                    }
+                    else
+                    {
+                        auto drawLineResult = graphics.DrawLine(blackPen, rect.location, Point(rect.location.x, rect.location.y + rect.size.h - shadowWidth));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                        drawLineResult = graphics.DrawLine(blackPen, Point(rect.location.x, r.location.y + rect.size.h - shadowWidth),
+                            Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y + rect.size.h - shadowWidth));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                        drawLineResult = graphics.DrawLine(blackPen, Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y + rect.size.h - shadowWidth),
+                            Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                        drawLineResult = graphics.DrawLine(blackPen, Point(rect.location.x + rect.size.w - shadowWidth, rect.location.y),
+                            Point(rect.location.x, rect.location.y));
+                        if (drawLineResult.Error())
+                        {
+                            return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+                        }
+                    }
+                    Component* child = children.FirstChild();
+                    while (child != null)
+                    {
+                        if (child is MenuItemBase*)
+                        {
+                            MenuItemBase* menuItem = cast<MenuItem*>(child);
+                            auto drawResult = menuItem->Draw(graphics, parentPadding, textBrush, disabledTextBrush, backgroundBrush, mouseOverBrush,
+                                menuOpenBrush, shadowBrush, blackBrush, blackPen, darkPen, font, format, menuOpenColor, menuControl, drawSubItems, origin);
+                            if (drawResult.Error())
+                            {
+                                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                    setClipResult = graphics.SetClip(prevClipRegion);
+                    if (setClipResult.Error())
+                    {
+                        return Result<bool>(ErrorId(setClipResult.GetErrorId()));
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        private Result<bool> DrawShortcut(Graphics& graphics, const Brush& textBrush, const Font& font, const StringFormat& format, const Point& origin)
+        {
+            if (shortcut != Keys.none)
+            {
+                string shortcutText = ToString(shortcut);
+                Padding shortcutPadding = ShortcutPadding();
+                int shortcutFieldWidth = 0;
+                int childIndicatorFieldWidth = 0;
+                MenuItem* parent = GetParentMenuItem();
+                if (parent != null)
+                {
+                    shortcutFieldWidth = parent->shortcutFieldWidth;
+                    childIndicatorFieldWidth = parent->childIndicatorFieldWidth;
+                }
+                Padding padding = DefaultPadding();
+                int shadowWidth = ShadowWidth();
+                Point loc = Location();
+                loc.x = loc.x - origin.x;
+                loc.y = loc.y - origin.y;
+                Size size = GetSize();
+                auto drawStringResult = graphics.DrawString(shortcutText, font,
+                    PointF(loc.x + size.w - shadowWidth - shortcutFieldWidth - childIndicatorFieldWidth + shortcutPadding.left, loc.y + padding.top), format, textBrush);
+                if (drawStringResult.Error())
+                {
+                    return Result<bool>(ErrorId(drawStringResult.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        private Result<bool> DrawChildIndicator(Graphics& graphics, const Brush& blackBrush, const Point& origin)
+        {
+            if (children.IsEmpty()) return Result<bool>(true);
+            Point loc = Location();
+            loc.x = loc.x - origin.x;
+            loc.y = loc.y - origin.y;
+            Size size = GetSize();
+            int childIndicatorIndent = ChildIndicatorIndent();
+            int childIndicatorWidth = ChildIndicatorWidth();
+            int shadowWidth = ShadowWidth();
+            Point up(loc.x + size.w - childIndicatorIndent - shadowWidth, loc.y + size.h / 2 - childIndicatorWidth / 2);
+            Point down(loc.x + size.w - childIndicatorIndent - shadowWidth, loc.y + size.h / 2 + childIndicatorWidth / 2);
+            Point right(loc.x + size.w - childIndicatorIndent + cast<int>((Sqrt(3) / 2.0) * childIndicatorWidth) - shadowWidth, loc.y + size.h / 2);
+            List<Point> triangle;
+            triangle.Add(up);
+            triangle.Add(down);
+            triangle.Add(right);
+            auto fillPolygonResult = graphics.FillPolygon(blackBrush, 3, triangle.Begin().Ptr());
+            if (fillPolygonResult.Error())
+            {
+                return Result<bool>(ErrorId(fillPolygonResult.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        internal bool IsSameOrParentOf(MenuItem* menuItem) const
+        {
+            if (this == menuItem) return true;
+            MenuItem* parent = menuItem->GetParentMenuItem();
+            if (parent != null)
+            {
+                return IsSameOrParentOf(parent);
+            }
+            return false;
+        }
+        internal inline bool Selected() const
+        {
+            return (flags & Flags.selected) != 0;
+        }
+        [nodiscard]
+        internal Result<bool> SetSelected(MenuControl* menuControl)
+        {
+            if ((flags & Flags.selected) == 0)
+            {
+                flags = cast<Flags>(flags | Flags.selected);
+                auto result = menuControl->SetMenuInvalidated();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> ResetSelected(MenuControl* menuControl)
+        {
+            if ((flags & Flags.selected) != 0)
+            {
+                flags = cast<Flags>(flags & ~Flags.selected);
+                auto result = menuControl->SetMenuInvalidated();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public inline bool IsEnabled() const
+        {
+            return cast<Flags>(flags & Flags.disabled) == Flags.none;
+        }
+        public inline bool IsDisabled() const
+        {
+            return cast<Flags>(flags & Flags.disabled) != Flags.none;
+        }
+        [nodiscard]
+        public Result<bool> Enable()
+        {
+            if (!IsEnabled())
+            {
+                flags = cast<Flags>(flags & ~Flags.disabled);
+                MenuControl* menuControl = GetMenuControl();
+                if (menuControl != null)
+                {
+                    auto result = menuControl->SetMenuInvalidated();
+                    if (result.Error()) return result;
+                    menuControl->SetMenuChanged();
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Disable()
+        {
+            if (IsEnabled())
+            {
+                flags = cast<Flags>(flags | Flags.disabled);
+                MenuControl* menuControl = GetMenuControl();
+                if (menuControl != null)
+                {
+                    auto result = menuControl->SetMenuInvalidated();
+                    if (result.Error()) return result;
+                    menuControl->SetMenuChanged();
+                }
+            }
+            return Result<bool>(true);
+        }
+        internal inline bool MouseInClient() const
+        {
+            return (flags & Flags.mouseInClient) != 0;
+        }
+        internal void SetMouseInClient()
+        {
+            flags = cast<Flags>(flags | Flags.mouseInClient);
+        }
+        internal void ResetMouseInClient()
+        {
+            flags = cast<Flags>(flags & ~Flags.mouseInClient);
+        }
+        private inline bool LButtonPressed() const
+        {
+            return (flags & Flags.lbuttonPressed) != 0;
+        }
+        private void SetLButtonPressed()
+        {
+            flags = cast<Flags>(flags | Flags.lbuttonPressed);
+        }
+        private void ResetLButtonPressed()
+        {
+            flags = cast<Flags>(flags & ~Flags.lbuttonPressed);
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseDownEvent()
+        {
+            return mouseDownEvent;
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseUpEvent()
+        {
+            return mouseUpEvent;
+        }
+        public Event<MouseEnterEventHandler>& MouseEnterEvent()
+        {
+            return mouseEnterEvent;
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseMoveEvent()
+        {
+            return mouseMoveEvent;
+        }
+        public Event<MouseLeaveEventHandler>& MouseLeaveEvent()
+        {
+            return mouseLeaveEvent;
+        }
+        public Event<ClickEventHandler, ClickEventArgs>& ClickEvent()
+        {
+            return clickEvent;
+        }
+        private string text;
+        private Container children;
+        private Rect childRect;
+        private Rect unionRect;
+        private Event<MouseEventHandler, MouseEventArgs> mouseDownEvent;
+        private Event<MouseEventHandler, MouseEventArgs> mouseUpEvent;
+        private Event<MouseEnterEventHandler> mouseEnterEvent;
+        private Event<MouseEventHandler, MouseEventArgs> mouseMoveEvent;
+        private Event<MouseLeaveEventHandler> mouseLeaveEvent;
+        private Event<ClickEventHandler, ClickEventArgs> clickEvent;
+        private State state;
+        private Flags flags;
+        private wchar accessKey;
+        private Keys shortcut;
+        private int shortcutFieldWidth;
+        private int childIndicatorFieldWidth;
+    }
+
+    public class MenuItemSeparator : MenuItemBase
+    {
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics, const Padding& parentPadding, const Brush& textBrush, const Brush& disabledTextBrush,
+            const Brush& backgroundBrush, const Brush& mouseOverBrush, const Brush& menuOpenBrush, const Brush& shadowBrush, const Brush& blackBrush,
+            const Pen& blackPen, const Pen& darkPen, const Font& font, const StringFormat& format,
+            const Color& menuOpenColor, MenuControl* menuControl, bool drawSubItems, const Point& origin)
+        {
+            Point loc = Location();
+            loc.x = loc.x - origin.x;
+            loc.y = loc.y - origin.y;
+            Rect rect(loc, GetSize());
+            Padding padding = DefaultPadding();
+            auto drawLineResult = graphics.DrawLine(darkPen,
+                Point(rect.location.x + padding.left, rect.location.y + rect.size.h / 2),
+                Point(rect.location.x + rect.size.w - padding.right, rect.location.y + rect.size.h / 2));
+            if (drawLineResult.Error())
+            {
+                return Result<bool>(ErrorId(drawLineResult.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        public override Padding DefaultPadding() const
+        {
+            return Padding(32, 4, 8, 4);
+        }
+        public override Size MeasureItem(Graphics& graphics, const Font& font, const StringFormat& format, int& shortcutFieldWidth, int& childIndicatorFieldWidth)
+        {
+            Padding padding = DefaultPadding();
+            RectF rect;
+            int w = cast<int>(rect.size.w);
+            w = w + padding.Horizontal();
+            int h = cast<int>(rect.size.h);
+            h = h + padding.Vertical();
+            Size size(w, h);
+            SetSize(size);
+            return size;
+        }
+    }
+}

@@ -29,7 +29,7 @@ void ControlFlowGraphNode::AddNext(int32_t next)
 }
 
 Function::Function(const std::string& name_, FunctionType* type_, Context& context) : Value(), name(name_), type(type_), nextResultNumber(0), nextLocalNumber(0), nextArgumentNumber(0),
-    linkOnce(false), nextBBNumber(0), nothrow(false), fileIndex(-1), functionId(), nopResultDeclarationWritten(false), nextControlFlowGraphNodeNumber(0)
+    /*/linkOnce(false),*/ nextBBNumber(0), nothrow(false), fileIndex(-1), functionId(), nopResultDeclarationWritten(false), nextControlFlowGraphNodeNumber(0)
 {
     entryBlock.reset(new BasicBlock(nextBBNumber++, "entry"));
     int paramIndex = 0;
@@ -103,12 +103,14 @@ void Function::SetFullName(const std::string& functionName)
 
 void Function::WriteDeclaration(util::CodeFormatter& formatter, Context& context)
 {
+/*
     std::string once;
     if (linkOnce)
     {
         once = "inline ";
     }
-    formatter.Write(once + type->ReturnType()->Name() + " " + name + "(");
+*/
+    formatter.Write(/*once + */type->ReturnType()->Name() + " " + name + "(");
     for (int i = 0; i < type->ParamTypes().size(); ++i)
     {
         if (i > 0)
@@ -143,12 +145,14 @@ void Function::Write(util::CodeFormatter& formatter, Context& context, util::Bin
     if (basicBlocks.empty()) return;
     context.SetCurrentBasicBlock(nullptr);
     context.SetCurrentFunction(this);
+/*
     std::string once;
     if (linkOnce)
     {
         once = "inline ";
     }
-    formatter.Write(once + type->ReturnType()->Name() + " " + name + "(");
+*/
+    formatter.Write(/*once + */type->ReturnType()->Name() + " " + name + "(");
     for (int i = 0; i < type->ParamTypes().size(); ++i)
     {
         if (i > 0)

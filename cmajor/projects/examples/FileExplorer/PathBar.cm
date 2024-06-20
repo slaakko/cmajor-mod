@@ -1,0 +1,234 @@
+using System;
+using System.Windows;
+
+namespace FileExplorer
+{
+    public System.Windows.Color DefaultPathBarBackgroundColor()
+    {
+        return System.Windows.Color.White();
+    }
+
+    public System.Windows.Color DefaultPathBarFrameColor()
+    {
+        return System.Windows.Color(204u, 206u, 219u);
+    }
+
+    public ControlCreateParams& PathBarControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return controlCreateParams.SetWindowClassName("FileExplorer.PathBar").
+            SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).
+            SetBackgroundColor(DefaultPathBarBackgroundColor());
+    }
+
+    public class PathBarCreateParams
+    {
+        public PathBarCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_),
+            frameColor(DefaultPathBarFrameColor())
+        {
+        }
+        public PathBarCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public PathBarCreateParams& SetFrameColor(const System.Windows.Color& frameColor_)
+        {
+            frameColor = frameColor_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public System.Windows.Color frameColor;
+    }
+
+    public class PathBar : ContainerControl
+    {
+        public PathBar(PathBarCreateParams& createParams,
+            ControlCreateParams& emptyViewCreateParams,
+            ParentPathSelectorCreateParams& parentPathSelectorCreateParams,
+            PathDividerCreateParams& pathDividerCreateParams,
+            PathViewCreateParams& pathViewCreateParams) :
+            base(createParams.controlCreateParams)
+        {
+            UniquePtr<EmptyView> emptyViewPtr(new EmptyView(emptyViewCreateParams));
+            if (emptyViewPtr->Error())
+            {
+                SetErrorId(emptyViewPtr->GetErrorId());
+                return;
+            }
+            emptyView = emptyViewPtr.Get();
+            auto result = AddChild(emptyViewPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<PathDivider> pathDivider1Ptr(new PathDivider(pathDividerCreateParams));
+            if (pathDivider1Ptr->Error())
+            {
+                SetErrorId(pathDivider1Ptr->GetErrorId());
+                return;
+            }
+            pathDivider1 = pathDivider1Ptr.Get();
+            result = AddChild(pathDivider1Ptr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<ParentPathSelector> parentPathSelectorPtr(new ParentPathSelector(parentPathSelectorCreateParams));
+            if (parentPathSelectorPtr->Error())
+            {
+                SetErrorId(parentPathSelectorPtr->GetErrorId());
+                return;
+            }
+            parentPathSelector = parentPathSelectorPtr.Get();
+            parentPathSelector->SetDoubleBuffered();
+            result = AddChild(parentPathSelectorPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<PathDivider> pathDivider2Ptr(new PathDivider(pathDividerCreateParams));
+            if (pathDivider2Ptr->Error())
+            {
+                SetErrorId(pathDivider2Ptr->GetErrorId());
+                return;
+            }
+            pathDivider2 = pathDivider2Ptr.Get();
+            result = AddChild(pathDivider2Ptr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<PathView> pathViewPtr(new PathView(pathViewCreateParams));
+            if (pathViewPtr->Error())
+            {
+                SetErrorId(pathViewPtr->GetErrorId());
+                return;
+            }
+            pathView = pathViewPtr.Get();
+            pathView->SetDoubleBuffered();
+            result = AddChild(pathViewPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public Result<bool> SetEmptyViewWidth(int width)
+        {
+            Size sz = emptyView->GetSize();
+            sz.w = width + 4;
+            auto result = emptyView->SetSize(sz);
+            if (result.Error()) return result;
+            Size pathDivider1Size = pathDivider1->GetSize();
+            sz.w = sz.w + pathDivider1Size.w;
+            sz.w = sz.w + 32;
+            Size pathDivider2Size = pathDivider2->GetSize();
+            sz.w = sz.w + pathDivider2Size.w;
+            Size pvSize = pathView->GetSize();
+            sz.w = sz.w + pvSize.w;
+            sz.h = Max(sz.h, pvSize.h);
+            result = SetSize(sz);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetPathViewMaxWidth(int width)
+        {
+            Size sz = emptyView->GetSize();
+            auto result = pathView->SetMaxWidth(width);
+            if (result.Error()) return result;
+            Size pathDivider1Size = pathDivider1->GetSize();
+            sz.w = sz.w + pathDivider1Size.w;
+            sz.w = sz.w + 32;
+            Size pathDivider2Size = pathDivider2->GetSize();
+            sz.w = sz.w + pathDivider2Size.w;
+            Size pvSize = pathView->GetSize();
+            sz.w = sz.w + pvSize.w;
+            sz.h = Max(sz.h, pvSize.h);
+            result = SetSize(sz);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetCurrentNode(Node* currentNode_)
+        {
+            auto result = pathView->Clear();
+            if (result.Error()) return result;
+            currentNode = currentNode_;
+            Node* node = currentNode;
+            while (node != null)
+            {
+                if (!node->IsRootDirectory())
+                {
+                    result = pathView->PushPathComponent(node->Name(), node);
+                    if (result.Error()) return result;
+                }
+                node = node->Parent();
+            }
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Node* CurrentNode() const
+        {
+            return currentNode;
+        }
+        public ParentPathSelector* GetParentPathSelector() const
+        {
+            return parentPathSelector;
+        }
+        public PathView* GetPathView() const
+        {
+            return pathView;
+        }
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            if (emptyView != null)
+            {
+                auto result = emptyView->Invalidate();
+                if (result.Error()) return result;
+            }
+            if (pathDivider1 != null)
+            {
+                auto result = pathDivider1->Invalidate();
+                if (result.Error()) return result;
+            }
+            if (parentPathSelector != null)
+            {
+                auto result = parentPathSelector->Invalidate();
+                if (result.Error()) return result;
+            }
+            if (pathDivider2 != null)
+            {
+                auto result = pathDivider2->Invalidate();
+                if (result.Error()) return result;
+            }
+            if (pathView != null)
+            {
+                auto result = pathView->Invalidate();
+                if (result.Error()) return result;
+            }
+            return base->OnPaint(args);
+        }
+        protected override Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
+        {
+            auto result = base->OnSizeChanged(args);
+            if (result.Error()) return result;
+            result = DockChildren();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private EmptyView* emptyView;
+        private PathDivider* pathDivider1;
+        private ParentPathSelector* parentPathSelector;
+        private PathDivider* pathDivider2;
+        private PathView* pathView;
+        private Node* currentNode;
+    }
+}
+

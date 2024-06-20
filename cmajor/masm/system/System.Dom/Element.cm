@@ -71,6 +71,7 @@ namespace System.Xml
             base->Accept(visitor);
             visitor.EndVisit(*this);
         }
+        [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
             if (formatter.Error())
@@ -97,10 +98,12 @@ namespace System.Xml
                 bool preserveSpace = formatter.PreserveSpace() || !HasMultilineContent();
                 if (!preserveSpace)
                 {
-                    formatter.WriteLine();
+                    auto result = formatter.WriteLine();
+                    if (result.Error()) return result;
                     formatter.IncIndent();
                 }
-                base->Write(formatter);
+                auto result = base->Write(formatter);
+                if (result.Error()) return result;
                 if (!preserveSpace)
                 {
                     formatter.DecIndent();

@@ -1,0 +1,21 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/masm/system/System.Json/Json.token' using SoulCm lexer generator scmlg version 5.0.0
+
+using System;
+
+namespace JsonTokens
+{
+    public const long tokenSetID = 1929506153;
+
+    public const long STRING = (tokenSetID << 32) | 1;
+    public const long NUMBER = (tokenSetID << 32) | 2;
+    public const long LBRACKET = (tokenSetID << 32) | 3;
+    public const long RBRACKET = (tokenSetID << 32) | 4;
+    public const long LBRACE = (tokenSetID << 32) | 5;
+    public const long RBRACE = (tokenSetID << 32) | 6;
+    public const long COMMA = (tokenSetID << 32) | 7;
+    public const long COLON = (tokenSetID << 32) | 8;
+    public const long TRUE = (tokenSetID << 32) | 9;
+    public const long FALSE = (tokenSetID << 32) | 10;
+    public const long NULL = (tokenSetID << 32) | 11;
+
+} // JsonTokens

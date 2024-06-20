@@ -352,7 +352,7 @@ namespace System
         public List<String<CharT>> Split(const String<CharT>& s)
         {
             List<String<CharT>> result;
-            if (!IsEmpty() && s.IsEmpty()) 
+            if (!IsEmpty() && s.IsEmpty())
             {
                 result.Add(*this);
             }
@@ -485,7 +485,7 @@ namespace System
         private void Grow(long minRes)
         {
             minRes = MemGrow(minRes);
-            CharT* newChars = cast<CharT*>(RtmMemAlloc(sizeof(CharT) * minRes));
+            CharT* newChars = cast<CharT*>(MemAlloc(sizeof(CharT) * minRes));
             if (chars != null)
             {
                 StrCopy(newChars, chars);
@@ -576,6 +576,7 @@ namespace System
         return true;
     }
 
+    [nodiscard]
     public Result<ustring> ToLower(const ustring& s)
     {
         ustring lower;
@@ -591,6 +592,7 @@ namespace System
         return Result<ustring>(lower);
     }
 
+    [nodiscard]
     public Result<ustring> ToUpper(const ustring& s)
     {
         ustring upper;
@@ -606,6 +608,7 @@ namespace System
         return Result<ustring>(upper);
     }
 
+    [nodiscard]
     public Result<wstring> ToLower(const wstring& s)
     {
         auto utfResult = ToUtf32(s);
@@ -621,6 +624,7 @@ namespace System
         return ToUtf16(lowerResult.Value());
     }
 
+    [nodiscard]
     public Result<wstring> ToUpper(const wstring& s)
     {
         auto utfResult = ToUtf32(s);
@@ -636,6 +640,7 @@ namespace System
         return ToUtf16(upperResult.Value());
     }
 
+    [nodiscard]
     public Result<string> ToLower(const string& s)
     {
         auto utfResult = ToUtf32(s);
@@ -651,6 +656,7 @@ namespace System
         return ToUtf8(lowerResult.Value());
     }
 
+    [nodiscard]
     public Result<string> ToUpper(const string& s)
     {
         auto utfResult = ToUtf32(s);

@@ -16,6 +16,7 @@ namespace System.Xml
             base(kind_, span_, fileIndex_, name_), data(data_)
         {
         }
+        [nodiscard]
         public override Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
             if (formatter.Error())
@@ -41,6 +42,7 @@ namespace System.Xml
         private string data;
     }
 
+    [nodiscard]
     public Result<string> XmlCharDataEscape(const string& text)
     {
         string result;

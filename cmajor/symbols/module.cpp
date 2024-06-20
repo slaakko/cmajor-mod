@@ -49,7 +49,7 @@ SystemModuleSet::SystemModuleSet()
     systemModuleNames.insert(U"System.Parsing");
     systemModuleNames.insert(U"System.Net.Sockets");
     systemModuleNames.insert(U"System.Net.Http");
-    systemModuleNames.insert(U"System.Net.Bmp");
+    systemModuleNames.insert(U"System.Net.BinaryMessageProtocol");
     systemModuleNames.insert(U"System.Json");
     systemModuleNames.insert(U"System.Xml");
     systemModuleNames.insert(U"System.Dom");
@@ -1606,12 +1606,6 @@ void Module::CheckUpToDate()
             else if (GetBackEnd() == BackEnd::cpp)
             {
                 objectFilePath = libDirPath / sfp.filename().replace_extension(".o");
-/*              TODO 
-                const Tool& compilerTool = GetCompilerTool(GetPlatform(), GetToolChain());
-                const Configuration& configuration = GetToolConfiguration(compilerTool, GetConfig());
-                std::string outputDirPath = configuration.outputDirectory;
-                objectFilePath = libDirPath / outputDirPath / sfp.filename().replace_extension(compilerTool.outputFileExtension);
-*/
             }
             else if (GetBackEnd() == BackEnd::systemx)
             {
@@ -1628,22 +1622,25 @@ void Module::CheckUpToDate()
             {
                 std::string sourceFilePath = sfp.generic_string();
                 std::string objectFilePathStr = objectFilePath.generic_string();
-                if (false /*std::filesystem::last_write_time(sourceFilePath) > std::filesystem::last_write_time(objectFilePathStr)*/) // TODO!!!!
+                if (std::filesystem::last_write_time(sourceFilePath) > std::filesystem::last_write_time(objectFilePathStr)) 
                 {
-                    Warning warning(name, "source file '" + util::GetFullPath(sfp.generic_string()) + "' is more recent than object file '" +
-                        util::GetFullPath(objectFilePath.generic_string()) + "'");
-                    bool found = false;
-                    for (const Warning& prev : warnings.Warnings())
+                    if (!IsWarningDisabled(fileNotUpToDateWarning))
                     {
-                        if (prev.Message() == warning.Message())
+                        Warning warning(fileNotUpToDateWarning, name, "source file '" + util::GetFullPath(sfp.generic_string()) + "' is more recent than object file '" +
+                            util::GetFullPath(objectFilePath.generic_string()) + "'");
+                        bool found = false;
+                        for (const Warning& prev : warnings.Warnings())
                         {
-                            found = true;
-                            break;
+                            if (prev.Message() == warning.Message())
+                            {
+                                found = true;
+                                break;
+                            }
                         }
-                    }
-                    if (!found)
-                    {
-                        warnings.AddWarning(warning);
+                        if (!found)
+                        {
+                            warnings.AddWarning(warning);
+                        }
                     }
                 }
             }

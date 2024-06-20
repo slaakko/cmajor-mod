@@ -1,0 +1,39 @@
+using System;
+using System.Collections;
+
+namespace calc
+{
+    public class RuleNameMap
+    {
+        static RuleNameMap() : instance(new RuleNameMap())
+        {
+        }
+        public static RuleNameMap& Instance()
+        {
+            return *instance;
+        }
+        public Map<long, string>* GetRuleNameMap() const
+        {
+            return &ruleNameMap;
+        }
+        private RuleNameMap()
+        {
+            ruleNameMap[8239364625267687425] = "calc.parser.expression";
+            ruleNameMap[8239364625267687426] = "calc.parser.additive_expr";
+            ruleNameMap[8239364625267687427] = "calc.parser.additive_op";
+            ruleNameMap[8239364625267687428] = "calc.parser.multiplicative_expr";
+            ruleNameMap[8239364625267687429] = "calc.parser.multiplicative_op";
+            ruleNameMap[8239364625267687430] = "calc.parser.unary_expr";
+            ruleNameMap[8239364625267687431] = "calc.parser.unary_op";
+            ruleNameMap[8239364625267687432] = "calc.parser.primary_expr";
+        }
+        private Map<long, string> ruleNameMap; 
+        private static UniquePtr<RuleNameMap> instance;
+    }
+
+    public Map<long, string>* GetRuleNameMapPtr()
+    {
+        return RuleNameMap.Instance().GetRuleNameMap();
+    }
+
+}

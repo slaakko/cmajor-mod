@@ -1,0 +1,60 @@
+
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Windows
+{
+    public class Buffer : GraphicsObject
+    {
+        public Buffer(const Size& size_, System.Windows.Graphics& graphics_) :
+            size(size_), bitmap(size.w, size.h, graphics_), graphics(null)
+        {
+            auto result = System.Windows.Graphics.FromImage(bitmap);
+            if (result.Error())
+            {
+                SetErrorId(graphics->GetErrorId());
+                return;
+            }
+            graphics.Reset(new Graphics(Rvalue(result.Value())));
+            if (graphics->Error())
+            {
+                SetErrorId(graphics->GetErrorId());
+                return;
+            }
+        }
+        public inline const Size& GetSize() const
+        {
+            return size;
+        }
+        public inline System.Windows.Graphics& BitmapGraphics()
+        {
+            return *graphics;
+        }
+        public inline System.Windows.Bitmap& GetBitmap() const
+        {
+            return bitmap;
+        }
+        [nodiscard]
+        public Result<bool> Draw(System.Windows.Graphics& graphics)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            PointF topLeftCorner;
+            auto result = graphics.DrawImage(bitmap, topLeftCorner);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        private Size size;
+        private Bitmap bitmap;
+        private UniquePtr<System.Windows.Graphics> graphics;
+    }
+}

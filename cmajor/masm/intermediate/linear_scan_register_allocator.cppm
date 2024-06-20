@@ -58,10 +58,11 @@ public:
     LinearScanRegisterAllocator(Function& function, Context* context_);
     void AddLiveRange(const LiveRange& liveRange, Instruction* inst);
     void AddFreeRegGroupToPool(Instruction* inst);
-    void RemoveFromActive(const LiveRange& range);
+    void RemoveFromActive(const LiveRange& range, bool integer);
     bool NoFreeRegs(bool floatingPoint) const;
     const std::set<LiveRange, LiveRangeByStart>& LiveRanges() const { return liveRanges; }
-    const std::set<LiveRange, LiveRangeByEnd>& Active() const { return active; }
+    const std::set<LiveRange, LiveRangeByEnd>& ActiveInteger() const { return activeInteger; }
+    const std::set<LiveRange, LiveRangeByEnd>& ActiveFP() const { return activeFP; }
     FrameLocation GetFrameLocation(Instruction* inst) const;
     cmajor::masm::assembly::RegisterGroup* GetRegisterGroup(Instruction* inst) const override;
     void RemoveRegisterGroup(Instruction* inst);
@@ -82,7 +83,8 @@ private:
     void ExpireOldRanges(const LiveRange& range);
     Frame frame;
     std::set<LiveRange, LiveRangeByStart> liveRanges;
-    std::set<LiveRange, LiveRangeByEnd> active;
+    std::set<LiveRange, LiveRangeByEnd> activeInteger;
+    std::set<LiveRange, LiveRangeByEnd> activeFP;
     std::map<Instruction*, FrameLocation> frameLocations;
     std::map<Instruction*, cmajor::masm::assembly::RegisterGroup*> registerGroups;
     std::map<Instruction*, LiveRange> instructionRangeMap;

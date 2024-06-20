@@ -8,7 +8,6 @@ module cmajor.resource.processor;
 import soul.xml.dom;
 import soul.xml.dom.parser;
 import soul.xml.xpath;
-//import cmajor.llvm.rc;
 import util;
 
 namespace cmajor::resources {
@@ -153,22 +152,27 @@ void AddResourcesInProjectToCurrentModule(cmajor::ast::Project* project, cmajor:
 
 void CreateResourceScriptFile(cmajor::symbols::Module* module, const std::string& resourceScriptFileName)
 {
-    std::ofstream resourceScriptFile(resourceScriptFileName);
-    util::CodeFormatter formatter(resourceScriptFile);
-    for (const cmajor::symbols::Resource& resource : module->GetGlobalResourceTable().Resources())
+    if (module->GetGlobalResourceTable().Resources().empty()) return;
     {
-        std::string line;
-        line.append(util::ToUtf8(resource.name)).append(1, ' ');
-        line.append(GetResourceTypeName(resource.type)).append(1, ' ');
-        line.append(1, '"').append(resource.filePath).append(1, '"');
-        formatter.WriteLine(line);
+        std::ofstream resourceScriptFile(resourceScriptFileName);
+        util::CodeFormatter formatter(resourceScriptFile);
+        for (const cmajor::symbols::Resource& resource : module->GetGlobalResourceTable().Resources())
+        {
+            std::string line;
+            line.append(util::ToUtf8(resource.name)).append(1, ' ');
+            line.append(GetResourceTypeName(resource.type)).append(1, ' ');
+            line.append(1, '"').append(resource.filePath).append(1, '"');
+            formatter.WriteLine(line);
+        }
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+        {
+            util::LogMessage(module->LogStreamId(), "==> " + resourceScriptFileName);
+        }
     }
-    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-    {
-        util::LogMessage(module->LogStreamId(), "==> " + resourceScriptFileName);
-    }
+    module->AddResourceScriptFilePath(resourceScriptFileName);
 }
 
+/*
 void CompileResourceScriptFile(cmajor::symbols::Module* module, const std::string& resourceScriptFileName, cmajor::ast::BackEnd backend)
 {
     if (module->GetGlobalResourceTable().Resources().empty()) return;
@@ -177,13 +181,12 @@ void CompileResourceScriptFile(cmajor::symbols::Module* module, const std::strin
     std::string errors;
     if (backend == cmajor::ast::BackEnd::llvm)
     {
-/*      TODO make it work
+        TODO make it work
         resourceFilePath = util::Path::ChangeExtension(module->LibraryFilePath(), ".res");
         commandLine.append("llvm-rc /V /FO ").append(util::QuotedPath(resourceFilePath));
         commandLine.append(1, ' ').append(util::QuotedPath(resourceScriptFileName));
         cmajor::llvm::ResourceCompile(resourceScriptFileName, resourceFilePath); todo removed
 
-*/
     }
     else if (backend == cmajor::ast::BackEnd::cpp)
     {
@@ -227,6 +230,7 @@ void CompileResourceScriptFile(cmajor::symbols::Module* module, const std::strin
     }
     module->AddResourceFilePath(resourceFilePath);
 }
+*/
 
 void ProcessResourcesInProject(cmajor::ast::Project* project, cmajor::symbols::Module* module)
 {
@@ -240,7 +244,7 @@ void ProcessResourcesInProject(cmajor::ast::Project* project, cmajor::symbols::M
     {
         std::string resourceScriptFileName = util::Path::ChangeExtension(project->ModuleFilePath(), ".rc");
         CreateResourceScriptFile(module, resourceScriptFileName);
-        CompileResourceScriptFile(module, resourceScriptFileName, project->GetBackEnd());
+        //CompileResourceScriptFile(module, resourceScriptFileName, project->GetBackEnd());
     }
 }
 

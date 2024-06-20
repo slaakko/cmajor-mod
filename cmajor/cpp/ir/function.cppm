@@ -52,7 +52,7 @@ public:
     void WriteDeclaration(util::CodeFormatter& formatter, Context& context);
     void Write(util::CodeFormatter& formatter, Context& context, util::BinaryStreamWriter& writer, int32_t& numFunctions);
     void WriteValueDeclarations(util::CodeFormatter& formatter, Context& context);
-    void SetLinkOnce() { linkOnce = true; }
+    //void SetLinkOnce() { linkOnce = true; }
     void RemoveUnreferencedBasicBlocks();
     void SetNothrow() { nothrow = true; }
     void RemoveNothrow() { nothrow = false; }
@@ -82,7 +82,7 @@ private:
     uint64_t nextLocalNumber;
     uint64_t nextArgumentNumber;
     int32_t nextControlFlowGraphNodeNumber;
-    bool linkOnce;
+    //bool linkOnce;
     int nextBBNumber;
     bool nothrow;
     int32_t fileIndex;

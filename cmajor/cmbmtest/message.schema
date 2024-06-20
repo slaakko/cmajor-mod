@@ -24,7 +24,6 @@ namespace BmTest
 		wchar f12;
 		uchar f13;
 		string f14;
-		number f15;
 		uuid f16;
 		date f17;
 		datetime f18;

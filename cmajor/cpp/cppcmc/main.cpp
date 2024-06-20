@@ -36,6 +36,8 @@ void PrintHelp()
         "--optimization-level=LEVEL (-O=LEVEL)\n" <<
         "   set optimization level to LEVEL=0-3\n" <<
         "   defaults: debug=0, release=2\n" <<
+        "--disable-warnings=WARNING_LIST (-w=WARNING_LIST)" << "\n" <<
+        "  disable warning messages for specified warnings in WARNING_LIST that is a semicolon-separated list of warning numbers." << "\n" <<
         "--verbose (-v)\n" <<
         "   print verbose messages\n" <<
         "--quiet (-q)\n" <<
@@ -130,12 +132,6 @@ int main(int argc, const char** argv)
                     {
                         useModuleCache = false;
                     }
-/*
-                    else if (arg == "--link-with-debug-runtime")
-                    {
-                        cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
-                    }
-*/
                     else if (arg == "--time")
                     {
                         cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::time);
@@ -166,6 +162,16 @@ int main(int argc, const char** argv)
                                 else
                                 {
                                     throw std::runtime_error("unknown optimization level '" + components[1] + "'");
+                                }
+                            }
+                            else if (components[0] == "--disable-warnings")
+                            {
+                                std::string warningList = components[1];
+                                std::vector<std::string> warnings = util::Split(warningList, ';');
+                                for (const auto& warning : warnings)
+                                {
+                                    int warningNumber = std::stoi(warning);
+                                    cmajor::symbols::DisableWarning(warningNumber);
                                 }
                             }
                             else
@@ -209,6 +215,16 @@ int main(int argc, const char** argv)
                             else
                             {
                                 throw std::runtime_error("unknown optimization level '" + components[1] + "'");
+                            }
+                        }
+                        else if (components[0] == "-w")
+                        {
+                            std::string warningList = components[1];
+                            std::vector<std::string> warnings = util::Split(warningList, ';');
+                            for (const auto& warning : warnings)
+                            {
+                                int warningNumber = std::stoi(warning);
+                                cmajor::symbols::DisableWarning(warningNumber);
                             }
                         }
                         else
@@ -263,13 +279,6 @@ int main(int argc, const char** argv)
                                 cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile);
                                 break;
                             }
-/*
-                            case 'd':
-                            {
-                                cmajor::symbols::SetGlobalFlag(cmajor::symbols::GlobalFlags::linkWithDebugRuntime);
-                                break;
-                            }
-*/
                             case 'm':
                             {
                                 useModuleCache = false;

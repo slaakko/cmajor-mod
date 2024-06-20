@@ -36,7 +36,6 @@ public:
     void Visit(cmajor::binary::message::schema::ast::UCharNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::UuidNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::StringNode& node) override;
-    void Visit(cmajor::binary::message::schema::ast::NumberNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::DateNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::DateTimeNode& node) override;
     void Visit(cmajor::binary::message::schema::ast::EnumConstantNode& node) override;
@@ -149,11 +148,6 @@ void InterfaceGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::Uuid
 void InterfaceGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::StringNode& node)
 {
     formatter.Write("std::string");
-}
-
-void InterfaceGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::NumberNode& node)
-{
-    formatter.Write("cmajor::bmp::Number");
 }
 
 void InterfaceGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::DateNode& node)
@@ -316,7 +310,6 @@ void InterfaceGeneratorVisitor::Visit(cmajor::binary::message::schema::ast::Sour
     formatter.WriteLine("import std.core;");
     formatter.WriteLine("import util;");
     formatter.WriteLine("import cmajor.binary.message.protocol;");
-    formatter.WriteLine("import cmajor.binary.message.number;");
     for (const auto& import : node.Imports())
     {
         if (import->Prefix() == cmajor::binary::message::schema::ast::ImportPrefix::interfacePrefix)

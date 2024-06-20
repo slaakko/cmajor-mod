@@ -49,6 +49,8 @@ public:
     virtual std::string TypeString() const { return "expression"; }
     virtual std::unique_ptr<cmajor::symbols::Value> ToValue(BoundCompileUnit& boundCompileUnit) const { return std::unique_ptr<cmajor::symbols::Value>(); }
     virtual bool ContainsExceptionCapture() const { return GetFlag(BoundExpressionFlags::exceptionCapture); }
+    virtual const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const { return nullptr; }
+    virtual cmajor::symbols::FunctionSymbol* GetFunctionSymbol() { return nullptr; }
     const cmajor::symbols::TypeSymbol* GetType() const { return type; }
     cmajor::symbols::TypeSymbol* GetType() { return type; }
     bool GetFlag(BoundExpressionFlags flag) const { return (flags & flag) != BoundExpressionFlags::none; }
@@ -279,8 +281,8 @@ public:
     bool HasValue() const override;
     std::string TypeString() const override { return "function call"; }
     bool IsLvalueExpression() const override;
-    const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const { return functionSymbol; }
-    cmajor::symbols::FunctionSymbol* GetFunctionSymbol() { return functionSymbol; }
+    const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const override  { return functionSymbol; }
+    cmajor::symbols::FunctionSymbol* GetFunctionSymbol() override { return functionSymbol; }
     void SetFunctionSymbol(cmajor::symbols::FunctionSymbol* functionSymbol_) { functionSymbol = functionSymbol_; }
     void AddArgument(std::unique_ptr<BoundExpression>&& argument);
     void SetArguments(std::vector<std::unique_ptr<BoundExpression>>&& arguments_);
@@ -346,6 +348,8 @@ public:
     std::string TypeString() const override { return "construct expression"; }
     bool ContainsExceptionCapture() const override;
     BoundExpression* ConstructorCall() { return constructorCall.get(); }
+    const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const override { return constructorCall->GetFunctionSymbol(); }
+    cmajor::symbols::FunctionSymbol* GetFunctionSymbol() override { return constructorCall->GetFunctionSymbol(); }
 private:
     std::unique_ptr<BoundExpression> constructorCall;
 };
@@ -363,6 +367,8 @@ public:
     std::string TypeString() const override { return "construct and return temporary expression"; }
     bool ContainsExceptionCapture() const override;
     BoundExpression* ConstructorCall() { return constructorCall.get(); }
+    const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const override { return constructorCall->GetFunctionSymbol(); }
+    cmajor::symbols::FunctionSymbol* GetFunctionSymbol() override { return constructorCall->GetFunctionSymbol(); }
     BoundExpression* BoundTemporary() { return boundTemporary.get(); }
 private:
     std::unique_ptr<BoundExpression> constructorCall;
@@ -623,6 +629,8 @@ public:
     void ResetClassPtr() { classPtr.reset(); }
     BoundExpression* ReleaseClassPtr() { return classPtr.release(); }
     BoundExpression* Member() { return member.get(); }
+    const cmajor::symbols::FunctionSymbol* GetFunctionSymbol() const override { return member->GetFunctionSymbol(); }
+    cmajor::symbols::FunctionSymbol* GetFunctionSymbol() override { return member->GetFunctionSymbol(); }
 private:
     std::unique_ptr<BoundExpression> classPtr;
     std::unique_ptr<BoundExpression> member;

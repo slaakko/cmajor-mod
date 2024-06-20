@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_MUTEX_INCLUDED
-#define CMRT_CPP_MUTEX_INCLUDED
+#ifndef CMRT_MUTEX_INCLUDED
+#define CMRT_MUTEX_INCLUDED
 
 extern "C" void* RtmAllocateMutex();
 extern "C" void RtmFreeMutex(void* mutexHandle);
@@ -15,4 +15,4 @@ extern "C" void RtmUnlockMutex(void* mutexHandle);
 extern "C" void RtmLockRecursiveMutex(void* recursiveMutexHandle);
 extern "C" void RtmUnlockRecursiveMutex(void* recursiveMutexHandle);
 
-#endif // CMRT_CPP_MUTEX_INCLUDED
+#endif // CMRT_MUTEX_INCLUDED

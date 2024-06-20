@@ -260,6 +260,9 @@
     <ProjectReference Include="..\svc\svc.vcxproj">
       <Project>{4ed1d1f0-4b7f-4e5b-b380-78525ff8b3f6}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\symbols\symbols.vcxproj">
+      <Project>{698d83e9-e751-4b45-8795-27f1f63e12ce}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\view\view.vcxproj">
       <Project>{88e4113f-3772-4d18-87d2-d01bc22face3}</Project>
     </ProjectReference>
@@ -270,6 +273,7 @@
     <None Include="solution_settings.xml-schema" />
   </ItemGroup>
   <ItemGroup>
+    <ResourceCompile Include="..\..\soul\rex\soul.rex.lexer.classmap.rc" />
     <ResourceCompile Include="..\..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc" />
     <ResourceCompile Include="..\cpp\cppdebug\cmajor.debug.expr.lexer.classmap.rc" />
     <ResourceCompile Include="..\cpp\cppdebug\cmajor.debug.gdb.reply.lexer.classmap.rc" />

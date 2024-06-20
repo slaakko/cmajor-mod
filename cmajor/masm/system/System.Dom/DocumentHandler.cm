@@ -17,16 +17,19 @@ namespace System.Xml
         {
             return document.Release();
         }
+        [nodiscard]
         public override Result<bool> StartDocument(const System.Lex.Span& span, int fileIndex)
         {
             document.Reset(new Document(span, fileIndex));
             currentParentNode = document.Get();
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> EndDocument()
         {
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Version(const ustring& xmlVersion)
         {
             auto result = ToUtf8(xmlVersion);
@@ -37,11 +40,13 @@ namespace System.Xml
             document->SetXmlVersion(result.Value());
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Standalone(bool standalone)
         {
             document->SetXmlStandalone(standalone);
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> Encoding(const ustring& encoding)
         {
             auto result = ToUtf8(encoding);
@@ -52,6 +57,7 @@ namespace System.Xml
             document->SetXmlEncoding(result.Value());
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> HandleText(const System.Lex.Span& span, int fileIndex, const ustring& text)
         {
             if (!textSpan.IsValid())
@@ -71,6 +77,7 @@ namespace System.Xml
             textContent.Append(result.Value());
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> HandleComment(const System.Lex.Span& span, int fileIndex, const ustring& comment)
         {
             auto result = AddTextContent();
@@ -86,6 +93,7 @@ namespace System.Xml
             currentParentNode->AppendChild(new Comment(span, fileIndex, commentResult.Value()));
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> HandlePI(const System.Lex.Span& span, int fileIndex, const ustring& target, const ustring& data)
         {
             auto result = AddTextContent();
@@ -106,6 +114,7 @@ namespace System.Xml
             currentParentNode->AppendChild(new ProcessingInstruction(span, fileIndex, targetResult.Value(), dataResult.Value()));
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> HandleCDataSection(const System.Lex.Span& span, int fileIndex, const ustring& cdata)
         {
             auto result = AddTextContent();
@@ -121,6 +130,7 @@ namespace System.Xml
             currentParentNode->AppendChild(new CDataSection(span, fileIndex, cdataResult.Value()));
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> StartElement(const System.Lex.Span& span, int fileIndex,
             const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName, const Attributes& attributes)
         {
@@ -164,6 +174,7 @@ namespace System.Xml
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> EndElement(const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName)
         {
             auto result = AddTextContent();
@@ -188,6 +199,7 @@ namespace System.Xml
             currentElement = elementStack.Pop();
             return Result<bool>(true);
         }
+        [nodiscard]
         public override Result<bool> SkippedEntity(const ustring& entityName)
         {
             auto result = AddTextContent();
@@ -203,10 +215,12 @@ namespace System.Xml
             currentParentNode->AppendChild(MakeEntityReference(entityNameResult.Value()));
             return Result<bool>(true);
         }
+        [nodiscard]
         private Result<bool> AddTextContent()
         {
             return AddTextContent(false);
         }
+        [nodiscard]
         private Result<bool> AddTextContent(bool addSpace)
         {
             if (currentElement != null)

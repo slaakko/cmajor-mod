@@ -3,9 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_ENV_INCLUDED
-#define CMRT_CPP_ENV_INCLUDED
+#ifndef CMRT_ENV_INCLUDED
+#define CMRT_ENV_INCLUDED
 
 extern "C" const char* RtmGetEnvironmentVariable(const char* envVarName);
 
-#endif // CMRT_CPP_ENV_INCLUDED
+#endif // CMRT_ENV_INCLUDED

@@ -8,6 +8,7 @@ using System.Collections;
 
 namespace System.IO
 {
+    [nodiscard]
     public Result<string> GetCurrentWorkingDirectory()
     {
         int errorId = 0;
@@ -20,7 +21,8 @@ namespace System.IO
         RtmFreeCurrentWorkingDirectoryHandle(handle);
         return Result<string>(currentWorkingDirectory);
     }
-    
+
+    [nodiscard]
     public Result<string> GetFullPath(const string& path)
     {
         string p = Path.MakeCanonical(path);
@@ -52,7 +54,7 @@ namespace System.IO
                         int errorId = RtmAllocateError(errorMessage.Chars());
                         return Result<string>(ErrorId(errorId));
                     }
-                }                
+                }
                 else
                 {
                     if (w != i)
@@ -91,9 +93,10 @@ namespace System.IO
         else
         {
             return Result<string>(result);
-        }            
+        }
     }
 
+    [nodiscard]
     public Result<string> MakeRelativeDirPath(const string& dirPath, const string& referenceDirPath)
     {
         auto dp = GetFullPath(dirPath);
@@ -352,7 +355,7 @@ namespace System.IO
             {
                 return string();
             }
-            else 
+            else
             {
                 long lastDirSepPos = p.RFind('/');
                 if (lastDirSepPos != -1)
@@ -383,7 +386,7 @@ namespace System.IO
                 {
                     return p2;
                 }
-                else 
+                else
                 {
                     string result = p1;
                     if (p1[p1.Length() - 1] != '/')

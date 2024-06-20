@@ -18,3 +18,4 @@ export import cmajor.view.search.results.view;
 export import cmajor.view.source.code.view;
 export import cmajor.view.text.file.editor;
 export import cmajor.view.init.done;
+export import cmajor.view.warnings.view;

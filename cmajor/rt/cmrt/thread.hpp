@@ -3,8 +3,8 @@
 // Distributed under the MIT license
 // =================================
 
-#ifndef CMRT_CPP_THREAD_INCLUDED
-#define CMRT_CPP_THREAD_INCLUDED
+#ifndef CMRT_THREAD_INCLUDED
+#define CMRT_THREAD_INCLUDED
 #include <stdint.h>
 
 namespace cmajor::rt {
@@ -21,4 +21,4 @@ extern "C" int32_t RtmStartThreadMethodWithParam(void* classDelegate, void* para
 extern "C" bool RtmJoinThread(int32_t threadId);
 extern "C" int32_t RtmThisThreadId();
 
-#endif // CMRT_CPP_THREAD_INCLUDED
+#endif // CMRT_THREAD_INCLUDED

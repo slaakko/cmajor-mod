@@ -15,7 +15,7 @@ namespace System.Threading
 
     public delegate bool Predicate(void* arg);
     public class delegate bool PredicateMethod(void* arg);
-    
+
     public class ConditionVariable
     {
         public ConditionVariable() : nativeHandle(RtmAllocateConditionVariable())
@@ -26,7 +26,7 @@ namespace System.Threading
             if (nativeHandle != null)
             {
                 RtmFreeConditionVariable(nativeHandle);
-            }            
+            }
         }
         suppress ConditionVariable(const ConditionVariable&);
         suppress void operator=(ConditionVariable&);
@@ -38,6 +38,7 @@ namespace System.Threading
         {
             Swap(nativeHandle, that.nativeHandle);
         }
+        [nodiscard]
         public Result<bool> NotifyOne()
         {
             int errorId = 0;
@@ -45,9 +46,10 @@ namespace System.Threading
             if (errorId > 0)
             {
                 return Result<bool>(ErrorId(errorId));
-            }            
+            }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> NotifyAll()
         {
             int errorId = 0;
@@ -55,9 +57,10 @@ namespace System.Threading
             if (errorId > 0)
             {
                 return Result<bool>(ErrorId(errorId));
-            }            
+            }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> Wait(RecursiveMutex& mtx)
         {
             int errorId = 0;
@@ -65,9 +68,10 @@ namespace System.Threading
             if (errorId > 0)
             {
                 return Result<bool>(ErrorId(errorId));
-            }            
+            }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<ConditionVariableStatus> WaitFor(RecursiveMutex& mtx, const Duration& duration)
         {
             int errorId = 0;
@@ -78,11 +82,13 @@ namespace System.Threading
             }
             return Result<ConditionVariableStatus>(cast<ConditionVariableStatus>(result));
         }
+        [nodiscard]
         public Result<ConditionVariableStatus> WaitUntil(RecursiveMutex& mtx, const TimePoint& tp)
         {
             Duration duration = tp - Now();
             return WaitFor(mtx, duration);
         }
+        [nodiscard]
         public Result<bool> Wait(RecursiveMutex& mtx, Predicate predicate, void* arg)
         {
             while (!predicate(arg))
@@ -95,6 +101,7 @@ namespace System.Threading
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> WaitFor(RecursiveMutex& mtx, Predicate predicate, void* arg, const Duration& duration)
         {
             while (!predicate(arg))
@@ -104,18 +111,20 @@ namespace System.Threading
                 {
                     return Result<bool>(ErrorId(result.GetErrorId()));
                 }
-                if (result.Value() == ConditionVariableStatus.timeout) 
+                if (result.Value() == ConditionVariableStatus.timeout)
                 {
                     return predicate(arg);
                 }
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> WaitUntil(RecursiveMutex& mtx, Predicate predicate, void* arg, const TimePoint& tp)
         {
             Duration duration = tp - Now();
             return WaitFor(mtx, predicate, arg, duration);
         }
+        [nodiscard]
         public Result<bool> Wait(RecursiveMutex& mtx, PredicateMethod predicateMethod, void* arg)
         {
             while (!predicateMethod(arg))
@@ -128,6 +137,7 @@ namespace System.Threading
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> WaitFor(RecursiveMutex& mtx, PredicateMethod predicateMethod, void* arg, const Duration& duration)
         {
             while (!predicateMethod(arg))
@@ -137,13 +147,14 @@ namespace System.Threading
                 {
                     return Result<bool>(ErrorId(result.GetErrorId()));
                 }
-                if (result.Value() == ConditionVariableStatus.timeout) 
+                if (result.Value() == ConditionVariableStatus.timeout)
                 {
                     return predicateMethod(arg);
                 }
             }
             return Result<bool>(true);
         }
+        [nodiscard]
         public Result<bool> WaitUntil(RecursiveMutex& mtx, PredicateMethod predicateMethod, void* arg, const TimePoint& tp)
         {
             Duration duration = tp - Now();

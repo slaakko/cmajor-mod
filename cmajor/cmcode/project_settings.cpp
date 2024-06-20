@@ -1,4 +1,4 @@
-// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/cmcode/project_settings.xml-schema' by xmlsergen version 4.1.0
+// this file has been automatically generated from 'C:/work/cmajor-mod/cmajor/cmcode/project_settings.xml-schema' by xmlsergen version 5.0.0
 
 module cmcode.project.settings;
 

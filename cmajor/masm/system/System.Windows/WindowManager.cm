@@ -1,0 +1,75 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Windows
+{
+    internal class WindowManager
+    {
+        public WindowManager()
+        {
+            systemClassNames.Insert("BUTTON");
+            systemClassNames.Insert("STATIC");
+            systemClassNames.Insert("EDIT");
+            systemClassNames.Insert("LISTBOX");
+        }
+        [nodiscard]
+        public Result<ushort> RegisterWindowClass(const char* windowClassName, WindowClassStyle windowClassStyle, int windowClassBackgroundColor)
+        {
+            string className = windowClassName;
+            auto it = registeredWindowClasses.Find(className);
+            if (it != registeredWindowClasses.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                Result<ushort> windowClassResult = System.Windows.API.RegisterWindowClass(windowClassName, windowClassStyle, windowClassBackgroundColor);
+                if (windowClassResult.Error())
+                {
+                    return windowClassResult;
+                }
+                ushort windowClass = windowClassResult.Value();
+                registeredWindowClasses[className] = windowClass;
+                return Result<ushort>(windowClass);
+            }
+        }
+        public bool IsSystemClassName(const char* windowClassName)
+        {
+            string className = windowClassName;
+            auto it = systemClassNames.Find(className);
+            if (it != systemClassNames.End())
+            {
+                return true;
+            }
+            return false;
+        }
+        public void AddWindow(Control* window)
+        {
+            windowMap[window->Handle()] = window;
+        }
+        public void RemoveWindow(Control* window)
+        {
+            windowMap.Remove(window->Handle());
+        }
+        public Control* GetWindow(void* handle) const
+        {
+            auto it = windowMap.Find(handle);
+            if (it != windowMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private HashMap<string, ushort> registeredWindowClasses;
+        private HashMap<void*, Control*> windowMap;
+        private HashSet<string> systemClassNames;
+    }
+}

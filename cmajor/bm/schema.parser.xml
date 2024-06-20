@@ -119,28 +119,28 @@
         </sequence>
         <token first="{LBRACE}" name="LBRACE"/>
        </sequence>
-       <nonterminal first="{#, BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="ClassContent"/>
+       <nonterminal first="{#, BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="ClassContent"/>
       </sequence>
       <token first="{RBRACE}" name="RBRACE"/>
      </sequence>
     </group>
    </action>
   </rule>
-  <rule first="{#, BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="ClassContent">
-   <kleene first="{#, BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-    <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-     <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-      <nonterminal first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="MemberVariable"/>
+  <rule first="{#, BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="ClassContent">
+   <kleene first="{#, BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+    <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+     <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+      <nonterminal first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="MemberVariable"/>
      </action>
     </group>
    </kleene>
   </rule>
-  <rule first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="MemberVariable">
-   <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-    <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-     <sequence first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-      <sequence first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-       <nonterminal first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="Type"/>
+  <rule first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="MemberVariable">
+   <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+    <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+     <sequence first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+      <sequence first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+       <nonterminal first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="Type"/>
        <action first="{ID}">
         <token first="{ID}" name="ID"/>
        </action>
@@ -150,14 +150,14 @@
     </group>
    </action>
   </rule>
-  <rule first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="Type">
-   <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-    <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-     <sequence first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-      <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-       <choice first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-        <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-         <nonterminal first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="ScalarType"/>
+  <rule first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="Type">
+   <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+    <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+     <sequence first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+      <group first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+       <choice first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, ID, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+        <action first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+         <nonterminal first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" ruleName="ScalarType"/>
         </action>
         <action first="{ID}">
          <nonterminal first="{ID}" ruleName="ClassType"/>
@@ -180,86 +180,81 @@
     </group>
    </action>
   </rule>
-  <rule first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="ScalarType">
-   <choice first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-    <choice first="{BOOL, BYTE, CHAR, DATE, DOUBLE, FLOAT, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-     <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
-      <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, NUMBER, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, WCHAR}">
-       <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, WCHAR}">
-        <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, WCHAR}">
-         <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT, WCHAR}">
-          <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
-           <choice first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
-            <choice first="{BOOL, BYTE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
-             <choice first="{BOOL, BYTE, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
-              <choice first="{BOOL, BYTE, INT, LONG, SBYTE, SHORT, UINT, USHORT}">
-               <choice first="{BOOL, BYTE, INT, SBYTE, SHORT, UINT, USHORT}">
-                <choice first="{BOOL, BYTE, INT, SBYTE, SHORT, USHORT}">
-                 <choice first="{BOOL, BYTE, SBYTE, SHORT, USHORT}">
-                  <choice first="{BOOL, BYTE, SBYTE, SHORT}">
-                   <choice first="{BOOL, BYTE, SBYTE}">
-                    <choice first="{BOOL, SBYTE}">
-                     <action first="{BOOL}">
-                      <token first="{BOOL}" name="BOOL"/>
-                     </action>
-                     <action first="{SBYTE}">
-                      <token first="{SBYTE}" name="SBYTE"/>
-                     </action>
-                    </choice>
-                    <action first="{BYTE}">
-                     <token first="{BYTE}" name="BYTE"/>
+  <rule first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}" name="ScalarType">
+   <choice first="{BOOL, BYTE, CHAR, DATE, DATETIME, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+    <choice first="{BOOL, BYTE, CHAR, DATE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+     <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, UUID, WCHAR}">
+      <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, STRING, UCHAR, UINT, ULONG, USHORT, WCHAR}">
+       <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UCHAR, UINT, ULONG, USHORT, WCHAR}">
+        <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT, WCHAR}">
+         <choice first="{BOOL, BYTE, CHAR, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+          <choice first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+           <choice first="{BOOL, BYTE, FLOAT, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+            <choice first="{BOOL, BYTE, INT, LONG, SBYTE, SHORT, UINT, ULONG, USHORT}">
+             <choice first="{BOOL, BYTE, INT, LONG, SBYTE, SHORT, UINT, USHORT}">
+              <choice first="{BOOL, BYTE, INT, SBYTE, SHORT, UINT, USHORT}">
+               <choice first="{BOOL, BYTE, INT, SBYTE, SHORT, USHORT}">
+                <choice first="{BOOL, BYTE, SBYTE, SHORT, USHORT}">
+                 <choice first="{BOOL, BYTE, SBYTE, SHORT}">
+                  <choice first="{BOOL, BYTE, SBYTE}">
+                   <choice first="{BOOL, SBYTE}">
+                    <action first="{BOOL}">
+                     <token first="{BOOL}" name="BOOL"/>
+                    </action>
+                    <action first="{SBYTE}">
+                     <token first="{SBYTE}" name="SBYTE"/>
                     </action>
                    </choice>
-                   <action first="{SHORT}">
-                    <token first="{SHORT}" name="SHORT"/>
+                   <action first="{BYTE}">
+                    <token first="{BYTE}" name="BYTE"/>
                    </action>
                   </choice>
-                  <action first="{USHORT}">
-                   <token first="{USHORT}" name="USHORT"/>
+                  <action first="{SHORT}">
+                   <token first="{SHORT}" name="SHORT"/>
                   </action>
                  </choice>
-                 <action first="{INT}">
-                  <token first="{INT}" name="INT"/>
+                 <action first="{USHORT}">
+                  <token first="{USHORT}" name="USHORT"/>
                  </action>
                 </choice>
-                <action first="{UINT}">
-                 <token first="{UINT}" name="UINT"/>
+                <action first="{INT}">
+                 <token first="{INT}" name="INT"/>
                 </action>
                </choice>
-               <action first="{LONG}">
-                <token first="{LONG}" name="LONG"/>
+               <action first="{UINT}">
+                <token first="{UINT}" name="UINT"/>
                </action>
               </choice>
-              <action first="{ULONG}">
-               <token first="{ULONG}" name="ULONG"/>
+              <action first="{LONG}">
+               <token first="{LONG}" name="LONG"/>
               </action>
              </choice>
-             <action first="{FLOAT}">
-              <token first="{FLOAT}" name="FLOAT"/>
+             <action first="{ULONG}">
+              <token first="{ULONG}" name="ULONG"/>
              </action>
             </choice>
-            <action first="{DOUBLE}">
-             <token first="{DOUBLE}" name="DOUBLE"/>
+            <action first="{FLOAT}">
+             <token first="{FLOAT}" name="FLOAT"/>
             </action>
            </choice>
-           <action first="{CHAR}">
-            <token first="{CHAR}" name="CHAR"/>
+           <action first="{DOUBLE}">
+            <token first="{DOUBLE}" name="DOUBLE"/>
            </action>
           </choice>
-          <action first="{WCHAR}">
-           <token first="{WCHAR}" name="WCHAR"/>
+          <action first="{CHAR}">
+           <token first="{CHAR}" name="CHAR"/>
           </action>
          </choice>
-         <action first="{UCHAR}">
-          <token first="{UCHAR}" name="UCHAR"/>
+         <action first="{WCHAR}">
+          <token first="{WCHAR}" name="WCHAR"/>
          </action>
         </choice>
-        <action first="{STRING}">
-         <token first="{STRING}" name="STRING"/>
+        <action first="{UCHAR}">
+         <token first="{UCHAR}" name="UCHAR"/>
         </action>
        </choice>
-       <action first="{NUMBER}">
-        <token first="{NUMBER}" name="NUMBER"/>
+       <action first="{STRING}">
+        <token first="{STRING}" name="STRING"/>
        </action>
       </choice>
       <action first="{UUID}">

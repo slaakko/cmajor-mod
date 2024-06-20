@@ -103,24 +103,34 @@ namespace System
         return true;
     }
 
-    public string ToString(const Uuid& uuid)
+    [nodiscard]
+    public Result<string> ToString(const Uuid& uuid)
     {
         string s;
-/*  TODO
         int index = 0;
         for (byte x : uuid)
         {
-            s.Append(ToLower(ToHexString(x)));
+            auto hexStringResult = ToHexString(x);
+            if (hexStringResult.Error())
+            {
+                return Result<string>(ErrorId(hexStringResult.GetErrorId()));
+            }
+            auto toLowerResult = ToLower(hexStringResult.Value());
+            if (toLowerResult.Error())
+            {
+                return Result<string>(ErrorId(toLowerResult.GetErrorId()));
+            }
+            s.Append(toLowerResult.Value());
             if (index == 3 || index == 5 || index == 7 || index == 9)
             {
                 s.Append('-');
             }
             ++index;
         }
-*/
-        return s;
+        return Result<string>(s);
     }
 
+    [nodiscard]
     public Result<Uuid> ParseUuid(const string& uuidHexString)
     {
         if (uuidHexString.Length() != 2 * Uuid.size + 4)
@@ -149,9 +159,16 @@ namespace System
         }
         return Result<Uuid>(uuid);
     }
-	
-	public TextWriter& operator<<(TextWriter& writer, const Uuid& uuid)
+
+    public TextWriter& operator<<(TextWriter& writer, const Uuid& uuid)
     {
-        return writer << ToString(uuid);
+        auto result = ToString(uuid);
+        if (result.Error())
+        {
+            writer.SetErrorId(result.GetErrorId());
+            return writer;
+        }
+        return writer << result.Value();
     }
+
 }
