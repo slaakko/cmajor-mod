@@ -100,7 +100,7 @@ namespace System.XPath
         }
         if (result.Value()->IsNodeSet())
         {
-            return Result<UniquePtr<NodeSet>>(UniquePtr<NodeSet>(result.Value().Release()));
+            return Result<UniquePtr<NodeSet>>(UniquePtr<NodeSet>(cast<NodeSet*>(result.Value().Release())));
         }
         else
         {
