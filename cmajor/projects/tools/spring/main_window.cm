@@ -96,12 +96,197 @@ namespace spring
                 return;
             }
             attachNoteToolCursor = cursorResult.Value();
-
+            UniquePtr<MenuBar> menuBar(new MenuBar());
+            MenuItem* fileMenuItem = new MenuItem("&File");
+            MenuItem* newMenuItem = new MenuItem("&New");
+            newMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.n));
+            newMenuItem->ClickEvent().AddHandler(NewClick);
+            auto result = fileMenuItem->AddMenuItem(newMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* openMenuItem = new MenuItem("&Open...");
+            openMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.o));
+            openMenuItem->ClickEvent().AddHandler(OpenClick);
+            result = fileMenuItem->AddMenuItem(openMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* saveMenuItem = new MenuItem("&Save");
+            saveMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.s));
+            saveMenuItem->ClickEvent().AddHandler(SaveClick);
+            result = fileMenuItem->AddMenuItem(saveMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* saveAsMenuItem = new MenuItem("Save &As...");
+            saveAsMenuItem->ClickEvent().AddHandler(SaveAsClick);
+            result = fileMenuItem->AddMenuItem(saveAsMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* saveImageMenuItem = new MenuItem("Save &Image...");
+            saveImageMenuItem->ClickEvent().AddHandler(SaveImageClick);
+            result = fileMenuItem->AddMenuItem(saveImageMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* exitMenuItem = new MenuItem("E&xit");
+            exitMenuItem->ClickEvent().AddHandler(ExitClick);
+            result = fileMenuItem->AddMenuItem(exitMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = menuBar->AddMenuItem(fileMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* editMenuItem = new MenuItem("&Edit");
+            cutMenuItem = new MenuItem("Cu&t");
+            result = cutMenuItem->Disable();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            cutMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.x));
+            cutMenuItem->ClickEvent().AddHandler(CutClick);
+            result = editMenuItem->AddMenuItem(cutMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            copyMenuItem = new MenuItem("&Copy");
+            result = copyMenuItem->Disable();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            copyMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.c));
+            copyMenuItem->ClickEvent().AddHandler(CopyClick);
+            result = editMenuItem->AddMenuItem(copyMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            pasteMenuItem = new MenuItem("&Paste");
+            result = pasteMenuItem->Disable();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            pasteMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.v));
+            pasteMenuItem->ClickEvent().AddHandler(PasteClick);
+            result = editMenuItem->AddMenuItem(pasteMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            undoMenuItem = new MenuItem("&Undo");
+            result = undoMenuItem->Disable();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            undoMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.z));
+            undoMenuItem->ClickEvent().AddHandler(UndoClick);
+            result = editMenuItem->AddMenuItem(undoMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            redoMenuItem = new MenuItem("&Redo");
+            result = redoMenuItem->Disable();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            redoMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.y));
+            redoMenuItem->ClickEvent().AddHandler(RedoClick);
+            result = editMenuItem->AddMenuItem(redoMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* selectAllMenuItem = new MenuItem("Select &All");
+            selectAllMenuItem->SetShortcut(cast<Keys>(Keys.controlModifier | Keys.a));
+            selectAllMenuItem->ClickEvent().AddHandler(SelectAllClick);
+            result = editMenuItem->AddMenuItem(selectAllMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = menuBar->AddMenuItem(editMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* helpMenuItem = new MenuItem("&Help");
+            MenuItem* userGuideMenuItem = new MenuItem("&User Guide");
+            userGuideMenuItem->ClickEvent().AddHandler(UserGuideClick);
+            result = helpMenuItem->AddMenuItem(userGuideMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* indexMenuItem = new MenuItem("&Index");
+            indexMenuItem->ClickEvent().AddHandler(IndexClick);
+            result = helpMenuItem->AddMenuItem(indexMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            MenuItem* aboutMenuItem = new MenuItem("&About...");
+            aboutMenuItem->ClickEvent().AddHandler(AboutClick);
+            result = helpMenuItem->AddMenuItem(aboutMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = menuBar->AddMenuItem(helpMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = AddChild(menuBar.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
             UniquePtr<ToolBar> toolBar(new ToolBar(ToolBarCreateParams(ToolBarControlCreateParams(ControlCreateParams().Defaults())).Defaults().
                 SetStyle(ToolBar.Style.radioButtonGroup)));
-
             ToolButton* selectToolButton = new ToolButton("arrow.system.windows.bitmap", ToolButton.Style.manual);
-            auto result = selectToolButton->SetToolTip("Select");
+            result = selectToolButton->SetToolTip("Select");
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -286,7 +471,7 @@ namespace spring
                 return;
             }
             canvas = new Canvas(CanvasCreateParams().Defaults());
-            // TODO canvas 
+            // TODO canvas
             result = AddChild(canvas);
             if (result.Error())
             {
@@ -294,6 +479,66 @@ namespace spring
                 return;
             }
             SetCanvas(canvas);
+        }
+        private void NewClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void OpenClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void SaveClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void SaveAsClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void SaveImageClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void ExitClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void CutClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void CopyClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void PasteClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void UndoClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void RedoClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void SelectAllClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void UserGuideClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void IndexClick(ClickEventArgs& args)
+        {
+            // todo
+        }
+        private void AboutClick(ClickEventArgs& args)
+        {
+            // todo
         }
         private Cursor arrowCursor;
         private Cursor* grabOpenCursor;
