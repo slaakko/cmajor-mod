@@ -1,0 +1,4 @@
+solution ref2html;
+project <ref2html.cmp>;
+activeProject ref2html;
+activeBackEnd=llvm;

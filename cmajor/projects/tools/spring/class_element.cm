@@ -1,0 +1,269 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class ClassElement : ContainerElement
+    {
+        public ClassElement() : base(DiagramElementKind.classElement), isAbstract(false), rep(new ConcreteClassElement(this))
+        {
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement("classElement");
+            SetName(xmlElement);
+            xmlElement->AppendChild(BoundsXmlElement());
+            if (isAbstract)
+            {
+                xmlElement->SetAttribute("abstract", "true");
+            }
+            else
+            {
+                xmlElement->SetAttribute("abstract", "false");
+            }
+            xmlElement->SetAttribute("keyword", keyword);
+            for (const auto& attribute : attributes)
+            {
+                System.Xml.Element* attributeXmlElement = attribute->ToXml();
+                xmlElement->AppendChild(attributeXmlElement);
+            }
+            for (const auto& operation : operations)
+            {
+                System.Xml.Element* operationXmlElement = operation->ToXml();
+                xmlElement->AppendChild(operationXmlElement);
+            }
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<bool> result = base->FromXml(xmlElement);
+            if (result.Error()) return result;
+            auto abstractResult = ParseBool(xmlElement->GetAttribute("abstract"));
+            if (abstractResult.Error()) return Result<bool>(ErrorId(abstractResult.GetErrorId()));
+            bool abstractValue = abstractResult.Value();
+            if (abstractValue)
+            {
+                SetAbstract();
+            }
+            keyword = xmlElement->GetAttribute("keyword");
+            Result<UniquePtr<System.XPath.NodeSet>> attributeNodeSetResult = System.XPath.EvaluateToNodeSet("attribute", xmlElement);
+            if (attributeNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(attributeNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* attributeNodeSet = attributeNodeSetResult.Value().Get();
+            int na = attributeNodeSet->Count();
+            for (int i = 0; i < na; ++i)
+            {
+                System.Xml.Node* node = attributeNodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* attributeXmlElement = cast<System.Xml.Element*>(node);
+                    AttributeElement* attributeElement = new AttributeElement();
+                    attributeElement->SetContainerElement(this);
+                    auto result = attributeElement->FromXml(attributeXmlElement);
+                    if (result.Error()) return result;
+                    attributes.Add(attributeElement);
+                }
+            }
+            Result<UniquePtr<System.XPath.NodeSet>> operationNodeSetResult = System.XPath.EvaluateToNodeSet("operation", xmlElement);
+            if (operationNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(operationNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* operationNodeSet = operationNodeSetResult.Value().Get();
+            int no = operationNodeSet->Count();
+            for (int i = 0; i < no; ++i)
+            {
+                System.Xml.Node* node = operationNodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* operationXmlElement = cast<System.Xml.Element*>(node);
+                    OperationElement* operationElement = new OperationElement();
+                    operationElement->SetContainerElement(this);
+                    auto result = operationElement->FromXml(operationXmlElement);
+                    if (result.Error()) return result;
+                    operations.Add(operationElement);
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override DiagramElement* Clone() const
+        {
+            ClassElement* clone = new ClassElement();
+            clone->SetName(Name());
+            clone->SetBounds(Bounds());
+            clone->SetKeyword(Keyword());
+            if (isAbstract)
+            {
+                clone->SetAbstract();
+            }
+            int na = attributes.Count();
+            for (int i = 0; i < na; ++i)
+            {
+                AttributeElement* attributeElement = attributes.Get(i);
+                AttributeElement* clonedAttribute = cast<AttributeElement*>(attributeElement->Clone());
+                clonedAttribute->SetContainerElement(clone);
+                clone->Attributes().Add(clonedAttribute);
+            }
+            int no = operations.Count();
+            for (int i = 0; i < no; ++i)
+            {
+                OperationElement* operationElement = operations.Get(i);
+                OperationElement* clonedOperation = cast<OperationElement*>(operationElement->Clone());
+                clonedOperation->SetContainerElement(clone);
+                clone->Operations().Add(clonedOperation);
+            }
+            return clone;
+        }
+        public inline bool IsAbstract() const
+        {
+            return isAbstract;
+        }
+        public void SetAbstract()
+        {
+            if (!isAbstract)
+            {
+                isAbstract = true;
+                rep.Reset(new AbstractClassElement(this));
+            }
+        }
+        public void ResetAbstract()
+        {
+            if (isAbstract)
+            {
+                isAbstract = false;
+                rep.Reset(new ConcreteClassElement(this));
+            }
+        }
+        public inline const string& Keyword() const
+        {
+            return keyword;
+        }
+        public void SetKeyword(const string& keyword_)
+        {
+            keyword = keyword_;
+        }
+        public const IndexList<AttributeElement>& Attributes() const
+        {
+            return attributes;
+        }
+        public IndexList<AttributeElement>& Attributes()
+        {
+            return attributes;
+        }
+        public void SetAttributes(IndexList<AttributeElement>&& attributes_)
+        {
+            attributes = attributes_;
+            for (auto& attribute : attributes)
+            {
+                attribute->SetContainerElement(this);
+            }
+        }
+        public const IndexList<OperationElement>& Operations() const
+        {
+            return operations;
+        }
+        public IndexList<OperationElement>& Operations()
+        {
+            return operations;
+        }
+        public void SetOperations(IndexList<OperationElement>&& operations_)
+        {
+            operations = operations_;
+            for (auto& operation : operations)
+            {
+                operation->SetContainerElement(this);
+            }
+        }
+        public override List<RelationshipElement*> GetAllRelationships()
+        {
+            List<RelationshipElement*> relationships = Relationships();
+            int na = attributes.Count();
+            for (int i = 0; i < na; ++i)
+            {
+                AttributeElement* attribute = attributes.Get(i);
+                RelationshipElement* relationship = attribute->Relationship();
+                if (relationship != null)
+                {
+                    relationships.Add(relationship);
+                }
+            }
+            int no = operations.Count();
+            for (int i = 0; i < no; ++i)
+            {
+                OperationElement* operation = operations.Get(i);
+                RelationshipElement* relationship = operation->Relationship();
+                if (relationship != null)
+                {
+                    relationships.Add(relationship);
+                }
+            }
+            return relationships;
+        }
+        public override Result<AttributeElement*> GetAttribute(int attributeIndex) const
+        {
+            return Result<AttributeElement*>(attributes.Get(attributeIndex));
+        }
+        public override Result<int> GetIndexOfAttributeElement(AttributeElement* attributeElement) const
+        {
+            int n = attributes.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (attributes.Get(i) == attributeElement) return Result<int>(i);
+            }
+            int errorId = AllocateError("attribute '" + attributeElement->Name() + "' not found from class '" + Name() + "'");
+            return Result<int>(ErrorId(errorId));
+        }
+        public override Result<OperationElement*> GetOperation(int operationIndex) const
+        {
+            return Result<OperationElement*>(operations.Get(operationIndex));
+        }
+        public override Result<int> GetIndexOfOperationElement(OperationElement* operationElement) const
+        {
+            int n = operations.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (operations.Get(i) == operationElement) return Result<int>(i);
+            }
+            int errorId = AllocateError("operation '" + operationElement->Name() + "' not found from class '" + Name() + "'");
+            return Result<int>(ErrorId(errorId));
+        }
+        public override void MapChildObjects(ContainerElement* from,
+            Map<DiagramElement*, DiagramElement*>& cloneMap,
+            Map<DiagramElement*, DiagramElement*>& reverseCloneMap)
+        {
+            if (from->IsClassElement())
+            {
+                ClassElement* fromClass = cast<ClassElement*>(from);
+                int na = fromClass->attributes.Count();
+                for (int i = 0; i < na; ++i)
+                {
+                    AttributeElement* newAttr = attributes.Get(i);
+                    AttributeElement* oldAttr = fromClass->attributes.Get(i);
+                    cloneMap[oldAttr] = newAttr;
+                    reverseCloneMap[newAttr] = oldAttr;
+                }
+                int no = fromClass->operations.Count();
+                for (int i = 0; i < no; ++i)
+                {
+                    OperationElement* newOp = operations.Get(i);
+                    OperationElement* oldOp = fromClass->operations.Get(i);
+                    cloneMap[oldOp] = newOp;
+                    reverseCloneMap[newOp] = oldOp;
+                }
+            }
+        }
+        private bool isAbstract;
+        private string keyword;
+        private UniquePtr<ClassElementRep> rep;
+        private IndexList<AttributeElement> attributes;
+        private IndexList<OperationElement> operations;
+    }
+}
+

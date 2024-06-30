@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+ <head>
+  <meta charset="utf-8"/>
+  <title>calc.expr</title>
+  <style>
+   div.soul
+{
+ background-color: #e6ffee;
+ margin: 20px;
+ padding: 20px;
+ font-family: monospace;
+}
+
+.soul .kw
+{
+ color: #a31515;
+ font-weight: bold;
+}
+
+.soul .id
+{
+ color: #000000;
+}
+
+.soul .number
+{
+ color: #000000;
+}
+
+.soul .other
+{
+ color: #000000;
+}
+
+.soul .string
+{
+ color: #a31515;
+}
+
+.soul .comment
+{
+ color: #006600;
+}
+
+.soul .punctuation
+{
+ color: #a31515;
+ font-weight: bold;
+}
+
+</style>
+ </head>
+ <body>
+  <div class="soul">
+   <span xml:space="preserve"><span class="comment">// calc.expr:
+</span></span>
+   <br/>
+   <span xml:space="preserve"/>
+   <br/>
+   <span xml:space="preserve"><span class="kw">expressions</span>&nbsp;<span class="id">calc</span><span class="punctuation">.</span><span class="id">expr</span></span>
+   <br/>
+   <span xml:space="preserve"><span class="punctuation">{</span></span>
+   <br/>
+   <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">ws</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"[\n\r\t ]"</span><span class="punctuation">;</span></span>
+   <br/>
+   <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">dec_digits</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"[0-9]+"</span><span class="punctuation">;</span></span>
+   <br/>
+   <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">fraction</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"{dec_digits}?\.{dec_digits}|{dec_digits}\."</span><span class="punctuation">;</span></span>
+   <br/>
+   <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">sign</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"\+|-"</span><span class="punctuation">;</span></span>
+   <br/>
+   <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exponent</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"(e|E){sign}?{dec_digits}"</span><span class="punctuation">;</span></span>
+   <br/>
+   <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">number</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"({fraction}{exponent}?|{dec_digits}{exponent})|{dec_digits}"</span><span class="punctuation">;</span></span>
+   <br/>
+   <span xml:space="preserve"><span class="punctuation">}</span></span>
+   <br/>
+  </div>
+ </body>
+</html>

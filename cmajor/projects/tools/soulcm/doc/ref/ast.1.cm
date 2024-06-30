@@ -1,0 +1,8 @@
+// ast.cm:
+
+using System;
+
+public abstract class Node
+{
+    public default virtual ~Node();
+}

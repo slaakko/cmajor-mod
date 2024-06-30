@@ -1,0 +1,520 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>SoulCm Generator Tools</title>
+    <link href="style/style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <h1>SoulCm Generator Tools</h1>
+
+    <p>
+        <span class="mono">SoulCm</span> contains two tools: a lexical analyzer generator <span class="mono">scmlg</span>
+        and a parser generator <span class="mono">scmpg</span>.
+        Both are source-to-source tools taking a mixture of <span class="mono">SoulCm</span> syntax and <span class="mono">Cmajor</span> syntax as input 
+        and generating <span class="mono">Cmajor</span> as output.
+    </p>
+
+    <h2>Calculator example</h2>
+
+    <p>
+        This section describes how to make a lexer and a parser 
+        for a language of arithmetic expressions using <span class="mono">SoulCm</span>
+        generator tools.
+    </p>
+
+    <h3>Problem</h3>
+
+    <p>
+        User enters an arithmetic expression line.
+        The line consists of four arithmetic operators, 
+        integer or floating-point numbers, parenthesis 
+        and white space.
+        The program uses a lexer to tokenize the line 
+        and a parser to make an abstract syntax tree from the 
+        tokenized expression. Then the program evaluates the
+        expression using the syntax tree and prints the result. 
+    </p>
+
+    <h3>Lexical analyzer</h3>
+
+    <p>
+        The lexical analyzer generator <span class="mono">scmlg</span> can process the following <span class="mono">SoulCm</span> syntax files:
+        <ul>
+            <li>lexer project files: <span class="mono">*.scmlg</span></li>
+            <li>token files: <span class="mono">*.token</span></li>
+            <li>expression files: <span class="mono">*.expr</span></li>
+            <li>keyword files: <span class="mono">*.keyword</span></li>
+            <li>lexer files: <span class="mono">*.lexer</span></li>
+        </ul>
+    </p>
+
+    <h4>Tokens</h4>
+
+    <p>Let's begin with the tokens. 
+    We need tokens for arithmetic operators +, -, *, and /.
+    I have named them PLUS, MINUS, MUL and DIV. 
+    Token names are capitalized in this text but this is not a requirement.
+    A token for integer or floating-point number is also required.
+    I have named it NUMBER. Finally token names for parenthesis are 
+    LPAREN and RPAREN.
+    </p>
+
+    <p>The following file contains SoulCm token descriptions:</p>
+
+    <ref file="ref/calc.token.div"/>
+
+    <p>Each token is a parenthesized pair of a token name and a token info string.
+    The token info string serves no other but informatic purpose any more but is required
+    any way.</p>
+
+    <h4>Lexer project file</h4>
+
+    <p>Now we can make a project file for the calculator lexer:</p>
+
+    <ref file="ref/calc.scmlg.1.div"/>
+
+    <h4>Generating code</h4>
+
+    <p>The following command generates Cmajor source code for the files contained by the project file:</p>
+
+    <div class="console">
+    scmlg -v calc.scmlg
+    </div>
+
+    <h4>Generated token file</h4>
+
+    <p>
+        The tokens are placed inside a namespace whose name is specified in the 
+        <span class="mono">tokens</span> declaration in the token file.
+        This is called <em>token set name</em>. In this case the token set name is 
+        <span class="mono">calc.token</span>.
+        Each token has a unique id that consists of a <em>tokenSetID</em>, 
+        a 31-bit hash code calculated from the token set name,
+        and a running positive integer. In the case two token sets collide, you
+        only have to change the token set name of one of them.
+    </p>
+
+    <ref file="ref/calc.token.cm.div"/>
+
+    <h4>Regular expressions for the tokens</h4>
+
+    <p>
+    The next step is to create regular expression that the lexer uses to chop the input 
+    into tokens. Each expression consists of the name of the expression, an assignment sign,
+    the regular expression body in double quotes and a semicolon.
+    An expression may refer to previously defined expressions by giving the name of the 
+    previously defined expression in braces. For example the <span class="mono">exponent</span>
+    expression refers to <span class="mono">sign</span> and <span class="mono">dec_digits</span>.
+    </p>
+
+    <ref file="ref/calc.expr.div"/>
+
+    <p>
+    The parenthesis, braces, the period, and the +, * and ? symbols are operators in the regular 
+    expression syntax. They, and the backslash symbol need to be escaped using the backslash '\' 
+    for their meaning to be taken literally.
+    </p>
+    <p>The named regular expressions do not generate source code in this stage.</p>
+
+    <h4>Lexer</h4>
+
+    <p>
+        The lexer file contains the lexer itself. 
+        Referenced token sets and expression sets need a <span class="mono">using</span> declaration.
+        The lexer is specified in the <span class="mono">lexer</span> section. 
+        The qualified identifier after the <span class="mono">lexer</span> keyword declares 
+        the name of the lexer.
+        The <span class="mono">rules</span> section contains token matching rules.
+        A matching rule consists of a regular expression in double quotes and a 
+        <span class="mono">Cmajor</span> compound statement. Typically the compound 
+        statement contains a return statement that returns a token identifier to the parser.
+        For example the rule for the <span class="mono">number</span> expression returns 
+        the <span class="mono">NUMBER</span> token to the parser.
+        The compound statement can also be empty. In this case the corresponding token is skipped 
+        and the lexer proceeds matching the next token. 
+        For example the rule for the <span class="mono">ws</span> expression 
+        is associated with an empty compound statement and thus white space is skipped.
+    </p>
+
+    <ref file="ref/calc.lexer.div"/>
+
+    <p>
+        The generated lexer class overloads two Cmajor operators: <span class="mono">operator++</span>
+        advances the lexer to the next token, and <span class="mono">operator*</span> returns the 
+        identifier of the currently matching token. When the input is exchausted the lexer 
+        <span class="mono">operator*</span> function returns <span class="mono">System.Lex.END_TOKEN</span>.
+    </p>
+
+    <h4>Complete lexer project file</h4>
+
+    <p>Now the lexer project file can be completed with references to the expression and lexer files:</p>
+
+    <ref file="ref/calc.scmlg.2.div"/>
+
+    <h4>Generating lexer code</h4>
+
+    <p>Now we can execute the <span class="mono">scmlg</span> command again to generate code for the lexer:</p>
+
+    <div class="console">
+    scmlg -v calc.scmlg
+    </div>
+
+    <p>The command now generates the following output:</p>
+
+    <div class="console">
+    ...<br/>
+    Generating lexer 'calc.lexer'...<br/>
+    ==> C:/work/cmajor-mod/cmajor/projects/tools/soulcm/doc/ref/calc.lexer.classmap<br/>
+    ==> C:/work/cmajor-mod/cmajor/projects/tools/soulcm/doc/ref/calc.lexer.classmap.compressed<br/>
+    ==> C:/work/cmajor-mod/cmajor/projects/tools/soulcm/doc/ref/calc.lexer.classmap.rc<br/>
+    ==> C:/work/cmajor-mod/cmajor/projects/tools/soulcm/doc/ref/calc.lexer.cm<br/>
+    lexers for project 'calc.lexer' generated<br/>
+    </div>
+
+    <p>
+        The command generates the following files:
+        <ul>
+            <li><span class="mono">calc.lexer.classmap</span>: a character class map file</li>
+            <li><span class="mono">calc.lexer.classmap.compressed</span>: compressed class map file</li>
+            <li><span class="mono">calc.lexer.classmap.rc</span>: a resource script for the embedded class map resource</li>
+            <li><span class="mono">calc.lexer.cm</span>: the lexer itself</li>
+        </ul>
+    </p>
+
+    <h4>Classmap</h4>
+    
+    <p>
+        A <span class="mono">classmap</span> is a mapping from each Unicode character to an integer index called <em>class index</em>.
+        It is needed by the lexer at runtime. Thus the class map need to be embedded as a resource to the final executable that contains
+        the lexer. You can embed the classmap by placing the resource script declaration 
+        <span class="mono">rc &lt;FILE.classmap.rc</span>&gt; to the Cmajor project file that contains the lexer.
+    </p>
+
+    <h4>Cmajor project file</h4>
+
+    <p>
+        Now we can make initial version of a Cmajor project file that contains references to the generated files:
+    </p>
+
+    <ref file="ref/calc.cmp.1.div"/>
+
+    <h3>Parser</h3>
+
+    <p>
+        The parser generator <span class="mono">scmpg</span> can process the following <span class="mono">SoulCm</span> syntax files:
+        <ul>
+            <li>parser project files: <span class="mono">*.scmpg</span></li>
+            <li>parser files: <span class="mono">*.parser</span></li>
+        </ul>
+    </p>
+
+    <h4>Parser files</h4>
+
+    <p>
+        A parser file begins with <span class="mono">using</span> declarations. Each token set should have a using declaration. 
+        The generated parser also may refer to other Cmajor classes and functions. The namespace that contain them may also have
+        a using declaration. In this example the abstract syntax tree classes are defined in the global namespace, so they do not need a
+        using declaration.
+    </p>
+
+    <p>
+        A parser definition begins with the keyword <span class="mono">parser</span> followed by the name of the parser that is a 
+        qualified identifier. A parser definition may contain following kinds of declarations:
+        <ul>
+            <li><span class="mono">lexer</span> declarations</li>
+            <li><span class="mono">main</span> declaration</li>
+            <li><span class="mono">using</span> declaration for each external rule</li>
+            <li>parsing rules</li>
+        </ul>
+    </p>
+
+    <ref file="ref/calc.1.parser.div"/>
+
+    <p>
+        The <span class="mono">calc.parser</span> contains one <span class="mono">lexer</span> declaration for the <span class="mono">calc.lexer</span>.
+        This means that the <span class="mono">calc.parser</span> uses <span class="mono">calc.lexer</span> as a lexer.
+        A parser may contain many lexer declarations. In this case the parser should consume only an intersection of the tokens that the lexers produce.
+    </p>
+
+    <p>
+        The <span class="mono">main</span> declaration causes the parser generator to generate a member function called <span class="mono">Parse</span>
+        that takes the lexer as a parameter and return what the first parsing rule of the parser returns.
+    </p>
+
+    <p>
+        A <span class="mono">using</span> declaration for an external rule brings the name of the rule to the scope of this parser so it can be referenced.
+        The <span class="mono">calc.parser</span> has no using declarations for external rules.
+    </p>
+
+    <p>
+        A parsing rule starts with the name of the rule followed by a parenthesized list of parameters and local variables of the rule function 
+        followed by a colon and the type of the return value of the rule function. The list of parameters and local variables and the return value type may be missing.
+        After that comes the <span class="mono">::=</span> symbol pronounced as 'produces' and the body of the parsing rule followed by a semicolon.
+    </p>
+
+    <p>
+        The first rule of the <span class="mono">calc.parser</span> is called <span class="mono">expression</span>. The expression rule takes no parameters and has no local
+        variables so the list of parameters and local variables are missing. The return value type of the rule function is <span class="mono">Node*</span> that is the 
+        base class of the abstract syntax tree node classes for the calculator.
+    </p>
+
+    <p>
+        The body of the expression rule consists of a reference to another rule called <span class="mono">additive_expr</span>. The rule reference consists of the name of
+        the referenced rule followed by colon followed by the <em>instance name</em> of the rule. The same rule may be referenced multiple times in the same rule body,
+        so each of the references must have a unique instance name. There is one variable in the rule function for each instance name. 
+        This variable is called an <em>instance variable</em> of the rule reference. It holds the return value of the called rule function.
+        The instance name of the referenced <span class="mono">additive_expr</span> rule is defined to be <span class="mono">expr</span>.
+        After <span class="mono">additive_expr</span> rule reference comes a <em>semantic action</em>, a Cmajor statement block in braces, that is: a Cmajor compound statement. 
+        In this case the semantic action returns the <span class="mono">expr</span> instance variable to the caller of the rule function. 
+        The <span class="mono">expr</span> variable is bound to the return value of the <span class="mono">additive_expr</span> rule function.
+    </p>
+
+    <p>
+        The second rule of the <span class="mono">calc.parser</span> is called <span class="mono">additive_expr</span>. 
+        The body of this rule consists of the <em>parsing expression</em> called <span class="mono">empty</span> followed by a semantic action associated with it.
+        The <span class="mono">empty</span> parsing expression matches always and consumes no input. Thus currently the <span class="mono">additive_expr</span> rule function returns
+        null. I complete it later.
+    </p>
+
+    <h4>Abstract syntax tree</h4>
+
+    <p>
+        Typically a parser generates a tree of objects as the parsing proceeeds. This tree is called an <em>abstract syntax tree</em> because it
+        correlates to the syntax of the language that the parser recognizes with the trivial parsing nodes for the punctuation and white space removed.
+    </p>
+
+    <p>
+        I have started to define syntax tree classes by defining only the base class of them called <span class="mono">Node</span>. 
+        The following file contains the definition of the <span class="mono">Node</span> class:
+    </p>
+
+    <ref file="ref/ast.1.div"/>
+
+    <h4>Parser project file</h4>
+
+    <p>
+        Now we have the skeleton of the parser and syntax tree defined, so we can make a project file for the calculator parser:
+    </p>
+
+    <ref file="ref/calc.scmpg.div"/>
+
+    <h4>Generating source code for the parser</h4>
+
+    <p>
+        The command <span class="mono">scmpg</span> followed by the calculator project file generates source code files for the parser:
+    </p>
+
+    <div class="console">
+    scmpg -v calc.scmpg
+    </div>
+
+    <p>
+        The following source code contains the skeleton of the calculator parser at this moment:
+    </p>
+
+    <ref file="ref/calc.1.parser.skeleton.div"/>
+
+    <p>
+        The parser generator generates a static template class for each parser definition.
+        The template parameter <span class="mono">LexerT</span> is bound to each concrete
+        lexer in the parser definition. The generated parser class has a static member function 
+        for each rule of the parser. These are called <em>rule functions</em>. 
+        The parser has also a <span class="mono">Parse</span> member 
+        function because of the <span class="mono">main</span> declaration.
+    </p>
+
+    <p>
+        The <span class="mono">new class calc.parser&lt;calc.lexer&gt;;</span> at the end of the file generates a 
+        <em>full instantiation</em> of the parser class template with the 
+        <span class="mono">calc.lexer</span> as the template argument.
+    </p> 
+
+    <h4>Additive expressions</h4>
+
+    <p>
+        The <span class="mono">Operator</span> enumerated type defines enumeration constants for the four arithmetic operators: 
+        <span class="mono">plus</span>, <span class="mono">minus</span>, <span class="mono">mul</span> and <span class="mono">div</span>:
+    </p>
+
+    <ref file="ref/ast.2.div"/>
+
+    <p>
+        The <span class="mono">additive_op</span> parsing rule parses an additive operator symbol:
+    </p>
+    
+    <ref file="ref/calc.2.parser.div"/>
+
+    <p>
+        The <span class="mono">additive_op</span> rule consists of two <span class="mono">token</span> parsers for tokens PLUS and MINUS combined with a 
+        <span class="mono">choice</span> parsing expression.
+        A token parser parses a single token. If the current input token matches the token of the token parser the lexer is advanced to the next token.
+        A choice parser matches alternatives separated by the '|' symbol. The parser tries to match the first alternative. 
+        If the first alternative matches, the whole choice matches. Otherwise the lexer is backtracked to the same input position 
+        as for the first alternative and the parser tries to match the second alternative, and so on.
+    </p>
+
+    <p>
+        I have now defined a syntax tree node class for a binary expression:
+    </p>
+
+    <ref file="ref/ast.3.div"/>
+
+    <p>
+        The <span class="mono">BinaryExprNode</span> class contains the left-hand side and the right-hand side of binary operation 
+        whose operation is defined by the arithmetic operator op.
+    </p>
+
+    <p>
+        The <span class="mono">Visitor</span> class is for visiting the syntax tree nodes. I complete it later.
+    </p>
+
+    <ref file="ref/calc.3.parser.div"/>
+
+    <p>
+        I have now refined the <span class="mono">additive_expr</span> rule:
+        The rule function has a local variable <span class="mono">expr</span> defined with the <span class="mono">var</span> keyword.
+        The <span class="mono">expr</span> variable is initially bound to the instance variable <span class="mono">left</span>,
+        the return value of the first reference of the <span class="mono">multiplicative_expr</span> rule.
+        The first rule reference is followed by a <em>Kleene closure</em> of a parsing expression 
+        consisting of reference of rule <span class="mono">additive_op</span> and another 
+        reference of the <span class="mono">multiplicative_expr</span> rule whose instance variable name is <span class="mono">right</span>.
+        Thus the <span class="mono">additive_expr</span> rule parses a <span class="mono">multiplicative_expr</span> (left) followed by 
+        zero or more instances of <span class="mono">multiplicative_expr</span> (right) separated by <span class="mono">additive_op</span> operators.
+    </p>
+
+    <p>
+        In the semantic action associated with the second reference to the <span class="mono">multiplicative_expr</span> rule, we now
+        rebind the <span class="mono">expr</span> variable to created instance of a <span class="mono">BinaryExprNode</span> class 
+        that is given the previous value of the <span class="mono">expr</span> variable, the <span class="mono">right</span> instance variable and
+        the operator as arguments. At the end of the <span class="mono">additive_expr</span> rule there's a semantic action that
+        returns the current value of <span class="mono">expr</span> to the caller of the rule function.
+    </p>
+
+    <h4>Multiplicative expressions</h4>
+
+    <p>
+        The structure of the parser for multiplicative expressions resembles the structure of the parser for additive expressions:
+    </p>
+
+    <ref file="ref/calc.4.parser.div"/>
+
+    <p>
+        We have a rule for parsing the multiplicative operator, <span class="mono">multiplicative_op</span>, and 
+        a rule for parsing the multiplicative expression, <span class="mono">multiplicative_expr</span>.
+    </p>
+
+    <h4>Unary expressions</h4>
+
+    <p>
+        I have now defined a syntax tree node class for unary expressions:
+    </p>
+
+    <ref file="ref/ast.4.div"/>
+
+    <p>
+        Parsing rule for a unary expression contains a choice parser.
+        The first alternative consists of a <span class="mono">unary_op</span> rule reference followed by a recursive <span class="mono">unary_expr</span> rule reference.
+        The second alternative consists of a <span class="mono">primary_expr</span> rule reference:
+    </p>
+
+    <ref file="ref/calc.5.parser.div"/>
+
+    <h4>Primary expressions</h4>
+
+    <p>
+        I have defined two new syntax tree node classes: 
+        The <span class="mono">NumberNode</span> class holds a single number and the <span class="mono">ParenExprNode</span> 
+        class holds the subtree for a parenthesized expression:
+    </p>
+
+    <ref file="ref/ast.5.div"/>
+
+    <p>
+        I have also added a function for parsing a number. 
+        The <span class="mono">ParseNumber</span> function first tries to convert a lexeme for a number token to UTF-8 string.
+        If the conversion fails, the function returns an error result.
+        If the conversion succceeds, the function tries to parse the UTF-8 string to a double using the 
+        <span class="mono">System.ParseDouble</span> function and returns the result.
+    </p>
+
+    <p>
+        Here's the parser for a primary expression:
+    </p>
+
+    <ref file="ref/calc.6.parser.div"/>
+
+    <p>
+        A primary expression is either a number or a parenthesized expression.
+        The expression <span class="mono">lexer.GetToken(pos).ToString()</span> obtains a matching lexeme for a current input token as a UTF-32 string.
+        Then the lexeme is parsed to a double using the <span class="mono">ParseNumber</span> function.
+        However if the parsing fails an error result is returned to the caller of the primary expression rule.
+        An error result is propagated to the caller of the rule function and from there to a caller's caller and so on up to the call chain
+        until it reaches the <span class="mono">Parse</span> function from where it is returned as an error result.
+        If the parsing succeeds the parsed number is returned to the caller by creating a <span class="mono">NumberNode</span> syntax tree node.
+    </p>
+
+    <p>
+        A parenthesized expression is parsed by parsing a left parenthesis token followed by a subexpression followed by a right parenthesis token.
+    </p>
+
+    <h4>Generating parser code</h4>
+
+    <p>Now we can execute the <span class="mono">scmpg</span> command again to generate code for the parser:</p>
+
+    <div class="console">
+    scmpg -v calc.scmpg
+    </div>
+
+    <h4>Evaluating the expression</h4>
+
+    <p>
+        Now that we have a parser for the expression that returns the expression as a syntax tree node, we can evaluate the expression by 
+        visiting the syntax tree nodes. For that I have created an <span class="mono">EvaluatorVisitor</span> class:
+    </p>
+
+    <ref file="ref/evaluate.div"/>
+
+    <p>
+        The evaluator visitor has a member variable <span class="mono">value</span> that holds the current value of the evaluation.
+    </p>
+
+    <p>
+        A <span class="mono">NumberNode></span> is evaluated simply by setting the value of the node to the <span class="mono">value</span> member variable.
+    </p>
+
+    <p>
+        A <span class="mono">BinaryExprNode</span> is evaluated by evaluating the left subtree and saving the evaluated value to the <span class="mono">leftValue</span>
+        variable, and then evaluating the right subtree and saving the evaluated value to the <span class="mono">rightValue</span> variable.
+        Finally the value of the whole subtree is evaluated by computing the value from the left and right subtree value.
+    </p>
+
+    <p>
+        A <span class="mono">UnaryExprNode</span> is evaluated by evaluating the child subtree and then computing the value from the subtree value.
+    </p>
+
+    <p>
+        A <span class="mono">ParenExprNode</span> is evaluated by evaluating the value of the child subtree.
+    </p>
+
+    <h3>Putting it all together</h3>
+
+    <p>
+        Here's a program that uses the lexical analyzer, the parser and the evaluator to evaluate arithmetic expressions:
+    </p>
+
+    <ref file="ref/main.div"/>
+
+    <h3>Compiling the project</h3>
+
+    <p>
+        Here's the complete Cmajor project file for the calculator:
+    </p>
+
+    <ref file="ref/calc.cmp.div"/>
+
+    <p>
+        This example is in the <span class="mono">projects/tools/soulcm/example</span> subdirectory of the Cmajor root directory.
+    </p>
+
+</body>
+</html>

@@ -1,0 +1,11 @@
+<div class="soul">
+ <span xml:space="preserve"><span class="comment">// calc.scmlg
+</span></span>
+ <br/>
+ <span xml:space="preserve"/>
+ <br/>
+ <span xml:space="preserve"><span class="kw">project</span>&nbsp;<span class="id">calc</span><span class="punctuation">.</span><span class="id">lexer</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve"><span class="kw">tokens</span>&nbsp;<span class="punctuation">&lt;</span><span class="id">calc</span><span class="punctuation">.</span><span class="id">token</span><span class="punctuation">></span><span class="punctuation">;</span></span>
+ <br/>
+</div>

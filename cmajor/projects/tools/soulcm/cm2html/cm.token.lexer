@@ -1,0 +1,74 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using cm.token;
+using cm.expr;
+using cm.keyword;
+
+lexer cm.lexer.CmTokenLexer
+{
+    rules
+    {
+        "{newline}" {}
+        "{collected_ws}" { return WS; }
+        "{line_comment}" { return COMMENT; }
+        "{id}" { long kw = GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return ID; else return KEYWORD; }
+        "{integer_literal}" { return INTEGER_LITERAL; }
+        "{floating_literal}" { return FLOATING_LITERAL; }
+        "{char_literal}" { return CHAR_LITERAL; }
+        "{string_literal}" { return STRING_LITERAL; }
+        "<=>" { return OTHER; }
+        "=>" { return OTHER; }
+        "\|\|" { return OTHER; }
+        "&&" { return OTHER; }
+        "\|" { return OTHER; }
+        "^" { return OTHER; }
+        "&" { return OTHER; }
+        "==" { return OTHER; }
+        "!=" { return OTHER; }
+        "<=" { return OTHER; }
+        ">=" { return OTHER; }
+        "<" { return OTHER; }
+        ">" { return OTHER; }
+        "<<" $(0) { return OTHER; }
+        ">>" $(1) { return OTHER; }
+        "\+" { return OTHER; }
+        "-" { return OTHER; }
+        "\*" { return OTHER; }
+        "/" { return OTHER; }
+        "%" { return OTHER; }
+        "\+\+" { return OTHER; }
+        "--" { return OTHER; }
+        "!" { return OTHER; }
+        "~" { return OTHER; }
+        "\." { return OTHER; }
+        "->" { return OTHER; }
+        "\[" { return OTHER; }
+        "\]" { return OTHER; }
+        "\(" { return OTHER; }
+        "\)" { return OTHER; }
+        "\{" { return OTHER; }
+        "\}" { return OTHER; }
+        "," { return OTHER; }
+        "=" { return OTHER; }
+        ":" { return OTHER; }
+        ";" { return OTHER; }
+        "\?" { return OTHER; }
+        "#" { return OTHER; }
+    }
+
+    variables
+    {
+        bool parsingOperatorFunctionGroupId;
+        int leftAngleCount;
+    }
+
+    actions
+    {
+        $(0)={ if (vars.parsingOperatorFunctionGroupId) return System.Lex.INVALID_TOKEN; }
+        $(1)={ if (vars.leftAngleCount > 0) return System.Lex.INVALID_TOKEN; }
+    }
+
+}

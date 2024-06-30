@@ -1,0 +1,12 @@
+project soul2html;
+target=program;
+source <main.cm>;
+source <soul.keyword.cm>;
+source <soul.lexer.SoulTokenLexer.cm>;
+source <soul.token.cm>;
+rc <soul.lexer.SoulTokenLexer.classmap.rc>;
+text <soul.expr>;
+text <soul.keyword>;
+text <soul.token>;
+text <soul.token.lexer>;
+text <soul.token.lexer.scmlg>;

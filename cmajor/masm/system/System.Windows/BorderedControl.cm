@@ -62,7 +62,7 @@ namespace System.Windows
         {
             return *this;
         }
-        public BorderedControlCreateParams& SetBordedStyle(BorderStyle borderStyle_)
+        public BorderedControlCreateParams& SetBorderStyle(BorderStyle borderStyle_)
         {
             borderStyle = borderStyle_;
             return *this;

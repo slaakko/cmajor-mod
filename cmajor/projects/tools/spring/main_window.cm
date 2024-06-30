@@ -1,0 +1,319 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class MainWindow : Window
+    {
+        public MainWindow() : base("Spring Software Diagram Designer")
+        {
+            auto arrowCursorResult = LoadStandardCursor(StandardCursorId.IDC_ARROW);
+            if (arrowCursorResult.Error())
+            {
+                SetErrorId(arrowCursorResult.GetErrorId());
+                return;
+            }
+            arrowCursor = Rvalue(arrowCursorResult.Value());
+            auto cursorResult = Application.GetResourceManager().GetCursor("grab.open.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            grabOpenCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("grab.closed.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            grabClosedCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("class.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            classToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("object.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            objectToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("note.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            noteToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("inheritance.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            inheritanceToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("composition.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            compositionToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("aggregation.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            aggregationToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("reference.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            referenceToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("create.instance.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            createInstanceToolCursor = cursorResult.Value();
+            cursorResult = Application.GetResourceManager().GetCursor("attach.note.tool.spring.cursor");
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            attachNoteToolCursor = cursorResult.Value();
+
+            UniquePtr<ToolBar> toolBar(new ToolBar(ToolBarCreateParams(ToolBarControlCreateParams(ControlCreateParams().Defaults())).Defaults().
+                SetStyle(ToolBar.Style.radioButtonGroup)));
+
+            ToolButton* selectToolButton = new ToolButton("arrow.system.windows.bitmap", ToolButton.Style.manual);
+            auto result = selectToolButton->SetToolTip("Select");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetSelectTool()->SetToolButton(selectToolButton);
+            Tools.Instance().GetSelectTool()->SetCursor(&arrowCursor);
+            result = toolBar->AddToolButton(selectToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* grabToolButton = new ToolButton("grab.tool.spring.bitmap", ToolButton.Style.manual);
+            result = grabToolButton->SetToolTip("Grab");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetGrabTool()->SetToolButton(grabToolButton);
+            Tools.Instance().GetGrabTool()->SetCursor(grabOpenCursor);
+            Tools.Instance().GetGrabTool()->SetPressedCursor(grabClosedCursor);
+            result = toolBar->AddToolButton(grabToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* classToolButton = new ToolButton("class.tool.spring.bitmap", ToolButton.Style.manual);
+            result = classToolButton->SetToolTip("Add new class");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetClassTool()->SetToolButton(classToolButton);
+            Tools.Instance().GetClassTool()->SetCursor(classToolCursor);
+            result = toolBar->AddToolButton(classToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* objectToolButton = new ToolButton("object.tool.spring.bitmap", ToolButton.Style.manual);
+            result = objectToolButton->SetToolTip("Add new object");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetObjectTool()->SetToolButton(objectToolButton);
+            Tools.Instance().GetObjectTool()->SetCursor(objectToolCursor);
+            result = toolBar->AddToolButton(objectToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* noteToolButton = new ToolButton("note.tool.spring.bitmap", ToolButton.Style.manual);
+            result = noteToolButton->SetToolTip("Add new note");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetNoteTool()->SetToolButton(noteToolButton);
+            Tools.Instance().GetNoteTool()->SetCursor(noteToolCursor);
+            result = toolBar->AddToolButton(noteToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* inheritanceToolButton = new ToolButton("inheritance.tool.spring.bitmap", ToolButton.Style.manual);
+            result = inheritanceToolButton->SetToolTip("Add inheritance relationship");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetInheritanceTool()->SetToolButton(inheritanceToolButton);
+            Tools.Instance().GetInheritanceTool()->SetCursor(inheritanceToolCursor);
+            result = toolBar->AddToolButton(inheritanceToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* compositionToolButton = new ToolButton("composition.tool.spring.bitmap", ToolButton.Style.manual);
+            result = compositionToolButton->SetToolTip("Add composition relationship");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetCompositionTool()->SetToolButton(compositionToolButton);
+            Tools.Instance().GetCompositionTool()->SetCursor(compositionToolCursor);
+            result = toolBar->AddToolButton(compositionToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* aggregationToolButton = new ToolButton("aggregation.tool.spring.bitmap", ToolButton.Style.manual);
+            result = aggregationToolButton->SetToolTip("Add aggregation relationship");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetAggregationTool()->SetToolButton(aggregationToolButton);
+            Tools.Instance().GetAggregationTool()->SetCursor(aggregationToolCursor);
+            result = toolBar->AddToolButton(aggregationToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* referenceToolButton = new ToolButton("reference.tool.spring.bitmap", ToolButton.Style.manual);
+            result = referenceToolButton->SetToolTip("Add reference relationship");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetReferenceTool()->SetToolButton(referenceToolButton);
+            Tools.Instance().GetReferenceTool()->SetCursor(referenceToolCursor);
+            result = toolBar->AddToolButton(referenceToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* createInstanceToolButton = new ToolButton("create.instance.tool.spring.bitmap", ToolButton.Style.manual);
+            result = createInstanceToolButton->SetToolTip("Add create instance relationship");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetCreateInstanceTool()->SetToolButton(createInstanceToolButton);
+            Tools.Instance().GetCreateInstanceTool()->SetCursor(createInstanceToolCursor);
+            result = toolBar->AddToolButton(createInstanceToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ToolButton* attachNoteToolButton = new ToolButton("attach.note.tool.spring.bitmap", ToolButton.Style.manual);
+            result = attachNoteToolButton->SetToolTip("Attach note");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Tools.Instance().GetAttachNoteTool()->SetToolButton(attachNoteToolButton);
+            Tools.Instance().GetAttachNoteTool()->SetCursor(attachNoteToolCursor);
+            result = toolBar->AddToolButton(attachNoteToolButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size toolBarSize = toolBar->GetSize();
+            toolBarSize.w = toolBarSize.w + 3;
+            toolBarSize.h = toolBarSize.h + 3;
+            UniquePtr<PaddedControl> paddedToolBar(new PaddedControl(PaddedControlCreateParams(
+                PaddedControlControlCreateParams(ControlCreateParams().Defaults(), toolBar.Get()),
+                toolBar.Release()).Defaults()));
+            Size paddedToolBarSize = toolBarSize;
+            paddedToolBarSize.w = paddedToolBarSize.w + DefaultPadding().Horizontal();
+            paddedToolBarSize.h = paddedToolBarSize.h + DefaultPadding().Vertical() + 7;
+            UniquePtr<BorderedControl> borderedToolBar(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults(), paddedToolBar.Get()).Defaults().
+                SetSize(paddedToolBarSize).SetDock(Dock.top), paddedToolBar.Release()).
+                SetBorderStyle(BorderStyle.single)));
+            result = AddChild(borderedToolBar.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            canvas = new Canvas(CanvasCreateParams().Defaults());
+            // TODO canvas 
+            result = AddChild(canvas);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetCanvas(canvas);
+        }
+        private Cursor arrowCursor;
+        private Cursor* grabOpenCursor;
+        private Cursor* grabClosedCursor;
+        private Cursor* classToolCursor;
+        private Cursor* objectToolCursor;
+        private Cursor* noteToolCursor;
+        private Cursor* inheritanceToolCursor;
+        private Cursor* compositionToolCursor;
+        private Cursor* aggregationToolCursor;
+        private Cursor* referenceToolCursor;
+        private Cursor* createInstanceToolCursor;
+        private Cursor* attachNoteToolCursor;
+        private UniquePtr<Bitmap> noteCornerBitmap;
+        private MenuItem* cutMenuItem;
+        private MenuItem* copyMenuItem;
+        private MenuItem* pasteMenuItem;
+        private MenuItem* undoMenuItem;
+        private MenuItem* redoMenuItem;
+        private Canvas* canvas;
+    }
+}
+

@@ -1,0 +1,25 @@
+<div class="soul">
+ <span xml:space="preserve"><span class="comment">// calc.expr:
+</span></span>
+ <br/>
+ <span xml:space="preserve"/>
+ <br/>
+ <span xml:space="preserve"><span class="kw">expressions</span>&nbsp;<span class="id">calc</span><span class="punctuation">.</span><span class="id">expr</span></span>
+ <br/>
+ <span xml:space="preserve"><span class="punctuation">{</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">ws</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"[\n\r\t ]"</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">dec_digits</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"[0-9]+"</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">fraction</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"{dec_digits}?\.{dec_digits}|{dec_digits}\."</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">sign</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"\+|-"</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">exponent</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"(e|E){sign}?{dec_digits}"</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">number</span>&nbsp;<span class="punctuation">=</span>&nbsp;<span class="string">"({fraction}{exponent}?|{dec_digits}{exponent})|{dec_digits}"</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve"><span class="punctuation">}</span></span>
+ <br/>
+</div>

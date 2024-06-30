@@ -1,0 +1,30 @@
+// calc.parser:
+
+using calc.token;
+
+parser calc.parser
+{
+    // ...
+
+    additive_op : Operator
+        ::= PLUS{ return Operator.plus; }
+        |   MINUS{ return Operator.minus; }
+        ;
+
+    additive_expr(var UniquePtr<Node> expr) : Node*
+        ::= 
+        (
+            multiplicative_expr:left{ expr.Reset(left); }
+            (
+                additive_op:op multiplicative_expr:right{ expr.Reset(new BinaryExprNode(expr.Release(), right, op)); }
+            )*
+        )
+        {
+            return expr.Release();
+        }
+        ;
+
+    multiplicative_expr : Node*
+        ::= empty{ return null; }
+        ;
+}

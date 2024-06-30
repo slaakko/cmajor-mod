@@ -1,0 +1,188 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    enum DiagramFlags
+    {
+        none, changed = 1 << 0, invalidated = 1 << 1, modified = 1 << 2
+    }
+
+    class Diagram
+    {
+        public Diagram() : flags(DiagramFlags.none)
+        {
+        }
+        public inline bool Changed() const
+        {
+            return (flags & DiagramFlags.changed) != DiagramFlags.none;
+        }
+        public void SetChanged()
+        {
+            if (!Changed())
+            {
+                flags = cast<DiagramFlags>(flags | DiagramFlags.changed);
+                SetModified();
+            }
+        }
+        public void ResetChanged()
+        {
+            flags = cast<DiagramFlags>(flags & ~DiagramFlags.changed);
+        }
+        public inline bool IsModified() const
+        {
+            return (flags & DiagramFlags.modified) != DiagramFlags.none;
+        }
+        public void SetModified()
+        {
+            flags = cast<DiagramFlags>(flags | DiagramFlags.modified);
+/* todo
+            if (canvas != null)
+            {
+                StatusBarItem* modifiedStatusBarItem = canvas->ModifiedStatusBarItem();
+                if (modifiedStatusBarItem != null)
+                {
+                    modifiedStatusBarItem->SetText("*");
+                }
+            }
+*/
+        }
+        public void ResetModified()
+        {
+            if (IsModified())
+            {
+                flags = cast<DiagramFlags>(flags & ~DiagramFlags.modified);
+/* todo
+                if (canvas != null)
+                {
+                    StatusBarItem* modifiedStatusBarItem = canvas->ModifiedStatusBarItem();
+                    modifiedStatusBarItem->SetText(" ");
+                }
+*/
+            }
+        }
+        public inline bool Invalidated() const
+        {
+            return (flags & DiagramFlags.invalidated) != DiagramFlags.none;
+        }
+        [nodiscard]
+        public Result<bool> Invalidate()
+        {
+            if (!Invalidated())
+            {
+                flags = cast<DiagramFlags>(flags | DiagramFlags.invalidated);
+                if (canvas != null)
+                {
+                    auto result = canvas->Invalidate();
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public void ResetInvalidated()
+        {
+            flags = cast<DiagramFlags>(flags & ~DiagramFlags.invalidated);
+        }
+        public void SetCanvas(Canvas* canvas_)
+        {
+            canvas = canvas_;
+        }
+        public inline Canvas* GetCanvas() const
+        {
+            return canvas;
+        }
+        public inline CommandList& GetCommandList()
+        {
+            return commandList;
+        }
+        [nodiscard]
+        public Result<bool> SetMenuItems(MenuItem* undoMenuItem, MenuItem* redoMenuItem)
+        {
+            auto result = commandList.SetMenuItems(undoMenuItem, redoMenuItem);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Undo()
+        {
+            if (commandList.CanUndo())
+            {
+                auto result = commandList.Undo();
+                if (result.Error()) return result;
+                SetChanged();
+                result = Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Redo()
+        {
+            if (commandList.CanRedo())
+            {
+                auto result = commandList.Redo();
+                if (result.Error()) return result;
+                SetChanged();
+                result = Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public int NextIndex() const
+        {
+            return cast<int>(elements.Count());
+        }
+        public DiagramElement* GetElementByIndex(int index) const
+        {
+            return elements.Get(index);
+        }
+        public void SetElementByIndex(DiagramElement* element, int index)
+        {
+            elements.Set(index, element);
+        }
+        public int GetIndexOfElement(DiagramElement* element) const
+        {
+            int n = cast<int>(elements.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (elements.Get(i) == element)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        [nodiscard]
+        public Result<bool> AddElement(DiagramElement* element)
+        {
+            elements.Add(element);
+            element->SetDiagram(this);
+            SetChanged();
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public UniquePtr<DiagramElement> RemoveElementByIndex(int index)
+        {
+            return elements.Remove(index);
+        }
+        public void InsertElement(DiagramElement* element, int index)
+        {
+            elements.Insert(index, element);
+        }
+        public DiagramElement* ReleaseElementByIndex(int index)
+        {
+            return elements.Release(index);
+        }
+        private DiagramFlags flags;
+        private Canvas* canvas;
+        private CommandList commandList;
+        private IndexList<DiagramElement> elements;
+    }
+}
+

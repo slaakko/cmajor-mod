@@ -1,0 +1,41 @@
+<div class="soul">
+ <span xml:space="preserve"><span class="comment">// calc.lexer:
+</span></span>
+ <br/>
+ <span xml:space="preserve"/>
+ <br/>
+ <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">calc</span><span class="punctuation">.</span><span class="id">token</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">calc</span><span class="punctuation">.</span><span class="id">expr</span><span class="punctuation">;</span></span>
+ <br/>
+ <span xml:space="preserve"/>
+ <br/>
+ <span xml:space="preserve"><span class="kw">lexer</span>&nbsp;<span class="id">calc</span><span class="punctuation">.</span><span class="id">lexer</span></span>
+ <br/>
+ <span xml:space="preserve"><span class="punctuation">{</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">rules</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="punctuation">{</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"{ws}"</span>&nbsp;<span class="punctuation">{</span><span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"{number}"</span>&nbsp;<span class="punctuation">{</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">NUMBER</span><span class="punctuation">;</span>&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"\+"</span>&nbsp;<span class="punctuation">{</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">PLUS</span><span class="punctuation">;</span>&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"-"</span>&nbsp;<span class="punctuation">{</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">MINUS</span><span class="punctuation">;</span>&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"\*"</span>&nbsp;<span class="punctuation">{</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">MUL</span><span class="punctuation">;</span>&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"/"</span>&nbsp;<span class="punctuation">{</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">DIV</span><span class="punctuation">;</span>&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"\("</span>&nbsp;<span class="punctuation">{</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">LPAREN</span><span class="punctuation">;</span>&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"\)"</span>&nbsp;<span class="punctuation">{</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">RPAREN</span><span class="punctuation">;</span>&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="punctuation">}</span></span>
+ <br/>
+ <span xml:space="preserve"><span class="punctuation">}</span></span>
+ <br/>
+</div>

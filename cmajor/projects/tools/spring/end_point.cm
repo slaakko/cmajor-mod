@@ -1,0 +1,73 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    enum EndPointKind
+    {
+        source, target
+    }
+    
+    class EndPoint
+    {
+        public EndPoint() : this(null, Connector(), PointF())
+        {
+        }
+        public EndPoint(DiagramElement* element_, const Connector& connector_, const PointF& point_) :
+            element(element_),
+            connector(connector_),
+            point(point_),
+            primaryTextElement(new TextElement("primaryText")),
+            secondaryTextElement(new TextElement("secondaryText")),
+            index(-1)
+        {
+        }
+        public inline DiagramElement* Element() const
+        {
+            return element;
+        }
+        public void SetElement(DiagramElement* element_)
+        {
+            element = element_;
+        }
+        public inline Connector& GetConnector() const
+        {
+            return connector;
+        }
+        public void SetConnector(const Connector& connector_)
+        {
+            connector = connector_;
+        }
+        public inline const PointF& Point() const
+        {
+            return point;
+        }
+        public void SetPoint(const PointF& point_)
+        {
+            point = point_;
+        }
+        public inline TextElement* PrimaryTextElement() const
+        {
+            return primaryTextElement;
+        }
+        public inline TextElement* SecondaryTextElement() const
+        {
+            return secondaryTextElement;
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        private DiagramElement* element;
+        private Connector connector;
+        private PointF point;
+        private TextElement* primaryTextElement;
+        private TextElement* secondaryTextElement;
+        private int index;
+    }
+}

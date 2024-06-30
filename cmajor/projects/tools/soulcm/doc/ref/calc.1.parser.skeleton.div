@@ -1,0 +1,156 @@
+<div class="cm">
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Lex</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">calc</span><span class="other">.</span><span class="id">token</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">namespace</span>&nbsp;<span class="id">calc</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">parser</span><span class="other">&lt;</span><span class="id">LexerT</span><span class="other">></span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">>></span>&nbsp;<span class="id">Parse</span><span class="other">(</span><span class="id">LexerT</span><span class="other">&amp;</span>&nbsp;<span class="id">lexer</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">></span>&nbsp;<span class="id">value</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">auto</span>&nbsp;<span class="id">incResult0</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">++</span><span class="id">lexer</span><span class="other">;</span>&nbsp;</span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span>&nbsp;<span class="id">matchResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">calc</span><span class="other">.</span><span class="id">parser</span><span class="other">&lt;</span><span class="id">LexerT</span><span class="other">></span><span class="other">.</span><span class="id">expression</span><span class="other">(</span><span class="id">lexer</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span>&nbsp;<span class="id">match</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">matchResult</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">value</span><span class="other">.</span><span class="id">Reset</span><span class="other">(</span><span class="kw">cast</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">*</span><span class="other">></span><span class="other">(</span><span class="id">match</span><span class="other">.</span><span class="id">value</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">match</span><span class="other">.</span><span class="id">hit</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="other">*</span><span class="id">lexer</span>&nbsp;<span class="other">==</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Lex</span><span class="other">.</span><span class="id">END_TOKEN</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">>></span><span class="other">(</span><span class="id">System</span><span class="other">.</span><span class="id">Rvalue</span><span class="other">(</span><span class="id">value</span><span class="other">)</span><span class="other">)</span><span class="other">;</span>&nbsp;</span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">>></span><span class="other">(</span><span class="id">lexer</span><span class="other">.</span><span class="id">GetFarthestError</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span>&nbsp;</span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">>></span><span class="other">(</span><span class="id">lexer</span><span class="other">.</span><span class="id">GetFarthestError</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span>&nbsp;</span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span>&nbsp;<span class="id">expression</span><span class="other">(</span><span class="id">LexerT</span><span class="other">&amp;</span>&nbsp;<span class="id">lexer</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">></span>&nbsp;<span class="id">expr</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span>&nbsp;<span class="id">match</span><span class="other">(</span><span class="kw">false</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">*</span>&nbsp;<span class="id">parentMatch0</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">&amp;</span><span class="id">match</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">long</span>&nbsp;<span class="id">pos</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">lexer</span><span class="other">.</span><span class="id">GetPos</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span>&nbsp;<span class="id">matchResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">calc</span><span class="other">.</span><span class="id">parser</span><span class="other">&lt;</span><span class="id">LexerT</span><span class="other">></span><span class="other">.</span><span class="id">additive_expr</span><span class="other">(</span><span class="id">lexer</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span>&nbsp;<span class="id">match</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">matchResult</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">expr</span><span class="other">.</span><span class="id">Reset</span><span class="other">(</span><span class="kw">cast</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">*</span><span class="other">></span><span class="other">(</span><span class="id">match</span><span class="other">.</span><span class="id">value</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">match</span><span class="other">.</span><span class="id">hit</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span><span class="other">(</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">(</span><span class="kw">true</span><span class="other">,</span>&nbsp;<span class="id">expr</span><span class="other">.</span><span class="id">Release</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">*</span><span class="id">parentMatch0</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">match</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="other">!</span><span class="id">match</span><span class="other">.</span><span class="id">hit</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">match</span><span class="other">.</span><span class="id">value</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">null</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span><span class="other">(</span><span class="id">match</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span>&nbsp;<span class="id">additive_expr</span><span class="other">(</span><span class="id">LexerT</span><span class="other">&amp;</span>&nbsp;<span class="id">lexer</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span>&nbsp;<span class="id">match</span><span class="other">(</span><span class="kw">false</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">*</span>&nbsp;<span class="id">parentMatch0</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">&amp;</span><span class="id">match</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">long</span>&nbsp;<span class="id">pos</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">lexer</span><span class="other">.</span><span class="id">GetPos</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span>&nbsp;<span class="id">match</span><span class="other">(</span><span class="kw">true</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">match</span><span class="other">.</span><span class="id">hit</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span><span class="other">(</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">(</span><span class="kw">true</span><span class="other">,</span>&nbsp;<span class="kw">null</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">*</span><span class="id">parentMatch0</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">match</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="other">!</span><span class="id">match</span><span class="other">.</span><span class="id">hit</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">match</span><span class="other">.</span><span class="id">value</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">null</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Parsing</span><span class="other">.</span><span class="id">Match</span><span class="other">></span><span class="other">(</span><span class="id">match</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">new</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">calc</span><span class="other">.</span><span class="id">parser</span><span class="other">&lt;</span><span class="id">calc</span><span class="other">.</span><span class="id">lexer</span><span class="other">></span><span class="other">;</span></span>
+  <br/>
+</div>

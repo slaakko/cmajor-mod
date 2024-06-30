@@ -963,11 +963,11 @@ namespace scmpg
                 if (!namespaceName.IsEmpty())
                 {
                     sourceFormatter << "namespace " << namespaceName << endl();
-                    sourceFormatter.WriteLine("{");
+                    sourceFormatter << "{" << endl();
                     sourceFormatter.IncIndent();
                 }
                 sourceFormatter << "public static class " << grammar.CommonName() << "<LexerT>" << endl();
-                sourceFormatter.WriteLine("{");
+                sourceFormatter << "{" << endl();
                 sourceFormatter.IncIndent();
                 if (grammar.Main())
                 {
@@ -1020,8 +1020,8 @@ namespace scmpg
                             const string& paramTypeStr = paramTypeStrResult.Value();
                             sourceFormatter << paramTypeStr << " " << param->Name();
                         }
-                        sourceFormatter.WriteLine(")");
-                        sourceFormatter.WriteLine("{");
+                        sourceFormatter << ")" << endl();
+                        sourceFormatter << "{" << endl();
                         sourceFormatter.IncIndent();
                         if (startRule->ReturnType() != null)
                         {
@@ -1282,6 +1282,10 @@ namespace scmpg
             if (sourceFormatter.Error())
             {
                 errorId = sourceFormatter.GetErrorId();
+            }
+            if (verbose)
+            {
+                Console.Out() << "==> " << fileName << endl();
             }
         }
         public inline bool Error() const

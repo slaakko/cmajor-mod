@@ -1,0 +1,6 @@
+project soul.token.lexer;
+tokens <soul.token>;
+keywords <soul.keyword>;
+expressions <soul.expr>;
+lexer <soul.token.lexer>;
+

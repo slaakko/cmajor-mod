@@ -1,0 +1,30 @@
+// ast.cm:
+
+// ...
+
+public class UnaryExprNode : Node
+{
+    public UnaryExprNode(Node* operand_, Operator op_) : operand(operand_), op(op_)
+    {
+    }
+    public Node* Operand() const
+    {
+        return operand.Get();
+    }
+    public Operator Op() const
+    {
+        return op;
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    private UniquePtr<Node> operand;
+    private Operator op;
+}
+
+public class Visitor
+{
+    public virtual void Visit(BinaryExprNode& node) {}
+    public virtual void Visit(UnaryExprNode& node) {}
+}

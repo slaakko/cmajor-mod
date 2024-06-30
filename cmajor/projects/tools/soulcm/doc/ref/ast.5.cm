@@ -1,0 +1,51 @@
+// ast.cm:
+
+// ...
+
+public class NumberNode : Node
+{
+    public NumberNode(double value_) : value(value_)
+    {
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    public double Value() const
+    {
+        return value;
+    }
+    private double value;
+}
+
+public class ParenExprNode : Node
+{
+    public ParenExprNode(Node* expr_) : expr(expr_)
+    {
+    }
+    public Node* Expr() const
+    {
+        return expr.Get();
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    private UniquePtr<Node> expr;
+}
+
+public Result<double> ParseNumber(const ustring& str)
+{
+    auto utf8Result = ToUtf8(str);
+    if (utf8Result.Error()) return Result<double>(ErrorId(utf8Result.GetErrorId()));
+    const string& s = utf8Result.Value();
+    return System.ParseDouble(s);
+}
+
+public class Visitor
+{
+    public virtual void Visit(NumberNode& node) {}
+    public virtual void Visit(BinaryExprNode& node) {}
+    public virtual void Visit(UnaryExprNode& node) {}
+    public virtual void Visit(ParenExprNode& node) {}
+}

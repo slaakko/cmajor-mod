@@ -1,0 +1,21 @@
+<div class="cm">
+  <span xml:space="preserve"><span class="comment">// ast.cm:
+</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span>&nbsp;<span class="id">Operator</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">plus</span><span class="other">,</span>&nbsp;<span class="id">minus</span><span class="other">,</span>&nbsp;<span class="id">mul</span><span class="other">,</span>&nbsp;<span class="id">div</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+</div>

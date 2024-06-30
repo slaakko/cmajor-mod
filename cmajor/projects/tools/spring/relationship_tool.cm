@@ -1,0 +1,67 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    abstract class RelationshipTool : ClickTool
+    {
+        public RelationshipTool(ToolKind kind_) : base(kind_)
+        {
+        }
+    }
+
+    abstract class ClassRelationshipTool : RelationshipTool
+    {
+        public ClassRelationshipTool(ToolKind kind_) : base(kind_)
+        {
+        }
+    }
+
+    class InheritanceTool : ClassRelationshipTool
+    {
+        public InheritanceTool() : base(ToolKind.inheritanceTool)
+        {
+        }
+    }
+
+    class CompositionTool : ClassRelationshipTool
+    {
+        public CompositionTool() : base(ToolKind.compositionTool)
+        {
+        }
+    }
+
+    class AggregationTool : ClassRelationshipTool
+    {
+        public AggregationTool() : base(ToolKind.aggregationTool)
+        {
+        }
+    }
+
+    class CreateInstanceTool : ClassRelationshipTool
+    {
+        public CreateInstanceTool() : base(ToolKind.createInstanceTool)
+        {
+        }
+    }
+
+    class AttachNoteTool : ClassRelationshipTool
+    {
+        public AttachNoteTool() : base(ToolKind.attachNoteTool)
+        {
+        }
+    }
+
+    class ReferenceTool : RelationshipTool
+    {
+        public ReferenceTool() : base(ToolKind.referenceTool)
+        {
+        }
+    }
+}
+

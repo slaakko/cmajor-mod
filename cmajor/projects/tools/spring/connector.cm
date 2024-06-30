@@ -1,0 +1,300 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    enum ConnectorPointKind
+    {
+        none, top, bottom, left, right, center, operation, attribute
+    }
+
+    string ConnectorPointStr(ConnectorPointKind kind)
+    {
+        switch (kind)
+        {
+            case ConnectorPointKind.none:
+            {
+                return "none";
+            }
+            case ConnectorPointKind.top:
+            {
+                return "top";
+            }
+            case ConnectorPointKind.bottom:
+            {
+                return "bottom";
+            }
+            case ConnectorPointKind.left:
+            {
+                return "left";
+            }
+            case ConnectorPointKind.right:
+            {
+                return "right";
+            }
+            case ConnectorPointKind.center:
+            {
+                return "center";
+            }
+            case ConnectorPointKind.operation:
+            {
+                return "operation";
+            }
+            case ConnectorPointKind.attribute:
+            {
+                return "attribute";
+            }
+        }
+        return "<unknown connector point kind>";
+    }
+
+    class ConnectorPointKindMap
+    {
+        static ConnectorPointKindMap() : instance(new ConnectorPointKindMap())
+        {
+        }
+        public static ConnectorPointKindMap& Instance()
+        {
+            return *instance;
+        }
+        public Result<ConnectorPointKind> GetKind(const string& str) const
+        {
+            auto it = map.Find(str);
+            if (it != map.End())
+            {
+                return Result<ConnectorPointKind>(it->second);
+            }
+            else
+            {
+                int errorId = AllocateError("connector point kind '" + str + "' not found");
+                return Result<ConnectorPointKind>(ErrorId(errorId));
+            }
+        }
+        private ConnectorPointKindMap()
+        {
+            map["none"] = ConnectorPointKind.none;
+            map["top"] = ConnectorPointKind.top;
+            map["bottom"] = ConnectorPointKind.bottom;
+            map["left"] = ConnectorPointKind.left;
+            map["right"] = ConnectorPointKind.right;
+            map["center"] = ConnectorPointKind.center;
+            map["operation"] = ConnectorPointKind.operation;
+            map["attribute"] = ConnectorPointKind.attribute;
+        }
+        private static UniquePtr<ConnectorPointKindMap> instance;
+        private Map<string, ConnectorPointKind> map;
+    }
+
+    Result<ConnectorPointKind> ParseConnectorPoint(const string& str)
+    {
+        return ConnectorPointKindMap.Instance().GetKind(str);
+    }
+
+    class Connector
+    {
+        public Connector() : primaryPointKind(ConnectorPointKind.none), secondaryPointKind(ConnectorPointKind.none)
+        {
+        }
+        public Connector(ConnectorPointKind primaryPointKind_, ConnectorPointKind secondaryPointKind_) :
+            primaryPointKind(primaryPointKind_),
+            secondaryPointKind(secondaryPointKind_)
+        {
+        }
+        public explicit Connector(int x) :
+            primaryPointKind(cast<ConnectorPointKind>(x >> 8)),
+            secondaryPointKind(cast<ConnectorPointKind>(x & 0xFF))
+        {
+        }
+        public int ToInt() const
+        {
+            return (cast<int>(primaryPointKind) << 8) | cast<int>(secondaryPointKind);
+        }
+        public string ToString() const
+        {
+            if (primaryPointKind == ConnectorPointKind.operation || primaryPointKind == ConnectorPointKind.attribute)
+            {
+                return ConnectorPointStr(primaryPointKind) + "." + ToString(cast<int>(secondaryPointKind));
+            }
+            else
+            {
+                return ConnectorPointStr(primaryPointKind) + "." + ConnectorPointStr(secondaryPointKind);
+            }
+        }
+        public inline ConnectorPointKind PrimaryPoint() const
+        {
+            return primaryPointKind;
+        }
+        public inline ConnectorPointKind SecondaryPoint() const
+        {
+            return secondaryPointKind;
+        }
+        static constexpr int TopLeft()
+        {
+            return (ConnectorPointKind.top << 8) | ConnectorPointKind.left;
+        }
+        static constexpr int TopCenter()
+        {
+            return (ConnectorPointKind.top << 8) | ConnectorPointKind.center;
+        }
+        static constexpr int TopRight()
+        {
+            return (ConnectorPointKind.top << 8) | ConnectorPointKind.right;
+        }
+        static constexpr int BottomLeft()
+        {
+            return (ConnectorPointKind.bottom << 8) | ConnectorPointKind.left;
+        }
+        static constexpr int BottomCenter()
+        {
+            return (ConnectorPointKind.bottom << 8) | ConnectorPointKind.center;
+        }
+        static constexpr int BottomRight()
+        {
+            return (ConnectorPointKind.bottom << 8) | ConnectorPointKind.right;
+        }
+        static constexpr int LeftTop()
+        {
+            return (ConnectorPointKind.left << 8) | ConnectorPointKind.top;
+        }
+        static constexpr int LeftCenter()
+        {
+            return (ConnectorPointKind.left << 8) | ConnectorPointKind.center;
+        }
+        static constexpr int LeftBottom()
+        {
+            return (ConnectorPointKind.left << 8) | ConnectorPointKind.bottom;
+        }
+        static constexpr int RightTop()
+        {
+            return (ConnectorPointKind.right << 8) | ConnectorPointKind.top;
+        }
+        static constexpr int RightCenter()
+        {
+            return (ConnectorPointKind.right << 8) | ConnectorPointKind.center;
+        }
+        static constexpr int RightBottom()
+        {
+            return (ConnectorPointKind.right << 8) | ConnectorPointKind.bottom;
+        }
+        static constexpr int Operation(int index)
+        {
+            return (ConnectorPointKind.operation << 8) | index;
+        }
+        static constexpr int Attribute(int index)
+        {
+            return (ConnectorPointKind.attribute << 8) | index;
+        }
+        public PointF Calculate(const PointF& point, float w, int index, int count) const
+        {
+            int s = ToInt();
+            switch (s)
+            {
+                case TopLeft():
+                case BottomLeft():
+                {
+                    return PointF(point.x + index * w, point.y);
+                }
+                case TopRight():
+                case BottomRight():
+                {
+                    return PointF(point.x - index * w, point.y);
+                }
+                case LeftTop():
+                case RightTop():
+                {
+                    return PointF(point.x, point.y + index * w);
+                }
+                case LeftBottom():
+                case RightBottom():
+                {
+                    return PointF(point.x, point.y - index * w);
+                }
+                case LeftCenter():
+                case RightCenter():
+                {
+                    if ((count & 1) == 0)
+                    {
+                        return PointF(point.x, point.y - (count / 2) * w + index * w + w / 2);
+                    }
+                    else
+                    {
+                        return PointF(point.x, point.y - (count / 2) * w + index * w);
+                    }
+                }
+                case TopCenter():
+                case BottomCenter():
+                {
+                    if ((count & 1) == 0)
+                    {
+                        return PointF(point.x - (count / 2) * w + index * w + w / 2, point.y);
+                    }
+                    else
+                    {
+                        return PointF(point.x - (count / 2) * w + index * w, point.y);
+                    }
+                }
+            }
+            return PointF();
+        }
+        private ConnectorPointKind primaryPointKind;
+        private ConnectorPointKind secondaryPointKind;
+    }
+
+    inline bool operator==(const Connector& left, const Connector& right)
+    {
+        return left.PrimaryPoint() == right.PrimaryPoint() && left.SecondaryPoint() == right.SecondaryPoint();
+    }
+
+    inline bool operator<(const Connector& left, const Connector& right)
+    {
+        if (left.PrimaryPoint() < right.PrimaryPoint()) return true;
+        if (left.PrimaryPoint() > right.PrimaryPoint()) return false;
+        return left.SecondaryPoint() < right.SecondaryPoint();
+    }
+    
+    Result<Connector> ParseConnector(const string& connectorStr)
+    {
+        List<string> components = connectorStr.Split('.');
+        if (components.Count() == 2)
+        {
+            Result<ConnectorPointKind> primaryResult = ParseConnectorPoint(components[0]);
+            if (primaryResult.Error())
+            {
+                return Result<Connector>(ErrorId(primaryResult.GetErrorId()));
+            }
+            ConnectorPointKind primary = primaryResult.Value();
+            if (primary == ConnectorPointKind.operation || primary == ConnectorPointKind.attribute)
+            {
+                auto indexResult = ParseInt(components[1]);
+                if (indexResult.Error())
+                {
+                    return Result<Connector>(ErrorId(indexResult.GetErrorId()));
+                }
+                Connector connector(primary, cast<ConnectorPointKind>(indexResult.Value()));
+                return Result<Connector>(Rvalue(connector));
+            }
+            else
+            {
+                Result<ConnectorPointKind> secondaryResult = ParseConnectorPoint(components[1]);
+                if (secondaryResult.Error())
+                {
+                    return Result<Connector>(ErrorId(secondaryResult.GetErrorId()));
+                }
+                ConnectorPointKind secondary = secondaryResult.Value();
+                Connector connector(primary, secondary);
+                return Result<Connector>(Rvalue(connector));
+            }
+        }
+        else
+        {
+            int errorId = AllocateError("two components expected");
+            return Result<Connector>(ErrorId(errorId));
+        }
+    }
+}

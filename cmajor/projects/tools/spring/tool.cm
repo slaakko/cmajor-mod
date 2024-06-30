@@ -1,0 +1,215 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    enum ToolKind
+    {
+        selectTool, grabTool, classTool, objectTool, noteTool, inheritanceTool, compositionTool, aggregationTool, createInstanceTool, attachNoteTool, referenceTool
+    }
+
+    class Tool
+    {
+        public Tool(ToolKind kind_) : kind(kind_)
+        {
+        }
+        public default virtual ~Tool();
+        public inline bool IsSelectTool() const
+        {
+            return kind == ToolKind.selectTool;
+        }
+        public inline bool IsGrabTool() const
+        {
+            return kind == ToolKind.grabTool;
+        }
+        public inline bool IsClassTool() const
+        {
+            return kind == ToolKind.classTool;
+        }
+        public inline bool IsObjectTool() const
+        {
+            return kind == ToolKind.objectTool;
+        }
+        public inline bool IsNoteTool() const
+        {
+            return kind == ToolKind.noteTool;
+        }
+        public inline bool IsInheritanceTool() const
+        {
+            return kind == ToolKind.inheritanceTool;
+        }
+        public inline bool IsCompositionTool() const
+        {
+            return kind == ToolKind.compositionTool;
+        }
+        public inline bool IsAggregationTool() const
+        {
+            return kind == ToolKind.aggregationTool;
+        }
+        public inline bool IsCreateInstanceTool() const
+        {
+            return kind == ToolKind.createInstanceTool;
+        }
+        public inline bool IsAttachNoteTool() const
+        {
+            return kind == ToolKind.attachNoteTool;
+        }
+        public inline bool IsReferenceTool() const
+        {
+            return kind == ToolKind.referenceTool;
+        }
+        public bool IsRelationshipTool() const
+        {
+            switch (kind)
+            {
+                case ToolKind.inheritanceTool:
+                case ToolKind.compositionTool:
+                case ToolKind.aggregationTool:
+                case ToolKind.createInstanceTool:
+                case ToolKind.attachNoteTool:
+                case ToolKind.referenceTool:
+                {
+                    return true;
+                }
+
+            }
+            return false;
+        }
+        public void SetToolButton(ToolButton* toolButton_)
+        {
+            toolButton = toolButton_;
+            toolButton->ClickEvent().AddHandler(ToolButtonClicked);
+        }
+        public inline ToolButton* GetToolButton() const
+        {
+            return toolButton;
+        }
+        public void SetCursor(Cursor* cursor_)
+        {
+            cursor = cursor_;
+        }
+        public inline Cursor* GetCursor() const
+        {
+            return cursor;
+        }
+        public void SetPressedCursor(Cursor* pressedCursor_)
+        {
+            pressedCursor = pressedCursor_;
+        }
+        public Cursor* GetPressedCursor() const
+        {
+            if (pressedCursor != null)
+            {
+                return pressedCursor;
+            }
+            else
+            {
+                return cursor;
+            }
+        }
+        private void ToolButtonClicked(ClickEventArgs& args)
+        {
+            Tools.Instance().SetCurrentToolInternal(this);
+        }
+        private ToolKind kind;
+        private ToolButton* toolButton;
+        private Cursor* cursor;
+        private Cursor* pressedCursor;
+    }
+
+    class Tools
+    {
+        static Tools() : instance(new Tools())
+        {
+        }
+        public static Tools& Instance()
+        {
+            return *instance;
+        }
+        private Tools() : currentTool(&selectTool)
+        {
+        }
+        public inline Tool* Current() const
+        {
+            return currentTool;
+        }
+        [nodiscard]
+        public Result<bool> SetCurrent(Tool* tool)
+        {
+            if (tool != currentTool)
+            {
+                currentTool = tool;
+                auto result = currentTool->GetToolButton()->SetState(ToolButton.State.pressed);
+                if (result.Error()) return result;
+                // currentTool->Initialize(GetDiagram()); TODO!!!
+            }
+            return Result<bool>(true);
+        }
+        internal void SetCurrentToolInternal(Tool* tool)
+        {
+            currentTool = tool;
+        }
+        public SelectTool* GetSelectTool() const
+        {
+            return &selectTool;
+        }
+        public GrabTool* GetGrabTool() const
+        {
+            return &grabTool;
+        }
+        public ClassTool* GetClassTool() const
+        {
+            return &classTool;
+        }
+        public ObjectTool* GetObjectTool() const
+        {
+            return &objectTool;
+        }
+        public NoteTool* GetNoteTool() const
+        {
+            return &noteTool;
+        }
+        public InheritanceTool* GetInheritanceTool() const
+        {
+            return &inheritanceTool;
+        }
+        public CompositionTool* GetCompositionTool() const
+        {
+            return &compositionTool;
+        }
+        public AggregationTool* GetAggregationTool() const
+        {
+            return &aggregationTool;
+        }
+        public CreateInstanceTool* GetCreateInstanceTool() const
+        {
+            return &createInstanceTool;
+        }
+        public AttachNoteTool* GetAttachNoteTool() const
+        {
+            return &attachNoteTool;
+        }
+        public ReferenceTool* GetReferenceTool() const
+        {
+            return &referenceTool;
+        }
+        private static UniquePtr<Tools> instance;
+        private SelectTool selectTool;
+        private GrabTool grabTool;
+        private ClassTool classTool;
+        private ObjectTool objectTool;
+        private NoteTool noteTool;
+        private InheritanceTool inheritanceTool;
+        private CompositionTool compositionTool;
+        private AggregationTool aggregationTool;
+        private CreateInstanceTool createInstanceTool;
+        private AttachNoteTool attachNoteTool;
+        private ReferenceTool referenceTool;
+        private Tool* currentTool;
+    }
+}

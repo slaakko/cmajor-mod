@@ -67,17 +67,21 @@
    </sequence>
   </rule>
   <rule first="{STRING}" name="Field">
-   <sequence first="{STRING}">
-    <sequence first="{STRING}">
-     <action first="{STRING}">
-      <token first="{STRING}" name="STRING"/>
-     </action>
-     <token first="{COLON}" name="COLON"/>
-    </sequence>
-    <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
-     <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
-    </action>
-   </sequence>
+   <action first="{STRING}">
+    <group first="{STRING}">
+     <sequence first="{STRING}">
+      <sequence first="{STRING}">
+       <action first="{STRING}">
+        <token first="{STRING}" name="STRING"/>
+       </action>
+       <token first="{COLON}" name="COLON"/>
+      </sequence>
+      <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+       <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
+      </action>
+     </sequence>
+    </group>
+   </action>
   </rule>
   <rule first="{LBRACKET}" name="Array">
    <sequence first="{LBRACKET}">
@@ -87,21 +91,21 @@
      </action>
      <optional first="{#, FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
       <group first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
-       <list first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
-        <sequence first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
-         <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
-          <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
-         </action>
-         <kleene first="{#, COMMA}">
+       <sequence first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+        <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
+         <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
+        </action>
+        <kleene first="{#, COMMA}">
+         <group first="{COMMA}">
           <sequence first="{COMMA}">
            <token first="{COMMA}" name="COMMA"/>
            <action first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}">
             <nonterminal first="{FALSE, LBRACE, LBRACKET, NULL, NUMBER, STRING, TRUE}" ruleName="Value"/>
            </action>
           </sequence>
-         </kleene>
-        </sequence>
-       </list>
+         </group>
+        </kleene>
+       </sequence>
       </group>
      </optional>
     </sequence>

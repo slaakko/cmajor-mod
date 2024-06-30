@@ -1,5 +1,6 @@
 project System.Json;
 target=library;
+reference <../System.Base/System.Base.cmp>;
 reference <../System.Lex/System.Lex.cmp>;
 reference <../System.Parsing/System.Parsing.cmp>;
 source <Json.cm>;

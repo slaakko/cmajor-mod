@@ -1,0 +1,75 @@
+// calc.parser:
+
+using calc.token;
+
+parser calc.parser
+{
+    lexer calc.lexer;
+    main;
+
+    expression : Node*
+        ::= additive_expr:expr{ return expr; }
+        ;
+
+    additive_op : Operator
+        ::= PLUS{ return Operator.plus; }
+        |   MINUS{ return Operator.minus; }
+        ;
+
+    additive_expr(var UniquePtr<Node> expr) : Node*
+        ::= 
+        (
+            multiplicative_expr:left{ expr.Reset(left); }
+            (
+                additive_op:op multiplicative_expr:right{ expr.Reset(new BinaryExprNode(expr.Release(), right, op)); }
+            )*
+        )
+        {
+            return expr.Release();
+        }
+        ;
+
+    multiplicative_op : Operator
+        ::= MUL{ return Operator.mul; }
+        |   DIV{ return Operator.div; }
+        ;
+
+    multiplicative_expr(var UniquePtr<Node> expr) : Node*
+        ::= 
+        (
+            unary_expr:left{ expr.Reset(left); }
+            (
+                multiplicative_op:op unary_expr:right{ expr.Reset(new BinaryExprNode(expr.Release(), right, op)); }
+            )*
+        )
+        {
+            return expr.Release();
+        }
+        ;
+
+    unary_op : Operator
+        ::= PLUS { return Operator.plus; }
+        |   MINUS { return Operator.minus; }
+        ;
+
+    unary_expr : Node*
+        ::= 
+        (   unary_op:op unary_expr:expr{ return new UnaryExprNode(expr, op); }
+        |   primary_expr:primary{ return primary; }
+        )
+        ;
+
+    primary_expr : Node*
+        ::= NUMBER
+            { 
+                Result<double> result = ParseNumber(lexer.GetToken(pos).ToString());
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                double number = result.Value();
+                return new NumberNode(number); 
+            }
+        |   LPAREN expression:expr RPAREN{ return new ParenExprNode(expr); }
+        ;
+}

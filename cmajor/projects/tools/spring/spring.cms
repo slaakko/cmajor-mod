@@ -1,0 +1,4 @@
+solution spring;
+project <spring.cmp>;
+activeProject spring;
+activeBackEnd=masm;

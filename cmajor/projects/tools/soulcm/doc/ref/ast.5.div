@@ -1,0 +1,106 @@
+<div class="cm">
+  <span xml:space="preserve"><span class="comment">// ast.cm:
+</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="comment">// ...
+</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">NumberNode</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">Node</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">NumberNode</span><span class="other">(</span><span class="kw">double</span>&nbsp;<span class="id">value_</span><span class="other">)</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">value</span><span class="other">(</span><span class="id">value_</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Accept</span><span class="other">(</span><span class="id">Visitor</span><span class="other">&amp;</span>&nbsp;<span class="id">visitor</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">visitor</span><span class="other">.</span><span class="id">Visit</span><span class="other">(</span><span class="other">*</span><span class="kw">this</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">double</span>&nbsp;<span class="id">Value</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">value</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="kw">double</span>&nbsp;<span class="id">value</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">ParenExprNode</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">Node</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">ParenExprNode</span><span class="other">(</span><span class="id">Node</span><span class="other">*</span>&nbsp;<span class="id">expr_</span><span class="other">)</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">expr</span><span class="other">(</span><span class="id">expr_</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Node</span><span class="other">*</span>&nbsp;<span class="id">Expr</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">expr</span><span class="other">.</span><span class="id">Get</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Accept</span><span class="other">(</span><span class="id">Visitor</span><span class="other">&amp;</span>&nbsp;<span class="id">visitor</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">visitor</span><span class="other">.</span><span class="id">Visit</span><span class="other">(</span><span class="other">*</span><span class="kw">this</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">></span>&nbsp;<span class="id">expr</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">double</span><span class="other">></span>&nbsp;<span class="id">ParseNumber</span><span class="other">(</span><span class="kw">const</span>&nbsp;<span class="id">ustring</span><span class="other">&amp;</span>&nbsp;<span class="id">str</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">auto</span>&nbsp;<span class="id">utf8Result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">ToUtf8</span><span class="other">(</span><span class="id">str</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">utf8Result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">double</span><span class="other">></span><span class="other">(</span><span class="id">ErrorId</span><span class="other">(</span><span class="id">utf8Result</span><span class="other">.</span><span class="id">GetErrorId</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">s</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">utf8Result</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">ParseDouble</span><span class="other">(</span><span class="id">s</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Visitor</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Visit</span><span class="other">(</span><span class="id">NumberNode</span><span class="other">&amp;</span>&nbsp;<span class="id">node</span><span class="other">)</span>&nbsp;<span class="other">{</span><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Visit</span><span class="other">(</span><span class="id">BinaryExprNode</span><span class="other">&amp;</span>&nbsp;<span class="id">node</span><span class="other">)</span>&nbsp;<span class="other">{</span><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Visit</span><span class="other">(</span><span class="id">UnaryExprNode</span><span class="other">&amp;</span>&nbsp;<span class="id">node</span><span class="other">)</span>&nbsp;<span class="other">{</span><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Visit</span><span class="other">(</span><span class="id">ParenExprNode</span><span class="other">&amp;</span>&nbsp;<span class="id">node</span><span class="other">)</span>&nbsp;<span class="other">{</span><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+</div>

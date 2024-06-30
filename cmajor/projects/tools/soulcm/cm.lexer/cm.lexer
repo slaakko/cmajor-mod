@@ -17,8 +17,8 @@ lexer cm.lexer.CmajorLexer
         "{floating_literal}" { return FLOATING_LITERAL; }
         "{char_literal}" { return CHAR_LITERAL; }
         "{string_literal}" { return STRING_LITERAL; }
-		"::=" { return PRODUCES; }
-		"$" { return DOLLAR; }
+        "::=" { return PRODUCES; }
+        "$" { return DOLLAR; }
         "<=>" { return EQUIVALENCE; }
         "=>" { return IMPLICATION; }
         "\|\|" { return DISJUNCTION; }

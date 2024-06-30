@@ -1,9 +1,11 @@
 <solutionSettings>
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
-    <openFiles/>
-    <currentOpenFile value=""/>
-    <currentCursorLine value="1"/>
+    <openFiles>
+        <item value="C:/work/cmajor-mod/cmajor/masm/system/System.Base/Conversion.cm"/>
+    </openFiles>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/masm/system/System.Base/Conversion.cm"/>
+    <currentCursorLine value="120"/>
     <breakpoints/>
     <expandedProjects/>
 </solutionSettings>

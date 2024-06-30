@@ -1,0 +1,15 @@
+<div class="cm">
+  <span xml:space="preserve"><span class="comment">// calc.cmp:
+</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="id">project</span>&nbsp;<span class="id">calc</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="id">source</span>&nbsp;<span class="other">&lt;</span><span class="id">calc</span><span class="other">.</span><span class="id">token</span><span class="other">.</span><span class="id">cm</span><span class="other">></span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="id">source</span>&nbsp;<span class="other">&lt;</span><span class="id">calc</span><span class="other">.</span><span class="id">lexer</span><span class="other">.</span><span class="id">cm</span><span class="other">></span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="id">rc</span>&nbsp;<span class="other">&lt;</span><span class="id">calc</span><span class="other">.</span><span class="id">lexer</span><span class="other">.</span><span class="id">classmap</span><span class="other">.</span><span class="id">rc</span><span class="other">></span><span class="other">;</span></span>
+  <br/>
+</div>

@@ -1,0 +1,17 @@
+// calc.parser:
+
+using calc.token;
+
+parser calc.parser
+{
+    lexer calc.lexer;
+    main;
+
+    expression : Node*
+        ::= additive_expr:expr{ return expr; }
+        ;
+
+    additive_expr : Node*
+        ::= empty{ return null; }
+        ;
+}

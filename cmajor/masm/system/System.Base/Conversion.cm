@@ -89,12 +89,17 @@ namespace System
 
     public string ToString(float f)
     {
-        return ToString(cast<double>(f));
+        return ToString(f, 15);
+    }
+
+    public string ToString(float f, int maxNumDecimals)
+    {
+        return ToString<float>(f, 0, maxNumDecimals);
     }
 
     public string ToString(double x, int maxNumDecimals)
     {
-        return ToString(x, 0, maxNumDecimals);
+        return ToString<double>(x, 0, maxNumDecimals);
     }
 
     public string ToString(double x)
@@ -102,7 +107,7 @@ namespace System
         return ToString(x, 15);
     }
 
-    public string ToString(double x, int minNumDecimals, int maxNumDecimals)
+    public string ToString<T>(T x, int minNumDecimals, int maxNumDecimals)
     {
         string result;
         if (x < 0)
@@ -111,7 +116,7 @@ namespace System
             result.Append('-');
         }
         result.Append(ToString(cast<int>(x)));
-        double d = x - cast<int>(x);
+        T d = x - cast<int>(x);
         if (d > 0 || minNumDecimals > 0)
         {
             result.Append('.');

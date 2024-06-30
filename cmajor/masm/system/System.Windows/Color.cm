@@ -19,6 +19,13 @@ namespace System.Windows
         public Color(byte red_, byte green_, byte blue_) : alpha(255u), red(red_), green(green_), blue(blue_)
         {
         }
+        public Color(uint value) : alpha(cast<byte>(value >> 24u)), red(cast<byte>(value >> 16u)), green(cast<byte>(value >> 8u)), blue(cast<byte>(value))
+        {
+        }
+        public uint ToUInt() const
+        {
+            return (cast<uint>(alpha) << 24u) | (cast<uint>(red) << 16u) | (cast<uint>(green) << 8u) | (cast<uint>(blue));
+        }
         public Color ToGray(const Color& transparentColor) const
         {
             if (*this == transparentColor) return *this;

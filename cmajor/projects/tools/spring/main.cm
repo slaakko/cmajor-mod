@@ -1,0 +1,83 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+using spring;
+
+Result<bool> SetLayout(Graphics* graphics)
+{
+    Result<string> layoutDirResult = LayoutDirectory();
+    if (layoutDirResult.Error())
+    {
+        return Result<bool>(ErrorId(layoutDirResult.GetErrorId()));
+    }
+    System.IO.Directory.CreateDirectories(layoutDirResult.Value());
+    Result<string> layoutFilePathResult = System.IO.GetFullPath(System.IO.Path.Combine(layoutDirResult.Value(), "layout.xml"));
+    if (layoutFilePathResult.Error())
+    {
+        return Result<bool>(ErrorId(layoutFilePathResult.GetErrorId()));
+    }
+    UniquePtr<Layout> layout(new Layout(graphics, layoutFilePathResult.Value()));
+    auto existsResult = System.IO.File.Exists(layout->XmlFilePath());
+    if (existsResult.Error())
+    {
+        return Result<bool>(ErrorId(existsResult.GetErrorId()));
+    }
+    bool exists = existsResult.Value();
+    if (!exists)
+    {
+        auto saveResult = layout->Save();
+        if (saveResult.Error()) return saveResult;
+    }
+    auto loadResult = layout->Load();
+    if (loadResult.Error()) return loadResult;
+    Configuration.Instance().SetLayout(layout.Release());
+    return Result<bool>(true);
+}
+
+int main()
+{
+    MainWindow mainWindow;
+    if (mainWindow.Error())
+    {
+        string errorMessage = GetErrorMessage(mainWindow.GetErrorId());
+        MessageBox.Show(errorMessage, "error");
+        return 1;
+    }
+    Result<Graphics> graphicsResult = Graphics.FromWindowHandle(mainWindow.Handle());
+    if (graphicsResult.Error())
+    {
+        MessageBox.Show(graphicsResult.GetErrorMessage(), "error");
+        return 1;
+    }
+    auto setLayoutResult = SetLayout(&graphicsResult.Value());
+    if (setLayoutResult.Error())
+    {
+        MessageBox.Show(setLayoutResult.GetErrorMessage(), "error");
+        return 1;
+    }
+    auto iconResult = Application.GetResourceManager().GetIcon("spring.icon");
+    if (iconResult.Error())
+    {
+        MessageBox.Show(iconResult.GetErrorMessage(), "error");
+        return 1;
+    }
+    Icon* icon = iconResult.Value();
+    auto result = mainWindow.SetSmallIcon(*icon);
+    if (result.Error())
+    {
+        MessageBox.Show(result.GetErrorMessage(), "error");
+        return 1;
+    }
+    result = mainWindow.SetIcon(*icon);
+    if (result.Error())
+    {
+        MessageBox.Show(result.GetErrorMessage(), "error");
+        return 1;
+    }
+    return Application.Run(mainWindow);
+}
+

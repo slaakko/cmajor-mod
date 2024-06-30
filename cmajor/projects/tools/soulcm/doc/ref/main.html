@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>main.cm</title>
+    <style>
+      div.cm
+{
+ background-color: #e6f7ff;
+ margin: 20px;
+ padding: 20px;
+ font-family: monospace;
+}
+
+.cm .kw
+{
+ color: #0000ff;
+}
+
+.cm .id
+{
+ color: #000000;
+}
+
+.cm .number
+{
+ color: #000000;
+}
+
+.cm .string
+{
+ color: #a31515;
+}
+
+.cm .other
+{
+ color: #000000;
+}
+
+.cm .comment
+{
+ color: #57a64a;
+}
+
+</style>
+  </head>
+  <body>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// main.cm:
+</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">WriteLine</span><span class="other">(</span><span class="string">"desk calculator"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">#</span><span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">WINDOWS</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">WriteLine</span><span class="other">(</span><span class="string">"enter arithmetic expression, or CTRL-Z to end:"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">#</span><span class="kw">else</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">WriteLine</span><span class="other">(</span><span class="string">"enter arithmetic expression, or CTRL-D to end:"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">#</span><span class="kw">endif</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Write</span><span class="other">(</span><span class="string">"> "</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">auto</span>&nbsp;<span class="id">lineResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">ReadLine</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">lineResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">lineResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">endl</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">string</span>&nbsp;<span class="id">line</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">lineResult</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">while</span>&nbsp;<span class="other">(</span><span class="other">!</span><span class="id">Console</span><span class="other">.</span><span class="id">In</span><span class="other">(</span><span class="other">)</span><span class="other">.</span><span class="id">EndOfStream</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">auto</span>&nbsp;<span class="id">utf32Result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">ToUtf32</span><span class="other">(</span><span class="id">line</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">utf32Result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">utf32Result</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">endl</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">ustring</span>&nbsp;<span class="id">uline</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">utf32Result</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">calc</span><span class="other">.</span><span class="id">lexer</span>&nbsp;<span class="id">lexer</span><span class="other">(</span><span class="id">uline</span><span class="other">.</span><span class="id">Chars</span><span class="other">(</span><span class="other">)</span><span class="other">,</span>&nbsp;<span class="id">uline</span><span class="other">.</span><span class="id">Chars</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">+</span>&nbsp;<span class="id">uline</span><span class="other">.</span><span class="id">Length</span><span class="other">(</span><span class="other">)</span><span class="other">,</span>&nbsp;<span class="string">"expression"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Node</span><span class="other">>></span>&nbsp;<span class="id">result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">calc</span><span class="other">.</span><span class="id">parser</span><span class="other">&lt;</span><span class="id">calc</span><span class="other">.</span><span class="id">lexer</span><span class="other">></span><span class="other">.</span><span class="id">Parse</span><span class="other">(</span><span class="id">lexer</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">result</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">endl</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Node</span><span class="other">*</span>&nbsp;<span class="id">node</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">result</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">.</span><span class="id">Get</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">double</span>&nbsp;<span class="id">value</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Evaluate</span><span class="other">(</span><span class="id">node</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"= "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">value</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">endl</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Write</span><span class="other">(</span><span class="string">"> "</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">lineResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">ReadLine</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">lineResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">lineResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">endl</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">line</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">lineResult</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">0</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,77 @@
+using System;
+using System.Lex;
+using System.Parsing;
+using calc.token;
+
+namespace calc
+{
+    public static class parser<LexerT>
+    {
+        public static System.Result<System.UniquePtr<Node>> Parse(LexerT& lexer)
+        {
+            System.UniquePtr<Node> value;
+            auto incResult0 = ++lexer; 
+            System.Result<System.Parsing.Match> matchResult = calc.parser<LexerT>.expression(lexer);
+            System.Parsing.Match match = matchResult.Value();
+            value.Reset(cast<Node*>(match.value));
+            if (match.hit)
+            {
+                if (*lexer == System.Lex.END_TOKEN)
+                {
+                    return System.Result<System.UniquePtr<Node>>(System.Rvalue(value)); 
+                }
+                else
+                {
+                    return System.Result<System.UniquePtr<Node>>(lexer.GetFarthestError()); 
+                }
+            }
+            else
+            {
+                return System.Result<System.UniquePtr<Node>>(lexer.GetFarthestError()); 
+            }
+        }
+        public static System.Result<System.Parsing.Match> expression(LexerT& lexer)
+        {
+            System.UniquePtr<Node> expr;
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Result<System.Parsing.Match> matchResult = calc.parser<LexerT>.additive_expr(lexer);
+                System.Parsing.Match match = matchResult.Value();
+                expr.Reset(cast<Node*>(match.value));
+                if (match.hit)
+                {
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, expr.Release()));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+        public static System.Result<System.Parsing.Match> additive_expr(LexerT& lexer)
+        {
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch0 = &match;
+            {
+                long pos = lexer.GetPos();
+                System.Parsing.Match match(true);
+                if (match.hit)
+                {
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, null));
+                }
+                *parentMatch0 = match;
+            }
+            if (!match.hit)
+            {
+                match.value = null;
+            }
+            return System.Result<System.Parsing.Match>(match);
+        }
+    }
+}
+
+new class calc.parser<calc.lexer>;

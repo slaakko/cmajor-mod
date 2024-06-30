@@ -149,5 +149,9 @@ namespace cm.token
     public const long ACTIVE_PROJECT = (tokenSetID << 32) | 141;
     public const long ACTIVE_BACKEND = (tokenSetID << 32) | 142;
     public const long FILE_PATH = (tokenSetID << 32) | 143;
+    public const long KEYWORD = (tokenSetID << 32) | 144;
+    public const long OTHER = (tokenSetID << 32) | 145;
+    public const long WS = (tokenSetID << 32) | 146;
+    public const long COMMENT = (tokenSetID << 32) | 147;
 
 } // cm.token

@@ -297,10 +297,12 @@ namespace scmlg
         }
         BinaryWriter& writer = writerResult.Value();
         int size = cast<int>(classMapList.Count());
-        writer.Write(size);
+        auto result = writer.Write(size);
+        if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
         for (int x : classMapList)
         {
-            writer.Write(x);
+            result = writer.Write(x);
+            if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
         }
         if (verbose)
         {
@@ -331,7 +333,8 @@ namespace scmlg
                 }
                 line.Append(":").Append("'").Append(utf8.Value()).Append("'");
                 line.Append(":").Append("#").Append(ToString(classMapList[i]));
-                writer.WriteLine(line);
+                auto result = writer.WriteLine(line);
+                if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
             }
             if (verbose)
             {
@@ -402,7 +405,8 @@ namespace scmlg
         }
         StreamWriter& writer = result.Value();
         System.Text.CodeFormatter formatter(writer);
-        formatter.WriteLine(classMapName + " RCDATA \"" + compressedClassMapFileName + "\"");
+        auto writeResult = formatter.WriteLine(classMapName + " RCDATA \"" + compressedClassMapFileName + "\"");
+        if (writeResult.Error()) return writeResult;
         if (verbose)
         {
             Console.Out() << "==> " << resourceFileName << endl();

@@ -1,0 +1,191 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class CanvasCreateParams
+    {
+        public CanvasCreateParams& Defaults()
+        {
+            SetWindowClassName("spring.canvas");
+            SetWindowClassStyle(DoubleClickWindowClassStyle());
+            SetWindowStyle(DefaultChildWindowStyle());
+            SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW);
+            SetBackgroundColor(System.Windows.Color.White());
+            SetText("canvas");
+            SetLocation(Point.Default());
+            SetSize(Size.Default());
+            SetAnchors(cast<Anchors>(Anchors.left | Anchors.top));
+            SetDock(Dock.fill);
+            return *this;
+        }
+        public CanvasCreateParams& SetWindowClassName(const string& windowClassName_)
+        {
+            controlCreateParams.SetWindowClassName(windowClassName_);
+            return *this;
+        }
+        public CanvasCreateParams& SetWindowClassStyle(WindowClassStyle windowClassStyle_)
+        {
+            controlCreateParams.SetWindowClassStyle(windowClassStyle_);
+            return *this;
+        }
+        public CanvasCreateParams& SetWindowStyle(WindowStyle windowStyle_)
+        {
+            controlCreateParams.SetWindowStyle(windowStyle_);
+            return *this;
+        }
+        public CanvasCreateParams& SetWindowClassBackgroundColor(SystemColor windowClassBackgroundColor_)
+        {
+            controlCreateParams.SetWindowClassBackgroundColor(windowClassBackgroundColor_);
+            return *this;
+        }
+        public CanvasCreateParams& SetBackgroundColor(const System.Windows.Color& backgroundColor_)
+        {
+            controlCreateParams.SetBackgroundColor(backgroundColor_);
+            return *this;
+        }
+        public CanvasCreateParams& SetText(const string& text_)
+        {
+            controlCreateParams.SetText(text_);
+            return *this;
+        }
+        public CanvasCreateParams& SetLocation(const Point& location_)
+        {
+            controlCreateParams.SetLocation(location_);
+            return *this;
+        }
+        public CanvasCreateParams& SetSize(const Size& size_)
+        {
+            controlCreateParams.SetSize(size_);
+            return *this;
+        }
+        public CanvasCreateParams& SetAnchors(Anchors anchors_)
+        {
+            controlCreateParams.SetAnchors(anchors_);
+            return *this;
+        }
+        public CanvasCreateParams& SetDock(Dock dock_)
+        {
+            controlCreateParams.SetDock(dock_);
+            return *this;
+        }
+        public ControlCreateParams controlCreateParams;
+    }
+
+    class CanvasHolder
+    {
+        static CanvasHolder() : instance(new CanvasHolder())
+        {
+        }
+        public static CanvasHolder& Instance()
+        {
+            return *instance;
+        }
+        public void SetCanvas(Canvas* canvas_)
+        {
+            canvas = canvas_;
+        }
+        public Canvas* GetCanvas() const
+        {
+            return canvas;
+        }
+        private static UniquePtr<CanvasHolder> instance;
+        private Canvas* canvas;
+    }
+
+    class Canvas : Control
+    {
+        public Canvas(CanvasCreateParams& createParams) :
+            base(createParams.controlCreateParams),
+            noteCornerBitmap(null),
+            modifiedStatusBarItem(null),
+            copyMenuItem(null),
+            cutMenuItem(null),
+            pasteMenuItem(null),
+            undoMenuItem(null),
+            redoMenuItem(null),
+            operationCreated(false),
+            buttonPressed(false)
+        {
+            SetDoubleBuffered();
+            diagram.Reset(new Diagram());
+            diagram->SetCanvas(this);
+        }
+        public inline Diagram* GetDiagram() const
+        {
+            return diagram.Get();
+        }
+        [nodiscard]
+        public Result<bool> SetDiagram(Diagram* diagram_)
+        {
+            if (diagram != null)
+            {
+                diagram->GetCommandList().Clear();
+            }
+            diagram.Reset(diagram_);
+            auto result = diagram->SetMenuItems(undoMenuItem, redoMenuItem);
+            if (result.Error()) return result;
+            diagram->SetCanvas(this);
+            diagram->SetChanged();
+            result = diagram->Invalidate();
+            if (result.Error()) return result;
+            diagram->ResetModified();
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> SetCursor()
+        {
+            Tool* currentTool = Tools.Instance().Current();
+            if (currentTool->IsSelectTool())
+            {
+                // todo
+            }
+            if (buttonPressed)
+            {
+                System.Windows.SetCursor(currentTool->GetPressedCursor());
+            }
+            else
+            {
+                System.Windows.SetCursor(currentTool->GetCursor());
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<Diagram> diagram;
+        private Bitmap* noteCornerBitmap;
+        private StatusBarItem* modifiedStatusBarItem;
+        private MenuItem* copyMenuItem;
+        private MenuItem* cutMenuItem;
+        private MenuItem* pasteMenuItem;
+        private MenuItem* undoMenuItem;
+        private MenuItem* redoMenuItem;
+        private PointF viewOrigin;
+        private MouseArgs mouseDownArgs;
+        private MouseArgs mouseMoveArgs;
+        private MouseArgs mouseUpArgs;
+        private bool operationCreated;
+        private bool buttonPressed;
+    }
+
+    void SetCanvas(Canvas* canvas)
+    {
+        CanvasHolder.Instance().SetCanvas(canvas);
+    }
+
+    Canvas* GetCanvas()
+    {
+        return CanvasHolder.Instance().GetCanvas();
+    }
+
+    Diagram* GetDiagram()
+    {
+        return GetCanvas()->GetDiagram();
+    }
+}
+

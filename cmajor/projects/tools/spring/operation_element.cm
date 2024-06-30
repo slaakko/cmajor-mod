@@ -1,0 +1,99 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class OperationElement : DiagramElement
+    {
+        public OperationElement() :
+            base(DiagramElementKind.operationElement),
+            isAbstract(false),
+            rep(new ConcreteOperation()),
+            containerElement(null),
+            relationship(null)
+        {
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement("operation");
+            SetName(xmlElement);
+            xmlElement->AppendChild(BoundsXmlElement());
+            if (isAbstract)
+            {
+                xmlElement->SetAttribute("abstract", "true");
+            }
+            else
+            {
+                xmlElement->SetAttribute("abstract", "false");
+            }
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<bool> result = base->FromXml(xmlElement);
+            if (result.Error()) return result;
+            auto abstractResult = ParseBool(xmlElement->GetAttribute("abstract"));
+            if (abstractResult.Error()) return Result<bool>(ErrorId(abstractResult.GetErrorId()));
+            bool abstractValue = abstractResult.Value();
+            if (abstractValue)
+            {
+                SetAbstract();
+            }
+            return Result<bool>(true);
+        }
+        public override DiagramElement* Clone() const
+        {
+            OperationElement* clone = new OperationElement();
+            clone->SetName(Name());
+            clone->SetBounds(Bounds());
+            if (isAbstract)
+            {
+                clone->SetAbstract();
+            }
+            clone->SetContainerElement(containerElement);
+            return clone;
+        }
+        public inline bool IsAbstract() const
+        {
+            return isAbstract;
+        }
+        public void SetAbstract()
+        {
+            if (!IsAbstract())
+            {
+                isAbstract = true;
+                rep.Reset(new AbstractOperation(this));
+            }
+        }
+        public void ResetAbstract()
+        {
+            if (IsAbstract())
+            {
+                isAbstract = false;
+                rep.Reset(new ConcreteOperation(this));
+            }
+        }
+        public void SetContainerElement(ContainerElement* containerElement_)
+        {
+            containerElement = containerElement_;
+        }
+        public inline ContainerElement* GetContainerElement() const
+        {
+            return containerElement;
+        }
+        public inline RelationshipElement* Relationship() const
+        {
+            return relationship;
+        }
+        private bool isAbstract;
+        private UniquePtr<OperationElementRep> rep;
+        private ContainerElement* containerElement;
+        private RelationshipElement* relationship;
+    }
+}
+

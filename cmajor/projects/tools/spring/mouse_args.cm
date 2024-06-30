@@ -1,0 +1,33 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class MouseArgs
+    {
+        public MouseArgs()
+        {
+        }
+        public MouseArgs(const PointF& location_, int elementIndex_, DiagramElement* element_, const MouseEventArgs& mouseEventArgs) :
+            time(System.Now()), location(location_), elementIndex(elementIndex_), element(element_),
+            shift((mouseEventArgs.buttons & MouseButtons.shift) != MouseButtons.none),
+            control((mouseEventArgs.buttons & MouseButtons.control) != MouseButtons.none),
+            left((mouseEventArgs.buttons & MouseButtons.lbutton) != MouseButtons.none),
+            right((mouseEventArgs.buttons & MouseButtons.rbutton) != MouseButtons.none)
+        {
+        }
+        public TimePoint time;
+        public PointF location;
+        public int elementIndex;
+        public DiagramElement* element;
+        public bool shift;
+        public bool control;
+        public bool left;
+        public bool right;
+    }
+}

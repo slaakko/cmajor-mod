@@ -1,0 +1,34 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace spring
+{
+    class Configuration
+    {
+        static Configuration() : instance(new Configuration())
+        {
+        }
+        public static Configuration& Instance()
+        {
+            return *instance;
+        }
+        private Configuration() : layout(null)
+        {
+        }
+        public void SetLayout(Layout* layout_)
+        {
+            layout.Reset(layout_);
+        }
+        public inline Layout* GetLayout() const
+        {
+            return layout.Get();
+        }
+        private static UniquePtr<Configuration> instance;
+        private UniquePtr<Layout> layout;
+    }
+}
+

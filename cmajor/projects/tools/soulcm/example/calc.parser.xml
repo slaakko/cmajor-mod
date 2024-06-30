@@ -5,6 +5,16 @@
     <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="additive_expr"/>
    </action>
   </rule>
+  <rule first="{MINUS, PLUS}" name="additive_op">
+   <choice first="{MINUS, PLUS}">
+    <action first="{PLUS}">
+     <token first="{PLUS}" name="PLUS"/>
+    </action>
+    <action first="{MINUS}">
+     <token first="{MINUS}" name="MINUS"/>
+    </action>
+   </choice>
+  </rule>
   <rule first="{LPAREN, MINUS, NUMBER, PLUS}" name="additive_expr">
    <action first="{LPAREN, MINUS, NUMBER, PLUS}">
     <group first="{LPAREN, MINUS, NUMBER, PLUS}">
@@ -26,13 +36,13 @@
     </group>
    </action>
   </rule>
-  <rule first="{MINUS, PLUS}" name="additive_op">
-   <choice first="{MINUS, PLUS}">
-    <action first="{PLUS}">
-     <token first="{PLUS}" name="PLUS"/>
+  <rule first="{DIV, MUL}" name="multiplicative_op">
+   <choice first="{DIV, MUL}">
+    <action first="{MUL}">
+     <token first="{MUL}" name="MUL"/>
     </action>
-    <action first="{MINUS}">
-     <token first="{MINUS}" name="MINUS"/>
+    <action first="{DIV}">
+     <token first="{DIV}" name="DIV"/>
     </action>
    </choice>
   </rule>
@@ -57,13 +67,13 @@
     </group>
    </action>
   </rule>
-  <rule first="{DIV, MUL}" name="multiplicative_op">
-   <choice first="{DIV, MUL}">
-    <action first="{MUL}">
-     <token first="{MUL}" name="MUL"/>
+  <rule first="{MINUS, PLUS}" name="unary_op">
+   <choice first="{MINUS, PLUS}">
+    <action first="{PLUS}">
+     <token first="{PLUS}" name="PLUS"/>
     </action>
-    <action first="{DIV}">
-     <token first="{DIV}" name="DIV"/>
+    <action first="{MINUS}">
+     <token first="{MINUS}" name="MINUS"/>
     </action>
    </choice>
   </rule>
@@ -81,16 +91,6 @@
      </action>
     </choice>
    </group>
-  </rule>
-  <rule first="{MINUS, PLUS}" name="unary_op">
-   <choice first="{MINUS, PLUS}">
-    <action first="{PLUS}">
-     <token first="{PLUS}" name="PLUS"/>
-    </action>
-    <action first="{MINUS}">
-     <token first="{MINUS}" name="MINUS"/>
-    </action>
-   </choice>
   </rule>
   <rule first="{LPAREN, NUMBER}" name="primary_expr">
    <choice first="{LPAREN, NUMBER}">

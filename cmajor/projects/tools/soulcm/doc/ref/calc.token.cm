@@ -1,0 +1,17 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/doc/ref/calc.token' using SoulCm lexer generator scmlg version 5.0.0
+
+using System;
+
+namespace calc.token
+{
+    public const long tokenSetID = 231186939;
+
+    public const long PLUS = (tokenSetID << 32) | 1;
+    public const long MINUS = (tokenSetID << 32) | 2;
+    public const long MUL = (tokenSetID << 32) | 3;
+    public const long DIV = (tokenSetID << 32) | 4;
+    public const long NUMBER = (tokenSetID << 32) | 5;
+    public const long LPAREN = (tokenSetID << 32) | 6;
+    public const long RPAREN = (tokenSetID << 32) | 7;
+
+} // calc.token

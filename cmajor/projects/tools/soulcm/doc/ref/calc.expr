@@ -1,0 +1,11 @@
+// calc.expr:
+
+expressions calc.expr
+{
+	ws = "[\n\r\t ]";
+	dec_digits = "[0-9]+";
+	fraction = "{dec_digits}?\.{dec_digits}|{dec_digits}\.";
+	sign = "\+|-";
+	exponent = "(e|E){sign}?{dec_digits}";
+	number = "({fraction}{exponent}?|{dec_digits}{exponent})|{dec_digits}";
+}

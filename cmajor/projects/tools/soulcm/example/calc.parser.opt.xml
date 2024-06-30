@@ -5,6 +5,20 @@
     <nonterminal first="{LPAREN, MINUS, NUMBER, PLUS}" ruleName="additive_expr"/>
    </action>
   </rule>
+  <rule first="{MINUS, PLUS}" name="additive_op">
+   <switch first="{MINUS, PLUS}">
+    <case first="{PLUS}">
+     <action first="{PLUS}">
+      <token first="{PLUS}" name="PLUS"/>
+     </action>
+    </case>
+    <case first="{MINUS}">
+     <action first="{MINUS}">
+      <token first="{MINUS}" name="MINUS"/>
+     </action>
+    </case>
+   </switch>
+  </rule>
   <rule first="{LPAREN, MINUS, NUMBER, PLUS}" name="additive_expr">
    <action first="{LPAREN, MINUS, NUMBER, PLUS}">
     <group first="{LPAREN, MINUS, NUMBER, PLUS}">
@@ -26,16 +40,16 @@
     </group>
    </action>
   </rule>
-  <rule first="{MINUS, PLUS}" name="additive_op">
-   <switch first="{MINUS, PLUS}">
-    <case first="{PLUS}">
-     <action first="{PLUS}">
-      <token first="{PLUS}" name="PLUS"/>
+  <rule first="{DIV, MUL}" name="multiplicative_op">
+   <switch first="{DIV, MUL}">
+    <case first="{MUL}">
+     <action first="{MUL}">
+      <token first="{MUL}" name="MUL"/>
      </action>
     </case>
-    <case first="{MINUS}">
-     <action first="{MINUS}">
-      <token first="{MINUS}" name="MINUS"/>
+    <case first="{DIV}">
+     <action first="{DIV}">
+      <token first="{DIV}" name="DIV"/>
      </action>
     </case>
    </switch>
@@ -61,16 +75,16 @@
     </group>
    </action>
   </rule>
-  <rule first="{DIV, MUL}" name="multiplicative_op">
-   <switch first="{DIV, MUL}">
-    <case first="{MUL}">
-     <action first="{MUL}">
-      <token first="{MUL}" name="MUL"/>
+  <rule first="{MINUS, PLUS}" name="unary_op">
+   <switch first="{MINUS, PLUS}">
+    <case first="{PLUS}">
+     <action first="{PLUS}">
+      <token first="{PLUS}" name="PLUS"/>
      </action>
     </case>
-    <case first="{DIV}">
-     <action first="{DIV}">
-      <token first="{DIV}" name="DIV"/>
+    <case first="{MINUS}">
+     <action first="{MINUS}">
+      <token first="{MINUS}" name="MINUS"/>
      </action>
     </case>
    </switch>
@@ -93,20 +107,6 @@
      </case>
     </switch>
    </group>
-  </rule>
-  <rule first="{MINUS, PLUS}" name="unary_op">
-   <switch first="{MINUS, PLUS}">
-    <case first="{PLUS}">
-     <action first="{PLUS}">
-      <token first="{PLUS}" name="PLUS"/>
-     </action>
-    </case>
-    <case first="{MINUS}">
-     <action first="{MINUS}">
-      <token first="{MINUS}" name="MINUS"/>
-     </action>
-    </case>
-   </switch>
   </rule>
   <rule first="{LPAREN, NUMBER}" name="primary_expr">
    <switch first="{LPAREN, NUMBER}">

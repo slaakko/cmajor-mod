@@ -1,0 +1,9 @@
+// ast.cm:
+
+using System;
+
+public enum Operator
+{
+    plus, minus, mul, div
+}
+

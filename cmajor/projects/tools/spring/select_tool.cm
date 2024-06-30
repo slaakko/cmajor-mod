@@ -1,0 +1,18 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class SelectTool : Tool
+    {
+        public SelectTool() : base(ToolKind.selectTool)
+        {
+        }
+    }
+}
+

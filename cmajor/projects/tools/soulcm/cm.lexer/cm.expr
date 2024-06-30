@@ -7,6 +7,7 @@ expressions cm.expr
 {
     ws = "[\n\r\t ]";
     newline = "\r\n|\n|\r";
+    collected_ws = "[\t ]+";
     line_comment = "//[^\n\r]*{newline}";
     block_comment = "/\*([^*]|\*[^/])*\*/";
     comment = "{line_comment}|{block_comment}";

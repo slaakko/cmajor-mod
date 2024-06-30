@@ -1,0 +1,52 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class AttributeElement : DiagramElement
+    {
+        public AttributeElement() : base(DiagramElementKind.attributeElement)
+        {
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement("attribute");
+            SetName(xmlElement);
+            xmlElement->AppendChild(BoundsXmlElement());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<bool> result = base->FromXml(xmlElement);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override DiagramElement* Clone() const
+        {
+            AttributeElement* clone = new AttributeElement();
+            clone->SetName(Name());
+            clone->SetBounds(Bounds());
+            clone->SetContainerElement(containerElement);
+            return clone;
+        }
+        public void SetContainerElement(ContainerElement* containerElement_)
+        {
+            containerElement = containerElement_;
+        }
+        public inline ContainerElement* GetContainerElement() const
+        {
+            return containerElement;
+        }
+        public inline RelationshipElement* Relationship() const
+        {
+            return relationship;
+        }
+        private ContainerElement* containerElement;
+        private RelationshipElement* relationship;
+    }
+}

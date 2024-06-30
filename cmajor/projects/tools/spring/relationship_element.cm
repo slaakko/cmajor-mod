@@ -1,0 +1,73 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    enum RelationshipKind
+    {
+        none, inheritance, combinedInheritance, composition, aggregation, reference, createInstance, attachNote
+    }
+
+    enum Cardinality
+    {
+        zero, one, many
+    }
+
+    class RelationshipElement : DiagramElement
+    {
+        public RelationshipElement() : base(DiagramElementKind.relationshipElement), rkind(RelationshipKind.none), cardinality(Cardinality.one)
+        {
+        }
+        public RelationshipElement(RelationshipKind rkind_) : base(DiagramElementKind.relationshipElement), rkind(rkind_), cardinality(Cardinality.one)
+        {
+        }
+        public void RemoveContainer(ContainerElement* container)
+        {
+            if (source.Element() == container)
+            {
+                source.SetElement(null);
+            }
+            for (auto& sourceEndPoint : sourceEndPoints)
+            {
+                if (sourceEndPoint.Element() == container)
+                {
+                    sourceEndPoint.SetElement(null);
+                }
+            }
+            if (target.Element() == container)
+            {
+                target.SetElement(null);
+            }
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement("relationshipElement");
+            // todo
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<bool> result = base->FromXml(xmlElement);
+            if (result.Error()) return result;
+            // todo
+            return Result<bool>(true);
+        }
+        public override DiagramElement* Clone() const
+        {
+            RelationshipElement* clone = new RelationshipElement(rkind);
+            // todo
+            return clone;
+        }
+        private RelationshipKind rkind;
+        private Cardinality cardinality;
+        private EndPoint source;
+        private EndPoint target;
+        private List<EndPoint> sourceEndPoints;
+    }
+}

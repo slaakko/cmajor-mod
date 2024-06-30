@@ -1,0 +1,132 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace spring
+{
+    concept Cloneable<T>
+    {
+        T* T.Clone();
+    }
+
+    class IndexList<T> where T is Cloneable
+    {
+        public typedef List<UniquePtr<T>>.Iterator Iterator;
+        public typedef List<UniquePtr<T>>.ConstIterator ConstIterator;
+        public Iterator Begin()
+        {
+            return elements.Begin();
+        }
+        public Iterator End()
+        {
+            return elements.End();
+        }
+        public ConstIterator Begin() const
+        {
+            return elements.Begin();
+        }
+        public ConstIterator End() const
+        {
+            return elements.End();
+        }
+        public ConstIterator CBegin() const
+        {
+            return elements.CBegin();
+        }
+        public ConstIterator CEnd() const
+        {
+            return elements.CEnd();
+        }
+        public IndexList<T> Clone()
+        {
+            IndexList<T> clone;
+            for (const auto& element : elements)
+            {
+                clone.Add(cast<T*>(element->Clone()));
+            }
+            return clone;
+        }
+        public T* Get(int index) const
+        {
+            #assert(index >= 0 && index < elements.Count());
+            return elements[index].Get();
+        }
+        public T* TryGet(int index) const
+        {
+            if (index >= 0 && index < elements.Count())
+            {
+                return elements[index].Get();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void Set(int index, T* element)
+        {
+            #assert(index >= 0 && index < elements.Count());
+            elements[index].Reset(element);
+        }
+        public void Add(T* element)
+        {
+            elements.Add(UniquePtr<T>(element));
+        }
+        public T* Remove(int index)
+        {
+            #assert(index >= 0 && index < elements.Count());
+            UniquePtr<T> element = elements.Remove(elements.Begin() + index);
+            return element.Release();
+        }
+        public void Insert(int index, T* element)
+        {
+            if (index >= 0 && index < elements.Count())
+            {
+                elements.Insert(elements.Begin() + index, UniquePtr<T>(element));
+            }
+            else if (index >= elements.Count())
+            {
+                Add(element);
+            }
+            else
+            {
+                #assert(false);
+            }
+        }
+        public T* Release(int index)
+        {
+            #assert(index >= 0 && index < elements.Count());
+            return elements[index].Release();
+        }
+        public void Clear()
+        {
+            elements.Clear();
+        }
+        public bool IsEmpty() const
+        {
+            return elements.IsEmpty();
+        }
+        public int Count() const
+        {
+            return cast<int>(elements.Count());
+        }
+        public void MoveUp(int index)
+        {
+            #assert(index > 0 && index < elements.Count());
+            T* element = Remove(index);
+            --index;
+            Insert(index, element);
+        }
+        public void MoveDown(int index)
+        {
+            #assert(index >= 0 && index < elements.Count());
+            T* element = Remove(index);
+            ++index;
+            Insert(index, element);
+        }
+        private List<UniquePtr<T>> elements;
+    }
+}

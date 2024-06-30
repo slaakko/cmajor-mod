@@ -9,6 +9,11 @@ parser calc.parser
         ::= additive_expr:expr{ return expr; }
         ;
 
+    additive_op : Operator
+        ::= PLUS{ return Operator.plus; }
+        |   MINUS{ return Operator.minus; }
+        ;
+
     additive_expr(var UniquePtr<Node> expr) : Node*
         ::= 
         (
@@ -22,9 +27,9 @@ parser calc.parser
         }
         ;
 
-    additive_op : Operator
-        ::= PLUS{ return Operator.plus; }
-        |   MINUS{ return Operator.minus; }
+    multiplicative_op : Operator
+        ::= MUL{ return Operator.mul; }
+        |   DIV{ return Operator.div; }
         ;
 
     multiplicative_expr(var UniquePtr<Node> expr) : Node*
@@ -40,9 +45,9 @@ parser calc.parser
         }
         ;
 
-    multiplicative_op : Operator
-        ::= MUL{ return Operator.mul; }
-        |   DIV{ return Operator.div; }
+    unary_op : Operator
+        ::= PLUS { return Operator.plus; }
+        |   MINUS { return Operator.minus; }
         ;
 
     unary_expr : Node*
@@ -50,11 +55,6 @@ parser calc.parser
         (   unary_op:op unary_expr:expr{ return new UnaryExprNode(expr, op); }
         |   primary_expr:primary{ return primary; }
         )
-        ;
-
-    unary_op : Operator
-        ::= PLUS { return Operator.plus; }
-        |   MINUS { return Operator.minus; }
         ;
 
     primary_expr : Node*

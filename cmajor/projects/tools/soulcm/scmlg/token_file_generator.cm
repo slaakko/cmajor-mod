@@ -62,6 +62,10 @@ namespace scmlg
             return Result<bool>(ErrorId(result.GetErrorId()));
         }
         scmlg.ast.TokenFile* tokenFile = result.Value().Get();
+        if (external)
+        {
+            tokenFile->SetExternal();
+        }
         auto genResult = GenerateTokenFile(tokenFile, scmlgVersion, verbose);
         if (genResult.Error())
         {

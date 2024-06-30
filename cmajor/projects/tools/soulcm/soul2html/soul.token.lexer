@@ -1,0 +1,76 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using soul.token;
+using soul.expr;
+using soul.keyword;
+
+lexer soul.lexer.SoulTokenLexer
+{
+    rules
+    {
+        "{newline}" {}
+        "{collected_ws}" { return WS; }
+        "{line_comment}" { return COMMENT; }
+        "{id}" { long kw = GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return ID; else return KEYWORD; }
+        "{integer_literal}" { return INTEGER_LITERAL; }
+        "{floating_literal}" { return FLOATING_LITERAL; }
+        "{char_literal}" { return CHAR_LITERAL; }
+        "{string_literal}" { return STRING_LITERAL; }
+        "::=" { return PUNCTUATION; }
+        "<=>" { return PUNCTUATION; }
+        "=>" { return PUNCTUATION; }
+        "\|\|" { return PUNCTUATION; }
+        "&&" { return PUNCTUATION; }
+        "\|" { return PUNCTUATION; }
+        "^" { return PUNCTUATION; }
+        "&" { return PUNCTUATION; }
+        "==" { return PUNCTUATION; }
+        "!=" { return PUNCTUATION; }
+        "<=" { return PUNCTUATION; }
+        ">=" { return PUNCTUATION; }
+        "<" { return PUNCTUATION; }
+        ">" { return PUNCTUATION; }
+        "<<" $(0) { return PUNCTUATION; }
+        ">>" $(1) { return PUNCTUATION; }
+        "\+" { return PUNCTUATION; }
+        "-" { return PUNCTUATION; }
+        "\*" { return PUNCTUATION; }
+        "/" { return PUNCTUATION; }
+        "%" { return PUNCTUATION; }
+        "\+\+" { return PUNCTUATION; }
+        "--" { return PUNCTUATION; }
+        "!" { return PUNCTUATION; }
+        "~" { return PUNCTUATION; }
+        "\." { return PUNCTUATION; }
+        "->" { return PUNCTUATION; }
+        "\[" { return PUNCTUATION; }
+        "\]" { return PUNCTUATION; }
+        "\(" { return PUNCTUATION; }
+        "\)" { return PUNCTUATION; }
+        "\{" { return PUNCTUATION; }
+        "\}" { return PUNCTUATION; }
+        "," { return PUNCTUATION; }
+        "=" { return PUNCTUATION; }
+        ":" { return PUNCTUATION; }
+        ";" { return PUNCTUATION; }
+        "\?" { return PUNCTUATION; }
+        "#" { return PUNCTUATION; }
+    }
+
+    variables
+    {
+        bool parsingOperatorFunctionGroupId;
+        int leftAngleCount;
+    }
+
+    actions
+    {
+        $(0)={ if (vars.parsingOperatorFunctionGroupId) return System.Lex.INVALID_TOKEN; }
+        $(1)={ if (vars.leftAngleCount > 0) return System.Lex.INVALID_TOKEN; }
+    }
+
+}
+

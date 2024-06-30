@@ -1,0 +1,22 @@
+// calc.parser:
+
+using calc.token;
+
+parser calc.parser
+{
+    // ...
+
+    primary_expr : Node*
+        ::= NUMBER
+            { 
+                Result<double> result = ParseNumber(lexer.GetToken(pos).ToString());
+                if (result.Error())
+                {
+                    return ErrorId(result.GetErrorId());
+                }
+                double number = result.Value();
+                return new NumberNode(number); 
+            }
+        |   LPAREN expression:expr RPAREN{ return new ParenExprNode(expr); }
+        ;
+}

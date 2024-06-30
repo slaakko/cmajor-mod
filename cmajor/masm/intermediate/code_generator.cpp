@@ -1402,7 +1402,7 @@ void EmitIntegerLess(LessInstruction& inst, CodeGenerator& codeGenerator)
             inst.Right(), assemblyContext->GetGlobalReg(size, cmajor::masm::assembly::RegisterGroupKind::rdx), codeGenerator);
         cmpInstruction->AddOperand(rightOperandReg);
         codeGenerator.Emit(cmpInstruction);
-        cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::SETL;
+        cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::SETL; 
         if (inst.Left()->GetType()->IsUnsignedType())
         {
             opCode = cmajor::masm::assembly::OpCode::SETC;
@@ -1450,7 +1450,7 @@ void EmitFloatingPointLess(LessInstruction& inst, CodeGenerator& codeGenerator)
             inst.Right(), assemblyContext->GetGlobalReg(operandSize, cmajor::masm::assembly::RegisterGroupKind::xmm2), codeGenerator);
         instruction->AddOperand(rightOperandReg);
         codeGenerator.Emit(instruction);
-        cmajor::masm::assembly::Instruction* setInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::SETL);
+        cmajor::masm::assembly::Instruction* setInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::SETC); 
         setInst->AddOperand(resultReg);
         codeGenerator.Emit(setInst);
     }

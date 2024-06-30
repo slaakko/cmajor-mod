@@ -1,0 +1,4 @@
+// calc.scmpg:
+
+project calc.parser;
+parser <calc.parser>;

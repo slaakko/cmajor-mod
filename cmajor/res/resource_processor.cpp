@@ -234,17 +234,12 @@ void CompileResourceScriptFile(cmajor::symbols::Module* module, const std::strin
 
 void ProcessResourcesInProject(cmajor::ast::Project* project, cmajor::symbols::Module* module)
 {
-    switch (project->GetBackEnd())
-    {
-        case cmajor::ast::BackEnd::systemx: return;
-        case cmajor::ast::BackEnd::masm: return;
-    }
+    if (project->GetBackEnd() == cmajor::ast::BackEnd::systemx) return;
     AddResourcesInProjectToCurrentModule(project, module);
     if (project->GetTarget() == cmajor::ast::Target::program || project->GetTarget() == cmajor::ast::Target::winapp || project->GetTarget() == cmajor::ast::Target::winguiapp)
     {
         std::string resourceScriptFileName = util::Path::ChangeExtension(project->ModuleFilePath(), ".rc");
         CreateResourceScriptFile(module, resourceScriptFileName);
-        //CompileResourceScriptFile(module, resourceScriptFileName, project->GetBackEnd());
     }
 }
 

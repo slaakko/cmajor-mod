@@ -1,0 +1,84 @@
+// ast.cm:
+
+// ...
+
+public class Visitor
+{
+    public virtual void Visit(NumberNode& node) {}
+    public virtual void Visit(BinaryExprNode& node) {}
+    public virtual void Visit(UnaryExprNode& node) {}
+    public virtual void Visit(ParenExprNode& node) {}
+}
+
+public class EvaluatorVisitor : Visitor
+{
+    public EvaluatorVisitor() : value(0)
+    {
+    }
+    public override void Visit(NumberNode& node)
+    {
+        value = node.Value();
+    }
+    public override void Visit(BinaryExprNode& node) 
+    {
+        node.Left()->Accept(*this);
+        double leftValue = value;
+        node.Right()->Accept(*this);
+        double rightValue = value;
+        switch (node.Op())
+        {
+            case Operator.plus:
+            {
+                value = leftValue + rightValue;
+                break;
+            }
+            case Operator.minus:
+            {
+                value = leftValue - rightValue;
+                break;
+            }
+            case Operator.mul:
+            {
+                value = leftValue * rightValue;
+                break;
+            }
+            case Operator.div:
+            {
+                value = leftValue / rightValue;
+                break;
+            }
+        }
+    }
+    public override void Visit(UnaryExprNode& node)
+    {
+        node.Operand()->Accept(*this);
+        switch (node.Op())
+        {
+            case Operator.plus: 
+            {
+                break;
+            }
+            case Operator.minus:
+            {
+                value = -value;
+                break;
+            }
+        }
+    }
+    public override void Visit(ParenExprNode& node) 
+    {
+        node.Expr()->Accept(*this);
+    }
+    public double Value() const
+    {
+        return value;
+    }
+    private double value;
+}
+
+public double Evaluate(Node* node)
+{
+    EvaluatorVisitor visitor;
+    node->Accept(visitor);
+    return visitor.Value();
+}

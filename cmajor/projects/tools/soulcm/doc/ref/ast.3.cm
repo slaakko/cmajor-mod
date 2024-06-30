@@ -1,0 +1,34 @@
+// ast.cm:
+
+// ...
+
+public class BinaryExprNode : Node
+{
+    public BinaryExprNode(Node* left_, Node* right_, Operator op_) : left(left_), right(right_), op(op_)
+    {
+    }
+    public Node* Left() const 
+    {
+        return left.Get();
+    }
+    public Node* Right() const 
+    {
+        return right.Get();
+    }
+    public Operator Op() const
+    {
+        return op;
+    }
+    public override void Accept(Visitor& visitor)
+    {
+        visitor.Visit(*this);
+    }
+    private UniquePtr<Node> left;
+    private UniquePtr<Node> right;
+    private Operator op;
+}
+
+public class Visitor
+{
+    public virtual void Visit(BinaryExprNode& node) {}
+}

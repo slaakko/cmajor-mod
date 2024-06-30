@@ -1,0 +1,6 @@
+// calc.cmp:
+
+project calc;
+source <calc.token.cm>;
+source <calc.lexer.cm>;
+rc <calc.lexer.classmap.rc>;

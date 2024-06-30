@@ -1,0 +1,62 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    abstract class ContainerElement : DiagramElement
+    {
+        public ContainerElement(DiagramElementKind kind_) : base(kind_)
+        {
+        }
+        public ContainerElement(DiagramElementKind kind_, const string& name_) : base(kind_)
+        {
+            SetName(name_);
+        }
+        public override ~ContainerElement()
+        {
+            for (RelationshipElement* relationship : relationships)
+            {
+                relationship->RemoveContainer(this);
+            }
+        }
+        public const List<RelationshipElement*>& Relationships() const
+        {
+            return relationships;
+        }
+        public abstract List<RelationshipElement*> GetAllRelationships();
+        public virtual Result<AttributeElement*> GetAttribute(int attributeIndex) const
+        {
+            int errorId = AllocateError("container element '" + Name() + "' has no attributes");
+            return Result<AttributeElement*>(ErrorId(errorId));
+        }
+        public virtual Result<int> GetIndexOfAttributeElement(AttributeElement* attributeElement) const
+        {
+            int errorId = AllocateError("container element '" + Name() + "' has no attributes");
+            return Result<int>(ErrorId(errorId));
+        }
+        public virtual Result<OperationElement*> GetOperation(int operationIndex) const
+        {
+            int errorId = AllocateError("container element '" + Name() + "' has no operations");
+            return Result<OperationElement*>(ErrorId(errorId));
+        }
+        public virtual Result<int> GetIndexOfOperationElement(OperationElement* operationElemnet) const
+        {
+            int errorId = AllocateError("container element '" + Name() + "' has no operations");
+            return Result<int>(ErrorId(errorId));
+        }
+        public virtual void MapChildObjects(ContainerElement* from,
+            Map<DiagramElement*, DiagramElement*>& cloneMap,
+            Map<DiagramElement*, DiagramElement*>& reverseCloneMap)
+        {
+        }
+        private List<RelationshipElement*> relationships;
+    }
+}
+
+

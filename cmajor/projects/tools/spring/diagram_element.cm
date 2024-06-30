@@ -1,0 +1,230 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    enum DiagramElementKind
+    {
+        classElement, objectElement, noteElement, operationElement, attributeElement, textElement, relationshipElement
+    }
+
+    enum DiagramElementFlags
+    {
+        none = 0, selected = 1 << 0
+    }
+
+    abstract class DiagramElement
+    {
+        public DiagramElement(DiagramElementKind kind_) : kind(kind_), flags(DiagramElementFlags.none)
+        {
+        }
+        public default virtual ~DiagramElement();
+        public inline DiagramElementKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsClassElement() const
+        {
+            return kind == DiagramElementKind.classElement;
+        }
+        public inline bool IsObjectElement() const
+        {
+            return kind == DiagramElementKind.objectElement;
+        }
+        public inline bool IsNoteElement() const
+        {
+            return kind == DiagramElementKind.noteElement;
+        }
+        public inline bool IsContainerElement() const
+        {
+            return IsClassElement() || IsObjectElement() || IsNoteElement();
+        }
+        public inline bool IsOperationElement() const
+        {
+            return kind == DiagramElementKind.operationElement;
+        }
+        public inline bool IsAttributeElement() const
+        {
+            return kind == DiagramElementKind.attributeElement;
+        }
+        public inline bool IsRelationshipElement() const
+        {
+            return kind == DiagramElementKind.relationshipElement;
+        }
+        public inline const PointF& Location() const
+        {
+            return bounds.location;
+        }
+        public void SetLocation(const PointF& location)
+        {
+            bounds.location = location;
+        }
+        public inline const SizeF& Size() const
+        {
+            return bounds.size;
+        }
+        public void SetSize(const SizeF& size)
+        {
+            bounds.size = size;
+        }
+        public virtual RectF Bounds() const
+        {
+            return bounds;
+        }
+        public void SetBounds(const RectF& bounds_)
+        {
+            bounds = bounds_;
+        }
+        public PointF Center() const
+        {
+            return PointF(bounds.location.x + bounds.size.w / 2, bounds.location.y + bounds.size.h / 2);
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public void SetName(const string& name_)
+        {
+            name = name_;
+        }
+        public inline Diagram* GetDiagram() const
+        {
+            return diagram;
+        }
+        public void SetDiagram(Diagram* diagram_)
+        {
+            diagram = diagram_;
+        }
+        public bool IsSelected() const
+        {
+            return (flags & DiagramElementFlags.selected) != DiagramElementFlags.none;
+        }
+        public void SetSelected()
+        {
+            flags = cast<DiagramElementFlags>(flags | DiagramElementFlags.selected);
+        }
+        [nodiscard]
+        public Result<bool> ResetSelected()
+        {
+            if (IsSelected())
+            {
+                flags = cast<DiagramElementFlags>(flags & ~DiagramElementFlags.selected);
+                auto result = spring.GetDiagram()->Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public virtual void SetCompoundLocation(const CompoundLocation& compoundLocation)
+        {
+            SetLocation(compoundLocation.Location());
+        }
+        public virtual CompoundLocation GetCompoundLocation() const
+        {
+            return CompoundLocation(Location());
+        }
+        public virtual ContainerElement* GetContainerElement() const
+        {
+            return null;
+        }
+        public virtual void AddRelationship(RelationshipElement* relationship)
+        {
+        }
+        public virtual void RemoveRelationship(RelationshipElement* relationship)
+        {
+        }
+        public virtual EndPoint GetEndPoint(const Connector& connector) const
+        {
+            return EndPoint();
+        }
+        public virtual List<EndPoint> GetEndPoints(EndPointKind endPointKind, Tool* tool) const
+        {
+            return List<EndPoint>();
+        }
+        [nodiscard]
+        public virtual Result<bool> AddActions(Diagram* diagram, int elementIndex, ContextMenu* contextMenu) const
+        {
+            MenuItem* deleteMenuItem = new MenuItem("Delete");
+            auto result = contextMenu->AddMenuItem(deleteMenuItem);
+            if (result.Error()) return result;
+            //contextMenu->AddAction(new DeleteDiagramElementAction(diagram, elementIndex, deleteMenuItem)); todo
+            return Result<bool>(true);
+        }
+        public virtual bool IntersectsWith(const RectF& rect) const
+        {
+            return bounds.IntersectsWith(rect);
+        }
+        public virtual bool Contains(const PointF& location) const
+        {
+            return bounds.Contains(location);
+        }
+        public abstract DiagramElement* Clone();
+        public abstract System.Xml.Element* ToXml() const;
+        [nodiscard]
+        public virtual Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            name = xmlElement->GetAttribute("name");
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("bounds", xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            if (nodeSet->Count() == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* boundsXmlElement = cast<System.Xml.Element*>(node);
+                    auto result = System.ParseFloat(boundsXmlElement->GetAttribute("x"));
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    float x = result.Value();
+                    result = System.ParseFloat(boundsXmlElement->GetAttribute("y"));
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    float y = result.Value();
+                    result = System.ParseFloat(boundsXmlElement->GetAttribute("w"));
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    float w = result.Value();
+                    result = System.ParseFloat(boundsXmlElement->GetAttribute("h"));
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    float h = result.Value();
+                    bounds = RectF(PointF(x, y), SizeF(w, h));
+                }
+                else
+                {
+                    int errorId = AllocateError("single 'bounds' element expected");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("single 'bounds' element expected");
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public void SetName(System.Xml.Element* xmlElement)
+        {
+            xmlElement->SetAttribute("name", name);
+        }
+        public System.Xml.Element* BoundsXmlElement() const
+        {
+            System.Xml.Element* boundsXmlElement = System.Xml.MakeElement("bounds");
+            boundsXmlElement->SetAttribute("x", System.ToString(bounds.location.x));
+            boundsXmlElement->SetAttribute("y", System.ToString(bounds.location.y));
+            boundsXmlElement->SetAttribute("w", System.ToString(bounds.size.w));
+            boundsXmlElement->SetAttribute("h", System.ToString(bounds.size.h));
+            return boundsXmlElement;
+        }
+        private DiagramElementKind kind;
+        private DiagramElementFlags flags;
+        private RectF bounds;
+        private string name;
+        private Diagram* diagram;
+    }
+}

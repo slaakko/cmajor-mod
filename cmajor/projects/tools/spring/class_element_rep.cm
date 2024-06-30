@@ -1,0 +1,33 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class ClassElementRep
+    {
+        public ClassElementRep(ClassElement* classElement_) : classElement(classElement_)
+        {
+        }
+        public default virtual ~ClassElementRep();
+        private ClassElement* classElement;
+    }
+
+    class ConcreteClassElement : ClassElementRep
+    {
+        public ConcreteClassElement(ClassElement* classElement_) : base(classElement_)
+        {
+        }
+    }
+
+    class AbstractClassElement : ClassElementRep
+    {
+        public AbstractClassElement(ClassElement* classElement_) : base(classElement_)
+        {
+        }
+    }
+}

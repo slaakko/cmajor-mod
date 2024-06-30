@@ -1,0 +1,13 @@
+// calc.parser:
+
+using calc.token;
+
+parser calc.parser
+{
+    // ...
+
+    additive_op : Operator
+        ::= PLUS{ return Operator.plus; }
+        |   MINUS{ return Operator.minus; }
+        ;
+}

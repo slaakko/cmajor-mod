@@ -1,0 +1,24 @@
+// calc.parser:
+
+using calc.token;
+
+parser calc.parser
+{
+    // ...
+
+    unary_op : Operator
+        ::= PLUS { return Operator.plus; }
+        |   MINUS { return Operator.minus; }
+        ;
+
+    unary_expr : Node*
+        ::= 
+        (   unary_op:op unary_expr:expr{ return new UnaryExprNode(expr, op); }
+        |   primary_expr:primary{ return primary; }
+        )
+        ;
+
+    primary_expr : Node*
+        ::= empty{ return null; }
+        ;
+}

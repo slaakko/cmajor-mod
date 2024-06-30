@@ -1,0 +1,66 @@
+<layout>
+ <diagramPadding bottom="5" left="5" right="5" top="5"/>
+ <selectionColor value="64.96.156.210"/>
+ <abstractClass frameWidth="0.264583325386047">
+  <caption>
+   <keywordFont family="Arial" size="9" style="regular"/>
+   <nameFont family="Arial" size="9" style="bold.italic"/>
+  </caption>
+  <padding bottom="1.5" left="1.5" right="1.5" top="1.5"/>
+  <textColor value="255.0.0.0"/>
+  <frameColor value="255.0.0.0"/>
+ </abstractClass>
+ <concreteClass frameWidth="0.264583325386047">
+  <caption>
+   <keywordFont family="Arial" size="9" style="regular"/>
+   <nameFont family="Arial" size="9" style="bold"/>
+  </caption>
+  <padding bottom="1.5" left="1.5" right="1.5" top="1.5"/>
+  <textColor value="255.0.0.0"/>
+  <frameColor value="255.0.0.0"/>
+ </concreteClass>
+ <object frameRoundingRadius="3" frameWidth="0.264583325386047">
+  <caption>
+   <keywordFont family="Arial" size="9" style="regular"/>
+   <nameFont family="Arial" size="9" style="bold"/>
+  </caption>
+  <padding bottom="1.5" left="1.5" right="1.5" top="1.5"/>
+  <textColor value="255.0.0.0"/>
+  <frameColor value="255.0.0.0"/>
+ </object>
+ <note frameWidth="0.264583325386047">
+  <padding bottom="1.5" left="1.5" right="1.5" top="1.5"/>
+  <font family="Arial" size="9" style="regular"/>
+  <textColor value="255.0.0.0"/>
+  <frameColor value="255.0.0.0"/>
+ </note>
+ <text>
+  <padding bottom="0.5" left="0.5" right="0.5" top="0.5"/>
+  <textColor value="255.0.0.0"/>
+  <font family="Arial" size="9" style="regular"/>
+ </text>
+ <attribute>
+  <textColor value="255.0.0.0"/>
+  <font family="Arial" size="9" style="regular"/>
+ </attribute>
+ <abstractOperation>
+  <textColor value="255.0.0.0"/>
+  <font family="Arial" size="9" style="italic"/>
+ </abstractOperation>
+ <concreteOperation>
+  <textColor value="255.0.0.0"/>
+  <font family="Arial" size="9" style="regular"/>
+ </concreteOperation>
+ <resizeHandle lineWidth="0.264583325386047" resizeHandleWidth="1">
+  <lineColor value="255.0.0.0"/>
+  <insideColor value="255.255.255.255"/>
+ </resizeHandle>
+ <relationship aggregateSymbolHeight="2" aggregateSymbolWidth="3" cardinalitySymbolRadius="1" compositeSymbolHeight="2" compositeSymbolWidth="3" inheritanceArrowWidth="5" lineArrowHeight="2" lineArrowWidth="3" nullReferenceSymbolHeight="1" nullReferenceSymbolWidth="3" relationshipSymbolRadius="0.75" selectedLineWidth="4">
+  <padding bottom="0.5" left="0.5" right="0.5" top="0.5"/>
+  <font family="Arial" size="9" style="regular"/>
+  <lineColor value="255.0.0.0"/>
+  <textColor value="255.0.0.0"/>
+  <arrowColor value="255.0.0.0"/>
+  <compositeSourceColor value="255.0.0.0"/>
+ </relationship>
+</layout>

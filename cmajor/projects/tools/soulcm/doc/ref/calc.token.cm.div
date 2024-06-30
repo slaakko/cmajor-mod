@@ -1,0 +1,43 @@
+<div class="cm">
+  <span xml:space="preserve"><span class="comment">// calc.token.cm:
+</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="comment">// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/doc/ref/calc.token' using SoulCm lexer generator scmlg version 5.0.0
+</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">namespace</span>&nbsp;<span class="id">calc</span><span class="other">.</span><span class="id">token</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">tokenSetID</span>&nbsp;<span class="other">=</span>&nbsp;<span class="number">231186939</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">PLUS</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">(</span><span class="id">tokenSetID</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="number">32</span><span class="other">)</span>&nbsp;<span class="other">|</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">MINUS</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">(</span><span class="id">tokenSetID</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="number">32</span><span class="other">)</span>&nbsp;<span class="other">|</span>&nbsp;<span class="number">2</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">MUL</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">(</span><span class="id">tokenSetID</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="number">32</span><span class="other">)</span>&nbsp;<span class="other">|</span>&nbsp;<span class="number">3</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">DIV</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">(</span><span class="id">tokenSetID</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="number">32</span><span class="other">)</span>&nbsp;<span class="other">|</span>&nbsp;<span class="number">4</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">NUMBER</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">(</span><span class="id">tokenSetID</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="number">32</span><span class="other">)</span>&nbsp;<span class="other">|</span>&nbsp;<span class="number">5</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">LPAREN</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">(</span><span class="id">tokenSetID</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="number">32</span><span class="other">)</span>&nbsp;<span class="other">|</span>&nbsp;<span class="number">6</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;<span class="id">RPAREN</span>&nbsp;<span class="other">=</span>&nbsp;<span class="other">(</span><span class="id">tokenSetID</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="number">32</span><span class="other">)</span>&nbsp;<span class="other">|</span>&nbsp;<span class="number">7</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span>&nbsp;<span class="comment">// calc.token
+</span></span>
+  <br/>
+</div>

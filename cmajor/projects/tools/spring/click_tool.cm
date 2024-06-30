@@ -1,0 +1,40 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    abstract class ClickTool : Tool
+    {
+        public ClickTool(ToolKind kind_) : base(kind_)
+        {
+        }
+    }
+
+    class ClassTool : ClickTool
+    {
+        public ClassTool() : base(ToolKind.classTool)
+        {
+        }
+    }
+
+    class ObjectTool : ClickTool
+    {
+        public ObjectTool() : base(ToolKind.objectTool)
+        {
+        }
+    }
+
+    class NoteTool : ClickTool
+    {
+        public NoteTool() : base(ToolKind.noteTool)
+        {
+        }
+    }
+}
+
+

@@ -1,0 +1,10 @@
+// calc.cmp:
+
+project calc;
+source <ast.cm>;
+source <calc.token.cm>;
+source <calc.lexer.cm>;
+source <calc.parser.cm>;
+source <calc_rules.cm>;
+source <main.cm>;
+rc <calc.lexer.classmap.rc>;

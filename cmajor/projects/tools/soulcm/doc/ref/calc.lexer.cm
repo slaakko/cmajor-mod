@@ -1,0 +1,635 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/soulcm/doc/ref/calc.lexer' using SoulCm lexer generator scmlg version 5.0.0
+
+using System;
+using System.Collections;
+using calc.token;
+
+namespace calc
+{
+    public class lexer : System.Lex.Lexer
+    {
+        public lexer(const uchar* start_, const uchar* end_, const string& fileName_) : 
+            base(start_, end_, fileName_, "calc.lexer.classmap")
+        {
+            auto classMapResult = System.Lex.GetClassMap(ClassMapName());
+            if (classMapResult.Error())
+            {
+                SetErrorId(classMapResult.GetErrorId());
+                return;
+            }
+            SetClassMap(classMapResult.Value());
+            SetKeywordMap(GetKeywordMap());
+        }
+        public override int NextState(int state, uchar c)
+        {
+            int cls = GetClass(c);
+            switch (state)
+            {
+                case 0:
+                {
+                    switch (cls)
+                    {
+                        case 2:
+                        case 3:
+                        case 4:
+                        case 5:
+                        {
+                            return 1;
+                        }
+                        case 6:
+                        {
+                            return 2;
+                        }
+                        case 9:
+                        {
+                            return 3;
+                        }
+                        case 10:
+                        {
+                            return 4;
+                        }
+                        case 11:
+                        {
+                            return 5;
+                        }
+                        case 12:
+                        {
+                            return 6;
+                        }
+                        case 13:
+                        {
+                            return 7;
+                        }
+                        case 14:
+                        {
+                            return 8;
+                        }
+                        case 15:
+                        {
+                            return 9;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 9:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(7);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 8:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(6);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 7:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(5);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 6:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(4);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 5:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(1);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 5;
+                        }
+                        case 6:
+                        {
+                            return 10;
+                        }
+                        case 7:
+                        {
+                            return 11;
+                        }
+                        case 8:
+                        {
+                            return 12;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 12:
+                {
+                    switch (cls)
+                    {
+                        case 9:
+                        {
+                            return 13;
+                        }
+                        case 10:
+                        {
+                            return 14;
+                        }
+                        case 11:
+                        {
+                            return 15;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 15:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(1);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 15;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 14:
+                {
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 15;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 13:
+                {
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 15;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 11:
+                {
+                    switch (cls)
+                    {
+                        case 9:
+                        {
+                            return 13;
+                        }
+                        case 10:
+                        {
+                            return 14;
+                        }
+                        case 11:
+                        {
+                            return 15;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 10:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(1);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 7:
+                        {
+                            return 16;
+                        }
+                        case 8:
+                        {
+                            return 17;
+                        }
+                        case 11:
+                        {
+                            return 18;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 18:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(1);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 7:
+                        {
+                            return 16;
+                        }
+                        case 8:
+                        {
+                            return 17;
+                        }
+                        case 11:
+                        {
+                            return 18;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    switch (cls)
+                    {
+                        case 9:
+                        {
+                            return 19;
+                        }
+                        case 10:
+                        {
+                            return 20;
+                        }
+                        case 11:
+                        {
+                            return 21;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 21:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(1);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 21;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 20:
+                {
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 21;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 19:
+                {
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 21;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 16:
+                {
+                    switch (cls)
+                    {
+                        case 9:
+                        {
+                            return 19;
+                        }
+                        case 10:
+                        {
+                            return 20;
+                        }
+                        case 11:
+                        {
+                            return 21;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 4:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(3);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 3:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(2);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+                case 2:
+                {
+                    switch (cls)
+                    {
+                        case 11:
+                        {
+                            return 18;
+                        }
+                        default:
+                        {
+                            return -1;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    auto prevMatch = token.match;
+                    token.match = lexeme;
+                    long tokenId = GetTokenId(0);
+                    if (tokenId == System.Lex.CONTINUE_TOKEN)
+                    {
+                        token.id = System.Lex.CONTINUE_TOKEN;
+                        return -1;
+                    }
+                    else if (tokenId != System.Lex.INVALID_TOKEN)
+                    {
+                        token.id = tokenId;
+                    }
+                    else
+                    {
+                        token.match = prevMatch;
+                    }
+                    return -1;
+                }
+            }
+            return -1;
+        }
+        public long GetTokenId(int ruleIndex)
+        {
+            switch (ruleIndex)
+            {
+                case 0:
+                {
+                    Retract();
+                    break;
+                }
+                case 1:
+                {
+                    Retract();
+                    return NUMBER;
+                    break;
+                }
+                case 2:
+                {
+                    Retract();
+                    return PLUS;
+                    break;
+                }
+                case 3:
+                {
+                    Retract();
+                    return MINUS;
+                    break;
+                }
+                case 4:
+                {
+                    Retract();
+                    return MUL;
+                    break;
+                }
+                case 5:
+                {
+                    Retract();
+                    return DIV;
+                    break;
+                }
+                case 6:
+                {
+                    Retract();
+                    return LPAREN;
+                    break;
+                }
+                case 7:
+                {
+                    Retract();
+                    return RPAREN;
+                    break;
+                }
+            }
+            return System.Lex.CONTINUE_TOKEN;
+        }
+        public lexer_Variables vars;
+    }
+
+    public class lexer_Variables
+    {
+        public lexer_Variables()
+        {
+        }
+    }
+
+} // calc

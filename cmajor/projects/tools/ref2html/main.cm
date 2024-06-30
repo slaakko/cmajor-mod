@@ -1,0 +1,172 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+public Result<bool> ProcessFile(const string& referenceFilePath, System.Lex.FileMap& fileMap, bool verbose)
+{
+    if (verbose)
+    {
+        Console.Out() << "> " << referenceFilePath << endl();
+    }
+    string root = System.IO.Path.GetDirectoryName(referenceFilePath);
+    Result<UniquePtr<System.Xml.Document>> docResult = System.Xml.ParseXmlDocument(referenceFilePath, fileMap);
+    if (docResult.Error())
+    {
+        return Result<bool>(ErrorId(docResult.GetErrorId()));
+    }
+    System.Xml.Document* doc = docResult.Value().Get();
+    Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("//ref", doc);
+    if (nodeSetResult.Error())
+    {
+        return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+    }
+    System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+    int n = nodeSet->Count();
+    for (int i = 0; i < n; ++i)
+    {
+        System.Xml.Node* node = nodeSet->GetNode(i);
+        if (node->IsElementNode())
+        {
+            System.Xml.Element* refElement = cast<System.Xml.Element*>(node);
+            System.Xml.ParentNode* refParent = refElement->Parent();
+            if (refParent != null)
+            {
+                string fileAttr = refElement->GetAttribute("file");
+                if (!fileAttr.IsEmpty())
+                {
+                    auto referenceFilePathResult = System.IO.GetFullPath(System.IO.Path.Combine(root, fileAttr));
+                    if (referenceFilePathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(referenceFilePathResult.GetErrorId()));
+                    }
+                    const string& referenceFilePath = referenceFilePathResult.Value();
+                    Result<UniquePtr<System.Xml.Document>> referenceDocResult = System.Xml.ParseXmlDocument(referenceFilePath, fileMap);
+                    if (referenceDocResult.Error())
+                    {
+                        return Result<bool>(ErrorId(referenceDocResult.GetErrorId()));
+                    }
+                    System.Xml.Document* referenceDoc = referenceDocResult.Value().Get();
+                    UniquePtr<System.Xml.Node> rootNode = referenceDoc->RemoveChild(referenceDoc->DocumentElement());
+                    refParent->ReplaceChild(rootNode.Release(), refElement);
+                }
+            }
+        }
+    }
+    string htmlFilePath = System.IO.Path.ChangeExtension(referenceFilePath, ".html");
+    Result<System.IO.StreamWriter> fileResult = System.IO.File.CreateText(htmlFilePath);
+    if (fileResult.Error())
+    {
+        return Result<bool>(ErrorId(fileResult.GetErrorId()));
+    }
+    System.IO.StreamWriter& htmlFile = fileResult.Value();
+    System.Text.CodeFormatter htmlFormatter(htmlFile);
+    htmlFormatter.SetIndentSize(2);
+    auto result = htmlFormatter.WriteLine("<!DOCTYPE html>");
+    if (result.Error()) return result;
+    result = htmlFormatter.WriteLine();
+    if (result.Error()) return result;
+    result = doc->Write(htmlFormatter);
+    if (result.Error()) return result;
+    if (verbose)
+    {
+        Console.Out() << "==> " << htmlFilePath << endl();
+    }
+    return Result<bool>(true);
+}
+
+public string Version()
+{
+    return "5.0.0";
+}
+
+public void PrintHelp()
+{
+    Console.Out() << "Reference file to HTML converter version " << Version() << endl();
+    Console.Out() << "Replaces each <ref file=\"FILEPATH\"/> element in the reference file FILE.ref " <<
+        "with the contents of FILEPATH and then writes the reference file as FILE.html." << endl();
+    Console.Out() << "Usage: ref2html [options] { FILE.ref }" << endl();
+    Console.Out() << "Options:" << endl();
+    Console.Out() << "--help | -h" << endl();
+    Console.Out() << "    Print help and exit." << endl();
+    Console.Out() << "--verbose | -v" << endl();
+    Console.Out() << "    Be verbose." << endl();
+}
+
+int main(int argc, const char** argv)
+{
+    bool verbose = false;
+    System.Lex.FileMap fileMap;
+    List<string> files;
+    for (int i = 1; i < argc; ++i)
+    {
+        string arg = argv[i];
+        if (arg.StartsWith("--"))
+        {
+            if (arg == "--help")
+            {
+                PrintHelp();
+                return 0;
+            }
+            else if (arg == "--verbose")
+            {
+                verbose = true;
+            }
+            else
+            {
+                Console.Error() << "unknonwn option '" << arg << "'" << endl();
+                return 1;
+            }
+        }
+        else if (arg.StartsWith("-"))
+        {
+            string options = arg.Substring(1);
+            for (char o : options)
+            {
+                switch (o)
+                {
+                    case 'h':
+                    {
+                        PrintHelp();
+                        return 0;
+                    }
+                    case 'v':
+                    {
+                        verbose = true;
+                        break;
+                    }
+                    default:
+                    {
+                        Console.Error() << "unknonwn option '-" << string(o) << "'" << endl();
+                        return 1;
+                    }
+                }
+            }
+        }
+        else
+        {
+            auto pathResult = System.IO.GetFullPath(arg);
+            if (pathResult.Error())
+            {
+                Console.Error() << pathResult.GetErrorMessage() << endl();
+                return 1;
+            }
+            string filePath = Rvalue(pathResult.Value());
+            files.Add(Rvalue(filePath));
+        }
+    }
+    for (const string& file : files)
+    {
+        auto result = ProcessFile(file, fileMap, verbose);
+        if (result.Error())
+        {
+            Console.Error() << result.GetErrorMessage() << endl();
+            return 1;
+        }
+    }
+    return 0;
+}
+

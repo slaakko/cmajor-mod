@@ -1,0 +1,1863 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class PaddingF
+    {
+        public PaddingF() : left(0), top(0), right(0), bottom(0)
+        {
+        }
+        public PaddingF(float left_, float top_, float right_, float bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
+        {
+        }
+        public float Vertical() const { return top + bottom; }
+        public float Horizontal() const { return left + right; }
+        public float left;
+        public float top;
+        public float right;
+        public float bottom;
+    }
+
+    string DefaultKeywordFontFamily()
+    {
+        return "Arial";
+    }
+
+    string DefaultCaptionFontFamily()
+    {
+        return "Arial";
+    }
+
+    string DefaultOperationFontFamily()
+    {
+        return "Arial";
+    }
+
+    string DefaultAttributeFontFamily()
+    {
+        return "Arial";
+    }
+
+    string DefaultRelationshipFontFamily()
+    {
+        return "Arial";
+    }
+
+    string DefaultNoteFontFamily()
+    {
+        return "Arial";
+    }
+
+    string DefaultTextFontFamily()
+    {
+        return "Arial";
+    }
+
+    float DefaultFontSize()
+    {
+        return 9.0f;
+    }
+
+    FontStyle DefaultKeywordFontStyle()
+    {
+        return FontStyle.regular;
+    }
+
+    FontStyle DefaultAbstractClassCaptionFontStyle()
+    {
+        return FontStyle.boldItalic;
+    }
+
+    FontStyle DefaultConcreteClassCaptionFontStyle()
+    {
+        return FontStyle.bold;
+    }
+
+    FontStyle DefaultConcreteOperationFontStyle()
+    {
+        return FontStyle.regular;
+    }
+
+    FontStyle DefaultAbstractOperationFontStyle()
+    {
+        return FontStyle.italic;
+    }
+
+    FontStyle DefaultObjectCaptionFontStyle()
+    {
+        return FontStyle.bold;
+    }
+
+    FontStyle DefaultAttributeFontStyle()
+    {
+        return FontStyle.regular;
+    }
+
+    FontStyle DefaultNoteFontStyle()
+    {
+        return FontStyle.regular;
+    }
+
+    FontStyle DefaultTextFontStyle()
+    {
+        return FontStyle.regular;
+    }
+
+    FontStyle DefaultDefaultRelationshipFontStyle()
+    {
+        return FontStyle.regular;
+    }
+
+    float DefaultFrameWidth(Graphics* graphics)
+    {
+        return PixelsToMM(1, Max(graphics->GetDpiX(), graphics->GetDpiY()));
+    }
+
+    float DefaultLineWidth(Graphics* graphics)
+    {
+        return PixelsToMM(1, Max(graphics->GetDpiX(), graphics->GetDpiY()));
+    }
+
+    float DefaultFrameRoundingRadius()
+    {
+        return 3.0f;
+    }
+
+    PaddingF DefaultDiagramPadding()
+    {
+        return PaddingF(5.0f, 5.0f, 5.0f, 5.0f);
+    }
+
+    PaddingF DefaultClassPadding()
+    {
+        return PaddingF(1.5f, 1.5f, 1.5f, 1.5f);
+    }
+
+    PaddingF DefaultObjectPadding()
+    {
+        return PaddingF(1.5f, 1.5f, 1.5f, 1.5f);
+    }
+
+    PaddingF DefaultNotePadding()
+    {
+        return PaddingF(1.5f, 1.5f, 1.5f, 1.5f);
+    }
+
+    PaddingF DefaultRelationshipSymbolPadding()
+    {
+        return PaddingF(0.5f, 0.5f, 0.5f, 0.5f);
+    }
+
+    PaddingF DefaultTextPadding()
+    {
+        return PaddingF(0.5f, 0.5f, 0.5f, 0.5f);
+    }
+
+    float DefaultInheritanceArrowWidth()
+    {
+        return 5.0f;
+    }
+
+    float DefaultCompositeSymbolWidth()
+    {
+        return 3.0f;
+    }
+
+    float DefaultCompositeSymbolHeight()
+    {
+        return 2.0f;
+    }
+
+    float DefaultAggregateSymbolWidth()
+    {
+        return 3.0f;
+    }
+
+    float DefaultAggregateSymbolHeight()
+    {
+        return 2.0f;
+    }
+
+    float DefaultLineArrowWidth()
+    {
+        return 3.0f;
+    }
+
+    float DefaultLineArrowHeight()
+    {
+        return 2.0f;
+    }
+
+    float DefaultCardinalitySymbolRadius()
+    {
+        return 1.0f;
+    }
+
+    float DefaultRelationshipSymbolRadius()
+    {
+        return 0.75f;
+    }
+
+    float DefaultSelectedLineWidth()
+    {
+        return 4.0f;
+    }
+
+    float DefaultNullReferenceSymbolWidth()
+    {
+        return 3.0f;
+    }
+
+    float DefaultNullReferenceSymbolHeight()
+    {
+        return 1.0f;
+    }
+
+    System.Windows.Color DefaultTextColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    System.Windows.Color DefaultFrameColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    System.Windows.Color DefaultLineColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    System.Windows.Color DefaultSelectionColor()
+    {
+        return System.Windows.Color(64u, 96u, 156u, 210u);
+    }
+
+    System.Windows.Color DefaultArrowColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    System.Windows.Color DefaultCompositeSourceColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    float DefaultResizeHandleWidth()
+    {
+        return 1.0f;
+    }
+
+    System.Windows.Color DefaultResizeHandleLineColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    System.Windows.Color DefaultResizeHandleInsideColor()
+    {
+        return System.Windows.Color.White();
+    }
+
+    Result<string> SpringDirectory()
+    {
+        string cmajorRoot = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (cmajorRoot.IsEmpty())
+        {
+            int errorId = AllocateError("CMAJOR_ROOT environment variable not set (set it to /path/to/cmajor directory)");
+            return Result<string>(ErrorId(errorId));
+        }
+        auto result = System.IO.GetFullPath(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(cmajorRoot, "projects"), "tools"), "spring"));
+        if (result.Error()) return result;
+        return Result<string>(result.Value());
+    }
+
+    Result<string> LayoutDirectory()
+    {
+        auto result = SpringDirectory();
+        if (result.Error()) return result;
+        return Result<string>(System.IO.Path.Combine(result.Value(), "layout"));
+    }
+
+    Result<string> DiagramDirectory()
+    {
+        auto result = SpringDirectory();
+        if (result.Error()) return result;
+        return Result<string>(System.IO.Path.Combine(result.Value(), "diagrams"));
+    }
+
+    abstract class LayoutElement
+    {
+        public LayoutElement(Layout* layout_, const string& name_) : layout(layout_), name(name_)
+        {
+        }
+        public default virtual ~LayoutElement();
+        public inline Layout* GetLayout() const
+        {
+            return layout;
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public abstract System.Xml.Element* ToXml() const;
+        public abstract Result<bool> FromXml(System.Xml.Element* xmlElement);
+        private Layout* layout;
+        private string name;
+    }
+
+    class ColorElement : LayoutElement
+    {
+        public ColorElement(Layout* layout_, const string& name_, const System.Windows.Color& color_) : base(layout_, name_), color(color_), brush(null)
+        {
+        }
+        public const System.Windows.Color& GetColor() const
+        {
+            return color;
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->SetAttribute("value", color.ToString());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    string attributeValue = element->GetAttribute("value");
+                    if (!attributeValue.IsEmpty())
+                    {
+                        auto colorResult = ParseColor(attributeValue);
+                        if (colorResult.Error())
+                        {
+                            return Result<bool>(ErrorId(colorResult.GetErrorId()));
+                        }
+                        color = colorResult.Value();
+                    }
+                    else
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'value' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public Brush* GetBrush()
+        {
+            if (brush == null)
+            {
+                brush = GetLayout()->GetOrInsertBrush(color);
+            }
+            return brush;
+        }
+        private System.Windows.Color color;
+        private Brush* brush;
+    }
+
+    class FontElement : LayoutElement
+    {
+        public FontElement(Layout* layout_, const string& name_, const string& family_, float size_, FontStyle style_) :
+            base(layout_, name_), family(family_), size(size_), style(style_), font(null)
+        {
+        }
+        public inline const string& Family() const
+        {
+            return family;
+        }
+        public inline float Size() const
+        {
+            return size;
+        }
+        public inline FontStyle Style() const
+        {
+            return style;
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->SetAttribute("family", family);
+            xmlElement->SetAttribute("size", System.ToString(size));
+            xmlElement->SetAttribute("style", System.Windows.ToString(style));
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    family = element->GetAttribute("family");
+                    if (family.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'family' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    string sizeStr = element->GetAttribute("size");
+                    if (sizeStr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'size' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto sizeResult = ParseFloat(sizeStr);
+                    if (sizeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(sizeResult.GetErrorId()));
+                    }
+                    size = sizeResult.Value();
+                    string styleStr = element->GetAttribute("style");
+                    if (styleStr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'style' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    style = ParseFontStyle(styleStr);
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+
+        public Result<Font*> GetFont()
+        {
+            if (font == null)
+            {
+                auto fontResult = GetLayout()->GetOrInsertFont(family, size, style);
+                if (fontResult.Error()) return fontResult;
+                font = fontResult.Value();
+            }
+            return Result<Font*>(font);
+        }
+        private string family;
+        private float size;
+        private FontStyle style;
+        private Font* font;
+    }
+
+    class PaddingElement : LayoutElement
+    {
+        public PaddingElement(Layout* layout_, const string& name_, const PaddingF& padding_) : base(layout_, name_), padding(padding_)
+        {
+        }
+        public inline const PaddingF& GetPadding() const
+        {
+            return padding;
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->SetAttribute("left", System.ToString(padding.left));
+            xmlElement->SetAttribute("top", System.ToString(padding.top));
+            xmlElement->SetAttribute("right", System.ToString(padding.right));
+            xmlElement->SetAttribute("bottom", System.ToString(padding.bottom));
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    string leftAttr = element->GetAttribute("left");
+                    if (leftAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'left' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto result = ParseFloat(leftAttr);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    float left = result.Value();
+                    string topAttr = element->GetAttribute("top");
+                    if (topAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'top' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    result = ParseFloat(topAttr);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    float top = result.Value();
+                    string rightAttr = element->GetAttribute("right");
+                    if (rightAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'right' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    result = ParseFloat(rightAttr);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    float right = result.Value();
+                    string bottomAttr = element->GetAttribute("bottom");
+                    if (bottomAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'bottom' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    result = ParseFloat(bottomAttr);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    float bottom = result.Value();
+                    padding = PaddingF(left, top, right, bottom);
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        private PaddingF padding;
+    }
+
+    class CaptionElement : LayoutElement
+    {
+        public CaptionElement(Layout* layout_, FontElement* keywordFontElement_, FontElement* nameFontElement_) :
+            base(layout_, "caption"), keywordFontElement(keywordFontElement_), nameFontElement(nameFontElement_)
+        {
+        }
+        public FontElement* GetKeywordFontElement() const
+        {
+            return keywordFontElement.Get();
+        }
+        public FontElement* GetNameFontElement() const
+        {
+            return nameFontElement.Get();
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->AppendChild(keywordFontElement->ToXml());
+            xmlElement->AppendChild(nameFontElement->ToXml());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    auto result = keywordFontElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = nameFontElement->FromXml(element);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        private UniquePtr<FontElement> keywordFontElement;
+        private UniquePtr<FontElement> nameFontElement;
+    }
+
+    abstract class ClassLayoutElement : LayoutElement
+    {
+        public ClassLayoutElement(Layout* layout_, const string& name_,
+            CaptionElement* captionElement_, PaddingElement* paddingElement_, ColorElement* textColorElement_, ColorElement* frameColorElement_, float frameWidth_) :
+            base(layout_, name_), captionElement(captionElement_), paddingElement(paddingElement_), textColorElement(textColorElement_),
+            frameColorElement(frameColorElement_), frameWidth(frameWidth_), framePen(null)
+        {
+        }
+        public CaptionElement* GetCaptionElement() const { return captionElement.Get(); }
+        public PaddingElement* GetPaddingElement() const { return paddingElement.Get(); }
+        public ColorElement* GetTextColorElement() const { return textColorElement.Get(); }
+        public ColorElement* GetFrameColorElement() const { return frameColorElement.Get(); }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->AppendChild(captionElement->ToXml());
+            xmlElement->AppendChild(paddingElement->ToXml());
+            xmlElement->AppendChild(textColorElement->ToXml());
+            xmlElement->AppendChild(frameColorElement->ToXml());
+            xmlElement->SetAttribute("frameWidth", System.ToString(frameWidth));
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    auto result = captionElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = paddingElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = textColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = frameColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    string frameWidthAttr = element->GetAttribute("frameWidth");
+                    if (frameWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'frameWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto frameWidthResult = System.ParseFloat(frameWidthAttr);
+                    if (frameWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(frameWidthResult.GetErrorId()));
+                    }
+                    frameWidth = frameWidthResult.Value();
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        public Result<Pen*> FramePen()
+        {
+            if (framePen == null)
+            {
+                auto penResult = GetLayout()->GetOrInsertPen(frameColorElement->GetColor(), frameWidth, DashStyle.solid);
+                if (penResult.Error()) return penResult;
+                framePen = penResult.Value();
+            }
+            return Result<Pen*>(framePen);
+        }
+        private UniquePtr<CaptionElement> captionElement;
+        private UniquePtr<PaddingElement> paddingElement;
+        private UniquePtr<ColorElement> textColorElement;
+        private UniquePtr<ColorElement> frameColorElement;
+        private float frameWidth;
+        private Pen* framePen;
+    }
+
+    class AbstractClassLayoutElement : ClassLayoutElement
+    {
+        public AbstractClassLayoutElement(Layout* layout_) : base(layout_, "abstractClass",
+            new CaptionElement(layout_,
+                new FontElement(layout_, "keywordFont", DefaultKeywordFontFamily(), DefaultFontSize(), DefaultKeywordFontStyle()),
+                new FontElement(layout_, "nameFont", DefaultCaptionFontFamily(), DefaultFontSize(), DefaultAbstractClassCaptionFontStyle())),
+            new PaddingElement(layout_, "padding", DefaultClassPadding()),
+            new ColorElement(layout_, "textColor", DefaultTextColor()),
+            new ColorElement(layout_, "frameColor", DefaultFrameColor()),
+            DefaultFrameWidth(layout_->GetGraphics()))
+        {
+        }
+    }
+
+    class ConcreteClassLayoutElement : ClassLayoutElement
+    {
+        public ConcreteClassLayoutElement(Layout* layout_) : base(layout_, "concreteClass",
+            new CaptionElement(layout_,
+                new FontElement(layout_, "keywordFont", DefaultKeywordFontFamily(), DefaultFontSize(), DefaultKeywordFontStyle()),
+                new FontElement(layout_, "nameFont", DefaultCaptionFontFamily(), DefaultFontSize(), DefaultConcreteClassCaptionFontStyle())),
+            new PaddingElement(layout_, "padding", DefaultClassPadding()),
+            new ColorElement(layout_, "textColor", DefaultTextColor()),
+            new ColorElement(layout_, "frameColor", DefaultFrameColor()),
+            DefaultFrameWidth(layout_->GetGraphics()))
+        {
+        }
+    }
+
+    class ObjectLayoutElement : LayoutElement
+    {
+        public ObjectLayoutElement(Layout* layout_) : base(layout_, "object"),
+            captionElement(new CaptionElement(layout_,
+                new FontElement(layout_, "keywordFont", DefaultKeywordFontFamily(), DefaultFontSize(), DefaultKeywordFontStyle()),
+                new FontElement(layout_, "nameFont", DefaultCaptionFontFamily(), DefaultFontSize(), DefaultObjectCaptionFontStyle()))),
+            paddingElement(new PaddingElement(layout_, "padding", DefaultObjectPadding())),
+            textColorElement(new ColorElement(layout_, "textColor", DefaultTextColor())),
+            frameColorElement(new ColorElement(layout_, "frameColor", DefaultFrameColor())),
+            frameWidth(DefaultFrameWidth(layout_->GetGraphics())),
+            frameRoundingRadius(DefaultFrameRoundingRadius()),
+            framePen(null)
+        {
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->AppendChild(captionElement->ToXml());
+            xmlElement->AppendChild(paddingElement->ToXml());
+            xmlElement->AppendChild(textColorElement->ToXml());
+            xmlElement->AppendChild(frameColorElement->ToXml());
+            xmlElement->SetAttribute("frameWidth", System.ToString(frameWidth));
+            xmlElement->SetAttribute("frameRoundingRadius", System.ToString(frameRoundingRadius));
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    auto result = captionElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = paddingElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = textColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = frameColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    string frameWidthAttr = element->GetAttribute("frameWidth");
+                    if (frameWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'frameWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto frameWidthResult = System.ParseFloat(frameWidthAttr);
+                    if (frameWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(frameWidthResult.GetErrorId()));
+                    }
+                    frameWidth = frameWidthResult.Value();
+                    string frameRoundingRadiusAttr = element->GetAttribute("frameRoundingRadius");
+                    if (frameRoundingRadiusAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'frameRoundingRadius' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto frameRoundingRadiusResult = System.ParseFloat(frameRoundingRadiusAttr);
+                    if (frameRoundingRadiusResult.Error())
+                    {
+                        return Result<bool>(ErrorId(frameRoundingRadiusResult.GetErrorId()));
+                    }
+                    frameRoundingRadius = frameRoundingRadiusResult.Value();
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        public Result<Pen*> FramePen()
+        {
+            if (framePen == null)
+            {
+                auto penResult = GetLayout()->GetOrInsertPen(frameColorElement->GetColor(), frameWidth, DashStyle.solid);
+                if (penResult.Error()) return penResult;
+                framePen = penResult.Value();
+            }
+            return Result<Pen*>(framePen);
+        }
+        private UniquePtr<CaptionElement> captionElement;
+        private UniquePtr<PaddingElement> paddingElement;
+        private UniquePtr<ColorElement> textColorElement;
+        private UniquePtr<ColorElement> frameColorElement;
+        private float frameWidth;
+        private float frameRoundingRadius;
+        private Pen* framePen;
+    }
+
+    class NoteLayoutElement : LayoutElement
+    {
+        public NoteLayoutElement(Layout* layout_) : base(layout_, "note"),
+            paddingElement(new PaddingElement(layout_, "padding", DefaultNotePadding())),
+            fontElement(new FontElement(layout_, "font", DefaultNoteFontFamily(), DefaultFontSize(), DefaultNoteFontStyle())),
+            textColorElement(new ColorElement(layout_, "textColor", DefaultTextColor())),
+            frameColorElement(new ColorElement(layout_, "frameColor", DefaultFrameColor())),
+            frameWidth(DefaultFrameWidth(layout_->GetGraphics())),
+            framePen(null)
+        {
+        }
+        public PaddingElement* GetPaddingElement() const
+        {
+            return paddingElement.Get();
+        }
+        public FontElement* GetFontElement() const
+        {
+            return fontElement.Get();
+        }
+        public ColorElement* TextColorElement() const
+        {
+            return textColorElement.Get();
+        }
+        public ColorElement* FrameColorElement() const
+        {
+            return frameColorElement.Get();
+        }
+        public float FrameWidth() const
+        {
+            return frameWidth;
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->AppendChild(paddingElement->ToXml());
+            xmlElement->AppendChild(fontElement->ToXml());
+            xmlElement->AppendChild(textColorElement->ToXml());
+            xmlElement->AppendChild(frameColorElement->ToXml());
+            xmlElement->SetAttribute("frameWidth", System.ToString(frameWidth));
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    auto result = paddingElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = fontElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = textColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = frameColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    string frameWidthAttr = element->GetAttribute("frameWidth");
+                    if (frameWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'frameWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto frameWidthResult = System.ParseFloat(frameWidthAttr);
+                    if (frameWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(frameWidthResult.GetErrorId()));
+                    }
+                    frameWidth = frameWidthResult.Value();
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        public Result<Pen*> FramePen()
+        {
+            if (framePen == null)
+            {
+                auto penResult = GetLayout()->GetOrInsertPen(frameColorElement->GetColor(), frameWidth, DashStyle.solid);
+                if (penResult.Error()) return penResult;
+                framePen = penResult.Value();
+            }
+            return Result<Pen*>(framePen);
+        }
+        private UniquePtr<PaddingElement> paddingElement;
+        private UniquePtr<FontElement> fontElement;
+        private UniquePtr<ColorElement> textColorElement;
+        private UniquePtr<ColorElement> frameColorElement;
+        private float frameWidth;
+        private Pen* framePen;
+    }
+
+    class AttributeLayoutElement : LayoutElement
+    {
+        public AttributeLayoutElement(Layout* layout_) : base(layout_, "attribute"),
+            textColorElement(new ColorElement(layout_, "textColor", DefaultTextColor())),
+            fontElement(new FontElement(layout_, "font", DefaultAttributeFontFamily(), DefaultFontSize(), DefaultAttributeFontStyle()))
+        {
+        }
+        public ColorElement* TextColorElement() const
+        {
+            return textColorElement.Get();
+        }
+        public FontElement* GetFontElement() const
+        {
+            return fontElement.Get();
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->AppendChild(textColorElement->ToXml());
+            xmlElement->AppendChild(fontElement->ToXml());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    auto result = textColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = fontElement->FromXml(element);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        private UniquePtr<ColorElement> textColorElement;
+        private UniquePtr<FontElement> fontElement;
+    }
+
+    abstract class OperationLayoutElement : LayoutElement
+    {
+        public OperationLayoutElement(Layout* layout_, const string& name_, ColorElement* textColorElement_, FontElement* fontElement_) :
+            base(layout_, name_), textColorElement(textColorElement_), fontElement(fontElement_)
+        {
+        }
+        public ColorElement* TextColorElement() const
+        {
+            return textColorElement.Get();
+        }
+        public FontElement* GetFontElement() const
+        {
+            return fontElement.Get();
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->AppendChild(textColorElement->ToXml());
+            xmlElement->AppendChild(fontElement->ToXml());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    auto result = textColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = fontElement->FromXml(element);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        private UniquePtr<ColorElement> textColorElement;
+        private UniquePtr<FontElement> fontElement;
+    }
+
+    class ConcreteOperationLayoutElement : OperationLayoutElement
+    {
+        public ConcreteOperationLayoutElement(Layout* layout_) : base(layout_, "concreteOperation",
+            new ColorElement(layout_, "textColor", DefaultTextColor()),
+            new FontElement(layout_, "font", DefaultOperationFontFamily(), DefaultFontSize(), DefaultConcreteOperationFontStyle()))
+        {
+        }
+    }
+
+    class AbstractOperationLayoutElement : OperationLayoutElement
+    {
+        public AbstractOperationLayoutElement(Layout* layout_) : base(layout_, "abstractOperation",
+            new ColorElement(layout_, "textColor", DefaultTextColor()),
+            new FontElement(layout_, "font", DefaultOperationFontFamily(), DefaultFontSize(), DefaultAbstractOperationFontStyle()))
+        {
+        }
+    }
+
+    class TextLayoutElement : LayoutElement
+    {
+        public TextLayoutElement(Layout* layout_) : base(layout_, "text"),
+            paddingElement(new PaddingElement(layout_, "padding", DefaultTextPadding())),
+            textColorElement(new ColorElement(layout_, "textColor", DefaultTextColor())),
+            fontElement(new FontElement(layout_, "font", DefaultTextFontFamily(), DefaultFontSize(), DefaultTextFontStyle()))
+        {
+        }
+        public PaddingElement* GetPaddingElement() const
+        {
+            return paddingElement.Get();
+        }
+        public ColorElement* TextColorElement() const
+        {
+            return textColorElement.Get();
+        }
+        public FontElement* GetFontElement() const
+        {
+            return fontElement.Get();
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->AppendChild(paddingElement->ToXml());
+            xmlElement->AppendChild(textColorElement->ToXml());
+            xmlElement->AppendChild(fontElement->ToXml());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    auto result = paddingElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = textColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = fontElement->FromXml(element);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        private UniquePtr<PaddingElement> paddingElement;
+        private UniquePtr<ColorElement> textColorElement;
+        private UniquePtr<FontElement> fontElement;
+    }
+
+    class ResizeHandleLayoutElement : LayoutElement
+    {
+        public ResizeHandleLayoutElement(Layout* layout_) : base(layout_, "resizeHandle"),
+            lineWidth(DefaultLineWidth(layout_->GetGraphics())),
+            resizeHandleWidth(DefaultResizeHandleWidth()),
+            lineColorElement(new ColorElement(layout_, "lineColor", DefaultResizeHandleLineColor())),
+            insideColorElement(new ColorElement(layout_, "insideColor", DefaultResizeHandleInsideColor())),
+            linePen(null),
+            insideBrush(null)
+        {
+        }
+        public inline float LineWidth() const
+        {
+            return lineWidth;
+        }
+        public inline float ResizeHandleWidth() const
+        {
+            return resizeHandleWidth;
+        }
+        public ColorElement* LineColorElement() const
+        {
+            return lineColorElement.Get();
+        }
+        public ColorElement* InsideColorElement() const
+        {
+            return insideColorElement.Get();
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->SetAttribute("lineWidth", System.ToString(lineWidth));
+            xmlElement->SetAttribute("resizeHandleWidth", System.ToString(resizeHandleWidth));
+            xmlElement->AppendChild(lineColorElement->ToXml());
+            xmlElement->AppendChild(insideColorElement->ToXml());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    string lineWidthAttr = element->GetAttribute("lineWidth");
+                    if (lineWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'lineWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto lineWidthResult = System.ParseFloat(lineWidthAttr);
+                    if (lineWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(lineWidthResult.GetErrorId()));
+                    }
+                    lineWidth = lineWidthResult.Value();
+                    string resizeHandleWidthAttr = element->GetAttribute("resizeHandleWidth");
+                    if (resizeHandleWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'resizeHandleWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto resizeHandleWidthResult = System.ParseFloat(resizeHandleWidthAttr);
+                    if (resizeHandleWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(resizeHandleWidthResult.GetErrorId()));
+                    }
+                    resizeHandleWidth = resizeHandleWidthResult.Value();
+                    auto result = lineColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = insideColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        public Result<Pen*> LinePen()
+        {
+            if (linePen == null)
+            {
+                auto linePenResult = GetLayout()->GetOrInsertPen(lineColorElement->GetColor(), lineWidth, DashStyle.solid);
+                if (linePenResult.Error()) return linePenResult;
+                linePen = linePenResult.Value();
+            }
+            return Result<Pen*>(linePen);
+        }
+        public Brush* InsideBrush()
+        {
+            if (insideBrush == null)
+            {
+                insideBrush = GetLayout()->GetOrInsertBrush(insideColorElement->GetColor());
+            }
+            return insideBrush;
+        }
+        private float lineWidth;
+        private float resizeHandleWidth;
+        private UniquePtr<ColorElement> lineColorElement;
+        private UniquePtr<ColorElement> insideColorElement;
+        private Pen* linePen;
+        private Brush* insideBrush;
+    }
+
+    class RelationshipLayoutElement : LayoutElement
+    {
+        public RelationshipLayoutElement(Layout* layout_) : base(layout_, "relationship"),
+            inheritanceArrowWidth(DefaultInheritanceArrowWidth()),
+            compositeSymbolWidth(DefaultCompositeSymbolWidth()),
+            compositeSymbolHeight(DefaultCompositeSymbolHeight()),
+            aggregateSymbolWidth(DefaultAggregateSymbolWidth()),
+            aggregateSymbolHeight(DefaultAggregateSymbolHeight()),
+            lineArrowWidth(DefaultLineArrowWidth()),
+            lineArrowHeight(DefaultLineArrowHeight()),
+            cardinalitySymbolRadius(DefaultCardinalitySymbolRadius()),
+            relationshipSymbolRadius(DefaultRelationshipSymbolRadius()),
+            nullReferenceSymbolWidth(DefaultNullReferenceSymbolWidth()),
+            nullReferenceSymbolHeight(DefaultNullReferenceSymbolHeight()),
+            lineWidth(DefaultLineWidth(layout_->GetGraphics())),
+            selectedLineWidth(DefaultSelectedLineWidth()),
+            paddingElement(new PaddingElement(layout_, "padding", DefaultRelationshipSymbolPadding())),
+            fontElement(new FontElement(layout_, "font", DefaultRelationshipFontFamily(), DefaultFontSize(), DefaultDefaultRelationshipFontStyle())),
+            lineColorElement(new ColorElement(layout_, "lineColor", DefaultLineColor())),
+            textColorElement(new ColorElement(layout_, "textColor", DefaultTextColor())),
+            arrowColorElement(new ColorElement(layout_, "arrowColor", DefaultArrowColor())),
+            compositeSourceColorElement(new ColorElement(layout_, "compositeSourceColor", DefaultCompositeSourceColor())),
+            linePen(null),
+            dashLinePen(null),
+            dotLinePen(null),
+            selectedLinePen(null)
+        {
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());
+            xmlElement->SetAttribute("inheritanceArrowWidth", System.ToString(inheritanceArrowWidth));
+            xmlElement->SetAttribute("compositeSymbolWidth", System.ToString(compositeSymbolWidth));
+            xmlElement->SetAttribute("compositeSymbolHeight", System.ToString(compositeSymbolHeight));
+            xmlElement->SetAttribute("aggregateSymbolWidth", System.ToString(aggregateSymbolWidth));
+            xmlElement->SetAttribute("aggregateSymbolHeight", System.ToString(aggregateSymbolHeight));
+            xmlElement->SetAttribute("lineArrowWidth", System.ToString(lineArrowWidth));
+            xmlElement->SetAttribute("lineArrowHeight", System.ToString(lineArrowHeight));
+            xmlElement->SetAttribute("cardinalitySymbolRadius", System.ToString(cardinalitySymbolRadius));
+            xmlElement->SetAttribute("relationshipSymbolRadius", System.ToString(relationshipSymbolRadius));
+            xmlElement->SetAttribute("nullReferenceSymbolWidth", System.ToString(nullReferenceSymbolWidth));
+            xmlElement->SetAttribute("nullReferenceSymbolHeight", System.ToString(nullReferenceSymbolHeight));
+            xmlElement->SetAttribute("selectedLineWidth", System.ToString(selectedLineWidth));
+            xmlElement->AppendChild(paddingElement->ToXml());
+            xmlElement->AppendChild(fontElement->ToXml());
+            xmlElement->AppendChild(lineColorElement->ToXml());
+            xmlElement->AppendChild(textColorElement->ToXml());
+            xmlElement->AppendChild(arrowColorElement->ToXml());
+            xmlElement->AppendChild(compositeSourceColorElement->ToXml());
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(Name(), xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    string inheritanceArrowWidthAttr = element->GetAttribute("inheritanceArrowWidth");
+                    if (inheritanceArrowWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'inheritanceArrowWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto inheritanceArrowWidthResult = System.ParseFloat(inheritanceArrowWidthAttr);
+                    if (inheritanceArrowWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(inheritanceArrowWidthResult.GetErrorId()));
+                    }
+                    inheritanceArrowWidth = inheritanceArrowWidthResult.Value();
+                    string compositeSymbolWidthAttr = element->GetAttribute("compositeSymbolWidth");
+                    if (compositeSymbolWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'compositeSymbolWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto compositeSymbolWidthResult = System.ParseFloat(compositeSymbolWidthAttr);
+                    if (compositeSymbolWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(compositeSymbolWidthResult.GetErrorId()));
+                    }
+                    compositeSymbolWidth = compositeSymbolWidthResult.Value();
+                    string compositeSymbolHeightAttr = element->GetAttribute("compositeSymbolHeight");
+                    if (compositeSymbolHeightAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'compositeSymbolHeight' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto compositeSymbolHeightResult = System.ParseFloat(compositeSymbolHeightAttr);
+                    if (compositeSymbolHeightResult.Error())
+                    {
+                        return Result<bool>(ErrorId(compositeSymbolHeightResult.GetErrorId()));
+                    }
+                    compositeSymbolHeight = compositeSymbolHeightResult.Value();
+                    string aggregateSymbolWidthAttr = element->GetAttribute("aggregateSymbolWidth");
+                    if (aggregateSymbolWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'aggregateSymbolWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto aggregateSymbolWidthResult = System.ParseFloat(aggregateSymbolWidthAttr);
+                    if (aggregateSymbolWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(aggregateSymbolWidthResult.GetErrorId()));
+                    }
+                    aggregateSymbolWidth = aggregateSymbolWidthResult.Value();
+                    string aggregateSymbolHeightAttr = element->GetAttribute("aggregateSymbolHeight");
+                    if (aggregateSymbolHeightAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'aggregateSymbolHeight' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto aggregateSymbolHeightResult = System.ParseFloat(aggregateSymbolHeightAttr);
+                    if (aggregateSymbolHeightResult.Error())
+                    {
+                        return Result<bool>(ErrorId(aggregateSymbolHeightResult.GetErrorId()));
+                    }
+                    aggregateSymbolHeight = aggregateSymbolHeightResult.Value();
+                    string lineArrowWidthAttr = element->GetAttribute("lineArrowWidth");
+                    if (lineArrowWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'lineArrowWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto lineArrowWidthResult = System.ParseFloat(lineArrowWidthAttr);
+                    if (lineArrowWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(lineArrowWidthResult.GetErrorId()));
+                    }
+                    lineArrowWidth = lineArrowWidthResult.Value();
+                    string lineArrowHeightAttr = element->GetAttribute("lineArrowHeight");
+                    if (lineArrowHeightAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'lineArrowHeight' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto lineArrowHeightResult = System.ParseFloat(lineArrowHeightAttr);
+                    if (lineArrowHeightResult.Error())
+                    {
+                        return Result<bool>(ErrorId(lineArrowHeightResult.GetErrorId()));
+                    }
+                    lineArrowHeight = lineArrowHeightResult.Value();
+                    string cardinalitySymbolRadiusAttr = element->GetAttribute("cardinalitySymbolRadius");
+                    if (cardinalitySymbolRadiusAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'cardinalitySymbolRadius' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto cardinalitySymbolRadiusResult = System.ParseFloat(cardinalitySymbolRadiusAttr);
+                    if (cardinalitySymbolRadiusResult.Error())
+                    {
+                        return Result<bool>(ErrorId(cardinalitySymbolRadiusResult.GetErrorId()));
+                    }
+                    cardinalitySymbolRadius = cardinalitySymbolRadiusResult.Value();
+                    string relationshipSymbolRadiusAttr = element->GetAttribute("relationshipSymbolRadius");
+                    if (relationshipSymbolRadiusAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'relationshipSymbolRadius' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto relationshipSymbolRadiusResult = System.ParseFloat(relationshipSymbolRadiusAttr);
+                    if (relationshipSymbolRadiusResult.Error())
+                    {
+                        return Result<bool>(ErrorId(relationshipSymbolRadiusResult.GetErrorId()));
+                    }
+                    relationshipSymbolRadius = relationshipSymbolRadiusResult.Value();
+                    string nullReferenceSymbolWidthAttr = element->GetAttribute("nullReferenceSymbolWidth");
+                    if (nullReferenceSymbolWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'nullReferenceSymbolWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto nullReferenceSymbolWidthResult = System.ParseFloat(nullReferenceSymbolWidthAttr);
+                    if (nullReferenceSymbolWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(nullReferenceSymbolWidthResult.GetErrorId()));
+                    }
+                    nullReferenceSymbolWidth = nullReferenceSymbolWidthResult.Value();
+                    string nullReferenceSymbolHeightAttr = element->GetAttribute("nullReferenceSymbolHeight");
+                    if (nullReferenceSymbolHeightAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'nullReferenceSymbolHeight' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto nullReferenceSymbolHeightResult = System.ParseFloat(nullReferenceSymbolHeightAttr);
+                    if (nullReferenceSymbolHeightResult.Error())
+                    {
+                        return Result<bool>(ErrorId(nullReferenceSymbolHeightResult.GetErrorId()));
+                    }
+                    nullReferenceSymbolHeight = nullReferenceSymbolHeightResult.Value();
+                    string selectedLineWidthAttr = element->GetAttribute("selectedLineWidth");
+                    if (selectedLineWidthAttr.IsEmpty())
+                    {
+                        int errorId = AllocateError("XML element '" + Name() + "' has no 'selectedLineWidth' attribute");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    auto selectedLineWidthResult = System.ParseFloat(selectedLineWidthAttr);
+                    if (selectedLineWidthResult.Error())
+                    {
+                        return Result<bool>(ErrorId(selectedLineWidthResult.GetErrorId()));
+                    }
+                    selectedLineWidth = selectedLineWidthResult.Value();
+                    auto result = paddingElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = fontElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = textColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = lineColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = arrowColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                    result = compositeSourceColorElement->FromXml(element);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        public float InheritanceArrowWidth() const { return inheritanceArrowWidth; }
+        public float CompositeSymbolWidth() const { return compositeSymbolWidth; }
+        public float CompositeSymbolHeight() const { return compositeSymbolHeight; }
+        public float AggregateSymbolWidth() const { return aggregateSymbolWidth; }
+        public float AggregateSymbolHeight() const { return aggregateSymbolHeight; }
+        public float LineArrowWidth() const { return lineArrowWidth; }
+        public float LineArrowHeight() const { return lineArrowHeight; }
+        public float CardinalitySymbolRadius() const { return cardinalitySymbolRadius; }
+        public float RelationshipSymbolRadius() const { return relationshipSymbolRadius; }
+        public float NullReferenceSymbolWidth() const { return nullReferenceSymbolWidth; }
+        public float NullReferenceSymbolHeight() const { return nullReferenceSymbolHeight; }
+        public float LineWidth() const { return lineWidth; }
+        public float SelectedLineWidth() const { return selectedLineWidth; }
+        public PaddingElement* GetPaddingElement() const { return paddingElement.Get(); }
+        public FontElement* GetFontElement() const { return fontElement.Get(); }
+        public ColorElement* TextColorElement() const { return textColorElement.Get(); }
+        public ColorElement* LineColorElement() const { return lineColorElement.Get(); }
+        public ColorElement* ArrowColorElement() const { return arrowColorElement.Get(); }
+        public ColorElement* CompositeSourceColorElement() const { return compositeSourceColorElement.Get(); }
+        public Result<Pen*> LinePen()
+        {
+            if (linePen == null)
+            {
+                auto result = GetLayout()->GetOrInsertPen(lineColorElement->GetColor(), lineWidth, DashStyle.solid);
+                if (result.Error()) return result;
+                linePen = result.Value();
+            }
+            return linePen;
+        }
+        public Result<Pen*> DashLinePen()
+        {
+            if (dashLinePen == null)
+            {
+                auto result = GetLayout()->GetOrInsertPen(lineColorElement->GetColor(), lineWidth, DashStyle.dash);
+                if (result.Error()) return result;
+                dashLinePen = result.Value();
+            }
+            return dashLinePen;
+        }
+        public Result<Pen*> DotLinePen()
+        {
+            if (dotLinePen == null)
+            {
+                auto result = GetLayout()->GetOrInsertPen(lineColorElement->GetColor(), lineWidth, DashStyle.dot);
+                if (result.Error()) return result;
+                dotLinePen = result.Value();
+            }
+            return dotLinePen;
+        }
+        public Result<Pen*> SelectedLinePen()
+        {
+            if (selectedLinePen == null)
+            {
+                Layout* layout = GetLayout();
+                Brush* brush = layout->GetSelectionColorElement()->GetBrush();
+                auto result = GetLayout()->GetOrInsertPen(layout->GetSelectionColorElement()->GetColor(), selectedLineWidth, DashStyle.solid);
+                if (result.Error()) return result;
+                selectedLinePen = result.Value();
+                auto setBrushResult = selectedLinePen->SetBrush(*brush);
+                if (setBrushResult.Error()) return Result<Pen*>(ErrorId(setBrushResult.GetErrorId()));
+                auto setStartCapResult = selectedLinePen->SetStartCap(LineCap.round);
+                if (setStartCapResult.Error()) return Result<Pen*>(ErrorId(setStartCapResult.GetErrorId()));
+                auto setEndCapResult = selectedLinePen->SetEndCap(LineCap.round);
+                if (setEndCapResult.Error()) return Result<Pen*>(ErrorId(setEndCapResult.GetErrorId()));
+                auto setLineJoinResult = selectedLinePen->SetLineJoin(LineJoin.round);
+                if (setLineJoinResult.Error()) return Result<Pen*>(ErrorId(setLineJoinResult.GetErrorId()));
+            }
+            return selectedLinePen;
+        }
+        public Brush* GetArrowBrush()
+        {
+            return arrowColorElement->GetBrush();
+        }
+        private float inheritanceArrowWidth;
+        private float compositeSymbolWidth;
+        private float compositeSymbolHeight;
+        private float aggregateSymbolWidth;
+        private float aggregateSymbolHeight;
+        private float lineArrowWidth;
+        private float lineArrowHeight;
+        private float cardinalitySymbolRadius;
+        private float relationshipSymbolRadius;
+        private float nullReferenceSymbolWidth;
+        private float nullReferenceSymbolHeight;
+        private float lineWidth;
+        private float selectedLineWidth;
+        private UniquePtr<PaddingElement> paddingElement;
+        private UniquePtr<FontElement> fontElement;
+        private UniquePtr<ColorElement> lineColorElement;
+        private UniquePtr<ColorElement> textColorElement;
+        private UniquePtr<ColorElement> arrowColorElement;
+        private UniquePtr<ColorElement> compositeSourceColorElement;
+        private Pen* linePen;
+        private Pen* dashLinePen;
+        private Pen* dotLinePen;
+        private Pen* selectedLinePen;
+    }
+
+    class Layout
+    {
+        public Layout(Graphics* graphics_, const string& xmlFilePath_) : graphics(graphics_), xmlFilePath(xmlFilePath_)
+        {
+            diagramPaddingElement.Reset(new PaddingElement(this, "diagramPadding", DefaultDiagramPadding()));
+            selectionColorElement.Reset(new ColorElement(this, "selectionColor", DefaultSelectionColor()));
+            abstractClassLayoutElement.Reset(new AbstractClassLayoutElement(this));
+            concreteClassLayoutElement.Reset(new ConcreteClassLayoutElement(this));
+            objectLayoutElement.Reset(new ObjectLayoutElement(this));
+            noteLayoutElement.Reset(new NoteLayoutElement(this));
+            textLayoutElement.Reset(new TextLayoutElement(this));
+            attributeLayoutElement.Reset(new AttributeLayoutElement(this));
+            abstractOperationLayoutElement.Reset(new AbstractOperationLayoutElement(this));
+            concreteOperationLayoutElement.Reset(new ConcreteOperationLayoutElement(this));
+            resizeHandleLayoutElement.Reset(new ResizeHandleLayoutElement(this));
+            relationshipLayoutElement.Reset(new RelationshipLayoutElement(this));
+        }
+        public System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* layoutElement = System.Xml.MakeElement("layout");
+            layoutElement->AppendChild(diagramPaddingElement->ToXml());
+            layoutElement->AppendChild(selectionColorElement->ToXml());
+            layoutElement->AppendChild(abstractClassLayoutElement->ToXml());
+            layoutElement->AppendChild(concreteClassLayoutElement->ToXml());
+            layoutElement->AppendChild(objectLayoutElement->ToXml());
+            layoutElement->AppendChild(noteLayoutElement->ToXml());
+            layoutElement->AppendChild(textLayoutElement->ToXml());
+            layoutElement->AppendChild(attributeLayoutElement->ToXml());
+            layoutElement->AppendChild(abstractOperationLayoutElement->ToXml());
+            layoutElement->AppendChild(concreteOperationLayoutElement->ToXml());
+            layoutElement->AppendChild(resizeHandleLayoutElement->ToXml());
+            layoutElement->AppendChild(relationshipLayoutElement->ToXml());
+            return layoutElement;
+        }
+        public Result<bool> FromXml(System.Xml.Document* layoutDoc)
+        {
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("/layout", layoutDoc);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* layoutElement = cast<System.Xml.Element*>(node);
+                    auto result = diagramPaddingElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = selectionColorElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = abstractClassLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = concreteClassLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = objectLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = noteLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = abstractOperationLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = concreteOperationLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = attributeLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = resizeHandleLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                    result = relationshipLayoutElement->FromXml(layoutElement);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element node expected in '" + layoutDoc->DocumentElement()->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("XML element not unique in '" + layoutDoc->DocumentElement()->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        public Result<bool> Save()
+        {
+            System.IO.Directory.CreateDirectories(System.IO.Path.GetDirectoryName(xmlFilePath));
+            System.Xml.Document layoutDoc;
+            layoutDoc.AppendChild(ToXml());
+            auto createResult = System.IO.File.CreateText(xmlFilePath);
+            if (createResult.Error()) return Result<bool>(ErrorId(createResult.GetErrorId()));
+            System.IO.StreamWriter& writer = createResult.Value();
+            System.Text.CodeFormatter formatter(writer);
+            formatter.SetIndentSize(1);
+            auto result = layoutDoc.Write(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<bool> Load()
+        {
+            Result<UniquePtr<System.Xml.Document>> parseResult = System.Xml.ParseXmlDocument(xmlFilePath, fileMap);
+            if (parseResult.Error()) return Result<bool>(ErrorId(parseResult.GetErrorId()));
+            auto result = FromXml(parseResult.Value().Get());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Graphics* GetGraphics() const
+        {
+            return graphics;
+        }
+        public inline const string& XmlFilePath() const
+        {
+            return xmlFilePath;
+        }
+        public PaddingElement* GetDiagramPaddingElement() const
+        {
+            return diagramPaddingElement.Get();
+        }
+        public ColorElement* GetSelectionColorElement() const
+        {
+            return selectionColorElement.Get();
+        }
+        public ClassLayoutElement* GetAbstractClassLayoutElement() const
+        {
+            return abstractClassLayoutElement.Get();
+        }
+        public ClassLayoutElement* GetConcreteClassLayoutElement() const
+        {
+            return concreteClassLayoutElement.Get();
+        }
+        public ObjectLayoutElement* GetObjectLayoutElement() const
+        {
+            return objectLayoutElement.Get();
+        }
+        public NoteLayoutElement* GetNoteLayoutElement() const
+        {
+            return noteLayoutElement.Get();
+        }
+        public TextLayoutElement* GetTextLayoutElement() const
+        {
+            return textLayoutElement.Get();
+        }
+        public OperationLayoutElement* GetAbstractOperationLayoutElement() const
+        {
+            return abstractOperationLayoutElement.Get();
+        }
+        public OperationLayoutElement* GetConcreteOperationLayoutElement() const
+        {
+            return concreteOperationLayoutElement.Get();
+        }
+        public AttributeLayoutElement* GetAttributeLayoutElement() const
+        {
+            return attributeLayoutElement.Get();
+        }
+        public ResizeHandleLayoutElement* GetResizeHandleLayoutElement() const
+        {
+            return resizeHandleLayoutElement.Get();
+        }
+        public RelationshipLayoutElement* GetRelationshipLayoutElement() const
+        {
+            return relationshipLayoutElement.Get();
+        }
+        public const StringFormat& GetStringFormat() const
+        {
+            return stringFormat;
+        }
+        public Result<Pen*> GetOrInsertPen(const System.Windows.Color& color, float width, DashStyle dashStyle)
+        {
+            PenKey penKey(color, width, dashStyle);
+            string penKeyStr = penKey.ToString();
+            auto it = penMap.Find(penKeyStr);
+            if (it != penMap.End())
+            {
+                return Result<Pen*>(it->second);
+            }
+            Pen* pen = new Pen(color, width);
+            if (dashStyle != DashStyle.solid)
+            {
+                auto result = pen->SetDashStyle(dashStyle);
+                if (result.Error())
+                {
+                    return Result<Pen*>(ErrorId(result.GetErrorId()));
+                }
+            }
+            pens.Add(UniquePtr<Pen>(pen));
+            penMap[penKeyStr] = pen;
+            return Result<Pen*>(pen);
+        }
+        public Brush* GetOrInsertBrush(const System.Windows.Color& color)
+        {
+            auto it = brushMap.Find(color.ToUInt());
+            if (it != brushMap.End())
+            {
+                return it->second;
+            }
+            SolidBrush* brush = new SolidBrush(color);
+            brushes.Add(UniquePtr<Brush>(brush));
+            brushMap[color.ToUInt()] = brush;
+            return brush;
+        }
+        public Result<Font*> GetOrInsertFont(const string& family, float size, FontStyle style)
+        {
+            FontKey fontKey(family, size, style);
+            auto fontKeyStrResult = fontKey.ToString();
+            if (fontKeyStrResult.Error())
+            {
+                return Result<Font*>(ErrorId(fontKeyStrResult.GetErrorId()));
+            }
+            const string& fontKeyStr = fontKeyStrResult.Value();
+            auto it = fontMap.Find(fontKeyStr);
+            if (it != fontMap.End())
+            {
+                return Result<Font*>(it->second);
+            }
+            FontFamily fontFamily(family);
+            if (fontFamily.Error())
+            {
+                return Result<Font*>(ErrorId(fontFamily.GetErrorId()));
+            }
+            Font* font = new Font(fontFamily, size, style, Unit.point);
+            if (font->Error()) return Result<Font*>(ErrorId(font->GetErrorId()));
+            fonts.Add(UniquePtr<Font>(font));
+            fontMap[fontKeyStr] = font;
+            return Result<Font*>(font);
+        }
+        private Graphics* graphics;
+        private string xmlFilePath;
+        private UniquePtr<PaddingElement> diagramPaddingElement;
+        private UniquePtr<ColorElement> selectionColorElement;
+        private UniquePtr<ClassLayoutElement> abstractClassLayoutElement;
+        private UniquePtr<ClassLayoutElement> concreteClassLayoutElement;
+        private UniquePtr<ObjectLayoutElement> objectLayoutElement;
+        private UniquePtr<NoteLayoutElement> noteLayoutElement;
+        private UniquePtr<TextLayoutElement> textLayoutElement;
+        private UniquePtr<OperationLayoutElement> abstractOperationLayoutElement;
+        private UniquePtr<OperationLayoutElement> concreteOperationLayoutElement;
+        private UniquePtr<AttributeLayoutElement> attributeLayoutElement;
+        private UniquePtr<ResizeHandleLayoutElement> resizeHandleLayoutElement;
+        private UniquePtr<RelationshipLayoutElement> relationshipLayoutElement;
+        private StringFormat stringFormat;
+        private List<UniquePtr<Pen>> pens;
+        private Map<string, Pen*> penMap;
+        private List<UniquePtr<Brush>> brushes;
+        private Map<uint, Brush*> brushMap;
+        private List<UniquePtr<Font>> fonts;
+        private Map<string, Font*> fontMap;
+        private System.Lex.FileMap fileMap;
+    }
+}

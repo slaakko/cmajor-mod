@@ -1,0 +1,242 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace spring
+{
+    class DecreasingIndexOrder : Rel<int>
+    {
+        public inline bool operator()(int left, int right) const
+        {
+            return left > right;
+        }
+    }
+
+    class DecreasingElementIndexPairOrder : Rel<ElementIndex>
+    {
+        public inline bool operator()(const ElementIndex& left, const ElementIndex& right) const
+        {
+            return left.Index() > right.Index();
+        }
+    }
+
+    class ElementIndex
+    {
+        public ElementIndex(DiagramElement* element_, int index_) : element(element_), index(index_)
+        {
+        }
+        public inline DiagramElement* Get() const
+        {
+            return element.Get();
+        }
+        public void Set(UniquePtr<DiagramElement>&& element_)
+        {
+            element = element_;
+        }
+        public DiagramElement* Release() const
+        {
+            return element.Release();
+        }
+        public inline int Index()
+        {
+            return index;
+        }
+        private UniquePtr<DiagramElement> element;
+        private int index;
+    }
+
+    abstract class Command
+    {
+        public Command(Diagram* diagram_) : diagram(diagram_)
+        {
+        }
+        public default virtual ~Command();
+        public inline Diagram* GetDiagram() const
+        {
+            return diagram;
+        }
+        public virtual void Finalize()
+        {
+        }
+        [nodiscard]
+        public abstract Result<bool> Undo();
+        [nodiscard]
+        public abstract Result<bool> Redo();
+        private Diagram* diagram;
+    }
+
+    class AddElementsCommand : Command
+    {
+        public AddElementsCommand(Diagram* diagram_) : base(diagram_)
+        {
+        }
+        public void AddIndex(int index)
+        {
+            indeces.Add(index);
+        }
+        public override void Finalize()
+        {
+            Sort(indeces, DecreasingIndexOrder());
+        }
+        public override Result<bool> Undo()
+        {
+            Diagram* diagram = GetDiagram();
+            for (int index : indeces)
+            {
+                UniquePtr<DiagramElement> element = diagram->RemoveElementByIndex(index);
+                addedElements.Add(ElementIndex(element.Release(), index));
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Redo()
+        {
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(addedElements.Count());
+            for (int i = n - 1; i >= 0; --i)
+            {
+                ElementIndex& addedElement = addedElements[i];
+                auto result = addedElement.Get()->ResetSelected();
+                if (result.Error()) return result;
+                int index = addedElement.Index();
+                diagram->InsertElement(addedElement.Release(), index);
+            }
+            return Result<bool>(true);
+        }
+        private List<int> indeces;
+        private List<ElementIndex> addedElements;
+    }
+
+    class DeleteElementsCommand : Command
+    {
+        public DeleteElementsCommand(Diagram* diagram_) : base(diagram_)
+        {
+        }
+        public void AddDeletedElement(DiagramElement* element, int index)
+        {
+            deletedElements.Add(ElementIndex(element, index));
+        }
+        public override void Finalize()
+        {
+            Sort(deletedElements, DecreasingElementIndexPairOrder());
+        }
+        public override Result<bool> Undo()
+        {
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(deletedElements.Count());
+            for (int i = n - 1; i >= 0; --i)
+            {
+                ElementIndex& deletedElement = deletedElements[i];
+                auto result = deletedElement.Get()->ResetSelected();
+                if (result.Error()) return result;
+                diagram->InsertElement(deletedElement.Release(), deletedElement.Index());
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Redo()
+        {
+            Diagram* diagram = GetDiagram();
+            for (auto& deleted : deletedElements)
+            {
+                deleted.Set(diagram->RemoveElementByIndex(deleted.Index()));
+            }
+            return Result<bool>(true);
+        }
+        private List<ElementIndex> deletedElements;
+    }
+
+    class ReplaceElementCommand : Command
+    {
+        public ReplaceElementCommand(Diagram* diagram_, int elementIndex_) : base(diagram_), elementIndex(elementIndex_)
+        {
+            Diagram* diagram = GetDiagram();
+            element.Reset(diagram->ReleaseElementByIndex(elementIndex));
+        }
+        public override Result<bool> Undo()
+        {
+            Diagram* diagram = GetDiagram();
+            UniquePtr<DiagramElement> newElement(diagram->ReleaseElementByIndex(elementIndex));
+            if (element->IsContainerElement())
+            {
+                ContainerElement* containerElement = cast<ContainerElement*>(element.Get());
+                Map<DiagramElement*, DiagramElement*> cloneMap;
+                Map<DiagramElement*, DiagramElement*> reverseCloneMap;
+                cloneMap[newElement.Get()] = containerElement;
+                containerElement->MapChildObjects(cast<ContainerElement*>(newElement.Get()), cloneMap, reverseCloneMap);
+            }
+            auto result = element->ResetSelected();
+            if (result.Error()) return result;
+            diagram->SetElementByIndex(element.Release(), elementIndex);
+            element = Rvalue(newElement);
+            return Result<bool>(true);
+        }
+        public override Result<bool> Redo()
+        {
+            Diagram* diagram = GetDiagram();
+            UniquePtr<DiagramElement> oldElement(diagram->ReleaseElementByIndex(elementIndex));
+            if (element->IsContainerElement())
+            {
+                ContainerElement* containerElement = cast<ContainerElement*>(element.Get());
+                Map<DiagramElement*, DiagramElement*> cloneMap;
+                Map<DiagramElement*, DiagramElement*> reverseCloneMap;
+                cloneMap[oldElement.Get()] = containerElement;
+                containerElement->MapChildObjects(cast<ContainerElement*>(oldElement.Get()), cloneMap, reverseCloneMap);
+            }
+            auto result = element->ResetSelected();
+            if (result.Error()) return result;
+            diagram->SetElementByIndex(element.Release(), elementIndex);
+            element = Rvalue(oldElement);
+            return Result<bool>(true);
+        }
+        private int elementIndex;
+        private UniquePtr<DiagramElement> element;
+    }
+
+    class MoveCommand : Command
+    {
+        public MoveCommand(Diagram* diagram_) : base(diagram_)
+        {
+        }
+        public void AddOldLocation(int index, const CompoundLocation& oldLocation)
+        {
+            indeces.Add(index);
+            oldLocations.Add(oldLocation);
+        }
+        public void AddNewLocation(const CompoundLocation& newLocation)
+        {
+            newLocations.Add(newLocation);
+        }
+        public override Result<bool> Undo()
+        {
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                element->SetCompoundLocation(oldLocations[i]);
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Redo()
+        {
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                element->SetCompoundLocation(newLocations[i]);
+            }
+            newLocations.Clear();
+            return Result<bool>(true);
+        }
+        private List<int> indeces;
+        private List<CompoundLocation> oldLocations;
+        private List<CompoundLocation> newLocations;
+    }
+}
+

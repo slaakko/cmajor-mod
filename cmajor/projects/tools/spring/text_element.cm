@@ -1,0 +1,91 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    enum TextKind
+    {
+        primaryText, secondaryText
+    }
+
+    class TextElement : DiagramElement
+    {
+        public TextElement() : base(DiagramElementKind.textElement), tkind(TextKind.primaryText)
+        {
+        }
+        public TextElement(const string& name_) : base(DiagramElementKind.textElement), tkind(TextKind.primaryText)
+        {
+            SetName(name_);
+            if (Name() == "primaryText")
+            {
+                tkind = TextKind.primaryText;
+            }
+            else if (Name() == "secondaryText")
+            {
+                tkind = TextKind.secondaryText;
+            }
+        }
+        public bool IsEmpty() const
+        {
+            return keyword.IsEmpty() && lines.IsEmpty();
+        }
+        public inline TextKind TKind() const
+        {
+            return tkind;
+        }
+        public inline const List<string>& Lines() const
+        {
+            return lines;
+        }
+        public void SetLines(const List<string>& lines_)
+        {
+            lines = lines_;
+        }
+        public inline const string& Keyword() const
+        {
+            return keyword;
+        }
+        public void SetKeyword(const string& keyword_)
+        {
+            keyword = keyword_;
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(XmlElementName());
+            xmlElement->AppendChild(BoundsXmlElement());
+            // todo
+            return xmlElement;
+        }
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            Result<bool> result = base->FromXml(xmlElement);
+            if (result.Error()) return result;
+            // todo
+            return Result<bool>(true);
+        }
+        public override DiagramElement* Clone() const
+        {
+            TextElement* clone = new TextElement(Name());
+            clone->SetBounds(Bounds());
+            // todo
+            return clone;
+        }
+        public string XmlElementName() const
+        {
+            if (Name().IsEmpty()) return "textElement"; else return Name();
+        }
+        private TextKind tkind;
+        private List<string> lines;
+        private string keyword;
+        private SizeF keywordTextSize;
+        private SizeF lineSize;
+        private SizeF linesSize;
+    }
+}
+

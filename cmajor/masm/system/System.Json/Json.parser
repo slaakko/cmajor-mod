@@ -42,7 +42,9 @@ parser JsonParser
         ;
 
     Field(System.Json.JsonObject* o, var ustring n) : bool
-        ::= STRING
+        ::=
+        (
+            STRING
             {
                 Token token = lexer.GetToken(pos);
                 auto stringLiteralResult = System.Json.ParseStringLiteral(token);
@@ -57,9 +59,26 @@ parser JsonParser
             {
                 o->AddField(n, v);
             }
+        )
+        {
+            return true;
+        }
         ;
 
     Array(var UniquePtr<System.Json.JsonArray> a) : System.Json.JsonArray*
-        ::= LBRACKET{ a.Reset(new System.Json.JsonArray()); } (Value:v{ a->AddItem(v); } % COMMA)? RBRACKET{ return a.Release(); }
+        ::= LBRACKET
+            {
+                a.Reset(new System.Json.JsonArray());
+            }
+            (
+                Value:first{ a->AddItem(first); }
+                (
+                    COMMA Value:next{ a->AddItem(next); }
+                )*
+            )?
+            RBRACKET
+            {
+                return a.Release();
+            }
         ;
 }

@@ -11,6 +11,9 @@ namespace System.Json
 {
     public abstract class JsonValue
     {
+        public JsonValue()
+        {
+        }
         public default virtual ~JsonValue();
         [nodiscard]
         public abstract Result<string> ToString() const;
@@ -30,6 +33,9 @@ namespace System.Json
 
     public class JsonNull : JsonValue
     {
+        public JsonNull() : base()
+        {
+        }
         public override Result<string> ToString() const
         {
             return Result<string>("null");
@@ -38,7 +44,7 @@ namespace System.Json
 
     public class JsonNumber : JsonValue
     {
-        public JsonNumber() : value(0.0)
+        public JsonNumber() : base(), value(0.0)
         {
         }
         public explicit JsonNumber(double value_) : value(value_)
@@ -66,10 +72,10 @@ namespace System.Json
 
     public class JsonBool : JsonValue
     {
-        public JsonBool() : value(false)
+        public JsonBool() : base(), value(false)
         {
         }
-        public explicit JsonBool(bool value_) : value(value_)
+        public explicit JsonBool(bool value_) : base(), value(value_)
         {
         }
         public override Result<string> ToString() const
@@ -89,10 +95,10 @@ namespace System.Json
 
     public class JsonString : JsonValue
     {
-        public JsonString() : value()
+        public JsonString() : base(), value()
         {
         }
-        public JsonString(const ustring& value_) : value(value_)
+        public JsonString(const ustring& value_) : base(), value(value_)
         {
         }
         public inline const ustring& Value() const
@@ -182,7 +188,7 @@ namespace System.Json
 
     public class JsonObject : JsonValue
     {
-        public JsonObject() : fieldValues(), fieldMap()
+        public JsonObject() : base(), fieldValues(), fieldMap()
         {
         }
         [nodiscard]
@@ -193,7 +199,7 @@ namespace System.Json
             {
                 return Result<bool>(ErrorId(utf32Result.GetErrorId()));
             }
-            AddField(utf32Result.Value(), fieldValue);
+            AddField(utf32Result.Value(), Rvalue(fieldValue));
             return Result<bool>(true);
         }
         [nodiscard]
@@ -204,7 +210,7 @@ namespace System.Json
             {
                 return Result<bool>(ErrorId(utf32Result.GetErrorId()));
             }
-            AddField(utf32Result.Value(), fieldValue);
+            AddField(utf32Result.Value(), Rvalue(fieldValue));
             return Result<bool>(true);
         }
         public void AddField(const ustring& fieldName, UniquePtr<JsonValue>&& fieldValue)
@@ -246,7 +252,9 @@ namespace System.Json
             {
                 return Result<JsonValue*>(ErrorId(utf32Result.GetErrorId()));
             }
-            return Result<JsonValue*>(GetField(utf32Result.Value()));
+            ustring ufieldName = Rvalue(utf32Result.Value());
+            Result<JsonValue*> fieldValue = GetField(ufieldName);
+            return fieldValue;
         }
         public Result<JsonValue*> GetField(const wstring& fieldName) const
         {
@@ -255,7 +263,9 @@ namespace System.Json
             {
                 return Result<JsonValue*>(ErrorId(utf32Result.GetErrorId()));
             }
-            return Result<JsonValue*>(GetField(utf32Result.Value()));
+            ustring ufieldName = Rvalue(utf32Result.Value());
+            Result<JsonValue*> fieldValue = GetField(ufieldName);
+            return fieldValue;
         }
         public JsonValue* GetField(const ustring& fieldName) const
         {
@@ -315,8 +325,8 @@ namespace System.Json
             bool lastWasArrayOrObject = false;
             for (const Pair<ustring, JsonValue*>& p : fieldMap)
             {
-                JsonString s(p.first);
-                JsonValue* v(p.second);
+                JsonString s = p.first;
+                JsonValue* v = p.second;
                 if (first)
                 {
                     first = false;
@@ -359,7 +369,7 @@ namespace System.Json
 
     public class JsonArray : JsonValue
     {
-        public JsonArray() : items()
+        public JsonArray() : base(), items()
         {
         }
         public void AddItem(UniquePtr<JsonValue>&& item)
@@ -467,6 +477,6 @@ namespace System.Json
     {
         JsonLexer jsonLexer(jsonText.Chars(), jsonText.Chars() + jsonText.Length(), "json");
         Result<UniquePtr<JsonValue>> jsonValue = JsonParser<JsonLexer>.Parse(jsonLexer);
-        return jsonValue;
+        return Rvalue(jsonValue);
     }
 }

@@ -18,4 +18,6 @@ cminst -v ..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.compressed ..\cmajor\r
 cminst -v ..\soul\xml\xpath\soul.xml.xpath.lexer.classmap.rc ..\cmajor\rc
 cminst -v ..\cmajor\projects\tools\soulcm\scmlg\bin\llvm\release\scmlg.exe ..\cmajor\bin
 cminst -v ..\cmajor\projects\tools\soulcm\scmpg\bin\llvm\release\scmpg.exe ..\cmajor\bin
-
+cminst -v ..\cmajor\projects\tools\ref2html\bin\llvm\release\ref2html.exe ..\cmajor\bin
+cminst -v ..\cmajor\projects\tools\soulcm\cm2html\bin\llvm\release\cm2html.exe ..\cmajor\bin
+cminst -v ..\cmajor\projects\tools\soulcm\soul2html\bin\llvm\release\soul2html.exe ..\cmajor\bin

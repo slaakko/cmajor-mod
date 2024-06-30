@@ -1,0 +1,115 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class CommandList
+    {
+        public CommandList() : currentIndex(0), undoMenuItem(null), redoMenuItem(null)
+        {
+        }
+        [nodiscard]
+        public Result<bool> SetMenuItems(MenuItem* undoMenuItem_, MenuItem* redoMenuItem_)
+        {
+            undoMenuItem = undoMenuItem_;
+            redoMenuItem = redoMenuItem_;
+            auto result = UpdateMenuItems();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddCommand(Command* command)
+        {
+            command->Finalize();
+            if (currentIndex >= commands.Count())
+            {
+                commands.Add(UniquePtr<Command>(command));
+                currentIndex = cast<int>(commands.Count());
+            }
+            else
+            {
+                commands[currentIndex].Reset(command);
+                ++currentIndex;
+            }
+            commands.Resize(currentIndex);
+            auto result = UpdateMenuItems();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public bool CanUndo() const
+        {
+            return currentIndex > 0;
+        }
+        public Result<bool> Undo()
+        {
+            if (CanUndo())
+            {
+                --currentIndex;
+                Command* command = commands[currentIndex].Get();
+                auto result = command->Undo();
+                if (result.Error()) return result;
+            }
+            auto result = UpdateMenuItems();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public bool CanRedo() const
+        {
+            return currentIndex < commands.Count();
+        }
+        public Result<bool> Redo()
+        {
+            if (CanRedo())
+            {
+                Command* command = commands[currentIndex].Get();
+                auto result = command->Redo();
+                if (result.Error()) return result;
+                ++currentIndex;
+            }
+            auto result = UpdateMenuItems();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public void Clear()
+        {
+            commands.Clear();
+            currentIndex = 0;
+        }
+        [nodiscard]
+        private Result<bool> UpdateMenuItems()
+        {
+            if (CanUndo())
+            {
+                auto result = undoMenuItem->Enable();
+                if (result.Error()) return result;
+            }
+            else
+            {
+                auto result = undoMenuItem->Disable();
+                if (result.Error()) return result;
+            }
+            if (CanRedo())
+            {
+                auto result = redoMenuItem->Enable();
+                if (result.Error()) return result;
+            }
+            else
+            {
+                auto result = redoMenuItem->Disable();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private int currentIndex;
+        private List<UniquePtr<Command>> commands;
+        private MenuItem* undoMenuItem;
+        private MenuItem* redoMenuItem;
+    }
+}
+

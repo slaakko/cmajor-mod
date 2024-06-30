@@ -1,0 +1,236 @@
+body {
+    max-width: 1200px;
+}
+
+h1, h2, h3, h4, h5, h6
+{
+    color: #005ab4;
+    font-family: sans-serif;
+}
+
+.toc
+{
+    font-family: sans-serif;
+}
+
+span.kw
+{
+    font-weight: bold;
+    color: #a31515;
+}
+
+span.rule
+{
+    font-family: serif;
+}
+
+span.mono
+{
+    font-family: monospace;
+    color: #a31515;
+    font-weight: bold;
+}
+
+span.var, span.param
+{
+    font-family: serif;
+}
+
+table.grammar
+{
+    background-color: FloralWhite;
+    margin: 20px;
+    padding: 20px;
+    max-width: 1000px;
+}
+
+td.rule, td.sep, td.rcontent
+{
+    vertical-align: top;
+}
+
+td.rule
+{
+    text-align: right
+}
+
+table.example
+{
+    background-color: #e6ffee;
+    margin: 20px;
+    padding: 20px;
+}
+
+div.soul
+{
+    background-color: #e6ffee;
+    margin: 20px;
+    padding: 20px;
+    font-family: monospace;
+}
+
+.soul .kw
+{
+    color: #a31515;
+    font-weight: bold;
+}
+
+.soul .id
+{
+    color: #000000;
+}
+
+.soul .number
+{
+    color: #000000;
+}
+
+.soul .other
+{
+    color: #000000;
+}
+
+.soul .string
+{
+    color: #a31515;
+}
+
+.soul .comment
+{
+    color: #006600;
+}
+
+.soul .punctuation
+{
+    color: #a31515;
+    font-weight: bold;
+}
+
+div.parser
+{
+    background-color: #e6ffee;
+    margin: 20px;
+    padding: 20px;
+    font-family: monospace;
+}
+
+.parser .kw
+{
+    color: #a31515;
+    font-weight: bold;
+}
+
+.parser .id
+{
+    color: #000000;
+}
+
+.parser .number
+{
+    color: #000000;
+}
+
+.parser .other
+{
+    color: #000000;
+}
+
+.parser .string
+{
+    color: #a31515;
+}
+
+.parser .comment
+{
+    color: #006600;
+}
+
+.parser .punctuation
+{
+    color: #a31515;
+    font-weight: bold;
+}
+
+div.cm
+{
+    background-color: #e6f7ff;
+    margin: 20px;
+    padding: 20px;
+    font-family: monospace;
+}
+
+.cm .kw
+{
+    color: #0000ff;
+}
+
+.cm .id
+{
+    color: #000000;
+}
+
+.cm .number
+{
+    color: #000000;
+}
+
+.cm .string
+{
+    color: #a31515;
+}
+
+.cm .other
+{
+    color: #000000;
+}
+
+.cm .comment
+{
+    color: #57a64a;
+}
+
+.indent
+{
+    margin: 40px;
+}
+
+.double_indent
+{
+    margin: 80px;
+}
+
+.triple_indent
+{
+    margin: 120px;
+}
+
+table.common-type, th.common-type, td.common-type
+{
+    border: 1px solid #dddddd;
+    border-collapse: collapse;
+    padding: 8px;
+}
+
+div.console
+{
+    background-color: #e0e0e0;
+    margin: 20px;
+    padding: 20px;
+    font-family: monospace;
+}
+
+.rule
+{
+    font-style: italic;
+}
+
+.var
+{
+    font-style: italic;
+}
+
+.op
+{
+    padding-left: 4pt;
+    padding-right: 4pt;
+}
