@@ -606,12 +606,12 @@ namespace System.Windows
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
             mouseEnterItem = null;
             return Result<bool>(true);
         }
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
             if (mouseEnterItem != null)
             {

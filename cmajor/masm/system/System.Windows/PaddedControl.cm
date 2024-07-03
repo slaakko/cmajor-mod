@@ -199,7 +199,7 @@ namespace System.Windows
             if (result.Error()) return result;
             return Result<bool>(true);
         }
-        private Container container;
+        private ComponentContainer container;
         private Control* child;
         private Padding padding;
     }

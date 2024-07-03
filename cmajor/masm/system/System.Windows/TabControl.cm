@@ -343,7 +343,7 @@ namespace System.Windows
             }
             return Result<bool>(true);
         }
-        public const Container& TabPages() const
+        public const ComponentContainer& TabPages() const
         {
             return tabPages;
         }
@@ -516,17 +516,17 @@ namespace System.Windows
             return base->OnPaint(args);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseEnter();
+            auto result = base->OnMouseEnter(args);
             if (result.Error()) return result;
             closeStateTabPage = null;
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseLeave();
+            auto result = base->OnMouseLeave(args);
             if (result.Error()) return result;
             if (closeStateTabPage != null)
             {
@@ -959,7 +959,7 @@ namespace System.Windows
         private Font font;
         private Color frameColor;
         private Color textColor;
-        private Container tabPages;
+        private ComponentContainer tabPages;
         private HashMap<string, TabPage*> tabPageMap;
         private TabPage* selectedTabPage;
         private int leadingWidth;

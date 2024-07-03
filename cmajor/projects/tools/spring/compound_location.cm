@@ -38,6 +38,18 @@ namespace spring
         {
             return targetPoint;
         }
+        public void Offset(float dx, float dy)
+        {
+            location.Offset(dx, dy);
+            for (auto& point : points)
+            {
+                point.Offset(dx, dy);
+            }
+            if (hasTargetPoint)
+            {
+                targetPoint.Offset(dx, dy);
+            }
+        }
         private PointF location;
         private List<PointF> points;
         private bool hasTargetPoint;

@@ -221,4 +221,25 @@ namespace System.Windows
     {
         return left.left == right.left && left.top == right.top && left.right == right.right && left.bottom == right.bottom;
     }
+
+    public class PaddingF
+    {
+        public PaddingF() : left(0), top(0), right(0), bottom(0)
+        {
+        }
+        public PaddingF(float left_, float top_, float right_, float bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
+        {
+        }
+        public float Vertical() const { return top + bottom; }
+        public float Horizontal() const { return left + right; }
+        public float left;
+        public float top;
+        public float right;
+        public float bottom;
+    }
+
+    public bool operator==(const PaddingF& left, const PaddingF& right)
+    {
+        return left.left == right.left && left.top == right.top && left.right == right.right && left.bottom == right.bottom;
+    }
 }

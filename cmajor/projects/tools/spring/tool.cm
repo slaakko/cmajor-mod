@@ -112,6 +112,123 @@ namespace spring
                 return cursor;
             }
         }
+        public virtual bool CanMove() const
+        {
+            return false;
+        }
+        public virtual bool IsClickTool() const
+        {
+            return false;
+        }
+        [nodiscard]
+        public virtual Result<bool> Initialize(Diagram* diagram)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> BeforeLeftClick(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        public virtual void AfterLeftClick(MouseArgs& args)
+        {
+        }
+        public virtual void BeforeRightClick(MouseArgs& args)
+        {
+        }
+        public virtual void AfterRightClick(MouseArgs& args)
+        {
+        }
+        [nodiscard]
+        public virtual Result<bool> MouseClick(MouseArgs& args)
+        {
+            if (args.left)
+            {
+                auto result = BeforeLeftClick(args);
+                if (result.Error()) return result;
+                if (args.shift)
+                {
+                    MouseShiftLeftClick(args);
+                }
+                else if (args.control)
+                {
+                    result = MouseControlLeftClick(args);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    result = MouseNormalLeftClick(args);
+                    if (result.Error()) return result;
+                }
+                AfterLeftClick(args);
+            }
+            else if (args.right)
+            {
+                BeforeRightClick(args);
+                if (args.shift)
+                {
+                    MouseShiftRightClick(args);
+                }
+                else if (args.control)
+                {
+                    MouseControlRightClick(args);
+                }
+                else
+                {
+                    auto result = MouseNormalRightClick(args);
+                    if (result.Error()) return result;
+                }
+                AfterRightClick(args);
+            }
+            return Result<bool>(true);
+        }
+        public virtual void MouseShiftLeftClick(MouseArgs& args)
+        {
+        }
+        [nodiscard]
+        public virtual Result<bool> MouseControlLeftClick(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> MouseNormalLeftClick(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        public virtual void MouseShiftRightClick(MouseArgs& args)
+        {
+        }
+        public virtual void MouseControlRightClick(MouseArgs& args)
+        {
+        }
+        [nodiscard]
+        public virtual Result<bool> MouseNormalRightClick(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> MouseDoubleClick(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        public virtual void CreateOperation(MouseArgs& args)
+        {
+        }
+        [nodiscard]
+        public virtual Result<bool> ContinueOperation(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> CancelOperation(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> CommitOperation(MouseArgs& args)
+        {
+            return Result<bool>(true);
+        }
         private void ToolButtonClicked(ClickEventArgs& args)
         {
             Tools.Instance().SetCurrentToolInternal(this);
@@ -146,7 +263,8 @@ namespace spring
                 currentTool = tool;
                 auto result = currentTool->GetToolButton()->SetState(ToolButton.State.pressed);
                 if (result.Error()) return result;
-                // currentTool->Initialize(GetDiagram()); TODO!!!
+                result = currentTool->Initialize(GetDiagram());
+                if (result.Error()) return result;
             }
             return Result<bool>(true);
         }

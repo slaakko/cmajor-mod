@@ -409,14 +409,14 @@ namespace System.Windows
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
             mouseDownComponent = null;
             mouseOverComponent = null;
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
             if (mouseDownComponent != null)
             {
@@ -510,7 +510,7 @@ namespace System.Windows
             }
             return Result<bool>(true);
         }
-        private Container pathComponents;
+        private ComponentContainer pathComponents;
         private float tickSizePercent;
         private SolidBrush textBrush;
         private SolidBrush tickBrush;

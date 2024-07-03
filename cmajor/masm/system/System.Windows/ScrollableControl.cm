@@ -471,7 +471,7 @@ namespace System.Windows
             updateRect.Inflate(horizontalScrollUnit, verticalScrollUnit);
             return updateRect;
         }
-        private Container container;
+        private ComponentContainer container;
         private Control* child;
         private Control* scrolledChild;
         private int verticalScrollUnit;

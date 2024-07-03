@@ -10,9 +10,9 @@ using System.Windows.API;
 namespace System.Windows
 {
     public class delegate void PaintEventHandler(PaintEventArgs& paintEventArgs);
-    public class delegate void MouseEnterEventHandler();
+    public class delegate void MouseEnterEventHandler(EnterLeaveEventArgs& args);
     public class delegate void MouseEventHandler(MouseEventArgs& mouseEventargs);
-    public class delegate void MouseLeaveEventHandler();
+    public class delegate void MouseLeaveEventHandler(EnterLeaveEventArgs& args);
     public class delegate void MouseWheelEventHandler(MouseWheelEventArgs& mouseWheelEventArgs);
     public class delegate void KeyPressEventHandler(KeyPressEventArgs& keyPressEventArgs);
     public class delegate void KeyEventHandler(KeyEventArgs& keyEventArgs);
@@ -260,7 +260,7 @@ namespace System.Windows
         public Control* ParentControl() const
         {
             Control* parentControl = null;
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -442,7 +442,7 @@ namespace System.Windows
             {
                 return cast<Window*>(this);
             }
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -2268,7 +2268,13 @@ namespace System.Windows
                 SetMouseInClient();
                 auto result = SetCursor();
                 if (result.Error()) return result;
-                result = OnMouseEnter();
+                EnterLeaveEventArgs enterArgs;
+                result = OnMouseEnter(enterArgs);
+                if (result.Error()) return result;
+                if (enterArgs.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(enterArgs.errorId));
+                }
                 if (result.Error()) return result;
                 WinTrackMouseEvent(handle, TME_LEAVE, HOVER_DEFAULT);
             }
@@ -2351,7 +2357,12 @@ namespace System.Windows
         {
             ResetMouseInClient();
             ResetLButtonPressed();
-            auto result = OnMouseLeave();
+            EnterLeaveEventArgs leaveArgs;
+            auto result = OnMouseLeave(leaveArgs);
+            if (leaveArgs.errorId != 0)
+            {
+                return Result<bool>(ErrorId(leaveArgs.errorId));
+            }
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -2475,9 +2486,9 @@ namespace System.Windows
             return Result<bool>(true);
         }
         [nodiscard]
-        protected virtual Result<bool> OnMouseEnter()
+        protected virtual Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            mouseEnterEvent.Fire();
+            mouseEnterEvent.Fire(args);
             return Result<bool>(true);
         }
         [nodiscard]
@@ -2491,9 +2502,9 @@ namespace System.Windows
             mouseHoverEvent.Fire(args);
         }
         [nodiscard]
-        protected virtual Result<bool> OnMouseLeave()
+        protected virtual Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            mouseLeaveEvent.Fire();
+            mouseLeaveEvent.Fire(args);
             return Result<bool>(true);
         }
         [nodiscard]
@@ -2713,7 +2724,7 @@ namespace System.Windows
         {
             return paintEvent;
         }
-        public Event<MouseEnterEventHandler>& MouseEnterEvent() const
+        public Event<MouseEnterEventHandler, EnterLeaveEventArgs>& MouseEnterEvent() const
         {
             return mouseEnterEvent;
         }
@@ -2725,7 +2736,7 @@ namespace System.Windows
         {
             return mouseHoverEvent;
         }
-        public Event<MouseLeaveEventHandler>& MouseLeaveEvent() const
+        public Event<MouseLeaveEventHandler, EnterLeaveEventArgs>& MouseLeaveEvent() const
         {
             return mouseLeaveEvent;
         }
@@ -3058,10 +3069,10 @@ namespace System.Windows
         private Point mouseHoverLocation;
         private UniquePtr<Buffer> buffer;
         private Event<PaintEventHandler, PaintEventArgs> paintEvent;
-        private Event<MouseEnterEventHandler> mouseEnterEvent;
+        private Event<MouseEnterEventHandler, EnterLeaveEventArgs> mouseEnterEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseMoveEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseHoverEvent;
-        private Event<MouseLeaveEventHandler> mouseLeaveEvent;
+        private Event<MouseLeaveEventHandler, EnterLeaveEventArgs> mouseLeaveEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseDownEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseUpEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseDoubleClickEvent;

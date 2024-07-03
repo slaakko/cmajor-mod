@@ -259,10 +259,6 @@ MainWindow::MainWindow(const std::string& filePath) :
     searchMenuItem->SetShortcut(wing::Keys::controlModifier | wing::Keys::f);
     searchMenuItem->Click().AddHandler(this, &MainWindow::SearchClick);
     editMenuItem->AddMenuItem(searchMenuItemPtr.release());
-    std::unique_ptr<wing::MenuItem> toggleCodeCompletionMenuItemPtr(new wing::MenuItem("&Toggle Code Completion On/Off"));
-    toggleCodeCompletionMenuItemPtr->SetShortcut(wing::Keys::controlModifier | wing::Keys::t);
-    toggleCodeCompletionMenuItemPtr->Click().AddHandler(this, &MainWindow::ToggleCodeCompletionClick);
-    editMenuItem->AddMenuItem(toggleCodeCompletionMenuItemPtr.release());
     editMenuItem->AddMenuItem(new wing::MenuItemSeparator());
     std::unique_ptr<wing::MenuItem> optionsMenuItemPtr(new wing::MenuItem("&Options..."));
     optionsMenuItem = optionsMenuItemPtr.get();

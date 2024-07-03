@@ -134,59 +134,59 @@ namespace spring
         {
             return secondaryPointKind;
         }
-        static constexpr int TopLeft()
+        public static constexpr int TopLeft()
         {
             return (ConnectorPointKind.top << 8) | ConnectorPointKind.left;
         }
-        static constexpr int TopCenter()
+        public static constexpr int TopCenter()
         {
             return (ConnectorPointKind.top << 8) | ConnectorPointKind.center;
         }
-        static constexpr int TopRight()
+        public static constexpr int TopRight()
         {
             return (ConnectorPointKind.top << 8) | ConnectorPointKind.right;
         }
-        static constexpr int BottomLeft()
+        public static constexpr int BottomLeft()
         {
             return (ConnectorPointKind.bottom << 8) | ConnectorPointKind.left;
         }
-        static constexpr int BottomCenter()
+        public static constexpr int BottomCenter()
         {
             return (ConnectorPointKind.bottom << 8) | ConnectorPointKind.center;
         }
-        static constexpr int BottomRight()
+        public static constexpr int BottomRight()
         {
             return (ConnectorPointKind.bottom << 8) | ConnectorPointKind.right;
         }
-        static constexpr int LeftTop()
+        public static constexpr int LeftTop()
         {
             return (ConnectorPointKind.left << 8) | ConnectorPointKind.top;
         }
-        static constexpr int LeftCenter()
+        public static constexpr int LeftCenter()
         {
             return (ConnectorPointKind.left << 8) | ConnectorPointKind.center;
         }
-        static constexpr int LeftBottom()
+        public static constexpr int LeftBottom()
         {
             return (ConnectorPointKind.left << 8) | ConnectorPointKind.bottom;
         }
-        static constexpr int RightTop()
+        public static constexpr int RightTop()
         {
             return (ConnectorPointKind.right << 8) | ConnectorPointKind.top;
         }
-        static constexpr int RightCenter()
+        public static constexpr int RightCenter()
         {
             return (ConnectorPointKind.right << 8) | ConnectorPointKind.center;
         }
-        static constexpr int RightBottom()
+        public static constexpr int RightBottom()
         {
             return (ConnectorPointKind.right << 8) | ConnectorPointKind.bottom;
         }
-        static constexpr int Operation(int index)
+        public static constexpr int Operation(int index)
         {
             return (ConnectorPointKind.operation << 8) | index;
         }
-        static constexpr int Attribute(int index)
+        public static constexpr int Attribute(int index)
         {
             return (ConnectorPointKind.attribute << 8) | index;
         }
@@ -257,7 +257,7 @@ namespace spring
         if (left.PrimaryPoint() > right.PrimaryPoint()) return false;
         return left.SecondaryPoint() < right.SecondaryPoint();
     }
-    
+
     Result<Connector> ParseConnector(const string& connectorStr)
     {
         List<string> components = connectorStr.Split('.');

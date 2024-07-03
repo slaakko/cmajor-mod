@@ -7,12 +7,12 @@ using System;
 
 namespace System.Windows
 {
-    public class Container
+    public class ComponentContainer
     {
-        public Container(Component* parent_) : firstChild(null), lastChild(null), parent(parent_)
+        public ComponentContainer(Component* parent_) : firstChild(null), lastChild(null), parent(parent_)
         {
         }
-        public virtual ~Container()
+        public virtual ~ComponentContainer()
         {
             Component* child = firstChild;
             while (child != null)
@@ -29,7 +29,7 @@ namespace System.Windows
         [nodiscard]
         public Result<bool> AddChild(Component* child)
         {
-            Container* container = child->GetContainer();
+            ComponentContainer* container = child->GetContainer();
             if (container != null)
             {
                 UniquePtr<Component> removedChild = container->RemoveChild(child);
@@ -82,7 +82,7 @@ namespace System.Windows
             }
             else
             {
-                Container* container = child->GetContainer();
+                ComponentContainer* container = child->GetContainer();
                 if (container != null)
                 {
                     UniquePtr<Component> removedChild = container->RemoveChild(child);
@@ -116,7 +116,7 @@ namespace System.Windows
             }
             else
             {
-                Container* container = child->GetContainer();
+                ComponentContainer* container = child->GetContainer();
                 if (container != null)
                 {
                     UniquePtr<Component> removedChild = container->RemoveChild(child);

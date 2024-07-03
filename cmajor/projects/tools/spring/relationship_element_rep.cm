@@ -1,0 +1,86 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    abstract class RelationshipElementRep
+    {
+        public RelationshipElementRep(RelationshipElement* relationshipElement_) : relationshipElement(relationshipElement_)
+        {
+        }
+        public default virtual ~RelationshipElementRep();
+        public inline RelationshipElement* GetRelationshipElement() const
+        {
+            return relationshipElement;
+        }
+        public abstract RelationshipElementRep* Clone(RelationshipElement* relationshipElement) const;
+        public abstract void Draw(Graphics& graphics);
+        [nodiscard]
+        public virtual Result<bool> DrawSelected(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> selectedLinePenResult = relationshipLayoutElement->SelectedLinePen();
+            if (selectedLinePenResult.Error()) return Result<bool>(ErrorId(selectedLinePenResult.GetErrorId()));
+            Pen* selectedLinePen = selectedLinePenResult.Value();
+            PointF prev = relationshipElement->Source().Point();
+            for (const auto& next : relationshipElement->RoutingPoints())
+            {
+                auto result = graphics.DrawLine(*selectedLinePen, prev, next);
+                if (result.Error()) return result;
+                prev = next;
+            }
+            auto result = graphics.DrawLine(*selectedLinePen, prev, relationshipElement->Target().Point());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public virtual bool Contains(const PointF& location) const
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            Diagram* diagram = GetDiagram();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float selectedLineWidth = relationshipLayoutElement->SelectedLineWidth();
+            PointF from = relationshipElement->Source().Point();
+            for (PointF to : relationshipElement->RoutingPoints())
+            {
+                if (spring.LineContains(from, to, location, selectedLineWidth))
+                {
+                    return true;
+                }
+                from = to;
+            }
+            PointF to = relationshipElement->Target().Point();
+            for (const auto& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                PointF from = sourceEndPoint.Point();
+                if (spring.LineContains(from, to, location, selectedLineWidth))
+                {
+                    return true;
+                }
+            }
+            if (spring.LineContains(from, to, location, selectedLineWidth))
+            {
+                return true;
+            }
+            return false;
+        }
+        public virtual float SourceSymbolWidth() const
+        {
+            return 0.0f;
+        }
+        public virtual float TargetSymbolWidth() const
+        {
+            return 0.0f;
+        }
+        private RelationshipElement* relationshipElement;
+    }
+}
+

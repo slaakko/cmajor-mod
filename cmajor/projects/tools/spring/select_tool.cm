@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 using System.Windows;
 
 namespace spring
@@ -12,6 +13,369 @@ namespace spring
     {
         public SelectTool() : base(ToolKind.selectTool)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Initialize(Diagram* diagram)
+        {
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            diagram->ResetOperation();
+            return Result<bool>(true);
+        }
+        public override bool CanMove() const
+        {
+            return true;
+        }
+        [nodiscard]
+        public override Result<bool> BeforeLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->DisposeContextMenu();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseNormalLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            if (args.element != null)
+            {
+                Selection* selection = diagram->GetSelection();
+                if (selection->Count() == 1 && selection->Contains(args.location))
+                {
+                    auto result = diagram->ResetSelection();
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    ElementSelection* elementSelection = new ElementSelection(diagram);
+                    auto result = elementSelection->Add(args.elementIndex);
+                    if (result.Error()) return result;
+                    result = diagram->SetSelection(elementSelection);
+                    if (result.Error()) return result;
+                }
+            }
+            else
+            {
+                auto result = diagram->ResetSelection();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseControlLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            DiagramElement* element = args.element;
+            if (element != null)
+            {
+                if (element->IsSelected())
+                {
+                    auto result = diagram->GetSelection()->Remove(args.elementIndex);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    auto result = diagram->GetSelection()->Add(args.elementIndex);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseNormalRightClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            UniquePtr<ContextMenu> contextMenu(new ContextMenu());
+            Selection* selection = diagram->GetSelection();
+            if (!selection->IsRectangleSelection() && selection->Count() <= 1)
+            {
+                if (selection->Count() == 1)
+                {
+                    args.elementIndex = selection->GetFirstIndex();
+                    if (args.elementIndex != -1)
+                    {
+                        args.element = diagram->GetElementByIndex(args.elementIndex);
+                    }
+                    else
+                    {
+                        args.element = null;
+                    }
+                }
+                if (args.element != null)
+                {
+                    if (args.element->Contains(args.location))
+                    {
+                        auto result = args.element->AddActions(diagram, args.elementIndex, contextMenu.Get());
+                        if (result.Error()) return result;
+                    }
+                    else
+                    {
+                        auto result = diagram->DisposeContextMenu();
+                        if (result.Error()) return result;
+                    }
+                }
+                else
+                {
+                    auto result = diagram->DisposeContextMenu();
+                    if (result.Error()) return result;
+                }
+            }
+            else
+            {
+                if (selection->Contains(args.location))
+                {
+                    auto result = selection->AddActions(contextMenu.Get());
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    auto result = diagram->DisposeContextMenu();
+                    if (result.Error()) return result;
+                }
+            }
+            if (contextMenu->HasMenuItems())
+            {
+                Canvas* canvas = GetCanvas();
+                Point loc = canvas->ToControlLocation(args.location);
+                auto screenLocResult = canvas->ClientToScreen(loc);
+                if (screenLocResult.Error()) return Result<bool>(ErrorId(screenLocResult.GetErrorId()));;
+                Point screenLoc = screenLocResult.Value();
+                Window* window = canvas->GetWindow();
+                auto result = window->ShowContextMenu(contextMenu.Release(), screenLoc);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                auto result = diagram->DisposeContextMenu();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseDoubleClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            Selection* selection = diagram->GetSelection();
+            auto result = selection->Clear();
+            if (result.Error()) return result;
+            DiagramElement* element = args.element;
+            if (element != null)
+            {
+                if (element->IsClassElement())
+                {
+                    ClassElementPropertiesAction action(diagram, args.elementIndex, null);
+                    action.Execute(diagram, args.elementIndex);
+                }
+                else if (element->IsObjectElement())
+                {
+                    ObjectElementPropertiesAction action(diagram, args.elementIndex, null);
+                    action.Execute(diagram, args.elementIndex);
+                }
+                else if (element->IsNoteElement())
+                {
+                    NoteElementPropertiesAction action(diagram, args.elementIndex, null);
+                    action.Execute(diagram, args.elementIndex);
+                }
+                else if (element->IsRelationshipElement())
+                {
+                    RelationshipElementPropertiesAction action(diagram, args.elementIndex, null);
+                    action.Execute(diagram, args.elementIndex);
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override void CreateOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            ResizeHandle* resizeHandle = null;
+            bool leftButtonPressed = args.left && !args.right && !args.control && !args.shift;
+            if (leftButtonPressed && diagram->GetSelection()->IsRectangleSelection())
+            {
+                RectangleSelection* selection = cast<RectangleSelection*>(diagram->GetSelection());
+                PointF location = args.location;
+                resizeHandle = selection->GetResizeHandle(location);
+            }
+            if (resizeHandle != null)
+            {
+                UniquePtr<Operation> operation(new ResizeRectangleSelectionOperation(diagram, args.location, resizeHandle));
+                diagram->SetOperation(operation.Release());
+            }
+            else
+            {
+                UniquePtr<Operation> operation(new MoveContainerElementsOperation(diagram, args.location));
+                Selection* selection = diagram->GetSelection();
+                if (selection->Count() <= 1)
+                {
+                    if (selection->Count() == 1)
+                    {
+                        args.elementIndex = selection->GetFirstIndex();
+                        if (args.elementIndex != -1)
+                        {
+                            args.element = diagram->GetElementByIndex(args.elementIndex);
+                        }
+                        else
+                        {
+                            args.element = null;
+                        }
+                    }
+                    if (args.element != null)
+                    {
+                        if (args.element->IsContainerElement())
+                        {
+                            ContainerElement* containerElement = cast<ContainerElement*>(args.element);
+                            if (containerElement->Contains(args.location))
+                            {
+                                operation->AddElementIndex(args.elementIndex);
+                                List<RelationshipElement*> relationships = containerElement->GetAllRelationships();
+                                for (RelationshipElement* relationship : relationships)
+                                {
+                                    DiagramElement* sourceElement = relationship->Source().Element();
+                                    ContainerElement* sourceContainerElement = null;
+                                    if (sourceElement != null)
+                                    {
+                                        sourceContainerElement = sourceElement->GetContainerElement();
+                                    }
+                                    DiagramElement* targetElement = relationship->Target().Element();
+                                    ContainerElement* targetContainerElement = null;
+                                    if (targetElement != null)
+                                    {
+                                        targetContainerElement = targetElement->GetContainerElement();
+                                    }
+                                    if (sourceContainerElement == containerElement && targetContainerElement == containerElement)
+                                    {
+                                        int relationshipIndex = diagram->GetIndexOfElement(relationship);
+                                        if (relationshipIndex != -1)
+                                        {
+                                            operation->AddElementIndex(relationshipIndex);
+                                        }
+                                    }
+                                    else if (targetElement == null && relationship->IsReference() && relationship->GetCardinality() == Cardinality.zero)
+                                    {
+                                        int relationshipIndex = diagram->GetIndexOfElement(relationship);
+                                        if (relationshipIndex != -1)
+                                        {
+                                            operation->AddElementIndex(relationshipIndex);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        operation.Reset(new CreateRectangleSelectionOperation(diagram, args.location));
+                        diagram->SetOperation(operation.Release());
+                        return;
+                    }
+                }
+                else
+                {
+                    if (selection->GetContainerElementCount() > 0)
+                    {
+                        if (selection->Contains(args.location))
+                        {
+                            List<int> elementIndeces = selection->GetContainerElementIndeces();
+                            List<int> relationshipIndeces;
+                            for (int index : elementIndeces)
+                            {
+                                DiagramElement* element = diagram->GetElementByIndex(index);
+                                if (element->IsContainerElement())
+                                {
+                                    ContainerElement* containerElement = cast<ContainerElement*>(element);
+                                    List<RelationshipElement*> containerElementRelationships = containerElement->GetAllRelationships();
+                                    for (RelationshipElement* relationship : containerElementRelationships)
+                                    {
+                                        bool sourceInSelection = false;
+                                        DiagramElement* sourceElement = relationship->Source().Element();
+                                        if (sourceElement != null)
+                                        {
+                                            ContainerElement* sourceContainerElement = sourceElement->GetContainerElement();
+                                            if (sourceContainerElement != null)
+                                            {
+                                                int sourceContainerElementIndex = diagram->GetIndexOfElement(sourceContainerElement);
+                                                if (sourceContainerElementIndex != -1)
+                                                {
+                                                    if (Find(elementIndeces.Begin(), elementIndeces.End(), sourceContainerElementIndex) != elementIndeces.End())
+                                                    {
+                                                        sourceInSelection = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        bool targetInSelection = false;
+                                        DiagramElement* targetElement = relationship->Target().Element();
+                                        if (targetElement != null)
+                                        {
+                                            ContainerElement* targetContainerElement = targetElement->GetContainerElement();
+                                            if (targetContainerElement != null)
+                                            {
+                                                int targetContainerElementIndex = diagram->GetIndexOfElement(targetContainerElement);
+                                                if (targetContainerElementIndex != -1)
+                                                {
+                                                    if (Find(elementIndeces.Begin(), elementIndeces.End(), targetContainerElementIndex) != elementIndeces.End())
+                                                    {
+                                                        targetInSelection = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else if (relationship->IsReference() && relationship->GetCardinality() == Cardinality.zero)
+                                        {
+                                            targetInSelection = true;
+                                        }
+                                        if (sourceInSelection && targetInSelection)
+                                        {
+                                            int relationshipIndex = diagram->GetIndexOfElement(relationship);
+                                            if (relationshipIndex != -1)
+                                            {
+                                                if (Find(relationshipIndeces.Begin(), relationshipIndeces.End(), relationshipIndex) == relationshipIndeces.End())
+                                                {
+                                                    relationshipIndeces.Add(relationshipIndex);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            for (int relationshipIndex : relationshipIndeces)
+                            {
+                                elementIndeces.Add(relationshipIndex);
+                            }
+                            operation->SetElementIndeces(Rvalue(elementIndeces));
+                        }
+                    }
+                }
+                operation->FetchOriginalLocations();
+                if (!operation->IsEmpty())
+                {
+                    diagram->SetOperation(operation.Release());
+                }
+            }
+        }
+        [nodiscard]
+        public override Result<bool> ContinueOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->AdvanceOperation(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> CommitOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->CommitOperation(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> CancelOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->CancelOperation();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
     }
 }

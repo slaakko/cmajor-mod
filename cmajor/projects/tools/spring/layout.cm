@@ -9,22 +9,6 @@ using System.Windows;
 
 namespace spring
 {
-    class PaddingF
-    {
-        public PaddingF() : left(0), top(0), right(0), bottom(0)
-        {
-        }
-        public PaddingF(float left_, float top_, float right_, float bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
-        {
-        }
-        public float Vertical() const { return top + bottom; }
-        public float Horizontal() const { return left + right; }
-        public float left;
-        public float top;
-        public float right;
-        public float bottom;
-    }
-
     string DefaultKeywordFontFamily()
     {
         return "Arial";
@@ -1639,6 +1623,17 @@ namespace spring
             concreteOperationLayoutElement.Reset(new ConcreteOperationLayoutElement(this));
             resizeHandleLayoutElement.Reset(new ResizeHandleLayoutElement(this));
             relationshipLayoutElement.Reset(new RelationshipLayoutElement(this));
+            stringFormat.Reset(new StringFormat());
+        }
+        public void Reset()
+        {
+            pens.Clear();
+            penMap.Clear();
+            brushes.Clear();
+            brushMap.Clear();
+            fonts.Clear();
+            fontMap.Clear();
+            stringFormat.Reset();
         }
         public System.Xml.Element* ToXml() const
         {
@@ -1734,6 +1729,10 @@ namespace spring
         {
             return graphics;
         }
+        public void SetGraphics(Graphics* graphics_)
+        {
+            graphics = graphics_;
+        }
         public inline const string& XmlFilePath() const
         {
             return xmlFilePath;
@@ -1788,7 +1787,7 @@ namespace spring
         }
         public const StringFormat& GetStringFormat() const
         {
-            return stringFormat;
+            return *stringFormat;
         }
         public Result<Pen*> GetOrInsertPen(const System.Windows.Color& color, float width, DashStyle dashStyle)
         {
@@ -1863,7 +1862,7 @@ namespace spring
         private UniquePtr<AttributeLayoutElement> attributeLayoutElement;
         private UniquePtr<ResizeHandleLayoutElement> resizeHandleLayoutElement;
         private UniquePtr<RelationshipLayoutElement> relationshipLayoutElement;
-        private StringFormat stringFormat;
+        private UniquePtr<StringFormat> stringFormat;
         private List<UniquePtr<Pen>> pens;
         private Map<string, Pen*> penMap;
         private List<UniquePtr<Brush>> brushes;
@@ -1871,5 +1870,11 @@ namespace spring
         private List<UniquePtr<Font>> fonts;
         private Map<string, Font*> fontMap;
         private System.Lex.FileMap fileMap;
+    }
+
+    float GetRelationshipSymbolFieldWidth(float relationshipSymbolRadius, float horizontalPadding)
+    {
+        float symbolFieldWidth = horizontalPadding + 2.0f * relationshipSymbolRadius;
+        return symbolFieldWidth;
     }
 }

@@ -27,6 +27,108 @@ namespace spring
         public RelationshipElement(RelationshipKind rkind_) : base(DiagramElementKind.relationshipElement), rkind(rkind_), cardinality(Cardinality.one)
         {
         }
+        public inline RelationshipKind RKind() const
+        {
+            return rkind;
+        }
+        public inline bool IsInheritance() const
+        {
+            return rkind == RelationshipKind.inheritance;
+        }
+        public inline bool IsCombinedInheritance() const
+        {
+            return rkind == RelationshipKind.combinedInheritance;
+        }
+        public inline bool IsComposition() const
+        {
+            return rkind == RelationshipKind.composition;
+        }
+        public inline bool IsAggregation() const
+        {
+            return rkind == RelationshipKind.aggregation;
+        }
+        public inline bool IsReference() const
+        {
+            return rkind == RelationshipKind.reference;
+        }
+        public inline bool IsCreateInstance() const
+        {
+            return rkind == RelationshipKind.createInstance;
+        }
+        public inline bool IsAttachNote() const
+        {
+            return rkind == RelationshipKind.attachNote;
+        }
+        [nodiscard]
+        public Result<bool> SetContainerElementIndeces(const Map<ContainerElement*, int>& containerElementIndexMap)
+        {
+            auto result = source.SetIndex(containerElementIndexMap);
+            if (result.Error()) return result;
+            for (auto& sourceEndPoint : sourceEndPoints)
+            {
+                result = sourceEndPoint.SetIndex(containerElementIndexMap);
+                if (result.Error()) return result;
+            }
+            result = target.SetIndex(containerElementIndexMap);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public void MapContainerElements(const Map<DiagramElement*, DiagramElement*>& cloneMap, bool& orphan)
+        {
+            orphan = false;
+            if (source.Element() != null)
+            {
+                auto it = cloneMap.Find(source.Element());
+                if (it != cloneMap.End())
+                {
+                    DiagramElement* target = it->second;
+                    if (target == null)
+                    {
+                        orphan = true;
+                    }
+                    source.SetElement(target);
+                }
+            }
+            for (auto& sourceEndPoint : sourceEndPoints)
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    auto it = cloneMap.Find(sourceEndPoint.Element());
+                    if (it != cloneMap.End())
+                    {
+                        sourceEndPoint.SetElement(it->second);
+                    }
+                }
+            }
+            if (target.Element() != null)
+            {
+                auto it = cloneMap.Find(target.Element());
+                if (it != cloneMap.End())
+                {
+                    target.SetElement(it->second);
+                }
+            }
+        }
+        public void AddToElements()
+        {
+            if (source.Element() != null && target.Element() != null)
+            {
+                source.Element()->AddRelationship(this);
+                target.Element()->AddRelationship(this);
+            }
+            for (auto& sourceEndPoint : sourceEndPoints)
+            {
+                if (sourceEndPoint.Element() != null && target.Element() != null)
+                {
+                    sourceEndPoint.Element()->AddRelationship(this);
+                    target.Element()->AddRelationship(this);
+                }
+            }
+        }
+        public inline Cardinality GetCardinality() const
+        {
+            return cardinality;
+        }
         public void RemoveContainer(ContainerElement* container)
         {
             if (source.Element() == container)
@@ -64,10 +166,151 @@ namespace spring
             // todo
             return clone;
         }
+        public inline const EndPoint& Source() const
+        {
+            return source;
+        }
+        public inline EndPoint& Source()
+        {
+            return source;
+        }
+        public inline const EndPoint& Target() const
+        {
+            return target;
+        }
+        public inline EndPoint& Target()
+        {
+            return target;
+        }
+        public inline const List<EndPoint>& SourceEndPoints() const
+        {
+            return sourceEndPoints;
+        }
+        public inline List<EndPoint>& SourceEndPoints()
+        {
+            return sourceEndPoints;
+        }
+        public inline const List<PointF>& RoutingPoints() const
+        {
+            return routingPoints;
+        }
+        public inline List<PointF>& RoutingPoints()
+        {
+            return routingPoints;
+        }
+        public PointF LastPoint() const
+        {
+            if (routingPoints.IsEmpty())
+            {
+                return source.Point();
+            }
+            else
+            {
+                return routingPoints.Back();
+            }
+        }
+        public void SetLastPoint(const PointF& lastPoint)
+        {
+            if (routingPoints.IsEmpty())
+            {
+                source.SetPoint(lastPoint);
+            }
+            else
+            {
+                routingPoints.Back() = lastPoint;
+            }
+        }
+        public Line StartLine() const
+        {
+            PointF nextPoint;
+            if (routingPoints.IsEmpty())
+            {
+                nextPoint = target.Point();
+            }
+            else
+            {
+                nextPoint = routingPoints.Front();
+            }
+            Line startLine(source.Point(), nextPoint);
+            return startLine;
+        }
+        public Line EndLine() const
+        {
+            PointF prevPoint;
+            if (routingPoints.IsEmpty())
+            {
+                prevPoint = source.Point();
+            }
+            else
+            {
+                prevPoint = routingPoints.Back();
+            }
+            Line endLine(prevPoint, target.Point());
+            return endLine;
+        }
+        public override RectF Bounds() const
+        {
+            RectF bounds;
+            PointF minPoint(999999.99f, 999999.99f);
+            PointF maxPoint(-1, -1);
+            if (!IsCombinedInheritance())
+            {
+                minPoint.x = Min(source.Point().x, minPoint.x);
+                minPoint.y = Min(source.Point().y, minPoint.y);
+                maxPoint.x = Max(source.Point().x, maxPoint.x);
+                maxPoint.y = Max(source.Point().y, maxPoint.y);
+            }
+            else
+            {
+                for (const auto& endPoint : sourceEndPoints)
+                {
+                    minPoint.x = Min(endPoint.Point().x, minPoint.x);
+                    minPoint.y = Min(endPoint.Point().y, minPoint.y);
+                    maxPoint.x = Max(endPoint.Point().x, maxPoint.x);
+                    maxPoint.y = Max(endPoint.Point().y, maxPoint.y);
+                }
+            }
+            minPoint.x = Min(target.Point().x, minPoint.x);
+            minPoint.y = Min(target.Point().y, minPoint.y);
+            maxPoint.x = Max(target.Point().x, maxPoint.x);
+            maxPoint.y = Max(target.Point().y, maxPoint.y);
+            for (const PointF& routingPoint : routingPoints)
+            {
+                minPoint.x = Min(routingPoint.x, minPoint.x);
+                minPoint.y = Min(routingPoint.y, minPoint.y);
+                maxPoint.x = Max(routingPoint.x, maxPoint.x);
+                maxPoint.y = Max(routingPoint.y, maxPoint.y);
+            }
+            bounds.location.x = minPoint.x;
+            bounds.location.y = minPoint.y;
+            bounds.size.w = maxPoint.x - minPoint.x;
+            bounds.size.h = maxPoint.y - minPoint.y;
+            return bounds;
+        }
+        public void RemoveFromElements()
+        {
+            if (source.Element() != null)
+            {
+                source.Element()->RemoveRelationship(this);
+            }
+            for (EndPoint& sourceEndPoint : sourceEndPoints)
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    sourceEndPoint.Element()->RemoveRelationship(this);
+                }
+            }
+            if (target.Element() != null)
+            {
+                target.Element()->RemoveRelationship(this);
+            }
+        }
         private RelationshipKind rkind;
         private Cardinality cardinality;
         private EndPoint source;
         private EndPoint target;
         private List<EndPoint> sourceEndPoints;
+        private List<PointF> routingPoints;
+        private UniquePtr<RelationshipElementRep> rep;
     }
 }

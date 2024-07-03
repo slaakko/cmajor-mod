@@ -440,7 +440,7 @@ namespace System.Windows
         }
         public static int HorizontalPadding()
         {
-            return 4;
+            return 8;
         }
         public StatusBarItem(const string& text_, BorderStyle borderStyle_, bool spring_) : statusBar(null), text(text_), borderStyle(borderStyle_), spring(spring_)
         {

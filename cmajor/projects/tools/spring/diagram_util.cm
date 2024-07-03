@@ -1,0 +1,88 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class HorizontallyLess : Rel<int>
+    {
+        public HorizontallyLess(Diagram* diagram_) : diagram(diagram_)
+        {
+        }
+        public bool operator()(int leftIndex, int rightIndex) const
+        {
+            DiagramElement* left = diagram->GetElementByIndex(leftIndex);
+            DiagramElement* right = diagram->GetElementByIndex(rightIndex);
+            if (left->Location().x < right->Location().x)
+            {
+                return true;
+            }
+            else if (left->Location().x > right->Location().x)
+            {
+                return false;
+            }
+            else
+            {
+                return left->Location().y < right->Location().y;
+            }
+        }
+        private Diagram* diagram;
+    }
+
+    class VerticallyLess : Rel<int>
+    {
+        public VerticallyLess(Diagram* diagram_) : diagram(diagram_)
+        {
+        }
+        public bool operator()(int leftIndex, int rightIndex) const
+        {
+            DiagramElement* left = diagram->GetElementByIndex(leftIndex);
+            DiagramElement* right = diagram->GetElementByIndex(rightIndex);
+            if (left->Location().y < right->Location().y)
+            {
+                return true;
+            }
+            else if (left->Location().y > right->Location().y)
+            {
+                return false;
+            }
+            else
+            {
+                return left->Location().x < right->Location().x;
+            }
+        }
+        private Diagram* diagram;
+    }
+
+    UniquePtr<RelationshipElement> CombineInheritanceRelationships(
+        const List<RelationshipElement*>& inheritanceRelationships,
+        List<RelationshipElement*>& sourceRelationships)
+    {
+        return UniquePtr<RelationshipElement>();
+    }
+
+    bool LineContains(const PointF& from, const PointF& to, const PointF& loc, float selectedLineWidth)
+    {
+        Line line(from, to);
+        Line lineToLoc(from, loc);
+        Vector a(line.ToVector());
+        Vector b(lineToLoc.ToVector());
+        float f = ProjectionFactor(b, a);
+        if (f >= 0 && f <= a.Length())
+        {
+            Vector c = Projection(b, a);
+            Vector d = b - c;
+            if (d.Length() <= selectedLineWidth / 2)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+

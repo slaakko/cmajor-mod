@@ -96,6 +96,13 @@ namespace spring
                 return;
             }
             attachNoteToolCursor = cursorResult.Value();
+            Result<Bitmap> noteCornerBitmapResult = Bitmap.FromResource("note.corner.spring.bitmap");
+            if (noteCornerBitmapResult.Error())
+            {
+                SetErrorId(noteCornerBitmapResult.GetErrorId());
+                return;
+            }
+            noteCornerBitmap.Reset(new Bitmap(Rvalue(noteCornerBitmapResult.Value())));
             UniquePtr<MenuBar> menuBar(new MenuBar());
             MenuItem* fileMenuItem = new MenuItem("&File");
             MenuItem* newMenuItem = new MenuItem("&New");
@@ -471,22 +478,75 @@ namespace spring
                 return;
             }
             canvas = new Canvas(CanvasCreateParams().Defaults());
-            // TODO canvas
             result = AddChild(canvas);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
                 return;
             }
-            SetCanvas(canvas);
+            spring.SetCanvas(canvas);
+            canvas->SetNoteCornerBitmap(noteCornerBitmap.Get());
+            canvas->SetCopyMenuItem(copyMenuItem);
+            canvas->SetCutMenuItem(cutMenuItem);
+            canvas->SetPasteMenuItem(pasteMenuItem);
+            canvas->SetUndoMenuItem(undoMenuItem);
+            canvas->SetRedoMenuItem(redoMenuItem);
+            result = canvas->GetDiagram()->SetMenuItems(undoMenuItem, redoMenuItem);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            canvas->MouseEnterEvent().AddHandler(CanvasMouseEnter);
+            canvas->MouseLeaveEvent().AddHandler(CanvasMouseLeave);
+            canvas->MouseMoveEvent().AddHandler(CanvasMouseMove);
+            statusBar = new StatusBar();
+            statusBar->SetDoubleBuffered();
+            filePathStatusBarItem = new StatusBarItem(string(), StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(filePathStatusBarItem);
+            modifiedStatusBarItem = new StatusBarItem(" ", StatusBarItem.BorderStyle.sunken);
+            canvas->SetModifiedStatusBarItem(modifiedStatusBarItem);
+            statusBar->AddItem(modifiedStatusBarItem);
+            StatusBarItem* springItem = new StatusBarItem(string(), StatusBarItem.BorderStyle.flat, true);
+            statusBar->AddItem(springItem);
+            StatusBarItem* viewXItem = new StatusBarItem("view X:", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(viewXItem);
+            viewXCoordStatusBarItem = new StatusBarItem("      ", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(viewXCoordStatusBarItem);
+            StatusBarItem* viewYItem = new StatusBarItem("view Y:", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(viewYItem);
+            viewYCoordStatusBarItem = new StatusBarItem("      ", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(viewYCoordStatusBarItem);
+            StatusBarItem* xItem = new StatusBarItem("X:", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(xItem);
+            xCoordStatusBarItem = new StatusBarItem("      ", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(xCoordStatusBarItem);
+            StatusBarItem* yItem = new StatusBarItem("Y:", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(yItem);
+            yCoordStatusBarItem = new StatusBarItem("      ", StatusBarItem.BorderStyle.sunken);
+            statusBar->AddItem(yCoordStatusBarItem);
+            result = AddChild(statusBar);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override ~MainWindow()
+        {
+            Configuration.Instance().Reset();
         }
         private void NewClick(ClickEventArgs& args)
         {
             // todo
+            // filePathStatusBarItem->SetText(std::string());
         }
         private void OpenClick(ClickEventArgs& args)
         {
             // todo
+            // diagramFilePath = filePath;
+            // filePathStatusBarItem->SetText(diagramFilePath);
+            // modifiedStatusBarItem->SetText(" ");
         }
         private void SaveClick(ClickEventArgs& args)
         {
@@ -494,6 +554,8 @@ namespace spring
         }
         private void SaveAsClick(ClickEventArgs& args)
         {
+            // filePathStatusBarItem->SetText(diagramFilePath);
+            // diagram->ResetModified();
             // todo
         }
         private void SaveImageClick(ClickEventArgs& args)
@@ -540,6 +602,67 @@ namespace spring
         {
             // todo
         }
+        private void CanvasMouseEnter(EnterLeaveEventArgs& args)
+        {
+            auto result = xCoordStatusBarItem->SetText(string(' ', 6));
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = yCoordStatusBarItem->SetText(string(' ', 6));
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+        }
+        private void CanvasMouseLeave(EnterLeaveEventArgs& args)
+        {
+            auto result = xCoordStatusBarItem->SetText(string(' ', 6));
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = yCoordStatusBarItem->SetText(string(' ', 6));
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+        }
+        private void CanvasMouseMove(MouseEventArgs& args)
+        {
+            string viewXCoordText = Format(System.ToString(canvas->ViewOrigin().x), 6, FormatJustify.right);
+            auto result = viewXCoordStatusBarItem->SetText(viewXCoordText);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            string viewYCoordText = Format(System.ToString(canvas->ViewOrigin().y), 6, FormatJustify.right);
+            result = viewYCoordStatusBarItem->SetText(viewYCoordText);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            string xCoordText = Format(System.ToString(canvas->ViewOrigin().x + PixelsToMM(args.location.x, ScreenMetrics.Get().DpiX())), 6, FormatJustify.right);
+            result = xCoordStatusBarItem->SetText(xCoordText);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            string yCoordText = Format(System.ToString(canvas->ViewOrigin().y + PixelsToMM(args.location.y, ScreenMetrics.Get().DpiY())), 6, FormatJustify.right);
+            result = yCoordStatusBarItem->SetText(yCoordText);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+        }
         private Cursor arrowCursor;
         private Cursor* grabOpenCursor;
         private Cursor* grabClosedCursor;
@@ -559,6 +682,17 @@ namespace spring
         private MenuItem* undoMenuItem;
         private MenuItem* redoMenuItem;
         private Canvas* canvas;
+        private StatusBarItem* filePathStatusBarItem;
+        private StatusBarItem* modifiedStatusBarItem;
+        private StatusBarItem* viewXCoordStatusBarItem;
+        private StatusBarItem* viewYCoordStatusBarItem;
+        private StatusBarItem* xCoordStatusBarItem;
+        private StatusBarItem* yCoordStatusBarItem;
+        private string diagramFilePath;
+        private UniquePtr<ClipboardFormat> springDiagramElementsFormat;
+        private ustring clipboardData;
+        private UniquePtr<ClipboardListener> clipboardListener;
+        private StatusBar* statusBar;
     }
 }
 

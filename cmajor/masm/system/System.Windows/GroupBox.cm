@@ -101,7 +101,7 @@ namespace System.Windows
             }
             return Result<bool>(true);
         }
-        public const Container& Children() const
+        public const ComponentContainer& Children() const
         {
             return children;
         }
@@ -244,7 +244,7 @@ namespace System.Windows
             }
             return null;
         }
-        private Container children;
+        private ComponentContainer children;
         private RadioButton* checkedRadioButton;
     }
 }

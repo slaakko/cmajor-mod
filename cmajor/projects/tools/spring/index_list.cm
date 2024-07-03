@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections;
+using System.Windows;
 
 namespace spring
 {
@@ -128,5 +129,31 @@ namespace spring
             Insert(index, element);
         }
         private List<UniquePtr<T>> elements;
+    }
+
+    int IndexOf<T, P>(const IndexList<T>& list, const P& pred)
+    {
+        int n = list.Count();
+        for (int i = 0; i < n; ++i)
+        {
+            T* element = list.Get(i);
+            if (pred(element))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    class Contains<T> : UnaryPred<T>
+    {
+        public Contains(const PointF& location_) : location(location_)
+        {
+        }
+        public inline bool operator()(T* element) const
+        {
+            return element->Contains(location);
+        }
+        private PointF location;
     }
 }

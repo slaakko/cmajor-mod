@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 using System.Windows;
 
 namespace spring
@@ -15,20 +16,63 @@ namespace spring
 
     class Diagram
     {
-        public Diagram() : flags(DiagramFlags.none)
+        public Diagram() : flags(DiagramFlags.none), canvas(null), operation(new EmptyOperation(this)), selection(new EmptySelection(this)), errorId(0)
         {
+        }
+        [nodiscard]
+        public Result<bool> Draw(Graphics& graphics)
+        {
+            if (Changed())
+            {
+                ResetChanged();
+                Configuration.Instance().GetLayout()->SetGraphics(&graphics);
+                for (const auto& element : elements)
+                {
+                    auto result = element->Measure(graphics);
+                    if (result.Error()) return result;
+                }
+            }
+            if (Invalidated())
+            {
+                ResetInvalidated();
+            }
+            List<DiagramElement*> relationshipElements;
+            for (const auto& element : elements)
+            {
+                if (element->IsContainerElement())
+                {
+                    auto result = element->Draw(graphics);
+                    if (result.Error()) return result;
+                }
+                else if (element->IsRelationshipElement())
+                {
+                    relationshipElements.Add(element.Get());
+                }
+            }
+            for (DiagramElement* relationshipElement : relationshipElements)
+            {
+                auto result = relationshipElement->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            auto result = operation->Draw(graphics);
+            if (result.Error()) return result;
+            selection->Draw(graphics);
+            return Result<bool>(true);
         }
         public inline bool Changed() const
         {
             return (flags & DiagramFlags.changed) != DiagramFlags.none;
         }
-        public void SetChanged()
+        [nodiscard]
+        public Result<bool> SetChanged()
         {
             if (!Changed())
             {
                 flags = cast<DiagramFlags>(flags | DiagramFlags.changed);
-                SetModified();
+                auto result = SetModified();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
         public void ResetChanged()
         {
@@ -38,33 +82,38 @@ namespace spring
         {
             return (flags & DiagramFlags.modified) != DiagramFlags.none;
         }
-        public void SetModified()
+        [nodiscard]
+        public Result<bool> SetModified()
         {
             flags = cast<DiagramFlags>(flags | DiagramFlags.modified);
-/* todo
             if (canvas != null)
             {
                 StatusBarItem* modifiedStatusBarItem = canvas->ModifiedStatusBarItem();
                 if (modifiedStatusBarItem != null)
                 {
-                    modifiedStatusBarItem->SetText("*");
+                    auto result = modifiedStatusBarItem->SetText("*");
+                    if (result.Error()) return result;
                 }
             }
-*/
+            return Result<bool>(true);
         }
-        public void ResetModified()
+        [nodiscard]
+        public Result<bool> ResetModified()
         {
             if (IsModified())
             {
                 flags = cast<DiagramFlags>(flags & ~DiagramFlags.modified);
-/* todo
                 if (canvas != null)
                 {
                     StatusBarItem* modifiedStatusBarItem = canvas->ModifiedStatusBarItem();
-                    modifiedStatusBarItem->SetText(" ");
+                    if (modifiedStatusBarItem != null)
+                    {
+                        auto result = modifiedStatusBarItem->SetText(" ");
+                        if (result.Error()) return result;
+                    }
                 }
-*/
             }
+            return Result<bool>(true);
         }
         public inline bool Invalidated() const
         {
@@ -107,6 +156,171 @@ namespace spring
             if (result.Error()) return result;
             return Result<bool>(true);
         }
+        public inline Selection* GetSelection() const
+        {
+            return selection.Get();
+        }
+        [nodiscard]
+        public Result<bool> SetSelection(Selection* selection_)
+        {
+            auto result = selection->Clear();
+            if (result.Error()) return result;
+            selection.Reset(selection_);
+            if (!selection->IsEmpty())
+            {
+                auto result = EnableCopy();
+                if (result.Error()) return result;
+                result = EnableCut();
+                if (result.Error()) return result;
+            }
+            else
+            {
+                auto result = DisableCopy();
+                if (result.Error()) return result;
+                result = DisableCut();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> ResetSelection()
+        {
+            auto result = selection->Clear();
+            if (result.Error()) return result;
+            result = DisposeContextMenu();
+            if (result.Error()) return result;
+            selection.Reset(new EmptySelection(this));
+            result = DisableCopy();
+            if (result.Error()) return result;
+            result = DisableCut();
+            if (result.Error()) return result;
+            result = SetChanged();
+            if (result.Error()) return result;
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DeleteSelection()
+        {
+            if (!selection->IsEmpty())
+            {
+                auto result = selection->Delete();
+                if (result.Error()) return result;
+                result = ResetSelection();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public inline Operation* GetOperation() const
+        {
+            return operation.Get();
+        }
+        public void SetOperation(Operation* operation_)
+        {
+            operation.Reset(operation_);
+        }
+        public void ResetOperation()
+        {
+            operation.Reset(new EmptyOperation(this));
+        }
+        [nodiscard]
+        public Result<bool> EnableCopy()
+        {
+            Canvas* canvas = GetCanvas();
+            if (canvas != null)
+            {
+                auto result = canvas->EnableCopy();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> EnableCut()
+        {
+            Canvas* canvas = GetCanvas();
+            if (canvas != null)
+            {
+                auto result = canvas->EnableCut();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DisableCopy()
+        {
+            Canvas* canvas = GetCanvas();
+            if (canvas != null)
+            {
+                auto result = canvas->DisableCopy();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DisableCut()
+        {
+            Canvas* canvas = GetCanvas();
+            if (canvas != null)
+            {
+                auto result = canvas->DisableCut();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AdvanceOperation(MouseArgs& mouseArgs)
+        {
+            if (operation->IsEmptyOperation()) return Result<bool>(true);
+            auto result = operation->AdvanceTo(mouseArgs);
+            if (result.Error()) return result;
+            result = SetChanged();
+            if (result.Error()) return result;
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> CommitOperation(MouseArgs& mouseArgs)
+        {
+            auto result = operation->Commit(mouseArgs);
+            if (result.Error()) return result;
+            ResetOperation();
+            result = SetChanged();
+            if (result.Error()) return result;
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> CancelOperation()
+        {
+            operation->Cancel();
+            ResetOperation();
+            auto result = Tools.Instance().SetCurrent(Tools.Instance().GetSelectTool());
+            if (result.Error()) return result;
+            result = SetChanged();
+            if (result.Error()) return result;
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DisposeContextMenu()
+        {
+            Window* window = canvas->GetWindow();
+            auto result = window->RemoveContextMenu();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> HideContextMenu()
+        {
+            Window* window = canvas->GetWindow();
+            auto result = window->HideContextMenu();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         [nodiscard]
         public Result<bool> Undo()
         {
@@ -114,7 +328,8 @@ namespace spring
             {
                 auto result = commandList.Undo();
                 if (result.Error()) return result;
-                SetChanged();
+                result = SetChanged();
+                if (result.Error()) return result;
                 result = Invalidate();
                 if (result.Error()) return result;
             }
@@ -127,7 +342,8 @@ namespace spring
             {
                 auto result = commandList.Redo();
                 if (result.Error()) return result;
-                SetChanged();
+                result = SetChanged();
+                if (result.Error()) return result;
                 result = Invalidate();
                 if (result.Error()) return result;
             }
@@ -157,13 +373,65 @@ namespace spring
             }
             return -1;
         }
+        public int GetIndexOfElementAt(const PointF& location) const
+        {
+            spring.Contains<DiagramElement> pred(location);
+            return IndexOf(elements, pred);
+        }
+        public bool HasIntersectingContainerElements(const RectF& rect) const
+        {
+            for (const auto& element : elements)
+            {
+                if (element->IsContainerElement())
+                {
+                    ContainerElement* containerElement = cast<ContainerElement*>(element.Get());
+                    if (containerElement->IntersectsWith(rect)) return true;
+                }
+            }
+            return false;
+        }
+        public int GetNumberOfIntersectingContainerElements(const RectF& rect) const
+        {
+            int count = 0;
+            for (const auto& element : elements)
+            {
+                if (element->IsContainerElement())
+                {
+                    ContainerElement* containerElement = cast<ContainerElement*>(element.Get());
+                    if (containerElement->IntersectsWith(rect))
+                    {
+                        ++count;
+                    }
+                }
+            }
+            return count;
+        }
+        public List<int> GetIntersectingContainerElementIndeces(const RectF& rect) const
+        {
+            List<int> indeces;
+            int n = cast<int>(elements.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                DiagramElement* element = GetElementByIndex(i);
+                if (element->IsContainerElement())
+                {
+                    ContainerElement* containerElement = cast<ContainerElement*>(element);
+                    if (containerElement->IntersectsWith(rect))
+                    {
+                        indeces.Add(i);
+                    }
+                }
+            }
+            return indeces;
+        }
         [nodiscard]
         public Result<bool> AddElement(DiagramElement* element)
         {
             elements.Add(element);
             element->SetDiagram(this);
-            SetChanged();
-            auto result = Invalidate();
+            auto result = SetChanged();
+            if (result.Error()) return result;
+            result = Invalidate();
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -179,10 +447,29 @@ namespace spring
         {
             return elements.Release(index);
         }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        public void ResetError()
+        {
+            errorId = 0;
+        }
         private DiagramFlags flags;
         private Canvas* canvas;
         private CommandList commandList;
+        private UniquePtr<Operation> operation;
+        private UniquePtr<Selection> selection;
         private IndexList<DiagramElement> elements;
+        private int errorId;
     }
 }
 

@@ -1,0 +1,442 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class ExecuteGuard
+    {
+        public ExecuteGuard(Diagram* diagram_) : diagram(diagram_)
+        {
+        }
+        public ~ExecuteGuard()
+        {
+            auto result = diagram->HideContextMenu();
+            if (result.Error())
+            {
+                diagram->SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = diagram->SetChanged();
+            if (result.Error())
+            {
+                diagram->SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = diagram->Invalidate();
+            if (result.Error())
+            {
+                diagram->SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        private Diagram* diagram;
+    }
+
+    abstract class DiagramAction : ClickAction
+    {
+        public DiagramAction(Diagram* diagram_, MenuItem* menuItem) : base(), diagram(diagram_)
+        {
+            if (menuItem != null)
+            {
+                AddHandlerTo(*menuItem);
+            }
+        }
+        public override Result<bool> Execute()
+        {
+            ExecuteGuard guard(diagram);
+            return Execute(diagram);
+        }
+        [nodiscard]
+        public abstract Result<bool> Execute(Diagram* diagram);
+        private Diagram* diagram;
+    }
+
+    abstract class DiagramElementAction : ClickAction
+    {
+        public DiagramElementAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(), diagram(diagram_), elementIndex(elementIndex_)
+        {
+            if (menuItem != null)
+            {
+                AddHandlerTo(*menuItem);
+            }
+        }
+        public override Result<bool> Execute()
+        {
+            ExecuteGuard guard(diagram);
+            return Execute(diagram, elementIndex);
+        }
+        [nodiscard]
+        public abstract Result<bool> Execute(Diagram* diagram, int elementIndex);
+        private Diagram* diagram;
+        private int elementIndex;
+    }
+
+    class SaveSelectionAsImageAction : DiagramAction
+    {
+        public SaveSelectionAsImageAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            Canvas* canvas = GetCanvas();
+            Window* window = canvas->GetWindow();
+            auto result = diagram->HideContextMenu();
+            if (result.Error()) return result;
+            string diagramFileName;
+/*          TODO
+            SaveImageDialog dialog(diagramFileName);
+            if (dialog.ShowDialog(*window) == DialogResult,ok)
+            {
+                Selection* selection = diagram->GetSelection();
+                selection->SaveImage(dialog.FileName(), dialog.Margins(), dialog.Format());
+            }
+*/
+            return Result<bool>(true);
+        }
+    }
+
+    class AlignTopAction : DiagramAction
+    {
+        public AlignTopAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.AlignTop();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class AlignBottomAction : DiagramAction
+    {
+        public AlignBottomAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.AlignBottom();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class AlignVerticalCenterAction : DiagramAction
+    {
+        public AlignVerticalCenterAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.AlignVerticalCenter();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class AlignLeftSideAction : DiagramAction
+    {
+        public AlignLeftSideAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.AlignLeftSide();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class AlignRightSideAction : DiagramAction
+    {
+        public AlignRightSideAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.AlignRightSide();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class AlignHorizontalCenterAction : DiagramAction
+    {
+        public AlignHorizontalCenterAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.AlignHorizontalCenter();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class SpaceEvenlyVerticallyAction : DiagramAction
+    {
+        public SpaceEvenlyVerticallyAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.SpaceEvenlyVertically();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class SpaceEvenlyHorizontallyAction : DiagramAction
+    {
+        public SpaceEvenlyHorizontallyAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            ElementSelection elementSelection(diagram);
+            List<int> containerElementIndeces = selection->GetContainerElementIndeces();
+            for (auto index : containerElementIndeces)
+            {
+                auto result = elementSelection.Add(index);
+                if (result.Error()) return result;
+            }
+            auto result = elementSelection.SpaceEvenlyHorizontally();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class CombineInheritancesAction : DiagramAction
+    {
+        public CombineInheritancesAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto selection = diagram->GetSelection();
+            if (selection->IsElementSelection())
+            {
+                ElementSelection* elementSelection = cast<ElementSelection*>(selection);
+                auto result = elementSelection->CombineInheritanceRelationships();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    class DeleteSelectionAction : DiagramAction
+    {
+        public DeleteSelectionAction(Diagram* diagram_, MenuItem* menuItem) : base(diagram_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram)
+        {
+            auto result = diagram->GetSelection()->Delete();
+            if (result.Error()) return result;
+            result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            result = diagram->SetChanged();
+            if (result.Error()) return result;
+            result = diagram->Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class DeleteDiagramElementAction : DiagramElementAction
+    {
+        public DeleteDiagramElementAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(diagram));
+            UniquePtr<DiagramElement> element = diagram->RemoveElementByIndex(elementIndex);
+            if (element->IsContainerElement())
+            {
+                ContainerElement* containerElement = cast<ContainerElement*>(element.Get());
+                List<RelationshipElement*> containerElementRelationships = containerElement->GetAllRelationships();
+                List<RelationshipElement*> relationships;
+                for (RelationshipElement* relationship : containerElementRelationships)
+                {
+                    if (Find(relationships.Begin(), relationships.End(), relationship) == relationships.End())
+                    {
+                        relationships.Add(relationship);
+                    }
+                }
+                List<int> relationshipIndeces;
+                for (RelationshipElement* relationship : relationships)
+                {
+                    int index = diagram->GetIndexOfElement(relationship);
+                    if (index != -1)
+                    {
+                        if (Find(relationshipIndeces.Begin(), relationshipIndeces.End(), index) == relationshipIndeces.End())
+                        {
+                            relationshipIndeces.Add(index);
+                        }
+                    }
+                }
+                Sort(relationshipIndeces);
+                int m = cast<int>(relationshipIndeces.Count());
+                for (int i = m - 1; i >= 0; --i)
+                {
+                    int index = relationshipIndeces[i];
+                    UniquePtr<DiagramElement> element = diagram->RemoveElementByIndex(index);
+                    deleteElementsCommand->AddDeletedElement(element.Release(), index);
+                }
+            }
+            deleteElementsCommand->AddDeletedElement(element.Release(), elementIndex);
+            auto result = diagram->GetCommandList().AddCommand(deleteElementsCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class ClassElementPropertiesAction : DiagramElementAction
+    {
+        public ClassElementPropertiesAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+    }
+
+    class ObjectElementPropertiesAction : DiagramElementAction
+    {
+        public ObjectElementPropertiesAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+    }
+
+    class NoteElementPropertiesAction : DiagramElementAction
+    {
+        public NoteElementPropertiesAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+    }
+
+    class RelationshipElementPropertiesAction : DiagramElementAction
+    {
+        public RelationshipElementPropertiesAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+    }
+
+    class StraightenRelationshipElementAction : DiagramElementAction
+    {
+        public StraightenRelationshipElementAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+    }
+
+    class SetCenterConnectorsRelationshipElementAction : DiagramElementAction
+    {
+        public SetCenterConnectorsRelationshipElementAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+    }
+
+    class SplitRelationshipElementAction : DiagramElementAction
+    {
+        public SplitRelationshipElementAction(Diagram* diagram_, int elementIndex_, MenuItem* menuItem) : base(diagram_, elementIndex_, menuItem)
+        {
+        }
+        public override Result<bool> Execute(Diagram* diagram, int elementIndex)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+    }
+}
+

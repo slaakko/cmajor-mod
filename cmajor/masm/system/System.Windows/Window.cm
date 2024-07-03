@@ -860,7 +860,7 @@ namespace System.Windows
             {
                 Component* parent = null;
                 Component* child = focusedControl;
-                Container* container = child->GetContainer();
+                ComponentContainer* container = child->GetContainer();
                 if (container != null)
                 {
                     parent = container->Parent();
@@ -935,7 +935,7 @@ namespace System.Windows
             {
                 Component* parent = null;
                 Component* child = focusedControl;
-                Container* container = child->GetContainer();
+                ComponentContainer* container = child->GetContainer();
                 if (container != null)
                 {
                     parent = container->Parent();

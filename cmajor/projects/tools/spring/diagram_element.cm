@@ -25,6 +25,30 @@ namespace spring
         {
         }
         public default virtual ~DiagramElement();
+        [nodiscard]
+        public virtual Result<bool> Measure(Graphics& graphics)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> Draw(Graphics& graphics)
+        {
+            if (IsSelected())
+            {
+                auto result = DrawSelected(graphics);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> DrawSelected(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            Brush* brush = layout->GetSelectionColorElement()->GetBrush();
+            auto result = graphics.FillRectangle(*brush, bounds);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         public inline DiagramElementKind Kind() const
         {
             return kind;
@@ -119,6 +143,21 @@ namespace spring
                 if (result.Error()) return result;
             }
             return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Select()
+        {
+            if (!IsSelected())
+            {
+                SetSelected();
+                auto result = spring.GetDiagram()->Invalidate();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public virtual void Offset(float dx, float dy)
+        {
+            bounds.Offset(dx, dy);
         }
         public virtual void SetCompoundLocation(const CompoundLocation& compoundLocation)
         {

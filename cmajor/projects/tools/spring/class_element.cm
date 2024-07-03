@@ -13,6 +13,24 @@ namespace spring
         public ClassElement() : base(DiagramElementKind.classElement), isAbstract(false), rep(new ConcreteClassElement(this))
         {
         }
+        [nodiscard]
+        public override Result<bool> Measure(Graphics& graphics)
+        {
+            auto result = base->Measure(graphics);
+            if (result.Error()) return result;
+            result = rep->Measure(graphics);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            auto result = base->Draw(graphics);
+            if (result.Error()) return result;
+            result = rep->Draw(graphics);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         public override System.Xml.Element* ToXml() const
         {
             System.Xml.Element* xmlElement = System.Xml.MakeElement("classElement");
@@ -257,6 +275,25 @@ namespace spring
                     cloneMap[oldOp] = newOp;
                     reverseCloneMap[newOp] = oldOp;
                 }
+            }
+        }
+        public override float GetMaxChildElementWidth() const
+        {
+            return rep->MaxChildElementWidth();
+        }
+        public void SetRelationshipPoints()
+        {
+            int na = attributes.Count();
+            for (int i = 0; i < na; ++i)
+            {
+                AttributeElement* attribute = attributes.Get(i);
+                attribute->SetRelationshipPoint();
+            }
+            int no = operations.Count();
+            for (int i = 0; i < no; ++i)
+            {
+                OperationElement* operation = operations.Get(i);
+                operation->SetRelationshipPoint();
             }
         }
         private bool isAbstract;

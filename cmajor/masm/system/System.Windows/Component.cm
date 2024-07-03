@@ -12,11 +12,11 @@ namespace System.Windows
         public Component() : base(), container(null), nextSibling(null), prevSibling(null)
         {
         }
-        public inline Container* GetContainer() const
+        public inline ComponentContainer* GetContainer() const
         {
             return container;
         }
-        internal void SetContainer(Container* container_)
+        internal void SetContainer(ComponentContainer* container_)
         {
             container = container_;
         }
@@ -67,7 +67,7 @@ namespace System.Windows
                 nextSibling->prevSibling = prevSibling;
             }
         }
-        private Container* container;
+        private ComponentContainer* container;
         private Component* nextSibling;
         private Component* prevSibling;
     }

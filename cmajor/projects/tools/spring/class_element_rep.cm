@@ -8,13 +8,282 @@ using System.Windows;
 
 namespace spring
 {
-    class ClassElementRep
+    abstract class ClassElementRep
     {
-        public ClassElementRep(ClassElement* classElement_) : classElement(classElement_)
+        public ClassElementRep(ClassElement* classElement_) : classElement(classElement_), captionTextHeight(0.0f), maxChildElementWidth(0.0f)
         {
         }
         public default virtual ~ClassElementRep();
+        [nodiscard]
+        public Result<bool> Measure(Graphics& graphics)
+        {
+            ClassElement* classElement = GetClassElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            ClassLayoutElement* classLayout = GetClassLayout(layout);
+            RelationshipLayoutElement* relationshipLayout = layout->GetRelationshipLayoutElement();
+            PaddingElement* paddingElement = classLayout->GetPaddingElement();
+            keywordTextSize = SizeF(0.0f, 0.0f);
+            if (!classElement->Keyword().IsEmpty())
+            {
+                auto kwResult = ToUtf32(classElement->Keyword());
+                if (kwResult.Error()) return Result<bool>(ErrorId(kwResult.GetErrorId()));
+                ustring kwStr = Rvalue(kwResult.Value());
+                ustring keywordU32Text = ustring(cast<uchar>(0x00AB)) + kwStr + ustring(cast<uchar>(0x00BB));
+                auto utf8Result = ToUtf8(keywordU32Text);
+                if (utf8Result.Error()) return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                string keywordText = Rvalue(utf8Result.Value());
+                auto fontResult = classLayout->GetCaptionElement()->GetKeywordFontElement()->GetFont();
+                if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+                Font* keywordFont = fontResult.Value();
+                auto measureResult = graphics.MeasureStringRectF(keywordText, *keywordFont, PointF(0, 0), layout->GetStringFormat());
+                if (measureResult.Error()) return Result<bool>(ErrorId(measureResult.GetErrorId()));
+                RectF r = measureResult.Value();
+                keywordTextSize = r.size;
+            }
+            auto fontResult = classLayout->GetCaptionElement()->GetNameFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* nameFont = fontResult.Value();
+            auto measureResult = graphics.MeasureStringRectF(classElement->Name(), *nameFont, PointF(0, 0), layout->GetStringFormat());
+            if (measureResult.Error()) return Result<bool>(ErrorId(measureResult.GetErrorId()));
+            RectF r = measureResult.Value();
+            nameTextSize = r.size;
+            captionTextHeight = nameTextSize.h + keywordTextSize.h;
+            float captionRectX = classElement->Location().x;
+            float captionRectY = classElement->Location().y;
+            float captionRectWidth = paddingElement->GetPadding().Horizontal() + Max(nameTextSize.w, keywordTextSize.w);
+            float captionRectHeight = paddingElement->GetPadding().Vertical() + captionTextHeight;
+            captionRect = RectF(PointF(captionRectX, captionRectY), SizeF(captionRectWidth, captionRectHeight));
+            maxChildElementWidth = 0.0f;
+            bool hasRelationship = false;
+            auto result = MeasureAttributes(graphics, classLayout, hasRelationship);
+            if (result.Error()) return result;
+            result = MeasureOperations(graphics, classLayout, hasRelationship);
+            if (result.Error()) return result;
+            if (hasRelationship)
+            {
+                float w = GetRelationshipSymbolFieldWidth(
+                    relationshipLayout->RelationshipSymbolRadius(),
+                    relationshipLayout->GetPaddingElement()->GetPadding().Horizontal());
+                captionRect.size.w = captionRect.size.w + w;
+                operationRect.size.w = operationRect.size.w + w;
+                attributeRect.size.w = attributeRect.size.w + w;
+                classElement->SetRelationshipPoints();
+            }
+            captionRect = RectF(PointF(captionRectX, captionRectY), SizeF(captionRectWidth, captionRectHeight));
+            SetSize();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Draw(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            ClassLayoutElement* classLayout = GetClassLayout(layout);
+            auto result = DrawFrame(graphics, classLayout);
+            if (result.Error()) return result;
+            result = DrawCaption(graphics, classLayout);
+            if (result.Error()) return result;
+            result = DrawAttributes(graphics);
+            if (result.Error()) return result;
+            result = DrawOperations(graphics);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> MeasureAttributes(Graphics& graphics, ClassLayoutElement* classLayout, bool& hasRelationship)
+        {
+            PaddingElement* paddingElement = classLayout->GetPaddingElement();
+            PointF location = classElement->Location();
+            attributeRect = RectF();
+            attributeRect.location.x = location.x;
+            attributeRect.location.y = location.y + captionRect.size.h;
+            attributeRect.size.w = captionRect.size.w;
+            attributeRect.size.h = paddingElement->GetPadding().top;
+            PointF origin;
+            origin.x = attributeRect.location.x + paddingElement->GetPadding().left;
+            origin.y = attributeRect.location.y + paddingElement->GetPadding().top;
+            int n = classElement->Attributes().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                AttributeElement* attribute = classElement->Attributes().Get(i);
+                auto result = attribute->Measure(graphics);
+                if (result.Error()) return result;
+                SizeF attributeSize = attribute->Size();
+                float w = attributeSize.w + paddingElement->GetPadding().Horizontal();
+                float h = attributeSize.h;
+                maxChildElementWidth = Max(maxChildElementWidth, w);
+                if (attribute->Relationship() != null)
+                {
+                    hasRelationship = true;
+                }
+                attribute->SetLocation(origin);
+                attributeRect.size.w = Max(attributeRect.size.w, w);
+                origin.y = origin.y + h;
+                attributeRect.size.h = attributeRect.size.h + h;
+            }
+            attributeRect.size.h = attributeRect.size.h + paddingElement->GetPadding().bottom;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> MeasureOperations(Graphics& graphics, ClassLayoutElement* classLayout, bool& hasRelationship)
+        {
+            PaddingElement* paddingElement = classLayout->GetPaddingElement();
+            PointF location = classElement->Location();
+            operationRect = RectF();
+            operationRect.location.x = location.x;
+            operationRect.location.y = attributeRect.location.y + attributeRect.size.h;
+            operationRect.size.w = attributeRect.size.w;
+            operationRect.size.h = paddingElement->GetPadding().top;
+            PointF origin;
+            origin.x = operationRect.location.x + paddingElement->GetPadding().left;
+            origin.y = operationRect.location.y + paddingElement->GetPadding().top;
+            int n = classElement->Operations().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                OperationElement* operation = classElement->Operations().Get(i);
+                auto result = operation->Measure(graphics);
+                if (result.Error()) return result;
+                SizeF operationSize = operation->Size();
+                float w = operationSize.w + paddingElement->GetPadding().Horizontal();
+                float h = operationSize.h;
+                maxChildElementWidth = Max(maxChildElementWidth, w);
+                if (operation->Relationship() != null)
+                {
+                    hasRelationship = true;
+                }
+                operation->SetLocation(origin);
+                operationRect.size.w = Max(operationRect.size.w, w);
+                origin.y = origin.y + h;
+                operationRect.size.h = operationRect.size.h + h;
+            }
+            operationRect.size.h = operationRect.size.h + paddingElement->GetPadding().bottom;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawFrame(Graphics& graphics, ClassLayoutElement* classLayout)
+        {
+            ClassElement* classElement = GetClassElement();
+            PaddingElement* paddingElement = classLayout->GetPaddingElement();
+            auto framePenResult = classLayout->FramePen();
+            if (framePenResult.Error()) return Result<bool>(ErrorId(framePenResult.GetErrorId()));
+            Pen* framePen = framePenResult.Value();
+            auto result = graphics.DrawRectangle(*framePen, classElement->Bounds());
+            if (result.Error()) return result;
+            if (!classElement->Attributes().IsEmpty() || !classElement->Operations().IsEmpty())
+            {
+                float captionLineY = paddingElement->GetPadding().Vertical() + captionTextHeight;
+                PointF captionLineStart = PointF(classElement->Location().x, classElement->Location().y + captionLineY);
+                PointF captionLineEnd = PointF(classElement->Location().x + classElement->Size().w, classElement->Location().y + captionLineY);
+                result = graphics.DrawLine(*framePen, captionLineStart, captionLineEnd);
+                if (result.Error()) return result;
+            }
+            if (!classElement->Operations().IsEmpty())
+            {
+                PointF operationLineStart = PointF(classElement->Location().x, operationRect.location.y);
+                PointF operationLineEnd = PointF(classElement->Location().x + classElement->Size().w, operationRect.location.y);
+                result = graphics.DrawLine(*framePen, operationLineStart, operationLineEnd);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCaption(Graphics& graphics, ClassLayoutElement* classLayout)
+        {
+            ClassElement* classElement = GetClassElement();
+            PaddingElement* paddingElement = classLayout->GetPaddingElement();
+            CaptionElement* captionElement = classLayout->GetCaptionElement();
+            PointF location = classElement->Location();
+            Brush* brush = classLayout->GetTextColorElement()->GetBrush();
+            float top = location.y + paddingElement->GetPadding().top;
+            if (!classElement->Keyword().IsEmpty())
+            {
+                auto kwResult = ToUtf32(classElement->Keyword());
+                if (kwResult.Error()) return Result<bool>(ErrorId(kwResult.GetErrorId()));
+                ustring kwStr = Rvalue(kwResult.Value());
+                ustring keywordU32Text = ustring(cast<uchar>(0x00AB)) + kwStr + ustring(cast<uchar>(0x00BB));
+                auto utf8Result = ToUtf8(keywordU32Text);
+                if (utf8Result.Error()) return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                string keywordText = Rvalue(utf8Result.Value());
+                auto fontResult = classLayout->GetCaptionElement()->GetKeywordFontElement()->GetFont();
+                if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+                Font* keywordFont = fontResult.Value();
+                float keywordXOffset = (classElement->Bounds().size.w - (keywordTextSize.w + paddingElement->GetPadding().Horizontal())) / 2.0f;
+                PointF keywordOrigin(location.x + paddingElement->GetPadding().left + keywordXOffset, top);
+                auto result = graphics.DrawString(keywordText, *keywordFont, keywordOrigin, *brush);
+                if (result.Error()) return result;
+                top = top + keywordTextSize.h;
+            }
+            float nameXOffset = (classElement->Bounds().size.w - (nameTextSize.w + paddingElement->GetPadding().Horizontal())) / 2.0f;
+            PointF nameOrigin(location.x + paddingElement->GetPadding().left + nameXOffset, top);
+            auto fontResult = captionElement->GetNameFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* nameFont = fontResult.Value();
+            auto result = graphics.DrawString(classElement->Name(), *nameFont, nameOrigin, *brush);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawAttributes(Graphics& graphics)
+        {
+            int n = classElement->Attributes().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                AttributeElement* attribute = classElement->Attributes().Get(i);
+                auto result = attribute->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawOperations(Graphics& graphics)
+        {
+            int n = classElement->Operations().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                OperationElement* operation = classElement->Operations().Get(i);
+                auto result = operation->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public abstract ClassLayoutElement* GetClassLayout(Layout* layout) const;
+        public inline ClassElement* GetClassElement() const
+        {
+            return classElement;
+        }
+        public inline float MaxChildElementWidth() const
+        {
+            return maxChildElementWidth;
+        }
+        private void SetSize()
+        {
+            ClassElement* classElement = GetClassElement();
+            SizeF captionRectSize = captionRect.size;
+            SizeF size(0.0f, 0.0f);
+            size.w = Max(size.w, captionRectSize.w);
+            float h = captionRectSize.h;
+            if (!classElement->Attributes().IsEmpty() || !classElement->Operations().IsEmpty())
+            {
+                SizeF attributeRectSize = attributeRect.size;
+                size.w = Max(size.w, attributeRectSize.w);
+                h = h + attributeRectSize.h;
+            }
+            if (!classElement->Operations().IsEmpty())
+            {
+                SizeF operationRectSize = operationRect.size;
+                size.w = Max(size.w, operationRectSize.w);
+                h = h + operationRectSize.h;
+            }
+            size.h = Max(size.h, h);
+            classElement->SetSize(size);
+        }
         private ClassElement* classElement;
+        private SizeF keywordTextSize;
+        private SizeF nameTextSize;
+        private float captionTextHeight;
+        private RectF captionRect;
+        private RectF attributeRect;
+        private RectF operationRect;
+        private float maxChildElementWidth;
     }
 
     class ConcreteClassElement : ClassElementRep
@@ -22,12 +291,20 @@ namespace spring
         public ConcreteClassElement(ClassElement* classElement_) : base(classElement_)
         {
         }
+        public override ClassLayoutElement* GetClassLayout(Layout* layout) const
+        {
+            return layout->GetConcreteClassLayoutElement();
+        }
     }
 
     class AbstractClassElement : ClassElementRep
     {
         public AbstractClassElement(ClassElement* classElement_) : base(classElement_)
         {
+        }
+        public override ClassLayoutElement* GetClassLayout(Layout* layout) const
+        {
+            return layout->GetAbstractClassLayoutElement();
         }
     }
 }

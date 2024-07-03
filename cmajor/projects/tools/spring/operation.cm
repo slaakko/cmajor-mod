@@ -1,0 +1,421 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    enum OperationKind
+    {
+        emptyOperation, moveContainerElementsOperation, addRelationshipOperation, createRectangleSelectionOperation, resizeRectangleSelectionOperation,
+        grabDiagramOperation
+    }
+
+    class Operation : GraphicsObject
+    {
+        public Operation(OperationKind kind_, Diagram* diagram_, const PointF& startLocation_) : kind(kind_), diagram(diagram_), startLocation(startLocation_)
+        {
+        }
+        public Operation(OperationKind kind_, Diagram* diagram_) : this(kind_, diagram_, PointF())
+        {
+        }
+        public default virtual ~Operation();
+        public virtual bool IsEmpty() const
+        {
+            return IsEmptyOperation();
+        }
+        [nodiscard]
+        public virtual Result<bool> AdvanceTo(MouseArgs& mouseArgs)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> Commit(MouseArgs& mouseArgs)
+        {
+            return Result<bool>(true);
+        }
+        public virtual void Cancel()
+        {
+        }
+        [nodiscard]
+        public virtual Result<bool> Draw(Graphics& graphics)
+        {
+            return Result<bool>(true);
+        }
+        public virtual void AddElementIndex(int index)
+        {
+        }
+        public virtual void SetElementIndeces(List<int>&& elementIndeces)
+        {
+        }
+        public virtual void FetchOriginalLocations()
+        {
+        }
+        public inline OperationKind Kind() const
+        {
+            return kind;
+        }
+        public inline Diagram* GetDiagram() const
+        {
+            return diagram;
+        }
+        public inline const PointF& StartLocation() const
+        {
+            return startLocation;
+        }
+        public inline bool IsEmptyOperation() const
+        {
+            return kind == OperationKind.emptyOperation;
+        }
+        public inline bool IsMoveContainerElementsOperation() const
+        {
+            return kind == OperationKind.moveContainerElementsOperation;
+        }
+        public inline bool IsAddRelationshipOperation() const
+        {
+            return kind == OperationKind.addRelationshipOperation;
+        }
+        public inline bool IsCreateRectangleSelectionOperation() const
+        {
+            return kind == OperationKind.createRectangleSelectionOperation;
+        }
+        public inline bool IsResizeRectangleSelectionOperation() const
+        {
+            return kind == OperationKind.resizeRectangleSelectionOperation;
+        }
+        public inline bool IsGrabDiagramOperation() const
+        {
+            return kind == OperationKind.grabDiagramOperation;
+        }
+        private OperationKind kind;
+        private Diagram* diagram;
+        private PointF startLocation;
+    }
+
+    class EmptyOperation : Operation
+    {
+        public EmptyOperation(Diagram* diagram_) : base(OperationKind.emptyOperation, diagram_)
+        {
+        }
+    }
+
+    class MoveContainerElementsOperation : Operation
+    {
+        public MoveContainerElementsOperation(Diagram* diagram_, const PointF& startLocation_) :
+            base(OperationKind.moveContainerElementsOperation, diagram_, startLocation_), resetSelection(false), moveCommand(new MoveCommand(diagram_))
+        {
+            Diagram* diagram = GetDiagram();
+            auto selection = diagram->GetSelection();
+            selection->SetStartLocation(StartLocation());
+        }
+        public void ResetSelection()
+        {
+            resetSelection = true;
+        }
+        public override bool IsEmpty() const
+        {
+            return elementIndeces.IsEmpty();
+        }
+        public override void AddElementIndex(int index)
+        {
+            elementIndeces.Add(index);
+        }
+        public override void SetElementIndeces(List<int>&& elementIndeces_)
+        {
+            elementIndeces = elementIndeces_;
+        }
+        [nodiscard]
+        public override Result<bool> AdvanceTo(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            PointF startLocation = StartLocation();
+            PointF nextLocation = args.location;
+            if (args.control)
+            {
+                Line line(startLocation, nextLocation);
+                Vector v(line.ToVector());
+                switch (MainDirection(v))
+                {
+                    case 0:
+                    case 180:
+                    {
+                        nextLocation.y = startLocation.y;
+                        break;
+                    }
+                    case 90:
+                    case 270:
+                    {
+                        nextLocation.x = startLocation.x;
+                        break;
+                    }
+                }
+            }
+            float dx = nextLocation.x - startLocation.x;
+            float dy = nextLocation.y - startLocation.y;
+            int n = cast<int>(elementIndeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int elementIndex = elementIndeces[i];
+                CompoundLocation newLocation = originalLocations[i];
+                newLocation.Offset(dx, dy);
+                DiagramElement* element = diagram->GetElementByIndex(elementIndex);
+                element->SetCompoundLocation(newLocation);
+            }
+            diagram->GetSelection()->Move(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Commit(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = AdvanceTo(args);
+            if (result.Error()) return result;
+            if (resetSelection)
+            {
+                result = diagram->ResetSelection();
+                if (result.Error()) return result;
+            }
+            for (int index : elementIndeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override void Cancel()
+        {
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(elementIndeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int elementIndex = elementIndeces[i];
+                DiagramElement* element = diagram->GetElementByIndex(elementIndex);
+                element->SetCompoundLocation(originalLocations[i]);
+            }
+        }
+        public override void FetchOriginalLocations()
+        {
+            Diagram* diagram = GetDiagram();
+            for (int elementIndex : elementIndeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(elementIndex);
+                CompoundLocation compoundLocation = element->GetCompoundLocation();
+                originalLocations.Add(compoundLocation);
+                moveCommand->AddOldLocation(elementIndex, compoundLocation);
+            }
+        }
+        private List<int> elementIndeces;
+        private List<CompoundLocation> originalLocations;
+        private bool resetSelection;
+        private UniquePtr<MoveCommand> moveCommand;
+    }
+
+    class AddRelationshipOperation : Operation
+    {
+        public AddRelationshipOperation(Diagram* diagram_, RelationshipElement* relationshipElement_) :
+            base(OperationKind.addRelationshipOperation, diagram_), relationshipElement(relationshipElement_)
+        {
+        }
+        public override bool IsEmpty() const
+        {
+            return false;
+        }
+        [nodiscard]
+        public override Result<bool> AdvanceTo(MouseArgs& args)
+        {
+            PointF lastPoint = relationshipElement->LastPoint();
+            PointF targetPoint = args.location;
+            if (args.control)
+            {
+                Line line(lastPoint, targetPoint);
+                Vector v(line.ToVector());
+                switch (MainDirection(v))
+                {
+                    case 0:
+                    case 180:
+                    {
+                        targetPoint.y = lastPoint.y;
+                        break;
+                    }
+                    case 90:
+                    case 270:
+                    {
+                        targetPoint.x = lastPoint.x;
+                        break;
+                    }
+                }
+            }
+            relationshipElement->Target().SetPoint(targetPoint);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            auto result = relationshipElement->Draw(graphics);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Commit(MouseArgs& args)
+        {
+            relationshipElement->AddToElements();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(diagram));
+            addElementsCommand->AddIndex(diagram->NextIndex());
+            auto result = diagram->AddElement(relationshipElement.Release());
+            if (result.Error()) return result;
+            result = Tools.Instance().SetCurrent(Tools.Instance().GetSelectTool());
+            if (result.Error()) return result;
+            result = diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override void Cancel()
+        {
+            relationshipElement->RemoveFromElements();
+        }
+        public inline RelationshipElement* GetRelationshipElement() const
+        {
+            return relationshipElement.Get();
+        }
+        private UniquePtr<RelationshipElement> relationshipElement;
+    }
+
+    class CreateRectangleSelectionOperation : Operation
+    {
+        public CreateRectangleSelectionOperation(Diagram* diagram_, const PointF& startLocation_) :
+            base(OperationKind.createRectangleSelectionOperation, diagram_, startLocation_), selection(new RectangleSelection(diagram_, startLocation_))
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->SetSelection(selection);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override bool IsEmpty() const
+        {
+            return selection->IsEmpty();
+        }
+        [nodiscard]
+        public override Result<bool> AdvanceTo(MouseArgs& args)
+        {
+            if (args.left && !args.right)
+            {
+                SizeF size(args.location.x - selection->Location().x, args.location.y - selection->Location().y);
+                selection->SetSize(size);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Commit(MouseArgs& mouseArgs)
+        {
+            if (!selection->IsEmpty())
+            {
+                Diagram* diagram = GetDiagram();
+                auto result = diagram->EnableCopy();
+                if (result.Error()) return result;
+                result = diagram->EnableCut();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private RectangleSelection* selection;
+    }
+
+    class ResizeRectangleSelectionOperation : Operation
+    {
+        public ResizeRectangleSelectionOperation(Diagram* diagram_, const PointF& startLocation_, ResizeHandle* resizeHandle_) :
+            base(OperationKind.resizeRectangleSelectionOperation, diagram_, startLocation_), resizeHandle(resizeHandle_)
+        {
+            auto selection = resizeHandle->GetSelection();
+            selection->SetStartLocation(StartLocation());
+        }
+        public override bool IsEmpty() const
+        {
+            return resizeHandle == null;
+        }
+        [nodiscard]
+        public override Result<bool> AdvanceTo(MouseArgs& args)
+        {
+            if (resizeHandle == null) return Result<bool>(true);
+            PointF currentLocation = args.location;
+            PointF startLocation = StartLocation();
+            float dx = currentLocation.x - startLocation.x;
+            float dy = currentLocation.y - startLocation.y;
+            resizeHandle->Move(dx, dy);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Commit(MouseArgs& args)
+        {
+            if (resizeHandle == null) return Result<bool>(true);
+            Diagram* diagram = GetDiagram();
+            auto result = AdvanceTo(args);
+            if (result.Error()) return result;
+            if (!resizeHandle->GetSelection()->IsEmpty())
+            {
+                result = diagram->EnableCopy();
+                if (result.Error()) return result;
+                result = diagram->EnableCut();
+            }
+            else
+            {
+                result = diagram->DisableCopy();
+                if (result.Error()) return result;
+                result = diagram->DisableCut();
+                if (result.Error()) return result;
+            }
+            resizeHandle = null;
+            return Result<bool>(true);
+        }
+        public override void Cancel()
+        {
+            if (resizeHandle == null) return;
+            resizeHandle->GetSelection()->SetRect(resizeHandle->GetSelection()->StartRect());
+            resizeHandle = null;
+        }
+        public Cursor* GetCursor() const
+        {
+            if (resizeHandle != null)
+            {
+                return resizeHandle->GetCursor();
+            }
+            return null;
+        }
+        private ResizeHandle* resizeHandle;
+    }
+
+    class GrabDiagramOperation : Operation
+    {
+        public GrabDiagramOperation(Diagram* diagram_, const PointF& startLocation_) :
+            base(OperationKind.grabDiagramOperation, diagram_, startLocation_), startViewOrigin(GetCanvas()->ViewOrigin())
+        {
+        }
+        [nodiscard]
+        public override Result<bool> AdvanceTo(MouseArgs& args)
+        {
+            if (args.left && !args.right)
+            {
+                PointF startLoc = StartLocation();
+                PointF loc = args.location;
+                float dx = loc.x - startLoc.x;
+                float dy = loc.y - startLoc.y;
+                PointF viewOrigin(Max(startViewOrigin.x - dx, 0.0f), Max(startViewOrigin.y - dy, 0.0f));
+                Canvas* canvas = GetCanvas();
+                auto result = canvas->SetViewOrigin(viewOrigin);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private PointF startViewOrigin;
+    }
+}
+

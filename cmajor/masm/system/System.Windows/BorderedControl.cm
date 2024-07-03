@@ -506,7 +506,7 @@ namespace System.Windows
         {
             flags = cast<Flags>(flags & ~Flags.childFocused);
         }
-        private Container container;
+        private ComponentContainer container;
         private BorderStyle borderStyle;
         private int borderWidth;
         private Color normalBorderColor;

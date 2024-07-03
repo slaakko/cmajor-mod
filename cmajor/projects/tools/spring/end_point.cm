@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 using System.Windows;
 
 namespace spring
@@ -12,7 +13,7 @@ namespace spring
     {
         source, target
     }
-    
+
     class EndPoint
     {
         public EndPoint() : this(null, Connector(), PointF())
@@ -63,11 +64,46 @@ namespace spring
         {
             return index;
         }
+        [nodiscard]
+        public Result<bool> SetIndex(const Map<ContainerElement*, int>& containerElementIndexMap)
+        {
+            if (element != null)
+            {
+                ContainerElement* containerElement = element->GetContainerElement();
+                auto it = containerElementIndexMap.Find(containerElement);
+                if (it != containerElementIndexMap.End())
+                {
+                    index = it->second;
+                }
+                else
+                {
+                    auto errorId = AllocateError("EndPoint.SetIndex: index for container element '" + containerElement->Name() + "' not found");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                index = -1;
+            }
+            return Result<bool>(true);
+        }
         private DiagramElement* element;
         private Connector connector;
         private PointF point;
         private TextElement* primaryTextElement;
         private TextElement* secondaryTextElement;
         private int index;
+    }
+
+    class EndPointNearer : Rel<EndPoint*>
+    {
+        public EndPointNearer(const PointF& location_) : location(location_)
+        {
+        }
+        public inline bool operator()(EndPoint* left, EndPoint* right) const
+        {
+            return Distance(left->Point(), location) < Distance(right->Point(), location);
+        }
+        private PointF location;
     }
 }

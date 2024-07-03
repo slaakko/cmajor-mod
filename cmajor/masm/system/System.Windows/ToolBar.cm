@@ -483,18 +483,18 @@ namespace System.Windows
             return base->OnPaint(args);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseEnter();
+            auto result = base->OnMouseEnter(args);
             if (result.Error()) return result;
             mouseInToolButton = null;
             mouseDownToolButton = null;
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseLeave();
+            auto result = base->OnMouseLeave(args);
             if (result.Error()) return result;
             if (mouseInToolButton != null)
             {
@@ -524,7 +524,8 @@ namespace System.Windows
                         mouseInToolButton = null;
                     }
                     mouseInToolButton = toolButton;
-                    mouseInToolButton->MouseEnterInternal();
+                    result = mouseInToolButton->MouseEnterInternal();
+                    if (result.Error()) return result;
                 }
                 result = toolButton->MouseMoveInternal(args);
                 if (result.Error()) return result;
@@ -792,7 +793,7 @@ namespace System.Windows
             flags = cast<Flags>(flags & ~Flags.toolTipWindowVisible);
         }
         private Flags flags;
-        private Container toolButtons;
+        private ComponentContainer toolButtons;
         private Color toolButtonTransparentColor;
         private int toolButtonHeight;
         private List<UniquePtr<Bitmap>> bitmaps;
@@ -1022,9 +1023,13 @@ namespace System.Windows
         {
             transparentColor = transparentColor_;
         }
-        internal void MouseEnterInternal()
+        [nodiscard]
+        internal Result<bool> MouseEnterInternal()
         {
-            OnMouseEnter();
+            EnterLeaveEventArgs args;
+            auto result = OnMouseEnter(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         internal void MouseHoverInternal()
         {
@@ -1034,18 +1039,26 @@ namespace System.Windows
                 toolBar->ShowToolTipWindow(this);
             }
         }
-        protected virtual void OnMouseEnter()
+        [nodiscard]
+        protected virtual Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            mouseEnterEvent.Fire();
+            mouseEnterEvent.Fire(args);
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public Event<MouseEnterEventHandler>& MouseEnterEvent() const
+        public Event<MouseEnterEventHandler, EnterLeaveEventArgs>& MouseEnterEvent() const
         {
             return mouseEnterEvent;
         }
         [nodiscard]
         internal Result<bool> MouseLeaveInternal()
         {
-            OnMouseLeave();
+            EnterLeaveEventArgs args;
+            auto result = OnMouseLeave(args);
+            if (result.Error()) return result;
             ToolBar* toolBar = GetToolBar();
             if (!toolTip.IsEmpty() && toolBar != null)
             {
@@ -1054,11 +1067,17 @@ namespace System.Windows
             }
             return Result<bool>(true);
         }
-        protected virtual void OnMouseLeave()
+        [nodiscard]
+        protected virtual Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            mouseLeaveEvent.Fire();
+            mouseLeaveEvent.Fire(args);
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public Event<MouseLeaveEventHandler>& MouseLeaveEvent() const
+        public Event<MouseLeaveEventHandler, EnterLeaveEventArgs>& MouseLeaveEvent() const
         {
             return mouseLeaveEvent;
         }
@@ -1399,8 +1418,8 @@ namespace System.Windows
         private Size toolBitmapSize;
         private string toolTip;
         private Padding padding;
-        private Event<MouseEnterEventHandler> mouseEnterEvent;
-        private Event<MouseLeaveEventHandler> mouseLeaveEvent;
+        private Event<MouseEnterEventHandler, EnterLeaveEventArgs> mouseEnterEvent;
+        private Event<MouseLeaveEventHandler, EnterLeaveEventArgs> mouseLeaveEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseMoveEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseDownEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseUpEvent;

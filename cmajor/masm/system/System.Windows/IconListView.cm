@@ -573,7 +573,7 @@ namespace System.Windows
             return (flags & Flags.changed) != Flags.none;
         }
         private Flags flags;
-        private Container items;
+        private ComponentContainer items;
         private int numberOfItems;
         private FontFamily fontFamily;
         private float fontSize;

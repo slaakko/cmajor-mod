@@ -1,0 +1,215 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows;
+
+namespace spring
+{
+    class ResizeHandle : GraphicsObject
+    {
+        public ResizeHandle(RectangleSelection* selection_, const PointF& location_, const Connector& connector_) :
+            selection(selection_), location(location_), startLocation(location), connector(connector_), cursor(), width(0.0f)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            ResizeHandleLayoutElement* resizeHandleLayoutElement = layout->GetResizeHandleLayoutElement();
+            width = resizeHandleLayoutElement->ResizeHandleWidth();
+            switch (connector.ToInt())
+            {
+                case Connector.TopLeft():
+                case Connector.BottomRight():
+                {
+                    auto cursorResult = LoadStandardCursor(StandardCursorId.IDC_SIZENWSE);
+                    if (cursorResult.Error())
+                    {
+                        SetErrorId(cursorResult.GetErrorId());
+                        return;
+                    }
+                    cursor = Rvalue(cursorResult.Value());
+                    break;
+                }
+                case Connector.TopCenter():
+                case Connector.BottomCenter():
+                {
+                    auto cursorResult = LoadStandardCursor(StandardCursorId.IDC_SIZENS);
+                    if (cursorResult.Error())
+                    {
+                        SetErrorId(cursorResult.GetErrorId());
+                        return;
+                    }
+                    cursor = Rvalue(cursorResult.Value());
+                    break;
+                }
+                case Connector.TopRight():
+                case Connector.BottomLeft():
+                {
+                    auto cursorResult = LoadStandardCursor(StandardCursorId.IDC_SIZENESW);
+                    if (cursorResult.Error())
+                    {
+                        SetErrorId(cursorResult.GetErrorId());
+                        return;
+                    }
+                    cursor = Rvalue(cursorResult.Value());
+                    break;
+                }
+                case Connector.RightCenter():
+                case Connector.LeftCenter():
+                {
+                    auto cursorResult = LoadStandardCursor(StandardCursorId.IDC_SIZEWE);
+                    if (cursorResult.Error())
+                    {
+                        SetErrorId(cursorResult.GetErrorId());
+                        return;
+                    }
+                    cursor = Rvalue(cursorResult.Value());
+                    break;
+                }
+            }
+        }
+        public inline Cursor* GetCursor() const
+        {
+            return &cursor;
+        }
+        public inline RectangleSelection* GetSelection() const
+        {
+            return selection;
+        }
+        public bool Contains(const PointF& loc) const
+        {
+            return Distance(location, loc) <= 2 * width;
+        }
+        [nodiscard]
+        public Result<bool> Draw(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            ResizeHandleLayoutElement* resizeHandleLayoutElement = layout->GetResizeHandleLayoutElement();
+            Vector towv = Vector(-1, 0) * (width / 2.0f);
+            Line towl(location, towv);
+            Vector tonv = Vector(0, -1) * (width / 2.0f);
+            Line tonl(towl.end, tonv);
+            PointF nw(tonl.end);
+            RectF rect(nw, SizeF(width, width));
+            Brush* brush = resizeHandleLayoutElement->InsideBrush();
+            Result<Pen*> penResult = resizeHandleLayoutElement->LinePen();
+            if (penResult.Error()) return Result<bool>(ErrorId(penResult.GetErrorId()));
+            Pen* pen = penResult.Value();
+            auto result = graphics.FillRectangle(*brush, rect);
+            if (result.Error()) return result;
+            result = graphics.DrawRectangle(*pen, rect);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public void Locate(const RectF& rect)
+        {
+            switch (connector.ToInt())
+            {
+                case Connector.TopLeft():
+                {
+                    location = rect.location;
+                    break;
+                }
+                case Connector.TopCenter():
+                {
+                    location = PointF(rect.location.x + rect.size.w / 2.0f, rect.location.y);
+                    break;
+                }
+                case Connector.TopRight():
+                {
+                    location = PointF(rect.location.x + rect.size.w, rect.location.y);
+                    break;
+                }
+                case Connector.RightCenter():
+                {
+                    location = PointF(rect.location.x + rect.size.w, rect.location.y + rect.size.h / 2.0f);
+                    break;
+                }
+                case Connector.BottomRight():
+                {
+                    location = PointF(rect.location.x + rect.size.w, rect.location.y + rect.size.h);
+                    break;
+                }
+                case Connector.BottomCenter():
+                {
+                    location = PointF(rect.location.x + rect.size.w / 2.0f, rect.location.y + rect.size.h);
+                    break;
+                }
+                case Connector.BottomLeft():
+                {
+                    location = PointF(rect.location.x, rect.location.y + rect.size.h);
+                    break;
+                }
+                case Connector.LeftCenter():
+                {
+                    location = PointF(rect.location.x, rect.location.y + rect.size.h / 2.0f);
+                    break;
+                }
+            }
+        }
+        public void Move(float dx, float dy)
+        {
+            RectF selectionRect = selection->StartRect();
+            switch (connector.ToInt())
+            {
+                case Connector.TopLeft():
+                {
+                    selectionRect.Offset(dx, dy);
+                    selectionRect.size.w = selectionRect.size.w - dx;
+                    selectionRect.size.h = selectionRect.size.h - dy;
+                    break;
+                }
+                case Connector.TopCenter():
+                {
+                    selectionRect.Offset(0.0f, dy);
+                    selectionRect.size.h = selectionRect.size.h - dy;
+                    break;
+                }
+                case Connector.TopRight():
+                {
+                    selectionRect.Offset(0.0f, dy);
+                    selectionRect.size.w = selectionRect.size.w + dx;
+                    selectionRect.size.h = selectionRect.size.h - dy;
+                    break;
+                }
+                case Connector.RightCenter():
+                {
+                    selectionRect.size.w = selectionRect.size.w + dx;
+                    break;
+                }
+                case Connector.BottomRight():
+                {
+                    selectionRect.size.w = selectionRect.size.w + dx;
+                    selectionRect.size.h = selectionRect.size.h + dy;
+                    break;
+                }
+                case Connector.BottomCenter():
+                {
+                    selectionRect.size.h = selectionRect.size.h + dy;
+                    break;
+                }
+                case Connector.BottomLeft():
+                {
+                    selectionRect.Offset(dx, 0.0f);
+                    selectionRect.size.w = selectionRect.size.w - dx;
+                    selectionRect.size.h = selectionRect.size.h + dy;
+                    break;
+                }
+                case Connector.LeftCenter():
+                {
+                    selectionRect.Offset(dx, 0.0f);
+                    selectionRect.size.w = selectionRect.size.w - dx;
+                    break;
+                }
+            }
+            selection->SetRect(selectionRect);
+        }
+        private RectangleSelection* selection;
+        private PointF location;
+        private PointF startLocation;
+        private Connector connector;
+        private Cursor cursor;
+        private float width;
+    }
+}
+

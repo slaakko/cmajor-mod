@@ -2286,8 +2286,9 @@ void EmitFunctionCall(FunctionCallInstruction& inst, const std::vector<ArgInstru
     {
         size = 8;
     }
-    cmajor::masm::assembly::Register* reg = regGroup->GetReg(size);
-    callInst->AddOperand(MakeCalleeOperand(inst.Callee(), reg, codeGenerator));
+    cmajor::masm::assembly::Register* reg = regGroup->GetReg(size); 
+    cmajor::masm::assembly::Register* callReg = regGroup->GetReg(8);
+    callInst->AddOperand(MakeCalleeOperand(inst.Callee(), callReg, codeGenerator));
     codeGenerator.Emit(callInst);
     if (type->IsFloatingPointType())
     {

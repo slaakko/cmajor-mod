@@ -106,6 +106,14 @@ namespace System.Windows
         public int errorId;
     }
 
+    public class EnterLeaveEventArgs
+    {
+        public EnterLeaveEventArgs() : errorId(0)
+        {
+        }
+        public int errorId;
+    }
+    
     public enum MouseButtons : ulong
     {
         none = 0x0u,
@@ -198,7 +206,7 @@ namespace System.Windows
         public uint windowState;
         public int errorId;
     }
-    
+
     public class SizeChangingEventArgs
     {
         public SizeChangingEventArgs(const Size& oldSize_, const Size& newSize_) : oldSize(oldSize_), newSize(newSize_), errorId(0)

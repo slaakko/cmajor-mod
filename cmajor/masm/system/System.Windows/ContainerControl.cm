@@ -72,7 +72,7 @@ namespace System.Windows
             }
             return Result<bool>(true);
         }
-        public const Container& Children() const
+        public const ComponentContainer& Children() const
         {
             return children;
         }
@@ -459,6 +459,6 @@ namespace System.Windows
             }
             return Result<bool>(true);
         }
-        private Container children;
+        private ComponentContainer children;
     }
 }

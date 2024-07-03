@@ -46,6 +46,37 @@ namespace spring
         {
             return relationship;
         }
+        public void SetRelationshipPoint()
+        {
+            if (relationship != null)
+            {
+                relationship->Source().SetElement(this);
+                relationship->Source().SetPoint(GetRelationshipPoint());
+                for (auto& sourceEndPoint : relationship->SourceEndPoints())
+                {
+                    sourceEndPoint.SetElement(this);
+                    sourceEndPoint.SetPoint(GetRelationshipPoint());
+                }
+            }
+        }
+        public PointF GetRelationshipPoint() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            PaddingElement* paddingElement = relationshipLayoutElement->GetPaddingElement();
+            float relationshipSymbolRadius = relationshipLayoutElement->RelationshipSymbolRadius();
+            PointF loc = Location();
+            SizeF size = Size();
+            float symbolLeft = 0.0f;
+            if (containerElement != null)
+            {
+                size.w = containerElement->GetMaxChildElementWidth();
+                size.w = size.w - GetRelationshipSymbolFieldWidth(relationshipSymbolRadius, paddingElement->GetPadding().Horizontal());
+                symbolLeft = paddingElement->GetPadding().left + relationshipSymbolRadius;
+            }
+            PointF point(loc.x + size.w + symbolLeft, loc.y + size.h / 2);
+            return point;
+        }
         private ContainerElement* containerElement;
         private RelationshipElement* relationship;
     }

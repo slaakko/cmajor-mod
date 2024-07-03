@@ -790,6 +790,10 @@ std::u32string FunctionSymbol::FullName(bool withParamNames) const
             fullName.append(U", ");
         }
         ParameterSymbol* parameter = parameters[i];
+        if (!parameter->GetType())
+        {
+            throw Exception("function symbol parameter has no type", GetFullSpan());
+        }
         fullName.append(parameter->GetType()->FullName());
         if (withParamNames)
         {

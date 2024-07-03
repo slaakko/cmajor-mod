@@ -1,0 +1,1113 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    [nodiscard]
+    Result<bool> DeleteElements(Diagram* diagram, const List<int>& elementIndeces)
+    {
+        List<int> indeces = elementIndeces;
+        UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(diagram));
+        List<RelationshipElement*> relationships;
+        int n = cast<int>(indeces.Count());
+        for (int i = 0; i < n; ++i)
+        {
+            int index = indeces[i];
+            DiagramElement* element = diagram->GetElementByIndex(index);
+            if (element->IsContainerElement())
+            {
+                ContainerElement* containerElement = cast<ContainerElement*>(element);
+                List<RelationshipElement*> containerElementRelationships = containerElement->GetAllRelationships();
+                for (auto relationship : containerElementRelationships)
+                {
+                    if (Find(relationships.Begin(), relationships.End(), relationship) == relationships.End())
+                    {
+                        relationships.Add(relationship);
+                    }
+                }
+            }
+        }
+        for (auto relationship : relationships)
+        {
+            int index = diagram->GetIndexOfElement(relationship);
+            if (index != -1)
+            {
+                if (Find(indeces.Begin(), indeces.End(), index) == indeces.End())
+                {
+                    indeces.Add(index);
+                }
+            }
+        }
+        Sort(indeces);
+        int m = cast<int>(indeces.Count());
+        for (int i = m - 1; i >= 0; --i)
+        {
+            int index = indeces[i];
+            UniquePtr<DiagramElement> element = diagram->RemoveElementByIndex(index);
+            if (element->IsRelationshipElement())
+            {
+                RelationshipElement* relationship = cast<RelationshipElement*>(element.Get());
+                relationship->RemoveFromElements();
+            }
+            deleteElementsCommand->AddDeletedElement(element.Release(), index);
+        }
+        auto result = diagram->GetCommandList().AddCommand(deleteElementsCommand.Release());
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    List<UniquePtr<DiagramElement>> CloneElements(Diagram* diagram, const List<int>& indeces, int& errorId)
+    {
+        errorId = 0;
+        List<UniquePtr<DiagramElement>> clonedElements;
+        List<ContainerElement*> containerElements;
+        List<RelationshipElement*> relationshipElements;
+        RectF bounds;
+        int n = cast<int>(indeces.Count());
+        for (int i = 0; i < n; ++i)
+        {
+            int index = indeces[i];
+            DiagramElement* element = diagram->GetElementByIndex(index);
+            if (element->IsContainerElement())
+            {
+                if (bounds.IsEmpty())
+                {
+                    bounds = element->Bounds();
+                }
+                else
+                {
+                    bounds = RectF.Union(bounds, element->Bounds());
+                }
+                containerElements.Add(cast<ContainerElement*>(element));
+            }
+        }
+        for (ContainerElement* containerElement : containerElements)
+        {
+            List<RelationshipElement*> containerRelationships = containerElement->GetAllRelationships();
+            for (RelationshipElement* relationship : containerRelationships)
+            {
+                bool sourceInClosure = false;
+                if (relationship->Source().Element() != null)
+                {
+                    ContainerElement* sourceContainerElement = relationship->Source().Element()->GetContainerElement();
+                    if (Find(containerElements.Begin(), containerElements.End(), sourceContainerElement) != containerElements.End())
+                    {
+                        sourceInClosure = true;
+                    }
+                }
+                bool sourcesInClosure = false;
+                if (!relationship->SourceEndPoints().IsEmpty())
+                {
+                    sourcesInClosure = true;
+                    for (const EndPoint& endPoint : relationship->SourceEndPoints())
+                    {
+                        ContainerElement* sourceContainerElement = endPoint.Element()->GetContainerElement();
+                        if (Find(containerElements.Begin(), containerElements.End(), sourceContainerElement) == containerElements.End())
+                        {
+                            sourcesInClosure = false;
+                            break;
+                        }
+                    }
+                }
+                bool targetInClosure = false;
+                if (relationship->Target().Element() != null)
+                {
+                    ContainerElement* targetContainerElement = relationship->Target().Element()->GetContainerElement();
+                    if (Find(containerElements.Begin(), containerElements.End(), targetContainerElement) != containerElements.End())
+                    {
+                        targetInClosure = true;
+                    }
+                }
+                else if (relationship->RKind() == RelationshipKind.reference && relationship->GetCardinality() == Cardinality.zero)
+                {
+                    targetInClosure = true;
+                }
+                if ((sourceInClosure || sourcesInClosure) && targetInClosure)
+                {
+                    if (bounds.IsEmpty())
+                    {
+                        bounds = relationship->Bounds();
+                    }
+                    else
+                    {
+                        bounds = RectF.Union(bounds, relationship->Bounds());
+                    }
+                    if (Find(relationshipElements.Begin(), relationshipElements.End(), relationship) == relationshipElements.End())
+                    {
+                        relationshipElements.Add(relationship);
+                    }
+                }
+            }
+        }
+        Map<DiagramElement*, DiagramElement*> cloneMap;
+        Map<DiagramElement*, DiagramElement*> reverseCloneMap;
+        Map<ContainerElement*, int> containerElementIndexMap;
+        int nc = cast<int>(containerElements.Count());
+        for (int i = 0; i < nc; ++i)
+        {
+            ContainerElement* containerElement = containerElements[i];
+            containerElementIndexMap[containerElement] = i;
+            ContainerElement* clone = cast<ContainerElement*>(containerElement->Clone());
+            cloneMap[containerElement] = clone;
+            reverseCloneMap[clone] = containerElement;
+            clone->MapChildObjects(containerElement, cloneMap, reverseCloneMap);
+            clonedElements.Add(UniquePtr<DiagramElement>(clone));
+        }
+        for (RelationshipElement* relationshipElement : relationshipElements)
+        {
+            RelationshipElement* clone = cast<RelationshipElement*>(relationshipElement->Clone());
+            auto result = clone->SetContainerElementIndeces(containerElementIndexMap);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return List<UniquePtr<DiagramElement>>();
+            }
+            bool orphan = false;
+            clone->MapContainerElements(cloneMap, orphan);
+            clone->AddToElements();
+            clonedElements.Add(UniquePtr<DiagramElement>(clone));
+        }
+        for (auto& clonedElement : clonedElements)
+        {
+            clonedElement->Offset(-bounds.location.x, -bounds.location.y);
+        }
+        return clonedElements;
+    }
+
+    enum SelectionKind
+    {
+        emptySelection, elementSelection, rectangleSelection
+    }
+
+    class Selection : GraphicsObject
+    {
+        public Selection(SelectionKind kind_, Diagram* diagram_) : kind(kind_), diagram(diagram_)
+        {
+        }
+        public default virtual ~Selection();
+        public inline SelectionKind Kind() const
+        {
+            return kind;
+        }
+        public inline Diagram* GetDiagram() const
+        {
+            return diagram;
+        }
+        public inline bool IsEmptySelection() const
+        {
+            return kind == SelectionKind.emptySelection;
+        }
+        public inline bool IsElementSelection() const
+        {
+            return kind == SelectionKind.elementSelection;
+        }
+        public inline bool IsRectangleSelection() const
+        {
+            return kind == SelectionKind.rectangleSelection;
+        }
+        public virtual bool IsEmpty() const
+        {
+            return true;
+        }
+        public virtual int Count() const
+        {
+            return 0;
+        }
+        public virtual bool Contains(const PointF& location) const
+        {
+            return false;
+        }
+        public virtual int GetContainerElementCount() const
+        {
+             return 0;
+         }
+        public virtual List<int> GetContainerElementIndeces() const
+        {
+            return List<int>();
+        }
+        [nodiscard]
+        public virtual Result<bool> Clear()
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> Delete()
+        {
+            return Result<bool>(true);
+        }
+        public virtual void SetStartLocation(const PointF& startLocation_)
+        {
+        }
+        public virtual void Move(MouseArgs& args)
+        {
+        }
+        [nodiscard]
+        public virtual List<UniquePtr<DiagramElement>> Clone(int& errorId) const
+        {
+            return List<UniquePtr<DiagramElement>>();
+        }
+        public virtual int GetFirstIndex() const
+        {
+            return -1;
+        }
+        [nodiscard]
+        public virtual Result<bool> Add(int index)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> Remove(int index)
+        {
+            return Result<bool>(true);
+        }
+        public virtual void Draw(Graphics& graphics)
+        {
+        }
+        [nodiscard]
+        public virtual Result<bool> AddActions(ContextMenu* contextMenu)
+        {
+            MenuItem* saveImageMenuItem = new MenuItem("Save Image...");
+            auto result = contextMenu->AddMenuItemAction(saveImageMenuItem, new SaveSelectionAsImageAction(diagram, saveImageMenuItem));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public ustring Copy()
+        {
+            // todo
+            return ustring();
+        }
+        public void SaveImage(const string& fileName, const PaddingF& margins, ImageFormat imageFormat)
+        {
+            // todo
+        }
+        private SelectionKind kind;
+        private Diagram* diagram;
+    }
+
+    class EmptySelection : Selection
+    {
+        public EmptySelection(Diagram* diagram_) : base(SelectionKind.emptySelection, diagram_)
+        {
+        }
+    }
+
+    class ElementSelection : Selection
+    {
+        public ElementSelection(Diagram* diagram_) : base(SelectionKind.elementSelection, diagram_)
+        {
+        }
+        public override bool IsEmpty() const
+        {
+            return indeces.IsEmpty();
+        }
+        public override int Count() const
+        {
+            return cast<int>(indeces.Count());
+        }
+        public override bool Contains(const PointF& location) const
+        {
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                if (element->Contains(location))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public override int GetContainerElementCount() const
+        {
+            int count = 0;
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                if (element->IsContainerElement())
+                {
+                    ++count;
+                }
+            }
+            return count;
+        }
+        public override List<int> GetContainerElementIndeces() const
+        {
+            List<int> containerElementIndeces;
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                if (element->IsContainerElement())
+                {
+                    containerElementIndeces.Add(index);
+                }
+            }
+            return containerElementIndeces;
+        }
+        [nodiscard]
+        public override Result<bool> Clear()
+        {
+            Diagram* diagram = GetDiagram();
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                int index = indeces[i];
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                auto result = element->ResetSelected();
+                if (result.Error()) return result;
+            }
+            indeces.Clear();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Delete()
+        {
+            auto result = DeleteElements(GetDiagram(), indeces);
+            if (result.Error()) return result;
+            indeces.Clear();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override List<UniquePtr<DiagramElement>> Clone(int& errorId) const
+        {
+            return CloneElements(GetDiagram(), indeces, errorId);
+        }
+        public override int GetFirstIndex() const
+        {
+            if (!indeces.IsEmpty())
+            {
+                return indeces.Front();
+            }
+            return -1;
+        }
+        [nodiscard]
+        public override Result<bool> Add(int index)
+        {
+            int n = cast<int>(indeces.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (indeces[i] == index) return Result<bool>(true);
+            }
+            indeces.Add(index);
+            Diagram* diagram = GetDiagram();
+            DiagramElement* element = diagram->GetElementByIndex(index);
+            auto result = element->Select();
+            if (result.Error()) return result;
+            result = diagram->EnableCopy();
+            if (result.Error()) return result;
+            result = diagram->EnableCut();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Remove(int index)
+        {
+            indeces.Remove(index);
+            Diagram* diagram = GetDiagram();
+            DiagramElement* element = diagram->GetElementByIndex(index);
+            auto result = element->ResetSelected();
+            if (result.Error()) return result;
+            if (!indeces.IsEmpty())
+            {
+                result = diagram->DisableCopy();
+                if (result.Error()) return result;
+                result = diagram->DisableCut();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> AddActions(ContextMenu* contextMenu)
+        {
+            auto result = base->AddActions(contextMenu);
+            if (result.Error()) return result;
+            Diagram* diagram = GetDiagram();
+            int containerElementCount = GetContainerElementCount();
+            if (containerElementCount > 1)
+            {
+                MenuItem* alignTopMenuItem = new MenuItem("Align top");
+                result = contextMenu->AddMenuItemAction(alignTopMenuItem, new AlignTopAction(diagram, alignTopMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignBottomMenuItem = new MenuItem("Align bottom");
+                result = contextMenu->AddMenuItemAction(alignBottomMenuItem, new AlignBottomAction(diagram, alignBottomMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignVerticalCenterMenuItem = new MenuItem("Align vertical center");
+                result = contextMenu->AddMenuItemAction(alignVerticalCenterMenuItem, new AlignVerticalCenterAction(diagram, alignVerticalCenterMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignLeftSideMenuItem = new MenuItem("Align left side");
+                result = contextMenu->AddMenuItemAction(alignLeftSideMenuItem, new AlignLeftSideAction(diagram, alignLeftSideMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignRightSideMenuItem = new MenuItem("Align right side");
+                result = contextMenu->AddMenuItemAction(alignRightSideMenuItem, new AlignRightSideAction(diagram, alignRightSideMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignHorizontalCenterMenuItem = new MenuItem("Align horizontal center");
+                result = contextMenu->AddMenuItemAction(alignHorizontalCenterMenuItem, new AlignHorizontalCenterAction(diagram, alignHorizontalCenterMenuItem));
+                if (result.Error()) return result;
+                if (containerElementCount > 2)
+                {
+                    MenuItem* spaceEvenlyVerticallyMenuItem = new MenuItem("Space evenly vertically");
+                    result = contextMenu->AddMenuItemAction(spaceEvenlyVerticallyMenuItem, new SpaceEvenlyVerticallyAction(diagram, spaceEvenlyVerticallyMenuItem));
+                    if (result.Error()) return result;
+                    MenuItem* spaceEvenlyHorizontallyMenuItem = new MenuItem("Space evenly horizontally");
+                    result = contextMenu->AddMenuItemAction(spaceEvenlyHorizontallyMenuItem, new SpaceEvenlyHorizontallyAction(diagram, spaceEvenlyHorizontallyMenuItem));
+                    if (result.Error()) return result;
+                }
+            }
+            else
+            {
+                bool inheritance = false;
+                int n = cast<int>(indeces.Count());
+                if (n > 1)
+                {
+                    for (int i = 0; i < n; ++i)
+                    {
+                        inheritance = false;
+                        int index = indeces[i];
+                        DiagramElement* element = diagram->GetElementByIndex(index);
+                        if (element->IsRelationshipElement())
+                        {
+                            RelationshipElement* relationship = cast<RelationshipElement*>(element);
+                            if (relationship->IsInheritance())
+                            {
+                                inheritance = true;
+                            }
+                        }
+                        if (!inheritance)
+                        {
+                            break;
+                        }
+                    }
+                    if (inheritance)
+                    {
+                        MenuItem* combineMenuItem = new MenuItem("Combine");
+                        result = contextMenu->AddMenuItemAction(combineMenuItem, new CombineInheritancesAction(diagram, combineMenuItem));
+                        if (result.Error()) return result;
+                    }
+                }
+                if (n > 0)
+                {
+                    MenuItem* deleteMenuItem = new MenuItem("Delete");
+                    result = contextMenu->AddMenuItemAction(deleteMenuItem, new DeleteSelectionAction(diagram, deleteMenuItem));
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public void SortHorizontally()
+        {
+            Sort(indeces, HorizontallyLess(GetDiagram()));
+        }
+        public void SortVertically()
+        {
+            Sort(indeces, VerticallyLess(GetDiagram()));
+        }
+        [nodiscard]
+        public Result<bool> AlignTop()
+        {
+            if (indeces.Count() < 2) return Result<bool>(true);
+            SortHorizontally();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            float top = firstElement->Location().y;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                element->SetLocation(PointF(element->Location().x, top));
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AlignBottom()
+        {
+            if (indeces.Count() < 2) return Result<bool>(true);
+            SortHorizontally();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            float bottom = firstElement->Location().y + firstElement->Size().h;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                float elementBottom = element->Location().y + element->Size().h;
+                float dy = elementBottom - bottom;
+                float top = element->Location().y - dy;
+                element->SetLocation(PointF(element->Location().x, top));
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AlignVerticalCenter()
+        {
+            if (indeces.Count() < 2) return Result<bool>(true);
+            SortHorizontally();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            float center = firstElement->Location().y + firstElement->Size().h / 2;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                float elementCenter = element->Location().y + element->Size().h / 2;
+                float dy = elementCenter - center;
+                float top = element->Location().y - dy;
+                element->SetLocation(PointF(element->Location().x, top));
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AlignLeftSide()
+        {
+            if (indeces.Count() < 2) return Result<bool>(true);
+            SortVertically();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            float left = firstElement->Location().x;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                element->SetLocation(PointF(left, element->Location().y));
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AlignRightSide()
+        {
+            if (indeces.Count() < 2) return Result<bool>(true);
+            SortVertically();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            float right = firstElement->Location().x + firstElement->Size().w;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                float elementRight = element->Location().x + element->Size().w;
+                float dx = elementRight - right;
+                float left = element->Location().x - dx;
+                element->SetLocation(PointF(left, element->Location().y));
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AlignHorizontalCenter()
+        {
+            if (indeces.Count() < 2) return Result<bool>(true);
+            SortVertically();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            float center = firstElement->Location().x + firstElement->Size().w / 2;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                float elementCenter = element->Location().x + element->Size().w / 2;
+                float dx = elementCenter - center;
+                float left = element->Location().x - dx;
+                element->SetLocation(PointF(left, element->Location().y));
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SpaceEvenlyVertically()
+        {
+            if (indeces.Count() < 3) return Result<bool>(true);
+            SortVertically();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            DiagramElement* lastElement = diagram->GetElementByIndex(indeces.Back());
+            float firstElementBottom = firstElement->Location().y + firstElement->Size().h;
+            float lastElementTop = lastElement->Location().y;
+            float space = lastElementTop - firstElementBottom;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n - 1; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                space = space - element->Size().h;
+            }
+            space = space / (n - 1);
+            float prevElementBottom = firstElementBottom;
+            for (int i = 1; i < n - 1; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                float top = prevElementBottom + space;
+                element->SetLocation(PointF(element->Location().x, top));
+                prevElementBottom = top + element->Size().h;
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SpaceEvenlyHorizontally()
+        {
+            if (indeces.Count() < 3) return Result<bool>(true);
+            SortHorizontally();
+            Diagram* diagram = GetDiagram();
+            UniquePtr<MoveCommand> moveCommand(new MoveCommand(diagram));
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddOldLocation(index, element->GetCompoundLocation());
+            }
+            DiagramElement* firstElement = diagram->GetElementByIndex(indeces.Front());
+            DiagramElement* lastElement = diagram->GetElementByIndex(indeces.Back());
+            float firstElementRight = firstElement->Location().x + firstElement->Size().w;
+            float lastElementLeft = lastElement->Location().x;
+            float space = lastElementLeft - firstElementRight;
+            int n = cast<int>(indeces.Count());
+            for (int i = 1; i < n - 1; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                space = space - element->Size().w;
+            }
+            space = space / (n - 1);
+            float prevElementRightSide = firstElementRight;
+            for (int i = 1; i < n - 1; ++i)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(indeces[i]);
+                float left = prevElementRightSide + space;
+                element->SetLocation(PointF(left, element->Location().y));
+                prevElementRightSide = left + element->Size().w;
+            }
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                moveCommand->AddNewLocation(element->GetCompoundLocation());
+            }
+            auto result = diagram->GetCommandList().AddCommand(moveCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> CombineInheritanceRelationships()
+        {
+            Diagram* diagram = GetDiagram();
+            List<RelationshipElement*> inheritanceRelationships;
+            for (int index : indeces)
+            {
+                DiagramElement* element = diagram->GetElementByIndex(index);
+                if (element->IsRelationshipElement())
+                {
+                    RelationshipElement* relationshipElement = cast<RelationshipElement*>(element);
+                    if (relationshipElement->IsInheritance())
+                    {
+                        inheritanceRelationships.Add(relationshipElement);
+                    }
+                }
+            }
+            List<RelationshipElement*> sourceRelationships;
+            UniquePtr<RelationshipElement> combinedInheritanceRelationship = spring.CombineInheritanceRelationships(inheritanceRelationships, sourceRelationships);
+            if (!combinedInheritanceRelationship.IsNull())
+            {
+                List<int> inheritanceRelationshipIndeces;
+                for (RelationshipElement* sourceRelationship : sourceRelationships)
+                {
+                    int index = diagram->GetIndexOfElement(sourceRelationship);
+                    if (index != -1)
+                    {
+                        inheritanceRelationshipIndeces.Add(index);
+                    }
+                }
+                UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(diagram));
+                Sort(inheritanceRelationshipIndeces);
+                int n = cast<int>(inheritanceRelationshipIndeces.Count());
+                for (int i = n - 1; i >= 0; --i)
+                {
+                    int index = inheritanceRelationshipIndeces[i];
+                    UniquePtr<DiagramElement> element = diagram->RemoveElementByIndex(index);
+                    if (element->IsRelationshipElement())
+                    {
+                        RelationshipElement* relationship = cast<RelationshipElement*>(element.Get());
+                        relationship->RemoveFromElements();
+                    }
+                    deleteElementsCommand->AddDeletedElement(element.Release(), index);
+                    indeces.Remove(index);
+                }
+                auto result = diagram->GetCommandList().AddCommand(deleteElementsCommand.Release());
+                if (result.Error()) return result;
+                int addIndex = diagram->NextIndex();
+                UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(diagram));
+                addElementsCommand->AddIndex(addIndex);
+                combinedInheritanceRelationship->AddToElements();
+                result = diagram->AddElement(combinedInheritanceRelationship.Release());
+                if (result.Error()) return result;
+                result = diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private List<int> indeces;
+    }
+
+    class RectangleSelection : Selection
+    {
+        public RectangleSelection(Diagram* diagram_, const PointF& startLocation_) :
+            base(SelectionKind.rectangleSelection, diagram_),
+            startLocation(startLocation_),
+            rect(startLocation, SizeF()),
+            startRect(),
+            resizeHandles()
+        {
+            auto cursorResult = LoadStandardCursor(StandardCursorId.IDC_ARROW);
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            arrowCursor = Rvalue(cursorResult.Value());
+            ResizeHandle* nw = new ResizeHandle(this, startLocation, Connector(Connector.TopLeft()));
+            if (nw->Error())
+            {
+                SetErrorId(nw->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(nw));
+            ResizeHandle* n = new ResizeHandle(this, startLocation, Connector(Connector.TopCenter()));
+            if (n->Error())
+            {
+                SetErrorId(n->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(n));
+            ResizeHandle* ne = new ResizeHandle(this, startLocation, Connector(Connector.TopRight()));
+            if (nw->Error())
+            {
+                SetErrorId(nw->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(ne));
+            ResizeHandle* e = new ResizeHandle(this, startLocation, Connector(Connector.RightCenter()));
+            if (e->Error())
+            {
+                SetErrorId(e->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(e));
+            ResizeHandle* se = new ResizeHandle(this, startLocation, Connector(Connector.BottomRight()));
+            if (se->Error())
+            {
+                SetErrorId(se->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(se));
+            ResizeHandle* s = new ResizeHandle(this, startLocation, Connector(Connector.BottomCenter()));
+            if (s->Error())
+            {
+                SetErrorId(s->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(s));
+            ResizeHandle* sw = new ResizeHandle(this, startLocation, Connector(Connector.BottomLeft()));
+            if (sw->Error())
+            {
+                SetErrorId(sw->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(sw));
+            ResizeHandle* w = new ResizeHandle(this, startLocation, Connector(Connector.LeftCenter()));
+            if (w->Error())
+            {
+                SetErrorId(w->GetErrorId());
+                return;
+            }
+            resizeHandles.Add(UniquePtr<ResizeHandle>(w));
+        }
+        public override bool IsEmpty() const
+        {
+            if (rect.IsEmpty()) return true;
+            Diagram* diagram = GetDiagram();
+            if (diagram->HasIntersectingContainerElements(rect)) return false;
+            return true;
+        }
+        public override int Count() const
+        {
+            Diagram* diagram = GetDiagram();
+            return diagram->GetNumberOfIntersectingContainerElements(rect);
+        }
+        public override bool Contains(const PointF& location) const
+        {
+            return rect.Contains(location);
+        }
+        public override int GetContainerElementCount() const
+        {
+            Diagram* diagram = GetDiagram();
+            return diagram->GetNumberOfIntersectingContainerElements(rect);
+        }
+        public override List<int> GetContainerElementIndeces() const
+        {
+            Diagram* diagram = GetDiagram();
+            return diagram->GetIntersectingContainerElementIndeces(rect);
+        }
+        [nodiscard]
+        public override Result<bool> Clear()
+        {
+            rect = RectF();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Delete()
+        {
+            auto result = DeleteElements(GetDiagram(), GetContainerElementIndeces());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override void Move(MouseArgs& args)
+        {
+            float dx = args.location.x - startLocation.x;
+            float dy = args.location.y - startLocation.y;
+            rect.location.x = startRect.location.x + dx;
+            rect.location.y = startRect.location.y + dy;
+            LocateResizeHandles();
+        }
+        public override int GetFirstIndex() const
+        {
+            List<int> containerElementIndeces = GetContainerElementIndeces();
+            if (!containerElementIndeces.IsEmpty())
+            {
+                return containerElementIndeces.Front();
+            }
+            return -1;
+        }
+        public override List<UniquePtr<DiagramElement>> Clone(int& errorId) const
+        {
+            return CloneElements(GetDiagram(), GetContainerElementIndeces(), errorId);
+        }
+        [nodiscard]
+        public override Result<bool> AddActions(ContextMenu* contextMenu)
+        {
+            auto result =  base->AddActions(contextMenu);
+            if (result.Error()) return result;
+            Diagram* diagram = GetDiagram();
+            MenuItem* deleteMenuItem = new MenuItem("Delete");
+            result = contextMenu->AddMenuItemAction(deleteMenuItem, new DeleteSelectionAction(diagram, deleteMenuItem));
+            if (result.Error()) return result;
+            int containerElementCount = GetContainerElementCount();
+            if (containerElementCount > 1)
+            {
+                MenuItem* alignTopMenuItem = new MenuItem("Align top");
+                result = contextMenu->AddMenuItemAction(alignTopMenuItem, new AlignTopAction(diagram, alignTopMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignBottomMenuItem = new MenuItem("Align bottom");
+                result = contextMenu->AddMenuItemAction(alignBottomMenuItem, new AlignBottomAction(diagram, alignBottomMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignVerticalCenterMenuItem = new MenuItem("Align vertical center");
+                result = contextMenu->AddMenuItemAction(alignVerticalCenterMenuItem, new AlignVerticalCenterAction(diagram, alignVerticalCenterMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignLeftSideMenuItem = new MenuItem("Align left side");
+                result = contextMenu->AddMenuItemAction(alignLeftSideMenuItem, new AlignLeftSideAction(diagram, alignLeftSideMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignRightSideMenuItem = new MenuItem("Align right side");
+                result = contextMenu->AddMenuItemAction(alignRightSideMenuItem, new AlignRightSideAction(diagram, alignRightSideMenuItem));
+                if (result.Error()) return result;
+                MenuItem* alignHorizontalCenterMenuItem = new MenuItem("Align horizontal center");
+                result = contextMenu->AddMenuItemAction(alignHorizontalCenterMenuItem, new AlignHorizontalCenterAction(diagram, alignHorizontalCenterMenuItem));
+                if (result.Error()) return result;
+                if (containerElementCount > 2)
+                {
+                    MenuItem* spaceEvenlyVerticallyMenuItem = new MenuItem("Space evenly vertically");
+                    result = contextMenu->AddMenuItemAction(spaceEvenlyVerticallyMenuItem, new SpaceEvenlyVerticallyAction(diagram, spaceEvenlyVerticallyMenuItem));
+                    if (result.Error()) return result;
+                    MenuItem* spaceEvenlyHorizontallyMenuItem = new MenuItem("Space evenly horizontally");
+                    result = contextMenu->AddMenuItemAction(spaceEvenlyHorizontallyMenuItem, new SpaceEvenlyHorizontallyAction(diagram, spaceEvenlyHorizontallyMenuItem));
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Draw(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            Brush* brush = layout->GetSelectionColorElement()->GetBrush();
+            auto result = graphics.FillRectangle(*brush, rect);
+            if (result.Error()) return result;
+            result = DrawResizeHandles(graphics);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline const PointF& Location() const
+        {
+            return rect.location;
+        }
+        public inline const SizeF& GetSize() const
+        {
+            return rect.size;
+        }
+        public void SetSize(const SizeF& size)
+        {
+            rect.size = size;
+            LocateResizeHandles();
+        }
+        public inline const PointF& StartLocation() const
+        {
+            return startLocation;
+        }
+        public override void SetStartLocation(const PointF& startLocation_)
+        {
+            startLocation = startLocation_;
+            startRect = rect;
+        }
+        public inline const RectF& Rect() const
+        {
+            return rect;
+        }
+        public void SetRect(const RectF& rect_)
+        {
+            rect = rect_;
+            LocateResizeHandles();
+        }
+        public inline const RectF& StartRect() const
+        {
+            return startRect;
+        }
+        public Cursor* GetCursor(const PointF& location) const
+        {
+            for (const auto& handle : resizeHandles)
+            {
+                if (handle->Contains(location))
+                {
+                    return handle->GetCursor();
+                }
+            }
+            return &arrowCursor;
+        }
+        public ResizeHandle* GetResizeHandle(const PointF& location) const
+        {
+            for (const auto& handle : resizeHandles)
+            {
+                if (handle->Contains(location))
+                {
+                    return handle.Get();
+                }
+            }
+            return null;
+        }
+        private void LocateResizeHandles()
+        {
+            for (auto& handle : resizeHandles)
+            {
+                handle->Locate(rect);
+            }
+        }
+        [nodiscard]
+        private Result<bool> DrawResizeHandles(Graphics& graphics)
+        {
+            for (auto& handle : resizeHandles)
+            {
+                auto result = handle->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private PointF startLocation;
+        private RectF rect;
+        private RectF startRect;
+        private List<UniquePtr<ResizeHandle>> resizeHandles;
+        private Cursor arrowCursor;
+    }
+}
+

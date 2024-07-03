@@ -27,6 +27,13 @@ namespace spring
         {
             return layout.Get();
         }
+        public void Reset()
+        {
+            if (!layout.IsNull())
+            {
+                layout->Reset();
+            }
+        }
         private static UniquePtr<Configuration> instance;
         private UniquePtr<Layout> layout;
     }

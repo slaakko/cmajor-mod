@@ -702,9 +702,9 @@ namespace System.Windows
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseEnter();
+            auto result = base->OnMouseEnter(args);
             if (result.Error()) return result;
             trackedNode = null;
             return Result<bool>(true);
@@ -734,9 +734,9 @@ namespace System.Windows
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseLeave();
+            auto result = base->OnMouseLeave(args);
             if (result.Error()) return result;
             if (trackedNode != null)
             {
@@ -1137,7 +1137,7 @@ namespace System.Windows
         }
         public TreeViewNode* Parent() const
         {
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -1722,7 +1722,7 @@ namespace System.Windows
                 view->SetTreeViewNodeChanged();
             }
         }
-        public inline Container& Children() const
+        public inline ComponentContainer& Children() const
         {
             return children;
         }
@@ -2025,7 +2025,7 @@ namespace System.Windows
         }
         private TreeView* treeView;
         private string text;
-        private Container children;
+        private ComponentContainer children;
         private State state;
         private Flags flags;
         private void* data;

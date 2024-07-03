@@ -454,7 +454,7 @@ namespace System.Windows
         }
         private Control* ParentControl() const
         {
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -527,12 +527,19 @@ namespace System.Windows
         [nodiscard]
         internal Result<bool> MouseEnterInternal()
         {
-            return OnMouseEnter();
+            EnterLeaveEventArgs args;
+            auto result = OnMouseEnter(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            return base->OnMouseEnter();
+            return base->OnMouseEnter(args);
         }
         [nodiscard]
         internal Result<bool> MouseMoveInternal(MouseEventArgs& args)
@@ -625,13 +632,20 @@ namespace System.Windows
         [nodiscard]
         internal Result<bool> MouseLeaveInternal()
         {
-            return OnMouseLeave();
+            EnterLeaveEventArgs args;
+            auto result = OnMouseLeave(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
             ResetMenuInvalidated();
-            auto result = base->OnMouseLeave();
+            auto result = base->OnMouseLeave(args);
             if (result.Error()) return result;
             Component* child = children.FirstChild();
             while (child != null)
@@ -1128,7 +1142,7 @@ namespace System.Windows
             return Result<bool>(true);
         }
         private Flags flags;
-        private Container children;
+        private ComponentContainer children;
         private MenuItem* latestOpenedMenuItem;
         private MenuItem* selectedMenuItem;
         private MenuItem* latestMouseDownMenuItem;
@@ -1299,7 +1313,7 @@ namespace System.Windows
         }
         private Control* ParentControl() const
         {
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -1311,9 +1325,9 @@ namespace System.Windows
             return null;
         }
         [nodiscard]
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseEnter();
+            auto result = base->OnMouseEnter(args);
             if (result.Error()) return result;
             if (menuBar != null)
             {
@@ -1349,9 +1363,9 @@ namespace System.Windows
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseLeave();
+            auto result = base->OnMouseLeave(args);
             if (result.Error()) return result;
             if (menuBar != null)
             {
@@ -1624,7 +1638,7 @@ namespace System.Windows
             MenuControl* menuControl, bool drawSubItems, const Point& origin);
         internal MenuItem* GetParentMenuItem() const
         {
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -1754,7 +1768,7 @@ namespace System.Windows
         }
         public MenuItem* GetParentMenuItem() const
         {
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -1771,7 +1785,7 @@ namespace System.Windows
         }
         private MenuControl* GetMenuControl() const
         {
-            Container* container = GetContainer();
+            ComponentContainer* container = GetContainer();
             if (container != null)
             {
                 Component* parent = container->Parent();
@@ -2549,8 +2563,10 @@ namespace System.Windows
                 if (result.Error()) return result;
                 menuControl->SetLatestOpenedMenuItem(this);
             }
-            OnMouseEnter();
-            auto result = menuControl->SetMenuInvalidated();
+            EnterLeaveEventArgs args;
+            auto result = OnMouseEnter(args);
+            if (result.Error()) return result;
+            result = menuControl->SetMenuInvalidated();
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -2561,9 +2577,15 @@ namespace System.Windows
             if (result.Error()) return result;
             return Result<bool>(true);
         }
-        protected virtual void OnMouseEnter()
+        [nodiscard]
+        protected virtual Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            mouseEnterEvent.Fire();
+            mouseEnterEvent.Fire(args);
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
         [nodiscard]
         internal Result<bool> LeaveChildren(MenuControl* menuControl)
@@ -2596,17 +2618,35 @@ namespace System.Windows
                 if (result.Error()) return result;
                 result = LeaveChildren(menuControl);
                 if (result.Error()) return result;
-                OnMouseLeave();
+                EnterLeaveEventArgs args;
+                result = OnMouseLeave(args);
+                if (result.Error()) return result;
+                if (args.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(args.errorId));
+                }
             }
             else if (Level() == 0)
             {
-                OnMouseLeave();
+                EnterLeaveEventArgs args;
+                auto result = OnMouseLeave(args);
+                if (result.Error()) return result;
+                if (args.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(args.errorId));
+                }
             }
             return Result<bool>(true);
         }
-        protected virtual void OnMouseLeave()
+        [nodiscard]
+        protected virtual Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            mouseLeaveEvent.Fire();
+            mouseLeaveEvent.Fire(args);
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
         [nodiscard]
         internal Result<bool> DispatchMouseMove(MouseEventArgs& args, bool& handled, MenuControl* menuControl)
@@ -2884,7 +2924,7 @@ namespace System.Windows
                 child = child->NextSibling();
             }
         }
-        public const Container& Children() const
+        public const ComponentContainer& Children() const
         {
             return children;
         }
@@ -3529,7 +3569,7 @@ namespace System.Windows
         {
             return mouseUpEvent;
         }
-        public Event<MouseEnterEventHandler>& MouseEnterEvent()
+        public Event<MouseEnterEventHandler, EnterLeaveEventArgs>& MouseEnterEvent()
         {
             return mouseEnterEvent;
         }
@@ -3537,7 +3577,7 @@ namespace System.Windows
         {
             return mouseMoveEvent;
         }
-        public Event<MouseLeaveEventHandler>& MouseLeaveEvent()
+        public Event<MouseLeaveEventHandler, EnterLeaveEventArgs>& MouseLeaveEvent()
         {
             return mouseLeaveEvent;
         }
@@ -3546,14 +3586,14 @@ namespace System.Windows
             return clickEvent;
         }
         private string text;
-        private Container children;
+        private ComponentContainer children;
         private Rect childRect;
         private Rect unionRect;
         private Event<MouseEventHandler, MouseEventArgs> mouseDownEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseUpEvent;
-        private Event<MouseEnterEventHandler> mouseEnterEvent;
+        private Event<MouseEnterEventHandler, EnterLeaveEventArgs> mouseEnterEvent;
         private Event<MouseEventHandler, MouseEventArgs> mouseMoveEvent;
-        private Event<MouseLeaveEventHandler> mouseLeaveEvent;
+        private Event<MouseLeaveEventHandler, EnterLeaveEventArgs> mouseLeaveEvent;
         private Event<ClickEventHandler, ClickEventArgs> clickEvent;
         private State state;
         private Flags flags;
