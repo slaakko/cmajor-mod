@@ -1,0 +1,700 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class SaveImageDialog : Window
+    {
+        public SaveImageDialog(const string& diagramFileName_) :
+            base(WindowCreateParams(
+                WindowControlCreateParams(
+                    ControlCreateParams().Defaults(), "System.Windows.Window", "Save Image", Point.Default(),
+                        Size(ScreenMetrics.Get().MMToHorizontalPixels(100), ScreenMetrics.Get().MMToVerticalPixels(100))))),
+            diagramFileName(diagramFileName_)
+        {
+            Size s = GetSize();
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+
+            if (!diagramFileName.IsEmpty())
+            {
+                fileName = System.IO.Path.ChangeExtension(diagramFileName, ".png");
+            }
+            format = ImageFormat.png;
+
+            Layout* layout = Configuration.Instance().GetLayout();
+            margins = layout->GetDiagramPaddingElement()->GetPadding();
+            int labelColumnWidth = ScreenMetrics.Get().MMToHorizontalPixels(15);
+
+            UniquePtr<GroupBox> formatGroupBoxPtr(new GroupBox(GroupBoxControlCreateParams(ControlCreateParams().Defaults().SetText("Format").
+                SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h)).
+                SetSize(Size(ScreenMetrics.Get().MMToHorizontalPixels(30), ScreenMetrics.Get().MMToVerticalPixels(30))).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            formatGroupBox = formatGroupBoxPtr.Get();
+            auto result = AddChild(formatGroupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            auto locResult = formatGroupBox->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point formatGroupBoxLoc = locResult.Value();
+            Size formatGroupBoxSize = formatGroupBox->GetSize();
+
+            UniquePtr<RadioButton> pngRadioButtonPtr = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetText("PNG").
+                    SetLocation(Point(formatGroupBoxLoc.x, formatGroupBoxLoc.y + defaultControlSpacing.h)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            pngRadioButton = pngRadioButtonPtr.Get();
+            pngRadioButton->CheckedChangedEvent().AddHandler(FormatRadioButtonStateChanged);
+            result = formatGroupBox->AddChild(pngRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            locResult = pngRadioButton->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point pngRadioButtonLoc = locResult.Value();
+            Size pngRadioButtonSize = pngRadioButton->GetSize();
+
+            UniquePtr<RadioButton> jpgRadioButtonPtr = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetText("JPEG").
+                    SetLocation(Point(formatGroupBoxLoc.x, pngRadioButtonLoc.y + pngRadioButtonSize.h)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            jpgRadioButton = jpgRadioButtonPtr.Get();
+            jpgRadioButton->CheckedChangedEvent().AddHandler(FormatRadioButtonStateChanged);
+            result = formatGroupBox->AddChild(jpgRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            locResult = jpgRadioButton->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point jpgRadioButtonLoc = locResult.Value();
+            Size jpgRadioButtonSize = jpgRadioButton->GetSize();
+
+            UniquePtr<RadioButton> gifRadioButtonPtr = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetText("GIF").
+                    SetLocation(Point(formatGroupBoxLoc.x, jpgRadioButtonLoc.y + jpgRadioButtonSize.h)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            gifRadioButton = gifRadioButtonPtr.Get();
+            gifRadioButton->CheckedChangedEvent().AddHandler(FormatRadioButtonStateChanged);
+            result = formatGroupBox->AddChild(gifRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            locResult = gifRadioButton->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point gifRadioButtonLoc = locResult.Value();
+            Size gifRadioButtonSize = gifRadioButton->GetSize();
+
+            UniquePtr<RadioButton> tiffRadioButtonPtr = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetText("TIFF").
+                    SetLocation(Point(formatGroupBoxLoc.x, gifRadioButtonLoc.y + gifRadioButtonSize.h)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            tiffRadioButton = tiffRadioButtonPtr.Get();
+            tiffRadioButton->CheckedChangedEvent().AddHandler(FormatRadioButtonStateChanged);
+            result = formatGroupBox->AddChild(tiffRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            locResult = tiffRadioButton->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point tiffRadioButtonLoc = locResult.Value();
+            Size tiffRadioButtonSize = tiffRadioButton->GetSize();
+
+            UniquePtr<RadioButton> bmpRadioButtonPtr = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetText("BMP").
+                    SetLocation(Point(formatGroupBoxLoc.x, tiffRadioButtonLoc.y + tiffRadioButtonSize.h)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            bmpRadioButton = bmpRadioButtonPtr.Get();
+            bmpRadioButton->CheckedChangedEvent().AddHandler(FormatRadioButtonStateChanged);
+            result = formatGroupBox->AddChild(bmpRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            locResult = bmpRadioButton->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point bmpRadioButtonLoc = locResult.Value();
+            Size bmpRadioButtonSize = bmpRadioButton->GetSize();
+
+            UniquePtr<GroupBox> marginsGroupBoxPtr(new GroupBox(GroupBoxControlCreateParams(ControlCreateParams().Defaults().SetText("Margins").
+                SetLocation(Point(formatGroupBoxLoc.x + formatGroupBoxSize.w + defaultControlSpacing.w, defaultControlSpacing.h)).
+                SetSize(Size(ScreenMetrics.Get().MMToHorizontalPixels(50), ScreenMetrics.Get().MMToVerticalPixels(40))).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            marginsGroupBox = marginsGroupBoxPtr.Get();
+            result = AddChild(marginsGroupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locResult = marginsGroupBox->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point marginsGroupBoxLoc = locResult.Value();
+            Size marginsGroupBoxSize = marginsGroupBox->GetSize();
+
+            Point leftLabelLoc(defaultControlSpacing.w, marginsGroupBoxLoc.y + defaultControlSpacing.h);
+            UniquePtr<Label> leftLabelPtr(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Left:").SetLocation(leftLabelLoc).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* leftLabel = leftLabelPtr.Get();
+            result = marginsGroupBox->AddChild(leftLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point leftTextBoxLoc(leftLabelLoc.x + labelColumnWidth, leftLabelLoc.y);
+            Size textBoxSize(Size(ScreenMetrics.Get().MMToHorizontalPixels(20), defaultTextBoxSize.h + 2 * DefaultControlPadding()));
+            UniquePtr<TextBox> leftTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(System.ToString(margins.left)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            leftTextBox = leftTextBoxPtr.Get();
+            leftTextBox->TextChangedEvent().AddHandler(LeftChanged);
+            UniquePtr<PaddedControl> paddedLeftTextBoxPtr(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                leftTextBoxPtr.Get()).Defaults(), leftTextBoxPtr.Release())));
+            UniquePtr<BorderedControl> borderedLeftTextBoxPtr(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(leftTextBoxLoc).
+                SetSize(textBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedLeftTextBoxPtr.Get()).Defaults(), paddedLeftTextBoxPtr.Release())));
+            result = marginsGroupBox->AddChild(borderedLeftTextBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point topTextBoxLoc(leftTextBoxLoc.x , leftTextBoxLoc.y + textBoxSize.h + defaultControlSpacing.h);
+            Point topLabelLoc(defaultControlSpacing.w, topTextBoxLoc.y + textBoxSize.h - defaultLabelSize.h);
+            UniquePtr<Label> topLabelPtr(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Top:").SetLocation(topLabelLoc).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* topLabel = topLabelPtr.Get();
+            result = marginsGroupBox->AddChild(topLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<TextBox> topTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(System.ToString(margins.top)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            topTextBox = topTextBoxPtr.Get();
+            topTextBox->TextChangedEvent().AddHandler(TopChanged);
+            UniquePtr<PaddedControl> paddedTopTextBoxPtr(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                topTextBoxPtr.Get()).Defaults(), topTextBoxPtr.Release())));
+            UniquePtr<BorderedControl> borderedTopTextBoxPtr(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(topTextBoxLoc).
+                SetSize(textBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedTopTextBoxPtr.Get()).Defaults(), paddedTopTextBoxPtr.Release())));
+            result = marginsGroupBox->AddChild(borderedTopTextBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point rightTextBoxLoc(leftTextBoxLoc.x , topTextBoxLoc.y + textBoxSize.h + defaultControlSpacing.h);
+            Point rightLabelLoc(defaultControlSpacing.w, rightTextBoxLoc.y + textBoxSize.h - defaultLabelSize.h);
+            UniquePtr<Label> rightLabelPtr(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Right:").SetLocation(rightLabelLoc).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* rightLabel = rightLabelPtr.Get();
+            result = marginsGroupBox->AddChild(rightLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<TextBox> rightTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(System.ToString(margins.right)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            rightTextBox = rightTextBoxPtr.Get();
+            rightTextBox->TextChangedEvent().AddHandler(RightChanged);
+            UniquePtr<PaddedControl> paddedRightTextBoxPtr(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                rightTextBoxPtr.Get()).Defaults(), rightTextBoxPtr.Release())));
+            UniquePtr<BorderedControl> borderedRightTextBoxPtr(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(rightTextBoxLoc).
+                SetSize(textBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedRightTextBoxPtr.Get()).Defaults(), paddedRightTextBoxPtr.Release())));
+            result = marginsGroupBox->AddChild(borderedRightTextBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point bottomTextBoxLoc(leftTextBoxLoc.x, rightTextBoxLoc.y + textBoxSize.h + defaultControlSpacing.h);
+            Point bottomLabelLoc(defaultControlSpacing.w, bottomTextBoxLoc.y + textBoxSize.h - defaultLabelSize.h);
+            UniquePtr<Label> bottomLabelPtr(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Bottom:").SetLocation(bottomLabelLoc).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* bottomLabel = bottomLabelPtr.Get();
+            result = marginsGroupBox->AddChild(bottomLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<TextBox> bottomTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(System.ToString(margins.bottom)).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            bottomTextBox = bottomTextBoxPtr.Get();
+            bottomTextBox->TextChangedEvent().AddHandler(BottomChanged);
+            UniquePtr<PaddedControl> paddedBottomTextBoxPtr(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                bottomTextBoxPtr.Get()).Defaults(), bottomTextBoxPtr.Release())));
+            UniquePtr<BorderedControl> borderedBottomTextBoxPtr(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(bottomTextBoxLoc).
+                SetSize(textBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedBottomTextBoxPtr.Get()).Defaults(), paddedBottomTextBoxPtr.Release())));
+            result = marginsGroupBox->AddChild(borderedBottomTextBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point fileNameLabelLoc(defaultControlSpacing.w, marginsGroupBoxLoc.y + marginsGroupBoxSize.h + defaultControlSpacing.h + textBoxSize.h - defaultLabelSize.h);
+            UniquePtr<Label> fileNameLabelPtr(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Image file name:").SetLocation(fileNameLabelLoc).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* fileNameLabel = fileNameLabelPtr.Get();
+            result = AddChild(fileNameLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point fileNameTextBoxLoc(defaultControlSpacing.w, fileNameLabelLoc.y + fileNameLabel->GetSize().h + defaultControlSpacing.h);
+            UniquePtr<TextBox> fileNameTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(fileName).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            fileNameTextBox = fileNameTextBoxPtr.Get();
+            fileNameTextBox->TextChangedEvent().AddHandler(FileNameChanged);
+            UniquePtr<PaddedControl> paddedFileNameTextBoxPtr(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                fileNameTextBoxPtr.Get()).Defaults(), fileNameTextBoxPtr.Release())));
+            UniquePtr<BorderedControl> borderedFileNameTextBoxPtr(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(fileNameTextBoxLoc).
+                SetSize(Size(ScreenMetrics.Get().MMToHorizontalPixels(80), textBoxSize.h)).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedFileNameTextBoxPtr.Get()).Defaults(), paddedFileNameTextBoxPtr.Release())));
+            result = AddChild(borderedFileNameTextBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point browseButtonLoc(fileNameTextBoxLoc.x + fileNameTextBox->GetSize().w - defaultButtonSize.w + 8,
+                fileNameTextBoxLoc.y + textBoxSize.h + defaultControlSpacing.h);
+            UniquePtr<Button> browseButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Browse").SetLocation(browseButtonLoc).
+                SetSize(defaultButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            browseButton = browseButtonPtr.Get();
+            browseButton->ClickEvent().AddHandler(Browse);
+            result = AddChild(browseButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+            int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+            UniquePtr<Button> cancelButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Cancel").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), false)));
+            cancelButton = cancelButtonPtr.Get();
+            cancelButton->SetDialogResult(DialogResult.cancel);
+            x = x - defaultButtonSize.w - defaultControlSpacing.w;
+
+            UniquePtr<Button> okButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("OK").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), true)));
+            okButton = okButtonPtr.Get();
+            okButton->SetDialogResult(DialogResult.ok);
+            result = AddChild(okButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = AddChild(cancelButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (fileName.IsEmpty())
+            {
+                okButton->Disable();
+            }
+            else
+            {
+                result = fileNameTextBox->SetText(fileName);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            SetDefaultButton(okButton);
+            SetCancelButton(cancelButton);
+            ready = true;
+            fileNameTextBox->SetFocus();
+        }
+        public const string& FileName() const
+        {
+            return fileName;
+        }
+        public ImageFormat Format() const
+        {
+            return format;
+        }
+        public PaddingF Margins() const
+        {
+            return margins;
+        }
+        private void FormatRadioButtonStateChanged()
+        {
+            if (!ready) return;
+            RadioButton* checkedRadioButton = formatGroupBox->CheckedRadioButton();
+            if (checkedRadioButton == pngRadioButton)
+            {
+                format = ImageFormat.png;
+            }
+            else if (checkedRadioButton == jpgRadioButton)
+            {
+                format = ImageFormat.jpeg;
+            }
+            else if (checkedRadioButton == gifRadioButton)
+            {
+                format = ImageFormat.gif;
+            }
+            else if (checkedRadioButton == tiffRadioButton)
+            {
+                format = ImageFormat.tiff;
+            }
+            else if (checkedRadioButton == bmpRadioButton)
+            {
+                format = ImageFormat.bmp;
+            }
+            if (!fileName.IsEmpty())
+            {
+                switch (format)
+                {
+                    case ImageFormat.png:
+                    {
+                        fileName = System.IO.Path.ChangeExtension(fileName, ".png");
+                        break;
+                    }
+                    case ImageFormat.jpeg:
+                    {
+                        fileName = System.IO.Path.ChangeExtension(fileName, ".jpg");
+                        break;
+                    }
+                    case ImageFormat.gif:
+                    {
+                        fileName = System.IO.Path.ChangeExtension(fileName, ".gif");
+                        break;
+                    }
+                    case ImageFormat.tiff:
+                    {
+                        fileName = System.IO.Path.ChangeExtension(fileName, ".tiff");
+                        break;
+                    }
+                    case ImageFormat.bmp:
+                    {
+                        fileName = System.IO.Path.ChangeExtension(fileName, ".bmp");
+                        break;
+                    }
+                }
+                if (fileNameTextBox != null)
+                {
+                    auto result = fileNameTextBox->SetText(fileName);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
+                }
+            }
+        }
+        private void LeftChanged()
+        {
+            bool disable = false;
+            string left = leftTextBox->Text();
+            if (left.IsEmpty())
+            {
+                disable = true;
+            }
+            else
+            {
+                auto leftResult = System.ParseFloat(left);
+                if (leftResult.Error())
+                {
+                    disable = true;
+                }
+                else
+                {
+                    margins.left = leftResult.Value();
+                }
+            }
+            if (disable)
+            {
+                okButton->Disable();
+            }
+            else
+            {
+                okButton->Enable();
+            }
+        }
+        private void TopChanged()
+        {
+            bool disable = false;
+            string top = topTextBox->Text();
+            if (top.IsEmpty())
+            {
+                disable = true;
+            }
+            else
+            {
+                auto result = System.ParseFloat(top);
+                if (result.Error())
+                {
+                    disable = true;
+                }
+                else
+                {
+                    margins.top = result.Value();
+                }
+            }
+            if (disable)
+            {
+                okButton->Disable();
+            }
+            else
+            {
+                okButton->Enable();
+            }
+        }
+        private void RightChanged()
+        {
+            bool disable = false;
+            string right = rightTextBox->Text();
+            if (right.IsEmpty())
+            {
+                disable = true;
+            }
+            else
+            {
+                auto result = System.ParseFloat(right);
+                if (result.Error())
+                {
+                    disable = true;
+                }
+                else
+                {
+                    margins.right = result.Value();
+                }
+            }
+            if (disable)
+            {
+                okButton->Disable();
+            }
+            else
+            {
+                okButton->Enable();
+            }
+        }
+        private void BottomChanged()
+        {
+            bool disable = false;
+            string bottom = bottomTextBox->Text();
+            if (bottom.IsEmpty())
+            {
+                disable = true;
+            }
+            else
+            {
+                auto result = System.ParseFloat(bottom);
+                if (result.Error())
+                {
+                    disable = true;
+                }
+                else
+                {
+                    margins.bottom = result.Value();
+                }
+            }
+            if (disable)
+            {
+                okButton->Disable();
+            }
+            else
+            {
+                okButton->Enable();
+            }
+        }
+        private void FileNameChanged()
+        {
+            bool disable = false;
+            fileName = fileNameTextBox->Text();
+            if (fileName.IsEmpty())
+            {
+                disable = true;
+            }
+            else
+            {
+                disable = false;
+            }
+            if (disable)
+            {
+                okButton->Disable();
+            }
+            else
+            {
+                okButton->Enable();
+            }
+        }
+        private void Browse(ClickEventArgs& args)
+        {
+            List<Pair<string, string>> descriptionFilterPairs;
+            descriptionFilterPairs.Add(MakePair(string("PNG files (*.png)"), string("*.png")));
+            descriptionFilterPairs.Add(MakePair(string("JPG files (*.jpg)"), string("*.jpg")));
+            descriptionFilterPairs.Add(MakePair(string("GIF files (*.gif)"), string("*.gif")));
+            descriptionFilterPairs.Add(MakePair(string("TIFF files (*.tiff)"), string("*.tiff")));
+            descriptionFilterPairs.Add(MakePair(string("BMP files (*.bmp)"), string("*.bmp")));
+            Result<string> diagramDirectoryResult = DiagramDirectory();
+            if (diagramDirectoryResult.Error())
+            {
+                args.errorId = diagramDirectoryResult.GetErrorId();
+                return;
+            }
+            string initialDirectory = Rvalue(diagramDirectoryResult.Value());
+            List<string> fileNames;
+            string defaultFilePath = fileName;
+            string filePath;
+            string currentDirectory;
+            Result<bool> selectedResult = System.Windows.API.GetSaveFileName(Handle(), descriptionFilterPairs, initialDirectory, defaultFilePath, ".png", 0u,
+                currentDirectory, filePath);
+            if (selectedResult.Error())
+            {
+                args.errorId = selectedResult.GetErrorId();
+                return;
+            }
+            bool selected = selectedResult.Value();
+            if (selected)
+            {
+                Result<bool> existsResult = System.IO.File.Exists(filePath);
+                if (existsResult.Error())
+                {
+                    args.errorId = existsResult.GetErrorId();
+                    return;
+                }
+                bool exists = existsResult.Value();
+                if (exists)
+                {
+                    Result<MessageBoxResult> result = MessageBox.Show(
+                        "File '" + filePath + "' already exists. Do you want to replace it?", "File Exists", this, MessageBoxType.MB_YESNO);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                    if (result.Value() != MessageBoxResult.yes)
+                    {
+                        return;
+                    }
+                }
+                fileName = filePath;
+                auto result = fileNameTextBox->SetText(fileName);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+            }
+        }
+        private string diagramFileName;
+        private string fileName;
+        private ImageFormat format;
+        private PaddingF margins;
+        private GroupBox* formatGroupBox;
+        private RadioButton* pngRadioButton;
+        private RadioButton* jpgRadioButton;
+        private RadioButton* gifRadioButton;
+        private RadioButton* tiffRadioButton;
+        private RadioButton* bmpRadioButton;
+        private GroupBox* marginsGroupBox;
+        private TextBox* leftTextBox;
+        private TextBox* topTextBox;
+        private TextBox* rightTextBox;
+        private TextBox* bottomTextBox;
+        private TextBox* fileNameTextBox;
+        private Button* browseButton;
+        private Button* okButton;
+        private Button* cancelButton;
+        private bool ready;
+    }
+}
+

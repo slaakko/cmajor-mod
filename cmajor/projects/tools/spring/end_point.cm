@@ -28,6 +28,99 @@ namespace spring
             index(-1)
         {
         }
+        public System.Xml.Element* ToXml(const string& elementName) const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement(elementName);
+            if (index != -1)
+            {
+                xmlElement->SetAttribute("index", System.ToString(index));
+            }
+            xmlElement->SetAttribute("connector", connector.ToString());
+            xmlElement->SetAttribute("x", System.ToString(point.x));
+            xmlElement->SetAttribute("y", System.ToString(point.y));
+            xmlElement->AppendChild(primaryTextElement->ToXml());
+            xmlElement->AppendChild(secondaryTextElement->ToXml());
+            return xmlElement;
+        }
+        public Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            string indexStr = xmlElement->GetAttribute("index");
+            if (indexStr.IsEmpty())
+            {
+                index = -1;
+            }
+            else
+            {
+                auto result = System.ParseInt(indexStr);
+                if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                index = result.Value();
+            }
+            string connectorStr = xmlElement->GetAttribute("connector");
+            auto connectorResult = ParseConnector(connectorStr);
+            if (connectorResult.Error()) return Result<bool>(ErrorId(connectorResult.GetErrorId()));
+            connector = connectorResult.Value();
+            string xStr = xmlElement->GetAttribute("x");
+            auto floatResult = System.ParseFloat(xStr);
+            if (floatResult.Error()) return Result<bool>(ErrorId(floatResult.GetErrorId()));
+            point.x = floatResult.Value();
+            string yStr = xmlElement->GetAttribute("y");
+            floatResult = System.ParseFloat(yStr);
+            if (floatResult.Error()) return Result<bool>(ErrorId(floatResult.GetErrorId()));
+            point.y = floatResult.Value();
+            Result<UniquePtr<System.XPath.NodeSet>> primaryNodeSetResult = System.XPath.EvaluateToNodeSet(primaryTextElement->XmlElementName(), xmlElement);
+            if (primaryNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(primaryNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* primaryNodeSet = primaryNodeSetResult.Value().Get();
+            if (primaryNodeSet->Count() == 1)
+            {
+                System.Xml.Node* node = primaryNodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* primaryXmlElement = cast<System.Xml.Element*>(node);
+                    Result<bool> textResult = primaryTextElement->FromXml(primaryXmlElement);
+                    if (textResult.Error()) return Result<bool>(ErrorId(textResult.GetErrorId()));
+                }
+                else
+                {
+                    int errorId = AllocateError("single XML element '" + primaryTextElement->XmlElementName() + "' expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("single XML element '" + primaryTextElement->XmlElementName() + "' expected in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+            Result<UniquePtr<System.XPath.NodeSet>> secondaryNodeSetResult = System.XPath.EvaluateToNodeSet(secondaryTextElement->XmlElementName(), xmlElement);
+            if (secondaryNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(secondaryNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* secondaryNodeSet = secondaryNodeSetResult.Value().Get();
+            if (secondaryNodeSet->Count() == 1)
+            {
+                System.Xml.Node* node = secondaryNodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* secondaryXmlElement = cast<System.Xml.Element*>(node);
+                    Result<bool> textResult = secondaryTextElement->FromXml(secondaryXmlElement);
+                    if (textResult.Error()) return Result<bool>(ErrorId(textResult.GetErrorId()));
+                }
+                else
+                {
+                    int errorId = AllocateError("single XML element '" + secondaryTextElement->XmlElementName() + "' expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("single XML element '" + secondaryTextElement->XmlElementName() + "' expected in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
         public inline DiagramElement* Element() const
         {
             return element;
@@ -84,6 +177,82 @@ namespace spring
             else
             {
                 index = -1;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> MapIndex(const Map<int, int>& indexMap)
+        {
+            if (index != -1)
+            {
+                auto it = indexMap.Find(index);
+                if (it != indexMap.End())
+                {
+                    index = it->second;
+                }
+                else
+                {
+                    int errorId = AllocateError("EndPoint.MapIndex: index " + System.ToString(index) + " not found from index map");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> MeasureTexts(Graphics& graphics)
+        {
+            if (primaryTextElement != null && !primaryTextElement->IsEmpty())
+            {
+                auto result = primaryTextElement->Measure(graphics);
+                if (result.Error()) return result;
+            }
+            if (secondaryTextElement != null && !secondaryTextElement->IsEmpty())
+            {
+                auto result = secondaryTextElement->Measure(graphics);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Resolve(Diagram* diagram)
+        {
+            if (index != -1)
+            {
+                element = diagram->GetElementByIndex(index);
+                if (connector.PrimaryPoint() == ConnectorPointKind.attribute)
+                {
+                    if (element->IsContainerElement())
+                    {
+                        ContainerElement* containerElement = cast<ContainerElement*>(element);
+                        Result<AttributeElement*> attributeResult = containerElement->GetAttribute(cast<int>(connector.SecondaryPoint()));
+                        if (attributeResult.Error()) return Result<bool>(ErrorId(attributeResult.GetErrorId()));
+                        element = attributeResult.Value();
+                    }
+                    else
+                    {
+                        int errorId = AllocateError("EndPoint.Resolve: container element expected");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                else if (connector.PrimaryPoint() == ConnectorPointKind.operation)
+                {
+                    if (element->IsContainerElement())
+                    {
+                        ContainerElement* containerElement = cast<ContainerElement*>(element);
+                        Result<OperationElement*> operationResult = containerElement->GetOperation(cast<int>(connector.SecondaryPoint()));
+                        if (operationResult.Error()) return Result<bool>(ErrorId(operationResult.GetErrorId()));
+                        element = operationResult.Value();
+                    }
+                    else
+                    {
+                        int errorId = AllocateError("EndPoint.Resolve: container element expected");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+            }
+            else
+            {
+                element = null;
             }
             return Result<bool>(true);
         }

@@ -266,8 +266,10 @@ namespace spring
         {
             return Result<bool>(true);
         }
-        public virtual void Draw(Graphics& graphics)
+        [nodiscard]
+        public virtual Result<bool> Draw(Graphics& graphics)
         {
+            return Result<bool>(true);
         }
         [nodiscard]
         public virtual Result<bool> AddActions(ContextMenu* contextMenu)
@@ -277,14 +279,52 @@ namespace spring
             if (result.Error()) return result;
             return Result<bool>(true);
         }
-        public ustring Copy()
+        public Result<ustring> Copy()
         {
-            // todo
-            return ustring();
+            int errorId = 0;
+            List<UniquePtr<DiagramElement>> clonedElements = Clone(errorId);
+            if (errorId != 0)
+            {
+                return Result<ustring>(ErrorId(errorId));
+            }
+            System.Xml.Document elementDoc;
+            elementDoc.AppendChild(System.Xml.MakeElement("spring.diagram.elements"));
+            for (const UniquePtr<DiagramElement>& clonedElement : clonedElements)
+            {
+                UniquePtr<System.Xml.Element> xmlElement(clonedElement->ToXml());
+                elementDoc.DocumentElement()->AppendChild(xmlElement.Release());
+            }
+            System.IO.StringWriter stringWriter;
+            System.Text.CodeFormatter formatter(stringWriter);
+            formatter.SetIndentSize(1);
+            auto result = elementDoc.Write(formatter);
+            if (result.Error()) return Result<ustring>(ErrorId(result.GetErrorId()));
+            string str = stringWriter.GetString();
+            auto utf32Result = ToUtf32(str);
+            if (utf32Result.Error()) return Result<ustring>(ErrorId(utf32Result.GetErrorId()));
+            return Result<ustring>(Rvalue(utf32Result.Value()));
         }
-        public void SaveImage(const string& fileName, const PaddingF& margins, ImageFormat imageFormat)
+        [nodiscard]
+        public Result<bool> SaveImage(const string& fileName, const PaddingF& margins, ImageFormat imageFormat)
         {
-            // todo
+            int errorId = 0;
+            List<UniquePtr<DiagramElement>> clonedElements = Clone(errorId);
+            if (errorId != 0)
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+            List<DiagramElement*> diagramElements;
+            for (const auto& clonedElement : clonedElements)
+            {
+                diagramElements.Add(clonedElement.Get());
+            }
+            Canvas* canvas = GetCanvas();
+            Result<Graphics> graphicsResult = Graphics.FromWindowHandle(canvas->Handle());
+            if (graphicsResult.Error()) return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            Graphics* graphics = &graphicsResult.Value();
+            auto result = spring.SaveImage(fileName, margins, canvas, diagramElements, graphics, imageFormat);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private SelectionKind kind;
         private Diagram* diagram;
@@ -1019,7 +1059,7 @@ namespace spring
             return Result<bool>(true);
         }
         [nodiscard]
-        public Result<bool> Draw(Graphics& graphics)
+        public override Result<bool> Draw(Graphics& graphics)
         {
             Layout* layout = Configuration.Instance().GetLayout();
             Brush* brush = layout->GetSelectionColorElement()->GetBrush();

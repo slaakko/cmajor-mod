@@ -7,7 +7,15 @@ using System;
 
 namespace System.Windows
 {
-    public class delegate void SelectedIndexChangedEventHandler();
+    public class SelectedIndexChangedEventArgs
+    {
+        public SelectedIndexChangedEventArgs() : errorId(0)
+        {
+        }
+        public int errorId;
+    }
+    
+    public class delegate void SelectedIndexChangedEventHandler(SelectedIndexChangedEventArgs& args);
 
     public enum ListBoxStyle : long
     {
@@ -213,18 +221,25 @@ namespace System.Windows
             }
             return Result<bool>(true);
         }
-        internal void SelectedIndexChangedInternal()
+        [nodiscard]
+        internal Result<bool> SelectedIndexChangedInternal()
         {
-            OnSelectedIndexChanged();
+            SelectedIndexChangedEventArgs args;
+            return OnSelectedIndexChanged(args);
         }
-        protected virtual void OnSelectedIndexChanged()
+        protected virtual Result<bool> OnSelectedIndexChanged(SelectedIndexChangedEventArgs& args)
         {
-            selectedIndexChangedEvent.Fire();
+            selectedIndexChangedEvent.Fire(args);
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public Event<SelectedIndexChangedEventHandler>& SelectedIndexChangedEvent() const
+        public Event<SelectedIndexChangedEventHandler, SelectedIndexChangedEventArgs>& SelectedIndexChangedEvent() const
         {
             return selectedIndexChangedEvent;
         }
-        private Event<SelectedIndexChangedEventHandler> selectedIndexChangedEvent;
+        private Event<SelectedIndexChangedEventHandler, SelectedIndexChangedEventArgs> selectedIndexChangedEvent;
     }
 }

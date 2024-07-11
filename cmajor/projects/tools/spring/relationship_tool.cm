@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 using System.Windows;
 
 namespace spring
@@ -13,12 +14,219 @@ namespace spring
         public RelationshipTool(ToolKind kind_) : base(kind_)
         {
         }
+        [nodiscard]
+        public override Result<bool> Initialize(Diagram* diagram)
+        {
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            diagram->ResetOperation();
+            return Result<bool>(true);
+        }
+        public virtual bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndPointKind endPointKind)
+        {
+            return false;
+        }
+        abstract RelationshipKind GetRelationshipKind() const;
+        [nodiscard]
+        public override Result<bool> MouseNormalLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            DiagramElement* element = args.element;
+            if (element == null)
+            {
+                Operation* currentOperation = diagram->GetOperation();
+                if (currentOperation->IsAddRelationshipOperation())
+                {
+                    AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                    RelationshipElement* relationshipElement = operation->GetRelationshipElement();
+                    relationshipElement->RoutingPoints().Add(args.location);
+                }
+                return Result<bool>(true);
+            }
+            DiagramElement* sourceElement = null;
+            EndPointKind endPointKind = EndPointKind.source;
+            Operation* currentOperation = diagram->GetOperation();
+            if (currentOperation->IsAddRelationshipOperation())
+            {
+                AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                RelationshipElement* relationshipElement = operation->GetRelationshipElement();
+                sourceElement = relationshipElement->Source().Element();
+                if (relationshipElement->Target().Element() == null)
+                {
+                    endPointKind = EndPointKind.target;
+                }
+            }
+            if (!Accept(element, sourceElement, endPointKind)) return Result<bool>(false);
+            List<EndPoint> endPoints = element->GetEndPoints(endPointKind, this);
+            if (!endPoints.IsEmpty())
+            {
+                List<const EndPoint*> endPointPtrs;
+                for (const auto& endPoint : endPoints)
+                {
+                    endPointPtrs.Add(&endPoint);
+                }
+                Sort(endPointPtrs, EndPointNearer(args.location));
+                const EndPoint* nearestEndPoint = endPointPtrs.Front();
+                if (currentOperation->IsEmptyOperation())
+                {
+                    RelationshipKind relationshipKind = GetRelationshipKind();
+                    UniquePtr<RelationshipElement> relationshipElement(new RelationshipElement(relationshipKind));
+                    if (endPointKind == EndPointKind.source)
+                    {
+                        if (nearestEndPoint->Element() != null)
+                        {
+                            nearestEndPoint->Element()->AddRelationship(relationshipElement.Get());
+                        }
+                    }
+                    relationshipElement->Source() = *nearestEndPoint;
+                    UniquePtr<AddRelationshipOperation> operation(new AddRelationshipOperation(diagram, relationshipElement.Release()));
+                    diagram->SetOperation(operation.Release());
+                }
+                else if (currentOperation->IsAddRelationshipOperation())
+                {
+                    AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                    RelationshipElement* relationshipElement = operation->GetRelationshipElement();
+                    if (relationshipElement->Source().Element() == element && relationshipElement->RoutingPoints().IsEmpty())
+                    {
+                        relationshipElement->Source() = *nearestEndPoint;
+                    }
+                    else if (relationshipElement->Target().Element() == null)
+                    {
+                        if (args.control)
+                        {
+                            PointF lastPoint = relationshipElement->LastPoint();
+                            PointF nextPoint = nearestEndPoint->Point();
+                            Line line(lastPoint, nextPoint);
+                            Vector v(line.ToVector());
+                            switch (MainDirection(v))
+                            {
+                                case 0:
+                                case 180:
+                                {
+                                    lastPoint.y = nextPoint.y;
+                                    break;
+                                }
+                                case 90:
+                                case 270:
+                                {
+                                    lastPoint.x = nextPoint.x;
+                                    break;
+                                }
+                            }
+                            relationshipElement->SetLastPoint(lastPoint);
+                        }
+                        relationshipElement->Target() = *nearestEndPoint;
+                        nearestEndPoint->Element()->AddRelationship(relationshipElement);
+                        result = diagram->CommitOperation(args);
+                        if (result.Error()) return result;
+                        result = Tools.Instance().SetCurrent(Tools.Instance().GetSelectTool());
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseControlLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            DiagramElement* element = args.element;
+            Operation* currentOperation = diagram->GetOperation();
+            if (currentOperation->IsAddRelationshipOperation())
+            {
+                AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                RelationshipElement* relationshipElement = operation->GetRelationshipElement();
+                PointF lastPoint = relationshipElement->LastPoint();
+                PointF nextPoint = args.location;
+                Line line(lastPoint, nextPoint);
+                Vector v(line.ToVector());
+                switch (MainDirection(v))
+                {
+                    case 0:
+                    case 180:
+                    {
+                        nextPoint.y = lastPoint.y;
+                        break;
+                    }
+                    case 90:
+                    case 270:
+                    {
+                        nextPoint.x = lastPoint.x;
+                        break;
+                    }
+                }
+                args.location = nextPoint;
+                result = MouseNormalLeftClick(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseShiftLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            Operation* currentOperation = diagram->GetOperation();
+            if (currentOperation->IsAddRelationshipOperation())
+            {
+                AddRelationshipOperation* operation = cast<AddRelationshipOperation*>(currentOperation);
+                RelationshipElement* relationshipElement = operation->GetRelationshipElement();
+                if (relationshipElement->Target().Element() == null)
+                {
+                    PointF finalPoint = args.location;
+                    if (args.control)
+                    {
+                        PointF lastPoint = relationshipElement->LastPoint();
+                        Line line(lastPoint, finalPoint);
+                        Vector v(line.ToVector());
+                        switch (MainDirection(v))
+                        {
+                            case 0:
+                            case 180:
+                            {
+                                finalPoint.y = lastPoint.y;
+                                break;
+                            }
+                            case 90:
+                            case 270:
+                            {
+                                finalPoint.x = lastPoint.x;
+                                break;
+                            }
+                        }
+                    }
+                    relationshipElement->Target() = EndPoint(null, Connector(), finalPoint);
+                    relationshipElement->Source().Element()->AddRelationship(relationshipElement);
+                    result = diagram->CommitOperation(args);
+                    if (result.Error()) return result;
+                    result = Tools.Instance().SetCurrent(Tools.Instance().GetSelectTool());
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
     }
 
     abstract class ClassRelationshipTool : RelationshipTool
     {
         public ClassRelationshipTool(ToolKind kind_) : base(kind_)
         {
+        }
+        public override bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndPointKind endPointKind)
+        {
+            if (element->IsClassElement())
+            {
+                return true;
+            }
+            else
+            {
+                return base->Accept(element, sourceElement, endPointKind);
+            }
         }
     }
 
@@ -27,12 +235,20 @@ namespace spring
         public InheritanceTool() : base(ToolKind.inheritanceTool)
         {
         }
+        public override RelationshipKind GetRelationshipKind() const
+        {
+            return RelationshipKind.inheritance;
+        }
     }
 
     class CompositionTool : ClassRelationshipTool
     {
         public CompositionTool() : base(ToolKind.compositionTool)
         {
+        }
+        public override RelationshipKind GetRelationshipKind() const
+        {
+            return RelationshipKind.composition;
         }
     }
 
@@ -41,12 +257,20 @@ namespace spring
         public AggregationTool() : base(ToolKind.aggregationTool)
         {
         }
+        public override RelationshipKind GetRelationshipKind() const
+        {
+            return RelationshipKind.aggregation;
+        }
     }
 
     class CreateInstanceTool : ClassRelationshipTool
     {
         public CreateInstanceTool() : base(ToolKind.createInstanceTool)
         {
+        }
+        public override RelationshipKind GetRelationshipKind() const
+        {
+            return RelationshipKind.createInstance;
         }
     }
 
@@ -55,12 +279,20 @@ namespace spring
         public AttachNoteTool() : base(ToolKind.attachNoteTool)
         {
         }
+        public override RelationshipKind GetRelationshipKind() const
+        {
+            return RelationshipKind.attachNote;
+        }
     }
 
     class ReferenceTool : RelationshipTool
     {
         public ReferenceTool() : base(ToolKind.referenceTool)
         {
+        }
+        public override RelationshipKind GetRelationshipKind() const
+        {
+            return RelationshipKind.reference;
         }
     }
 }

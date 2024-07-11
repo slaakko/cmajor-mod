@@ -1,0 +1,1821 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class Inheritance : RelationshipElementRep
+    {
+        public Inheritance(RelationshipElement* relationshipElement_) : base(relationshipElement_)
+        {
+        }
+        public override RelationshipElementRep* Clone(RelationshipElement* relationshipElement_) const
+        {
+            return new Inheritance(relationshipElement_);
+        }
+        public override float TargetSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            return inheritanceArrowWidth;
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            PointF lastPoint;
+            if (relationshipElement->RoutingPoints().IsEmpty())
+            {
+                lastPoint = relationshipElement->Source().Point();
+            }
+            else
+            {
+                PointF prevPoint = relationshipElement->Source().Point();
+                for (const auto& routingPoint : relationshipElement->RoutingPoints())
+                {
+                    auto result = graphics.DrawLine(*linePen, prevPoint, routingPoint);
+                    if (result.Error()) return result;
+                    prevPoint = routingPoint;
+                }
+                lastPoint = relationshipElement->RoutingPoints().Back();
+            }
+            Line line(lastPoint, relationshipElement->Target().Point());
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(lastPoint, u);
+            auto result = graphics.DrawLine(*linePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            Line arrowLine(startLine.end, relationshipElement->Target().Point());
+            Line arrowRightRotatedLine = System.Windows.Rotate(arrowLine, 90.0f);
+            Vector arv = UnitVector(arrowRightRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowRightLine(arrowRightRotatedLine.start, arv);
+            result = graphics.DrawLine(*linePen, arrowRightLine.end, relationshipElement->Target().Point());
+            if (result.Error()) return result;
+            Line arrowLeftRotatedLine = System.Windows.Rotate(arrowLine, -90.0f);
+            Vector alv = UnitVector(arrowLeftRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowLeftLine(arrowLeftRotatedLine.start, alv);
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, relationshipElement->Target().Point());
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, arrowRightLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class CombinedInheritance : RelationshipElementRep
+    {
+        public CombinedInheritance(RelationshipElement* relationshipElement_) : base(relationshipElement_)
+        {
+        }
+        public override RelationshipElementRep* Clone(RelationshipElement* relationshipElement_) const
+        {
+            return new CombinedInheritance(relationshipElement_);
+        }
+        public override float TargetSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            return inheritanceArrowWidth;
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            int mainDirection = relationshipElement->MainDirection();
+            switch (mainDirection)
+            {
+                case 0:
+                {
+                    auto result = DrawCombinedInheritance0(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+                case 90:
+                {
+                    auto result = DrawCombinedInheritance90(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+                case 180:
+                {
+                    auto result = DrawCombinedInheritance180(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+                case 270:
+                {
+                    auto result = DrawCombinedInheritance270(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> DrawSelected(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            int mainDirection = relationshipElement->MainDirection();
+            switch (mainDirection)
+            {
+                case 0:
+                {
+                    auto result = DrawCombinedInheritance0Selected(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+                case 90:
+                {
+                    auto result = DrawCombinedInheritance90Selected(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+                case 180:
+                {
+                    auto result = DrawCombinedInheritance180Selected(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+                case 270:
+                {
+                    auto result = DrawCombinedInheritance270Selected(graphics, relationshipElement);
+                    if (result.Error()) return result;
+                    break;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override bool Contains(const PointF& location) const
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            int mainDirection = relationshipElement->MainDirection();
+            switch (mainDirection)
+            {
+                case 0:
+                {
+                    return Contains0(location, relationshipElement);
+                }
+                case 90:
+                {
+                    return Contains90(location, relationshipElement);
+                }
+                case 180:
+                {
+                    return Contains180(location, relationshipElement);
+                }
+                case 270:
+                {
+                    return Contains270(location, relationshipElement);
+                }
+            }
+            return false;
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance0(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint leftCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.LeftCenter()));
+            PointF targetPoint = leftCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* rightElement = horizontalOrder.Back();
+            EndPoint rightEndPoint = rightElement->GetEndPoint(Connector(Connector.RightCenter()));
+            PointF rightPoint = rightEndPoint.Point();
+            float dx = (targetPoint.x - inheritanceArrowHeight) - rightPoint.x;
+            float w = dx / 2;
+            PointF crossPoint(targetPoint.x - inheritanceArrowHeight - w, targetPoint.y);
+            for (ClassElement* sourceElement : verticalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.RightCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(crossPoint.x, sourcePoint.y);
+                auto result = graphics.DrawLine(*linePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*linePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            Line arrowLine(startLine.end, targetPoint);
+            Line arrowRightRotatedLine = System.Windows.Rotate(arrowLine, 90.0f);
+            Vector arv = UnitVector(arrowRightRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowRightLine(arrowRightRotatedLine.start, arv);
+            result = graphics.DrawLine(*linePen, arrowRightLine.end, targetPoint);
+            if (result.Error()) return result;
+            Line arrowLeftRotatedLine = System.Windows.Rotate(arrowLine, -90.0f);
+            Vector alv = UnitVector(arrowLeftRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowLeftLine(arrowLeftRotatedLine.start, alv);
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, targetPoint);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, arrowRightLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance90(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint topCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.TopCenter()));
+            PointF targetPoint = topCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* bottomElement = verticalOrder.Back();
+            EndPoint bottomEndPoint = bottomElement->GetEndPoint(Connector(Connector.BottomCenter()));
+            PointF bottomPoint = bottomEndPoint.Point();
+            float dy = (targetPoint.y - inheritanceArrowHeight) - bottomPoint.y;
+            float h = dy / 2;
+            PointF crossPoint(targetPoint.x, targetPoint.y - inheritanceArrowHeight - h);
+            for (ClassElement* sourceElement : horizontalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.BottomCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(sourcePoint.x, crossPoint.y);
+                auto result = graphics.DrawLine(*linePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*linePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            Line arrowLine(startLine.end, targetPoint);
+            Line arrowRightRotatedLine = System.Windows.Rotate(arrowLine, 90.0f);
+            Vector arv = UnitVector(arrowRightRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowRightLine(arrowRightRotatedLine.start, arv);
+            result = graphics.DrawLine(*linePen, arrowRightLine.end, targetPoint);
+            if (result.Error()) return result;
+            Line arrowLeftRotatedLine = System.Windows.Rotate(arrowLine, -90.0f);
+            Vector alv = UnitVector(arrowLeftRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowLeftLine(arrowLeftRotatedLine.start, alv);
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, targetPoint);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, arrowRightLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance180(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint rightCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.RightCenter()));
+            PointF targetPoint = rightCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* leftElement = horizontalOrder.Front();
+            EndPoint leftEndPoint = leftElement->GetEndPoint(Connector(Connector.LeftCenter()));
+            PointF leftPoint = leftEndPoint.Point();
+            float dx = leftPoint.x - (targetPoint.x + inheritanceArrowHeight);
+            float w = dx / 2;
+            PointF crossPoint(targetPoint.x + inheritanceArrowHeight + w, targetPoint.y);
+            for (ClassElement* sourceElement : verticalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.LeftCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(crossPoint.x, sourcePoint.y);
+                auto result = graphics.DrawLine(*linePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*linePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            Line arrowLine(startLine.end, targetPoint);
+            Line arrowRightRotatedLine = System.Windows.Rotate(arrowLine, 90.0f);
+            Vector arv = UnitVector(arrowRightRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowRightLine(arrowRightRotatedLine.start, arv);
+            result = graphics.DrawLine(*linePen, arrowRightLine.end, targetPoint);
+            if (result.Error()) return result;
+            Line arrowLeftRotatedLine = System.Windows.Rotate(arrowLine, -90.0f);
+            Vector alv = UnitVector(arrowLeftRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowLeftLine(arrowLeftRotatedLine.start, alv);
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, targetPoint);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, arrowRightLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance270(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint bottomCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.BottomCenter()));
+            PointF targetPoint = bottomCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);;
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* topElement = verticalOrder.Front();
+            EndPoint topEndPoint = topElement->GetEndPoint(Connector(Connector.TopCenter()));
+            PointF topPoint = topEndPoint.Point();
+            float dy = topPoint.y - (targetPoint.y + inheritanceArrowHeight);
+            float h = dy / 2;
+            PointF crossPoint(targetPoint.x, targetPoint.y + inheritanceArrowHeight + h);
+            for (ClassElement* sourceElement : horizontalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.TopCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(sourcePoint.x, crossPoint.y);
+                auto result = graphics.DrawLine(*linePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*linePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            Line arrowLine(startLine.end, targetPoint);
+            Line arrowRightRotatedLine = System.Windows.Rotate(arrowLine, 90.0f);
+            Vector arv = UnitVector(arrowRightRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowRightLine(arrowRightRotatedLine.start, arv);
+            result = graphics.DrawLine(*linePen, arrowRightLine.end, targetPoint);
+            if (result.Error()) return result;
+            Line arrowLeftRotatedLine = System.Windows.Rotate(arrowLine, -90.0f);
+            Vector alv = UnitVector(arrowLeftRotatedLine.ToVector()) * (inheritanceArrowWidth / 2);
+            Line arrowLeftLine(arrowLeftRotatedLine.start, alv);
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, targetPoint);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, arrowLeftLine.end, arrowRightLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance0Selected(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint leftCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.LeftCenter()));
+            PointF targetPoint = leftCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> selectedLinePenResult = relationshipLayoutElement->SelectedLinePen();
+            if (selectedLinePenResult.Error()) return Result<bool>(ErrorId(selectedLinePenResult.GetErrorId()));
+            Pen* selectedLinePen = selectedLinePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* rightElement = horizontalOrder.Back();
+            EndPoint rightEndPoint = rightElement->GetEndPoint(Connector(Connector.RightCenter()));
+            PointF rightPoint = rightEndPoint.Point();
+            float dx = (targetPoint.x - inheritanceArrowHeight) - rightPoint.x;
+            float w = dx / 2;
+            PointF crossPoint(targetPoint.x - inheritanceArrowHeight - w, targetPoint.y);
+            for (ClassElement* sourceElement : verticalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.RightCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(crossPoint.x, sourcePoint.y);
+                auto result = graphics.DrawLine(*selectedLinePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*selectedLinePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*selectedLinePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance90Selected(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint topCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.TopCenter()));
+            PointF targetPoint = topCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> selectedLinePenResult = relationshipLayoutElement->SelectedLinePen();
+            if (selectedLinePenResult.Error()) return Result<bool>(ErrorId(selectedLinePenResult.GetErrorId()));
+            Pen* selectedLinePen = selectedLinePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* bottomElement = verticalOrder.Back();
+            EndPoint bottomEndPoint = bottomElement->GetEndPoint(Connector(Connector.BottomCenter()));
+            PointF bottomPoint = bottomEndPoint.Point();
+            float dy = (targetPoint.y - inheritanceArrowHeight) - bottomPoint.y;
+            float h = dy / 2;
+            PointF crossPoint(targetPoint.x, targetPoint.y - inheritanceArrowHeight - h);
+            for (ClassElement* sourceElement : horizontalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.BottomCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(sourcePoint.x, crossPoint.y);
+                auto result = graphics.DrawLine(*selectedLinePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*selectedLinePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*selectedLinePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance180Selected(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint rightCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.RightCenter()));
+            PointF targetPoint = rightCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> selectedLinePenResult = relationshipLayoutElement->SelectedLinePen();
+            if (selectedLinePenResult.Error()) return Result<bool>(ErrorId(selectedLinePenResult.GetErrorId()));
+            Pen* selectedLinePen = selectedLinePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* leftElement = horizontalOrder.Front();
+            EndPoint leftEndPoint = leftElement->GetEndPoint(Connector(Connector.LeftCenter()));
+            PointF leftPoint = leftEndPoint.Point();
+            float dx = leftPoint.x - (targetPoint.x + inheritanceArrowHeight);
+            float w = dx / 2;
+            PointF crossPoint(targetPoint.x + inheritanceArrowHeight + w, targetPoint.y);
+            for (ClassElement* sourceElement : verticalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.LeftCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(crossPoint.x, sourcePoint.y);
+                auto result = graphics.DrawLine(*selectedLinePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*selectedLinePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*selectedLinePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DrawCombinedInheritance270Selected(Graphics& graphics, RelationshipElement* relationshipElement)
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return Result<bool>(true);
+            EndPoint bottomCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.BottomCenter()));
+            PointF targetPoint = bottomCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return Result<bool>(true);
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> selectedLinePenResult = relationshipLayoutElement->SelectedLinePen();
+            if (selectedLinePenResult.Error()) return Result<bool>(ErrorId(selectedLinePenResult.GetErrorId()));
+            Pen* selectedLinePen = selectedLinePenResult.Value();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* topElement = verticalOrder.Front();
+            EndPoint topEndPoint = topElement->GetEndPoint(Connector(Connector.TopCenter()));
+            PointF topPoint = topEndPoint.Point();
+            float dy = topPoint.y - (targetPoint.y + inheritanceArrowHeight);
+            float h = dy / 2;
+            PointF crossPoint(targetPoint.x, targetPoint.y + inheritanceArrowHeight + h);
+            for (ClassElement* sourceElement : horizontalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.TopCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(sourcePoint.x, crossPoint.y);
+                auto result = graphics.DrawLine(*selectedLinePen, sourcePoint, vpoint);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*selectedLinePen, vpoint, crossPoint);
+                if (result.Error()) return result;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            auto result = graphics.DrawLine(*selectedLinePen, startLine.start, startLine.end);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private bool Contains0(const PointF& location, RelationshipElement* relationshipElement) const
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return false;
+            EndPoint leftCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.LeftCenter()));
+            PointF targetPoint = leftCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return false;
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float selectedLineWidth = relationshipLayoutElement->SelectedLineWidth();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* rightElement = horizontalOrder.Back();
+            EndPoint rightEndPoint = rightElement->GetEndPoint(Connector(Connector.RightCenter()));
+            PointF rightPoint = rightEndPoint.Point();
+            float dx = (targetPoint.x - inheritanceArrowHeight) - rightPoint.x;
+            float w = dx / 2;
+            PointF crossPoint(targetPoint.x - inheritanceArrowHeight - w, targetPoint.y);
+            for (ClassElement* sourceElement : verticalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.RightCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(crossPoint.x, sourcePoint.y);
+                if (spring.LineContains(sourcePoint, vpoint, location, selectedLineWidth)) return true;
+                if (spring.LineContains(vpoint, crossPoint, location, selectedLineWidth)) return true;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            if (spring.LineContains(startLine.start, startLine.end, location, selectedLineWidth)) return true;
+            return false;
+        }
+        private bool Contains90(const PointF& location, RelationshipElement* relationshipElement) const
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return false;
+            EndPoint topCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.TopCenter()));
+            PointF targetPoint = topCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return false;
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float selectedLineWidth = relationshipLayoutElement->SelectedLineWidth();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* bottomElement = verticalOrder.Back();
+            EndPoint bottomEndPoint = bottomElement->GetEndPoint(Connector(Connector.BottomCenter()));
+            PointF bottomPoint = bottomEndPoint.Point();
+            float dy = (targetPoint.y - inheritanceArrowHeight) - bottomPoint.y;
+            float h = dy / 2;
+            PointF crossPoint(targetPoint.x, targetPoint.y - inheritanceArrowHeight - h);
+            for (ClassElement* sourceElement : horizontalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.BottomCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(sourcePoint.x, crossPoint.y);
+                if (spring.LineContains(sourcePoint, vpoint, location, selectedLineWidth)) return true;
+                if (spring.LineContains(vpoint, crossPoint, location, selectedLineWidth)) return true;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            if (spring.LineContains(startLine.start, startLine.end, location, selectedLineWidth)) return true;
+            return false;
+        }
+        private bool Contains180(const PointF& location, RelationshipElement* relationshipElement) const
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return false;
+            EndPoint rightCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.RightCenter()));
+            PointF targetPoint = rightCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return false;
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float selectedLineWidth = relationshipLayoutElement->SelectedLineWidth();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* leftElement = horizontalOrder.Front();
+            EndPoint leftEndPoint = leftElement->GetEndPoint(Connector(Connector.LeftCenter()));
+            PointF leftPoint = leftEndPoint.Point();
+            float dx = leftPoint.x - (targetPoint.x + inheritanceArrowHeight);
+            float w = dx / 2;
+            PointF crossPoint(targetPoint.x + inheritanceArrowHeight + w, targetPoint.y);
+            for (ClassElement* sourceElement : verticalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.LeftCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(crossPoint.x, sourcePoint.y);
+                if (spring.LineContains(sourcePoint, vpoint, location, selectedLineWidth)) return true;
+                if (spring.LineContains(vpoint, crossPoint, location, selectedLineWidth)) return true;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            if (spring.LineContains(startLine.start, startLine.end, location, selectedLineWidth)) return true;
+            return false;
+        }
+        private bool Contains270(const PointF& location, RelationshipElement* relationshipElement) const
+        {
+            Diagram* diagram = relationshipElement->GetDiagram();
+            ClassElement* targetClassElement = null;
+            EndPoint& targetEndPoint = relationshipElement->Target();
+            if (targetEndPoint.Element() != null && targetEndPoint.Element()->IsClassElement())
+            {
+                targetClassElement = cast<ClassElement*>(targetEndPoint.Element());
+            }
+            if (targetClassElement == null) return false;
+            EndPoint bottomCenterEndPoint = targetClassElement->GetEndPoint(Connector(Connector.BottomCenter()));
+            PointF targetPoint = bottomCenterEndPoint.Point();
+            targetEndPoint.SetPoint(targetPoint);
+            List<int> indeces;
+            for (const EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+            {
+                if (sourceEndPoint.Element() != null)
+                {
+                    if (sourceEndPoint.Element()->IsClassElement())
+                    {
+                        int index = diagram->GetIndexOfElement(sourceEndPoint.Element());
+                        if (index != -1)
+                        {
+                            indeces.Add(index);
+                        }
+                    }
+                }
+            }
+            if (indeces.Count() < 2) return false;
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float selectedLineWidth = relationshipLayoutElement->SelectedLineWidth();
+            float inheritanceArrowWidth = relationshipLayoutElement->InheritanceArrowWidth();
+            float inheritanceArrowHeight = cast<float>(Sqrt(3.0f)) / 2.0f * inheritanceArrowWidth;
+            List<int> horizontalIndexOrder = indeces;
+            Sort(horizontalIndexOrder, HorizontallyLess(diagram));
+            List<ClassElement*> horizontalOrder;
+            for (int index : horizontalIndexOrder)
+            {
+                horizontalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            List<int> verticalIndexOrder = indeces;
+            Sort(verticalIndexOrder, VerticallyLess(diagram));
+            List<ClassElement*> verticalOrder;
+            for (int index : verticalIndexOrder)
+            {
+                verticalOrder.Add(cast<ClassElement*>(diagram->GetElementByIndex(index)));
+            }
+            ClassElement* topElement = verticalOrder.Front();
+            EndPoint topEndPoint = topElement->GetEndPoint(Connector(Connector.TopCenter()));
+            PointF topPoint = topEndPoint.Point();
+            float dy = topPoint.y - (targetPoint.y + inheritanceArrowHeight);
+            float h = dy / 2;
+            PointF crossPoint(targetPoint.x, targetPoint.y + inheritanceArrowHeight + h);
+            for (ClassElement* sourceElement : horizontalOrder)
+            {
+                EndPoint sourceEndPoint = sourceElement->GetEndPoint(Connector(Connector.TopCenter()));
+                PointF sourcePoint = sourceEndPoint.Point();
+                PointF vpoint(sourcePoint.x, crossPoint.y);
+                if (spring.LineContains(sourcePoint, vpoint, location, selectedLineWidth)) return true;
+                if (spring.LineContains(vpoint, crossPoint, location, selectedLineWidth)) return true;
+            }
+            Line line(crossPoint, targetPoint);
+            Vector v = line.ToVector();
+            float len = v.Length();
+            float startLen = Max(0.0f, len - inheritanceArrowHeight);
+            Vector u = UnitVector(v) * startLen;
+            Line startLine(crossPoint, u);
+            if (spring.LineContains(startLine.start, startLine.end, location, selectedLineWidth)) return true;
+            return false;
+        }
+    }
+
+    class Composition : RelationshipElementRep
+    {
+        public Composition(RelationshipElement* relationshipElement_) : base(relationshipElement_)
+        {
+        }
+        public override RelationshipElementRep* Clone(RelationshipElement* relationshipElement_) const
+        {
+            return new Composition(relationshipElement_);
+        }
+        public override float SourceSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float compositionSymbolWidth = relationshipLayoutElement->CompositeSymbolWidth();
+            return compositionSymbolWidth;
+        }
+        public override float TargetSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Cardinality cardinality = relationshipElement->GetCardinality();
+            if (cardinality == Cardinality.one)
+            {
+                return lineArrowWidth;
+            }
+            else if (cardinality == Cardinality.many)
+            {
+                return 2 * cardinalitySymbolRadius + lineArrowWidth;
+            }
+            return 0.0f;
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            ClassLayoutElement* classLayoutElement = layout->GetConcreteClassLayoutElement();
+            PaddingElement* classPaddingElement = classLayoutElement->GetPaddingElement();
+            float compositionSymbolWidth = relationshipLayoutElement->CompositeSymbolWidth();
+            float compositionSymbolHeight = relationshipLayoutElement->CompositeSymbolHeight();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            float lineArrowHeight = relationshipLayoutElement->LineArrowHeight();
+            Result<Font*> fontResult = relationshipLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            Brush* textBrush = relationshipLayoutElement->TextColorElement()->GetBrush();
+            Brush* arrowBrush = relationshipLayoutElement->GetArrowBrush();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            PointF start = relationshipElement->Source().Point();
+            PointF end;
+            if (relationshipElement->RoutingPoints().IsEmpty())
+            {
+                end = relationshipElement->Target().Point();
+            }
+            else
+            {
+                end = relationshipElement->RoutingPoints().Front();
+            }
+            Line compositionLine(start, end);
+            Vector v(compositionLine.ToVector());
+            Vector u(UnitVector(v) * compositionSymbolWidth);
+            Line compositionSymbolLine(start, u);
+            Vector h(u * 0.5f);
+            Line halfCompositionSymbolLine(start, h);
+            Vector l(UnitVector(System.Windows.Rotate(halfCompositionSymbolLine, 90.0f).ToVector()) * (compositionSymbolHeight / 2));
+            Vector r(UnitVector(System.Windows.Rotate(halfCompositionSymbolLine, -90.0f).ToVector()) * (compositionSymbolHeight / 2));
+            Line leftCompositionSymbolLine(halfCompositionSymbolLine.end, l);
+            Line rightCompositionSymbolLine(halfCompositionSymbolLine.end, r);
+            List<PointF> compositionPoints;
+            compositionPoints.Add(compositionSymbolLine.start);
+            compositionPoints.Add(leftCompositionSymbolLine.end);
+            compositionPoints.Add(compositionSymbolLine.end);
+            compositionPoints.Add(rightCompositionSymbolLine.end);
+            compositionPoints.Add(compositionSymbolLine.start);
+            Brush* compositionSourceBrush = relationshipLayoutElement->CompositeSourceColorElement()->GetBrush();
+            auto result = graphics.FillPolygon(*compositionSourceBrush, cast<int>(compositionPoints.Count()), compositionPoints.Begin().Ptr());
+            result = graphics.DrawLine(*linePen, compositionSymbolLine.start, leftCompositionSymbolLine.end);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, leftCompositionSymbolLine.end, compositionSymbolLine.end);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, compositionSymbolLine.start, rightCompositionSymbolLine.end);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, rightCompositionSymbolLine.end, compositionSymbolLine.end);
+            if (result.Error()) return result;
+            PointF prevPoint = compositionSymbolLine.end;
+            for (const PointF& routingPoint : relationshipElement->RoutingPoints())
+            {
+                result = graphics.DrawLine(*linePen, prevPoint, routingPoint);
+                if (result.Error()) return result;
+                prevPoint = routingPoint;
+            }
+            Line arrowLine(relationshipElement->Target().Point(), prevPoint);
+            Vector av(arrowLine.ToVector());
+            if (relationshipElement->GetCardinality() == Cardinality.many)
+            {
+                Line line = arrowLine;
+                Vector v = line.ToVector();
+                Vector u(UnitVector(v) * cardinalitySymbolRadius);
+                Line toCircleCenter(line.start, u);
+                PointF circleCenter(toCircleCenter.end);
+                Vector n1(0, -1);
+                Vector u1(UnitVector(n1) * cardinalitySymbolRadius);
+                Line l1(circleCenter, u1);
+                Vector n2(-1, 0);
+                Vector u2(UnitVector(n2) * cardinalitySymbolRadius);
+                Line l2(l1.end, u2);
+                PointF topLeftCorner(l2.end);
+                RectF rect(topLeftCorner, SizeF(2.0f * cardinalitySymbolRadius, 2.0f * cardinalitySymbolRadius));
+                result = graphics.FillEllipse(*arrowBrush, rect);
+                if (result.Error()) return result;
+                Line circleLine(relationshipElement->Target().Point(), UnitVector(av) * 2.0f * cardinalitySymbolRadius);
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0f)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(circleLine.end, uv);
+                Line arrowEndLine(arrowStartLine.end, circleLine.end);
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(circleLine.end);
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, circleLine.end, arrowLine.end);
+                if (result.Error()) return result;
+            }
+            else if (relationshipElement->GetCardinality() == Cardinality.one)
+            {
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0f)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(relationshipElement->Target().Point(), uv);
+                Line arrowEndLine(arrowStartLine.end, relationshipElement->Target().Point());
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(relationshipElement->Target().Point());
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, arrowEndLine.start, arrowLine.end);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    class Aggregation : RelationshipElementRep
+    {
+        public Aggregation(RelationshipElement* relationshipElement_) : base(relationshipElement_)
+        {
+        }
+        public override RelationshipElementRep* Clone(RelationshipElement* relationshipElement_) const
+        {
+            return new Aggregation(relationshipElement_);
+        }
+        public override float SourceSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float aggregationSymbolWidth = relationshipLayoutElement->CompositeSymbolWidth();
+            return aggregationSymbolWidth;
+        }
+        public override float TargetSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Cardinality cardinality = relationshipElement->GetCardinality();
+            if (cardinality == Cardinality.one)
+            {
+                return lineArrowWidth;
+            }
+            else if (cardinality == Cardinality.many)
+            {
+                return 2 * cardinalitySymbolRadius + lineArrowWidth;
+            }
+            return 0.0f;
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            ClassLayoutElement* classLayoutElement = layout->GetConcreteClassLayoutElement();
+            PaddingElement* classPaddingElement = classLayoutElement->GetPaddingElement();
+            float aggregateSymbolWidth = relationshipLayoutElement->AggregateSymbolWidth();
+            float aggregateSymbolHeight = relationshipLayoutElement->AggregateSymbolHeight();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            float lineArrowHeight = relationshipLayoutElement->LineArrowHeight();
+            Result<Font*> fontResult = relationshipLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            Brush* textBrush = relationshipLayoutElement->TextColorElement()->GetBrush();
+            Brush* arrowBrush = relationshipLayoutElement->GetArrowBrush();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            PointF start = relationshipElement->Source().Point();
+            PointF end;
+            if (relationshipElement->RoutingPoints().IsEmpty())
+            {
+                end = relationshipElement->Target().Point();
+            }
+            else
+            {
+                end = relationshipElement->RoutingPoints().Front();
+            }
+            Line aggregateLine(start, end);
+            Vector v(aggregateLine.ToVector());
+            Vector u(UnitVector(v) * aggregateSymbolWidth);
+            Line aggregateSymbolLine(start, u);
+            Vector h(u * 0.5f);
+            Line halfAggregateSymbolLine(start, h);
+            Vector l(UnitVector(System.Windows.Rotate(halfAggregateSymbolLine, 90.0f).ToVector()) * (aggregateSymbolHeight / 2));
+            Vector r(UnitVector(System.Windows.Rotate(halfAggregateSymbolLine, -90.0f).ToVector()) * (aggregateSymbolHeight / 2));
+            Line leftAggregateSymbolLine(halfAggregateSymbolLine.end, l);
+            Line rightAggregateSymbolLine(halfAggregateSymbolLine.end, r);
+            auto result = graphics.DrawLine(*linePen, aggregateSymbolLine.start, leftAggregateSymbolLine.end);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, leftAggregateSymbolLine.end, aggregateSymbolLine.end);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, aggregateSymbolLine.start, rightAggregateSymbolLine.end);
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*linePen, rightAggregateSymbolLine.end, aggregateSymbolLine.end);
+            if (result.Error()) return result;
+            PointF prevPoint = aggregateSymbolLine.end;
+            for (const PointF& routingPoint : relationshipElement->RoutingPoints())
+            {
+                result = graphics.DrawLine(*linePen, prevPoint, routingPoint);
+                if (result.Error()) return result;
+                prevPoint = routingPoint;
+            }
+            Line arrowLine(relationshipElement->Target().Point(), prevPoint);
+            Vector av(arrowLine.ToVector());
+            if (relationshipElement->GetCardinality() == Cardinality.many)
+            {
+                Line line = arrowLine;
+                Vector v = line.ToVector();
+                Vector u(UnitVector(v) * cardinalitySymbolRadius);
+                Line toCircleCenter(line.start, u);
+                PointF circleCenter(toCircleCenter.end);
+                Vector n1(0, -1);
+                Vector u1(UnitVector(n1) * cardinalitySymbolRadius);
+                Line l1(circleCenter, u1);
+                Vector n2(-1, 0);
+                Vector u2(UnitVector(n2) * cardinalitySymbolRadius);
+                Line l2(l1.end, u2);
+                PointF topLeftCorner(l2.end);
+                RectF rect(topLeftCorner, SizeF(2.0f * cardinalitySymbolRadius, 2.0f * cardinalitySymbolRadius));
+                result = graphics.FillEllipse(*arrowBrush, rect);
+                if (result.Error()) return result;
+                Line circleLine(relationshipElement->Target().Point(), UnitVector(av) * 2.0f * cardinalitySymbolRadius);
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0f)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(circleLine.end, uv);
+                Line arrowEndLine(arrowStartLine.end, circleLine.end);
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(circleLine.end);
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, circleLine.end, arrowLine.end);
+                if (result.Error()) return result;
+            }
+            else if (relationshipElement->GetCardinality() == Cardinality.one)
+            {
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0f)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(relationshipElement->Target().Point(), uv);
+                Line arrowEndLine(arrowStartLine.end, relationshipElement->Target().Point());
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(relationshipElement->Target().Point());
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, arrowEndLine.start, arrowLine.end);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    class Reference : RelationshipElementRep
+    {
+        public Reference(RelationshipElement* relationshipElement_) : base(relationshipElement_)
+        {
+        }
+        public override float TargetSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Cardinality cardinality = relationshipElement->GetCardinality();
+            if (cardinality == Cardinality.one)
+            {
+                return lineArrowWidth;
+            }
+            else if (cardinality == Cardinality.many)
+            {
+                return 2 * cardinalitySymbolRadius + lineArrowWidth;
+            }
+            return 0.0f;
+        }
+        public override RelationshipElementRep* Clone(RelationshipElement* relationshipElement_) const
+        {
+            return new Reference(relationshipElement_);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            ClassLayoutElement* classLayoutElement = layout->GetConcreteClassLayoutElement();
+            PaddingElement* classPaddingElement = classLayoutElement->GetPaddingElement();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            float lineArrowHeight = relationshipLayoutElement->LineArrowHeight();
+            float nullReferenceSymbolWidth = relationshipLayoutElement->NullReferenceSymbolWidth();
+            float nullReferenceSymbolHeight = relationshipLayoutElement->NullReferenceSymbolHeight();
+            Result<Font*> fontResult = relationshipLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            Brush* textBrush = relationshipLayoutElement->TextColorElement()->GetBrush();
+            Brush* arrowBrush = relationshipLayoutElement->GetArrowBrush();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            PointF start = relationshipElement->Source().Point();
+            PointF first = start;
+            if (relationshipElement->Source().Element()->IsAttributeElement())
+            {
+                float relationshipSymbolRadius = relationshipLayoutElement->RelationshipSymbolRadius();
+                Vector left(-1, 0);
+                Vector ul(UnitVector(left) * relationshipSymbolRadius);
+                Line l(start, ul);
+                Vector up(0, -1);
+                Vector uu(UnitVector(up) * relationshipSymbolRadius);
+                Line u(l.end, uu);
+                RectF r(u.end, SizeF(2.0f * relationshipSymbolRadius, 2.0f * relationshipSymbolRadius));
+                auto result = graphics.FillEllipse(*arrowBrush, r);
+                if (result.Error()) return result;
+                PointF next;
+                if (relationshipElement->RoutingPoints().IsEmpty())
+                {
+                    next = relationshipElement->Target().Point();
+                }
+                else
+                {
+                    next = relationshipElement->RoutingPoints().Front();
+                }
+                Line line(start, next);
+                Vector v = line.ToVector();
+                Vector n = UnitVector(v) * relationshipSymbolRadius;
+                Line f(start, n);
+                first = f.end;
+            }
+            PointF end;
+            if (relationshipElement->RoutingPoints().IsEmpty())
+            {
+                end = relationshipElement->Target().Point();
+            }
+            else
+            {
+                end = relationshipElement->RoutingPoints().Front();
+            }
+            Line referenceLine(first, end);
+            PointF prevPoint = referenceLine.start;
+            for (const PointF& routingPoint : relationshipElement->RoutingPoints())
+            {
+                auto result = graphics.DrawLine(*linePen, prevPoint, routingPoint);
+                if (result.Error()) return result;
+                prevPoint = routingPoint;
+            }
+            Line arrowLine(relationshipElement->Target().Point(), prevPoint);
+            Vector av(arrowLine.ToVector());
+            Cardinality cardinality = relationshipElement->GetCardinality();
+            if (cardinality == Cardinality.many)
+            {
+                Line line = arrowLine;
+                Vector v = line.ToVector();
+                Vector u(UnitVector(v) * cardinalitySymbolRadius);
+                Line toCircleCenter(line.start, u);
+                PointF circleCenter(toCircleCenter.end);
+                Vector n1(0, -1);
+                Vector u1(UnitVector(n1) * cardinalitySymbolRadius);
+                Line l1(circleCenter, u1);
+                Vector n2(-1, 0);
+                Vector u2(UnitVector(n2) * cardinalitySymbolRadius);
+                Line l2(l1.end, u2);
+                PointF topLeftCorner(l2.end);
+                RectF rect(topLeftCorner, SizeF(2.0f * cardinalitySymbolRadius, 2.0f * cardinalitySymbolRadius));
+                auto result = graphics.FillEllipse(*arrowBrush, rect);
+                if (result.Error()) return result;
+                Line circleLine(relationshipElement->Target().Point(), UnitVector(av) * 2.0f * cardinalitySymbolRadius);
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(circleLine.end, uv);
+                Line arrowEndLine(arrowStartLine.end, circleLine.end);
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(circleLine.end);
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, arrowEndLine.start, arrowLine.end);
+                if (result.Error()) return result;
+            }
+            else if (cardinality == Cardinality.one)
+            {
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(relationshipElement->Target().Point(), uv);
+                Line arrowEndLine(arrowStartLine.end, relationshipElement->Target().Point());
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(relationshipElement->Target().Point());
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                auto result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, arrowEndLine.start, arrowLine.end);
+                if (result.Error()) return result;
+            }
+            else if (cardinality == Cardinality.zero)
+            {
+                Line line(arrowLine.end, relationshipElement->Target().Point());
+                Vector v = line.ToVector();
+                Vector up = UnitVector(v) * (line.Length() - 2 * nullReferenceSymbolHeight);
+                Line prevLine(line.start, up);
+                Vector uf = UnitVector(v) * (line.Length() - nullReferenceSymbolHeight);
+                Line lastLine(line.start, uf);
+                auto result = graphics.DrawLine(*linePen, prevLine.start, prevLine.end);
+                if (result.Error()) return result;
+                Line prev = Line(prevLine.end, UnitVector(v) * (nullReferenceSymbolWidth / 2));
+                Line prevl = System.Windows.Rotate(prev, 90.0f);
+                Line prevr = System.Windows.Rotate(prev, -90.0f);
+                Line finalLine = Line(lastLine.end, UnitVector(v) * (nullReferenceSymbolWidth / 2));
+                Line finall = System.Windows.Rotate(finalLine, 90.0f);
+                Line finalr = System.Windows.Rotate(finalLine, -90.0f);
+                result = graphics.DrawLine(*linePen, prevl.end, prevr.end);
+                if (result.Error()) return result;
+                result = graphics.DrawLine(*linePen, finall.end, finalr.end);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    class CreateInstance : RelationshipElementRep
+    {
+        public CreateInstance(RelationshipElement* relationshipElement_) : base(relationshipElement_)
+        {
+        }
+        public override RelationshipElementRep* Clone(RelationshipElement* relationshipElement_) const
+        {
+            return new CreateInstance(relationshipElement_);
+        }
+        public override float TargetSymbolWidth() const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Cardinality cardinality = relationshipElement->GetCardinality();
+            if (cardinality == Cardinality.one)
+            {
+                return lineArrowWidth;
+            }
+            else if (cardinality == Cardinality.many)
+            {
+                return 2 * cardinalitySymbolRadius + lineArrowWidth;
+            }
+            return 0.0f;
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            ClassLayoutElement* classLayoutElement = layout->GetConcreteClassLayoutElement();
+            PaddingElement* classPaddingElement = classLayoutElement->GetPaddingElement();
+            float cardinalitySymbolRadius = relationshipLayoutElement->CardinalitySymbolRadius();
+            float lineArrowWidth = relationshipLayoutElement->LineArrowWidth();
+            float lineArrowHeight = relationshipLayoutElement->LineArrowHeight();
+            Result<Font*> fontResult = relationshipLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            Brush* textBrush = relationshipLayoutElement->TextColorElement()->GetBrush();
+            Brush* arrowBrush = relationshipLayoutElement->GetArrowBrush();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            Result<Pen*> dashPenResult = relationshipLayoutElement->DashLinePen();
+            if (dashPenResult.Error()) return Result<bool>(ErrorId(dashPenResult.GetErrorId()));
+            Pen* dashPen = dashPenResult.Value();
+            PointF start = relationshipElement->Source().Point();
+            PointF end;
+            if (relationshipElement->RoutingPoints().IsEmpty())
+            {
+                end = relationshipElement->Target().Point();
+            }
+            else
+            {
+                end = relationshipElement->RoutingPoints().Front();
+            }
+            Line instanceLine(start, end);
+            Vector v(instanceLine.ToVector());
+            PointF prevPoint = instanceLine.start;
+            if (!relationshipElement->RoutingPoints().IsEmpty())
+            {
+                prevPoint = relationshipElement->RoutingPoints().Back();
+            }
+            PointF finalPoint;
+            Line arrowLine(relationshipElement->Target().Point(), prevPoint);
+            Vector av(arrowLine.ToVector());
+            Cardinality cardinality = relationshipElement->GetCardinality();
+            if (cardinality == Cardinality.many)
+            {
+                Line line = arrowLine;
+                Vector v = line.ToVector();
+                Vector u(UnitVector(v) * cardinalitySymbolRadius);
+                Line toCircleCenter(line.start, u);
+                PointF circleCenter(toCircleCenter.end);
+                Vector n1(0, -1);
+                Vector u1(UnitVector(n1) * cardinalitySymbolRadius);
+                Line l1(circleCenter, u1);
+                Vector n2(-1, 0);
+                Vector u2(UnitVector(n2) * cardinalitySymbolRadius);
+                Line l2(l1.end, u2);
+                PointF topLeftCorner(l2.end);
+                RectF rect(topLeftCorner, SizeF(2.0f * cardinalitySymbolRadius, 2.0f * cardinalitySymbolRadius));
+                auto result = graphics.FillEllipse(*arrowBrush, rect);
+                if (result.Error()) return result;
+                Line circleLine(relationshipElement->Target().Point(), UnitVector(av) * 2.0f * cardinalitySymbolRadius);
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(circleLine.end, uv);
+                Line arrowEndLine(arrowStartLine.end, circleLine.end);
+                finalPoint = arrowEndLine.start;
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(circleLine.end);
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                finalPoint = arrowEndLine.start;
+            }
+            else if (cardinality == Cardinality.one)
+            {
+                Vector uv(UnitVector(av) * (cast<float>(Sqrt(3.0)) / 2.0f * lineArrowWidth));
+                Line arrowStartLine(relationshipElement->Target().Point(), uv);
+                Line arrowEndLine(arrowStartLine.end, relationshipElement->Target().Point());
+                Vector la(UnitVector(System.Windows.Rotate(arrowEndLine, 90.0f).ToVector()) * (lineArrowHeight / 2));
+                Vector ra(UnitVector(System.Windows.Rotate(arrowEndLine, -90.0f).ToVector()) * (lineArrowHeight / 2));
+                Line leftArrowLine(arrowEndLine.start, la);
+                Line rightArrowLine(arrowEndLine.start, ra);
+                List<PointF> points;
+                points.Add(relationshipElement->Target().Point());
+                points.Add(leftArrowLine.end);
+                points.Add(rightArrowLine.end);
+                auto result = graphics.FillPolygon(*arrowBrush, cast<int>(points.Count()), points.Begin().Ptr());
+                if (result.Error()) return result;
+                finalPoint = arrowEndLine.start;
+            }
+            List<PointF> points;
+            points.Add(relationshipElement->Source().Point());
+            for (const PointF& routingPoint : relationshipElement->RoutingPoints())
+            {
+                points.Add(routingPoint);
+            }
+            points.Add(finalPoint);
+            auto result = graphics.DrawLines(*dashPen, cast<int>(points.Count()), points.Begin().Ptr());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    class AttachNote : RelationshipElementRep
+    {
+        public AttachNote(RelationshipElement* relationshipElement_) : base(relationshipElement_)
+        {
+        }
+        public override RelationshipElementRep* Clone(RelationshipElement* relationshipElement_) const
+        {
+            return new AttachNote(relationshipElement_);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            RelationshipElement* relationshipElement = GetRelationshipElement();
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            Result<Pen*> linePenResult = relationshipLayoutElement->LinePen();
+            if (linePenResult.Error()) return Result<bool>(ErrorId(linePenResult.GetErrorId()));
+            Pen* linePen = linePenResult.Value();
+            Result<Pen*> dotPenResult = relationshipLayoutElement->DotLinePen();
+            if (dotPenResult.Error()) return Result<bool>(ErrorId(dotPenResult.GetErrorId()));
+            Pen* dotPen = dotPenResult.Value();
+            float radius = relationshipLayoutElement->RelationshipSymbolRadius();
+            PointF start = relationshipElement->Source().Point();
+            Vector left(-1, 0);
+            Vector ul(UnitVector(left) * radius);
+            Line l(start, ul);
+            Vector up(0, -1);
+            Vector uu(UnitVector(up) * radius);
+            Line u(l.end, uu);
+            RectF r(u.end, SizeF(2.0f * radius, 2.0f * radius));
+            auto result = graphics.DrawEllipse(*linePen, r);
+            if (result.Error()) return result;
+            PointF next;
+            if (relationshipElement->RoutingPoints().IsEmpty())
+            {
+                next = relationshipElement->Target().Point();
+            }
+            else
+            {
+                next = relationshipElement->RoutingPoints().Front();
+            }
+            Line line(start, next);
+            Vector v = line.ToVector();
+            Vector n = UnitVector(v) * radius;
+            Line f(start, n);
+            PointF first = f.end;
+            List<PointF> points;
+            points.Add(first);
+            if (relationshipElement->RoutingPoints().IsEmpty())
+            {
+                points.Add(next);
+            }
+            else
+            {
+                for (const PointF& routingPoint : relationshipElement->RoutingPoints())
+                {
+                    points.Add(routingPoint);
+                }
+                points.Add(relationshipElement->Target().Point());
+            }
+            result = graphics.DrawLines(*dotPen, cast<int>(points.Count()), points.Begin().Ptr());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+}
+

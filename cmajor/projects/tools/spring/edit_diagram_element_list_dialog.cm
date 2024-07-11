@@ -1,0 +1,1301 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class EditDiagramElementListDialogParams
+    {
+        public EditDiagramElementListDialogParams() : dialogSize(), dialogCaption(), groupBoxCaption(), groupBoxSize(), listBoxSize()
+        {
+        }
+        public Size dialogSize;
+        public string dialogCaption;
+        public string groupBoxCaption;
+        public Size groupBoxSize;
+        public Size listBoxSize;
+    }
+
+    class EditDiagramElementListDialog : Window
+    {
+        public EditDiagramElementListDialog(const EditDiagramElementListDialogParams& dialogParams_) :
+            base(WindowCreateParams(
+                WindowControlCreateParams(
+                    ControlCreateParams().Defaults(), "System.Windows.Window", dialogParams_.dialogCaption, Point.Default(), dialogParams_.dialogSize))),
+                    dialogParams(dialogParams_)
+        {
+            Size s = GetSize();
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultListBoxSize = ScreenMetrics.Get().DefaultListBoxSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+
+            UniquePtr<GroupBox> groupBoxPtr(new GroupBox(GroupBoxControlCreateParams(ControlCreateParams().Defaults().SetText(dialogParams.groupBoxCaption).
+                SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h)).SetSize(dialogParams.groupBoxSize).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            groupBox = groupBoxPtr.Get();
+            auto locationResult = groupBox->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point groupBoxLocation = locationResult.Value();
+            Size groupBoxSize = groupBox->GetSize();
+            auto result = AddChild(groupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point addButtonLocation(groupBoxLocation.x + groupBoxSize.w + defaultControlSpacing.w, groupBoxLocation.y + defaultControlSpacing.h);
+            UniquePtr<Button> addButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Add").SetLocation(addButtonLocation).
+                SetSize(defaultButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            addButton = addButtonPtr.Get();
+            addButton->Disable();
+            result = AddChild(addButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point changeButtonLocation(groupBoxLocation.x + groupBoxSize.w + defaultControlSpacing.w, addButtonLocation.y + defaultButtonSize.h + defaultControlSpacing.h);
+            UniquePtr<Button> changeButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Change").SetLocation(changeButtonLocation).
+                SetSize(defaultButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            changeButton = changeButtonPtr.Get();
+            changeButton->Disable();
+            result = AddChild(changeButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point deleteButtonLocation(groupBoxLocation.x + groupBoxSize.w + defaultControlSpacing.w, changeButtonLocation.y + defaultButtonSize.h +
+                defaultControlSpacing.h);
+            UniquePtr<Button> deleteButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Delete").SetLocation(deleteButtonLocation).
+                SetSize(defaultButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            deleteButton = deleteButtonPtr.Get();
+            deleteButton->Disable();
+            result = AddChild(deleteButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point moveUpButtonLocation(groupBoxLocation.x + groupBoxSize.w + defaultControlSpacing.w, deleteButtonLocation.y + defaultButtonSize.h +
+                defaultControlSpacing.h);
+            ustring moveUpStr(cast<uchar>(0xF1));
+            auto utf8Result = ToUtf8(moveUpStr);
+            if (utf8Result.Error())
+            {
+                SetErrorId(utf8Result.GetErrorId());
+                return;
+            }
+            string moveUpButtonText = Rvalue(utf8Result.Value());
+            UniquePtr<Button> moveUpButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText(moveUpButtonText)
+                .SetLocation(moveUpButtonLocation).SetSize(defaultButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            FontFamily wingdings("Wingdings");
+            Font wingdingsFont(wingdings, 8.25f, FontStyle.regular, Unit.point);
+            moveUpButton = moveUpButtonPtr.Get();
+            moveUpButton->SetFont(wingdingsFont);
+            moveUpButton->Disable();
+            result = AddChild(moveUpButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point moveDownButtonLocation(groupBoxLocation.x + groupBoxSize.w + defaultControlSpacing.w, moveUpButtonLocation.y + defaultButtonSize.h +
+                defaultControlSpacing.h);
+            ustring moveDownStr(cast<uchar>(0xF2));
+            utf8Result = ToUtf8(moveDownStr);
+            if (utf8Result.Error())
+            {
+                SetErrorId(utf8Result.GetErrorId());
+                return;
+            }
+            string moveDownButtonText = Rvalue(utf8Result.Value());
+            UniquePtr<Button> moveDownButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText(moveDownButtonText)
+                .SetLocation(moveDownButtonLocation).SetSize(defaultButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            moveDownButton = moveDownButtonPtr.Get();
+            moveDownButton->SetFont(wingdingsFont);
+            moveDownButton->Disable();
+            result = AddChild(moveDownButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point listBoxLocation(defaultControlSpacing.w, defaultControlSpacing.h + dialogParams.groupBoxSize.h + defaultControlSpacing.h);
+            Size listBoxSize = dialogParams.listBoxSize;
+            Rect listBoxRect(listBoxLocation, listBoxSize);
+            listBoxRect.Inflate(-1, -1);
+            UniquePtr<ListBox> listBoxPtr(new ListBox(ListBoxCreateParams(ListBoxControlCreateParams(ControlCreateParams().Defaults().
+                SetLocation(Point(listBoxRect.location.x, listBoxRect.location.y)).
+                SetSize(Size(listBoxRect.size.w, listBoxRect.size.h)).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            listBox = listBoxPtr.Get();
+            UniquePtr<Control> borderedListBoxPtr(new BorderedControl(BorderedControlCreateParams(
+                BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(listBoxLocation).SetSize(listBoxSize).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)), listBoxPtr.Get()), listBoxPtr.Release())));
+            Control* borderedListBox = borderedListBoxPtr.Get();
+            result = AddChild(borderedListBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            auto locResult = listBox->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point realListBoxLocation = locResult.Value();
+            Size realListBoxSize = listBox->GetSize();
+            Rect realListBoxRect(realListBoxLocation, realListBoxSize);
+            realListBoxRect.Inflate(1, 1);
+            result = borderedListBox->SetSize(Size(realListBoxRect.size.w, realListBoxRect.size.h));
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+            int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+            UniquePtr<Button> cancelButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Cancel").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), false)));
+            cancelButton = cancelButtonPtr.Get();
+            cancelButton->SetDialogResult(DialogResult.cancel);
+            x = x - defaultButtonSize.w - defaultControlSpacing.w;
+
+            UniquePtr<Button> okButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("OK").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), true)));
+            okButton = okButtonPtr.Get();
+            okButton->SetDialogResult(DialogResult.ok);
+            result = AddChild(okButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = AddChild(cancelButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetDefaultButton(okButton);
+            SetCancelButton(cancelButton);
+        }
+        suppress EditDiagramElementListDialog(const EditDiagramElementListDialog&);
+        suppress void operator=(EditDiagramElementListDialog&);
+        public GroupBox* GetGroupBox() const
+        {
+            return groupBox;
+        }
+        public Button* AddButton() const
+        {
+            return addButton;
+        }
+        public Button* ChangeButton() const
+        {
+            return changeButton;
+        }
+        public Button* DeleteButton() const
+        {
+            return deleteButton;
+        }
+        public Button* MoveUpButton() const
+        {
+            return moveUpButton;
+        }
+        public Button* MoveDownButton() const
+        {
+            return moveDownButton;
+        }
+        public ListBox* GetListBox() const
+        {
+            return listBox;
+        }
+        public Button* GetOkButton() const
+        {
+            return okButton;
+        }
+        public Button* GetCancelButton() const
+        {
+            return cancelButton;
+        }
+        private EditDiagramElementListDialogParams dialogParams;
+        private GroupBox* groupBox;
+        private Button* addButton;
+        private Button* changeButton;
+        private Button* deleteButton;
+        private Button* moveUpButton;
+        private Button* moveDownButton;
+        private ListBox* listBox;
+        private Button* okButton;
+        private Button* cancelButton;
+    }
+
+    class AttributeElementListDialog : EditDiagramElementListDialog
+    {
+        public AttributeElementListDialog(const EditDiagramElementListDialogParams& dialogParams_, IndexList<AttributeElement>& attributeList_,
+            Map<DiagramElement*, DiagramElement*>& cloneMap_, Map<DiagramElement*, DiagramElement*>& reverseCloneMap_, ContainerElement* containerElement_) :
+            base(dialogParams_),
+            attributeList(attributeList_), cloneMap(cloneMap_), reverseCloneMap(reverseCloneMap_),
+            containerElement(containerElement_), attributeNameTextBox(null), selectedIndex(-1), selectedAttribute(null)
+        {
+            if (Error()) return;
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            int textBoxPadding = DefaultControlPadding();
+            int borderWidth = DefaultSingleBorderWidth();
+            auto locResult= GetGroupBox()->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point groupBoxLocation = locResult.Value();
+            Size groupBoxSize = GetGroupBox()->GetSize();
+            Point nameLabelLocation(defaultControlSpacing.w, groupBoxLocation.y + defaultControlSpacing.h * 2 + 4);
+            UniquePtr<Label> nameLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Name:").
+                SetLocation(nameLabelLocation).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* nameLabel = nameLabelPtr.Get();
+            auto result = GetGroupBox()->AddChild(nameLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size nameLabelSize = nameLabel->GetSize();
+            Point nameTextBoxLocation(defaultControlSpacing.w + nameLabel->GetSize().w + defaultControlSpacing.w,
+                groupBoxLocation.y + defaultControlSpacing.h * 2 + 4);
+            Size nameTextBoxSize = Size(groupBoxSize.w - nameLabel->GetSize().w - 4 * defaultControlSpacing.w, defaultTextBoxSize.h + 4);
+            Rect nameTextBoxRec(nameTextBoxLocation, nameTextBoxSize);
+            Rect paddedNameTextBoxRect = nameTextBoxRec;
+            paddedNameTextBoxRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<TextBox> attributeNameTextBoxPtr(new TextBox(TextBoxCreateParams(TextBoxControlCreateParams(ControlCreateParams().Defaults())).Defaults()));
+            attributeNameTextBox = attributeNameTextBoxPtr.Get();
+            attributeNameTextBox->GotFocusEvent().AddHandler(AttributeNameTextBoxGotFocus);
+            attributeNameTextBox->LostFocusEvent().AddHandler(AttributeNameTextBoxLostFocus);
+            attributeNameTextBox->TextChangedEvent().AddHandler(AttributeNameTextBoxTextChanged);
+
+            UniquePtr<Control> paddedAttributeNameTextBox(new PaddedControl(PaddedControlCreateParams(
+                PaddedControlControlCreateParams(ControlCreateParams().Defaults(), attributeNameTextBoxPtr.Get()), attributeNameTextBoxPtr.Release())));
+            Rect borderedPaddedAttributeNameTextBoxRect = paddedNameTextBoxRect;
+            borderedPaddedAttributeNameTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedAttributeNameTextBox(new BorderedControl(BorderedControlCreateParams(
+                BorderedControlControlCreateParams(ControlCreateParams().Defaults().
+                SetLocation(Point(borderedPaddedAttributeNameTextBoxRect.location.x, borderedPaddedAttributeNameTextBoxRect.location.y)).
+                SetSize(Size(borderedPaddedAttributeNameTextBoxRect.size.w, borderedPaddedAttributeNameTextBoxRect.size.h)).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)), paddedAttributeNameTextBox.Get()), paddedAttributeNameTextBox.Release()).Defaults()));
+            result = GetGroupBox()->AddChild(borderedPaddedAttributeNameTextBox.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            AddButton()->ClickEvent().AddHandler(AddAttribute);
+            ChangeButton()->ClickEvent().AddHandler(ChangeAttribute);
+            DeleteButton()->ClickEvent().AddHandler(DeleteAttribute);
+            MoveUpButton()->ClickEvent().AddHandler(MoveUpAttribute);
+            MoveDownButton()->ClickEvent().AddHandler(MoveDownAttribute);
+            GetListBox()->SelectedIndexChangedEvent().AddHandler(SelectedIndexChanged);
+            result = FillListBox();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        suppress AttributeElementListDialog(const AttributeElementListDialog&);
+        suppress void operator=(AttributeElementListDialog&);
+        protected override Result<bool> OnGotFocus()
+        {
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
+            attributeNameTextBox->SetFocus();
+            return Result<bool>(true);
+        }
+        private IndexList<AttributeElement>& attributeList;
+        private Map<DiagramElement*, DiagramElement*>& cloneMap;
+        private Map<DiagramElement*, DiagramElement*>& reverseCloneMap;
+        private ContainerElement* containerElement;
+        private TextBox* attributeNameTextBox;
+        private int selectedIndex;
+        private AttributeElement* selectedAttribute;
+        private void AttributeNameTextBoxGotFocus()
+        {
+            if (selectedIndex != -1 && ChangeButton()->IsEnabled())
+            {
+                SetDefaultButton(ChangeButton());
+            }
+            else
+            {
+                SetDefaultButton(AddButton());
+            }
+        }
+        private void AttributeNameTextBoxLostFocus()
+        {
+            SetDefaultButton(GetOkButton());
+        }
+        private void AttributeNameTextBoxTextChanged()
+        {
+            if (attributeNameTextBox->Text().IsEmpty())
+            {
+                AddButton()->Disable();
+                ChangeButton()->Disable();
+            }
+            else
+            {
+                AddButton()->Enable();
+                if (selectedIndex != -1)
+                {
+                    ChangeButton()->Enable();
+                }
+            }
+        }
+        [nodiscard]
+        private Result<bool> FillListBox()
+        {
+            for (const auto& attributeElement : attributeList)
+            {
+                string listBoxItemString = attributeElement->Name();
+                auto result = GetListBox()->AddItem(listBoxItemString);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private void AddAttribute(ClickEventArgs& args)
+        {
+            string attributeName = attributeNameTextBox->Text();
+            AttributeElement* attributeElement = new AttributeElement();
+            attributeElement->SetName(attributeName);
+            attributeElement->SetContainerElement(containerElement);
+            attributeList.Add(attributeElement);
+            string listBoxItemString = attributeName;
+            auto result = GetListBox()->AddItem(listBoxItemString);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = attributeNameTextBox->Clear();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            selectedIndex = -1;
+            DeleteButton()->Disable();
+            MoveUpButton()->Disable();
+            MoveDownButton()->Disable();
+        }
+        private void ChangeAttribute(ClickEventArgs& args)
+        {
+            if (selectedIndex != -1 && selectedAttribute != null)
+            {
+                string attributeName = attributeNameTextBox->Text();
+                selectedAttribute->SetName(attributeName);
+                string listBoxItemString = attributeName;
+                auto result = GetListBox()->SetItem(selectedIndex, listBoxItemString);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                result = attributeNameTextBox->Clear();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                attributeNameTextBox->SetFocus();
+                selectedIndex = -1;
+                SetDefaultButton(AddButton());
+                DeleteButton()->Disable();
+                MoveUpButton()->Disable();
+                MoveDownButton()->Disable();
+            }
+        }
+        private void DeleteAttribute(ClickEventArgs& args)
+        {
+            if (selectedIndex != -1 && selectedAttribute != null)
+            {
+                auto it = reverseCloneMap.Find(selectedAttribute);
+                if (it != reverseCloneMap.End())
+                {
+                    DiagramElement* oldAttr = it->second;
+                    cloneMap[oldAttr] = null;
+                }
+                GetListBox()->DeleteItem(selectedIndex);
+                attributeList.Remove(selectedIndex);
+                auto result = attributeNameTextBox->Clear();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                attributeNameTextBox->SetFocus();
+                selectedIndex = -1;
+                SetDefaultButton(AddButton());
+                DeleteButton()->Disable();
+                MoveUpButton()->Disable();
+                MoveDownButton()->Disable();
+            }
+        }
+        private void MoveUpAttribute(ClickEventArgs& args)
+        {
+            if (selectedIndex > 0)
+            {
+                GetListBox()->DeleteItem(selectedIndex);
+                attributeList.MoveUp(selectedIndex);
+                --selectedIndex;
+                selectedAttribute = attributeList.Get(selectedIndex);
+                string attributeName = selectedAttribute->Name();
+                string listBoxItemString = attributeName;
+                auto result = GetListBox()->InsertItem(selectedIndex, listBoxItemString);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                GetListBox()->SetSelectedIndex(selectedIndex);
+                SelectedIndexChangedEventArgs selectedIndecChangedEventArgs;
+                SelectedIndexChanged(selectedIndecChangedEventArgs);
+                if (selectedIndecChangedEventArgs.errorId != 0)
+                {
+                    args.errorId = selectedIndecChangedEventArgs.errorId;
+                    return;
+                }
+            }
+        }
+        private void MoveDownAttribute(ClickEventArgs& args)
+        {
+            if (selectedIndex < attributeList.Count() - 1)
+            {
+                GetListBox()->DeleteItem(selectedIndex);
+                attributeList.MoveDown(selectedIndex);
+                ++selectedIndex;
+                selectedAttribute = attributeList.Get(selectedIndex);
+                string attributeName = selectedAttribute->Name();
+                string listBoxItemString = attributeName;
+                if (selectedIndex < attributeList.Count())
+                {
+                    auto result = GetListBox()->InsertItem(selectedIndex, listBoxItemString);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                else
+                {
+                    auto result = GetListBox()->AddItem(listBoxItemString);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                GetListBox()->SetSelectedIndex(selectedIndex);
+                SelectedIndexChangedEventArgs selectedIndecChangedEventArgs;
+                SelectedIndexChanged(selectedIndecChangedEventArgs);
+                if (selectedIndecChangedEventArgs.errorId != 0)
+                {
+                    args.errorId = selectedIndecChangedEventArgs.errorId;
+                    return;
+                }
+            }
+        }
+        private void SelectedIndexChanged(SelectedIndexChangedEventArgs& args)
+        {
+            selectedIndex = GetListBox()->GetSelectedIndex();
+            if (selectedIndex != -1)
+            {
+                selectedAttribute = attributeList.Get(selectedIndex);
+                auto result = attributeNameTextBox->SetText(selectedAttribute->Name());
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                ChangeButton()->Enable();
+                attributeNameTextBox->SetFocus();
+                DeleteButton()->Enable();
+                if (selectedIndex > 0)
+                {
+                    MoveUpButton()->Enable();
+                }
+                else
+                {
+                    MoveUpButton()->Disable();
+                }
+                if (selectedIndex < attributeList.Count() - 1)
+                {
+                    MoveDownButton()->Enable();
+                }
+                else
+                {
+                    MoveDownButton()->Disable();
+                }
+            }
+            else
+            {
+                selectedAttribute = null;
+                DeleteButton()->Disable();
+            }
+        }
+    }
+
+    [nodiscard]
+    Result<bool> ExecuteEditAttributesDialog(IndexList<AttributeElement>& attributeList, Map<DiagramElement*, DiagramElement*>& cloneMap,
+        Map<DiagramElement*, DiagramElement*>& reverseCloneMap, ContainerElement* containerElement, Window& parentWindow)
+    {
+        EditDiagramElementListDialogParams dialogParams;
+        dialogParams.dialogSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(140), ScreenMetrics.Get().MMToVerticalPixels(90));
+        dialogParams.dialogCaption = "Attributes";
+        dialogParams.groupBoxCaption = "Attribute";
+        dialogParams.groupBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(70), ScreenMetrics.Get().MMToVerticalPixels(20));
+        dialogParams.listBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(70), ScreenMetrics.Get().MMToVerticalPixels(44));
+        UniquePtr<EditDiagramElementListDialog> dialog(new AttributeElementListDialog(dialogParams, attributeList, cloneMap, reverseCloneMap, containerElement));
+        if (dialog->Error())
+        {
+            return Result<bool>(ErrorId(dialog->GetErrorId()));
+        }
+        auto dialogResultResult = dialog->ShowDialog(parentWindow);
+        if (dialogResultResult.Error())
+        {
+            return Result<bool>(ErrorId(dialogResultResult.GetErrorId()));
+        }
+        DialogResult dialogResult = dialogResultResult.Value();
+        if (dialogResult == DialogResult.ok)
+        {
+            return Result<bool>(true);
+        }
+        return Result<bool>(false);
+    }
+
+    class AbstractOperationElementListDialog : EditDiagramElementListDialog
+    {
+        public AbstractOperationElementListDialog(const EditDiagramElementListDialogParams& dialogParams_,
+            IndexList<OperationElement>& operationList_, Map<DiagramElement*, DiagramElement*>& cloneMap_, Map<DiagramElement*, DiagramElement*>& reverseCloneMap_,
+            ContainerElement* containerElement_) : base(dialogParams_), operationList(operationList_), cloneMap(cloneMap_), reverseCloneMap(reverseCloneMap_),
+            containerElement(containerElement_), operationNameTextBox(null), abstractCheckBox(null), selectedIndex(-1), selectedOperation(null)
+        {
+            if (Error()) return;
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultCheckBoxSize = ScreenMetrics.Get().DefaultCheckBoxSize();
+            int textBoxPadding = DefaultControlPadding();
+            int borderWidth = DefaultSingleBorderWidth();
+            auto locResult= GetGroupBox()->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point groupBoxLocation = locResult.Value();
+            Size groupBoxSize = GetGroupBox()->GetSize();
+            Point nameLabelLocation(defaultControlSpacing.w, groupBoxLocation.y + defaultControlSpacing.h * 2 + 4);
+            UniquePtr<Label> nameLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Name:").
+                SetLocation(nameLabelLocation).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* nameLabel = nameLabelPtr.Get();
+            auto result = GetGroupBox()->AddChild(nameLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size nameLabelSize = nameLabel->GetSize();
+            Point nameTextBoxLocation(defaultControlSpacing.w + nameLabel->GetSize().w + defaultControlSpacing.w,
+                groupBoxLocation.y + defaultControlSpacing.h * 2 + 4);
+            Size nameTextBoxSize = Size(groupBoxSize.w - nameLabel->GetSize().w - 4 * defaultControlSpacing.w, defaultTextBoxSize.h + 4);
+            Rect nameTextBoxRec(nameTextBoxLocation, nameTextBoxSize);
+            Rect paddedNameTextBoxRect = nameTextBoxRec;
+            paddedNameTextBoxRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<TextBox> operationNameTextBoxPtr(new TextBox(TextBoxCreateParams(TextBoxControlCreateParams(ControlCreateParams().Defaults())).Defaults()));
+            operationNameTextBox = operationNameTextBoxPtr.Get();
+            operationNameTextBox->GotFocusEvent().AddHandler(OperationNameTextBoxGotFocus);
+            operationNameTextBox->LostFocusEvent().AddHandler(OperationNameTextBoxLostFocus);
+            operationNameTextBox->TextChangedEvent().AddHandler(OperationNameTextBoxTextChanged);
+
+            UniquePtr<Control> paddedOperationNameTextBox(new PaddedControl(PaddedControlCreateParams(
+                PaddedControlControlCreateParams(ControlCreateParams().Defaults(), operationNameTextBoxPtr.Get()), operationNameTextBoxPtr.Release())));
+            Rect borderedPaddedOperationNameTextBoxRect = paddedNameTextBoxRect;
+            borderedPaddedOperationNameTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedOperationNameTextBox(new BorderedControl(BorderedControlCreateParams(
+                BorderedControlControlCreateParams(ControlCreateParams().Defaults().
+                SetLocation(Point(borderedPaddedOperationNameTextBoxRect.location.x, borderedPaddedOperationNameTextBoxRect.location.y)).
+                SetSize(Size(borderedPaddedOperationNameTextBoxRect.size.w, borderedPaddedOperationNameTextBoxRect.size.h)).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)), paddedOperationNameTextBox.Get()), paddedOperationNameTextBox.Release()).Defaults()));
+            result = GetGroupBox()->AddChild(borderedPaddedOperationNameTextBox.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point checkBoxLocation(defaultControlSpacing.w, groupBoxLocation.y + nameLabelLocation.y + nameLabelSize.h + defaultControlSpacing.h);
+            Size checkBoxSize = defaultCheckBoxSize;
+            UniquePtr<CheckBox> abstractCheckBoxPtr(new CheckBox(
+                CheckBoxCreateParams(CheckBoxControlCreateParams(ControlCreateParams().Defaults().SetText("Abstract").SetLocation(checkBoxLocation).SetSize(checkBoxSize).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left))))));
+            abstractCheckBox = abstractCheckBoxPtr.Get();
+            result = GetGroupBox()->AddChild(abstractCheckBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            AddButton()->ClickEvent().AddHandler(AddOperation);
+            ChangeButton()->ClickEvent().AddHandler(ChangeOperation);
+            DeleteButton()->ClickEvent().AddHandler(DeleteOperation);
+            MoveUpButton()->ClickEvent().AddHandler(MoveUpOperation);
+            MoveDownButton()->ClickEvent().AddHandler(MoveDownOperation);
+            GetListBox()->SelectedIndexChangedEvent().AddHandler(SelectedIndexChanged);
+            result = FillListBox();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        suppress AbstractOperationElementListDialog(const AbstractOperationElementListDialog&);
+        suppress void operator=(AbstractOperationElementListDialog&);
+        [nodiscard]
+        protected override Result<bool> OnGotFocus()
+        {
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
+            operationNameTextBox->SetFocus();
+            return Result<bool>(true);
+        }
+        private IndexList<OperationElement>& operationList;
+        private Map<DiagramElement*, DiagramElement*>& cloneMap;
+        private Map<DiagramElement*, DiagramElement*>& reverseCloneMap;
+        private ContainerElement* containerElement;
+        private TextBox* operationNameTextBox;
+        private CheckBox* abstractCheckBox;
+        private int selectedIndex;
+        private OperationElement* selectedOperation;
+        private void OperationNameTextBoxGotFocus()
+        {
+            if (selectedIndex != -1 && ChangeButton()->IsEnabled())
+            {
+                SetDefaultButton(ChangeButton());
+            }
+            else
+            {
+                SetDefaultButton(AddButton());
+            }
+        }
+        private void OperationNameTextBoxLostFocus()
+        {
+            SetDefaultButton(GetOkButton());
+        }
+        private void OperationNameTextBoxTextChanged()
+        {
+            if (operationNameTextBox->Text().IsEmpty())
+            {
+                AddButton()->Disable();
+                ChangeButton()->Disable();
+            }
+            else
+            {
+                AddButton()->Enable();
+                if (selectedIndex != -1)
+                {
+                    ChangeButton()->Enable();
+                }
+            }
+        }
+        private Result<bool> FillListBox()
+        {
+            for (const auto& operationElement : operationList)
+            {
+                string listBoxItemString = operationElement->Name();
+                if (operationElement->IsAbstract())
+                {
+                    listBoxItemString.Append(", abstract=true");
+                }
+                auto result = GetListBox()->AddItem(listBoxItemString);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private void AddOperation(ClickEventArgs& args)
+        {
+            string operationName = operationNameTextBox->Text();
+            bool isAbstract = abstractCheckBox->Checked();
+            OperationElement* operationElement = new OperationElement();
+            operationElement->SetName(operationName);
+            if (isAbstract)
+            {
+                operationElement->SetAbstract();
+            }
+            operationElement->SetContainerElement(containerElement);
+            operationList.Add(operationElement);
+            string listBoxItemString = operationName;
+            if (isAbstract)
+            {
+                listBoxItemString.Append(", abstract=true");
+            }
+            auto result = GetListBox()->AddItem(listBoxItemString);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = operationNameTextBox->Clear();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            abstractCheckBox->SetChecked(false);
+            selectedIndex = -1;
+            DeleteButton()->Disable();
+            MoveUpButton()->Disable();
+            MoveDownButton()->Disable();
+        }
+        private void ChangeOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex != -1 && selectedOperation != null)
+            {
+                string operationName = operationNameTextBox->Text();
+                bool isAbstract = abstractCheckBox->Checked();
+                selectedOperation->SetName(operationName);
+                if (isAbstract)
+                {
+                    selectedOperation->SetAbstract();
+                }
+                else
+                {
+                    selectedOperation->ResetAbstract();
+                }
+                string listBoxItemString = operationName;
+                if (isAbstract)
+                {
+                    listBoxItemString.Append(", abstract=true");
+                }
+                auto result = GetListBox()->SetItem(selectedIndex, listBoxItemString);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                result = operationNameTextBox->Clear();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                operationNameTextBox->SetFocus();
+                abstractCheckBox->SetChecked(false);
+                selectedIndex = -1;
+                SetDefaultButton(AddButton());
+                DeleteButton()->Disable();
+                MoveUpButton()->Disable();
+                MoveDownButton()->Disable();
+            }
+        }
+        private void DeleteOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex != -1 && selectedOperation != null)
+            {
+                auto it = reverseCloneMap.Find(selectedOperation);
+                if (it != reverseCloneMap.End())
+                {
+                    DiagramElement* oldOperation = it->second;
+                    cloneMap[oldOperation] = null;
+                }
+                GetListBox()->DeleteItem(selectedIndex);
+                operationList.Remove(selectedIndex);
+                auto result = operationNameTextBox->Clear();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                abstractCheckBox->SetChecked(false);
+                operationNameTextBox->SetFocus();
+                selectedIndex = -1;
+                SetDefaultButton(AddButton());
+                DeleteButton()->Disable();
+                MoveUpButton()->Disable();
+                MoveDownButton()->Disable();
+            }
+        }
+        private void MoveUpOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex > 0)
+            {
+                GetListBox()->DeleteItem(selectedIndex);
+                operationList.MoveUp(selectedIndex);
+                --selectedIndex;
+                selectedOperation = operationList.Get(selectedIndex);
+                string operationName = selectedOperation->Name();
+                bool isAbstract = selectedOperation->IsAbstract();
+                string listBoxItemString = operationName;
+                if (isAbstract)
+                {
+                    listBoxItemString.Append(", abstract=true");
+                }
+                auto result = GetListBox()->InsertItem(selectedIndex, listBoxItemString);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                GetListBox()->SetSelectedIndex(selectedIndex);
+                SelectedIndexChangedEventArgs selectedIndexChangedEventArgs;
+                SelectedIndexChanged(selectedIndexChangedEventArgs);
+                if (selectedIndexChangedEventArgs.errorId != 0)
+                {
+                    args.errorId = selectedIndexChangedEventArgs.errorId;
+                    return;
+                }
+            }
+        }
+        private void MoveDownOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex < operationList.Count() - 1)
+            {
+                GetListBox()->DeleteItem(selectedIndex);
+                operationList.MoveDown(selectedIndex);
+                ++selectedIndex;
+                selectedOperation = operationList.Get(selectedIndex);
+                string operationName = selectedOperation->Name();
+                bool isAbstract = selectedOperation->IsAbstract();
+                string listBoxItemString = operationName;
+                if (isAbstract)
+                {
+                    listBoxItemString.Append(", abstract=true");
+                }
+                if (selectedIndex < operationList.Count())
+                {
+                    auto result = GetListBox()->InsertItem(selectedIndex, listBoxItemString);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                else
+                {
+                    auto result = GetListBox()->AddItem(listBoxItemString);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                GetListBox()->SetSelectedIndex(selectedIndex);
+                SelectedIndexChangedEventArgs selectedIndexChangedEventArgs;
+                SelectedIndexChanged(selectedIndexChangedEventArgs);
+                if (selectedIndexChangedEventArgs.errorId != 0)
+                {
+                    args.errorId = selectedIndexChangedEventArgs.errorId;
+                    return;
+                }
+            }
+        }
+        private void SelectedIndexChanged(SelectedIndexChangedEventArgs& args)
+        {
+            selectedIndex = GetListBox()->GetSelectedIndex();
+            if (selectedIndex != -1)
+            {
+                selectedOperation = operationList.Get(selectedIndex);
+                auto result = operationNameTextBox->SetText(selectedOperation->Name());
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                abstractCheckBox->SetChecked(selectedOperation->IsAbstract());
+                ChangeButton()->Enable();
+                operationNameTextBox->SetFocus();
+                DeleteButton()->Enable();
+                if (selectedIndex > 0)
+                {
+                    MoveUpButton()->Enable();
+                }
+                else
+                {
+                    MoveUpButton()->Disable();
+                }
+                if (selectedIndex < operationList.Count() - 1)
+                {
+                    MoveDownButton()->Enable();
+                }
+                else
+                {
+                    MoveDownButton()->Disable();
+                }
+            }
+            else
+            {
+                selectedOperation = null;
+                DeleteButton()->Disable();
+            }
+        }
+    }
+
+    class ConcreteOperationElementListDialog : EditDiagramElementListDialog
+    {
+        public ConcreteOperationElementListDialog(const EditDiagramElementListDialogParams& dialogParams_,
+            IndexList<OperationElement>& operationList_, Map<DiagramElement*, DiagramElement*>& cloneMap_, Map<DiagramElement*, DiagramElement*>& reverseCloneMap_,
+            ContainerElement* containerElement_) : base(dialogParams_), operationList(operationList_), cloneMap(cloneMap_), reverseCloneMap(reverseCloneMap_),
+            containerElement(containerElement_), operationNameTextBox(null), selectedIndex(-1), selectedOperation(null)
+        {
+            if (Error()) return;
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultCheckBoxSize = ScreenMetrics.Get().DefaultCheckBoxSize();
+            int textBoxPadding = DefaultControlPadding();
+            int borderWidth = DefaultSingleBorderWidth();
+            auto locResult= GetGroupBox()->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point groupBoxLocation = locResult.Value();
+            Size groupBoxSize = GetGroupBox()->GetSize();
+            Point nameLabelLocation(defaultControlSpacing.w, groupBoxLocation.y + defaultControlSpacing.h * 2 + 4);
+            UniquePtr<Label> nameLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Name:").
+                SetLocation(nameLabelLocation).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* nameLabel = nameLabelPtr.Get();
+            auto result = GetGroupBox()->AddChild(nameLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size nameLabelSize = nameLabel->GetSize();
+            Point nameTextBoxLocation(defaultControlSpacing.w + nameLabel->GetSize().w + defaultControlSpacing.w,
+                groupBoxLocation.y + defaultControlSpacing.h * 2 + 4);
+            Size nameTextBoxSize = Size(groupBoxSize.w - nameLabel->GetSize().w - 4 * defaultControlSpacing.w, defaultTextBoxSize.h + 4);
+            Rect nameTextBoxRec(nameTextBoxLocation, nameTextBoxSize);
+            Rect paddedNameTextBoxRect = nameTextBoxRec;
+            paddedNameTextBoxRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<TextBox> operationNameTextBoxPtr(new TextBox(TextBoxCreateParams(TextBoxControlCreateParams(ControlCreateParams().Defaults())).Defaults()));
+            operationNameTextBox = operationNameTextBoxPtr.Get();
+            operationNameTextBox->GotFocusEvent().AddHandler(OperationNameTextBoxGotFocus);
+            operationNameTextBox->LostFocusEvent().AddHandler(OperationNameTextBoxLostFocus);
+            operationNameTextBox->TextChangedEvent().AddHandler(OperationNameTextBoxTextChanged);
+
+            UniquePtr<Control> paddedOperationNameTextBox(new PaddedControl(PaddedControlCreateParams(
+                PaddedControlControlCreateParams(ControlCreateParams().Defaults(), operationNameTextBoxPtr.Get()), operationNameTextBoxPtr.Release())));
+            Rect borderedPaddedOperationNameTextBoxRect = paddedNameTextBoxRect;
+            borderedPaddedOperationNameTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedOperationNameTextBox(new BorderedControl(BorderedControlCreateParams(
+                BorderedControlControlCreateParams(ControlCreateParams().Defaults().
+                SetLocation(Point(borderedPaddedOperationNameTextBoxRect.location.x, borderedPaddedOperationNameTextBoxRect.location.y)).
+                SetSize(Size(borderedPaddedOperationNameTextBoxRect.size.w, borderedPaddedOperationNameTextBoxRect.size.h)).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)), paddedOperationNameTextBox.Get()), paddedOperationNameTextBox.Release()).Defaults()));
+            result = GetGroupBox()->AddChild(borderedPaddedOperationNameTextBox.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            AddButton()->ClickEvent().AddHandler(AddOperation);
+            ChangeButton()->ClickEvent().AddHandler(ChangeOperation);
+            DeleteButton()->ClickEvent().AddHandler(DeleteOperation);
+            MoveUpButton()->ClickEvent().AddHandler(MoveUpOperation);
+            MoveDownButton()->ClickEvent().AddHandler(MoveDownOperation);
+            GetListBox()->SelectedIndexChangedEvent().AddHandler(SelectedIndexChanged);
+            result = FillListBox();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        suppress ConcreteOperationElementListDialog(const ConcreteOperationElementListDialog&);
+        suppress void operator=(ConcreteOperationElementListDialog&);
+        [nodiscard]
+        protected override Result<bool> OnGotFocus()
+        {
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
+            operationNameTextBox->SetFocus();
+            return Result<bool>(true);
+        }
+        private IndexList<OperationElement>& operationList;
+        private Map<DiagramElement*, DiagramElement*>& cloneMap;
+        private Map<DiagramElement*, DiagramElement*>& reverseCloneMap;
+        private ContainerElement* containerElement;
+        private TextBox* operationNameTextBox;
+        private int selectedIndex;
+        private OperationElement* selectedOperation;
+        private void OperationNameTextBoxGotFocus()
+        {
+            if (selectedIndex != -1 && ChangeButton()->IsEnabled())
+            {
+                SetDefaultButton(ChangeButton());
+            }
+            else
+            {
+                SetDefaultButton(AddButton());
+            }
+        }
+        private void OperationNameTextBoxLostFocus()
+        {
+            SetDefaultButton(GetOkButton());
+        }
+        private void OperationNameTextBoxTextChanged()
+        {
+            if (operationNameTextBox->Text().IsEmpty())
+            {
+                AddButton()->Disable();
+                ChangeButton()->Disable();
+            }
+            else
+            {
+                AddButton()->Enable();
+                if (selectedIndex != -1)
+                {
+                    ChangeButton()->Enable();
+                }
+            }
+        }
+        private Result<bool> FillListBox()
+        {
+            for (const auto& operationElement : operationList)
+            {
+                string listBoxItemString = operationElement->Name();
+                auto result = GetListBox()->AddItem(listBoxItemString);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private void AddOperation(ClickEventArgs& args)
+        {
+            string operationName = operationNameTextBox->Text();
+            OperationElement* operationElement = new OperationElement();
+            operationElement->SetName(operationName);
+            operationElement->SetContainerElement(containerElement);
+            operationList.Add(operationElement);
+            string listBoxItemString = operationName;
+            auto result = GetListBox()->AddItem(listBoxItemString);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = operationNameTextBox->Clear();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            selectedIndex = -1;
+            DeleteButton()->Disable();
+            MoveUpButton()->Disable();
+            MoveDownButton()->Disable();
+        }
+        private void ChangeOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex != -1 && selectedOperation != null)
+            {
+                string operationName = operationNameTextBox->Text();
+                selectedOperation->SetName(operationName);
+                string listBoxItemString = operationName;
+                auto result = GetListBox()->SetItem(selectedIndex, listBoxItemString);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                result = operationNameTextBox->Clear();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                operationNameTextBox->SetFocus();
+                selectedIndex = -1;
+                SetDefaultButton(AddButton());
+                DeleteButton()->Disable();
+                MoveUpButton()->Disable();
+                MoveDownButton()->Disable();
+            }
+        }
+        private void DeleteOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex != -1 && selectedOperation != null)
+            {
+                auto it = reverseCloneMap.Find(selectedOperation);
+                if (it != reverseCloneMap.End())
+                {
+                    DiagramElement* oldOperation = it->second;
+                    cloneMap[oldOperation] = null;
+                }
+                GetListBox()->DeleteItem(selectedIndex);
+                operationList.Remove(selectedIndex);
+                auto result = operationNameTextBox->Clear();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                operationNameTextBox->SetFocus();
+                selectedIndex = -1;
+                SetDefaultButton(AddButton());
+                DeleteButton()->Disable();
+                MoveUpButton()->Disable();
+                MoveDownButton()->Disable();
+            }
+        }
+        private void MoveUpOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex > 0)
+            {
+                GetListBox()->DeleteItem(selectedIndex);
+                operationList.MoveUp(selectedIndex);
+                --selectedIndex;
+                selectedOperation = operationList.Get(selectedIndex);
+                string operationName = selectedOperation->Name();
+                string listBoxItemString = operationName;
+                auto result = GetListBox()->InsertItem(selectedIndex, listBoxItemString);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                GetListBox()->SetSelectedIndex(selectedIndex);
+                SelectedIndexChangedEventArgs selectedIndexChangedEventArgs;
+                SelectedIndexChanged(selectedIndexChangedEventArgs);
+                if (selectedIndexChangedEventArgs.errorId != 0)
+                {
+                    args.errorId = selectedIndexChangedEventArgs.errorId;
+                    return;
+                }
+            }
+        }
+        private void MoveDownOperation(ClickEventArgs& args)
+        {
+            if (selectedIndex < operationList.Count() - 1)
+            {
+                GetListBox()->DeleteItem(selectedIndex);
+                operationList.MoveDown(selectedIndex);
+                ++selectedIndex;
+                selectedOperation = operationList.Get(selectedIndex);
+                string operationName = selectedOperation->Name();
+                string listBoxItemString = operationName;
+                if (selectedIndex < operationList.Count())
+                {
+                    auto result = GetListBox()->InsertItem(selectedIndex, listBoxItemString);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                else
+                {
+                    auto result = GetListBox()->AddItem(listBoxItemString);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                GetListBox()->SetSelectedIndex(selectedIndex);
+                SelectedIndexChangedEventArgs selectedIndexChangedEventArgs;
+                SelectedIndexChanged(selectedIndexChangedEventArgs);
+                if (selectedIndexChangedEventArgs.errorId != 0)
+                {
+                    args.errorId = selectedIndexChangedEventArgs.errorId;
+                    return;
+                }
+            }
+        }
+        private void SelectedIndexChanged(SelectedIndexChangedEventArgs& args)
+        {
+            selectedIndex = GetListBox()->GetSelectedIndex();
+            if (selectedIndex != -1)
+            {
+                selectedOperation = operationList.Get(selectedIndex);
+                auto result = operationNameTextBox->SetText(selectedOperation->Name());
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                ChangeButton()->Enable();
+                operationNameTextBox->SetFocus();
+                DeleteButton()->Enable();
+                if (selectedIndex > 0)
+                {
+                    MoveUpButton()->Enable();
+                }
+                else
+                {
+                    MoveUpButton()->Disable();
+                }
+                if (selectedIndex < operationList.Count() - 1)
+                {
+                    MoveDownButton()->Enable();
+                }
+                else
+                {
+                    MoveDownButton()->Disable();
+                }
+            }
+            else
+            {
+                selectedOperation = null;
+                DeleteButton()->Disable();
+            }
+        }
+    }
+
+    [nodiscard]
+    Result<bool> ExecuteEditOperationsDialog(IndexList<OperationElement>& operationList, Map<DiagramElement*, DiagramElement*>& cloneMap,
+        Map<DiagramElement*, DiagramElement*>& reverseCloneMap, ContainerElement* containerElement, bool mayHaveAbstractOperations, Window& parentWindow)
+    {
+        EditDiagramElementListDialogParams dialogParams;
+        dialogParams.dialogCaption = "Operations";
+        dialogParams.groupBoxCaption = "Operation";
+        UniquePtr<EditDiagramElementListDialog> dialog;
+        if (mayHaveAbstractOperations)
+        {
+            dialogParams.dialogSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(140), ScreenMetrics.Get().MMToVerticalPixels(90));
+            dialogParams.groupBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(70), ScreenMetrics.Get().MMToVerticalPixels(24));
+            dialogParams.listBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(70), ScreenMetrics.Get().MMToVerticalPixels(36));
+            dialog.Reset(new AbstractOperationElementListDialog(dialogParams, operationList, cloneMap, reverseCloneMap, containerElement));
+        }
+        else
+        {
+            dialogParams.dialogSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(140), ScreenMetrics.Get().MMToVerticalPixels(90));
+            dialogParams.groupBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(70), ScreenMetrics.Get().MMToVerticalPixels(20));
+            dialogParams.listBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(70), ScreenMetrics.Get().MMToVerticalPixels(44));
+            dialog.Reset(new ConcreteOperationElementListDialog(dialogParams, operationList, cloneMap, reverseCloneMap, containerElement));
+        }
+        auto dialogResultResult = dialog->ShowDialog(parentWindow);
+        if (dialogResultResult.Error()) return Result<bool>(ErrorId(dialogResultResult.GetErrorId()));
+        DialogResult dialogResult = dialogResultResult.Value();
+        if (dialogResult == DialogResult.ok)
+        {
+            return Result<bool>(true);
+        }
+        return Result<bool>(false);
+    }
+}

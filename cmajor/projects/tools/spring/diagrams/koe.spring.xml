@@ -1,0 +1,27 @@
+<diagram>
+ <classElement abstract="false" keyword="" name="Class">
+  <bounds h="6.943944931030273" w="12.783379554748535" x="62.970829010009765" y="54.504165649414062"/>
+ </classElement>
+ <classElement abstract="false" keyword="" name="Class">
+  <bounds h="6.943944931030273" w="12.783379554748535" x="62.970829010009765" y="22.489583969116210"/>
+ </classElement>
+ <relationshipElement cardinality="one" rkind="inheritance">
+  <bounds h="0" w="0" x="0" y="0"/>
+  <source connector="top.center" index="0" x="69.362518310546875" y="54.504165649414062">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="bottom.center" index="1" x="69.362518310546875" y="29.433528900146484">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+</diagram>

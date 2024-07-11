@@ -51,6 +51,8 @@ namespace spring
             }
             return clone;
         }
+        suppress IndexList(const IndexList<T>&);
+        suppress void operator=(const IndexList<T>&);
         public T* Get(int index) const
         {
             #assert(index >= 0 && index < elements.Count());

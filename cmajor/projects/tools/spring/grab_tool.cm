@@ -13,6 +13,40 @@ namespace spring
         public GrabTool() : base(ToolKind.grabTool)
         {
         }
+        public override bool CanMove() const
+        {
+            return true;
+        }
+        public override void CreateOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            if (args.left && !args.right && !args.control && !args.shift)
+            {
+                UniquePtr<Operation> operation(new GrabDiagramOperation(diagram, args.location));
+                diagram->SetOperation(operation.Release());
+            }
+        }
+        public override Result<bool> ContinueOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->AdvanceOperation(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override Result<bool> CommitOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->CommitOperation(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override Result<bool> CancelOperation(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->CancelOperation();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
     }
 }
 

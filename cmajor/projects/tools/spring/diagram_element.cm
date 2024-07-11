@@ -189,9 +189,8 @@ namespace spring
         public virtual Result<bool> AddActions(Diagram* diagram, int elementIndex, ContextMenu* contextMenu) const
         {
             MenuItem* deleteMenuItem = new MenuItem("Delete");
-            auto result = contextMenu->AddMenuItem(deleteMenuItem);
+            auto result = contextMenu->AddMenuItemAction(deleteMenuItem, new DeleteDiagramElementAction(diagram, elementIndex, deleteMenuItem));
             if (result.Error()) return result;
-            //contextMenu->AddAction(new DeleteDiagramElementAction(diagram, elementIndex, deleteMenuItem)); todo
             return Result<bool>(true);
         }
         public virtual bool IntersectsWith(const RectF& rect) const
@@ -202,7 +201,7 @@ namespace spring
         {
             return bounds.Contains(location);
         }
-        public abstract DiagramElement* Clone();
+        public abstract DiagramElement* Clone() const;
         public abstract System.Xml.Element* ToXml() const;
         [nodiscard]
         public virtual Result<bool> FromXml(System.Xml.Element* xmlElement)
@@ -265,5 +264,75 @@ namespace spring
         private RectF bounds;
         private string name;
         private Diagram* diagram;
+    }
+
+    abstract class AbstractDiagramElementCreator
+    {
+        public default ~AbstractDiagramElementCreator();
+        public abstract DiagramElement* CreateDiagramElement() const;
+    }
+
+    class ConcreteDiagramElementCreator<T> : AbstractDiagramElementCreator
+    {
+        public override DiagramElement* CreateDiagramElement() const
+        {
+            return new T();
+        }
+    }
+
+    new class ConcreteDiagramElementCreator<ClassElement>;
+    new class ConcreteDiagramElementCreator<ObjectElement>;
+    new class ConcreteDiagramElementCreator<NoteElement>;
+    new class ConcreteDiagramElementCreator<RelationshipElement>;
+
+    class DiagramElementFactory
+    {
+        static DiagramElementFactory() : instance(new DiagramElementFactory())
+        {
+        }
+        private DiagramElementFactory()
+        {
+            AbstractDiagramElementCreator* classElementCreator = new ConcreteDiagramElementCreator<ClassElement>();
+            creators.Add(UniquePtr<AbstractDiagramElementCreator>(classElementCreator));
+            creatorMap["classElement"] = classElementCreator;
+
+            AbstractDiagramElementCreator* objectElementCreator = new ConcreteDiagramElementCreator<ObjectElement>();
+            creators.Add(UniquePtr<AbstractDiagramElementCreator>(objectElementCreator));
+            creatorMap["objectElement"] = objectElementCreator;
+
+            AbstractDiagramElementCreator* noteElementCreator = new ConcreteDiagramElementCreator<NoteElement>();
+            creators.Add(UniquePtr<AbstractDiagramElementCreator>(noteElementCreator));
+            creatorMap["noteElement"] = noteElementCreator;
+
+            AbstractDiagramElementCreator* relationshipElementCreator = new ConcreteDiagramElementCreator<RelationshipElement>();
+            creators.Add(UniquePtr<AbstractDiagramElementCreator>(relationshipElementCreator));
+            creatorMap["relationshipElement"] = relationshipElementCreator;
+        }
+        public static DiagramElementFactory& Instance()
+        {
+            return *instance;
+        }
+        public Result<DiagramElement*> CreateDiagramElement(const string& xmlElementName) const
+        {
+            auto it = creatorMap.Find(xmlElementName);
+            if (it != creatorMap.End())
+            {
+                AbstractDiagramElementCreator* creator = it->second;
+                return Result<DiagramElement*>(creator->CreateDiagramElement());
+            }
+            else
+            {
+                int errorId = AllocateError("creator for '" + xmlElementName + "' not found");
+                return Result<DiagramElement*>(ErrorId(errorId));
+            }
+        }
+        private static UniquePtr<DiagramElementFactory> instance;
+        private List<UniquePtr<AbstractDiagramElementCreator>> creators;
+        private Map<string, AbstractDiagramElementCreator*> creatorMap;
+    }
+
+    Result<DiagramElement*> CreateDiagramElement(const string& xmlElementName)
+    {
+        return DiagramElementFactory.Instance().CreateDiagramElement(xmlElementName);
     }
 }

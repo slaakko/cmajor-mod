@@ -192,12 +192,36 @@ namespace spring
             return Result<bool>(true);
         }
         [nodiscard]
-        protected override Result<bool> SetCursor()
+        public override Result<bool> SetCursor()
+        {
+            return SetCursor(PointF());
+        }
+        [nodiscard]
+        public Result<bool> SetCursor(const PointF& location)
         {
             Tool* currentTool = Tools.Instance().Current();
             if (currentTool->IsSelectTool())
             {
-                // todo
+                if (diagram->GetOperation()->IsResizeRectangleSelectionOperation())
+                {
+                    ResizeRectangleSelectionOperation* operation = cast<ResizeRectangleSelectionOperation*>(diagram->GetOperation());
+                    Cursor* operationCursor = operation->GetCursor();
+                    if (operationCursor != null)
+                    {
+                        SetCursor(operationCursor);
+                        return Result<bool>(true);
+                    }
+                }
+                else if (diagram->GetSelection()->IsRectangleSelection())
+                {
+                    RectangleSelection* selection = cast<RectangleSelection*>(diagram->GetSelection());
+                    Cursor* selectionCursor = selection->GetCursor(location);
+                    if (selectionCursor != null)
+                    {
+                        SetCursor(selectionCursor);
+                        return Result<bool>(true);
+                    }
+                }
             }
             if (buttonPressed)
             {
@@ -359,7 +383,7 @@ namespace spring
             {
                 buttonPressed = true;
             }
-            result = SetCursor();
+            result = SetCursor(location);
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -398,7 +422,7 @@ namespace spring
                 result = diagram->AdvanceOperation(mouseMoveArgs);
                 if (result.Error()) return result;
             }
-            result = SetCursor();
+            result = SetCursor(location);
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -449,7 +473,7 @@ namespace spring
                 if (result.Error()) return result;
             }
             buttonPressed = false;
-            result = SetCursor();
+            result = SetCursor(location);
             if (result.Error()) return result;
             return Result<bool>(true);
         }

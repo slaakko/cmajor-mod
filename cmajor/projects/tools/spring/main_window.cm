@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 using System.Windows;
 
 namespace spring
@@ -531,72 +532,551 @@ namespace spring
                 SetErrorId(result.GetErrorId());
                 return;
             }
+            springDiagramElementsFormat.Reset(new ClipboardFormat("spring.diagram.elements"));
+            AddClipboardListener();
         }
         public override ~MainWindow()
         {
             Configuration.Instance().Reset();
         }
+        protected override Result<bool> OnClipboardUpdate()
+        {
+            auto result = base->OnClipboardUpdate();
+            if (result.Error()) return result;
+            Clipboard clipboard(Handle());
+            if (clipboard.IsClipboardFormatAvailable(*springDiagramElementsFormat))
+            {
+                auto dataResult = clipboard.GetStringData(*springDiagramElementsFormat);
+                if (dataResult.Error())
+                {
+                    return Result<bool>(ErrorId(dataResult.GetErrorId()));
+                }
+                clipboardData = dataResult.Value();
+                auto result = pasteMenuItem->Enable();
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected override Result<bool> OnKeyDown(KeyEventArgs& args)
+        {
+            auto result = base->OnKeyDown(args);
+            if (result.Error()) return result;
+            switch (args.key)
+            {
+                case Keys.controlModifier | Keys.insert:
+                {
+                    if (copyMenuItem->IsEnabled())
+                    {
+                        ClickEventArgs clickEventArgs;
+                        CopyClick(clickEventArgs);
+                        if (clickEventArgs.errorId != 0)
+                        {
+                            return Result<bool>(ErrorId(clickEventArgs.errorId));
+                        }
+                    }
+                    args.handled = true;
+                    break;
+                }
+                case Keys.shiftModifier | Keys.insert:
+                {
+                    if (pasteMenuItem->IsEnabled())
+                    {
+                        ClickEventArgs clickEventArgs;
+                        PasteClick(clickEventArgs);
+                        if (clickEventArgs.errorId != 0)
+                        {
+                            return Result<bool>(ErrorId(clickEventArgs.errorId));
+                        }
+                    }
+                    args.handled = true;
+                    break;
+                }
+                case Keys.shiftModifier | Keys.delete_:
+                {
+                    if (cutMenuItem->IsEnabled())
+                    {
+                        ClickEventArgs clickEventArgs;
+                        CutClick(clickEventArgs);
+                        if (clickEventArgs.errorId != 0)
+                        {
+                            return Result<bool>(ErrorId(clickEventArgs.errorId));
+                        }
+                    }
+                    args.handled = true;
+                    break;
+                }
+            }
+            if (!args.handled)
+            {
+                auto result = canvas->KeyDown(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        protected Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
+        {
+            auto result = base->OnSizeChanged(args);
+            if (result.Error()) return result;
+            statusBar->SetChanged();
+            result = statusBar->Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        protected Result<bool> OnWindowClosing(bool& cancel)
+        {
+            Diagram* diagram = canvas->GetDiagram();
+            if (diagram->IsModified())
+            {
+                auto messageBoxResultResult = MessageBox.Show("Current diagram is modified. Do you want to save changes?", "Diagram modified", this,
+                    MessageBoxType.MB_YESNOCANCEL);
+                if (messageBoxResultResult.Error())
+                {
+                    return Result<bool>(ErrorId(messageBoxResultResult.GetErrorId()));
+                }
+                MessageBoxResult result = messageBoxResultResult.Value();
+                if (result == MessageBoxResult.yes)
+                {
+                    ClickEventArgs clickEventArgs;
+                    SaveClick(clickEventArgs);
+                    if (clickEventArgs.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(clickEventArgs.errorId));
+                    }
+                }
+                else if (result == MessageBoxResult.cancel)
+                {
+                    cancel = true;
+                    return Result<bool>(true);
+                }
+            }
+            RemoveClipboardListener();
+            return Result<bool>(true);
+        }
+        private void AddClipboardListener()
+        {
+            clipboardListener.Reset(new ClipboardListener(Handle()));
+        }
+        private void RemoveClipboardListener()
+        {
+            clipboardListener.Reset();
+        }
         private void NewClick(ClickEventArgs& args)
         {
-            // todo
-            // filePathStatusBarItem->SetText(std::string());
+            Diagram* diagram = canvas->GetDiagram();
+            if (diagram->IsModified())
+            {
+                Result<MessageBoxResult> messageBoxResultResult = MessageBox.Show("Current diagram is modified. Do you want to save changes?", "Diagram modified", this,
+                    MessageBoxType.MB_YESNOCANCEL);
+                if (messageBoxResultResult.Error())
+                {
+                    args.errorId = messageBoxResultResult.GetErrorId();
+                    return;
+                }
+                MessageBoxResult result = messageBoxResultResult.Value();
+                if (result == MessageBoxResult.yes)
+                {
+                    SaveClick(args);
+                    if (args.errorId != 0) return;
+                }
+                else if (result == MessageBoxResult.cancel)
+                {
+                    return;
+                }
+            }
+            UniquePtr<Diagram> newDiagram(new Diagram());
+            diagramFilePath.Clear();
+            auto result = filePathStatusBarItem->SetText(string());
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = modifiedStatusBarItem->SetText(" ");
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = canvas->SetDiagram(newDiagram.Release());
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = canvas->GetDiagram()->ResetModified();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
         }
         private void OpenClick(ClickEventArgs& args)
         {
-            // todo
-            // diagramFilePath = filePath;
-            // filePathStatusBarItem->SetText(diagramFilePath);
-            // modifiedStatusBarItem->SetText(" ");
+            Diagram* diagram = canvas->GetDiagram();
+            if (diagram->IsModified())
+            {
+                Result<MessageBoxResult> messageBoxResultResult = MessageBox.Show("Current diagram is modified. Do you want to save changes?", "Diagram modified", this,
+                    MessageBoxType.MB_YESNOCANCEL);
+                if (messageBoxResultResult.Error())
+                {
+                    args.errorId = messageBoxResultResult.GetErrorId();
+                    return;
+                }
+                MessageBoxResult result = messageBoxResultResult.Value();
+                if (result == MessageBoxResult.yes)
+                {
+                    SaveClick(args);
+                    if (args.errorId != 0) return;
+                }
+                else if (result == MessageBoxResult.cancel)
+                {
+                    return;
+                }
+            }
+            List<Pair<string, string>> descriptionFilterPairs;
+            descriptionFilterPairs.Add(MakePair(string("spring diagram files (*.spring.xml)"), string("*.spring.xml")));
+            Result<string> diagramDirectoryResult = DiagramDirectory();
+            if (diagramDirectoryResult.Error())
+            {
+                args.errorId = diagramDirectoryResult.GetErrorId();
+                return;
+            }
+            string initialDirectory = Rvalue(diagramDirectoryResult.Value());
+            List<string> fileNames;
+            string filePath;
+            string currentDirectory;
+            string defaultFilePath;
+            Result<bool> selectedResult = System.Windows.API.GetOpenFileName(Handle(), descriptionFilterPairs, initialDirectory, defaultFilePath, ".spring.xml",
+                OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST, currentDirectory, fileNames);
+            if (selectedResult.Error())
+            {
+                args.errorId = selectedResult.GetErrorId();
+                return;
+            }
+            bool selected = selectedResult.Value();
+            if (selected)
+            {
+                if (!fileNames.IsEmpty())
+                {
+                    filePath = System.IO.Path.Combine(currentDirectory, fileNames[0]);
+                }
+                Result<bool> existsResult(false);
+                if (!filePath.IsEmpty())
+                {
+                    existsResult = System.IO.File.Exists(filePath);
+                }
+                if (existsResult.Error())
+                {
+                    args.errorId = existsResult.GetErrorId();
+                    return;
+                }
+                bool fileExists = existsResult.Value();
+                if (!filePath.IsEmpty() && fileExists)
+                {
+                    UniquePtr<Diagram> diagram(new Diagram());
+                    auto result = diagram->Load(filePath);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                    diagramFilePath = filePath;
+                    result = filePathStatusBarItem->SetText(diagramFilePath);
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                    result = modifiedStatusBarItem->SetText(" ");
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                    result = canvas->SetDiagram(diagram.Release());
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                    result = canvas->GetDiagram()->ResetModified();
+                    if (result.Error())
+                    {
+                        args.errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                else
+                {
+                    int errorId = AllocateError("file path is empty or does not exist");
+                    args.errorId = errorId;
+                    return;
+                }
+            }
         }
         private void SaveClick(ClickEventArgs& args)
         {
-            // todo
+            Diagram* diagram = canvas->GetDiagram();
+            if (diagramFilePath.IsEmpty())
+            {
+                SaveAsClick(args);
+                if (args.errorId != 0) return;
+            }
+            else
+            {
+                auto result = diagram->Save(diagramFilePath);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                result = diagram->ResetModified();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+            }
         }
         private void SaveAsClick(ClickEventArgs& args)
         {
-            // filePathStatusBarItem->SetText(diagramFilePath);
-            // diagram->ResetModified();
-            // todo
+            List<Pair<string, string>> descriptionFilterPairs;
+            descriptionFilterPairs.Add(MakePair(string("spring diagram files (*.spring.xml)"), string("*.spring.xml")));
+            Result<string> diagramDirectoryResult = DiagramDirectory();
+            if (diagramDirectoryResult.Error())
+            {
+                args.errorId = diagramDirectoryResult.GetErrorId();
+                return;
+            }
+            string initialDirectory = Rvalue(diagramDirectoryResult.Value());
+            List<string> fileNames;
+            string filePath;
+            string currentDirectory;
+            string defaultFilePath = "diagram.spring.xml";
+            Result<bool> selectedResult = System.Windows.API.GetSaveFileName(Handle(), descriptionFilterPairs, initialDirectory, defaultFilePath, ".spring.xml",
+                0u, currentDirectory, filePath);
+            if (selectedResult.Error())
+            {
+                args.errorId = selectedResult.GetErrorId();
+                return;
+            }
+            bool selected = selectedResult.Value();
+            if (selected)
+            {
+                auto existsResult = System.IO.File.Exists(filePath);
+                if (existsResult.Error())
+                {
+                    args.errorId = existsResult.GetErrorId();
+                    return;
+                }
+                bool exists = existsResult.Value();
+                if (exists)
+                {
+                    Result<MessageBoxResult> messageBoxResultResult = MessageBox.Show(
+                        "File '" + filePath + "' already exists. Do you want to replace it?", "File exists", this, MessageBoxType.MB_YESNO);
+                    if (messageBoxResultResult.Error())
+                    {
+                        args.errorId = messageBoxResultResult.GetErrorId();
+                        return;
+                    }
+                    MessageBoxResult result = messageBoxResultResult.Value();
+                    if (result != MessageBoxResult.yes)
+                    {
+                        return;
+                    }
+                }
+                Diagram* diagram = canvas->GetDiagram();
+                auto result = diagram->Save(filePath);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                diagramFilePath = filePath;
+                result = filePathStatusBarItem->SetText(diagramFilePath);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                result = diagram->ResetModified();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+            }
         }
         private void SaveImageClick(ClickEventArgs& args)
         {
-            // todo
+            Canvas* canvas = GetCanvas();
+            Diagram* diagram = canvas->GetDiagram();
+            SaveImageDialog dialog(diagramFilePath);
+            auto dialogResultResult = dialog.ShowDialog(*this);
+            if (dialogResultResult.Error())
+            {
+                args.errorId = dialogResultResult.GetErrorId();
+                return;
+            }
+            DialogResult dialogResult = dialogResultResult.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                auto result = diagram->SaveImage(dialog.FileName(), dialog.Margins(), dialog.Format());
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+            }
         }
         private void ExitClick(ClickEventArgs& args)
         {
-            // todo
+            auto result = Close();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
         }
         private void CutClick(ClickEventArgs& args)
         {
-            // todo
+            auto selection = canvas->GetDiagram()->GetSelection();
+            Result<ustring> copyResult = selection->Copy();
+            if (copyResult.Error())
+            {
+                args.errorId = copyResult.GetErrorId();
+                return;
+            }
+            ustring copy = Rvalue(copyResult.Value());
+            if (!copy.IsEmpty())
+            {
+                Clipboard clipboard(Handle());
+                auto result = clipboard.SetStringData(*springDiagramElementsFormat, copy);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+                result = selection->Delete();
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+            }
         }
         private void CopyClick(ClickEventArgs& args)
         {
-            // todo
+            auto selection = canvas->GetDiagram()->GetSelection();
+            Result<ustring> copyResult = selection->Copy();
+            if (copyResult.Error())
+            {
+                args.errorId = copyResult.GetErrorId();
+                return;
+            }
+            ustring copy = Rvalue(copyResult.Value());
+            if (!copy.IsEmpty())
+            {
+                Clipboard clipboard(Handle());
+                auto result = clipboard.SetStringData(*springDiagramElementsFormat, copy);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+            }
         }
         private void PasteClick(ClickEventArgs& args)
         {
-            // todo
+            if (!clipboardData.IsEmpty())
+            {
+                auto result = canvas->GetDiagram()->Paste(clipboardData);
+                if (result.Error())
+                {
+                    args.errorId = result.GetErrorId();
+                    return;
+                }
+            }
         }
         private void UndoClick(ClickEventArgs& args)
         {
-            // todo
+            auto result = canvas->GetDiagram()->Undo();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
         }
         private void RedoClick(ClickEventArgs& args)
         {
-            // todo
+            auto result = canvas->GetDiagram()->Redo();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
         }
         private void SelectAllClick(ClickEventArgs& args)
         {
-            // todo
+            Diagram* diagram = canvas->GetDiagram();
+            RectF diagramRect = diagram->CalculateBounds();
+            UniquePtr<RectangleSelection> selection(new RectangleSelection(diagram, PointF()));
+            selection->SetRect(diagramRect);
+            auto result = diagram->SetSelection(selection.Release());
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = diagram->SetChanged();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            result = diagram->Invalidate();
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
         }
         private void UserGuideClick(ClickEventArgs& args)
         {
-            // todo
+            auto springRootResult = SpringDirectory();
+            if (springRootResult.Error())
+            {
+                args.errorId = springRootResult.GetErrorId();
+                return;
+            }
+            const string& springRootDir = springRootResult.Value();
+            string userGuideFilePath = System.IO.Path.Combine(springRootDir, "doc/user_guide/user_guide.html");
+            Result<bool> result = ShellExecute(userGuideFilePath);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
         }
         private void IndexClick(ClickEventArgs& args)
         {
-            // todo
+            auto springRootResult = SpringDirectory();
+            if (springRootResult.Error())
+            {
+                args.errorId = springRootResult.GetErrorId();
+                return;
+            }
+            const string& springRootDir = springRootResult.Value();
+            string indexFilePath = System.IO.Path.Combine(springRootDir, "doc/index.html");
+            Result<bool> result = ShellExecute(indexFilePath);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
         }
         private void AboutClick(ClickEventArgs& args)
         {

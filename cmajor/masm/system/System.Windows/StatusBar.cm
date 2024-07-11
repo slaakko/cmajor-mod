@@ -394,7 +394,7 @@ namespace System.Windows
         {
             return (flags & Flags.changed) != Flags.none;
         }
-        internal inline void SetChanged()
+        public inline void SetChanged()
         {
             flags = cast<Flags>(flags | Flags.changed);
         }

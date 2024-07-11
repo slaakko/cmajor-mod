@@ -89,14 +89,19 @@ namespace spring
             auto result = diagram->HideContextMenu();
             if (result.Error()) return result;
             string diagramFileName;
-/*          TODO
             SaveImageDialog dialog(diagramFileName);
-            if (dialog.ShowDialog(*window) == DialogResult,ok)
+            Result<DialogResult> dialogResultResult = dialog.ShowDialog(*window);
+            if (dialogResultResult.Error())
             {
-                Selection* selection = diagram->GetSelection();
-                selection->SaveImage(dialog.FileName(), dialog.Margins(), dialog.Format());
+                return Result<bool>(ErrorId(dialogResultResult.GetErrorId()));
             }
-*/
+            DialogResult dialogResult = dialogResultResult.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                auto selection = diagram->GetSelection();
+                auto result = selection->SaveImage(dialog.FileName(), dialog.Margins(), dialog.Format());
+                if (result.Error()) return result;
+            }
             return Result<bool>(true);
         }
     }
@@ -313,6 +318,8 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
+            auto result = diagram->GetSelection()->Remove(elementIndex);
+            if (result.Error()) return result;
             UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(diagram));
             UniquePtr<DiagramElement> element = diagram->RemoveElementByIndex(elementIndex);
             if (element->IsContainerElement())
@@ -349,7 +356,7 @@ namespace spring
                 }
             }
             deleteElementsCommand->AddDeletedElement(element.Release(), elementIndex);
-            auto result = diagram->GetCommandList().AddCommand(deleteElementsCommand.Release());
+            result = diagram->GetCommandList().AddCommand(deleteElementsCommand.Release());
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -362,7 +369,54 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
-            // todo
+            DiagramElement* element = diagram->GetElementByIndex(elementIndex);
+            if (element->IsClassElement())
+            {
+                ClassElement* classElement = cast<ClassElement*>(element);
+                UniquePtr<ClassElement> clone(cast<ClassElement*>(classElement->Clone()));
+                Map<DiagramElement*, DiagramElement*> cloneMap;
+                Map<DiagramElement*, DiagramElement*> reverseCloneMap;
+                cloneMap[classElement] = clone.Get();
+                reverseCloneMap[clone.Get()] = classElement;
+                clone->MapChildObjects(classElement, cloneMap, reverseCloneMap);
+                UniquePtr<ClassPropertiesDialog> classPropertiesDialog(new ClassPropertiesDialog(clone.Get(), cloneMap, reverseCloneMap));
+                Canvas* canvas = GetCanvas();
+                Window* window = canvas->GetWindow();
+                auto result = diagram->HideContextMenu();
+                if (result.Error()) return result;
+                Result<DialogResult> dialogResultResult = classPropertiesDialog->ShowDialog(*window);
+                if (dialogResultResult.Error()) return Result<bool>(ErrorId(dialogResultResult.GetErrorId()));
+                DialogResult dialogResult = dialogResultResult.Value();
+                if (dialogResult == DialogResult.ok)
+                {
+                    if (!clone->IsAbstract())
+                    {
+                        clone->ResetAbstractOperations();
+                    }
+                    UniquePtr<ReplaceElementCommand> replaceElementCommand(new ReplaceElementCommand(diagram, elementIndex));
+                    List<RelationshipElement*> orphanRelationships;
+                    List<RelationshipElement*> relationships = classElement->GetAllRelationships();
+                    for (RelationshipElement* relationship : relationships)
+                    {
+                        bool orphan = false;
+                        relationship->MapContainerElements(cloneMap, orphan);
+                        if (orphan)
+                        {
+                            orphanRelationships.Add(relationship);
+                        }
+                        relationship->AddToElements();
+                    }
+                    result = DeleteRelationships(diagram, orphanRelationships);
+                    if (result.Error()) return result;
+                    diagram->SetElementByIndex(clone.Release(), elementIndex);
+                    result = diagram->SetChanged();
+                    if (result.Error()) return result;
+                    result = diagram->Invalidate();
+                    if (result.Error()) return result;
+                    result = diagram->GetCommandList().AddCommand(replaceElementCommand.Release());
+                    if (result.Error()) return result;
+                }
+            }
             return Result<bool>(true);
         }
     }
@@ -374,7 +428,50 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
-            // todo
+            DiagramElement* element = diagram->GetElementByIndex(elementIndex);
+            if (element->IsObjectElement())
+            {
+                ObjectElement* objectElement = cast<ObjectElement*>(element);
+                UniquePtr<ObjectElement> clone(cast<ObjectElement*>(objectElement->Clone()));
+                Map<DiagramElement*, DiagramElement*> cloneMap;
+                Map<DiagramElement*, DiagramElement*> reverseCloneMap;
+                cloneMap[objectElement] = clone.Get();
+                reverseCloneMap[clone.Get()] = objectElement;
+                clone->MapChildObjects(objectElement, cloneMap, reverseCloneMap);
+                UniquePtr<ObjectPropertiesDialog> objectPropertiesDialog(new ObjectPropertiesDialog(clone.Get(), cloneMap, reverseCloneMap));
+                Canvas* canvas = GetCanvas();
+                Window* window = canvas->GetWindow();
+                auto result = diagram->HideContextMenu();
+                if (result.Error()) return result;
+                Result<DialogResult> dialogResultResult = objectPropertiesDialog->ShowDialog(*window);
+                if (dialogResultResult.Error()) return Result<bool>(ErrorId(dialogResultResult.GetErrorId()));
+                DialogResult dialogResult = dialogResultResult.Value();
+                if (dialogResult == DialogResult.ok)
+                {
+                    UniquePtr<ReplaceElementCommand> replaceElementCommand(new ReplaceElementCommand(diagram, elementIndex));
+                    List<RelationshipElement*> orphanRelationships;
+                    List<RelationshipElement*> relationships = objectElement->GetAllRelationships();
+                    for (RelationshipElement* relationship : relationships)
+                    {
+                        bool orphan = false;
+                        relationship->MapContainerElements(cloneMap, orphan);
+                        if (orphan)
+                        {
+                            orphanRelationships.Add(relationship);
+                        }
+                        relationship->AddToElements();
+                    }
+                    result = DeleteRelationships(diagram, orphanRelationships);
+                    if (result.Error()) return result;
+                    diagram->SetElementByIndex(clone.Release(), elementIndex);
+                    result = diagram->SetChanged();
+                    if (result.Error()) return result;
+                    result = diagram->Invalidate();
+                    if (result.Error()) return result;
+                    result = diagram->GetCommandList().AddCommand(replaceElementCommand.Release());
+                    if (result.Error()) return result;
+                }
+            }
             return Result<bool>(true);
         }
     }
@@ -386,7 +483,50 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
-            // todo
+            DiagramElement* element = diagram->GetElementByIndex(elementIndex);
+            if (element->IsNoteElement())
+            {
+                NoteElement* noteElement = cast<NoteElement*>(element);
+                UniquePtr<NoteElement> clone(cast<NoteElement*>(noteElement->Clone()));
+                Map<DiagramElement*, DiagramElement*> cloneMap;
+                Map<DiagramElement*, DiagramElement*> reverseCloneMap;
+                cloneMap[noteElement] = clone.Get();
+                reverseCloneMap[clone.Get()] = noteElement;
+                clone->MapChildObjects(noteElement, cloneMap, reverseCloneMap);
+                UniquePtr<NotePropertiesDialog> notePropertiesDialog(new NotePropertiesDialog(clone.Get()));
+                Canvas* canvas = diagram->GetCanvas();
+                Window* window = canvas->GetWindow();
+                auto result = diagram->HideContextMenu();
+                if (result.Error()) return result;
+                auto dialogResultResult = notePropertiesDialog->ShowDialog(*window);
+                if (dialogResultResult.Error()) return Result<bool>(ErrorId(dialogResultResult.GetErrorId()));
+                DialogResult dialogResult = dialogResultResult.Value();
+                if (dialogResult == DialogResult.ok)
+                {
+                    UniquePtr<ReplaceElementCommand> replaceElementCommand(new ReplaceElementCommand(diagram, elementIndex));
+                    List<RelationshipElement*> orphanRelationships;
+                    List<RelationshipElement*> relationships = noteElement->GetAllRelationships();
+                    for (RelationshipElement* relationship : relationships)
+                    {
+                        bool orphan = false;
+                        relationship->MapContainerElements(cloneMap, orphan);
+                        if (orphan)
+                        {
+                            orphanRelationships.Add(relationship);
+                        }
+                        relationship->AddToElements();
+                    }
+                    result = DeleteRelationships(diagram, orphanRelationships);
+                    if (result.Error()) return result;
+                    diagram->SetElementByIndex(clone.Release(), elementIndex);
+                    result = diagram->SetChanged();
+                    if (result.Error()) return result;
+                    result = diagram->Invalidate();
+                    if (result.Error()) return result;
+                    result = diagram->GetCommandList().AddCommand(replaceElementCommand.Release());
+                    if (result.Error()) return result;
+                }
+            }
             return Result<bool>(true);
         }
     }
@@ -398,7 +538,62 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
-            // todo
+            DiagramElement* element = diagram->GetElementByIndex(elementIndex);
+            if (element->IsRelationshipElement())
+            {
+                RelationshipElement* relationshipElement = cast<RelationshipElement*>(element);
+                DiagramElement* sourceElement = relationshipElement->Source().Element();
+                Connector sourceConnector = relationshipElement->Source().GetConnector();
+                DiagramElement* targetElement = relationshipElement->Target().Element();
+                Connector targetConnector = relationshipElement->Target().GetConnector();
+                UniquePtr<RelationshipElement> clone(cast<RelationshipElement*>(relationshipElement->Clone()));
+                UniquePtr<RelationshipPropertiesDialog> relationshipPropertiesDialog(new RelationshipPropertiesDialog(clone.Get()));
+                Canvas* canvas = diagram->GetCanvas();
+                Window* window = canvas->GetWindow();
+                auto result = diagram->HideContextMenu();
+                if (result.Error()) return result;
+                auto shorDialogResult = relationshipPropertiesDialog->ShowDialog(*window);
+                if (shorDialogResult.Error())
+                {
+                    return Result<bool>(ErrorId(shorDialogResult.GetErrorId()));
+                }
+                DialogResult dialogResult = shorDialogResult.Value();
+                if (dialogResult == DialogResult.ok)
+                {
+                    UniquePtr<ReplaceElementCommand> replaceElementCommand(new ReplaceElementCommand(diagram, elementIndex));
+                    if (relationshipElement->Source().Element() != null)
+                    {
+                        relationshipElement->Source().Element()->RemoveRelationship(relationshipElement);
+                        relationshipElement->Source().Element()->AddRelationship(clone.Get());
+                        EndPoint endPoint = relationshipElement->Source().Element()->GetEndPoint(clone->Source().GetConnector());
+                        clone->Source().SetPoint(endPoint.Point());
+                    }
+                    for (EndPoint& sourceEndPoint : relationshipElement->SourceEndPoints())
+                    {
+                        if (sourceEndPoint.Element() != null)
+                        {
+                            sourceEndPoint.Element()->RemoveRelationship(relationshipElement);
+                            sourceEndPoint.Element()->AddRelationship(clone.Get());
+                            EndPoint endPoint = sourceEndPoint.Element()->GetEndPoint(clone->Source().GetConnector());
+                            clone->Source().SetPoint(endPoint.Point());
+                        }
+                    }
+                    if (relationshipElement->Target().Element() != null)
+                    {
+                        relationshipElement->Target().Element()->RemoveRelationship(relationshipElement);
+                        relationshipElement->Target().Element()->AddRelationship(clone.Get());
+                        EndPoint endPoint = relationshipElement->Target().Element()->GetEndPoint(clone->Target().GetConnector());
+                        clone->Target().SetPoint(endPoint.Point());
+                    }
+                    diagram->SetElementByIndex(clone.Release(), elementIndex);
+                    result = diagram->SetChanged();
+                    if (result.Error()) return result;
+                    result = diagram->Invalidate();
+                    if (result.Error()) return result;
+                    result = diagram->GetCommandList().AddCommand(replaceElementCommand.Release());
+                    if (result.Error()) return result;
+                }
+            }
             return Result<bool>(true);
         }
     }
@@ -410,7 +605,12 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
-            // todo
+            DiagramElement* diagramElement = diagram->GetElementByIndex(elementIndex);
+            if (diagramElement->IsRelationshipElement())
+            {
+                RelationshipElement* relationship = cast<RelationshipElement*>(diagramElement);
+                relationship->Straighten();
+            }
             return Result<bool>(true);
         }
     }
@@ -422,7 +622,12 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
-            // todo
+            DiagramElement* diagramElement = diagram->GetElementByIndex(elementIndex);
+            if (diagramElement->IsRelationshipElement())
+            {
+                RelationshipElement* relationship = cast<RelationshipElement*>(diagramElement);
+                relationship->SetCenterConnectors();
+            }
             return Result<bool>(true);
         }
     }
@@ -434,7 +639,30 @@ namespace spring
         }
         public override Result<bool> Execute(Diagram* diagram, int elementIndex)
         {
-            // todo
+            DiagramElement* diagramElement = diagram->GetElementByIndex(elementIndex);
+            if (diagramElement->IsRelationshipElement())
+            {
+                RelationshipElement* relationship = cast<RelationshipElement*>(diagramElement);
+                if (relationship->IsCombinedInheritance())
+                {
+                    List<UniquePtr<RelationshipElement>> relationships = SplitCombinedInheritanceRelationship(relationship);
+                    UniquePtr<DeleteElementsCommand> deleteCommand(new DeleteElementsCommand(diagram));
+                    UniquePtr<DiagramElement> element(diagram->RemoveElementByIndex(elementIndex));
+                    deleteCommand->AddDeletedElement(element.Release(), elementIndex);
+                    auto result = diagram->GetCommandList().AddCommand(deleteCommand.Release());
+                    if (result.Error()) return result;
+                    UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(diagram));
+                    for (UniquePtr<RelationshipElement>& relationship : relationships)
+                    {
+                        int addIndex = diagram->NextIndex();
+                        addElementsCommand->AddIndex(addIndex);
+                        result = diagram->AddElement(relationship.Release());
+                        if (result.Error()) return result;
+                    }
+                    result = diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+                    if (result.Error()) return result;
+                }
+            }
             return Result<bool>(true);
         }
     }

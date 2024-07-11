@@ -13,6 +13,41 @@ namespace spring
         public AttributeElement() : base(DiagramElementKind.attributeElement)
         {
         }
+        [nodiscard]
+        public override Result<bool> Measure(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            PaddingElement* paddingElement = relationshipLayoutElement->GetPaddingElement();
+            float relationshipSymbolRadius = relationshipLayoutElement->RelationshipSymbolRadius();
+            AttributeLayoutElement* attributeLayout = layout->GetAttributeLayoutElement();
+            Result<Font*> fontResult = attributeLayout->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            auto measureResult = graphics.MeasureStringRectF(Name(), *font, PointF(0, 0), layout->GetStringFormat());
+            if (measureResult.Error()) return Result<bool>(ErrorId(measureResult.GetErrorId()));
+            RectF r = measureResult.Value();
+            SizeF sz = r.size;
+            if (relationship != null)
+            {
+                sz.w = sz.w + GetRelationshipSymbolFieldWidth(relationshipSymbolRadius, paddingElement->GetPadding().Horizontal());
+            }
+            SetSize(sz);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            AttributeLayoutElement* attributeLayout = layout->GetAttributeLayoutElement();
+            Result<Font*> fontResult = attributeLayout->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            Brush* brush = attributeLayout->TextColorElement()->GetBrush();
+            auto result = graphics.DrawString(Name(), *font, Location(), *brush);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         public override System.Xml.Element* ToXml() const
         {
             System.Xml.Element* xmlElement = System.Xml.MakeElement("attribute");

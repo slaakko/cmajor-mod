@@ -148,7 +148,8 @@ namespace spring
                 if (result.Error()) return result;
                 if (args.shift)
                 {
-                    MouseShiftLeftClick(args);
+                    result = MouseShiftLeftClick(args);
+                    if (result.Error()) return result;
                 }
                 else if (args.control)
                 {
@@ -182,8 +183,10 @@ namespace spring
             }
             return Result<bool>(true);
         }
-        public virtual void MouseShiftLeftClick(MouseArgs& args)
+        [nodiscard]
+        public virtual Result<bool> MouseShiftLeftClick(MouseArgs& args)
         {
+            return Result<bool>(true);
         }
         [nodiscard]
         public virtual Result<bool> MouseControlLeftClick(MouseArgs& args)

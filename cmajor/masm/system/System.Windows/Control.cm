@@ -1443,7 +1443,8 @@ namespace System.Windows
                 }
                 case WM_CLIPBOARDUPDATE:
                 {
-                    DoClipboardUpdate();
+                    auto result = DoClipboardUpdate();
+                    if (result.Error()) return result;
                     message.result = 0;
                     return Result<bool>(true);
                 }
@@ -1559,7 +1560,8 @@ namespace System.Windows
                                 if (child is ListBox*)
                                 {
                                     ListBox* listBox = cast<ListBox*>(child);
-                                    listBox->SelectedIndexChangedInternal();
+                                    auto result = listBox->SelectedIndexChangedInternal();
+                                    if (result.Error()) return result;
                                 }
                                 message.result = 0;
                                 return Result<bool>(true);
@@ -1579,13 +1581,14 @@ namespace System.Windows
                 WinRestoreOriginalWndProc(handle, originalWndProc);
             }
         }
-        private void DoClipboardUpdate()
+        private Result<bool> DoClipboardUpdate()
         {
-            OnClipboardUpdate();
+            return OnClipboardUpdate();
         }
-        protected virtual void OnClipboardUpdate()
+        protected virtual Result<bool> OnClipboardUpdate()
         {
             clipboardUpdateEvent.Fire();
+            return Result<bool>(true);
         }
         [nodiscard]
         private Result<bool> DoSysCommand(ulong wparam, long lparam)

@@ -1,0 +1,158 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class TextElementPropertiesDialog : Window
+    {
+        public TextElementPropertiesDialog(const string& dialogName, TextElement* textElement_) :
+            base(WindowCreateParams(
+                WindowControlCreateParams(
+                    ControlCreateParams().Defaults(), "System.Windows.Window", dialogName, Point.Default(),
+                        Size(ScreenMetrics.Get().MMToHorizontalPixels(100), ScreenMetrics.Get().MMToVerticalPixels(70))))),
+            textElement(textElement_)
+        {
+            Size s = GetSize();
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            int textBoxPadding = DefaultControlPadding();
+            int borderWidth = DefaultSingleBorderWidth();
+            string linesText;
+            bool first = true;
+            lines = textElement->Lines();
+            for (const string& line : lines)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    linesText.Append("\r\n");
+                }
+                linesText.Append(line);
+            }
+            Point linesLabelLoc(defaultControlSpacing.w, defaultControlSpacing.h);
+            UniquePtr<Label> linesLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Text:").
+                SetLocation(linesLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* linesLabel = linesLabelPtr.Get();
+            auto result = AddChild(linesLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point textBoxLoc(defaultControlSpacing.w, defaultControlSpacing.h + linesLabelLoc.y + linesLabel->GetSize().h);
+            Size textBoxSize(ScreenMetrics.Get().MMToHorizontalPixels(80), ScreenMetrics.Get().MMToVerticalPixels(30));
+            UniquePtr<TextBox> textBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(linesText).
+                    SetLocation(textBoxLoc).SetSize(textBoxSize).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                    cast<TextBoxStyle>(TextBoxStyle.ES_LEFT | TextBoxStyle.ES_AUTOHSCROLL | TextBoxStyle.ES_AUTOVSCROLL | TextBoxStyle.ES_MULTILINE))).Defaults()));
+            linesTextBox = textBoxPtr.Get();
+            linesTextBox->TextChangedEvent().AddHandler(LinesTextChanged);
+            linesTextBox->SelectAll();
+            UniquePtr<PaddedControl> paddedTextBox(new PaddedControl(PaddedControlCreateParams(
+                PaddedControlControlCreateParams(ControlCreateParams().Defaults(), linesTextBox), textBoxPtr.Release())));
+            UniquePtr<BorderedControl> borderedPaddedTextBox(new BorderedControl(BorderedControlCreateParams(
+                BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(textBoxLoc).SetSize(textBoxSize).
+                SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)), paddedTextBox.Get()), paddedTextBox.Release()).Defaults().SetBorderStyle(BorderStyle.style3D)));
+            result = AddChild(borderedPaddedTextBox.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point keywordLabelLoc(defaultControlSpacing.w, 2 * defaultControlSpacing.h + textBoxLoc.y + textBoxSize.h);
+            UniquePtr<Label> keywordLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Keyword:").
+                SetLocation(keywordLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* keywordLabel = keywordLabelPtr.Get();
+            result = AddChild(keywordLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            keyword = textElement->Keyword();
+            Point keywordTextBoxLoc(keywordLabelLoc.x + keywordLabel->GetSize().w + defaultControlSpacing.w,
+                textBoxLoc.y + textBoxSize.h + 2 * defaultControlSpacing.h);
+            UniquePtr<TextBox> keywordTextBoxPtr(
+                new TextBox(TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(keyword).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left))))));
+            keywordTextBox = keywordTextBoxPtr.Get();
+            keywordTextBox->TextChangedEvent().AddHandler(KeywordChanged);
+            Size keywordTextBoxSize = Size(defaultTextBoxSize.w, defaultTextBoxSize.h);
+            Rect keywordRect(keywordTextBoxLoc, keywordTextBoxSize);
+            Rect paddedKeywordRect = keywordRect;
+            paddedKeywordRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<Control> paddedKeywordTextBox(new PaddedControl(PaddedControlCreateParams(
+                PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)), keywordTextBox),
+                keywordTextBoxPtr.Release()).Defaults()));
+            Rect borderedPaddedKeywordTextBoxRect = paddedKeywordRect;
+            borderedPaddedKeywordTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedKeywordTextBox(new BorderedControl(BorderedControlCreateParams(
+                BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(borderedPaddedKeywordTextBoxRect.location).
+                SetSize(borderedPaddedKeywordTextBoxRect.size).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)), paddedKeywordTextBox.Get()),
+                paddedKeywordTextBox.Release()).Defaults()));
+            Control* borderedPaddedKeywordTextBoxControl = borderedPaddedKeywordTextBox.Get();
+            result = AddChild(borderedPaddedKeywordTextBox.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public List<string> Lines()
+        {
+            return Rvalue(lines);
+        }
+        public string Keyword()
+        {
+            return Rvalue(keyword);
+        }
+        private void LinesTextChanged()
+        {
+            auto utf32Result = ToUtf32(linesTextBox->Text());
+            if (utf32Result.Error())
+            {
+                SetErrorId(utf32Result.GetErrorId());
+                return;
+            }
+            ustring utext = Rvalue(utf32Result.Value());
+            List<ustring> ulines = System.Windows.SplitTextIntoLines(utext);
+            lines.Clear();
+            for (const auto& uline : ulines)
+            {
+                auto utf8Result = ToUtf8(uline);
+                if (utf8Result.Error())
+                {
+                    SetErrorId(utf8Result.GetErrorId());
+                    return;
+                }
+                lines.Add(Rvalue(utf8Result.Value()));
+            }
+        }
+        private void KeywordChanged()
+        {
+            keyword = keywordTextBox->Text();
+        }
+        private TextElement* textElement;
+        private TextBox* linesTextBox;
+        private TextBox* keywordTextBox;
+        private Button* cancelButton;
+        private Button* okButton;
+        private List<string> lines;
+        private string keyword;
+    }
+}
+

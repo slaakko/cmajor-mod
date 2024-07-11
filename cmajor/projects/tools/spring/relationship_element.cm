@@ -14,22 +14,105 @@ namespace spring
         none, inheritance, combinedInheritance, composition, aggregation, reference, createInstance, attachNote
     }
 
+    string RelationshipKindStr(RelationshipKind kind)
+    {
+        switch (kind)
+        {
+            case RelationshipKind.inheritance: return "inheritance";
+            case RelationshipKind.combinedInheritance: return "combinedInheritance";
+            case RelationshipKind.composition: return "composition";
+            case RelationshipKind.aggregation: return "aggregation";
+            case RelationshipKind.reference: return "reference";
+            case RelationshipKind.createInstance: return "createInstance";
+            case RelationshipKind.attachNote: return "attachNote";
+        }
+        return "<unknown relationship kind>";
+    }
+
+    class RelationshipKindMap
+    {
+        static RelationshipKindMap() : instance(new RelationshipKindMap())
+        {
+        }
+        public static RelationshipKindMap& Instance()
+        {
+            return *instance;
+        }
+        private RelationshipKindMap()
+        {
+            map["inheritance"] = RelationshipKind.inheritance;
+            map["combinedInheritance"] = RelationshipKind.combinedInheritance;
+            map["composition"] = RelationshipKind.composition;
+            map["aggregation"] = RelationshipKind.aggregation;
+            map["reference"] = RelationshipKind.reference;
+            map["createInstance"] = RelationshipKind.createInstance;
+            map["attachNote"] = RelationshipKind.attachNote;
+        }
+        public Result<RelationshipKind> GetKind(const string& kindStr)
+        {
+            auto it = map.Find(kindStr);
+            if (it != map.End())
+            {
+                return Result<RelationshipKind>(it->second);
+            }
+            int errorId = AllocateError("relationship kind '" + kindStr + "' not found");
+            return Result<RelationshipKind>(ErrorId(errorId));
+        }
+        private static UniquePtr<RelationshipKindMap> instance;
+        private Map<string, RelationshipKind> map;
+    }
+
+    Result<RelationshipKind> ParseRelationshipKindStr(const string& kindStr)
+    {
+        return RelationshipKindMap.Instance().GetKind(kindStr);
+    }
+
     enum Cardinality
     {
         zero, one, many
+    }
+
+    string CardinalityStr(Cardinality cardinality)
+    {
+        switch (cardinality)
+        {
+            case Cardinality.zero: return "zero";
+            case Cardinality.one: return "one";
+            case Cardinality.many: return "many";
+        }
+        return "<unknown cardinality>";
+    }
+
+    Result<Cardinality> ParseCardinalityStr(const string& cardinalityStr)
+    {
+        if (cardinalityStr == "zero") return Result<Cardinality>(Cardinality.zero);
+        else if (cardinalityStr == "one") return Result<Cardinality>(Cardinality.one);
+        else if (cardinalityStr == "many") return Result<Cardinality>(Cardinality.many);
+        else
+        {
+            int errorId = AllocateError("cardinality '" + cardinalityStr + "' not found");
+            return Result<Cardinality>(ErrorId(errorId));
+        }
     }
 
     class RelationshipElement : DiagramElement
     {
         public RelationshipElement() : base(DiagramElementKind.relationshipElement), rkind(RelationshipKind.none), cardinality(Cardinality.one)
         {
+            SetRep();
         }
         public RelationshipElement(RelationshipKind rkind_) : base(DiagramElementKind.relationshipElement), rkind(rkind_), cardinality(Cardinality.one)
         {
+            SetRep();
         }
         public inline RelationshipKind RKind() const
         {
             return rkind;
+        }
+        public void SetRKind(RelationshipKind rkind_)
+        {
+            rkind = rkind_;
+            SetRep();
         }
         public inline bool IsInheritance() const
         {
@@ -58,6 +141,50 @@ namespace spring
         public inline bool IsAttachNote() const
         {
             return rkind == RelationshipKind.attachNote;
+        }
+        [nodiscard]
+        public override Result<bool> Measure(Graphics& graphics)
+        {
+            auto result = source.MeasureTexts(graphics);
+            if (result.Error()) return result;
+            result = target.MeasureTexts(graphics);
+            if (result.Error()) return result;
+            SetTextLocations();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            auto result = base->Draw(graphics);
+            if (result.Error()) return result;
+            result = rep->Draw(graphics);
+            if (result.Error()) return result;
+            if (source.PrimaryTextElement() != null && !source.PrimaryTextElement()->IsEmpty())
+            {
+                result = source.PrimaryTextElement()->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            if (source.SecondaryTextElement() != null && !source.SecondaryTextElement()->IsEmpty())
+            {
+                result = source.SecondaryTextElement()->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            if (target.PrimaryTextElement() != null && !target.PrimaryTextElement()->IsEmpty())
+            {
+                result = target.PrimaryTextElement()->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            if (target.SecondaryTextElement() != null && !target.SecondaryTextElement()->IsEmpty())
+            {
+                result = target.SecondaryTextElement()->Draw(graphics);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> DrawSelected(Graphics& graphics)
+        {
+            return rep->DrawSelected(graphics);
         }
         [nodiscard]
         public Result<bool> SetContainerElementIndeces(const Map<ContainerElement*, int>& containerElementIndexMap)
@@ -129,6 +256,10 @@ namespace spring
         {
             return cardinality;
         }
+        public void SetCardinality(Cardinality cardinality_)
+        {
+            cardinality = cardinality_;
+        }
         public void RemoveContainer(ContainerElement* container)
         {
             if (source.Element() == container)
@@ -150,20 +281,152 @@ namespace spring
         public override System.Xml.Element* ToXml() const
         {
             System.Xml.Element* xmlElement = System.Xml.MakeElement("relationshipElement");
-            // todo
+            xmlElement->AppendChild(BoundsXmlElement());
+            xmlElement->SetAttribute("rkind", RelationshipKindStr(rkind));
+            xmlElement->SetAttribute("cardinality", CardinalityStr(cardinality));
+            xmlElement->AppendChild(source.ToXml("source"));
+            xmlElement->AppendChild(target.ToXml("target"));
+            for (const auto& sourceEndPoint : sourceEndPoints)
+            {
+                xmlElement->AppendChild(sourceEndPoint.ToXml("sourceEndPoint"));
+            }
+            for (const auto& point : routingPoints)
+            {
+                System.Xml.Element* routingPointElement = System.Xml.MakeElement("routingPoint");
+                routingPointElement->SetAttribute("x", System.ToString(point.x));
+                routingPointElement->SetAttribute("y", System.ToString(point.y));
+                xmlElement->AppendChild(routingPointElement);
+            }
             return xmlElement;
         }
         public override Result<bool> FromXml(System.Xml.Element* xmlElement)
         {
             Result<bool> result = base->FromXml(xmlElement);
             if (result.Error()) return result;
-            // todo
+            auto rkindResult = ParseRelationshipKindStr(xmlElement->GetAttribute("rkind"));
+            if (rkindResult.Error()) return Result<bool>(ErrorId(rkindResult.GetErrorId()));
+            rkind = rkindResult.Value();
+            SetRep();
+            auto cardinalityResult = ParseCardinalityStr(xmlElement->GetAttribute("cardinality"));
+            if (cardinalityResult.Error()) return Result<bool>(ErrorId(cardinalityResult.GetErrorId()));
+            cardinality = cardinalityResult.Value();
+            Result<UniquePtr<System.XPath.NodeSet>> sourceNodeSetResult = System.XPath.EvaluateToNodeSet("source", xmlElement);
+            if (sourceNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(sourceNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* sourceNodeSet = sourceNodeSetResult.Value().Get();
+            if (sourceNodeSet->Count() == 1)
+            {
+                System.Xml.Node* node = sourceNodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* sourceXmlElement = cast<System.Xml.Element*>(node);
+                    Result<bool> sourceResult = source.FromXml(sourceXmlElement);
+                    if (sourceResult.Error()) return Result<bool>(ErrorId(sourceResult.GetErrorId()));
+                }
+                else
+                {
+                    int errorId = AllocateError("single XML element 'source' expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("single XML element 'source' expected in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+            Result<UniquePtr<System.XPath.NodeSet>> targetNodeSetResult = System.XPath.EvaluateToNodeSet("target", xmlElement);
+            if (targetNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(targetNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* targetNodeSet = targetNodeSetResult.Value().Get();
+            if (targetNodeSet->Count() == 1)
+            {
+                System.Xml.Node* node = targetNodeSet->GetNode(0);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* targetXmlElement = cast<System.Xml.Element*>(node);
+                    Result<bool> targetResult = target.FromXml(targetXmlElement);
+                    if (targetResult.Error()) return Result<bool>(ErrorId(targetResult.GetErrorId()));
+                }
+                else
+                {
+                    int errorId = AllocateError("single XML element 'target' expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                int errorId = AllocateError("single XML element 'target' expected in '" + xmlElement->Name() + "'");
+                return Result<bool>(ErrorId(errorId));
+            }
+            Result<UniquePtr<System.XPath.NodeSet>> sourceEndPointNodeSetResult = System.XPath.EvaluateToNodeSet("sourceEndPoint", xmlElement);
+            if (sourceEndPointNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(sourceEndPointNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* sourceEndPointNodeSet = sourceEndPointNodeSetResult.Value().Get();
+            for (int i = 0; i < sourceEndPointNodeSet->Count(); ++i)
+            {
+                System.Xml.Node* node = sourceEndPointNodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* sourceEndPointXmlElement = cast<System.Xml.Element*>(node);
+                    EndPoint endPoint;
+                    Result<bool> sourceEndPointResult = endPoint.FromXml(sourceEndPointXmlElement);
+                    if (sourceEndPointResult.Error()) return Result<bool>(ErrorId(sourceEndPointResult.GetErrorId()));
+                    sourceEndPoints.Add(endPoint);
+                }
+                else
+                {
+                    int errorId = AllocateError("XML elements 'sourceEndPoint' expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            Result<UniquePtr<System.XPath.NodeSet>> routingPointNodeSetResult = System.XPath.EvaluateToNodeSet("routingPoint", xmlElement);
+            if (routingPointNodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(routingPointNodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* routingPointNodeSet = routingPointNodeSetResult.Value().Get();
+            for (int i = 0; i < routingPointNodeSet->Count(); ++i)
+            {
+                System.Xml.Node* node = routingPointNodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* routingPointXmlElement = cast<System.Xml.Element*>(node);
+                    PointF routingPoint;
+                    string xStr = routingPointXmlElement->GetAttribute("x");
+                    auto result = System.ParseFloat(xStr);
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    routingPoint.x = result.Value();
+                    string yStr = routingPointXmlElement->GetAttribute("y");
+                    result = System.ParseFloat(yStr);
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    routingPoint.y = result.Value();
+                    routingPoints.Add(routingPoint);
+                }
+                else
+                {
+                    int errorId = AllocateError("XML elements 'routingPoint' expected in '" + xmlElement->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
             return Result<bool>(true);
         }
         public override DiagramElement* Clone() const
         {
             RelationshipElement* clone = new RelationshipElement(rkind);
-            // todo
+            clone->SetName(Name());
+            clone->SetBounds(Bounds());
+            clone->cardinality = cardinality;
+            clone->source = source;
+            clone->target = target;
+            clone->sourceEndPoints = sourceEndPoints;
+            clone->routingPoints = routingPoints;
+            clone->rep.Reset(rep->Clone(clone));
             return clone;
         }
         public inline const EndPoint& Source() const
@@ -287,6 +550,81 @@ namespace spring
             bounds.size.h = maxPoint.y - minPoint.y;
             return bounds;
         }
+        public override void Offset(float dx, float dy)
+        {
+            source.Point().Offset(dx, dy);
+            for (auto& sourceEndPoint : sourceEndPoints)
+            {
+                sourceEndPoint.Point().Offset(dx, dy);
+            }
+            for (auto& routingPoint : routingPoints)
+            {
+                routingPoint.Offset(dx, dy);
+            }
+            target.Point().Offset(dx, dy);
+        }
+        public override bool IntersectsWith(const RectF& rect) const
+        {
+            if (rect.Contains(source.Point())) return true;
+            for (const auto& sourceEndPoint : sourceEndPoints)
+            {
+                if (rect.Contains(sourceEndPoint.Point())) return true;
+            }
+            if (rect.Contains(target.Point())) return true;
+            for (const auto& routingPoint : routingPoints)
+            {
+                if (rect.Contains(routingPoint)) return true;
+            }
+            return Bounds().IntersectsWith(rect);
+        }
+        public override bool Contains(const PointF& location) const
+        {
+            return rep->Contains(location);
+        }
+        public override void SetCompoundLocation(const CompoundLocation& compoundLocation)
+        {
+            SetLocation(compoundLocation.Location());
+            routingPoints = compoundLocation.Points();
+            if (IsReference() && cardinality == Cardinality.zero)
+            {
+                target.SetPoint(compoundLocation.TargetPoint());
+            }
+        }
+        public override CompoundLocation GetCompoundLocation() const
+        {
+            CompoundLocation compoundLocation(Location(), routingPoints);
+            if (IsReference() && cardinality == Cardinality.zero)
+            {
+                compoundLocation.SetTargetPoint(target.Point());
+            }
+            return compoundLocation;
+        }
+        [nodiscard]
+        public override Result<bool> AddActions(Diagram* diagram, int elementIndex, ContextMenu* contextMenu) const
+        {
+            auto result = base->AddActions(diagram, elementIndex, contextMenu);
+            if (result.Error()) return result;
+            if (!IsCombinedInheritance())
+            {
+                MenuItem* straightenMenuItem = new MenuItem("Straighten");
+                result = contextMenu->AddMenuItemAction(straightenMenuItem, new StraightenRelationshipElementAction(diagram, elementIndex, straightenMenuItem));
+                if (result.Error()) return result;
+                MenuItem* setCenterConnectorsMenuItem = new MenuItem("Set center connectors");
+                result = contextMenu->AddMenuItemAction(setCenterConnectorsMenuItem,
+                    new SetCenterConnectorsRelationshipElementAction(diagram, elementIndex, setCenterConnectorsMenuItem));
+                if (result.Error()) return result;
+            }
+            else
+            {
+                MenuItem* splitMenuItem = new MenuItem("Split");
+                result = contextMenu->AddMenuItemAction(splitMenuItem, new SplitRelationshipElementAction(diagram, elementIndex, splitMenuItem));
+                if (result.Error()) return result;
+            }
+            MenuItem* propertiesMenuItem = new MenuItem("Properties...");
+            result = contextMenu->AddMenuItemAction(propertiesMenuItem, new RelationshipElementPropertiesAction(diagram, elementIndex, propertiesMenuItem));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         public void RemoveFromElements()
         {
             if (source.Element() != null)
@@ -303,6 +641,284 @@ namespace spring
             if (target.Element() != null)
             {
                 target.Element()->RemoveRelationship(this);
+            }
+        }
+        public int MainDirection() const
+        {
+            if (sourceEndPoints.IsEmpty())
+            {
+                if (source.Element() != null && target.Element() != null)
+                {
+                    return spring.MainDirection(source.Element(), target.Element());
+                }
+            }
+            else if (target.Element() != null)
+            {
+                Map<int, int> directionMap;
+                for (const auto& sourceEndPoint : sourceEndPoints)
+                {
+                    if (sourceEndPoint.Element() != null)
+                    {
+                        Line line(target.Element()->Center(), sourceEndPoint.Element()->Center());
+                        Vector v = line.ToVector();
+                        if (v.x > 0) ++directionMap[180];
+                        if (v.y > 0) ++directionMap[270];
+                        if (v.x < 0) ++directionMap[0];
+                        if (v.y < 0) ++directionMap[90];
+                    }
+                }
+                List<Pair<int, int>> directionList;
+                for (const auto& p : directionMap)
+                {
+                    directionList.Add(p);
+                }
+                Sort(directionList, DecreasingOrderBySecond());
+                Pair<int, int> max = directionList.Front();
+                return max.first;
+            }
+            return 0;
+        }
+        public void Straighten()
+        {
+            if (!routingPoints.IsEmpty())
+            {
+                PointF prev = source.Point();
+                for (PointF& next : routingPoints)
+                {
+                    Line line(prev, next);
+                    Vector v(line.ToVector());
+                    switch (MainDirection(v))
+                    {
+                        case 0:
+                        case 180:
+                        {
+                            next.y = prev.y;
+                            break;
+                        }
+                        case 90:
+                        case 270:
+                        {
+                            next.x = prev.x;
+                            break;
+                        }
+                    }
+                    prev = next;
+                }
+                PointF& last = routingPoints.Back();
+                Line line(last, target.Point());
+                Vector v(line.ToVector());
+                switch (MainDirection(v))
+                {
+                    case 0:
+                    case 180:
+                    {
+                        last.y = target.Point().y;
+                        break;
+                    }
+                    case 90:
+                    case 270:
+                    {
+                        last.x = target.Point().x;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Line line(source.Point(), target.Point());
+                Vector v(line.ToVector());
+                switch (MainDirection(v))
+                {
+                    case 0:
+                    case 180:
+                    {
+                        if (target.Element() != null)
+                        {
+                            float dy = source.Point().y - target.Point().y;
+                            target.Element()->Offset(0.0f, dy);
+                        }
+                        else
+                        {
+                            target.Point().y = source.Point().y;
+                        }
+                        break;
+                    }
+                    case 90:
+                    case 270:
+                    {
+                        if (target.Element() != null)
+                        {
+                            float dx = source.Point().x - target.Point().x;
+                            target.Element()->Offset(dx, 0.0f);
+                        }
+                        else
+                        {
+                            target.Point().x = source.Point().x;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        public void SetCenterConnectors()
+        {
+            Line line(source.Point(), target.Point());
+            Vector v = line.ToVector();
+            ConnectorPointKind primarySourcePoint = ConnectorPointKind.none;
+            ConnectorPointKind primaryTargetPoint = ConnectorPointKind.none;
+            switch (MainDirection(v))
+            {
+                case 0:
+                {
+                    primarySourcePoint = ConnectorPointKind.right;
+                    primaryTargetPoint = ConnectorPointKind.left;
+                    break;
+                }
+                case 180:
+                {
+                    primarySourcePoint = ConnectorPointKind.left;
+                    primaryTargetPoint = ConnectorPointKind.right;
+                    break;
+                }
+                case 90:
+                {
+                    primarySourcePoint = ConnectorPointKind.bottom;
+                    primaryTargetPoint = ConnectorPointKind.top;
+                    break;
+                }
+                case 270:
+                {
+                    primarySourcePoint = ConnectorPointKind.top;
+                    primaryTargetPoint = ConnectorPointKind.bottom;
+                    break;
+                }
+            }
+            source.SetConnector(Connector(primarySourcePoint, ConnectorPointKind.center));
+            target.SetConnector(Connector(primaryTargetPoint, ConnectorPointKind.center));
+        }
+        [nodiscard]
+        public Result<bool> Resolve(Diagram* diagram)
+        {
+            auto result = source.Resolve(diagram);
+            if (result.Error()) return result;
+            if (source.Element() != null)
+            {
+                source.Element()->AddRelationship(this);
+            }
+            for (auto& sourceEndPoint : sourceEndPoints)
+            {
+                result = sourceEndPoint.Resolve(diagram);
+                if (result.Error()) return result;
+                if (sourceEndPoint.Element() != null)
+                {
+                    sourceEndPoint.Element()->AddRelationship(this);
+                }
+            }
+            result = target.Resolve(diagram);
+            if (result.Error()) return result;
+            if (target.Element() != null)
+            {
+                target.Element()->AddRelationship(this);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> MapIndeces(const Map<int, int>& indexMap)
+        {
+            auto result = source.MapIndex(indexMap);
+            if (result.Error()) return result;
+            for (EndPoint& sourceEndPoint : sourceEndPoints)
+            {
+                result = sourceEndPoint.MapIndex(indexMap);
+                if (result.Error()) return result;
+            }
+            result = target.MapIndex(indexMap);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public void Calculate(const Connector& connector, DiagramElement* element, float w, int index, int count)
+        {
+            EndPoint endPoint = element->GetEndPoint(connector);
+            if (source.Element() == element && source.GetConnector() == connector)
+            {
+                source.SetPoint(connector.Calculate(endPoint.Point(), w, index, count));
+            }
+            if (target.Element() == element && target.GetConnector() == connector)
+            {
+                target.SetPoint(connector.Calculate(endPoint.Point(), w, index, count));
+            }
+        }
+        private void SetRep()
+        {
+            switch (rkind)
+            {
+                case RelationshipKind.inheritance:
+                {
+                    rep.Reset(new Inheritance(this));
+                    break;
+                }
+                case RelationshipKind.combinedInheritance:
+                {
+                    rep.Reset(new CombinedInheritance(this));
+                    break;
+                }
+                case RelationshipKind.composition:
+                {
+                    rep.Reset(new Composition(this));
+                    break;
+                }
+                case RelationshipKind.aggregation:
+                {
+                    rep.Reset(new Aggregation(this));
+                    break;
+                }
+                case RelationshipKind.reference:
+                {
+                    rep.Reset(new Reference(this));
+                    break;
+                }
+                case RelationshipKind.createInstance:
+                {
+                    rep.Reset(new CreateInstance(this));
+                    break;
+                }
+                case RelationshipKind.attachNote:
+                {
+                    rep.Reset(new AttachNote(this));
+                    break;
+                }
+            }
+        }
+        private void SetTextLocations()
+        {
+            if (IsCombinedInheritance()) return;
+            if (source.PrimaryTextElement() != null && !source.PrimaryTextElement()->IsEmpty() ||
+                source.SecondaryTextElement() != null && !source.SecondaryTextElement()->IsEmpty())
+            {
+                Line startLine = StartLine();
+                float symbolWidth = rep->SourceSymbolWidth();
+                if (source.PrimaryTextElement() != null && !source.PrimaryTextElement()->IsEmpty())
+                {
+                    source.PrimaryTextElement()->SetSourceLocation(startLine, symbolWidth);
+                }
+                if (source.SecondaryTextElement() != null && !source.SecondaryTextElement()->IsEmpty())
+                {
+                    source.SecondaryTextElement()->SetSourceLocation(startLine, symbolWidth);
+                }
+            }
+            if (target.PrimaryTextElement() != null && !target.PrimaryTextElement()->IsEmpty() ||
+                target.SecondaryTextElement() != null && !target.SecondaryTextElement()->IsEmpty())
+            {
+                Line endLine = EndLine();
+                float symbolWidth = rep->TargetSymbolWidth();
+                if (target.PrimaryTextElement() != null && !target.PrimaryTextElement()->IsEmpty())
+                {
+                    target.PrimaryTextElement()->SetTargetLocation(endLine, symbolWidth);
+                }
+                if (target.SecondaryTextElement() != null && !target.SecondaryTextElement()->IsEmpty())
+                {
+                    target.SecondaryTextElement()->SetTargetLocation(endLine, symbolWidth);
+                }
             }
         }
         private RelationshipKind rkind;

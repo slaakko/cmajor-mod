@@ -159,6 +159,15 @@ namespace spring
                 rep.Reset(new ConcreteClassElement(this));
             }
         }
+        public void ResetAbstractOperations()
+        {
+            int n = operations.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                OperationElement* operation = operations.Get(i);
+                operation->ResetAbstract();
+            }
+        }
         public inline const string& Keyword() const
         {
             return keyword;
@@ -295,6 +304,15 @@ namespace spring
                 OperationElement* operation = operations.Get(i);
                 operation->SetRelationshipPoint();
             }
+        }
+        protected override Result<bool> AddActions(Diagram* diagram, int elementIndex, ContextMenu* contextMenu)
+        {
+            auto result = base->AddActions(diagram, elementIndex, contextMenu);
+            if (result.Error()) return result;
+            MenuItem* propertiesMenuItem = new MenuItem("Properties...");
+            result = contextMenu->AddMenuItemAction(propertiesMenuItem, new ClassElementPropertiesAction(diagram, elementIndex, propertiesMenuItem));
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private bool isAbstract;
         private string keyword;

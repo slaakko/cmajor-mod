@@ -20,7 +20,8 @@ namespace spring
             return relationshipElement;
         }
         public abstract RelationshipElementRep* Clone(RelationshipElement* relationshipElement) const;
-        public abstract void Draw(Graphics& graphics);
+        [nodiscard]
+        public abstract Result<bool> Draw(Graphics& graphics);
         [nodiscard]
         public virtual Result<bool> DrawSelected(Graphics& graphics)
         {

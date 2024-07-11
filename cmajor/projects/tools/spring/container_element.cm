@@ -59,6 +59,168 @@ namespace spring
         {
             return 0.0f;
         }
+        public override ContainerElement* GetContainerElement() const
+        {
+            return this;
+        }
+        public override void AddRelationship(RelationshipElement* relationship_)
+        {
+            if (Find(relationships.Begin(), relationships.End(), relationship_) == relationships.End())
+            {
+                relationships.Add(relationship_);
+            }
+        }
+        public override void RemoveRelationship(RelationshipElement* relationship_)
+        {
+            relationships.Remove(relationship_);
+        }
+        public override EndPoint GetEndPoint(const Connector& connector) const
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float w = relationshipLayoutElement->LineArrowWidth();
+            PointF loc = Location();
+            SizeF size = Size();
+            switch (connector.ToInt())
+            {
+                case Connector.TopLeft():
+                {
+                    return EndPoint(this, Connector(Connector.TopLeft()), PointF(loc.x + w, loc.y));
+                }
+                case Connector.TopCenter():
+                {
+                    return EndPoint(this, Connector(Connector.TopCenter()), PointF(loc.x + size.w / 2, loc.y));
+                }
+                case Connector.TopRight():
+                {
+                    return EndPoint(this, Connector(Connector.TopRight()), PointF(loc.x + size.w - w, loc.y));
+                }
+                case Connector.RightTop():
+                {
+                    return EndPoint(this, Connector(Connector.RightTop()), PointF(loc.x + size.w, loc.y + w));
+                }
+                case Connector.RightCenter():
+                {
+                    return EndPoint(this, Connector(Connector.RightCenter()), PointF(loc.x + size.w, loc.y + size.h / 2));
+                }
+                case Connector.RightBottom():
+                {
+                    return EndPoint(this, Connector(Connector.RightBottom()), PointF(loc.x + size.w, loc.y + size.h - w));
+                }
+                case Connector.BottomRight():
+                {
+                    return EndPoint(this, Connector(Connector.BottomRight()), PointF(loc.x + size.w - w, loc.y + size.h));
+                }
+                case Connector.BottomCenter():
+                {
+                    return EndPoint(this, Connector(Connector.BottomCenter()), PointF(loc.x + size.w / 2, loc.y + size.h));
+                }
+                case Connector.BottomLeft():
+                {
+                    return EndPoint(this, Connector(Connector.BottomLeft()), PointF(loc.x + w, loc.y + size.h));
+                }
+                case Connector.LeftBottom():
+                {
+                    return EndPoint(this, Connector(Connector.LeftBottom()), PointF(loc.x, loc.y + size.h - w));
+                }
+                case Connector.LeftCenter():
+                {
+                    return EndPoint(this, Connector(Connector.LeftCenter()), PointF(loc.x, loc.y + size.h / 2));
+                }
+                case Connector.LeftTop():
+                {
+                    return EndPoint(this, Connector(Connector.LeftTop()), PointF(loc.x, loc.y + w));
+                }
+            }
+            return EndPoint();
+        }
+        public override List<EndPoint> GetEndPoints(EndPointKind endPointKind, Tool* tool) const
+        {
+            List<EndPoint> endPoints;
+            endPoints.Add(GetEndPoint(Connector(Connector.TopLeft())));
+            endPoints.Add(GetEndPoint(Connector(Connector.TopCenter())));
+            endPoints.Add(GetEndPoint(Connector(Connector.TopRight())));
+            endPoints.Add(GetEndPoint(Connector(Connector.RightTop())));
+            endPoints.Add(GetEndPoint(Connector(Connector.RightCenter())));
+            endPoints.Add(GetEndPoint(Connector(Connector.RightBottom())));
+            endPoints.Add(GetEndPoint(Connector(Connector.BottomRight())));
+            endPoints.Add(GetEndPoint(Connector(Connector.BottomCenter())));
+            endPoints.Add(GetEndPoint(Connector(Connector.BottomLeft())));
+            endPoints.Add(GetEndPoint(Connector(Connector.LeftBottom())));
+            endPoints.Add(GetEndPoint(Connector(Connector.LeftCenter())));
+            endPoints.Add(GetEndPoint(Connector(Connector.LeftTop())));
+            return endPoints;
+        }
+        public override Result<bool> Measure(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            float w = relationshipLayoutElement->LineWidth();
+            MeasureRelationships(Connector(Connector.TopLeft()), w);
+            MeasureRelationships(Connector(Connector.TopCenter()), w);
+            MeasureRelationships(Connector(Connector.TopRight()), w);
+            MeasureRelationships(Connector(Connector.BottomLeft()), w);
+            MeasureRelationships(Connector(Connector.BottomCenter()), w);
+            MeasureRelationships(Connector(Connector.BottomRight()), w);
+            MeasureRelationships(Connector(Connector.LeftTop()), w);
+            MeasureRelationships(Connector(Connector.LeftCenter()), w);
+            MeasureRelationships(Connector(Connector.LeftBottom()), w);
+            MeasureRelationships(Connector(Connector.RightTop()), w);
+            MeasureRelationships(Connector(Connector.RightCenter()), w);
+            MeasureRelationships(Connector(Connector.RightBottom()), w);
+            return Result<bool>(true);
+        }
+        private void MeasureRelationships(const Connector& connector, float w)
+        {
+            List<RelationshipElement*> pickedRelationships = PickRelationships(connector);
+            int n = cast<int>(pickedRelationships.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                RelationshipElement* relationship = pickedRelationships[i];
+                relationship->Calculate(connector, this, w, i, n);
+            }
+        }
+        private List<RelationshipElement*> PickRelationships(const Connector& connector) const
+        {
+            List<RelationshipElement*> pickedRelationships;
+            for (RelationshipElement* relationship : relationships)
+            {
+                if (relationship->Source().Element() == this)
+                {
+                    if (relationship->Source().GetConnector() == connector)
+                    {
+                        if (Find(pickedRelationships.Begin(), pickedRelationships.End(), relationship) == pickedRelationships.End())
+                        {
+                            pickedRelationships.Add(relationship);
+                        }
+                    }
+                }
+                for (const EndPoint& sourceEndPoint : relationship->SourceEndPoints())
+                {
+                    if (sourceEndPoint.Element() == this)
+                    {
+                        if (sourceEndPoint.GetConnector() == connector)
+                        {
+                            if (Find(pickedRelationships.Begin(), pickedRelationships.End(), relationship) == pickedRelationships.End())
+                            {
+                                pickedRelationships.Add(relationship);
+                            }
+                        }
+                    }
+                }
+                if (relationship->Target().Element() == this)
+                {
+                    if (relationship->Target().GetConnector() == connector)
+                    {
+                        if (Find(pickedRelationships.Begin(), pickedRelationships.End(), relationship) == pickedRelationships.End())
+                        {
+                            pickedRelationships.Add(relationship);
+                        }
+                    }
+                }
+            }
+            return pickedRelationships;
+        }
         private List<RelationshipElement*> relationships;
     }
 }

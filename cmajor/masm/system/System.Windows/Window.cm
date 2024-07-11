@@ -279,7 +279,8 @@ namespace System.Windows
                 case WM_CLOSE:
                 {
                     bool cancelClose = false;
-                    OnWindowClosing(cancelClose);
+                    auto result = OnWindowClosing(cancelClose);
+                    if (result.Error()) return result;
                     if (cancelClose)
                     {
                         message.result = 0;
@@ -314,9 +315,10 @@ namespace System.Windows
         {
             return PostMessage(Handle(), WM_CLOSE, 0u, 0);
         }
-        protected virtual void OnWindowClosing(bool& cancelClose)
+        protected virtual Result<bool> OnWindowClosing(bool& cancelClose)
         {
             windowClosingEvent.Fire(cancelClose);
+            return Result<bool>(true);
         }
         protected virtual void OnWindowClosed(bool& processed)
         {

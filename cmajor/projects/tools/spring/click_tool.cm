@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 using System.Windows;
 
 namespace spring
@@ -62,12 +63,75 @@ namespace spring
         public ObjectTool() : base(ToolKind.objectTool)
         {
         }
+        [nodiscard]
+        public override Result<bool> Initialize(Diagram* diagram)
+        {
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            diagram->ResetOperation();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseNormalLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            UniquePtr<ObjectElement> objectElement(new ObjectElement("anObject"));
+            objectElement->SetLocation(args.location);
+            UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(diagram));
+            addElementsCommand->AddIndex(diagram->NextIndex());
+            result = diagram->AddElement(objectElement.Release());
+            if (result.Error()) return result;
+            result = diagram->SetChanged();
+            if (result.Error()) return result;
+            result = diagram->Invalidate();
+            if (result.Error()) return result;
+            result = diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+            if (result.Error()) return result;
+            result = Tools.Instance().SetCurrent(Tools.Instance().GetSelectTool());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
     }
 
     class NoteTool : ClickTool
     {
         public NoteTool() : base(ToolKind.noteTool)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Initialize(Diagram* diagram)
+        {
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            diagram->ResetOperation();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> MouseNormalLeftClick(MouseArgs& args)
+        {
+            Diagram* diagram = GetDiagram();
+            auto result = diagram->ResetSelection();
+            if (result.Error()) return result;
+            UniquePtr<NoteElement> noteElement(new NoteElement());
+            List<string> lines;
+            lines.Add("note...");
+            noteElement->SetLines(Rvalue(lines));
+            noteElement->SetLocation(args.location);
+            UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(diagram));
+            addElementsCommand->AddIndex(diagram->NextIndex());
+            result = diagram->AddElement(noteElement.Release());
+            if (result.Error()) return result;
+            result = diagram->SetChanged();
+            if (result.Error()) return result;
+            result = diagram->Invalidate();
+            if (result.Error()) return result;
+            result = Tools.Instance().SetCurrent(Tools.Instance().GetSelectTool());
+            if (result.Error()) return result;
+            result = diagram->GetCommandList().AddCommand(addElementsCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
     }
 }

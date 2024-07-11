@@ -809,8 +809,8 @@ namespace System.Windows.API
     }
 
     [nodiscard]
-    public Result<bool> GetSaveFileName(void* windowHandle, const List<Pair<string, string>>& descriptionFilterPairs, const string& initialDirectory, const string& defaultFilePath,
-        const string& defaultExtension, uint flags, string& currentDirectory, string& filePath)
+    public Result<bool> GetSaveFileName(void* windowHandle, const List<Pair<string, string>>& descriptionFilterPairs, const string& initialDirectory,
+        const string& defaultFilePath, const string& defaultExtension, uint flags, string& currentDirectory, string& filePath)
     {
         long filterBufferSize = 0;
         for (const Pair<string, string>& descriptionFilterPair : descriptionFilterPairs)

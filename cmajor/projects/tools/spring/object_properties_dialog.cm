@@ -1,0 +1,185 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class ObjectPropertiesDialog : Window
+    {
+        public ObjectPropertiesDialog(
+            ObjectElement* objectElement_,
+            Map<DiagramElement*, DiagramElement*>& cloneMap_,
+            Map<DiagramElement*, DiagramElement*>& reverseCloneMap_) :
+            base(WindowCreateParams(
+                WindowControlCreateParams(
+                    ControlCreateParams().Defaults(), "System.Windows.Window", "Object Properties", Point.Default(),
+                        Size(ScreenMetrics.Get().MMToHorizontalPixels(100), ScreenMetrics.Get().MMToVerticalPixels(70))))),
+            objectElement(objectElement_),
+            cloneMap(cloneMap_),
+            reverseCloneMap(reverseCloneMap_)
+        {
+            Size s = GetSize();
+            int column1Width = ScreenMetrics.Get().MMToHorizontalPixels(20);
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            int textBoxPadding = DefaultControlPadding();
+            int borderWidth = DefaultSingleBorderWidth();
+            int column2Width = ScreenMetrics.Get().MMToHorizontalPixels(30);
+            
+            int line1Top = defaultControlSpacing.h + textBoxPadding + borderWidth;
+            Point objectNameLabelLoc(defaultControlSpacing.w, line1Top);
+            UniquePtr<Label> objectNameLabel(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Object name:").
+                SetLocation(objectNameLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            
+            int line2Top = objectNameLabelLoc.y + objectNameLabel->GetSize().h + defaultControlSpacing.h + textBoxPadding + borderWidth;
+            auto result = AddChild(objectNameLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point objectNameTextBoxLoc(defaultControlSpacing.w * 2 + column1Width, line1Top);
+            Size objectNameTextBoxSize(column2Width - 2 * (textBoxPadding + borderWidth), defaultTextBoxSize.h + 4);
+            Rect objectNameRect(objectNameTextBoxLoc, objectNameTextBoxSize);
+            Rect paddedObjectNameRect = objectNameRect;
+            paddedObjectNameRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<TextBox> objectNameTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(objectElement->Name()).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            objectNameTextBox = objectNameTextBoxPtr.Get();
+            objectNameTextBox->SelectAll();
+            objectNameTextBox->TextChangedEvent().AddHandler(ObjectNameChanged);
+            UniquePtr<Control> paddedObjectNameTextBox(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                objectNameTextBoxPtr.Get()).Defaults(), objectNameTextBoxPtr.Release())));
+            Rect borderedPaddedObjectNameTextBoxRect = paddedObjectNameRect;
+            borderedPaddedObjectNameTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedObjectNameTextBox(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(borderedPaddedObjectNameTextBoxRect.location).
+                SetSize(Size(borderedPaddedObjectNameTextBoxRect.size.w, borderedPaddedObjectNameTextBoxRect.size.h)).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedObjectNameTextBox.Get()).Defaults(), paddedObjectNameTextBox.Release())));
+            Control* borderedPaddedObjectNameTextBoxControl = borderedPaddedObjectNameTextBox.Get();
+            result = AddChild(borderedPaddedObjectNameTextBox.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point attributesLabelLoc(defaultControlSpacing.w, line2Top);
+            UniquePtr<Label> attributesLabel(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Attributes:").
+                SetLocation(attributesLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Size attributesLabelSize = attributesLabel->GetSize();
+            result = AddChild(attributesLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point editAttributesButtonLoc(defaultControlSpacing.w + column1Width + defaultControlSpacing.w -
+                (textBoxPadding + borderWidth), line2Top - (textBoxPadding + borderWidth));
+            Size editAttributesButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            UniquePtr<Button> editAttributesButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(editAttributesButtonLoc).
+                SetSize(editAttributesButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            editAttributesButton = editAttributesButtonPtr.Get();
+            editAttributesButton->ClickEvent().AddHandler(EditAttributes);
+            result = AddChild(editAttributesButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            
+            int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+            int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+            
+            UniquePtr<Button> cancelButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Cancel").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), false)));
+            cancelButton = cancelButtonPtr.Get();
+            cancelButton->SetDialogResult(DialogResult.cancel);
+            x = x - defaultButtonSize.w - defaultControlSpacing.w;
+
+            UniquePtr<Button> okButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("OK").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), true)));
+            okButton = okButtonPtr.Get();
+            okButton->SetDialogResult(DialogResult.ok);
+            if (objectElement->Name().IsEmpty())
+            {
+                okButton->Disable();
+                editAttributesButton->Disable();
+            }
+            result = AddChild(okButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = AddChild(cancelButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetDefaultButton(okButton);
+            SetCancelButton(cancelButton);
+            objectNameTextBox->SetFocus();
+        }
+        protected override Result<bool> OnGotFocus()
+        {
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
+            objectNameTextBox->SetFocus();
+            return Result<bool>(true);
+        }
+        private void ObjectNameChanged()
+        {
+            if (objectNameTextBox->Text().IsEmpty())
+            {
+                okButton->Disable();
+                editAttributesButton->Disable();
+            }
+            else
+            {
+                okButton->Enable();
+                editAttributesButton->Enable();
+                objectElement->SetName(objectNameTextBox->Text());
+            }
+        }
+        private void EditAttributes(ClickEventArgs& args)
+        {
+            Map<DiagramElement*, DiagramElement*> prevCloneMap = cloneMap;
+            Map<DiagramElement*, DiagramElement*> prevReverseCloneMap = reverseCloneMap;
+            auto result = ExecuteEditAttributesDialog(objectElement->Attributes(), cloneMap, reverseCloneMap, objectElement, *this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            bool ok = result.Value();
+            if (!ok)
+            {
+                cloneMap = prevCloneMap;
+                reverseCloneMap = prevReverseCloneMap;
+            }
+        }
+        private ObjectElement* objectElement;
+        private Map<DiagramElement*, DiagramElement*>& cloneMap;
+        private Map<DiagramElement*, DiagramElement*>& reverseCloneMap;
+        private TextBox* objectNameTextBox;
+        private Button* cancelButton;
+        private Button* okButton;
+        private Button* editAttributesButton;
+    }
+}
+

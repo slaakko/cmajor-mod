@@ -56,7 +56,89 @@ namespace spring
             }
             auto result = operation->Draw(graphics);
             if (result.Error()) return result;
-            selection->Draw(graphics);
+            result = selection->Draw(graphics);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Save(const string& filePath)
+        {
+            Result<StreamWriter> writerResult = System.IO.File.CreateText(filePath);
+            if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+            StreamWriter& writer = writerResult.Value();
+            System.Text.CodeFormatter formatter(writer);
+            formatter.SetIndentSize(1);
+            System.Xml.Document diagramDoc;
+            System.Xml.Element* diagramElement = System.Xml.MakeElement("diagram");
+            List<ContainerElement*> containerElements;
+            List<RelationshipElement*> relationshipElements;
+            Map<ContainerElement*, int> containerElementIndexMap;
+            for (const auto& element : elements)
+            {
+                if (element->IsContainerElement())
+                {
+                    containerElements.Add(cast<ContainerElement*>(element.Get()));
+                }
+                else if (element->IsRelationshipElement())
+                {
+                    relationshipElements.Add(cast<RelationshipElement*>(element.Get()));
+                }
+            }
+            int nc = cast<int>(containerElements.Count());
+            for (int i = 0; i < nc; ++i)
+            {
+                ContainerElement* containerElement = containerElements[i];
+                containerElementIndexMap[containerElement] = i;
+                diagramElement->AppendChild(containerElement->ToXml());
+            }
+            int nr = cast<int>(relationshipElements.Count());
+            for (int i = 0; i < nr; ++i)
+            {
+                RelationshipElement* relationshipElement = relationshipElements[i];
+                auto result = relationshipElement->SetContainerElementIndeces(containerElementIndexMap);
+                if (result.Error()) return result;
+                diagramElement->AppendChild(relationshipElement->ToXml());
+            }
+            diagramDoc.AppendChild(diagramElement);
+            auto result = diagramDoc.Write(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Load(const string& filePath)
+        {
+            List<RelationshipElement*> relationshipElements;
+            Result<UniquePtr<System.Xml.Document>> diagramDocResult = System.Xml.ParseXmlDocument(filePath, fileMap);
+            if (diagramDocResult.Error()) return Result<bool>(ErrorId(diagramDocResult.GetErrorId()));
+            System.Xml.Document* diagramDoc = diagramDocResult.Value().Get();
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("/diagram/*", diagramDoc);
+            if (nodeSetResult.Error()) return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            for (int i = 0; i < n; ++i)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    Result<DiagramElement*> diagramElementResult = CreateDiagramElement(element->Name());
+                    if (diagramElementResult.Error()) return Result<bool>(ErrorId(diagramElementResult.GetErrorId()));
+                    DiagramElement* diagramElement = diagramElementResult.Value();
+                    auto result = diagramElement->FromXml(element);
+                    if (result.Error()) return result;
+                    if (diagramElement->IsRelationshipElement())
+                    {
+                        relationshipElements.Add(cast<RelationshipElement*>(diagramElement));
+                    }
+                    result = AddElement(diagramElement);
+                    if (result.Error()) return result;
+                }
+            }
+            for (RelationshipElement* relationshipElement : relationshipElements)
+            {
+                auto result = relationshipElement->Resolve(this);
+                if (result.Error()) return result;
+            }
             return Result<bool>(true);
         }
         public inline bool Changed() const
@@ -269,6 +351,61 @@ namespace spring
             return Result<bool>(true);
         }
         [nodiscard]
+        public Result<bool> Paste(const ustring& clipboardData)
+        {
+            auto utf8Result = ToUtf8(clipboardData);
+            if (utf8Result.Error()) return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+            const string& cbdata = utf8Result.Value();
+            UniquePtr<AddElementsCommand> addElementsCommand(new AddElementsCommand(this));
+            Result<UniquePtr<System.Xml.Document>> diagramElementDocResult(System.Xml.ParseXmlDocumentContent(cbdata, "clipboard", fileMap));
+            if (diagramElementDocResult.Error()) return Result<bool>(ErrorId(diagramElementDocResult.GetErrorId()));
+            System.Xml.Document* diagramElementDoc = diagramElementDocResult.Value().Get();
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("/spring.diagram.elements/*", diagramElementDoc);
+            if (nodeSetResult.Error()) return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            UniquePtr<ElementSelection> elementSelection(new ElementSelection(this));
+            List<RelationshipElement*> relationshipElements;
+            Map<int, int> indexMap;
+            int n = cast<int>(nodeSet->Count());
+            for (int i = 0; i < n; ++i)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* xmlElement = cast<System.Xml.Element*>(node);
+                    string xmlElementName = xmlElement->Name();
+                    auto diagramElementResult = CreateDiagramElement(xmlElementName);
+                    if (diagramElementResult.Error()) return Result<bool>(ErrorId(diagramElementResult.GetErrorId()));
+                    UniquePtr<DiagramElement> diagramElement(diagramElementResult.Value());
+                    auto result = diagramElement->FromXml(xmlElement);
+                    if (result.Error()) return result;
+                    int index = cast<int>(elements.Count());
+                    if (diagramElement->IsRelationshipElement())
+                    {
+                        relationshipElements.Add(cast<RelationshipElement*>(diagramElement.Get()));
+                    }
+                    result = AddElement(diagramElement.Release());
+                    if (result.Error()) return result;
+                    indexMap[i] = index;
+                    result = elementSelection->Add(index);
+                    if (result.Error()) return result;
+                    addElementsCommand->AddIndex(index);
+                }
+            }
+            for (RelationshipElement* relationship : relationshipElements)
+            {
+                auto result = relationship->MapIndeces(indexMap);
+                if (result.Error()) return result;
+                result = relationship->Resolve(this);
+                if (result.Error()) return result;
+            }
+            auto result = SetSelection(elementSelection.Release());
+            if (result.Error()) return result;
+            result = commandList.AddCommand(addElementsCommand.Release());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
         public Result<bool> AdvanceOperation(MouseArgs& mouseArgs)
         {
             if (operation->IsEmptyOperation()) return Result<bool>(true);
@@ -447,6 +584,37 @@ namespace spring
         {
             return elements.Release(index);
         }
+        public void Offset(float dx, float dy)
+        {
+            for (auto& element : elements)
+            {
+                element->Offset(dx, dy);
+            }
+        }
+        public RectF CalculateBounds() const
+        {
+            List<DiagramElement*> diagramElements;
+            for (const auto& element : elements)
+            {
+                diagramElements.Add(element.Get());
+            }
+            return spring.CalculateBounds(diagramElements);
+        }
+        [nodiscard]
+        public Result<bool> SaveImage(const string& fileName, const PaddingF& margins, ImageFormat format)
+        {
+            List<DiagramElement*> diagramElements;
+            for (const auto& element : elements)
+            {
+                diagramElements.Add(element.Get());
+            }
+            Result<Graphics> graphicsResult = Graphics.FromWindowHandle(canvas->Handle());
+            if (graphicsResult.Error()) return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            Graphics* graphics = &graphicsResult.Value();
+            auto result = spring.SaveImage(fileName, margins, canvas, diagramElements, graphics, format);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         public inline bool Error() const
         {
             return errorId != 0;
@@ -463,6 +631,7 @@ namespace spring
         {
             errorId = 0;
         }
+        private static System.Lex.FileMap fileMap;
         private DiagramFlags flags;
         private Canvas* canvas;
         private CommandList commandList;

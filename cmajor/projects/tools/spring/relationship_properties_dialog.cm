@@ -1,0 +1,801 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class RelationshipPropertiesDialog : Window
+    {
+        public RelationshipPropertiesDialog(RelationshipElement* relationshipElement_) :
+            base(WindowCreateParams(
+                WindowControlCreateParams(
+                    ControlCreateParams().Defaults(), "System.Windows.Window", "Relationship Properties", Point.Default(),
+                        Size(ScreenMetrics.Get().MMToHorizontalPixels(120), ScreenMetrics.Get().MMToVerticalPixels(100))))),
+            relationshipElement(relationshipElement_)
+        {
+            int column1Width = ScreenMetrics.Get().MMToHorizontalPixels(20);
+            int column2Width = ScreenMetrics.Get().MMToHorizontalPixels(30);
+            Size s = GetSize();
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            Size relationGroupBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(40), ScreenMetrics.Get().MMToVerticalPixels(30));
+
+            UniquePtr<GroupBox> relationGroupBoxPtr(new GroupBox(GroupBoxCreateParams(
+                GroupBoxControlCreateParams(
+                    ControlCreateParams().Defaults().SetText("Relation").SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetSize(relationGroupBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left))))));
+            relationGroupBox = relationGroupBoxPtr.Get();
+            auto result = AddChild(relationGroupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            auto locationResult = relationGroupBox->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point relationGroupBoxLoc = locationResult.Value();
+
+            UniquePtr<RadioButton> inheritanceRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Inheritance").
+                SetLocation(Point(relationGroupBoxLoc.x, relationGroupBoxLoc.y + defaultControlSpacing.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            inheritanceRadioButton = inheritanceRadioButtonPtr.Get();
+            inheritanceRadioButton->CheckedChangedEvent().AddHandler(RelationRadioButtonStateChanged);
+            result = relationGroupBox->AddChild(inheritanceRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = inheritanceRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point inheritanceRadioButtonLoc = locationResult.Value();
+            Size inheritanceRadioButtonSize = inheritanceRadioButton->GetSize();
+
+            UniquePtr<RadioButton> compositionRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Composition").
+                SetLocation(Point(inheritanceRadioButtonLoc.x, inheritanceRadioButtonLoc.y + inheritanceRadioButtonSize.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            compositionRadioButton = compositionRadioButtonPtr.Get();
+            compositionRadioButton->CheckedChangedEvent().AddHandler(RelationRadioButtonStateChanged);
+            result = relationGroupBox->AddChild(compositionRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = compositionRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point compositionRadioButtonLoc = locationResult.Value();
+            Size compositionRadioButtonSize = compositionRadioButton->GetSize();
+
+            UniquePtr<RadioButton> aggregationRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Aggregation").
+                SetLocation(Point(compositionRadioButtonLoc.x, compositionRadioButtonLoc.y + compositionRadioButtonSize.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            aggregationRadioButton = aggregationRadioButtonPtr.Get();
+            aggregationRadioButton->CheckedChangedEvent().AddHandler(RelationRadioButtonStateChanged);
+            result = relationGroupBox->AddChild(aggregationRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = aggregationRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point aggregationRadioButtonLoc = locationResult.Value();
+            Size aggregationRadioButtonSize = aggregationRadioButton->GetSize();
+
+            UniquePtr<RadioButton> referenceRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Reference").
+                SetLocation(Point(aggregationRadioButtonLoc.x, aggregationRadioButtonLoc.y + aggregationRadioButtonSize.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            referenceRadioButton = referenceRadioButtonPtr.Get();
+            referenceRadioButton->CheckedChangedEvent().AddHandler(RelationRadioButtonStateChanged);
+            result = relationGroupBox->AddChild(referenceRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = referenceRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point referenceRadioButtonLoc = locationResult.Value();
+            Size referenceRadioButtonSize = referenceRadioButton->GetSize();
+
+            UniquePtr<RadioButton> createInstanceRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Create Instance").
+                SetLocation(Point(referenceRadioButtonLoc.x, referenceRadioButtonLoc.y + referenceRadioButtonSize.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            createInstanceRadioButton = createInstanceRadioButtonPtr.Get();
+            createInstanceRadioButton->CheckedChangedEvent().AddHandler(RelationRadioButtonStateChanged);
+            result = relationGroupBox->AddChild(createInstanceRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = createInstanceRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point createInstanceRadioButtonLoc = locationResult.Value();
+            Size createInstanceRadioButtonSize = createInstanceRadioButton->GetSize();
+
+            UniquePtr<RadioButton> attachNoteRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Attach Note").
+                SetLocation(Point(createInstanceRadioButtonLoc.x, createInstanceRadioButtonLoc.y + createInstanceRadioButtonSize.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            attachNoteRadioButton = attachNoteRadioButtonPtr.Get();
+            attachNoteRadioButton->CheckedChangedEvent().AddHandler(RelationRadioButtonStateChanged);
+            result = relationGroupBox->AddChild(attachNoteRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = attachNoteRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point attachNoteRadioButtonLoc = locationResult.Value();
+            Size attachNoteRadioButtonSize = attachNoteRadioButton->GetSize();
+
+            Size cardinalityGroupBoxSize(ScreenMetrics.Get().MMToHorizontalPixels(40), ScreenMetrics.Get().MMToVerticalPixels(30));
+
+            UniquePtr<GroupBox> cardinalityGroupBoxPtr(new GroupBox(GroupBoxCreateParams(
+                GroupBoxControlCreateParams(
+                    ControlCreateParams().Defaults().SetText("Cardinality").SetLocation(
+                    Point(defaultControlSpacing.w + relationGroupBoxLoc.x + relationGroupBoxSize.w, defaultControlSpacing.h)).
+                    SetSize(cardinalityGroupBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left))))));
+            cardinalityGroupBox = cardinalityGroupBoxPtr.Get();
+            result = AddChild(cardinalityGroupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = cardinalityGroupBox->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point cardinalityGroupBoxLoc = locationResult.Value();
+
+            UniquePtr<RadioButton> zeroRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Zero").
+                SetLocation(Point(defaultControlSpacing.w, cardinalityGroupBoxLoc.y + defaultControlSpacing.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            zeroRadioButton = zeroRadioButtonPtr.Get();
+            zeroRadioButton->CheckedChangedEvent().AddHandler(CardinalityRadioButtonStateChanged);
+            result = cardinalityGroupBox->AddChild(zeroRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = zeroRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point zeroRadioButtonLoc = locationResult.Value();
+            Size zeroRadioButtonSize = zeroRadioButton->GetSize();
+
+            UniquePtr<RadioButton> oneRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("One").
+                SetLocation(Point(defaultControlSpacing.w, zeroRadioButtonLoc.y + zeroRadioButtonSize.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            oneRadioButton = oneRadioButtonPtr.Get();
+            oneRadioButton->CheckedChangedEvent().AddHandler(CardinalityRadioButtonStateChanged);
+            result = cardinalityGroupBox->AddChild(oneRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = oneRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point oneRadioButtonLoc = locationResult.Value();
+            Size oneRadioButtonSize = oneRadioButton->GetSize();
+
+            UniquePtr<RadioButton> manyRadioButtonPtr(new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Many").
+                SetLocation(Point(defaultControlSpacing.w, oneRadioButtonLoc.y + oneRadioButtonSize.h)).
+                SetAnchors(cast<Anchors>(Anchors.left | Anchors.top))))));
+            manyRadioButton = manyRadioButtonPtr.Get();
+            manyRadioButton->CheckedChangedEvent().AddHandler(CardinalityRadioButtonStateChanged);
+            result = cardinalityGroupBox->AddChild(manyRadioButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = manyRadioButton->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point manyRadioButtonLoc = locationResult.Value();
+            Size manyRadioButtonSize = oneRadioButton->GetSize();
+
+            Size sourceGroupBoxSize(ScreenMetrics.Get().MMToHorizontalPixels(40), ScreenMetrics.Get().MMToVerticalPixels(30));
+
+            UniquePtr<GroupBox> sourceGroupBoxPtr(new GroupBox(GroupBoxCreateParams(
+                GroupBoxControlCreateParams(
+                    ControlCreateParams().Defaults().SetText("Source").SetLocation(
+                    Point(defaultControlSpacing.w, defaultControlSpacing.h + cardinalityGroupBoxLoc.y + cardinalityGroupBoxSize.h)).
+                    SetSize(sourceGroupBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left))))));
+            sourceGroupBox = sourceGroupBoxPtr.Get();
+            result = AddChild(sourceGroupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = sourceGroupBox->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point sourceGroupBoxLoc = locationResult.Value();
+
+            Point primarySourceTextLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h);
+            UniquePtr<Label> primarySourceTextLabel(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Primary text:").
+                SetLocation(primarySourceTextLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = sourceGroupBox->AddChild(primarySourceTextLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size primarySourceTextButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            Point primarySourceTextButtonLoc(sourceGroupBoxSize.w - primarySourceTextButtonSize.w - defaultControlSpacing.w, 3 * defaultControlSpacing.h - 4);
+            UniquePtr<Button> primarySourceTextButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(primarySourceTextButtonLoc).
+                SetSize(primarySourceTextButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            primarySourceTextButton = primarySourceTextButtonPtr.Get();
+            primarySourceTextButton->ClickEvent().AddHandler(EditPrimarySourceText);
+            result = sourceGroupBox->AddChild(primarySourceTextButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point secondarySourceTextLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h + defaultButtonSize.h);
+            UniquePtr<Label> secondarySourceTextLabel(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Secondary text:").
+                SetLocation(secondarySourceTextLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = sourceGroupBox->AddChild(secondarySourceTextLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size secondarySourceTextButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            Point secondarySourceTextButtonLoc(sourceGroupBoxSize.w - secondarySourceTextButtonSize.w - defaultControlSpacing.w, 3 * defaultControlSpacing.h - 4 +
+                defaultButtonSize.h);
+            UniquePtr<Button> secondarySourceTextButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(secondarySourceTextButtonLoc).
+                SetSize(secondarySourceTextButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            secondarySourceTextButton = secondarySourceTextButtonPtr.Get();
+            secondarySourceTextButton->ClickEvent().AddHandler(EditSecondarySourceText);
+            result = sourceGroupBox->AddChild(secondarySourceTextButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point sourceConnectorLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h + 2 * defaultButtonSize.h);
+            UniquePtr<Label> sourceConnectorLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Connector:").
+                SetLocation(sourceConnectorLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* sourceConnectorLabel = sourceConnectorLabelPtr.Get();
+            result = sourceGroupBox->AddChild(sourceConnectorLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point sourceConnectorTextLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h + 3 * defaultButtonSize.h);
+            UniquePtr<Label> sourceConnectorTextLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().
+                SetText(relationshipElement->Source().GetConnector().ToString()).
+                SetLocation(sourceConnectorTextLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            sourceConnectorTextLabel = sourceConnectorTextLabelPtr.Get();
+            result = sourceGroupBox->AddChild(sourceConnectorTextLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Size sourceConnectorButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            Point sourceConnectorButtonLoc(sourceGroupBoxSize.w - secondarySourceTextButtonSize.w - defaultControlSpacing.w,
+                3 * defaultControlSpacing.h - 4 + 2 * defaultButtonSize.h);
+            UniquePtr<Button> sourceConnectorButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(sourceConnectorButtonLoc).
+                    SetSize(sourceConnectorButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            sourceConnectorButton = sourceConnectorButtonPtr.Get();
+            sourceConnectorButton->ClickEvent().AddHandler(EditSourceConnector);
+            result = sourceGroupBox->AddChild(sourceConnectorButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Size targetGroupBoxSize(ScreenMetrics.Get().MMToHorizontalPixels(40), ScreenMetrics.Get().MMToVerticalPixels(30));
+
+            UniquePtr<GroupBox> targetGroupBoxPtr(new GroupBox(GroupBoxCreateParams(
+                GroupBoxControlCreateParams(
+                    ControlCreateParams().Defaults().SetText("Target").SetLocation(
+                    Point(defaultControlSpacing.w + relationGroupBoxLoc.x + relationGroupBoxSize.w,
+                        defaultControlSpacing.h + cardinalityGroupBoxLoc.y + cardinalityGroupBoxSize.h)).
+                    SetSize(targetGroupBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left))))));
+            targetGroupBox = targetGroupBoxPtr.Get();
+            result = AddChild(targetGroupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            locationResult = targetGroupBox->Location();
+            if (locationResult.Error())
+            {
+                SetErrorId(locationResult.GetErrorId());
+                return;
+            }
+            Point targetGroupBoxLoc = locationResult.Value();
+
+            Point primaryTargetTextLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h);
+            UniquePtr<Label> primaryTargetTextLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Primary text:").
+                SetLocation(primaryTargetTextLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* primaryTargetTextLabel = primaryTargetTextLabelPtr.Get();
+            result = targetGroupBox->AddChild(primaryTargetTextLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size primaryTargetTextButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            Point primaryTargetTextButtonLoc(targetGroupBoxSize.w - primaryTargetTextButtonSize.w - defaultControlSpacing.w, 3 * defaultControlSpacing.h - 4);
+            UniquePtr<Button> primaryTargetTextButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(primaryTargetTextButtonLoc).
+                SetSize(primaryTargetTextButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            primaryTargetTextButton = primaryTargetTextButtonPtr.Get();
+            primaryTargetTextButton->ClickEvent().AddHandler(EditPrimaryTargetText);
+            result = sourceGroupBox->AddChild(primaryTargetTextButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point secondaryTargetTextLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h + defaultButtonSize.h);
+            UniquePtr<Label> secondaryTargetTextLabel(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Secondary text:").
+                SetLocation(secondaryTargetTextLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = sourceGroupBox->AddChild(secondaryTargetTextLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size secondaryTargetTextButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            Point secondaryTargetTextButtonLoc(targetGroupBoxSize.w - secondaryTargetTextButtonSize.w - defaultControlSpacing.w, 3 * defaultControlSpacing.h - 4 +
+                defaultButtonSize.h);
+            UniquePtr<Button> secondaryTargetTextButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(secondaryTargetTextButtonLoc).
+                SetSize(secondaryTargetTextButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            secondaryTargetTextButton = secondaryTargetTextButtonPtr.Get();
+            secondaryTargetTextButton->ClickEvent().AddHandler(EditSecondaryTargetText);
+            result = targetGroupBox->AddChild(secondaryTargetTextButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point targetConnectorLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h + 2 * defaultButtonSize.h);
+            UniquePtr<Label> targetConnectorLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Connector:").
+                SetLocation(targetConnectorLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Label* targetConnectorLabel = targetConnectorLabelPtr.Get();
+            result = targetGroupBox->AddChild(targetConnectorLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point targetConnectorTextLabelLoc(defaultControlSpacing.w, 3 * defaultControlSpacing.h + 3 * defaultButtonSize.h);
+            UniquePtr<Label> targetConnectorTextLabelPtr(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().
+                SetText(relationshipElement->Target().GetConnector().ToString()).
+                SetLocation(targetConnectorTextLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            targetConnectorTextLabel = targetConnectorTextLabelPtr.Get();
+            result = targetGroupBox->AddChild(targetConnectorTextLabelPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Size targetConnectorButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            Point targetConnectorButtonLoc(targetGroupBoxSize.w - secondaryTargetTextButtonSize.w - defaultControlSpacing.w,
+                3 * defaultControlSpacing.h - 4 + 2 * defaultButtonSize.h);
+            UniquePtr<Button> targetConnectorButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(targetConnectorButtonLoc).
+                    SetSize(targetConnectorButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            targetConnectorButton = targetConnectorButtonPtr.Get();
+            targetConnectorButton->ClickEvent().AddHandler(EditTargetConnector);
+            result = sourceGroupBox->AddChild(targetConnectorButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+    
+            int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+            int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+            UniquePtr<Button> cancelButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Cancel").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), false)));
+            cancelButton = cancelButtonPtr.Get();
+            cancelButton->SetDialogResult(DialogResult.cancel);
+            x = x - defaultButtonSize.w - defaultControlSpacing.w;
+
+            UniquePtr<Button> okButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("OK").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), true)));
+            okButton = okButtonPtr.Get();
+            okButton->SetDialogResult(DialogResult.ok);
+            result = AddChild(okButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = AddChild(cancelButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetDefaultButton(okButton);
+            SetCancelButton(cancelButton);
+            SetRelationRadioButton();
+            SetCardinalityRadioButton();
+            ready = true;
+            RelationRadioButtonStateChanged();
+        }
+        private void SetRelationRadioButton()
+        {
+            switch (relationshipElement->RKind())
+            {
+                case RelationshipKind.inheritance:
+                {
+                    relationGroupBox->SetCheckedRadioButton(inheritanceRadioButton);
+                    zeroRadioButton->Disable();
+                    break;
+                }
+                case RelationshipKind.composition:
+                {
+                    relationGroupBox->SetCheckedRadioButton(compositionRadioButton);
+                    zeroRadioButton->Disable();
+                    break;
+                }
+                case RelationshipKind.aggregation:
+                {
+                    relationGroupBox->SetCheckedRadioButton(aggregationRadioButton);
+                    zeroRadioButton->Disable();
+                    break;
+                }
+                case RelationshipKind.reference:
+                {
+                    relationGroupBox->SetCheckedRadioButton(referenceRadioButton);
+                    break;
+                }
+                case RelationshipKind.createInstance:
+                {
+                    relationGroupBox->SetCheckedRadioButton(createInstanceRadioButton);
+                    zeroRadioButton->Disable();
+                    break;
+                }
+                case RelationshipKind.attachNote:
+                {
+                    relationGroupBox->SetCheckedRadioButton(attachNoteRadioButton);
+                    zeroRadioButton->Disable();
+                    oneRadioButton->Disable();
+                    manyRadioButton->Disable();
+                    break;
+                }
+            }
+        }
+        private void SetCardinalityRadioButton()
+        {
+            switch (relationshipElement->GetCardinality())
+            {
+                case Cardinality.zero:
+                {
+                    cardinalityGroupBox->SetCheckedRadioButton(zeroRadioButton);
+                    break;
+                }
+                case Cardinality.one:
+                {
+                    cardinalityGroupBox->SetCheckedRadioButton(oneRadioButton);
+                    break;
+                }
+                case Cardinality.many:
+                {
+                    cardinalityGroupBox->SetCheckedRadioButton(manyRadioButton);
+                    break;
+                }
+            }
+        }
+        private void RelationRadioButtonStateChanged()
+        {
+            if (ready)
+            {
+                RadioButton* checkedRadioButton = relationGroupBox->CheckedRadioButton();
+                if (checkedRadioButton == inheritanceRadioButton)
+                {
+                    relationshipElement->SetRKind(RelationshipKind.inheritance);
+                }
+                else if (checkedRadioButton == compositionRadioButton)
+                {
+                    relationshipElement->SetRKind(RelationshipKind.composition);
+                }
+                else if (checkedRadioButton == aggregationRadioButton)
+                {
+                    relationshipElement->SetRKind(RelationshipKind.aggregation);
+                }
+                else if (checkedRadioButton == referenceRadioButton)
+                {
+                    relationshipElement->SetRKind(RelationshipKind.reference);
+                }
+                else if (checkedRadioButton == createInstanceRadioButton)
+                {
+                    relationshipElement->SetRKind(RelationshipKind.createInstance);
+                }
+                else if (checkedRadioButton == attachNoteRadioButton)
+                {
+                    relationshipElement->SetRKind(RelationshipKind.attachNote);
+                }
+                if (checkedRadioButton == inheritanceRadioButton)
+                {
+                    if (manyRadioButton->Checked())
+                    {
+                        oneRadioButton->SetChecked(true);
+                    }
+                    else if (zeroRadioButton->Checked())
+                    {
+                        oneRadioButton->SetChecked(true);
+                    }
+                    manyRadioButton->Disable();
+                    zeroRadioButton->Disable();
+                }
+                else if (checkedRadioButton == compositionRadioButton)
+                {
+                    if (zeroRadioButton->Checked())
+                    {
+                        oneRadioButton->SetChecked(true);
+                    }
+                    zeroRadioButton->Disable();
+                    manyRadioButton->Enable();
+                }
+                else if (checkedRadioButton == aggregationRadioButton)
+                {
+                    if (zeroRadioButton->Checked())
+                    {
+                        oneRadioButton->SetChecked(true);
+                    }
+                    zeroRadioButton->Disable();
+                    manyRadioButton->Enable();
+                }
+                else if (checkedRadioButton == referenceRadioButton)
+                {
+                    zeroRadioButton->Enable();
+                    manyRadioButton->Enable();
+                }
+                else if (checkedRadioButton == createInstanceRadioButton)
+                {
+                    if (zeroRadioButton->Checked())
+                    {
+                        oneRadioButton->SetChecked(true);
+                    }
+                    zeroRadioButton->Disable();
+                    manyRadioButton->Enable();
+                }
+                else if (checkedRadioButton == attachNoteRadioButton)
+                {
+                    zeroRadioButton->Disable();
+                    oneRadioButton->Disable();
+                    manyRadioButton->Disable();
+                }
+            }
+        }
+        private void CardinalityRadioButtonStateChanged()
+        {
+            if (ready)
+            {
+                RadioButton* checkedRadioButton = cardinalityGroupBox->CheckedRadioButton();
+                if (checkedRadioButton == zeroRadioButton)
+                {
+                    relationshipElement->SetCardinality(Cardinality.zero);
+                }
+                else if (checkedRadioButton == oneRadioButton)
+                {
+                    relationshipElement->SetCardinality(Cardinality.one);
+                }
+                else if (checkedRadioButton == manyRadioButton)
+                {
+                    relationshipElement->SetCardinality(Cardinality.many);
+                }
+            }
+        }
+        private void EditPrimarySourceText(ClickEventArgs& args)
+        {
+            TextElementPropertiesDialog dialog("Primary Source Text", relationshipElement->Source().PrimaryTextElement());
+            auto result = dialog.ShowDialog(*this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            DialogResult dialogResult = result.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                relationshipElement->Source().PrimaryTextElement()->SetLines(dialog.Lines());
+                relationshipElement->Source().PrimaryTextElement()->SetKeyword(dialog.Keyword());
+            }
+        }
+        private void EditSecondarySourceText(ClickEventArgs& args)
+        {
+            TextElementPropertiesDialog dialog("Secondary Source Text", relationshipElement->Source().SecondaryTextElement());
+            auto result = dialog.ShowDialog(*this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            DialogResult dialogResult = result.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                relationshipElement->Source().SecondaryTextElement()->SetLines(dialog.Lines());
+                relationshipElement->Source().SecondaryTextElement()->SetKeyword(dialog.Keyword());
+            }
+        }
+        private void EditSourceConnector(ClickEventArgs& args)
+        {
+            ConnectorDialog connectorDialog(relationshipElement->Source().GetConnector());
+            auto result = connectorDialog.ShowDialog(*this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            DialogResult dialogResult = result.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                relationshipElement->Source().SetConnector(connectorDialog.GetConnector());
+                auto setTextResult = sourceConnectorTextLabel->SetText(relationshipElement->Source().GetConnector().ToString());
+                if (setTextResult.Error())
+                {
+                    args.errorId = setTextResult.GetErrorId();
+                    return;
+                }
+            }
+        }
+        private void EditPrimaryTargetText(ClickEventArgs& args)
+        {
+            TextElementPropertiesDialog dialog("Primary Target Text", relationshipElement->Target().PrimaryTextElement());
+            auto result = dialog.ShowDialog(*this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            DialogResult dialogResult = result.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                relationshipElement->Target().PrimaryTextElement()->SetLines(dialog.Lines());
+                relationshipElement->Target().PrimaryTextElement()->SetKeyword(dialog.Keyword());
+            }
+        }
+        private void EditSecondaryTargetText(ClickEventArgs& args)
+        {
+            TextElementPropertiesDialog dialog("Secondary Target Text", relationshipElement->Target().SecondaryTextElement());
+            auto result = dialog.ShowDialog(*this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            DialogResult dialogResult = result.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                relationshipElement->Target().SecondaryTextElement()->SetLines(dialog.Lines());
+                relationshipElement->Target().SecondaryTextElement()->SetKeyword(dialog.Keyword());
+            }
+        }
+        private void EditTargetConnector(ClickEventArgs& args)
+        {
+            ConnectorDialog connectorDialog(relationshipElement->Target().GetConnector());
+            auto result = connectorDialog.ShowDialog(*this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            DialogResult dialogResult = result.Value();
+            if (dialogResult == DialogResult.ok)
+            {
+                relationshipElement->Target().SetConnector(connectorDialog.GetConnector());
+                auto setTextResult = targetConnectorTextLabel->SetText(relationshipElement->Target().GetConnector().ToString());
+                if (setTextResult.Error())
+                {
+                    args.errorId = setTextResult.GetErrorId();
+                    return;
+                }
+            }
+        }
+        private RelationshipElement* relationshipElement;
+        private bool ready;
+        private GroupBox* relationGroupBox;
+        private RadioButton* inheritanceRadioButton;
+        private RadioButton* compositionRadioButton;
+        private RadioButton* aggregationRadioButton;
+        private RadioButton* referenceRadioButton;
+        private RadioButton* createInstanceRadioButton;
+        private RadioButton* attachNoteRadioButton;
+        private GroupBox* cardinalityGroupBox;
+        private RadioButton* zeroRadioButton;
+        private RadioButton* oneRadioButton;
+        private RadioButton* manyRadioButton;
+        private GroupBox* sourceGroupBox;
+        private GroupBox* targetGroupBox;
+        private Button* primarySourceTextButton;
+        private Button* secondarySourceTextButton;
+        private Button* sourceConnectorButton;
+        private Button* primaryTargetTextButton;
+        private Button* secondaryTargetTextButton;
+        private Button* targetConnectorButton;
+        private Label* sourceConnectorTextLabel;
+        private Label* targetConnectorTextLabel;
+        private Button* okButton;
+        private Button* cancelButton;
+    }
+}
+

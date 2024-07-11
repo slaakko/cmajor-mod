@@ -1,0 +1,170 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class NoteElement : ContainerElement
+    {
+        public NoteElement() : base(DiagramElementKind.noteElement)
+        {
+        }
+        public override DiagramElement* Clone() const
+        {
+            NoteElement* clone = new NoteElement();
+            clone->SetBounds(Bounds());
+            clone->lines = lines;
+            return clone;
+        }
+        public override System.Xml.Element* ToXml() const
+        {
+            System.Xml.Element* xmlElement = System.Xml.MakeElement("noteElement");
+            SetName(xmlElement);
+            xmlElement->AppendChild(BoundsXmlElement());
+            for (const auto& line : lines)
+            {
+                System.Xml.Element* lineElement = System.Xml.MakeElement("line");
+                lineElement->SetAttribute("text", line);
+                xmlElement->AppendChild(lineElement);
+            }
+            return xmlElement;
+        }
+        [nodiscard]
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            auto result = base->FromXml(xmlElement);
+            if (result.Error()) return result;
+            auto lineNodeSetResult = System.XPath.EvaluateToNodeSet("line", xmlElement);
+            if (lineNodeSetResult.Error()) return Result<bool>(ErrorId(lineNodeSetResult.GetErrorId()));
+            System.XPath.NodeSet* lineNodeSet = lineNodeSetResult.Value().Get();
+            int n = lineNodeSet->Count();
+            for (int i = 0; i < n; ++i)
+            {
+                System.Xml.Node* node = lineNodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* lineElement = cast<System.Xml.Element*>(node);
+                    string textAttribute = lineElement->GetAttribute("text");
+                    lines.Add(textAttribute);
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Measure(Graphics& graphics)
+        {
+            auto result = base->Measure(graphics);
+            if (result.Error()) return result;
+            Layout* layout = Configuration.Instance().GetLayout();
+            NoteLayoutElement* noteLayoutElement = layout->GetNoteLayoutElement();
+            PaddingElement* paddingElement = noteLayoutElement->GetPaddingElement();
+            auto fontResult = noteLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            SizeF size;
+            System.Windows.Size cornerBitmapSize(11, 11);
+            SizeF cornerBitmapSizeF(ScreenMetrics.Get().HorizontalPixelsToMM(cornerBitmapSize.w), ScreenMetrics.Get().VerticalPixelsToMM(cornerBitmapSize.h));
+            size.h = paddingElement->GetPadding().Vertical();
+            lineSize = SizeF();
+            int n = cast<int>(lines.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                const string& line = lines[i];
+                auto measureResult = graphics.MeasureStringRectF(line, *font, PointF(0, 0), layout->GetStringFormat());
+                if (measureResult.Error()) return Result<bool>(ErrorId(measureResult.GetErrorId()));
+                RectF lineRect = measureResult.Value();
+                lineSize.h = Max(lineSize.h, lineRect.size.h);
+                size.w = Max(size.w, paddingElement->GetPadding().Horizontal() + lineRect.size.w + cornerBitmapSizeF.w);
+                size.h = size.h + lineSize.h;
+            }
+            SetSize(size);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            auto result = base->Draw(graphics);
+            if (result.Error()) return result;
+            Canvas* canvas = GetCanvas();
+            Layout* layout = Configuration.Instance().GetLayout();
+            NoteLayoutElement* noteLayoutElement = layout->GetNoteLayoutElement();
+            PaddingElement* paddingElement = noteLayoutElement->GetPaddingElement();
+            auto fontResult = noteLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            Brush* brush = noteLayoutElement->TextColorElement()->GetBrush();
+            auto penResult = noteLayoutElement->FramePen();
+            if (penResult.Error()) return Result<bool>(ErrorId(penResult.GetErrorId()));
+            Pen* framePen = penResult.Value();
+            PointF location = Location();
+            SizeF size = Size();
+            System.Windows.Size cornerBitmapSize(13, 13);
+            SizeF cornerBitmapSizeF(ScreenMetrics.Get().HorizontalPixelsToMM(cornerBitmapSize.w), ScreenMetrics.Get().VerticalPixelsToMM(cornerBitmapSize.h));
+            PointF cornerBitmapLocF(location.x + size.w - cornerBitmapSizeF.w, location.y);
+            Point cornerBitmapLoc(canvas->ToControlLocation(cornerBitmapLocF));
+            Bitmap* noteCornerBitmap = canvas->NoteCornerBitmap();
+            result = graphics.DrawLine(*framePen, location, PointF(location.x + size.w - cornerBitmapSizeF.w, location.y));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*framePen, PointF(location.x + size.w, location.y + cornerBitmapSizeF.h), PointF(location.x + size.w, location.y + size.h));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*framePen, location, PointF(location.x, location.y + size.h));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(*framePen, PointF(location.x, location.y + size.h), PointF(location.x + size.w, location.y + size.h));
+            if (result.Error()) return result;
+            PointF origin(location.x + paddingElement->GetPadding().left, location.y + paddingElement->GetPadding().top);
+            int n = cast<int>(lines.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                const string& line = lines[i];
+                result = graphics.DrawString(line, *font, origin, *brush);
+                if (result.Error()) return result;
+                origin.y = origin.y + lineSize.h;
+            }
+            RectF r(cornerBitmapLocF, cornerBitmapSizeF);
+            ImageAttributes imageAttributes;
+            System.Windows.Color transparentColor(0u, 128u, 128u);
+            result = imageAttributes.SetColorKey(transparentColor, transparentColor, ColorAdjustType.default_);
+            if (result.Error()) return result;
+            RectF s(PointF(0, 0), cornerBitmapSizeF);
+            auto smoothingModeResult = graphics.GetSmoothingMode();
+            if (smoothingModeResult.Error()) return Result<bool>(ErrorId(smoothingModeResult.GetErrorId()));
+            SmoothingMode prevSmoothingMode = smoothingModeResult.Value();
+            result = graphics.SetSmoothingMode(SmoothingMode.none);
+            if (result.Error()) return result;
+            result = graphics.DrawImage(*noteCornerBitmap, r, s, Unit.millimeter, imageAttributes);
+            if (result.Error()) return result;
+            result = graphics.SetSmoothingMode(prevSmoothingMode);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override List<RelationshipElement*> GetAllRelationships()
+        {
+            return Relationships();
+        }
+        public override Result<bool> AddActions(Diagram* diagram, int elementIndex, ContextMenu* contextMenu) const
+        {
+            auto result = base->AddActions(diagram, elementIndex, contextMenu);
+            if (result.Error()) return result;
+            MenuItem* propertiesMenuItem = new MenuItem("Properties...");
+            result = contextMenu->AddMenuItemAction(propertiesMenuItem, new NoteElementPropertiesAction(diagram, elementIndex, propertiesMenuItem));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline const List<string>& Lines() const
+        {
+            return lines;
+        }
+        public void SetLines(List<string>&& lines_)
+        {
+            lines = lines_;
+        }
+        private List<string> lines;
+        private SizeF lineSize;
+    }
+}
+

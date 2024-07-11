@@ -59,11 +59,111 @@ namespace spring
         private Diagram* diagram;
     }
 
+    class DecreasingOrderBySecond : Rel<Pair<int, int>>
+    {
+        public bool operator()(const Pair<int, int>& left, const Pair<int, int>& right) const
+        {
+            return left.second > right.second;
+        }
+    }
+
+    RectF CalculateBounds(const List<DiagramElement*>& diagramElements)
+    {
+        RectF bounds;
+        for (DiagramElement* diagramElement : diagramElements)
+        {
+            if (bounds.IsEmpty())
+            {
+                if (!diagramElement->Bounds().IsEmpty())
+                {
+                    bounds = diagramElement->Bounds();
+                }
+            }
+            else if (!diagramElement->Bounds().IsEmpty())
+            {
+                bounds = RectF.Union(bounds, diagramElement->Bounds());
+            }
+        }
+        return bounds;
+    }
+
     UniquePtr<RelationshipElement> CombineInheritanceRelationships(
         const List<RelationshipElement*>& inheritanceRelationships,
         List<RelationshipElement*>& sourceRelationships)
     {
-        return UniquePtr<RelationshipElement>();
+        UniquePtr<RelationshipElement> combinedRelationship;
+        Map<DiagramElement*, int> targetMap;
+        for (RelationshipElement* relationship : inheritanceRelationships)
+        {
+            if (relationship->Target().Element() != null)
+            {
+                ++targetMap[relationship->Target().Element()];
+            }
+        }
+        int maxCount = -1;
+        DiagramElement* maxTargetElement = null;
+        for (const Pair<DiagramElement*, int>& p : targetMap)
+        {
+            if (p.second > maxCount)
+            {
+                maxCount = p.second;
+                maxTargetElement = p.first;
+            }
+        }
+        if (maxTargetElement != null && maxTargetElement->IsClassElement())
+        {
+            EndPoint targetEndPoint;
+            List<EndPoint> sourceEndPoints;
+            ClassElement* targetClassElement = cast<ClassElement*>(maxTargetElement);
+            for (RelationshipElement* relationship : inheritanceRelationships)
+            {
+                if (relationship->Target().Element() != null)
+                {
+                    if (relationship->Target().Element() == targetClassElement)
+                    {
+                        if (targetEndPoint.Element() == null)
+                        {
+                            targetEndPoint = relationship->Target();
+                        }
+                        if (relationship->Source().Element() != null)
+                        {
+                            if (relationship->Source().Element()->IsClassElement())
+                            {
+                                sourceEndPoints.Add(relationship->Source());
+                                sourceRelationships.Add(relationship);
+                            }
+                        }
+                    }
+                }
+            }
+            if (sourceRelationships.Count() > 1)
+            {
+                combinedRelationship.Reset(new RelationshipElement(RelationshipKind.combinedInheritance));
+                combinedRelationship->SetCardinality(Cardinality.one);
+                combinedRelationship->SourceEndPoints() = sourceEndPoints;
+                combinedRelationship->Target() = targetEndPoint;
+            }
+        }
+        return combinedRelationship;
+    }
+
+    List<UniquePtr<RelationshipElement>> SplitCombinedInheritanceRelationship(RelationshipElement* combinedRelationship)
+    {
+        List<UniquePtr<RelationshipElement>> relationships;
+        EndPoint target = combinedRelationship->Target();
+        for (const EndPoint& source : combinedRelationship->SourceEndPoints())
+        {
+            UniquePtr<RelationshipElement> relationship(new RelationshipElement(RelationshipKind.inheritance));
+            relationship->Source() = source;
+            relationship->Target() = target;
+            relationships.Add(Rvalue(relationship));
+        }
+        combinedRelationship->RemoveFromElements();
+        for (const UniquePtr<RelationshipElement>& relationship : relationships)
+        {
+            relationship->AddToElements();
+        }
+        return relationships;
     }
 
     bool LineContains(const PointF& from, const PointF& to, const PointF& loc, float selectedLineWidth)
@@ -84,5 +184,109 @@ namespace spring
         }
         return false;
     }
+
+    int MainDirection(DiagramElement* source, DiagramElement* target)
+    {
+        PointF sourceCenter = source->Center();
+        PointF targetCenter = target->Center();
+        Line line(sourceCenter, targetCenter);
+        Vector v = line.ToVector();
+        return MainDirection(v);
+    }
+
+    [nodiscard]
+    Result<bool> DeleteRelationships(Diagram* diagram, const List<RelationshipElement*>& relationships)
+    {
+        if (relationships.IsEmpty()) return Result<bool>(true);
+        UniquePtr<DeleteElementsCommand> deleteElementsCommand(new DeleteElementsCommand(diagram));
+        List<int> indeces;
+        for (RelationshipElement* relationship : relationships)
+        {
+            int index = diagram->GetIndexOfElement(relationship);
+            if (index != -1)
+            {
+                if (Find(indeces.Begin(), indeces.End(), index) == indeces.End())
+                {
+                    indeces.Add(index);
+                }
+            }
+        }
+        Sort(indeces);
+        int m = cast<int>(indeces.Count());
+        for (int i = m - 1; i >= 0; --i)
+        {
+            int index = indeces[i];
+            UniquePtr<DiagramElement> element = diagram->RemoveElementByIndex(index);
+            if (element->IsRelationshipElement())
+            {
+                RelationshipElement* relationship = cast<RelationshipElement*>(element.Get());
+                relationship->RemoveFromElements();
+            }
+            deleteElementsCommand->AddDeletedElement(element.Release(), index);
+        }
+        auto result = diagram->GetCommandList().AddCommand(deleteElementsCommand.Release());
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    Result<bool> SaveImage(const string& imageFileName, const PaddingF& margins, Canvas* canvas, const List<DiagramElement*>& diagramElements, Graphics* graphics,
+        ImageFormat imageFormat)
+    {
+        Diagram diagram;
+        diagram.SetCanvas(canvas);
+        Map<DiagramElement*, DiagramElement*> cloneMap;
+        Map<DiagramElement*, DiagramElement*> reverseCloneMap;
+        List<RelationshipElement*> relationships;
+        for (DiagramElement* diagramElement : diagramElements)
+        {
+            DiagramElement* clone = diagramElement->Clone();
+            if (clone->IsContainerElement())
+            {
+                ContainerElement* containerElement = cast<ContainerElement*>(clone);
+                cloneMap[diagramElement] = clone;
+                containerElement->MapChildObjects(cast<ContainerElement*>(diagramElement), cloneMap, reverseCloneMap);
+            }
+            else if (clone->IsRelationshipElement())
+            {
+                relationships.Add(cast<RelationshipElement*>(clone));
+            }
+            auto result = diagram.AddElement(clone);
+            if (result.Error()) return result;
+        }
+        for (RelationshipElement* relationship : relationships)
+        {
+            bool orphan = false;
+            relationship->MapContainerElements(cloneMap, orphan);
+            relationship->AddToElements();
+        }
+        RectF bounds = diagram.CalculateBounds();
+        diagram.Offset(-bounds.location.x + margins.left, -bounds.location.y + margins.top);
+        bounds.size.w = bounds.size.w + margins.Horizontal();
+        bounds.size.h = bounds.size.h + margins.Vertical();
+        int width = ScreenMetrics.Get().MMToHorizontalPixels(bounds.size.w);
+        int height = ScreenMetrics.Get().MMToVerticalPixels(bounds.size.h);
+        Bitmap bitmap(width, height, *graphics);
+        auto graphicsResult = Graphics.FromImage(bitmap);
+        if (graphicsResult.Error()) return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+        Graphics& bitmapGraphics = graphicsResult.Value();
+        auto result = bitmapGraphics.SetTextRenderingHint(TextRenderingHint.clearTypeGridFit);
+        if (result.Error()) return result;
+        result = bitmapGraphics.SetSmoothingMode(SmoothingMode.highQuality);
+        if (result.Error()) return result;
+        result = bitmapGraphics.SetPageUnit(Unit.millimeter);
+        if (result.Error()) return result;
+        result = bitmapGraphics.Clear(System.Windows.Color.White());
+        if (result.Error()) return result;
+        result = diagram.Draw(bitmapGraphics);
+        if (result.Error()) return result;
+        Result<Uuid> clsidResult = GetEncoderClsId(GetImageFormat(imageFormat));
+        if (clsidResult.Error()) return Result<bool>(ErrorId(clsidResult.GetErrorId()));
+        Uuid clsid = clsidResult.Value();
+        result = bitmap.Save(imageFileName.Chars(), clsid);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
 }
 

@@ -1,0 +1,327 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class ClassPropertiesDialog : Window
+    {
+        public ClassPropertiesDialog(ClassElement* classElement_, Map<DiagramElement*, DiagramElement*>& cloneMap_, Map<DiagramElement*, DiagramElement*>& reverseCloneMap_) :
+            base(WindowCreateParams(
+                WindowControlCreateParams(
+                    ControlCreateParams().Defaults(), "System.Windows.Window", "Class Properties", Point.Default(),
+                        Size(ScreenMetrics.Get().MMToHorizontalPixels(100), ScreenMetrics.Get().MMToVerticalPixels(70))))),
+            classElement(classElement_),
+            cloneMap(cloneMap_),
+            reverseCloneMap(reverseCloneMap_)
+        {
+            Size s = GetSize();
+            int column1Width = ScreenMetrics.Get().MMToHorizontalPixels(20);
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size defaultLabelSize = ScreenMetrics.Get().DefaultLabelSize();
+            Size defaultTextBoxSize = ScreenMetrics.Get().DefaultTextBoxSize();
+            int column2Width = ScreenMetrics.Get().MMToHorizontalPixels(30);
+            int textBoxPadding = DefaultControlPadding();
+            int borderWidth = DefaultSingleBorderWidth();
+
+            int line1Top = defaultControlSpacing.h + textBoxPadding + borderWidth;
+            Point classNameLabelLoc(defaultControlSpacing.w, line1Top);
+            UniquePtr<Label> classNameLabel(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Class name:").
+                SetLocation(classNameLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            auto result = AddChild(classNameLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point classNameTextBoxLoc(defaultControlSpacing.w * 2 + column1Width, line1Top);
+            Size classNameTextBoxSize(column2Width - 2 * (textBoxPadding + borderWidth), defaultTextBoxSize.h + 4);
+            Rect classNameRect(classNameTextBoxLoc, classNameTextBoxSize);
+            Rect paddedClassNameRect = classNameRect;
+            paddedClassNameRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<TextBox> classNameTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(classElement->Name()).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            classNameTextBox = classNameTextBoxPtr.Get();
+            classNameTextBox->SelectAll();
+            classNameTextBox->TextChangedEvent().AddHandler(ClassNameChanged);
+            UniquePtr<Control> paddedClassNameTextBox(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                classNameTextBoxPtr.Get()).Defaults(), classNameTextBoxPtr.Release())));
+            Rect borderedPaddedClassNameTextBoxRect = paddedClassNameRect;
+            borderedPaddedClassNameTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedClassNameTextBox(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(borderedPaddedClassNameTextBoxRect.location).
+                SetSize(Size(borderedPaddedClassNameTextBoxRect.size.w, borderedPaddedClassNameTextBoxRect.size.h)).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedClassNameTextBox.Get()).Defaults(), paddedClassNameTextBox.Release())));
+            Control* borderedPaddedClassNameTextBoxControl = borderedPaddedClassNameTextBox.Get();
+            result = AddChild(borderedPaddedClassNameTextBox.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            auto locResult = borderedPaddedClassNameTextBoxControl->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            Point loc = locResult.Value();
+            int line2Top = loc.y + borderedPaddedClassNameTextBoxControl->GetSize().h + defaultControlSpacing.h;
+
+            Point keywordLabelLoc(defaultControlSpacing.w, line2Top);
+            UniquePtr<Label> keywordLabel(new Label(LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Keyword:").
+                SetLocation(keywordLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = AddChild(keywordLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point keywordTextBoxLoc(defaultControlSpacing.w * 2 + column1Width, line2Top);
+            Size keywordTextBoxSize(column2Width - 2 * (textBoxPadding + borderWidth), defaultTextBoxSize.h + 4);
+            Rect keywordRect(keywordTextBoxLoc, keywordTextBoxSize);
+            Rect paddedKeywordRect = keywordRect;
+            paddedKeywordRect.Inflate(textBoxPadding, textBoxPadding);
+            UniquePtr<TextBox> keywordTextBoxPtr(new TextBox(
+                TextBoxCreateParams(
+                    TextBoxControlCreateParams(ControlCreateParams().Defaults().SetText(classElement->Keyword()).
+                    SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults()));
+            keywordTextBox = keywordTextBoxPtr.Get();
+            keywordTextBox->TextChangedEvent().AddHandler(KeywordChanged);
+            UniquePtr<Control> paddedKeywordTextBoxPtr(new PaddedControl(
+                PaddedControlCreateParams(PaddedControlControlCreateParams(ControlCreateParams().Defaults().SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                keywordTextBoxPtr.Get()).Defaults(), keywordTextBoxPtr.Release())));
+            Rect borderedPaddedKeywordTextBoxRect = paddedKeywordRect;
+            borderedPaddedKeywordTextBoxRect.Inflate(borderWidth, borderWidth);
+            UniquePtr<Control> borderedPaddedKeywordTextBoxPtr(new BorderedControl(
+                BorderedControlCreateParams(BorderedControlControlCreateParams(ControlCreateParams().Defaults().SetLocation(borderedPaddedKeywordTextBoxRect.location).
+                SetSize(Size(borderedPaddedKeywordTextBoxRect.size.w, borderedPaddedKeywordTextBoxRect.size.h)).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)),
+                paddedKeywordTextBoxPtr.Get()).Defaults(), paddedKeywordTextBoxPtr.Release())));
+            Control* borderedPaddedKeywordTextBoxControl = borderedPaddedKeywordTextBoxPtr.Get();
+            result = AddChild(borderedPaddedKeywordTextBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            locResult = borderedPaddedKeywordTextBoxControl->Location();
+            if (locResult.Error())
+            {
+                SetErrorId(locResult.GetErrorId());
+                return;
+            }
+            loc = locResult.Value();
+            int line3Top = loc.y + borderedPaddedKeywordTextBoxControl->GetSize().h + defaultControlSpacing.h;
+
+            Point abstractCheckBoxLoc(borderedPaddedClassNameTextBoxRect.location.x, line3Top);
+            UniquePtr<CheckBox> abstractCheckBoxPtr(new CheckBox(CheckBoxCreateParams(CheckBoxControlCreateParams(ControlCreateParams().Defaults().
+                SetText("Abstract").SetLocation(abstractCheckBoxLoc).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))).Defaults().SetAutoSize(true)));
+            abstractCheckBox = abstractCheckBoxPtr.Get();
+            abstractCheckBox->SetChecked(classElement->IsAbstract());
+            abstractCheckBox->CheckedChangedEvent().AddHandler(AbstractChanged);
+            result = AddChild(abstractCheckBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Size abstractCheckBoxSize = abstractCheckBox->GetSize();
+
+            int line4Top = abstractCheckBoxLoc.y + abstractCheckBoxSize.h + defaultControlSpacing.h;
+
+            Point attributesLabelLoc(defaultControlSpacing.w, line4Top);
+            UniquePtr<Label> attributesLabel(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Attributes:").
+                SetLocation(attributesLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Size attributesLabelSize = attributesLabel->GetSize();
+            result = AddChild(attributesLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Point editAttributesButtonLoc(defaultControlSpacing.w + column1Width + defaultControlSpacing.w -
+                (textBoxPadding + borderWidth), line4Top - (textBoxPadding + borderWidth));
+            Size editAttributesButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            UniquePtr<Button> editAttributesButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(editAttributesButtonLoc).
+                SetSize(editAttributesButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            editAttributesButton = editAttributesButtonPtr.Get();
+            editAttributesButton->ClickEvent().AddHandler(EditAttributes);
+            result = AddChild(editAttributesButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            int line5Top = attributesLabelLoc.y + attributesLabelSize.h + defaultControlSpacing.h + textBoxPadding + borderWidth;
+
+            Point operationsLabelLoc(defaultControlSpacing.w, line5Top);
+            UniquePtr<Label> operationsLabel(new Label(
+                LabelControlCreateParams(ControlCreateParams().Defaults().SetText("Operations:").
+                SetLocation(operationsLabelLoc).SetSize(defaultLabelSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            Size operationsLabelSize = operationsLabel->GetSize();
+            result = AddChild(operationsLabel.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Point editOperationsButtonLoc(defaultControlSpacing.w + column1Width + defaultControlSpacing.w -
+                (textBoxPadding + borderWidth), line5Top - (textBoxPadding + borderWidth));
+            Size editOperationsButtonSize(ScreenMetrics.Get().MMToHorizontalPixels(8), defaultButtonSize.h);
+            UniquePtr<Button> editOperationsButtonPtr(new Button(
+                ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("...").SetLocation(editOperationsButtonLoc).
+                SetSize(editOperationsButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            editOperationsButton = editOperationsButtonPtr.Get();
+            editOperationsButton->ClickEvent().AddHandler(EditOperations);
+            result = AddChild(editOperationsButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+            int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+            UniquePtr<Button> cancelButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Cancel").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), false)));
+            cancelButton = cancelButtonPtr.Get();
+            cancelButton->SetDialogResult(DialogResult.cancel);
+            x = x - defaultButtonSize.w - defaultControlSpacing.w;
+
+            UniquePtr<Button> okButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("OK").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), true)));
+            okButton = okButtonPtr.Get();
+            okButton->SetDialogResult(DialogResult.ok);
+            if (classElement->Name().IsEmpty() && classElement->Keyword().IsEmpty())
+            {
+                okButton->Disable();
+                editOperationsButton->Disable();
+                editAttributesButton->Disable();
+            }
+            result = AddChild(okButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = AddChild(cancelButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetDefaultButton(okButton);
+            SetCancelButton(cancelButton);
+            classNameTextBox->SetFocus();
+        }
+        private ClassElement* classElement;
+        private Button* okButton;
+        private Button* cancelButton;
+        private Button* editAttributesButton;
+        private Button* editOperationsButton;
+        private TextBox* classNameTextBox;
+        private TextBox* keywordTextBox;
+        private CheckBox* abstractCheckBox;
+        private Map<DiagramElement*, DiagramElement*>& cloneMap;
+        private Map<DiagramElement*, DiagramElement*>& reverseCloneMap;
+        private void ClassNameChanged()
+        {
+            if (classNameTextBox->Text().IsEmpty() && keywordTextBox->Text().IsEmpty())
+            {
+                okButton->Disable();
+                editOperationsButton->Disable();
+                editAttributesButton->Disable();
+                classElement->SetName(string());
+            }
+            else
+            {
+                okButton->Enable();
+                editOperationsButton->Enable();
+                editAttributesButton->Enable();
+                classElement->SetName(classNameTextBox->Text());
+            }
+        }
+        private void KeywordChanged()
+        {
+            if (classNameTextBox->Text().IsEmpty() && keywordTextBox->Text().IsEmpty())
+            {
+                okButton->Disable();
+                editOperationsButton->Disable();
+                editAttributesButton->Disable();
+                classElement->SetKeyword(string());
+            }
+            else
+            {
+                okButton->Enable();
+                editOperationsButton->Enable();
+                editAttributesButton->Enable();
+                classElement->SetKeyword(keywordTextBox->Text());
+            }
+        }
+        private void AbstractChanged()
+        {
+            bool isAbstract = abstractCheckBox->Checked();
+            if (isAbstract)
+            {
+                classElement->SetAbstract();
+            }
+            else
+            {
+                classElement->ResetAbstract();
+            }
+        }
+        private void EditAttributes(ClickEventArgs& args)
+        {
+            Map<DiagramElement*, DiagramElement*> prevCloneMap = cloneMap;
+            Map<DiagramElement*, DiagramElement*> prevReverseCloneMap = reverseCloneMap;
+            auto result = ExecuteEditAttributesDialog(classElement->Attributes(), cloneMap, reverseCloneMap, classElement, *this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            bool value = result.Value();
+            if (!value)
+            {
+                cloneMap = prevCloneMap;
+                reverseCloneMap = prevReverseCloneMap;
+            }
+        }
+        private void EditOperations(ClickEventArgs& args)
+        {
+            Map<DiagramElement*, DiagramElement*> prevCloneMap = cloneMap;
+            Map<DiagramElement*, DiagramElement*> prevReverseCloneMap = reverseCloneMap;
+            bool mayHaveAbstractOperations = classElement->IsAbstract();
+            auto result = ExecuteEditOperationsDialog(classElement->Operations(), cloneMap, reverseCloneMap, classElement, mayHaveAbstractOperations, *this);
+            if (result.Error())
+            {
+                args.errorId = result.GetErrorId();
+                return;
+            }
+            bool value = result.Value();
+            if (!value)
+            {
+                cloneMap = prevCloneMap;
+                reverseCloneMap = prevReverseCloneMap;
+            }
+        }
+    }
+}
+

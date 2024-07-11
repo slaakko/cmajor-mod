@@ -14,10 +14,20 @@ namespace spring
         public OperationElement() :
             base(DiagramElementKind.operationElement),
             isAbstract(false),
-            rep(new ConcreteOperation()),
+            rep(new ConcreteOperation(this)),
             containerElement(null),
             relationship(null)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Measure(Graphics& graphics)
+        {
+            return rep->Measure(graphics);
+        }
+        [nodiscard]
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            return rep->Draw(graphics);
         }
         public override System.Xml.Element* ToXml() const
         {

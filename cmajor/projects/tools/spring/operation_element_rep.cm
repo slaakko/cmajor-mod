@@ -8,12 +8,56 @@ using System.Windows;
 
 namespace spring
 {
-    class OperationElementRep
+    abstract class OperationElementRep
     {
         public OperationElementRep(OperationElement* operationElement_) : operationElement(operationElement_)
         {
         }
         public default virtual ~OperationElementRep();
+        public abstract OperationLayoutElement* GetOperationLayout(Layout* layout) const;
+        [nodiscard]
+        public Result<bool> Measure(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            OperationLayoutElement* operationLayout = GetOperationLayout(layout);
+            RelationshipLayoutElement* relationshipLayoutElement = layout->GetRelationshipLayoutElement();
+            PaddingElement* paddingElement = relationshipLayoutElement->GetPaddingElement();
+            float relationshipSymbolRadius = relationshipLayoutElement->RelationshipSymbolRadius();
+            Result<Font*> fontResult = operationLayout->GetFontElement()->GetFont();
+            if (fontResult.Error())
+            {
+                return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            }
+            Font* font = fontResult.Value();
+            auto measureResult = graphics.MeasureStringRectF(operationElement->Name(), *font, PointF(0, 0), layout->GetStringFormat());
+            if (measureResult.Error())
+            {
+                return Result<bool>(ErrorId(measureResult.GetErrorId()));
+            }
+            RectF r = measureResult.Value();
+            SizeF sz = r.size;
+            if (operationElement->Relationship() != null)
+            {
+                sz.w = sz.w + GetRelationshipSymbolFieldWidth(relationshipSymbolRadius, paddingElement->GetPadding().Horizontal());
+            }
+            operationElement->SetSize(sz);
+            return Result<bool>(true);
+        }
+        public Result<bool> Draw(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            OperationLayoutElement* operationLayout = GetOperationLayout(layout);
+            Result<Font*> fontResult = operationLayout->GetFontElement()->GetFont();
+            if (fontResult.Error())
+            {
+                return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            }
+            Font* font = fontResult.Value();
+            Brush* brush = operationLayout->TextColorElement()->GetBrush();
+            auto result = graphics.DrawString(operationElement->Name(), *font, operationElement->Location(), *brush);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         private OperationElement* operationElement;
     }
 
@@ -22,12 +66,20 @@ namespace spring
         public ConcreteOperation(OperationElement* operationElement_) : base(operationElement_)
         {
         }
+        public override OperationLayoutElement* GetOperationLayout(Layout* layout) const
+        {
+            return layout->GetConcreteOperationLayoutElement();
+        }
     }
 
     class AbstractOperation : OperationElementRep
     {
         public AbstractOperation(OperationElement* operationElement_) : base(operationElement_)
         {
+        }
+        public override OperationLayoutElement* GetOperationLayout(Layout* layout) const
+        {
+            return layout->GetAbstractOperationLayoutElement();
         }
     }
 }

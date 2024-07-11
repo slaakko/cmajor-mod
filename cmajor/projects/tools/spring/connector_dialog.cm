@@ -1,0 +1,285 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+
+namespace spring
+{
+    class ConnectorDialog : Window
+    {
+        public ConnectorDialog(Connector connector_) :
+            base(WindowCreateParams(
+                WindowControlCreateParams(
+                    ControlCreateParams().Defaults(), "System.Windows.Window", "Connector", Point.Default(),
+                        Size(ScreenMetrics.Get().MMToHorizontalPixels(60), ScreenMetrics.Get().MMToVerticalPixels(60))))),
+            connector(connector_)
+        {
+            Size s = GetSize();
+            Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
+            Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
+            Size radioButtonSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(4.0f), ScreenMetrics.Get().MMToHorizontalPixels(4.0f));
+            
+            topLeftRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(radioButtonSize.w + defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            topLeftRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            auto result = AddChild(topLeftRadioButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            topCenterRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(radioButtonSize.w * 2 + defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            topCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            result = AddChild(topCenterRadioButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            topRightRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(radioButtonSize.w * 3 + defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            topRightRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            result = AddChild(topRightRadioButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            leftTopRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h + radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            leftTopRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            result = AddChild(leftTopRadioButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            rightTopRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w + 4 * radioButtonSize.w, defaultControlSpacing.h + radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            rightTopRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            result = AddChild(rightTopRadioButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            leftCenterRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h + 2 * radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            leftCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            result = AddChild(leftCenterRadioButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            rightCenterRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w + 4 * radioButtonSize.w, defaultControlSpacing.h + 2 * radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            rightCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            result = AddChild(rightCenterRadioButton);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            leftBottomRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h + 3 * radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = AddChild(leftBottomRadioButton);
+            leftBottomRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            rightBottomRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w + 4 * radioButtonSize.w, defaultControlSpacing.h + 3 * radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = AddChild(rightBottomRadioButton);
+            rightBottomRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            bottomLeftRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w + radioButtonSize.w, defaultControlSpacing.h + 4 * radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = AddChild(bottomLeftRadioButton);
+            bottomLeftRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            bottomCenterRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w + 2 * radioButtonSize.w, defaultControlSpacing.h + 4 * radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = AddChild(bottomCenterRadioButton);
+            bottomCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            bottomRightRadioButton = new RadioButton(RadioButtonCreateParams(
+                RadioButtonControlCreateParams(ControlCreateParams().Defaults().
+                    SetLocation(Point(defaultControlSpacing.w + 3 * radioButtonSize.w, defaultControlSpacing.h + 4 * radioButtonSize.h)).
+                    SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
+            result = AddChild(bottomRightRadioButton);
+            bottomRightRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+
+            Connector topLeftConnector(ConnectorPointKind.top, ConnectorPointKind.left);
+            radioButtonMap[topLeftRadioButton] = topLeftConnector;
+            connectorMap[topLeftConnector] = topLeftRadioButton;
+            Connector topCenterConnector(ConnectorPointKind.top, ConnectorPointKind.center);
+            radioButtonMap[topCenterRadioButton] = topCenterConnector;
+            connectorMap[topCenterConnector] = topCenterRadioButton;
+            Connector topRightConnector(ConnectorPointKind.top, ConnectorPointKind.right);
+            radioButtonMap[topRightRadioButton] = topRightConnector;
+            connectorMap[topRightConnector] = topRightRadioButton;
+            Connector rightTopConnector(ConnectorPointKind.right, ConnectorPointKind.top);
+            radioButtonMap[rightTopRadioButton] = rightTopConnector;
+            connectorMap[rightTopConnector] = rightTopRadioButton;
+            Connector rightCenterConnector(ConnectorPointKind.right, ConnectorPointKind.center);
+            radioButtonMap[rightCenterRadioButton] = rightCenterConnector;
+            connectorMap[rightCenterConnector] = rightCenterRadioButton;
+            Connector rightBottomConnector(ConnectorPointKind.right, ConnectorPointKind.bottom);
+            radioButtonMap[rightBottomRadioButton] = rightBottomConnector;
+            connectorMap[rightBottomConnector] = rightBottomRadioButton;
+            Connector bottomLeftConnector(ConnectorPointKind.bottom, ConnectorPointKind.left);
+            radioButtonMap[bottomLeftRadioButton] = bottomLeftConnector;
+            connectorMap[bottomLeftConnector] = bottomLeftRadioButton;
+            Connector bottomCenterConnector(ConnectorPointKind.bottom, ConnectorPointKind.center);
+            radioButtonMap[bottomCenterRadioButton] = bottomCenterConnector;
+            connectorMap[bottomCenterConnector] = bottomCenterRadioButton;
+            Connector bottomRightConnector(ConnectorPointKind.bottom, ConnectorPointKind.right);
+            radioButtonMap[bottomRightRadioButton] = bottomRightConnector;
+            connectorMap[bottomRightConnector] = bottomRightRadioButton;
+            Connector leftTopConnector(ConnectorPointKind.left, ConnectorPointKind.top);
+            radioButtonMap[leftTopRadioButton] = leftTopConnector;
+            connectorMap[leftTopConnector] = leftTopRadioButton;
+            Connector leftCenterConnector(ConnectorPointKind.left, ConnectorPointKind.center);
+            radioButtonMap[leftCenterRadioButton] = leftCenterConnector;
+            connectorMap[leftCenterConnector] = leftCenterRadioButton;
+            Connector leftBottomConnector(ConnectorPointKind.left, ConnectorPointKind.bottom);
+            radioButtonMap[leftBottomRadioButton] = leftBottomConnector;
+            connectorMap[leftBottomConnector] = leftBottomRadioButton;
+        
+            auto it = connectorMap.Find(connector);
+            if (it != connectorMap.End())
+            {
+                it->second->SetChecked(true);
+            }
+
+            int x = s.w - defaultButtonSize.w - defaultControlSpacing.w;
+            int y = s.h - defaultButtonSize.h - defaultControlSpacing.h;
+            UniquePtr<Button> cancelButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("Cancel").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), false)));
+            cancelButton = cancelButtonPtr.Get();
+            cancelButton->SetDialogResult(DialogResult.cancel);
+            x = x - defaultButtonSize.w - defaultControlSpacing.w;
+
+            UniquePtr<Button> okButtonPtr(new Button(ButtonControlCreateParams(ControlCreateParams().Defaults().SetText("OK").SetLocation(Point(x, y)).
+                SetSize(defaultButtonSize).SetDock(Dock.none).SetAnchors(cast<Anchors>(Anchors.bottom | Anchors.right)), true)));
+            okButton = okButtonPtr.Get();
+            okButton->SetDialogResult(DialogResult.ok);
+            result = AddChild(okButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = AddChild(cancelButtonPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetDefaultButton(okButton);
+            SetCancelButton(cancelButton);
+            ready = true;
+        }
+        public Connector GetConnector()
+        {
+            return connector;
+        }
+        private void RadioButtonCheckedChanged()
+        {
+            if (!ready) return;
+            ready = false;
+            RadioButton* prev = connectorMap[connector];
+            if (prev != null)
+            {
+                prev->SetChecked(false);
+            }
+            for (const auto& rb : radioButtonMap)
+            {
+                if (rb.first->Checked())
+                {
+                    if (connector != rb.second)
+                    {
+                        connector = rb.second;
+                    }
+                }
+            }
+            ready = true;
+        }
+        private Connector connector;
+        private bool ready;
+        private Button* cancelButton;
+        private Button* okButton;
+        private RadioButton* topLeftRadioButton;
+        private RadioButton* topCenterRadioButton;
+        private RadioButton* topRightRadioButton;
+        private RadioButton* rightTopRadioButton;
+        private RadioButton* rightCenterRadioButton;
+        private RadioButton* rightBottomRadioButton;
+        private RadioButton* bottomLeftRadioButton;
+        private RadioButton* bottomCenterRadioButton;
+        private RadioButton* bottomRightRadioButton;
+        private RadioButton* leftTopRadioButton;
+        private RadioButton* leftCenterRadioButton;
+        private RadioButton* leftBottomRadioButton;
+        private Map<RadioButton*, Connector> radioButtonMap;
+        private Map<Connector, RadioButton*> connectorMap;
+    }
+}

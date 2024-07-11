@@ -752,6 +752,30 @@ namespace spring
             framePen(null)
         {
         }
+        public CaptionElement* GetCaptionElement() const
+        {
+            return captionElement.Get();
+        }
+        public PaddingElement* GetPaddingElement() const
+        {
+            return paddingElement.Get();
+        }
+        public ColorElement* GetTextColorElement() const
+        {
+            return textColorElement.Get();
+        }
+        public ColorElement* GetFrameColorElement() const
+        {
+            return frameColorElement.Get();
+        }
+        public float FrameWidth() const
+        {
+            return frameWidth;
+        }
+        public float FrameRoundingRadius()
+        {
+            return frameRoundingRadius;
+        }
         public override System.Xml.Element* ToXml() const
         {
             System.Xml.Element* xmlElement = System.Xml.MakeElement(Name());

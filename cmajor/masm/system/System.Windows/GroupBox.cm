@@ -128,7 +128,7 @@ namespace System.Windows
         {
             checkedRadioButton = null;
         }
-        protected Result<bool> OnCreated()
+        protected override Result<bool> OnCreated()
         {
             auto result = base->OnCreated();
             if (result.Error())

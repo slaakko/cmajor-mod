@@ -43,7 +43,7 @@ namespace spring
         {
             return lines;
         }
-        public void SetLines(const List<string>& lines_)
+        public void SetLines(const List<string>&& lines_)
         {
             lines = lines_;
         }
@@ -59,26 +59,426 @@ namespace spring
         {
             System.Xml.Element* xmlElement = System.Xml.MakeElement(XmlElementName());
             xmlElement->AppendChild(BoundsXmlElement());
-            // todo
+            for (const auto& line : lines)
+            {
+                System.Xml.Element* lineElement = System.Xml.MakeElement("line");
+                lineElement->SetAttribute("text", line);
+                xmlElement->AppendChild(lineElement);
+            }
+            xmlElement->SetAttribute("keyword", keyword);
             return xmlElement;
         }
         public override Result<bool> FromXml(System.Xml.Element* xmlElement)
         {
             Result<bool> result = base->FromXml(xmlElement);
             if (result.Error()) return result;
-            // todo
+            auto lineNodeSetResult = System.XPath.EvaluateToNodeSet("line", xmlElement);
+            if (lineNodeSetResult.Error()) return Result<bool>(ErrorId(lineNodeSetResult.GetErrorId()));
+            System.XPath.NodeSet* lineNodeSet = lineNodeSetResult.Value().Get();
+            int n = lineNodeSet->Count();
+            for (int i = 0; i < n; ++i)
+            {
+                System.Xml.Node* node = lineNodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* lineElement = cast<System.Xml.Element*>(node);
+                    string textAttribute = lineElement->GetAttribute("text");
+                    lines.Add(textAttribute);
+                }
+            }
             return Result<bool>(true);
         }
         public override DiagramElement* Clone() const
         {
             TextElement* clone = new TextElement(Name());
             clone->SetBounds(Bounds());
-            // todo
+            clone->lines = lines;
+            clone->keyword = keyword;
             return clone;
+        }
+        public override Result<bool> Measure(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            TextLayoutElement* textLayoutElement = layout->GetTextLayoutElement();
+            PaddingElement* paddingElement = textLayoutElement->GetPaddingElement();
+            Result<Font*> fontResult = textLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            keywordTextSize = SizeF(0.0f, 0.0f);
+            if (!keyword.IsEmpty())
+            {
+                auto kwResult = ToUtf32(keyword);
+                if (kwResult.Error()) return Result<bool>(ErrorId(kwResult.GetErrorId()));
+                ustring kwStr = Rvalue(kwResult.Value());
+                ustring keywordU32Text = ustring(cast<uchar>(0x00AB)) + kwStr + ustring(cast<uchar>(0x00BB));
+                auto utf8Result = ToUtf8(keywordU32Text);
+                if (utf8Result.Error()) return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                string keywordText = Rvalue(utf8Result.Value());
+                auto measureResult = graphics.MeasureStringRectF(keywordText, *font, PointF(0, 0), layout->GetStringFormat());
+                if (measureResult.Error()) return Result<bool>(ErrorId(measureResult.GetErrorId()));
+                RectF r = measureResult.Value();
+                keywordTextSize = r.size;
+            }
+            lineSize = SizeF(0.0f, 0.0f);
+            linesSize = SizeF(0.0f, 0.0f);
+            for (const auto& line : lines)
+            {
+                auto measureResult = graphics.MeasureStringRectF(line, *font, PointF(0, 0), layout->GetStringFormat());
+                if (measureResult.Error()) return Result<bool>(ErrorId(measureResult.GetErrorId()));
+                RectF r = measureResult.Value();
+                SizeF sz = r.size;
+                lineSize.w = Max(lineSize.w, sz.w);
+                lineSize.h = Max(lineSize.h, sz.h);
+                linesSize.h = linesSize.h + lineSize.h;
+                linesSize.w = Max(linesSize.w, lineSize.w);
+            }
+            SizeF size(0.0f, 0.0f);
+            if (!keyword.IsEmpty() || !lines.IsEmpty())
+            {
+                size = SizeF(paddingElement->GetPadding().Horizontal() + Max(keywordTextSize.w, linesSize.w),
+                    paddingElement->GetPadding().Vertical() + keywordTextSize.h + linesSize.h);
+            }
+            SetSize(size);
+            return Result<bool>(true);
+        }
+        public override Result<bool> Draw(Graphics& graphics)
+        {
+            Layout* layout = Configuration.Instance().GetLayout();
+            TextLayoutElement* textLayoutElement = layout->GetTextLayoutElement();
+            PaddingElement* paddingElement = textLayoutElement->GetPaddingElement();
+            Result<Font*> fontResult = textLayoutElement->GetFontElement()->GetFont();
+            if (fontResult.Error()) return Result<bool>(ErrorId(fontResult.GetErrorId()));
+            Font* font = fontResult.Value();
+            Brush* brush = textLayoutElement->TextColorElement()->GetBrush();
+            PointF location = Location();
+            PointF origin(location.x + paddingElement->GetPadding().left, location.y + paddingElement->GetPadding().top);
+            if (!keyword.IsEmpty())
+            {
+                auto kwResult = ToUtf32(keyword);
+                if (kwResult.Error()) return Result<bool>(ErrorId(kwResult.GetErrorId()));
+                ustring kwStr = Rvalue(kwResult.Value());
+                ustring keywordU32Text = ustring(cast<uchar>(0x00AB)) + kwStr + ustring(cast<uchar>(0x00BB));
+                auto utf8Result = ToUtf8(keywordU32Text);
+                if (utf8Result.Error()) return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                string keywordText = Rvalue(utf8Result.Value());
+                auto result = graphics.DrawString(keywordText, *font, origin, *brush);
+                origin.y = origin.y + keywordTextSize.h;
+            }
+            for (const auto& line : lines)
+            {
+                auto result = graphics.DrawString(line, *font, origin, *brush);
+                if (result.Error()) return result;
+                origin.y = origin.y + lineSize.h;
+            }
+            return Result<bool>(true);
         }
         public string XmlElementName() const
         {
             if (Name().IsEmpty()) return "textElement"; else return Name();
+        }
+        public void SetSourceLocation(const Line& line, float symbolWidth)
+        {
+            switch (tkind)
+            {
+                case TextKind.primaryText:
+                {
+                    SetPrimarySourceLocation(line, symbolWidth);
+                    break;
+                }
+                case TextKind.secondaryText:
+                {
+                    SetSecondarySourceLocation(line, symbolWidth);
+                    break;
+                }
+            }
+        }
+        public void SetTargetLocation(const Line& line, float symbolWidth)
+        {
+            switch (tkind)
+            {
+                case TextKind.primaryText:
+                {
+                    SetPrimaryTargetLocation(line, symbolWidth);
+                    break;
+                }
+                case TextKind.secondaryText:
+                {
+                    SetSecondaryTargetLocation(line, symbolWidth);
+                    break;
+                }
+            }
+        }
+        private void SetPrimarySourceLocation(const Line& line, float symbolWidth)
+        {
+            if (line.Length() == 0.0f) return;
+            Vector u = line.ToVector();
+            if (u.x >= 0 && u.y >= 0)
+            {
+                float h = Size().h;
+                Vector x_unit(1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                SetLocation(c.end);
+            }
+            else if (u.x > 0 && u.y < 0)
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector wx = x_unit * w;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                Line d(c.end, wx);
+                SetLocation(d.end);
+            }
+            else if (u.x <= 0 && u.y < 0 || u.x < 0 && u.y == 0)
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                SetLocation(c.end);
+            }
+            else
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector wx = x_unit * w;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                Line d(c.end, wx);
+                SetLocation(d.end);
+            }
+        }
+        private void SetSecondarySourceLocation(const Line& line, float symbolWidth)
+        {
+            Vector u = line.ToVector();
+            if (u.x >= 0 && u.y >= 0)
+            {
+                float w = Size().w;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector wx = x_unit * w;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, wx);
+                SetLocation(c.end);
+            }
+            else if (u.x > 0 && u.y < 0)
+            {
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                SetLocation(b.end);
+            }
+            else if (u.x <= 0 && u.y < 0 || u.x < 0 && u.y == 0)
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector su = UnitVector(u) * symbolWidth;
+                Vector wx = x_unit * w;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, wx);
+                SetLocation(c.end);
+            }
+            else
+            {
+                float w = Size().w;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(line.start, su);
+                Line b(a.end, ru);
+                SetLocation(b.end);
+            }
+        }
+        private void SetPrimaryTargetLocation(const Line& line, float symbolWidth)
+        {
+            if (line.Length() == 0.0f) return;
+            Line reverseLine(line.end, line.start);
+            Vector u = reverseLine.ToVector();
+            if (u.x >= 0 && u.y >= 0)
+            {
+                float h = Size().h;
+                Vector x_unit(1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                SetLocation(c.end);
+            }
+            else if (u.x > 0 && u.y < 0)
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector wx = x_unit * w;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                Line d(c.end, wx);
+                SetLocation(d.end);
+            }
+            else if (u.x <= 0 && u.y < 0 || u.x < 0 && u.y == 0)
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                SetLocation(c.end);
+            }
+            else
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector y_unit(0.0f, -1.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector hy = y_unit * h;
+                Vector wx = x_unit * w;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, hy);
+                Line d(c.end, wx);
+                SetLocation(d.end);
+            }
+        }
+        private void SetSecondaryTargetLocation(const Line& line, float symbolWidth)
+        {
+            if (line.Length() == 0.0f) return;
+            Line reverseLine(line.end, line.start);
+            Vector u = reverseLine.ToVector();
+            if (u.x >= 0 && u.y >= 0)
+            {
+                float w = Size().w;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector wx = x_unit * w;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, wx);
+                SetLocation(c.end);
+            }
+            else if (u.x > 0 && u.y < 0)
+            {
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                SetLocation(b.end);
+            }
+            else if (u.x <= 0 && u.y < 0 || u.x < 0 && u.y == 0)
+            {
+                float w = Size().w;
+                float h = Size().h;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector v = Projection(u, x_unit);
+                Vector v_minus_u = v - u;
+                float r = h * v_minus_u.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector su = UnitVector(u) * symbolWidth;
+                Vector wx = x_unit * w;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                Line c(b.end, wx);
+                SetLocation(c.end);
+            }
+            else
+            {
+                float w = Size().w;
+                Vector x_unit(-1.0f, 0.0f);
+                Vector v = Projection(u, x_unit);
+                float r = w * v.Length() / Dot(u, u);
+                Vector ru = u * r;
+                Vector su = UnitVector(u) * symbolWidth;
+                Line a(reverseLine.start, su);
+                Line b(a.end, ru);
+                SetLocation(b.end);
+            }
         }
         private TextKind tkind;
         private List<string> lines;
