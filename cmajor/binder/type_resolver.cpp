@@ -347,6 +347,11 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
     {
         throw cmajor::symbols::Exception("class template expected", templateIdNode.GetFullSpan(), templateIdNode.Primary()->GetFullSpan());
     }
+    if (templateIdNode.Primary()->IsIdentifierNode())
+    {
+        cmajor::ast::IdentifierNode* primaryIdNode = static_cast<cmajor::ast::IdentifierNode*>(templateIdNode.Primary());
+        cmajor::symbols::MapIdentifierToSymbolDefinition(primaryIdNode, classTemplate);
+    }
 /*  TODO
     cmajor::ast::IdentifierNode* idNode = boundCompileUnit.GetLatestIdentifier();
     boundCompileUnit.SetLatestIdentifier(prevId);

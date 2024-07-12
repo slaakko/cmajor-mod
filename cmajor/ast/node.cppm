@@ -82,6 +82,7 @@ public:
     bool IsTypedefNode() const { return nodeType == NodeType::typedefNode; }
     bool IsAliasNode() const { return nodeType == NodeType::aliasNode; }
     bool IsDotNode() const { return nodeType == NodeType::dotNode; }
+    bool IsIdentifierNode() const { return nodeType == NodeType::identifierNode; }
     virtual Specifiers GetSpecifiers() const { return Specifiers::none; }
     const soul::ast::Span& GetSpan() const { return span; }
     void SetSpan(const soul::ast::Span& span_) { span = span_; }
