@@ -148,17 +148,17 @@ namespace FileExplorer
             }
             return Result<bool>(true);
         }
-        protected override Result<bool> OnMouseEnter()
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseEnter();
+            auto result = base->OnMouseEnter(args);
             if (result.Error()) return result;
             result = SetState(State.mouseOver);
             if (result.Error()) return result;
             return Result<bool>(true);
         }
-        protected override Result<bool> OnMouseLeave()
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
-            auto result = base->OnMouseLeave();
+            auto result = base->OnMouseLeave(args);
             if (result.Error()) return result;
             result = SetState(State.idle);
             if (result.Error()) return result;

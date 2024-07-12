@@ -263,22 +263,6 @@ namespace spring
                 SetErrorId(result.GetErrorId());
                 return;
             }
-            MenuItem* indexMenuItem = new MenuItem("&Index");
-            indexMenuItem->ClickEvent().AddHandler(IndexClick);
-            result = helpMenuItem->AddMenuItem(indexMenuItem);
-            if (result.Error())
-            {
-                SetErrorId(result.GetErrorId());
-                return;
-            }
-            MenuItem* aboutMenuItem = new MenuItem("&About...");
-            aboutMenuItem->ClickEvent().AddHandler(AboutClick);
-            result = helpMenuItem->AddMenuItem(aboutMenuItem);
-            if (result.Error())
-            {
-                SetErrorId(result.GetErrorId());
-                return;
-            }
             result = menuBar->AddMenuItem(helpMenuItem);
             if (result.Error())
             {
@@ -616,7 +600,7 @@ namespace spring
             }
             return Result<bool>(true);
         }
-        protected Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
+        protected override Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
         {
             auto result = base->OnSizeChanged(args);
             if (result.Error()) return result;
@@ -625,7 +609,7 @@ namespace spring
             if (result.Error()) return result;
             return Result<bool>(true);
         }
-        protected Result<bool> OnWindowClosing(bool& cancel)
+        protected override Result<bool> OnWindowClosing(bool& cancel)
         {
             Diagram* diagram = canvas->GetDiagram();
             if (diagram->IsModified())
@@ -1060,27 +1044,6 @@ namespace spring
                 args.errorId = result.GetErrorId();
                 return;
             }
-        }
-        private void IndexClick(ClickEventArgs& args)
-        {
-            auto springRootResult = SpringDirectory();
-            if (springRootResult.Error())
-            {
-                args.errorId = springRootResult.GetErrorId();
-                return;
-            }
-            const string& springRootDir = springRootResult.Value();
-            string indexFilePath = System.IO.Path.Combine(springRootDir, "doc/index.html");
-            Result<bool> result = ShellExecute(indexFilePath);
-            if (result.Error())
-            {
-                args.errorId = result.GetErrorId();
-                return;
-            }
-        }
-        private void AboutClick(ClickEventArgs& args)
-        {
-            // todo
         }
         private void CanvasMouseEnter(EnterLeaveEventArgs& args)
         {

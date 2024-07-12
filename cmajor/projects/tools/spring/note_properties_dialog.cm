@@ -14,7 +14,7 @@ namespace spring
         public NotePropertiesDialog(NoteElement* noteElement_) :
             base(WindowCreateParams(
                 WindowControlCreateParams(
-                    ControlCreateParams().Defaults(), "System.Windows.Window", "Class Properties", Point.Default(),
+                    ControlCreateParams().Defaults(), "System.Windows.Window", "Note Properties", Point.Default(),
                         Size(ScreenMetrics.Get().MMToHorizontalPixels(100), ScreenMetrics.Get().MMToVerticalPixels(70))))),
             noteElement(noteElement_)
         {

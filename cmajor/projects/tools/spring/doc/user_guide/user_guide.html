@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>User Guide</title>
+    <link rel="stylesheet" type="text/css" href="../style/style.css" />
+</head>
+
+<body>
+    <h1>Spring User Guide</h1>
+
+    <h2>User Interface</h2>
+
+    <p>
+        The user interface is divided into toolbar, canvas and statusbar.
+    </p>
+
+    <img src="../image/ui.png"/>
+
+    <h2>Diagrams and Diagram Elements</h2>
+
+    <p>
+        Currently Spring++ supports creation of class and object diagrams.
+    </p>
+
+    <p>
+        You can add the following diagram elements with the provided tools:
+    </p>
+
+    <table>
+        <tr>
+            <td><img src="../image/concrete_class.png"/></td>
+            <td>Concrete class.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/abstract_class.png"/></td>
+            <td>Abstract class.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/object.png"/></td>
+            <td>Object.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/note.png"/></td>
+            <td>Note.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/inheritance.png"/></td>
+            <td>Inheritance relationship. Class B inherits from class A.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/combined_inheritance.png"/></td>
+            <td>Combined inheritance relationship. Classes B and C inherit from class A.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/one-to-one-composition.png"/></td>
+            <td>One-to-one composition relationship.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/one-to-many-composition.png"/></td>
+            <td>One-to-many composition relationship.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/one-to-one-aggregation.png"/></td>
+            <td>One-to-one aggregation relationship.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/one-to-many-aggregation.png"/></td>
+            <td>One-to-many aggregation relationship.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/object_reference.png"/></td>
+            <td>Object reference relationship.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/null_reference.png"/></td>
+            <td>Null reference.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/create_instance.png"/></td>
+            <td>Create instance relationship.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/attach_note.png"/></td>
+            <td>Attach note relationship.</td>
+        </tr>
+    </table>
+
+    <P>
+        The class, object and note elements are called <em>container</em> elements. 
+        The inheritance, composition, aggregation, reference, create instance and attach note elements are called <em>relationship</em> elements.
+    </P>
+
+    <h2>Tools</h2>
+
+    <p>
+        Spring has following tools:
+    </p>
+
+    <table>
+        <tr>
+            <td><img src="../image/selection_tool.png"></td>
+            <td>Selection tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/grab_tool.png"></td>
+            <td>Grab tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/class_tool.png"></td>
+            <td>Class tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/object_tool.png"></td>
+            <td>Object tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/note_tool.png"></td>
+            <td>Note tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/inheritance_tool.png"></td>
+            <td>Inheritance tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/composition_tool.png"></td>
+            <td>Composition tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/aggregation_tool.png"></td>
+            <td>Aggregation tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/reference_tool.png"></td>
+            <td>Reference tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/create_instance_tool.png"></td>
+            <td>Create instance tool.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/attach_note_tool.png"></td>
+            <td>Attach note tool.</td>
+        </tr>
+    </table>
+
+    <p>
+        The class, object and note tools are called <em>container</em> tools.
+        The inheritance, composition, aggregation, reference, create instance and attach note tools are called <em>relationship</em> tools.
+    </p>
+
+    <h3>Selection tool</h3>
+
+    <img src="../image/selection_tool.png"/>
+
+    <table>
+        <tr>
+            <th>Action</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><span class="bold">click</span></td>
+            <td>Click a diagram element to select or deselect it, or click a canvas location to clear selection.</td>
+        </tr>
+        <tr>
+            <td><span class="bold">right-click</span></td>
+            <td>Right-click a diagram element or selection to open context menu showing actions for that diagram element or selected elements.</td>
+        </tr>
+        <tr>
+            <td><span class="bold">double-click</span></td>
+            <td>Double-click a diagram element to execute the default action assocated with it. The default action is to edit the properties of the element.</td>
+        </tr>
+        <tr>
+            <td><span class="bold">control+click</span></td>
+            <td>Control+click a diagram element to add or remove the element to or from the element selection.</td>
+        </tr>
+        <tr>
+            <td><span class="bold">drag</span></td>
+            <td>
+                Point to a diagram element or selection and drag to move it to a new location.
+                Point a canvas location and drag to create a rectangle selection.
+                Point a resize handle of a rectangle selection and drag to enlarge the selection or make it smaller.
+            </td>
+        </tr>
+        <tr>
+            <td><span class="bold">delete</span></td>
+            <td>When there is a rectangle selection or an element selection, press delete key to remove the selected diagram elements.</td>
+        </tr>
+    </table>
+
+    <h3>Grab tool</h3>
+
+    <img src="../image/grab_tool.png"/>
+
+    <table>
+        <tr>
+            <th>Action</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><span class="bold">drag</span></td>
+            <td>Point a canvas location and draw with the mouse to move diagram to a different location.</td>
+        </tr>
+        <tr>
+            <td><span class="bold">escape</span></td>
+            <td>Press escape to activate the selection tool.</td>
+        </tr>
+    </table>
+
+    <h3>Container tools</h3>
+
+    <img src="../image/class_tool.png"/>
+    <img src="../image/object_tool.png"/>
+    <img src="../image/note_tool.png"/>
+    
+    <table>
+        <tr>
+            <th>Action</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><span class="bold">click</span></td>
+            <td>Point a canvas location and click to place a container element at that location.</td>
+        </tr>
+        <tr>
+            <td><span class="bold">escape</span></td>
+            <td>Press escape to activate the selection tool.</td>
+        </tr>
+    </table>
+
+    <h3>Relationship tools</h3>
+
+    <img src="../image/inheritance_tool.png"/>
+    <img src="../image/composition_tool.png"/>
+    <img src="../image/aggregation_tool.png"/>
+    <img src="../image/reference_tool.png"/>
+    <img src="../image/create_instance_tool.png"/>
+    <img src="../image/attach_note_tool.png"/>
+
+    <table>
+        <tr>
+            <th>Action</th>
+            <th>Description</th>
+        </tr>
+        <tr>
+            <td><span class="bold">click</span></td>
+            <td>
+                Click a container element near its connector point to start a relationship and set the element as the source element of the relationship. 
+                Then optionally click canvas locations to place routing points. 
+                Finally click a container element near its connector point to set is as the target element of the relationship.
+            </td>
+        </tr>
+        <tr>
+            <td><span class="bold">control+click</span></td>
+            <td>Add a straight vertical or horizontal routing point.</td>
+        </tr>
+        <tr>
+            <td><span class="bold">escape</span></td>
+            <td>Press escape to cancel current operation and activate the selection tool.</td>
+        </tr>
+    </table>
+
+    <h2>Special actions</h2>
+
+    <h3>Creating a combined inhertance</h3>
+
+    <table>
+        <tr>
+            <td><img src="../image/inheritances.png"/></td>
+            <td>Add ordinary inheritances from B to A and from C to A</td>
+        </tr>
+        <tr>
+            <td><img src="../image/select_inheritances.png"/></td>
+            <td><span class="bold">Control+click</span> the inheritance arrows to select them.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/combine_inheritances.png"/></td>
+            <td><span class="bold">Right-click</span> the selection to open context menu and select the <span class="bold">Combine</span> action.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/combined_inheritances.png"/></td>
+            <td>The inheritance arrows are combined.</td>
+        </tr>
+    </table>
+
+    <h3>Adding a class to a combined inhertance</h3>
+
+    <table>
+        <tr>
+            <td><img src="../image/split.png"/></td>
+            <td><span class="bold">Right-click</span> a combined inheritance to open context menu and select the <span class="bold">Split</span> action.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/abcd.png"/></td>
+            <td>Add a new class and a new inheritance to A.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/combined_abcd.png"/></td>
+            <td>Combine the inheritances.</td>
+        </tr>
+    </table>
+
+    <h3>Creating a null reference</h3>
+
+    <table>
+        <tr>
+            <td><img src="../image/ref_arrow.png"/></td>
+            <td>Use the reference tool to start a reference relationship by clicking the attribute inside an object.
+                Then <span class="bold">control+click</span> to the right of the object to create a horizontal routing point.
+                Finally <span class="bold">shift+click</span> to the below to create an orphaned reference relationship.
+            </td>
+        </tr>
+        <tr>
+            <td><img src="../image/ref_cardinality_zero.png"/></td>
+            <td><span class="bold">Double-click</span> the relationship arrow to edit the properties of the relationship and set the cardinality to <span class="bold">zero</span>. Then click ok.</td>
+        </tr>
+        <tr>
+            <td><img src="../image/null_ref.png"/></td>
+            <td>The reference arrow changes to a null reference symbol.</td>
+        </tr>
+    </table>
+
+    <h2>Properties of Diagram Elements</h2>
+
+    <p>
+        You can edit the properties of diagram elements by double-clicking an element, or by right-clicking an element and selecting the <span class="bold">Properties...</span> context menu item.
+    </p>
+
+    <h3>Class Properties</h3>
+
+    <p>
+        With the class properties dialog you can set the name and keyword of the class, and add, change and remove attributes and operations of the class.
+        A nonempty keyword is shown above the class name in the diagram. It may be used to categorize the class to be, for example, a <em>datatype</em> class, or an <em>enumeration</em>.
+        In the dialog, you can also set the class abstract. An abstract class has an italic style caption. It may have attributes, and concrete and abstract operations.
+        A concrete class may have attributes and concrete operations, but it may not have abstract operations.
+    </p>
+
+    <img src="../image/class_properties.png"/><br/>
+
+    <img src="../image/connector_class.png"/>
+
+    <h3>Object Properties</h3>
+
+    <p>
+        With the object properties dialog you can set the name of the object, and add, change and remove attributes of the object.
+    </p>
+
+    <img src="../image/object_properties.png"/><br/>
+
+    <img src="../image/diagram_object.png"/>
+
+    <h3>Note Properties</h3>
+
+    <p>
+        With the note properties dialog you can set the text lines of the note. To enter multiple lines, use the <span class="bold">shift+enter</span> key combination to insert newlines.
+    </p>
+
+    <img src="../image/note_properties.png"/><br/>
+
+    <img src="../image/multiline_note.png"/>
+
+    <h3>Relationship Properties</h3>
+
+    <p>
+        With the relationship properties dialog you can set the relation, cardinality, source and target texts and connector points.
+    </p>
+
+    <img src="../image/relationship_properties.png"/>
+
+    <h4>Primary and Secondary Source and Target Texts</h4>
+
+    <p>
+        For multiline texts, use the <span class="bold">shift+enter</span> key combination to insert newlines.
+    </p>
+
+    <img src="../image/text.png"/>
+
+    <p>
+        A primary text is shown above the relationship arrow, and the secondary text below the arrow.
+        A nonempty keyword is shown above the text in the diagram, it can be used to categorize the relationship endpoint.
+    </p>
+
+    <img src="../image/relationship_texts.png"/>
+
+    <h4>Connector Points</h4>
+
+    <p>
+        Each container element has twelve <em>connector points</em>, three on each side of the element. 
+        Thus the top and bottom sides have left, center and right connectors, and the left and right sides have top, center and bottom connectors.
+        You can change the source and target connectors of a relationship in the connector dialog:
+    </p>
+
+    <img src="../image/connector.png"/>
+
+    <h2>Selections</h2>
+
+    <p>
+        There are two kinds of selections: rectangle selections and element selections.
+    </p>
+
+    <h3>
+        Rectangle Selection
+    </h3>
+
+    <p>
+        The rectangle selection is created by pointing to a canvas location with the selection tool and dragging the selection rectangle around diagram elements.
+        Then right-clicking the selection opens a context menu with actions for the selected elements:
+    </p>
+
+    <img src="../image/rectangle_selection.png"/>
+
+    <h3>
+        Element Selection
+    </h3>
+
+    <p>
+        The element selection is created by clicking an element with the selection tool and then adding elements to the selection by control-clicking them.
+        Then right-clicking the selection opens a context menu with actions for the selected elements:
+    </p>
+
+    <img src="../image/element_selection.png"/>
+</body>
+</html>

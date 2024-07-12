@@ -391,6 +391,7 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
 {
     cmajor::symbols::SetRootModuleForCurrentThread(nullptr);
     cmajor::info::bs::GetDefinitionReply reply;
+    int len = util::ToUtf32(request.identifier).length();
     try
     {
         cmajor::ast::BackEnd backend = cmajor::ast::BackEnd::llvm;
@@ -464,7 +465,7 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
             {
                 int32_t line = request.identifierLocation.line;
                 int32_t scol = request.identifierLocation.scol;
-                soul::ast::LineColLen lineColLen(line, scol, 1);
+                soul::ast::LineColLen lineColLen(line, scol, len);
                 const std::vector<int>* lineStarts = module->FileMap().LineStartIndeces(fileIndex);
                 if (!lineStarts)
                 {
@@ -473,7 +474,7 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
                 }
                 if (lineStarts)
                 {
-                    soul::ast::Span span(soul::ast::LineColLenToPos(lineColLen, *lineStarts), 1);
+                    soul::ast::Span span(soul::ast::LineColLenToPos(lineColLen, *lineStarts), len);
                     cmajor::symbols::SymbolLocation identifierLocation(module->Id(), fileIndex, span);
                     cmajor::symbols::SymbolLocation definitionLocation = module->GetSymbolTable().GetDefinitionLocation(identifierLocation);
                     std::string filePath = cmajor::symbols::GetSourceFilePath(definitionLocation.fileIndex, definitionLocation.moduleId);
@@ -488,15 +489,10 @@ cmajor::info::bs::GetDefinitionReply GetDefinition(const cmajor::info::bs::GetDe
                         throw std::runtime_error("file path for file index " + std::to_string(definitionLocation.fileIndex) + " not found from module '" + moduleName + "'");
                     }
                     reply.definitionLocation.file = filePath;
-                    const std::vector<int>* lineStarts = module->FileMap().LineStartIndeces(definitionLocation.fileIndex);
-                    if (!lineStarts)
+                    cmajor::symbols::Module* m = cmajor::symbols::GetModuleById(definitionLocation.moduleId);
+                    if (m)
                     {
-                        module->FileMap().ReadFile(definitionLocation.fileIndex);
-                        lineStarts = module->FileMap().LineStartIndeces(definitionLocation.fileIndex);
-                    }
-                    if (lineStarts)
-                    {
-                        soul::ast::LineColLen lineColLen = soul::ast::SpanToLineColLen(definitionLocation.span, *lineStarts);
+                        soul::ast::LineColLen lineColLen = m->GetLineColLen(definitionLocation.span, definitionLocation.fileIndex);
                         if (lineColLen.IsValid())
                         {
                             reply.definitionLocation.line = lineColLen.line;

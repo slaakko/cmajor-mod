@@ -15,20 +15,41 @@ namespace spring
             base(WindowCreateParams(
                 WindowControlCreateParams(
                     ControlCreateParams().Defaults(), "System.Windows.Window", "Connector", Point.Default(),
-                        Size(ScreenMetrics.Get().MMToHorizontalPixels(60), ScreenMetrics.Get().MMToVerticalPixels(60))))),
+                        Size(ScreenMetrics.Get().MMToHorizontalPixels(68), ScreenMetrics.Get().MMToVerticalPixels(68))))),
             connector(connector_)
         {
             Size s = GetSize();
             Size defaultButtonSize = ScreenMetrics.Get().DefaultButtonSize();
             Size defaultControlSpacing = ScreenMetrics.Get().DefaultControlSpacing();
-            Size radioButtonSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(4.0f), ScreenMetrics.Get().MMToHorizontalPixels(4.0f));
-            
+            Size radioButtonSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(4.0f), ScreenMetrics.Get().MMToVerticalPixels(4.0f));
+
+            Size connectorGroupBoxSize = Size(ScreenMetrics.Get().MMToHorizontalPixels(32), ScreenMetrics.Get().MMToVerticalPixels(32));
+
+            UniquePtr<GroupBox> connectorGroupBoxPtr(new GroupBox(GroupBoxCreateParams(
+                GroupBoxControlCreateParams(
+                    ControlCreateParams().Defaults().SetText("Connector").SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetSize(connectorGroupBoxSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left))))));
+            GroupBox* connectorGroupBox = connectorGroupBoxPtr.Get();
+            auto result = AddChild(connectorGroupBoxPtr.Release());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            auto loc = connectorGroupBox->Location();
+            if (loc.Error())
+            {
+                SetErrorId(loc.GetErrorId());
+                return;
+            }
+            Point groupBoxLoc = loc.Value();
+
             topLeftRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(radioButtonSize.w + defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetLocation(Point(groupBoxLoc.x + radioButtonSize.w + defaultControlSpacing.w, groupBoxLoc.y + defaultControlSpacing.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
             topLeftRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
-            auto result = AddChild(topLeftRadioButton);
+            result = connectorGroupBox->AddChild(topLeftRadioButton);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -37,10 +58,10 @@ namespace spring
 
             topCenterRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(radioButtonSize.w * 2 + defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetLocation(Point(groupBoxLoc.x + radioButtonSize.w * 2 + defaultControlSpacing.w, groupBoxLoc.y + defaultControlSpacing.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
             topCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
-            result = AddChild(topCenterRadioButton);
+            result = connectorGroupBox->AddChild(topCenterRadioButton);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -49,10 +70,10 @@ namespace spring
 
             topRightRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(radioButtonSize.w * 3 + defaultControlSpacing.w, defaultControlSpacing.h)).
+                    SetLocation(Point(groupBoxLoc.x + radioButtonSize.w * 3 + defaultControlSpacing.w, groupBoxLoc.y + defaultControlSpacing.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
             topRightRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
-            result = AddChild(topRightRadioButton);
+            result = connectorGroupBox->AddChild(topRightRadioButton);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -61,10 +82,10 @@ namespace spring
 
             leftTopRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h + radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w, groupBoxLoc.y + defaultControlSpacing.h + radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
             leftTopRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
-            result = AddChild(leftTopRadioButton);
+            result = connectorGroupBox->AddChild(leftTopRadioButton);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -73,10 +94,10 @@ namespace spring
 
             rightTopRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w + 4 * radioButtonSize.w, defaultControlSpacing.h + radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w + 4 * radioButtonSize.w, groupBoxLoc.y + defaultControlSpacing.h + radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
             rightTopRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
-            result = AddChild(rightTopRadioButton);
+            result = connectorGroupBox->AddChild(rightTopRadioButton);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -85,10 +106,10 @@ namespace spring
 
             leftCenterRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h + 2 * radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w, groupBoxLoc.y + defaultControlSpacing.h + 2 * radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
             leftCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
-            result = AddChild(leftCenterRadioButton);
+            result = connectorGroupBox->AddChild(leftCenterRadioButton);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -97,10 +118,10 @@ namespace spring
 
             rightCenterRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w + 4 * radioButtonSize.w, defaultControlSpacing.h + 2 * radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w + 4 * radioButtonSize.w, groupBoxLoc.y + defaultControlSpacing.h + 2 * radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
             rightCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
-            result = AddChild(rightCenterRadioButton);
+            result = connectorGroupBox->AddChild(rightCenterRadioButton);
             if (result.Error())
             {
                 SetErrorId(result.GetErrorId());
@@ -109,9 +130,9 @@ namespace spring
 
             leftBottomRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w, defaultControlSpacing.h + 3 * radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w, groupBoxLoc.y + defaultControlSpacing.h + 3 * radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
-            result = AddChild(leftBottomRadioButton);
+            result = connectorGroupBox->AddChild(leftBottomRadioButton);
             leftBottomRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
             if (result.Error())
             {
@@ -121,9 +142,9 @@ namespace spring
 
             rightBottomRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w + 4 * radioButtonSize.w, defaultControlSpacing.h + 3 * radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w + 4 * radioButtonSize.w, groupBoxLoc.y + defaultControlSpacing.h + 3 * radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
-            result = AddChild(rightBottomRadioButton);
+            result = connectorGroupBox->AddChild(rightBottomRadioButton);
             rightBottomRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
             if (result.Error())
             {
@@ -133,9 +154,9 @@ namespace spring
 
             bottomLeftRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w + radioButtonSize.w, defaultControlSpacing.h + 4 * radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w + radioButtonSize.w, groupBoxLoc.y + defaultControlSpacing.h + 4 * radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
-            result = AddChild(bottomLeftRadioButton);
+            result = connectorGroupBox->AddChild(bottomLeftRadioButton);
             bottomLeftRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
             if (result.Error())
             {
@@ -145,9 +166,9 @@ namespace spring
 
             bottomCenterRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w + 2 * radioButtonSize.w, defaultControlSpacing.h + 4 * radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w + 2 * radioButtonSize.w, groupBoxLoc.y + defaultControlSpacing.h + 4 * radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
-            result = AddChild(bottomCenterRadioButton);
+            result = connectorGroupBox->AddChild(bottomCenterRadioButton);
             bottomCenterRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
             if (result.Error())
             {
@@ -157,9 +178,9 @@ namespace spring
 
             bottomRightRadioButton = new RadioButton(RadioButtonCreateParams(
                 RadioButtonControlCreateParams(ControlCreateParams().Defaults().
-                    SetLocation(Point(defaultControlSpacing.w + 3 * radioButtonSize.w, defaultControlSpacing.h + 4 * radioButtonSize.h)).
+                    SetLocation(Point(groupBoxLoc.x + defaultControlSpacing.w + 3 * radioButtonSize.w, groupBoxLoc.y + defaultControlSpacing.h + 4 * radioButtonSize.h)).
                     SetSize(radioButtonSize).SetAnchors(cast<Anchors>(Anchors.top | Anchors.left)))));
-            result = AddChild(bottomRightRadioButton);
+            result = connectorGroupBox->AddChild(bottomRightRadioButton);
             bottomRightRadioButton->CheckedChangedEvent().AddHandler(RadioButtonCheckedChanged);
             if (result.Error())
             {
@@ -203,7 +224,7 @@ namespace spring
             Connector leftBottomConnector(ConnectorPointKind.left, ConnectorPointKind.bottom);
             radioButtonMap[leftBottomRadioButton] = leftBottomConnector;
             connectorMap[leftBottomConnector] = leftBottomRadioButton;
-        
+
             auto it = connectorMap.Find(connector);
             if (it != connectorMap.End())
             {

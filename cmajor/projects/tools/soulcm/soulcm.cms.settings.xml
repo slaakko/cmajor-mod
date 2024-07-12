@@ -1,14 +1,9 @@
 <solutionSettings>
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
-    <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg.parser/parser_file.parser"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg/code_generator.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg/main.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/soul2html/main.cm"/>
-    </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/soulcm/scmpg/code_generator.cm"/>
-    <currentCursorLine value="1288"/>
+    <openFiles/>
+    <currentOpenFile value=""/>
+    <currentCursorLine value="94"/>
     <breakpoints/>
     <expandedProjects/>
 </solutionSettings>
