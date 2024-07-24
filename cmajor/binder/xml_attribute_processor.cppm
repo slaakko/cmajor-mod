@@ -25,10 +25,12 @@ public:
     void GenerateImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, StatementBinder* statementBinder) override;
 private:
     void TypeCheckClass(cmajor::symbols::ClassTypeSymbol* classType);
+    void SetBaseClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit,
+        cmajor::symbols::ContainerScope* containerScope);
     void GenerateMemberSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
-    void CheckXmlSerializableInterface(cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope);
-    void CheckVirtualDestructor(cmajor::symbols::ClassTypeSymbol* classTypeSymbol);
+    //void CheckXmlSerializableInterface(cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope);
+    //void CheckVirtualDestructor(cmajor::symbols::ClassTypeSymbol* classTypeSymbol);
     void GenerateDestructorImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::DestructorSymbol* destructorSymbol, StatementBinder* statementBinder);
     void GenerateMemberVariableSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
@@ -44,6 +46,7 @@ private:
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateRegisterImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* registerSymbol, StatementBinder* statementBinder);
+/*
     void GenerateDestroyObjectFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateDestroyObjectImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
@@ -64,22 +67,27 @@ private:
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateSetContainerImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* setContainerSymbol, StatementBinder* statementBinder);
+*/
     void GenerateClassIdFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateClassIdImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* classIdSymbol, StatementBinder* statementBinder);
+/*
     void GenerateClassNameFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateClassNameImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* classNameSymbol, StatementBinder* statementBinder);
+*/
     void GenerateSetObjectXmlAttributesSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateSetObjectXmlAttributesImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* setObjectXmlAttributesSymbol, StatementBinder* statementBinder);
+/*
     void GenerateToXmlPlainSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateToXmlPlainImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* toXmlSymbol, StatementBinder* statementBinder);
+*/
     void GenerateToXmlSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateToXmlImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
@@ -88,6 +96,7 @@ private:
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateFromXmlImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* fromXmlSymbol, StatementBinder* statementBinder);
+/*
     void GenerateGetPtrsSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, 
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateGetPtrsImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
@@ -104,6 +113,7 @@ private:
         cmajor::symbols::ContainerScope* containerScope);
     void GenerateResetOwnedImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
         cmajor::symbols::MemberFunctionSymbol* setOwnedMemFunSymbol, StatementBinder* statementBinder);
+*/
     bool HasXmlBaseClass(cmajor::symbols::ClassTypeSymbol* classType) const;
     void CompileMemberFunction(cmajor::symbols::MemberFunctionSymbol* memberFunctionSymbol, cmajor::ast::CompoundStatementNode& compoundStatementNode, 
         cmajor::ast::MemberFunctionNode& memberFunctionNode, std::unique_ptr<BoundFunction>&& boundFunction, StatementBinder* statementBinder);

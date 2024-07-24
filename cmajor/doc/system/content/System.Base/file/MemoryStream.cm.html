@@ -1,0 +1,197 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>System.Base/MemoryStream.cm</title>
+  <link href="../../../style/code.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <span class="code" id="1" xml:space="preserve"><span class="lineNumber">&nbsp;1</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="2" xml:space="preserve"><span class="lineNumber">&nbsp;2</span>&nbsp;<span class="comment">//&nbsp;Copyright&nbsp;(c)&nbsp;2024&nbsp;Seppo&nbsp;Laakko
+</span></span>
+  <br/>
+  <span class="code" id="3" xml:space="preserve"><span class="lineNumber">&nbsp;3</span>&nbsp;<span class="comment">//&nbsp;Distributed&nbsp;under&nbsp;the&nbsp;MIT&nbsp;license
+</span></span>
+  <br/>
+  <span class="code" id="4" xml:space="preserve"><span class="lineNumber">&nbsp;4</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="5" xml:space="preserve"><span class="lineNumber">&nbsp;5</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="6" xml:space="preserve"><span class="lineNumber">&nbsp;6</span>&nbsp;<span class="keyword">using</span>&nbsp;<span class="identifier">System</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="7" xml:space="preserve"><span class="lineNumber">&nbsp;7</span>&nbsp;<span class="keyword">using</span>&nbsp;<span class="identifier">System.Collections</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="8" xml:space="preserve"><span class="lineNumber">&nbsp;8</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="9" xml:space="preserve"><span class="lineNumber">&nbsp;9</span>&nbsp;<span class="keyword">namespace</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">IO</span></span>
+  <br/>
+  <span class="code" id="10" xml:space="preserve"><span class="lineNumber">10</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="11" xml:space="preserve"><span class="lineNumber">11</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">class</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a><span class="other">&nbsp;:&nbsp;</span><a href="../doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a></span>
+  <br/>
+  <span class="code" id="12" xml:space="preserve"><span class="lineNumber">12</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="13" xml:space="preserve"><span class="lineNumber">13</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#default_constructor_MemoryStream_2BF6711C9B19007B26221E165595B0F5B5275A3E">MemoryStream</a><span class="other">(</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="identifier">content</span><span class="other">(</span><span class="other">)</span><span class="other">,&nbsp;</span><span class="identifier">readPos</span><span class="other">(</span><span class="number">0</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="14" xml:space="preserve"><span class="lineNumber">14</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="15" xml:space="preserve"><span class="lineNumber">15</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="16" xml:space="preserve"><span class="lineNumber">16</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#constructor_MemoryStream_B068395773B7F2B56E33C121B4B9716A5507E774">MemoryStream</a><span class="other">(</span><span class="keyword">byte</span><span class="other">*</span>&nbsp;<span class="identifier">data</span><span class="other">,&nbsp;</span><span class="keyword">long</span>&nbsp;<span class="identifier">count</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="identifier">content</span><span class="other">(</span><span class="other">)</span><span class="other">,&nbsp;</span><span class="identifier">readPos</span><span class="other">(</span><span class="number">0</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="17" xml:space="preserve"><span class="lineNumber">17</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="18" xml:space="preserve"><span class="lineNumber">18</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">auto</span>&nbsp;<span class="identifier">result</span><span class="other">&nbsp;=&nbsp;</span><span class="keyword">this</span><span class="other">-></span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Write_MemoryStream_B202C78A36B29DDB9FEE181EA884B7608BE8A752">Write</a><span class="other">(</span><span class="identifier">data</span><span class="other">,&nbsp;</span><span class="identifier">count</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="19" xml:space="preserve"><span class="lineNumber">19</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="20" xml:space="preserve"><span class="lineNumber">20</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">suppress</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#copy_constructor_MemoryStream_5B6F5AF3CF0930042925A7E47A14F54B372E1660">MemoryStream</a><span class="other">(</span><span class="keyword">const</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a><span class="other">&amp;</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="21" xml:space="preserve"><span class="lineNumber">21</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">suppress</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#copy_assignment_op_assign_MemoryStream_9A9840DF7D1BA54E700B01CCE321A79A4ADCF434">operator=</a><span class="other">(</span><span class="keyword">const</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a><span class="other">&amp;</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="22" xml:space="preserve"><span class="lineNumber">22</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">default</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#move_constructor_MemoryStream_FF858C69C83A1435A637893E5D4BE3AB0FC134A8">MemoryStream</a><span class="other">(</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a><span class="other">&amp;&amp;</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="23" xml:space="preserve"><span class="lineNumber">23</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">default</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#move_assignment_op_assign_MemoryStream_9BF4C65A73294937F3E16273A90BFCF876761834">operator=</a><span class="other">(</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a><span class="other">&amp;&amp;</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="24" xml:space="preserve"><span class="lineNumber">24</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">inline</span>&nbsp;<span class="keyword">const</span>&nbsp;<span class="keyword">byte</span><span class="other">*</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Data_MemoryStream_56992BD702C1FAC0AAD289CDDD7E5636FFE5FD4B">Data</a><span class="other">(</span><span class="other">)</span>&nbsp;<span class="keyword">const</span></span>
+  <br/>
+  <span class="code" id="25" xml:space="preserve"><span class="lineNumber">25</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="26" xml:space="preserve"><span class="lineNumber">26</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">.</span><a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html#member_function_CBegin_List_9E5EC8C2747BE1C6D0F865FB4F58F4D153FFA412">CBegin</a><span class="other">(</span><span class="other">)</span><span class="other">.</span><a href="../doc/class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484.html#member_function_Ptr_RandomAccessIter_5F4B32726ADCA07063A4A4D7300ECB5A6A2A5691">Ptr</a><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="27" xml:space="preserve"><span class="lineNumber">27</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="28" xml:space="preserve"><span class="lineNumber">28</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">inline</span>&nbsp;<span class="keyword">long</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Count_MemoryStream_9AD16E1CC7D33CAB277FB173112C6128726EB06C">Count</a><span class="other">(</span><span class="other">)</span>&nbsp;<span class="keyword">const</span></span>
+  <br/>
+  <span class="code" id="29" xml:space="preserve"><span class="lineNumber">29</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="30" xml:space="preserve"><span class="lineNumber">30</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">.</span><a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html#member_function_Count_List_0DF3C03F1483A6080A8C2DDAF6C8843E6F113B54">Count</a><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="31" xml:space="preserve"><span class="lineNumber">31</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="32" xml:space="preserve"><span class="lineNumber">32</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">inline</span>&nbsp;<span class="keyword">long</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_ReadPos_MemoryStream_BF15E295947F4C3D69962F772A73E813ECAF83C8">ReadPos</a><span class="other">(</span><span class="other">)</span>&nbsp;<span class="keyword">const</span></span>
+  <br/>
+  <span class="code" id="33" xml:space="preserve"><span class="lineNumber">33</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="34" xml:space="preserve"><span class="lineNumber">34</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="35" xml:space="preserve"><span class="lineNumber">35</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="36" xml:space="preserve"><span class="lineNumber">36</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="identifier">nodiscard</span><span class="other">]</span></span>
+  <br/>
+  <span class="code" id="37" xml:space="preserve"><span class="lineNumber">37</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">int</span><span class="other">></span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_ReadByte_MemoryStream_9B6EED5D584D4A6806293D4E810DF24FC4D60A48">ReadByte</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="38" xml:space="preserve"><span class="lineNumber">38</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="39" xml:space="preserve"><span class="lineNumber">39</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span>&nbsp;<span class="other">(</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">&nbsp;&lt;&nbsp;</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">.</span><a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html#member_function_Count_List_0DF3C03F1483A6080A8C2DDAF6C8843E6F113B54">Count</a><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="40" xml:space="preserve"><span class="lineNumber">40</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="41" xml:space="preserve"><span class="lineNumber">41</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">byte</span>&nbsp;<span class="identifier">r</span><span class="other">&nbsp;=&nbsp;</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">[</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">++</span><span class="other">]</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="42" xml:space="preserve"><span class="lineNumber">42</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a><span class="other">&lt;</span><span class="keyword">int</span><span class="other">></span><span class="other">(</span><span class="identifier">r</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="43" xml:space="preserve"><span class="lineNumber">43</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="44" xml:space="preserve"><span class="lineNumber">44</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a><span class="other">&lt;</span><span class="keyword">int</span><span class="other">></span><span class="other">(</span><span class="other">-</span><span class="number">1</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="45" xml:space="preserve"><span class="lineNumber">45</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="46" xml:space="preserve"><span class="lineNumber">46</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="identifier">nodiscard</span><span class="other">]</span></span>
+  <br/>
+  <span class="code" id="47" xml:space="preserve"><span class="lineNumber">47</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">long</span><span class="other">></span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Read_MemoryStream_519A4CCD807BF27344948E14ADE20AFD6C1C0F2F">Read</a><span class="other">(</span><span class="keyword">byte</span><span class="other">*</span>&nbsp;<span class="identifier">buf</span><span class="other">,&nbsp;</span><span class="keyword">long</span>&nbsp;<span class="identifier">count</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="48" xml:space="preserve"><span class="lineNumber">48</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="49" xml:space="preserve"><span class="lineNumber">49</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">long</span>&nbsp;<span class="identifier">bytesRead</span><span class="other">&nbsp;=&nbsp;</span><span class="number">0</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="50" xml:space="preserve"><span class="lineNumber">50</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">long</span>&nbsp;<span class="identifier">n</span><span class="other">&nbsp;=&nbsp;</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">.</span><a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html#member_function_Count_List_0DF3C03F1483A6080A8C2DDAF6C8843E6F113B54">Count</a><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="51" xml:space="preserve"><span class="lineNumber">51</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">while</span>&nbsp;<span class="other">(</span><span class="identifier">count</span><span class="other">&nbsp;>&nbsp;</span><span class="number">0</span><span class="other">&nbsp;&amp;&amp;&nbsp;</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">&nbsp;&lt;&nbsp;</span><span class="identifier">n</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="52" xml:space="preserve"><span class="lineNumber">52</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="53" xml:space="preserve"><span class="lineNumber">53</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">*</span><span class="identifier">buf</span><span class="other">++</span><span class="other">&nbsp;=&nbsp;</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">[</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">++</span><span class="other">]</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="54" xml:space="preserve"><span class="lineNumber">54</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">++</span><span class="identifier">bytesRead</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="55" xml:space="preserve"><span class="lineNumber">55</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">--</span><span class="identifier">count</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="56" xml:space="preserve"><span class="lineNumber">56</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="57" xml:space="preserve"><span class="lineNumber">57</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a><span class="other">&lt;</span><span class="keyword">long</span><span class="other">></span><span class="other">(</span><span class="identifier">bytesRead</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="58" xml:space="preserve"><span class="lineNumber">58</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="59" xml:space="preserve"><span class="lineNumber">59</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="identifier">nodiscard</span><span class="other">]</span></span>
+  <br/>
+  <span class="code" id="60" xml:space="preserve"><span class="lineNumber">60</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Write_MemoryStream_CDA1924FC9D50E46EA8063B6405161B349FDF623">Write</a><span class="other">(</span><span class="keyword">byte</span>&nbsp;<span class="identifier">x</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="61" xml:space="preserve"><span class="lineNumber">61</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="62" xml:space="preserve"><span class="lineNumber">62</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">.</span><a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html#member_function_Add_List_1D1B2D3DB629A4EB7D2FF5DC26BAC25844CDC950">Add</a><span class="other">(</span><span class="identifier">x</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="63" xml:space="preserve"><span class="lineNumber">63</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span><span class="other">(</span><span class="keyword">true</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="64" xml:space="preserve"><span class="lineNumber">64</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="65" xml:space="preserve"><span class="lineNumber">65</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="identifier">nodiscard</span><span class="other">]</span></span>
+  <br/>
+  <span class="code" id="66" xml:space="preserve"><span class="lineNumber">66</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Write_MemoryStream_B202C78A36B29DDB9FEE181EA884B7608BE8A752">Write</a><span class="other">(</span><span class="keyword">byte</span><span class="other">*</span>&nbsp;<span class="identifier">buf</span><span class="other">,&nbsp;</span><span class="keyword">long</span>&nbsp;<span class="identifier">count</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="67" xml:space="preserve"><span class="lineNumber">67</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="68" xml:space="preserve"><span class="lineNumber">68</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">while</span>&nbsp;<span class="other">(</span><span class="identifier">count</span><span class="other">&nbsp;>&nbsp;</span><span class="number">0</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="69" xml:space="preserve"><span class="lineNumber">69</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="70" xml:space="preserve"><span class="lineNumber">70</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">.</span><a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html#member_function_Add_List_1D1B2D3DB629A4EB7D2FF5DC26BAC25844CDC950">Add</a><span class="other">(</span><span class="other">*</span><span class="identifier">buf</span><span class="other">++</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="71" xml:space="preserve"><span class="lineNumber">71</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">--</span><span class="identifier">count</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="72" xml:space="preserve"><span class="lineNumber">72</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="73" xml:space="preserve"><span class="lineNumber">73</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span><span class="other">(</span><span class="keyword">true</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="74" xml:space="preserve"><span class="lineNumber">74</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="75" xml:space="preserve"><span class="lineNumber">75</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="identifier">nodiscard</span><span class="other">]</span></span>
+  <br/>
+  <span class="code" id="76" xml:space="preserve"><span class="lineNumber">76</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Seek_MemoryStream_8B3B34C2E7AA4C88CB20B1EBBD51A9E314D8BE13">Seek</a><span class="other">(</span><span class="keyword">long</span>&nbsp;<span class="identifier">pos</span><span class="other">,&nbsp;</span><a href="../doc/enumerated_type_Origin_A770811A120AA0D85B3AD4E90D4A9AF5ADC90D70.html">Origin</a>&nbsp;<span class="identifier">origin</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="77" xml:space="preserve"><span class="lineNumber">77</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="78" xml:space="preserve"><span class="lineNumber">78</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">switch</span>&nbsp;<span class="other">(</span><span class="identifier">origin</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="79" xml:space="preserve"><span class="lineNumber">79</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="80" xml:space="preserve"><span class="lineNumber">80</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Origin</span><span class="other">.</span><span class="identifier">seekSet</span><span class="other">:</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">&nbsp;=&nbsp;</span><span class="identifier">pos</span><span class="other">;</span>&nbsp;<span class="keyword">break</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="81" xml:space="preserve"><span class="lineNumber">81</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Origin</span><span class="other">.</span><span class="identifier">seekCur</span><span class="other">:</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">&nbsp;=&nbsp;</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">&nbsp;+&nbsp;</span><span class="identifier">pos</span><span class="other">;</span>&nbsp;<span class="keyword">break</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="82" xml:space="preserve"><span class="lineNumber">82</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Origin</span><span class="other">.</span><span class="identifier">seekEnd</span><span class="other">:</span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">&nbsp;=&nbsp;</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0">content</a><span class="other">.</span><a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html#member_function_Count_List_0DF3C03F1483A6080A8C2DDAF6C8843E6F113B54">Count</a><span class="other">(</span><span class="other">)</span><span class="other">&nbsp;+&nbsp;</span><span class="identifier">pos</span><span class="other">;</span>&nbsp;<span class="keyword">break</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="83" xml:space="preserve"><span class="lineNumber">83</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="84" xml:space="preserve"><span class="lineNumber">84</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span><span class="other">(</span><span class="keyword">true</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="85" xml:space="preserve"><span class="lineNumber">85</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="86" xml:space="preserve"><span class="lineNumber">86</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">long</span><span class="other">></span>&nbsp;<a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Tell_MemoryStream_F82DE67ACEC3D932A91350866B98C47746712C34">Tell</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="87" xml:space="preserve"><span class="lineNumber">87</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="88" xml:space="preserve"><span class="lineNumber">88</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a><span class="other">&lt;</span><span class="keyword">long</span><span class="other">></span><span class="other">(</span><a href="../doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79">readPos</a><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="89" xml:space="preserve"><span class="lineNumber">89</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="90" xml:space="preserve"><span class="lineNumber">90</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">private</span>&nbsp;<a href="../doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a><span class="other">&lt;</span><span class="keyword">byte</span><span class="other">></span>&nbsp;<span class="identifier">content</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="91" xml:space="preserve"><span class="lineNumber">91</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">private</span>&nbsp;<span class="keyword">long</span>&nbsp;<span class="identifier">readPos</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="92" xml:space="preserve"><span class="lineNumber">92</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+ </body>
+</html>

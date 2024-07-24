@@ -465,6 +465,11 @@ void Context::SetCompileUnitId(const std::string& compileUnitId_)
     dataRepository.SetCompileUnitId(compileUnitId_);
 }
 
+const std::string& Context::CompileUnitId() const
+{
+    return dataRepository.CompileUnitId();
+}
+
 void Context::AddMDStructItem(MDStruct* mdStruct, const std::string& fieldName, MDItem* item)
 {
     mdStruct->AddItem(fieldName, item);

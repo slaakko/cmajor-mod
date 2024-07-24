@@ -120,10 +120,19 @@ public:
     StatementNode* ThenS() { return thenS.get(); }
     const StatementNode* ElseS() const { return elseS.get(); }
     StatementNode* ElseS() { return elseS.get(); }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
+    const soul::ast::Span& ElseSpan() const { return elseSpan; }
+    void SetElseSpan(const soul::ast::Span& elseSpan_) { elseSpan = elseSpan_; }
 private:
     std::unique_ptr<Node> condition;
     std::unique_ptr<StatementNode> thenS;
     std::unique_ptr<StatementNode> elseS;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
+    soul::ast::Span elseSpan;
 };
 
 class WhileStatementNode : public StatementNode
@@ -141,9 +150,15 @@ public:
     Node* Condition() { return condition.get(); }
     const StatementNode* Statement() const { return statement.get(); }
     StatementNode* Statement() { return statement.get(); }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
 private:
     std::unique_ptr<Node> condition;
     std::unique_ptr<StatementNode> statement;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
 };
 
 class DoStatementNode : public StatementNode
@@ -161,9 +176,18 @@ public:
     StatementNode* Statement() { return statement.get(); }
     const Node* Condition() const { return condition.get(); }
     Node* Condition() { return condition.get(); }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
+    const soul::ast::Span& WhileSpan() const { return whileSpan; }
+    void SetWhileSpan(const soul::ast::Span& whileSpan_) { whileSpan = whileSpan_; }
 private:
     std::unique_ptr<StatementNode> statement;
     std::unique_ptr<Node> condition;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
+    soul::ast::Span whileSpan;
 };
 
 class ForStatementNode : public StatementNode
@@ -185,11 +209,17 @@ public:
     StatementNode* LoopS() { return loopS.get(); }
     const StatementNode* ActionS() const { return actionS.get(); }
     StatementNode* ActionS() { return actionS.get(); }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
 private:
     std::unique_ptr<StatementNode> initS;
     std::unique_ptr<Node> condition;
     std::unique_ptr<StatementNode> loopS;
     std::unique_ptr<StatementNode> actionS;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
 };
 
 class BreakStatementNode : public StatementNode
@@ -343,11 +373,20 @@ public:
     Node* Container() { return container.get(); }
     const StatementNode* Action() const { return action.get(); }
     StatementNode* Action() { return action.get(); }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
+    const soul::ast::Span& ColonSpan() const { return colonSpan; }
+    void SetColonSpan(const soul::ast::Span& colonSpan_) { colonSpan = colonSpan_; }
 private:
     std::unique_ptr<Node> typeExpr;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<Node> container;
     std::unique_ptr<StatementNode> action;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
+    soul::ast::Span colonSpan;
 };
 
 class CaseStatementNode;
@@ -370,10 +409,22 @@ public:
     void SetDefault(DefaultStatementNode* defaultS_);
     const DefaultStatementNode* Default() const { return defaultS.get(); }
     DefaultStatementNode* Default() { return defaultS.get(); }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
+    const soul::ast::Span& BeginBraceSpan() const { return beginBraceSpan; }
+    void SetBeginBraceSpan(const soul::ast::Span& beginBraceSpan_) { beginBraceSpan = beginBraceSpan_; }
+    const soul::ast::Span& EndBraceSpan() const { return endBraceSpan; }
+    void SetEndBraceSpan(const soul::ast::Span& endBraceSpan_) { endBraceSpan = endBraceSpan_; }
 private:
     std::unique_ptr<Node> condition;
     NodeList<CaseStatementNode> cases;
     std::unique_ptr<DefaultStatementNode> defaultS;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
+    soul::ast::Span beginBraceSpan;
+    soul::ast::Span endBraceSpan;
 };
 
 class CaseStatementNode : public StatementNode
@@ -388,9 +439,12 @@ public:
     const NodeList<Node>& CaseExprs() const { return caseExprs; }
     void AddStatement(StatementNode* statement);
     const NodeList<StatementNode>& Statements() const { return statements; }
+    void AddCaseSpan(const soul::ast::Span& caseSpan) { caseSpans.push_back(caseSpan); }
+    const std::vector<soul::ast::Span>& CaseSpans() const { return caseSpans; }
 private:
     NodeList<Node> caseExprs;
     NodeList<StatementNode> statements;
+    std::vector<soul::ast::Span> caseSpans;
 };
 
 class DefaultStatementNode : public StatementNode
@@ -486,10 +540,16 @@ public:
     IdentifierNode* Id() { return id.get(); }
     const CompoundStatementNode* CatchBlock() const { return catchBlock.get(); }
     CompoundStatementNode* CatchBlock() { return catchBlock.get(); }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
 private:
     std::unique_ptr<Node> typeExpr;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<CompoundStatementNode> catchBlock;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
 };
 
 class AssertStatementNode : public StatementNode
@@ -600,9 +660,18 @@ public:
     void Read(AstReader& reader) override;
     ConditionalCompilationExpressionNode* Expr() const { return expr.get(); }
     const NodeList<StatementNode>& Statements() const { return statements; }
+    const soul::ast::Span& KeywordSpan() const { return keywordSpan; }
+    void SetKeywordSpan(const soul::ast::Span& keywordSpan_) { keywordSpan = keywordSpan_; }
+    const soul::ast::Span& LParenSpan() const { return lparenSpan; }
+    void SetLParenSpan(const soul::ast::Span& lparenSpan_) { lparenSpan = lparenSpan_; }
+    const soul::ast::Span& RParenSpan() const { return rparenSpan; }
+    void SetRParenSpan(const soul::ast::Span& rparenSpan_) { rparenSpan = rparenSpan_; }
 private:
     std::unique_ptr<ConditionalCompilationExpressionNode> expr;
     NodeList<StatementNode> statements;
+    soul::ast::Span keywordSpan;
+    soul::ast::Span lparenSpan;
+    soul::ast::Span rparenSpan;
 };
 
 class ConditionalCompilationStatementNode : public StatementNode
@@ -624,10 +693,13 @@ public:
     void SetIfPart(cmajor::ast::ConditionalCompilationPartNode* ifPart_);
     void AddElifPart(cmajor::ast::ConditionalCompilationPartNode* elifPart);
     void SetElsePart(cmajor::ast::ConditionalCompilationPartNode* elsePart_);
+    const soul::ast::Span& EndIfSpan() const { return endIfSpan; }
+    void SetEndIfSpan(const soul::ast::Span& endIfSpan_) { endIfSpan = endIfSpan_; }
 private:
     std::unique_ptr<cmajor::ast::ConditionalCompilationPartNode> ifPart;
     NodeList<cmajor::ast::ConditionalCompilationPartNode> elifParts;
     std::unique_ptr<cmajor::ast::ConditionalCompilationPartNode> elsePart;
+    soul::ast::Span endIfSpan;
 };
 
 } // namespace cmajor::ast

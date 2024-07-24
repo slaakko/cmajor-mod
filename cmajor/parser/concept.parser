@@ -39,11 +39,11 @@ parser ConceptParser
             Specifiers:specifiers{ s = lexer.GetSpan(pos); }
             CONCEPT
             Identifier(context):conceptName{ conceptNode.reset(new cmajor::ast::ConceptNode(s, specifiers, conceptName)); }
-            LANGLE
+            LANGLE{ conceptNode->SetBeginBraceSpan(lexer.GetSpan(pos)); }
             (
                 Identifier(context):typeParam{ conceptNode->AddTypeParameter(typeParam); } % COMMA
             )
-            RANGLE
+            RANGLE{ conceptNode->SetEndBraceSpan(lexer.GetSpan(pos)); }
             (
                 Refinement(context):refinement{ conceptNode->SetRefinement(refinement); }
             )?
@@ -193,14 +193,15 @@ parser ConceptParser
         }
         ;
 
-    EmbeddedConstraint(cmajor::parser::context::Context* context) : cmajor::ast::WhereConstraintNode*
+    EmbeddedConstraint(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::WhereConstraintNode> constraint) : cmajor::ast::WhereConstraintNode*
         ::= 
         (
-            WhereConstraint(context):constraint
+            WhereConstraint(context):c{ constraint.reset(c); }
             SEMICOLON
         )
         {
-            return constraint;
+            constraint->SetSemicolon();
+            return constraint.release();
         }
         ;
 
@@ -325,9 +326,9 @@ parser ConceptParser
             Identifier(context):id?
             empty{ axiomNode.reset(new cmajor::ast::AxiomNode(s, id)); }
             ParameterList(context, axiomNode.get()):paramList?
-            LBRACE
+            LBRACE{ axiomNode->SetBeginBraceSpan(lexer.GetSpan(pos)); }
             AxiomBody(context, axiomNode.get()):axiomBody
-            RBRACE
+            RBRACE{ axiomNode->SetEndBraceSpan(lexer.GetSpan(pos)); }
         )
         {
             conceptNode->AddAxiom(axiomNode.release());

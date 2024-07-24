@@ -268,8 +268,9 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.Windows.Image", id: "diagram_node_0", level: 0, subject: true, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Image_0C854FE3EE188E9E90F25AAC12D138DEA1CD552F.html" },
-        { name: "System.Windows.Bitmap", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Windows/doc/class_Bitmap_9353F3F51063287F07823DBC826FA90D5D4D4F28.html" }];
+        { name: "System.Windows.GraphicsObject", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_GraphicsObject_7C98CD08CF463746DBA93565958E3CB9D87DFDF9.html" },
+        { name: "System.Windows.Image", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Image_0C854FE3EE188E9E90F25AAC12D138DEA1CD552F.html" },
+        { name: "System.Windows.Bitmap", id: "diagram_node_2", level: 2, subject: false, hasDerivedNodes: false, link: "../../System.Windows/doc/class_Bitmap_9353F3F51063287F07823DBC826FA90D5D4D4F28.html" }];
     drawDiagram(diagramNodes);
 }
 

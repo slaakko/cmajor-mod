@@ -269,7 +269,7 @@ function drawDiagram(diagramNodes) {
 function drawInheritanceDiagram() {
     var diagramNodes = [
         { name: "System.CounterBase", id: "diagram_node_0", level: 0, subject: true, hasDerivedNodes: true, link: "../../System.Base/doc/class_CounterBase_10B5255B4C6CEAF6663DDD03CCD6EFED9BFD9254.html" },
-        { name: "System.Counter&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/class_Counter_T_38A7F42D0E20389A22B581B3FAAD0E018811DD30.html" }];
+        { name: "System.Counter&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/class_Counter_38A7F42D0E20389A22B581B3FAAD0E018811DD30.html" }];
     drawDiagram(diagramNodes);
 }
 

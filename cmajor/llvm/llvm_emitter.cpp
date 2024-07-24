@@ -4,6 +4,7 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/DIBuilder.h>
 #include <llvm/Support/raw_os_ostream.h>
@@ -18,6 +19,7 @@ module;
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/IRPrinter/IRPrintingPasses.h>
 #include <llvm/IR/DebugInfoMetadata.h>
+#pragma warning(default : 4996)
 
 module cmajor.llvm.emitter;
 
@@ -2381,6 +2383,11 @@ void* LLVMEmitter::GenerateTrap(const std::vector<void*>& args)
 void LLVMEmitter::SetCompileUnitId(const std::string& compileUnitId_)
 {
     compileUnitId = compileUnitId_;
+}
+
+const std::string& LLVMEmitter::CompileUnitId() const
+{
+    return compileUnitId;
 }
 
 void* LLVMEmitter::GetClsIdValue(const std::string& typeId)

@@ -1,0 +1,30 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions cmajor.token.expr
+{
+    ws = "[\t ]";
+    newline = "\r\n|\n|\r";
+    linecomment = "//[^\n\r]*{newline}";
+    blockcomment = "/\*([^*]|\*[^/])*\*/";
+    blockcommentline = "([^*\n\r]|\*[^/\n\r])*(\*/|{newline})";
+    comment = "{linecomment}|{blockcomment}";
+    separators = "({ws}|{comment})+";
+    id = "{unicode_id_start}{unicode_id_cont}*";
+    decdigits = "[0-9]+";
+    hexdigit = "[0-9a-fA-F]";
+    hexdigits = "{hexdigit}+";
+    hex4 = "{hexdigit}{hexdigit}{hexdigit}{hexdigit}";
+    hex8 = "{hex4}{hex4}";
+    octaldigits = "[0-7]+";
+    fraction = "{decdigits}?\.{decdigits}|{decdigits}\.";
+    sign = "\+|-";
+    exponent = "(e|E){sign}?{decdigits}";
+    integer = "(0{octaldigits}?|[1-9]{decdigits}?|0(x|X){hexdigits})(u|U)?";
+    floating = "({fraction}{exponent}?|{decdigits}{exponent})(f|F)?";
+    escape = "\\((x|X){hexdigits}|(d|D){decdigits}|{octaldigits}|u{hex4}|U{hex8}|[abfnrtv\"'\\])";
+    character = "(w|u)?'([^\\\r\n']+|{escape})'";
+    string = "((w|u)?@\"[^\"]*\")|(w|u)?\"([^\\\r\n\"]|{escape})*\"";
+}

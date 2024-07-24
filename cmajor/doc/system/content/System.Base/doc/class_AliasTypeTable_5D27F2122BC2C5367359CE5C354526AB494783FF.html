@@ -6,9 +6,14 @@
  </head>
  <body>
   <h1>AliasTypeTable Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#1703">1703</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
-  <h2>Constructors &amp; Destructor</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#2039">2039</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">static</span></td>
@@ -23,7 +28,7 @@
     <td xml:space="preserve"><a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html#destructor_AliasTypeTable_D209CEB489EA97A77C3E600CA0CAC1E1F1EBA273">~AliasTypeTable</a>()</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_AliasType_26C1BD4B52D4B4FA45C72272C56F7F26186F16BD.html">AliasType</a>*</td>
@@ -31,29 +36,29 @@
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_AliasType_26C1BD4B52D4B4FA45C72272C56F7F26186F16BD.html">AliasType</a>*</td>
-    <td xml:space="preserve"><a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html#member_function_GetAliasType_AliasTypeTable_CB4D0712854471A5282E397E5C027A9791A1D4AD">GetAliasType</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name)&nbsp;<span class="kw">const</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html#member_function_GetAliasType_AliasTypeTable_CB4D0712854471A5282E397E5C027A9791A1D4AD">GetAliasType</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name)&nbsp;<span class="kw">const</span></td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html">AliasTypeTable</a>&amp;</td>
     <td xml:space="preserve"><a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html#member_function_Instance_AliasTypeTable_35D2366A52CC94AEF1D587AFB203B22FFA264C93">Instance</a>()</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<span class="kw">uint</span>, <span class="kw">void</span>*, <a href="../../System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<span class="kw">uint</span>>, <a href="../../System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<span class="kw">uint</span>>></td>
+    <td class="rightAlignedCol" id="member_variable_aliasTypeIdMap_E9712F9C0318831F777AD48153F49E804D1A8A6B" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<span class="kw">uint</span>, <span class="kw">void</span>*, <a href="../../System.Base/doc/class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<span class="kw">uint</span>>></td>
     <td xml:space="preserve">aliasTypeIdMap</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../System.Base/doc/class_AliasType_26C1BD4B52D4B4FA45C72272C56F7F26186F16BD.html">AliasType</a>*></td>
+    <td class="rightAlignedCol" id="member_variable_aliasTypes_612C51B39081E083FF6D02D6657E0DE6BADEE78B" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../System.Base/doc/class_AliasType_26C1BD4B52D4B4FA45C72272C56F7F26186F16BD.html">AliasType</a>*></td>
     <td xml:space="preserve">aliasTypes</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html">AliasTypeTable</a>></td>
+    <td class="rightAlignedCol" id="member_variable_instance_A7680DA1D488B124B4B597833730FA45B4933D5B" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html">AliasTypeTable</a>></td>
     <td xml:space="preserve">instance</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314.html">HashMap</a>&lt;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>, <span class="kw">void</span>*, <a href="../../System.Base/doc/class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>, <a href="../../System.Base/doc/class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>></td>
+    <td class="rightAlignedCol" id="member_variable_nameMap_F4CB0935E8FF058F99FB816324DA129BBCCA7F7B" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>, <span class="kw">void</span>*, <a href="../../System.Base/doc/class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>></td>
     <td xml:space="preserve">nameMap</td>
    </tr>
   </table>
@@ -61,21 +66,21 @@
   <h3 id="static_constructor_AliasTypeTable_000F7F1388E33186423F2CD751A22B7CFFF06155" xml:space="preserve">AliasTypeTable&nbsp;Static Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">static</span>&nbsp;AliasTypeTable()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#1705">1705</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#2041">2041</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="default_constructor_AliasTypeTable_C043369E2AB06F7654FB732F5784C16EC1EC3D38" xml:space="preserve">AliasTypeTable&nbsp;Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;AliasTypeTable()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#1730">1730</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#2066">2066</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="destructor_AliasTypeTable_D209CEB489EA97A77C3E600CA0CAC1E1F1EBA273" xml:space="preserve">~AliasTypeTable&nbsp;Destructor</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~AliasTypeTable()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#1743">1743</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#2079">2079</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
   <br/>
   <br/>
   <hr/>
@@ -83,21 +88,21 @@
   <h3 id="member_function_GetAliasType_AliasTypeTable_BCF284A2B2F7E2C2FDDDD45C67A074AFB87BBFB2" xml:space="preserve">GetAliasType&nbsp;Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_AliasType_26C1BD4B52D4B4FA45C72272C56F7F26186F16BD.html">AliasType</a>*&nbsp;GetAliasType(<a href="../../System.Base/doc/enumerated_type_AliasTypeId_7FC85F30EF822D1494ABEF86D1AE5D80A01D6A27.html">AliasTypeId</a>&nbsp;id)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#1712">1712</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#2048">2048</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_GetAliasType_AliasTypeTable_CB4D0712854471A5282E397E5C027A9791A1D4AD" xml:space="preserve">GetAliasType&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_AliasType_26C1BD4B52D4B4FA45C72272C56F7F26186F16BD.html">AliasType</a>*&nbsp;GetAliasType(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_AliasType_26C1BD4B52D4B4FA45C72272C56F7F26186F16BD.html">AliasType</a>*&nbsp;GetAliasType(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#1721">1721</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#2057">2057</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_Instance_AliasTypeTable_35D2366A52CC94AEF1D587AFB203B22FFA264C93" xml:space="preserve">Instance&nbsp;Static Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Base/doc/class_AliasTypeTable_5D27F2122BC2C5367359CE5C354526AB494783FF.html">AliasTypeTable</a>&amp;&nbsp;Instance()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#1708">1708</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Unicode.cm.html#2044">2044</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Unicode.cm.html">System.Base/Unicode.cm</a></span>
   <br/>
   <br/>
   <hr/>

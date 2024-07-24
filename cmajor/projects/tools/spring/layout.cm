@@ -251,7 +251,13 @@ namespace spring
 
     Result<string> SpringDirectory()
     {
-        string cmajorRoot = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        string cmajorRoot;
+        int stringHandle = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (stringHandle != -1)
+        {
+            cmajorRoot = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+        }
         if (cmajorRoot.IsEmpty())
         {
             int errorId = AllocateError("CMAJOR_ROOT environment variable not set (set it to /path/to/cmajor directory)");

@@ -2,8 +2,8 @@
 <docs>
   <doc id="solution">
     <desc>
-      The Cmajor System Library consists of nineteen modules.
-      The <a href="content/System.Base/index.html">System.Base</a> module constitutes the major part of the System Library.
+      The Cmajor System Library consists of sixteen modules.
+      The <a href="content/System.Base/index.html">System.Base</a> module constitutes a major part of the System Library.
     </desc>
   </doc>
   <doc id="System.Windows.Install">
@@ -61,76 +61,34 @@
       Thus <a href="../../../code/xml/cmdoc/content/XPath2/file/xpath2.cm.html">this</a> program prints Socrates.
     </details>
   </doc>
-  <doc id="function_Evaluate_BAADC9F9757ECDA2C151920B9C3805CAD33229D9">
+  <doc id="function_Evaluate_9BFC4966EFBA2E4968FEB78FE20F2809BB062B6C">
     <desc>
-      Compiles the given XPath
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_Expr_35256B60DE19B4D934C20948CE6D8BCE49F1731C">query expression</a>,
-      evaluates it with respect to the given <ref>class_DomDocument_975632F3AA8CF3FEC1D51FB0E91F580D6EBA16C8</ref> and returns the resulting
-      <ref>class_XPathObject_91D53F03F45FCACE5D10959D030939A3CBB38F3E</ref>.
+      Evaluates the given XPATH expression with respect to the given XML context node and returns the result.
+      In case of an error returns an error result.
     </desc>
-    <details>
-      The concrete type of the result depends on the supplied XPath expression. If the expression is a
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_PathExpr_119171CB9F132FA051BB69B3AF4916B1C4410851">path expression</a>
-      the result will be a <ref>class_XPathNodeSet_70D9F2F055A2EAFCF3988BC033AE454E204F643A</ref>.
-      If the expression is a Boolean expression, for example an
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_OrExpr_7DB3F0405E0E1FE54A04A420B05B0AAD7F692390">or expression</a>,
-      the result will be a <ref>class_XPathBoolean_62EBEB870905B1B981080A7A18EBBBD98ADD5C4A</ref>, and so on.
-      The result of a
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_FunctionCall_7F14EFF296F2A74BFB4E5605F6E7A0AFE65608B8">function call</a>
-      has a type depending on the function called. The functions implemented are documented under the
-      <ref>class_XPathFunctionLibrary_5044787DDFDAF4AF5701F92F8775A709B4496547</ref>.
-    </details>
-    <details>
-      If the query string is not syntactically valid
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_Expr_35256B60DE19B4D934C20948CE6D8BCE49F1731C">XPath expression</a>,
-      the function throws an <ref>class_ExpectationFailure_EBDBB0FC1DDED5BE7E15008622BB34AFCA7E9A8C</ref> exception.
-      If an error such as type violation is detected when evaluating the query expression, the function
-      throws an <ref>class_XPathException_5F5973D81A22230252D5069223C1877CBFBA755A</ref> exception.
-    </details>
   </doc>
-  <doc id="function_Evaluate_7744D75060A34CA07FEAF119B483BB6EC1226786">
+  <doc id="function_EvaluateToNodeSet_76B358731215A2E91165FB385F64C7BB6C3BDEE5">
     <desc>
-      Compiles the given XPath
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_Expr_35256B60DE19B4D934C20948CE6D8BCE49F1731C">query expression</a>,
-      evaluates it with respect to the given <ref>class_DomNode_AAD27BD01107131DCBD7D66B91A6A861C7C23509</ref> and returns the resulting
-      <ref>class_XPathObject_91D53F03F45FCACE5D10959D030939A3CBB38F3E</ref>.
+      Evaluates the given XPATH expression with respect to the given XML context node and returns the node-set result.
+      If the expression does not evaluate to a node-set, or other error occurs, returns an error result. 
     </desc>
-    <details>
-      The concrete type of the result depends on the supplied XPath expression. If the expression is a
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_PathExpr_119171CB9F132FA051BB69B3AF4916B1C4410851">path expression</a>
-      the result will be a <ref>class_XPathNodeSet_70D9F2F055A2EAFCF3988BC033AE454E204F643A</ref>.
-      If the expression is a Boolean expression, for example an
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_OrExpr_7DB3F0405E0E1FE54A04A420B05B0AAD7F692390">or expression</a>,
-      the result will be a <ref>class_XPathBoolean_62EBEB870905B1B981080A7A18EBBBD98ADD5C4A</ref>.
-      The result of a
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_FunctionCall_7F14EFF296F2A74BFB4E5605F6E7A0AFE65608B8">function call</a>
-      has a type depending on the function called. The functions implemented are documented under the
-      <ref>class_XPathFunctionLibrary_5044787DDFDAF4AF5701F92F8775A709B4496547</ref>.
-    </details>
-    <details>
-      If the query string is not syntactically valid
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_Expr_35256B60DE19B4D934C20948CE6D8BCE49F1731C">XPath expression</a>,
-      the function throws an <ref>class_ExpectationFailure_EBDBB0FC1DDED5BE7E15008622BB34AFCA7E9A8C</ref> exception.
-      If an error such as type violation is detected when evaluating the query expression, the function
-      throws an <ref>class_XPathException_5F5973D81A22230252D5069223C1877CBFBA755A</ref> exception.
-    </details>
   </doc>
-  <doc id="class_XPathFunctionLibrary_5044787DDFDAF4AF5701F92F8775A709B4496547">
+  <doc id="class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F">
     <desc>
       The function library contains only a minimal set of XPath functions: <strong>boolean</strong>, <strong>number</strong>, <strong>string</strong>,
       <strong>last</strong>, <strong>position</strong> and <strong>count</strong>.
       </desc>
     <details>
       The implemented functions are:
-      <ref>class_XPathBooleanFunction_436037BD58AFA8408E3A2FB305BBBE107362B516</ref>,
-      <ref>class_XPathNumberFunction_3CD349E443E9F9856C593054B85BA4FEFECC42C7</ref>,
-      <ref>class_XPathStringFunction_7B03242259C3ABC0C5FDCBC3F3A3791DAB1E9862</ref>,
-      <ref>class_XPathLastFunction_470D2B0434975293AB9C5EEA6266A1B38E7C6E95</ref>,
-      <ref>class_XPathPositionFunction_CD239B9D33A34AB01D2239F7A7FF3B1F0646ED05</ref>, and
-      <ref>class_XPathCountFunction_2296BBD53FA4F0D57A2C327CD82EB2E7B5FE38CF</ref>.
+      <ref>class_BooleanFunction_79F14FC3DFA8C47C2EE90BB7288F2D3E707DCAF4</ref>,
+      <ref>class_NumberFunction_7E4C45FEF142926E9059C4B09CA72A9A0828E671</ref>,
+      <ref>class_StringFunction_4D59657A7F0A08D5D3284630824612CC44636382</ref>,
+      <ref>class_LastFunction_3FCC71B59BB2DFDDE80BD4B3983DCC778283862B</ref>,
+      <ref>class_PositionFunction_0C9A78BCB749ECF886731E893B5D0D5DAD42D809</ref>, and
+      <ref>class_CountFunction_679D9777A259BC791727E5FBAF786BD04AD81CC7</ref>.
     </details>
   </doc>
-  <doc id="class_XPathBooleanFunction_436037BD58AFA8408E3A2FB305BBBE107362B516">
+  <doc id="class_BooleanFunction_79F14FC3DFA8C47C2EE90BB7288F2D3E707DCAF4">
     <desc>
       <strong>Function:</strong> <em>boolean</em> <strong>boolean</strong>(<em>object</em>)
     </desc>
@@ -138,7 +96,7 @@
       Implements the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/#function-boolean">boolean</a> conversion function.
     </details>
   </doc>
-  <doc id="class_XPathNumberFunction_3CD349E443E9F9856C593054B85BA4FEFECC42C7">
+  <doc id="class_NumberFunction_7E4C45FEF142926E9059C4B09CA72A9A0828E671">
     <desc>
       <strong>Function:</strong> <em>number</em> <strong>number</strong>(<em>object</em>?)
     </desc>
@@ -146,7 +104,7 @@
       Implements the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/#function-number">number</a> conversion function.
     </details>
   </doc>
-  <doc id="class_XPathStringFunction_7B03242259C3ABC0C5FDCBC3F3A3791DAB1E9862">
+  <doc id="class_StringFunction_4D59657A7F0A08D5D3284630824612CC44636382">
     <desc>
       <strong>Function:</strong> <em>string</em> <strong>string</strong>(<em>object</em>?)
     </desc>
@@ -154,7 +112,7 @@
       Implements the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/#function-string">string</a> conversion function.
     </details>
   </doc>
-  <doc id="class_XPathLastFunction_470D2B0434975293AB9C5EEA6266A1B38E7C6E95">
+  <doc id="class_LastFunction_3FCC71B59BB2DFDDE80BD4B3983DCC778283862B">
     <desc>
       <strong>Function:</strong> <em>number</em> <strong>last</strong>()
     </desc>
@@ -162,7 +120,7 @@
       Implements the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/#function-last">last</a> function.
     </details>
   </doc>
-  <doc id="class_XPathPositionFunction_CD239B9D33A34AB01D2239F7A7FF3B1F0646ED05">
+  <doc id="class_PositionFunction_0C9A78BCB749ECF886731E893B5D0D5DAD42D809">
     <desc>
       <strong>Function:</strong> <em>number</em> <strong>position</strong>()
     </desc>
@@ -170,19 +128,13 @@
       Implements the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/#function-position">position</a> function.
     </details>
   </doc>
-  <doc id="class_XPathCountFunction_2296BBD53FA4F0D57A2C327CD82EB2E7B5FE38CF">
+  <doc id="class_CountFunction_679D9777A259BC791727E5FBAF786BD04AD81CC7">
     <desc>
       <strong>Function:</strong> <em>number</em> <strong>count</strong>(<em>node-set</em>)
     </desc>
     <details>
       Implements the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/#function-count">count</a> function.
     </details>
-  </doc>
-  <doc id="class_XPathException_5F5973D81A22230252D5069223C1877CBFBA755A">
-    <desc>
-      Thrown when there is an error executing an
-      <a href="grammar_XPathExpressionGrammar_D814D198200E8CD6C8ED51082723082DF24B5607.html#rule_Expr_35256B60DE19B4D934C20948CE6D8BCE49F1731C">XPath expression</a>.
-    </desc>
   </doc>
 
   <doc id="System.RegularExpressions">
@@ -236,55 +188,20 @@
     </desc>
   </doc>
 
-  <doc id="System.Numerics.Multiprecision">
-    <desc>
-      The System.Numerics.Multiprecision library provides three arbitrary precision number classes
-      <ref>class_BigInt_9326EADB23C0E0FE1858A97CCC64FF60DD2A22D0</ref>, <ref>class_BigRational_0F62DE7516E5ADB5CE79939E2167456710EF7B23</ref> and
-      <ref>class_BigFloat_BC19EFB82C8E666524B4436C56800B572EFBED53</ref> and arithmetic operations for them.
-      It is implemented by means of <a href="https://www.boost.org/">Boost.Multiprecision library</a>.
-    </desc>
-    <details title="Example">
-      This <a href="../../../examples/content/BigNumCalc/index.html">BigNumCalc</a> example program contains a multiprecision desk calculator.
-    </details>
+  <doc id="System.Net.BinaryMessageProtocol">
+   <desc>
+     The System.Net.BinaryMessageProtocol module provides library support for sending and receiving binary messages over a <ref>class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C</ref>.
+   </desc>
   </doc>
-
-  <doc id="System.Net.Http">
-    <desc>
-      The System.Net.Http module contains a simple HTTP/1.1 client and URI parser.
-    </desc>
-    <details>
-      The fundamental classes are <ref>class_HttpClient_83C2D3F4BD814B26EED122D5467B7A58D6B02DCB</ref>,
-      <ref>class_UriReference_6E4543DEBAEE63870C6B9BC9C602E2225A228B71</ref> and
-      <ref>class_HttpHeaderCollection_3842C23118DB927F1943E7359BD822DBC5D282D8</ref>.
-      Support for HTTPS protocol is implemented by means of <a href="http://www.gnutls.org/">GnuTLS</a> library.
-    </details>
-    <details title="Examples">
-      This <a href="../../../code/http/cmdoc/content/httpClient1/file/httpClient1.cm.html">httpClient1</a> example program
-      retrieves an XML document using HTTP protocol and prints it to console.
-    </details>
-    <details>
-      This <a href="../../../code/http/cmdoc/content/httpClient2/file/httpClient2.cm.html">httpClient2</a> example program
-      retrieves a HTML document using HTTPS protocol and prints the response statistics to console.
-    </details>
-    <details>
-      This <a href="../../../code/cmdoc/content/rfc/file/main.cm.html">program</a> retrieves an RFC document from rfc-editor.org, saves it to a 
-      file and then shows it in the default browser.
-    </details>
+  <doc id="function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144">
+   <desc>
+	 Reads a binary message from a socket and returns it. Returns an error result if reading fails.
+   </desc>
   </doc>
-  <doc id="class_HttpClient_83C2D3F4BD814B26EED122D5467B7A58D6B02DCB">
-    <desc>
-      Represents a HTTP/1.1 client.
-    </desc>
-  </doc>
-  <doc id="class_HttpHeaderCollection_3842C23118DB927F1943E7359BD822DBC5D282D8">
-    <desc>
-      Represents a collection of HTTP headers.
-    </desc>
-  </doc>
-  <doc id="class_UriReference_6E4543DEBAEE63870C6B9BC9C602E2225A228B71">
-    <desc>
-      Represents a <a href="https://en.wikipedia.org/wiki/Uniform_Resource_Identifier">URI</a>.
-    </desc>
+  <doc id="function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A">
+   <desc>
+    Writes a binary message to a socket and returns a true result if writing succeeds or an error result otherwise.
+   </desc>
   </doc>
 
   <doc id="System.Net.Sockets">
@@ -304,31 +221,10 @@
       creates a <ref>class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C</ref>, sends a HTTP/1.1 request using the socket,
       reads the reply into a string using an <ref>class_IOBuffer_7AC61842AD3FCA40A4176E0D72E981B672D7E222</ref> and prints the reply to console.
     </details>
-    <details>
-      This <a href="../../../code/socket/cmdoc/content/socketClient2/file/socketClient2.cm.html">socketClient2</a> example
-      creates a <ref>class_TcpClient_BEAB95A1A35E77E97DFDF4C9915EEDD66CFDEF21</ref>,
-      gets a <ref>class_NetworkByteStream_5A7A9D75DF6B7A874E386D849EB0B8F0D28C226D</ref> from it,
-      sends a HTTP/1.1 request to the stream, reads the reply from the stream into a string and prints the reply to console.
-  </details>
   </doc>
   <doc id="class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C">
     <desc>
       Represents a synchronous reliable connection-oriented socket.
-    </desc>
-  </doc>
-  <doc id="class_TcpClient_BEAB95A1A35E77E97DFDF4C9915EEDD66CFDEF21">
-    <desc>
-      Represents a client-side socket connection that provides a <ref>class_NetworkByteStream_5A7A9D75DF6B7A874E386D849EB0B8F0D28C226D</ref>.
-    </desc>
-    <details>
-      The stream can be read and written to directly, or it can be passed to a <ref>class_StreamReader_8A8267CD81BA8B198AF295474A8CB0B2DFBB7B57</ref> and/or
-      to a <ref>class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311</ref> for text I/O, or to
-      <ref>class_BinaryReader_7D0A41A9C666814155001B1AF5B066E926C8F3AC</ref> and/or <ref>class_BinaryWriter_6D47712E9CF8C098A17FFF3729140EE727BD87E2</ref> for binary I/O.
-    </details>
-  </doc>
-  <doc id="class_NetworkByteStream_5A7A9D75DF6B7A874E386D849EB0B8F0D28C226D">
-    <desc>
-      Represents a stream connected to a <ref>class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C</ref>.
     </desc>
   </doc>
   <doc id="class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B">
@@ -336,17 +232,7 @@
       Represents a server-side socket that can be used to listen and accept client connections.
     </desc>
   </doc>
-  <doc id="class_SocketException_543E6533D1008D044BED00CE9B250109F27F18FB">
-    <desc>
-      Thrown when an error in a socket operation is detected.
-    </desc>
-  </doc>
-  <doc id="enumeration_constant_useTls_D27FDBD0B9D7AEF5379EE263B8FF5A13ABA03135">
-    <desc>
-      Use Transport Layer Security provided by the <a href="http://www.gnutls.org/">GnuTLS</a> library.
-    </desc>
-  </doc>
-
+  
   <doc id="ns_System.Threading.Fibers">
     <desc>
        Contains support for fibers that are stackful explicitly scheduled coroutines.
@@ -360,88 +246,12 @@
     <desc>
       The System.Json module contains support for <a href="https://www.json.org/">JSON</a> serialization.
     </desc>
-    <details>
-      The JSON serialization support is implemented in half by the compiler and in half by the <ref>ns_System.Json</ref> library.
-      The compiler processes <a href="../../../langref/langref.html#attributes">attributes</a> named <strong>json</strong> and <strong>jsonFieldName</strong>
-      that are attached to user-defined JSON serializable classes and generates serialization code for them.
-      The <ref>ns_System.Json</ref> library contains conversion function overloads that call the compiler generated serialization code.
-    </details>
-    <details>
-      When a user-defined class has a <strong>json</strong> attribute, an object of that class can be serialized to a JSON string.
-      Construction of the JSON string from a JSON serializable class is a three-step process.
-      First an object of the class to serialize is created with <strong>new</strong> and assigned to a <ref>class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009</ref>.
-      Then a non-member <ref>function_ToJson_14356EE699F7663903DB09AB9EFE1B206802DDE8</ref> library function is called with the unique pointer argument.
-      The function returns a unique pointer to a <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref> abstract class.
-      Finally the JSON string is generated by calling the <ref>member_function_ToString_JsonValue_A1F5A8829AA78394CCFED1FF3A143C981BAA1D23</ref> member function
-      of the <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref>.
-    </details>
-    <details>
-      A user-defined class having a <strong>json</strong> attribute adds also support for parsing an object of that class back from a JSON string.
-      The parsing is a multi-step process. First a unique pointer to a <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref> is constructed
-      by calling the <ref>function_ParseJson_DBF1730C39BEE47518DDF489C3C1CA7CC4D29DFF</ref> library function with a JSON string.
-      Then empty unique pointer of a user-defined class is constructed. Then the <ref>function_FromJson_97B0CE17747A8F5A6697880760B61937E269F734</ref>
-      library function is called with the <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref> and the constructed user-defined class arguments.
-      This assigns a value to the unique pointer of the user-defined class. Finally the actual type of the object can be queried by <strong>is</strong> or
-      <strong>as</strong> operators, casted to the right user-defined type and processed.
-    </details>
-    <details title="Example">
-      This <a href="../../../code/json/cmdoc/content/vehicles/file/vehicles.cm.html">vehicles</a> example program shows how to construct JSON serializable classes,
-      how to serialize them to JSON strings and parse them back from JSON strings.
-    </details>
-    <details>
-      The <em>SerializeOneVehicle()</em> function of the example program contructs a single JSON serializable <strong>Car</strong> object,
-      serializes it to a JSON string, parses it back from the JSON string and writes the data of it to console.
-      The program called with argument "1" prints:
-      <pre>
-        {"class":"Vehicles.Car", "object":{"model":"Porsche", "registrationNumber":"ABC-123", "speed":200}}<br/>
-        Porsche: ABC-123 200
-      </pre>
-    </details>
-    <details>
-      The <em>SerializeListOfVehicles()</em> function of the example program constructs a <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref> of
-      <strong>Vehicle</strong>s, serializer them to a JSON string, parses them back from the JSON string and writes their data to console.
-      The program called with no arguments prints:
-      <pre>
-        [{"class":"Vehicles.Truck", "object":{"model":"Volvo", "registrationNumber":"XYZ-987", "speed":100, "weight":1000}},<br/>
-        {"class":"Vehicles.Car", "object":{"model":"Peugeot", "registrationNumber":"PRQ-567", "speed":150}}, <br/>
-        {"class":"Vehicles.Bicycle", "object":{"brand":"Pegoretti", "speed":30}}]<br/>
-        Volvo: XYZ-987 100 1000<br/>
-        Peugeot: PRQ-567 150<br/>
-        Pegoretti: 30
-      </pre>
-    </details>
-  </doc>
-  <doc id="function_ToJson_14356EE699F7663903DB09AB9EFE1B206802DDE8">
-    <desc>
-      Converts a <ref>concept_JsonExportable_380A04F1C16289D6FC8DB54C68F467C83E565340</ref> class
-      to a unique pointer of <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref> and returns it.
-    </desc>
-    <details>
-      A user-defined class defined with a <strong>json</strong> attribute is a <ref>concept_JsonExportable_380A04F1C16289D6FC8DB54C68F467C83E565340</ref> class.
-    </details>
-  </doc>
-  <doc id="concept_JsonExportable_380A04F1C16289D6FC8DB54C68F467C83E565340">
-    <desc>
-      A class having a member function named <strong>ToJson</strong> that returns a <ref>class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009</ref> to a
-      <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref> is <strong>JsonExportable</strong>.
-    </desc>
-    <details>
-      A user-defined class defined with a <strong>json</strong> attribute is a <strong>JsonExportable</strong> class.
-    </details>
-  </doc>
-  <doc id="concept_JsonConstructible_FDF8EB5A6050ED39397E14EF89FACCA63F29DDF2">
-    <desc>
-      A class having a constructor that takes a <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref> pointer is <strong>JsonConstructible</strong>.
-    </desc>
-    <details>
-      A user-defined class defined with a <strong>json</strong> attribute is a <strong>JsonConstructible</strong> class.
-    </details>
   </doc>
   <doc id="concept_JsonValueType_6519CA3F247A823EA53E9BBD4C42E505C0A78F5D">
     <desc>
       Primitive types <strong>int</strong>, <strong>long</strong>, etc. are <strong>JsonValueType</strong>s, as are
-      <ref>typedef_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3</ref>, <ref>typedef_wstring_EDB6336488DF46A7779AFB4209BAB1DAF59B5DAE</ref> and
-      <ref>typedef_ustring_1750E1C62AAF5897C1F1DA3C5BC4999982AE9B36</ref>.
+      <ref>aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3</ref>, <ref>aliasType_wstring_EDB6336488DF46A7779AFB4209BAB1DAF59B5DAE</ref> and
+      <ref>aliasType_ustring_1750E1C62AAF5897C1F1DA3C5BC4999982AE9B36</ref>.
     </desc>
   </doc>
   <doc id="member_function_ToString_JsonValue_0E8D02CC91EA26B2A9A8AF1C11DF12FD5FE86F31">
@@ -464,36 +274,16 @@
       Converts a <a href="https://www.json.org/">JSON</a> string to a <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref>.
     </desc>
   </doc>
-  <doc id="function_FromJson_97B0CE17747A8F5A6697880760B61937E269F734">
-    <desc>
-      Creates a <ref>concept_JsonConstructible_FDF8EB5A6050ED39397E14EF89FACCA63F29DDF2</ref> class from a <ref>class_JsonValue_B86942C2856CC5758E1FB19BBBE97E4002D4008A</ref>
-      and assigns it to the <strong>field</strong> argument.
-    </desc>
-    <details>
-      A user-defined class with a <strong>json</strong> attribute is <ref>concept_JsonConstructible_FDF8EB5A6050ED39397E14EF89FACCA63F29DDF2</ref>.
-    </details>
-  </doc>
-
-  <doc id="System.Init">
-    <desc>
-      The System.Init library does dynamic initialization before program main function is called.
-    </desc>
-  </doc>
 
   <doc id="System.IO.Compression">
     <desc>
       The System.IO.Compression module contains data compression/decompression streams.
-      It is implemented by means of <a href="http://www.zlib.net/">zlib</a> and <a href="http://www.sourceware.org/bzip2/">bzip2</a> libraries.
+      It is implemented by means of the <a href="http://www.zlib.net/">zlib</a> library.
     </desc>
     <details title="Examples">
       This <a href="../../../code/compression/cmdoc/content/deflate/file/main.cm.html">deflate</a> program compresses a file using
       <ref>class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306</ref> or extracts a file compressed using
       <ref>class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306</ref>.
-    </details>
-    <details>
-      This <a href="../../../code/compression/cmdoc/content/bz2/file/main.cm.html">bz2</a> program compresses a file using
-      <ref>class_BZip2Stream_82BE6AC7D0A89DAA12AD1CF0B26FFEAD7D90CF11</ref> or extracts a file compressed using
-      <ref>class_BZip2Stream_82BE6AC7D0A89DAA12AD1CF0B26FFEAD7D90CF11</ref>.
     </details>
   </doc>
 
@@ -503,44 +293,38 @@
       <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/">Document Object Model Core</a> specification.
     </desc>
     <details>
-      It does not follow strictly W3C DOM naming conventions and many API's take and return
-      <ref>class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009</ref>s instead of raw pointers or interfaces.
+      It does not follow strictly W3C DOM naming conventions.
     </details>
     <details title="Example">
       <a href="../../../code/xml/cmdoc/content/Dom1/file/dom1.cm.html">This</a> example program creates an in-memory XML document,
       writes it to a UTF-8 encoded text file, reads it back from the text file and writes it to console.
     </details>
   </doc>
-  <doc id="class_Document_55733573E779F43C27626A09417DC9D84BFCB81B">
+  <doc id="class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC">
     <desc>
       Represents an in-memory XML or XHTML document.
     </desc>
   </doc>
-  <doc id="function_ParseDocument_BE2ACDA88F309E8A83AD9EFD9B27A5158D0A0E49">
+  <doc id="function_ParseXmlDocumentContent_2F3D62A010034F4ED92746BAD05393D84DECF925">
     <desc>
-      Parses a UTF-32 encoded XML string to a <ref>class_Document_55733573E779F43C27626A09417DC9D84BFCB81B</ref> and returns it.
+      Parses a UTF-8 encoded XML string to a <ref>class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC</ref> and returns it.
     </desc>
     <details>
       The given <strong>systemId</strong> parameter is used for error reporting only and will occur in the possible error message.
-      If the XML string is not syntactically valid, the function throws an <ref>class_ParsingException_05B147C5054E1ADB84074F65FDF2E8CFBF5052EF</ref> exception.
-      If the XML string is not otherwise well-formed, the function throws an <ref>class_XmlProcessingException_38961E809BD4812FD6BEA01B8DDA08229100E6F5</ref> exception.
+      If the XML string is not syntactically valid, the function returns an error result.
+      If the XML string is not otherwise well-formed, the function returns an error result.
     </details>
   </doc>
-  <doc id="function_ReadDocument_5FC028805AA730C01D80778478307E33095ACBA3">
+  <doc id="function_ParseXmlDocument_11C5F4532C29497DA2F3ADDE83B9EDB70D857939">
     <desc>
-      Parses a UTF-8 encoded XML file to a <ref>class_Document_55733573E779F43C27626A09417DC9D84BFCB81B</ref> and returns it.
+      Parses a UTF-8 encoded XML file to a <ref>class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC</ref> and returns it.
     </desc>
     <details>
-      If the XML file is not syntactically valid, the function throws an <ref>class_ParsingException_05B147C5054E1ADB84074F65FDF2E8CFBF5052EF</ref> exception.
-      If the XML file is not otherwise well-formed, the function throws an <ref>class_XmlProcessingException_38961E809BD4812FD6BEA01B8DDA08229100E6F5</ref> exception.
+      If the XML file is not syntactically valid, the function returns an error result.
+      If the XML file is not otherwise well-formed, the function returns an error result.
     </details>
   </doc>
-  <doc id="class_DomException_EE72D4E688A5F4B0F4D22924FF24D42E74D944CA">
-    <desc>
-      Thrown when an error is detected during manipulation of a <ref>class_Document_55733573E779F43C27626A09417DC9D84BFCB81B</ref>.
-    </desc>
-  </doc>
-  <doc id="member_function_GetAttribute_Element_CD84C3F5F156ABD14B26DD9E0B403E5DC1062D1B">
+  <doc id="member_function_GetAttribute_Element_3CBC44977C67BC4D84F3A77F17EBB8453ADFD444">
     <desc>
       Returns the value of an attribute if it exists and empty string otherwise.
     </desc>
@@ -558,10 +342,10 @@
       member function of the content handler is called for each of them.
     </details>
     <details>
-      The <ref>function_ParseXmlFile_7ED565F7B87DFEA8BE61A14E6C0BDB5D473022BC</ref> function parses the given XML file with a content handler.
+      The <ref>function_ParseXmlFile_C7306F811CB6EF48E31E6269B9AE90BAB4C64896</ref> function parses the given XML file with a content handler.
       As XML file is parsed, the overridden methods of user supplied class derived from the <ref>class_XmlContentHandler_7429223FCBE3A541F14FD9475F2099B20E248715</ref>
       class are called. If the XML document need to be manipulated entirely in memory, it can be parsed with the
-      <ref>function_ReadDocument_5FC028805AA730C01D80778478307E33095ACBA3</ref> function instead.
+      <ref>function_ParseXmlDocument_11C5F4532C29497DA2F3ADDE83B9EDB70D857939</ref> function instead.
     </details>
     <details title="Example">
       This <a href="../../../code/xml/cmdoc/content/XmlStats/file/xmlstats.cm.html">xmlstats</a> example program prints statistics of an XML file.
@@ -581,14 +365,33 @@
   </doc>
   <doc id="class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267">
     <desc>
-      Represents either a span of tokens during parsing or a span of text after parsing.
+      Represents a span of text during and after parsing.
+    </desc>
+  </doc>
+  <doc id="class_FileMap_00D83B1C90CC59AC4180663F35CB02A6FD057151">
+    <desc>
+      A utility class for maintaining a mapping from a file index to a file name.
+      Also can be used for maintaining a mapping from a file index to a contents of a source text file represented as a <ref>class_SourceFile_A569605C01F5CA27D47A3A02B17A80A76E51D822</ref>.
     </desc>
     <details>
-      During parsing the span is said to be <em>internal</em>. Then it contains the starting line number, index of the file being parsed and a range of token indeces.
-      The string corresponding to the tokens can then be obtained from the <ref>class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23</ref> for a span.
-      When a span is serialized to a module file, it is turned to an <em>external</em> span that contains start and end indeces of the characters that a range of tokens contained.
-      The start and end character indeces are counted from the start of the file. 
+      When a parsing function needs a file map parameter, you can give a default-constructed file map as an argument.
+      The parsing function will add the file name and file contents to the file map.
     </details>
+  </doc>
+  <doc id="member_function_MapFileName_FileMap_17CBED6EABA1F0A0E7DB9163E4D6D5917B144268">
+    <desc>
+       Adds a file name to a list of file names and returns its index.
+    </desc>
+  </doc>
+  <doc id="member_function_AddSourceFile_FileMap_8A0999C4795DCCED9275A98984C56BDF08C959DD">
+    <desc>
+      Adds the contents of a source text file to a (file index, <ref>class_SourceFile_A569605C01F5CA27D47A3A02B17A80A76E51D822</ref>) map.
+    </desc>
+  </doc>
+  <doc id="member_function_GetSourceFile_FileMap_351A22FC4F12F5B4CA755326EDDCC74F8E2E4829">
+    <desc>
+      Returns a pointer to a source file associated with a file index. If a source file for a given file index is not found, returns null.
+    </desc>
   </doc>
   
   <doc id="System.Xml.Serialization">
@@ -606,17 +409,110 @@
       The System.Base module contains basic facilities, containers, algorithms, and I/O.
     </desc>
   </doc>
-  <doc id="typedef_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">
+  <doc id="class_ErrorId_0E4B2140259AADB7DB40D7239F8FEA3526DD7F6B">
+    <desc>
+      Represents an error identifier.
+    </desc>
+    <details>
+      The error id value can be obtained by calling the <ref>function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456</ref> function. 
+    </details>
+  </doc>
+  <doc id="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+    <desc>
+      Represents either an expected function return value or an error result.      
+    </desc>
+  </doc>
+  <doc id="constructor_Result_180DCE55562CA5F4DA45580226198E172402C1E7">
+    <desc>
+      Use this constructor when constructing an error result. 
+    </desc>
+    <details>
+      The error id can be obtained by calling the <ref>function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456</ref> function. 
+    </details>
+  </doc>
+  <doc id="constructor_Result_127474B682C86342EB1948328E1D19D34E21F263">
+    <desc>
+      Constructs an expected function result.
+    </desc>
+  </doc>
+  <doc id="constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">
+    <desc>
+      Constructs an expected function result.
+    </desc>
+  </doc>
+  <doc id="function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456">
+    <desc>
+      Allocates an error id and associates it with the specified error message. Returns the allocated error id.
+    </desc>
+    <details>
+      You can obtain the error message associated with an error id by calling the <ref>function_GetErrorMessage_4F8BE3DCC0B9CAF44A246661780447184CBEEC91</ref> function.
+    </details>
+  </doc>
+  <doc id="function_GetErrorMessage_4F8BE3DCC0B9CAF44A246661780447184CBEEC91">
+    <desc>
+      Gets an error message associated with an error id.
+    </desc>
+    <details>
+      The error message will contain a stack trace on debug builds.
+    </details>
+  </doc>
+  <doc id="member_function_Error_Result_B003457B7051E2B567FD3A8C392B6448A609CD5A">
+    <desc>
+      Returns true if the result represents an error result and false otherwise.
+    </desc>        
+    <details>
+      An error result will have an error id that is a positive integer.
+      A successful result will have an error id that is zero.
+    </details>
+  </doc>
+  <doc id="member_function_GetErrorId_Result_544DAE1573CDBA0F3EBFAA27421D7C3FCEB0BFEB">
+    <desc>
+      Returns the contained error id. 
+    </desc>
+    <details>
+        A positive error id indicates error. A zero error id indicates success.
+    </details>
+  </doc>
+  <doc id="member_function_SetErrorId_Result_28864A901366526BA820BA21713D38EAA6FBA2AA">
+    <desc>
+      Sets the contained error id.
+    </desc>
+  </doc>
+  <doc id="member_function_GetErrorMessage_Result_3398AF48FF6871CE07D8602497C95049EFF7965B">
+    <desc>
+      Returns the error message associated with the error id.
+    </desc>
+    <details>
+      The error message will contain a stack trace on debug builds.
+    </details>
+  </doc>
+  <doc id="member_function_Value_Result_6B212DC641E37E1AADE44E0A58D7C2F1E3CA7E1D">
+    <desc>
+      Returns the expected return value.
+    </desc>
+  </doc>
+  <doc id="member_function_Value_Result_BEA160CA481B9C2B7EF5A04232C68B3762FC6C35">
+    <desc>
+      Returns the expected return value.
+    </desc>
+  </doc>
+  <doc id="member_function_AndThen_Result_512E0262CA0F74EA43585B1EE500A86B2630CD7A">
+    <desc>
+      If the result represented by this result is an error result, returns this result.
+      Otherwise returns the second result.
+    </desc>
+  </doc>
+  <doc id="aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">
     <desc>
       Represents a UTF-8 or ASCII encoded string.
     </desc>
   </doc>
-  <doc id="typedef_wstring_EDB6336488DF46A7779AFB4209BAB1DAF59B5DAE">
+  <doc id="aliasType_wstring_EDB6336488DF46A7779AFB4209BAB1DAF59B5DAE">
     <desc>
       Represents a UTF-16 encoded string.
     </desc>
   </doc>
-  <doc id="typedef_ustring_1750E1C62AAF5897C1F1DA3C5BC4999982AE9B36">
+  <doc id="aliasType_ustring_1750E1C62AAF5897C1F1DA3C5BC4999982AE9B36">
     <desc>
       Represents a UTF-32 encoded string.
     </desc>
@@ -652,7 +548,7 @@
       Returns the size of the given file.
     </desc>
     <details>
-      If the file does not exist, or in case of other error a <ref>class_FileSystemException_BB9552A6F8CD7166104BC90F55939797AA006B1A</ref> exception is thrown.
+      If the file does not exist, or in case of other error returns an error result.
     </details>
   </doc>
   <doc id="member_function_OpenRead_File_E47873D844B9D94ACA693A28F299A0CCF71AD6B6">
@@ -662,7 +558,8 @@
   </doc>
   <doc id="member_function_Exists_File_FC6BD11DC4C17349F599B2729C5A76449EDB46F3">
     <desc>
-      Returns true, if the given file exists and false otherwise.
+      Returns result containing true, if the given file exists and result containing false otherwise.
+      In case of an error returns an error result.
     </desc>
   </doc>
   <doc id="member_function_LastWriteTimeLess_File_2A1F7CAC91487015802222F0432A9071D3DA8880">
@@ -672,11 +569,12 @@
   </doc>
   <doc id="member_function_ReadAllLines_File_DC86B4CEA779764618F3663F4CC2710BDFCAA04E">
     <desc>
-      Reads all lines of the given UTF-8 encoded text file into a <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref> of
-      <ref>typedef_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3</ref>s and returns the list.
+      Reads all lines of the given UTF-8 encoded text file into a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref> of
+      <ref>aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3</ref>s and returns the list.
     </desc>
     <details>
       Each line in the file is represented as a UTF-8 encoded string without a newline terminator.
+      Skips a possible BOM (byte order mark) at the start of the file.
     </details>
   </doc>
   <doc id="member_function_ReadAllText_File_BF69423F5ECED3BABCA2932C268CBA63196E46E4">
@@ -685,80 +583,66 @@
     </desc>
     <details>
       Each newline in the file is represented as a single linefeed character in the returned string.
+      Skips a possible BOM (byte order mark) at the start of the file.
     </details>
   </doc>
   <doc id="function_ToUtf8_0F1024A368A6DA5AA49229F7B5E77D3EC9DE4036">
     <desc>
       Converts a UTF-32 string to a UTF-8 string.
-      If an invalid UTF-32 code point is encountered, throws a <ref>class_ConversionException_968EDA1D00534F82FF78F973855F91349977511B</ref>.
+      If an invalid UTF-32 code point is encountered, returns an error result.
     </desc>
   </doc>
   <doc id="function_ToUtf8_63916ECE0F4D6130E20FDD15D7F1BFF840F53865">
     <desc>
       Converts a UTF-16 string to a UTF-8 string.
-      If an invalid UTF-16 byte sequence is encountered, throws a <ref>class_ConversionException_968EDA1D00534F82FF78F973855F91349977511B</ref>.
+      If an invalid UTF-16 byte sequence is encountered, returns an error result.
     </desc>
   </doc>
   <doc id="function_ToUtf16_A5E06C63CBAF22CA84A880EB5BB51269C6BE4257">
     <desc>
       Converts a UTF-8 (or 7-bit ASCII) string to a UTF-16 string.
-      If an invalid UTF-8 byte sequence is encountered, throws a <ref>class_ConversionException_968EDA1D00534F82FF78F973855F91349977511B</ref>.
+      If an invalid UTF-8 byte sequence is encountered, returns an error result.
     </desc>
   </doc>
   <doc id="function_ToUtf16_F2521751AB2A1E1F18C4047AC49CAEAE9CF2EDC6">
     <desc>
       Converts a UTF-32 string to a UTF-16 string.
-      If an invalid UTF-32 code point is encountered, throws a <ref>class_ConversionException_968EDA1D00534F82FF78F973855F91349977511B</ref>.
+      If an invalid UTF-32 code point is encountered, returns an error result.
     </desc>
   </doc>
   <doc id="function_ToUtf32_0476C1B2C07579259DF76F80D2F2987EA2B8EFDD">
     <desc>
       Converts a UTF-8 (or 7-bit ASCII) string to a UTF-32 string.
-      If an invalid UTF-8 byte sequence is encountered, throws a <ref>class_ConversionException_968EDA1D00534F82FF78F973855F91349977511B</ref>.
+      If an invalid UTF-8 byte sequence is encountered, returns an error result.
     </desc>
   </doc>
   <doc id="function_ToUtf32_591A6A903DC5D15ED167D4844BC2864FC446614A">
     <desc>
       Converts a UTF-16 string to a UTF-32 string.
-      If an invalid UTF-16 byte sequence is encountered, throws a <ref>class_ConversionException_968EDA1D00534F82FF78F973855F91349977511B</ref>.
-    </desc>
-  </doc>
-  <doc id="class_ConversionException_968EDA1D00534F82FF78F973855F91349977511B">
-    <desc>
-      An exception thrown when
-        <ul>
-          <li>a primitive type cannot be parsed from a string</li>
-          <li>a date cannot be parsed from a string</li>
-          <li>UTF-X string cannot be converted to UTF-Y string</li>
-          <li>invalid initialization string passed to multiple precision arithmetic class constructor</li>
-        </ul>
-    </desc>
-  </doc>
-  <doc id="class_Exception_02AEA5204AD1035A91C2D843597EACBE078C8989">
-    <desc>
-      Ultimate base class of all Cmajor exceptions. By catching <strong>System.Exception</strong> all exceptions can be handled.
+      If an invalid UTF-16 byte sequence is encountered, returns an error result.
     </desc>
   </doc>
   <doc id="member_function_Read_ByteStream_026763BB61037CC329F0EC41074406529C920B49">
     <desc>
       Reads at most <strong>count</strong> bytes into <strong>buf</strong> and returns the number of bytes read.
-      If an error is detected, throws an exception.
+      If an error is detected, returns an error result.
     </desc>
   </doc>
   <doc id="member_function_ReadByte_ByteStream_00F33B1B22C620EA630EFF170682AF0914E4E568">
     <desc>
       Reads one byte from the stream. Returns the byte read, or -1 if end of stream is encountered.
-      If an error is detected, throws an exception.
+      If an error is detected, returns an error result.
     </desc>
   </doc>
   <doc id="member_function_Write_ByteStream_B16019C1887E69858F8B4AADB6B9CE65537722E2">
     <desc>
-      Writes a byte to the stream. If an error is detected, throws an exception.
+      Writes a byte to the stream. 
+      If an error is detected, returns an error result.
     </desc>
   </doc>
   <doc id="member_function_Write_ByteStream_E19BFE5AE2C372D12C30E7858F26083DF778BC5D">
     <desc>
-      Writes <strong>count</strong> bytes from <strong>buf</strong> to the stream. If an error is detected, throws an exception.
+      Writes <strong>count</strong> bytes from <strong>buf</strong> to the stream. If an error is detected, // TODO
     </desc>
   </doc>
   <doc id="member_function_Flush_ByteStream_B359C6583A0F7B15600ACAFE7CAC23020693AEBB">
@@ -778,42 +662,42 @@
   </doc>
   <doc id="member_function_Tell_ByteStream_163EFD5A892885A5804810B26BDF0BA74083B8D7">
     <desc>
-      Returns the current stream position, if this stream type supports it. Otherwise throws a <ref>class_FileSystemException_BB9552A6F8CD7166104BC90F55939797AA006B1A</ref>.
+      Returns the current stream position, if this stream type supports it. Otherwise // TODO
     </desc>
   </doc>
   <doc id="member_function_Seek_ByteStream_6127E9DEF97F05A69D099D8E1CED2CCA9FD5F9B3">
     <desc>
-      Sets the current stream position, if this stream type supports it. Otherwise throws a <ref>class_FileSystemException_BB9552A6F8CD7166104BC90F55939797AA006B1A</ref>.
+      Sets the current stream position, if this stream type supports it. Otherwise // TODO
     </desc>
   </doc>
-  <doc id="class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F">
+  <doc id="class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B">
     <desc>
       Represents a stream of bytes.
     </desc>
   </doc>
   <doc id="class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311">
     <desc>
-      Writes character data to a <ref>class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F</ref> using UTF-8 encoding.
+      Writes character data to a <ref>class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B</ref> using UTF-8 encoding.
     </desc>
   </doc>
   <doc id="class_StreamReader_8A8267CD81BA8B198AF295474A8CB0B2DFBB7B57">
     <desc>
-      Reads character data from a <ref>class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F</ref>. The data is expected to be UTF-8 encoded.
+      Reads character data from a <ref>class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B</ref>. The data is expected to be UTF-8 encoded.
     </desc>
   </doc>
   <doc id="class_BinaryWriter_6D47712E9CF8C098A17FFF3729140EE727BD87E2">
     <desc>
-      Writes binary data to a <ref>class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F</ref> using big-endian byte order.
+      Writes binary data to a <ref>class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B</ref> using big-endian byte order.
     </desc>
   </doc>
   <doc id="class_BinaryReader_7D0A41A9C666814155001B1AF5B066E926C8F3AC">
     <desc>
-      Reads binary data from a <ref>class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F</ref>. The data is expected to be in big-endian byte order.
+      Reads binary data from a <ref>class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B</ref>. The data is expected to be in big-endian byte order.
     </desc>
   </doc>
   <doc id="class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99">
     <desc>
-      Writes indented text to a stream using a <ref>class_StreamWriter_40A39F418049D49DB679452BB514CDFE47500311</ref>.
+      Writes indented text to a stream using a <ref>class_TextWriter_95D72C37DDCBB941FE8EC41FF28270B9FFB782C1</ref>.
     </desc>
   </doc>
   <doc id="function_Trim_4EC105640B060F96EB3BC9E288DE7D1624DCC838">
@@ -849,25 +733,6 @@
   <doc id="function_Rvalue_FC16F1187C8C3CF8D9182A63AC59041EF4474FA2">
     <desc>
       Converts the argument to an rvalue so it can be moved.
-    </desc>
-  </doc>
-  <doc id="function_CaptureCurrentException_2777DD986058C8D3A8C848141454281F049B3B45">
-    <desc>
-      Captures an exception into an <ref>class_ExceptionPtr_3E313CB08B225E0124692C11F3BF8F26E971600C</ref>.
-      Can be called only from inside of an exception handler.
-      The exception can be rethrown by calling the <ref>function_ThrowCapturedException_3C8DDE776866EED7DA7C5B7657B761F790C31B75</ref>.
-      Used to transfer an exception from a thread to another.
-    </desc>
-  </doc>
-  <doc id="function_ThrowCapturedException_3C8DDE776866EED7DA7C5B7657B761F790C31B75">
-    <desc>
-      Rethrow an exception captured with the <ref>function_CaptureCurrentException_2777DD986058C8D3A8C848141454281F049B3B45</ref>.
-      Used to transfer an exception from a thread to another.
-    </desc>
-  </doc>
-  <doc id="class_ExceptionPtr_3E313CB08B225E0124692C11F3BF8F26E971600C">
-    <desc>
-      Used to transfer an exception from a thread to another.
     </desc>
   </doc>
   <doc id="function_InitRand_FC91A0646CA9E897EC03AF41DE040C0B0315FBE4">
@@ -911,26 +776,26 @@
       Represents standard I/O streams <strong>stdin</strong>, <strong>stdout</strong> and <strong>stderr</strong>.
     </desc>
   </doc>
-  <doc id="class_UniquePtr_T_793F841C13E9DD3A6869243C74F1D948C0E04009">
+  <doc id="class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009">
     <desc>
       Represents a unique ownership smart pointer. Cannot be copied but can be moved.
     </desc>
   </doc>
-  <doc id="class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F">
+  <doc id="class_SharedPtr_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F">
     <desc>
       Represents a shared ownership smart pointer. Keeps count of references to the underlying pointer and deletes it when the last shared pointer goes out of scope.
     </desc>
   </doc>
-  <doc id="class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11">
+  <doc id="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
     <desc>
       Most fundamental container class. The list is like an array that can grow.
     </desc>
     <details>
-      Elements can be added by copying (<ref>member_function_Add_List_T_18D2DDE64E3013E6F1AE3ADD3E44E07CF7319488</ref>) or by 
-      moving (<ref>member_function_Add_List_T_98DE56C62C7807506C9B2721ECC5D6A001D5DBC7</ref>). Adding takes amortized constant time.
-      When moving you may want to use the <ref>function_Rvalue_FC16F1187C8C3CF8D9182A63AC59041EF4474FA2</ref> to convert an argument to an rvalue.
-      Elements of a list can be accessed by index using the <ref>member_function_op_index_List_T_FC7EB4FD20150BA1E15EE8CA8D260E64A8B39E3F</ref> or
-      <ref>member_function_op_index_List_T_66057173FB956CB9AC4EEEDDA73C7B837EDAFC79</ref> member functions.
+      Elements can be added by copying (<ref>member_function_Add_List_1D1B2D3DB629A4EB7D2FF5DC26BAC25844CDC950</ref>) or by 
+      moving (<ref>member_function_Add_List_E3153F8BB52D4AE91B603B901C44A6A6B4D06162</ref>). Adding takes amortized constant time.
+      When moving you may want to use the <ref>function_Rvalue_1B3DB0610C3620EF4E68B21F93F01B306FF74562</ref> to convert an argument to an rvalue.
+      Elements of a list can be accessed by index using the <ref>member_function_op_index_List_C72C437D1C76647FFBB205AB91C0F41C0AAF799F</ref> or
+      <ref>member_function_op_index_List_56E25E07873F20FD8891B368BB37F65C9E738DF9</ref> member functions.
       Element access is <em>O(1)</em> operation.
     </details>
     <details>
@@ -940,26 +805,26 @@
       <ref>concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6</ref>.
     </details>
   </doc>
-  <doc id="class_RandomAccessIter_T_R_P_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484">
+  <doc id="class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484">
     <desc>
       Model of <ref>concept_RandomAccessIterator_A5A1B6A4EC8E181A67C733002B3BE437554D3484</ref>.
     </desc>
   </doc>
-  <doc id="class_Negate_T_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E">
+  <doc id="class_Negate_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E">
     <desc>
       Model of <ref>concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344</ref>,
       <ref>concept_UnaryOperation_A42C7312D25FC827BE924605B8EB6CAF29F5668A</ref>.
     </desc>
   </doc>
-  <doc id="class_Identity_T_88B6920757B097108E06B2CB21F8C2B6DE39E909">
+  <doc id="class_Identity_88B6920757B097108E06B2CB21F8C2B6DE39E909">
     <desc>
       Model of <ref>concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344</ref>.
       <ref>concept_UnaryOperation_A42C7312D25FC827BE924605B8EB6CAF29F5668A</ref>.
     </desc>
   </doc>
-  <doc id="class_Set_T_C_00925824F65733E00086D88AA2C7106F3B56C343">
+  <doc id="class_Set_00925824F65733E00086D88AA2C7106F3B56C343">
     <desc>
-      A collection of unique elements that are kept sorted in a <ref>class_RedBlackTree_KeyType_ValueType_KeyOfValue_Compare_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
+      A collection of unique elements that are kept sorted in a <ref>class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
     </desc>
     <details>
       Searching for an element in the set and inserting an element to the set are <em>Olog(n)</em> operations.
@@ -968,9 +833,9 @@
       Model of <ref>concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7</ref>.
     </details>
   </doc>
-  <doc id="class_Map_Key_Value_KeyCompare_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
+  <doc id="class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
     <desc>
-      An associative array of key-value pairs that are kept sorted in a <ref>class_RedBlackTree_KeyType_ValueType_KeyOfValue_Compare_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
+      An associative array of key-value pairs that are kept sorted in a <ref>class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
     </desc>
     <details>
       Searching for an element in the map and inserting an element to the map are <em>Olog(n)</em> operations.
@@ -979,7 +844,7 @@
       Model of <ref>concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7</ref>.
     </details>
   </doc>
-  <doc id="class_RedBlackTree_KeyType_ValueType_KeyOfValue_Compare_7BE28FA31E79012444BFE30C8422DEC2110A11ED">
+  <doc id="class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED">
     <desc>
       A red-black tree.
     </desc>
@@ -989,7 +854,7 @@
   </doc>
   <doc id="class_RedBlackTreeNodeIterator_T_R_P_6B55278500271829D7E5F7BCD5A22DABD182EF92">
     <desc>
-      Iterator type of a <ref>class_RedBlackTree_KeyType_ValueType_KeyOfValue_Compare_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
+      Iterator type of a <ref>class_RedBlackTree_7BE28FA31E79012444BFE30C8422DEC2110A11ED</ref>.
     </desc>
     <details>
       Model of <ref>concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6</ref>.
@@ -997,13 +862,13 @@
   </doc>
   <doc id="class_HashtableIterator_T_R_P_H_096790EBD70A9327536FC43A710AF00FB8221CA1">
     <desc>
-      Iterator type of a <ref>class_Hashtable_KeyType_ValueType_KeyOfValue_HashFun_Compare_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
+      Iterator type of a <ref>class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
     </desc>
     <details>
       Model of <ref>concept_ForwardIterator_4C777D423CF589B8535F29F910C025990ED656D4</ref>.
     </details>
   </doc>
-  <doc id="class_Hashtable_KeyType_ValueType_KeyOfValue_HashFun_Compare_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3">
+  <doc id="class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3">
     <desc>
       A hashtable.
     </desc>
@@ -1011,20 +876,20 @@
       Model of <ref>concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2</ref>.
     </details>
   </doc>
-  <doc id="class_HashSet_T_H_C_6F412153491DE45DCD64B2BA6D957A207E598099">
+  <doc id="class_HashSet_6F412153491DE45DCD64B2BA6D957A207E598099">
     <desc>
-      A collection of unique elements that are organized in a <ref>class_Hashtable_KeyType_ValueType_KeyOfValue_HashFun_Compare_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
+      A collection of unique elements that are organized in a <ref>class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
     </desc>
     <details>
-      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E</ref>)
+      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>)
       or other equality-like relation provided as the third template argument.
     </details>
     <details>
       The second template argument is a hash function object that is by default the
-      <ref>class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>
-      function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_823BCCBA357DC5DC7439E8DBEEF7A15ECAF5E0F9</ref>
+      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>
+      function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_BD15899CCA748FF443AF1574B768E8FF490F2011</ref>
       function overloads. If there is not a <em>GetHashCode</em> overload for the your element type, you can provide your own, and it should work with the standard
-      <ref>class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>.
+      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>.
     </details>
     <details>
       Adding an element to the hash set depends on the hash function, but can be thought as <em>O(1)</em> operation.
@@ -1034,7 +899,7 @@
       Model of <ref>concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2</ref>.
     </details>
   </doc>
-  <doc id="class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325">
+  <doc id="class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325">
     <desc>
       A hash function object that calls one of the <em>GetHashCode</em> function overloads with its argument.
     </desc>
@@ -1042,20 +907,20 @@
       Model of <ref>concept_HashFunction_996DE63476FF956BFF568F751960AF2CB4A097A8</ref>.
     </details>
   </doc>
-  <doc id="class_HashMap_K_T_H_C_D555F9108F5700505E1FCCC02041016E58EE9314">
+  <doc id="class_HashMap_D555F9108F5700505E1FCCC02041016E58EE9314">
     <desc>
-      An associative array of key-value pairs that are organized in a <ref>class_Hashtable_KeyType_ValueType_KeyOfValue_HashFun_Compare_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
+      An associative array of key-value pairs that are organized in a <ref>class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3</ref>.
     </desc>
     <details>
-      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E</ref>)
+      The elements need not be ordered, but you must be able to compare them for equality (<ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>)
       or other equality-like relation provided as the fourth template argument.
     </details>
     <details>
       The third template argument is a hash function object that is by default the
-      <ref>class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>
-      function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_823BCCBA357DC5DC7439E8DBEEF7A15ECAF5E0F9</ref>
+      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>
+      function object that delegates the computation of the hash function for the element to one of the <ref>function_GetHashCode_BD15899CCA748FF443AF1574B768E8FF490F2011</ref>
       function overloads. If there is not a <em>GetHashCode</em> overload for the your element type, you can provide your own, and it should work with the standard
-      <ref>class_Hasher_T_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>.
+      <ref>class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325</ref>.
     </details>
     <details>
       Adding an element to the hash map depends on the hash function, but can be thought as <em>O(1)</em> operation.
@@ -1065,7 +930,7 @@
       Model of <ref>concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2</ref>.
     </details>
   </doc>
-  <doc id="class_LinkedList_T_C2F07264039DB70F20B67C74602135AACA707210">
+  <doc id="class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210">
     <desc>
       A doubly linked list of elements.
     </desc>
@@ -1080,15 +945,15 @@
       <ref>concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6</ref>.
     </details>
   </doc>
-  <doc id="class_LinkedListNodeIterator_T_R_P_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF">
+  <doc id="class_LinkedListNodeIterator_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF">
     <desc>
-      Iterator type of a <ref>class_LinkedList_T_C2F07264039DB70F20B67C74602135AACA707210</ref>.
+      Iterator type of a <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
     </desc>
     <details>
       Model of <ref>concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6</ref>.
     </details>
   </doc>
-  <doc id="class_ForwardList_T_ABB97B61A697C29A835977FB389CCB519FC05F4D">
+  <doc id="class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D">
     <desc>
       A singly linked list of elements.
     </desc>
@@ -1101,38 +966,39 @@
       <ref>concept_FrontInsertionSequence_6E92B081B326D22C296036E5DDC43365491BEBF4</ref>.
     </details>
   </doc>
-  <doc id="class_ForwardListNodeIterator_T_R_P_F664F07C33DBAABDB2487D2FBE1538C3E6F42EBA">
+  <doc id="class_ForwardListNodeIterator_F664F07C33DBAABDB2487D2FBE1538C3E6F42EBA">
     <desc>
-      Iterator type of a <ref>class_ForwardList_T_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
+      Iterator type of a <ref>class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
     </desc>
     <details>
       Model of <ref>concept_ForwardIterator_4C777D423CF589B8535F29F910C025990ED656D4</ref>.
     </details>
   </doc>
-  <doc id="class_Stack_T_CAB2AD063212443437B477BD815360F469912604">
+  <doc id="class_Stack_CAB2AD063212443437B477BD815360F469912604">
     <desc>
-      A last-in-first-out container of elements implemented as a <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      A last-in-first-out container of elements implemented as a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
     </desc>
     <details>
       Pushing an element to the top of the stack takes amortized constant time. Popping an element from the top of the stack is <em>O(1)</em> operation.
     </details>
   </doc>
-  <doc id="class_Queue_T_F0FF1F7FEDEB5A065595E4EC4CFE4E1E748FA14F">
+  <doc id="class_Queue_F0FF1F7FEDEB5A065595E4EC4CFE4E1E748FA14F">
     <desc>
-      A first-in-first-out container of elements implemented as a <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      A first-in-first-out container of elements implemented as a <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
     </desc>
     <details>
-      Putting an element to the end of the queue takes amortized constant time. Getting an element from the start of the queue is <em>O(n)</em> operation.
+      Putting an element to the end of the queue takes constant time. Getting an element from the start of the queue takes constant time.
     </details>
   </doc>
   <doc id="class_Bitset_BA1EE2E68426C5445CB6CAF7F957084ADAFD19CA">
     <desc>
-      A variable length container of bits implemented as a <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref> of ulongs.
+      A variable length container of bits implemented as a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref> of ulongs.
     </desc>
     <details>
       Setting, resetting and accessing a bit takes constant time.
     </details>
   </doc>
+
   <doc id="concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A">
     <desc>
       A collection of elements that provides iterators, element count and empty predicate.
@@ -1143,8 +1009,8 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> having an <em>Add</em> operation that appends an element to the end of the container.
     </desc>
     <details title="Examples">
-      <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
-      <ref>class_LinkedList_T_C2F07264039DB70F20B67C74602135AACA707210</ref>.
+      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
+      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
     </details>
   </doc>
   <doc id="concept_FrontInsertionSequence_6E92B081B326D22C296036E5DDC43365491BEBF4">
@@ -1152,9 +1018,9 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> having an <em>InsertFront</em> operation that inserts an element to the beginning of the container.
     </desc>
     <details title="Examples">
-      <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
-      <ref>class_LinkedList_T_C2F07264039DB70F20B67C74602135AACA707210</ref>,
-      <ref>class_ForwardList_T_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
+      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
+      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>,
+      <ref>class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
     </details>
   </doc>
   <doc id="concept_InsertionSequence_5D1868A305E1B5BDA144AAB9338B802BCE110BE6.html">
@@ -1162,8 +1028,8 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> having an <em>Insert</em> operation that inserts an element in the middle of the container.
     </desc>
     <details title="Examples">
-      <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
-      <ref>class_LinkedList_T_C2F07264039DB70F20B67C74602135AACA707210</ref>.
+      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
+      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>.
     </details>
   </doc>
   <doc id="concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2">
@@ -1171,8 +1037,8 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> whose iterators are <ref>concept_ForwardIterator_4C777D423CF589B8535F29F910C025990ED656D4</ref>s.
     </desc>
     <details title="Examples">
-      <ref>class_ForwardList_T_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
-      <ref>class_HashSet_T_H_C_6F412153491DE45DCD64B2BA6D957A207E598099</ref>.
+      <ref>class_ForwardList_ABB97B61A697C29A835977FB389CCB519FC05F4D</ref>.
+      <ref>class_HashSet_6F412153491DE45DCD64B2BA6D957A207E598099</ref>.
     </details>
   </doc>
   <doc id="concept_BidirectionalContainer_05A591605B349EDF6FDA457C4C7B21759F8E2BC7">
@@ -1180,9 +1046,9 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> whose iterators are <ref>concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6</ref>s.
     </desc>
     <details title="Examples">
-      <ref>class_LinkedList_T_C2F07264039DB70F20B67C74602135AACA707210</ref>,
-      <ref>class_Set_T_C_00925824F65733E00086D88AA2C7106F3B56C343</ref>,
-      <ref>class_Map_Key_Value_KeyCompare_734D5EBC9BF418F0903F1E19A7338E2D82C029AE</ref>.
+      <ref>class_LinkedList_C2F07264039DB70F20B67C74602135AACA707210</ref>,
+      <ref>class_Set_00925824F65733E00086D88AA2C7106F3B56C343</ref>,
+      <ref>class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE</ref>.
     </details>
   </doc>
   <doc id="concept_RandomAccessContainer_7D44EBDB629CA332A20056356A52519C0BB1FADF">
@@ -1190,7 +1056,7 @@
       A <ref>concept_Container_0A128B13B9494DFD21086D34DFB070EAA26D473A</ref> whose iterators are <ref>concept_RandomAccessIterator_A5A1B6A4EC8E181A67C733002B3BE437554D3484</ref>s.
     </desc>
     <details title="Examples">
-      <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
     </details>
   </doc>
   <doc id="concept_TrivialIterator_63C9CBDE8700FA0C9E6E0CA6C6C65B5DA24A13E5">
@@ -1203,9 +1069,9 @@
       An iterator that can move forwards.
     </desc>
     <details title="Examples">
-      <ref>class_ForwardListNodeIterator_T_R_P_F664F07C33DBAABDB2487D2FBE1538C3E6F42EBA</ref>,
-      <ref>class_LinkedListNodeIterator_T_R_P_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF</ref>,
-      <ref>class_RandomAccessIter_T_R_P_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
+      <ref>class_ForwardListNodeIterator_F664F07C33DBAABDB2487D2FBE1538C3E6F42EBA</ref>,
+      <ref>class_LinkedListNodeIterator_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF</ref>,
+      <ref>class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
     </details>
   </doc>
   <doc id="concept_BidirectionalIterator_96C10B73881A17B6DC9C0804E7DF2141C2E58DA6">
@@ -1213,8 +1079,8 @@
       An iterator that can move forwards and backwards.
     </desc>
     <details title="Examples">
-      <ref>class_LinkedListNodeIterator_T_R_P_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF</ref>,
-      <ref>class_RandomAccessIter_T_R_P_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
+      <ref>class_LinkedListNodeIterator_1B6A4ECB2747EF21647DCDFB3EA5E3CFB23B08EF</ref>,
+      <ref>class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
     </details>
   </doc>
   <doc id="concept_RandomAccessIterator_A5A1B6A4EC8E181A67C733002B3BE437554D3484">
@@ -1222,7 +1088,7 @@
       An iterator that can move arbitrary offsets.
     </desc>
     <details title="Examples">
-      <ref>class_RandomAccessIter_T_R_P_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
+      <ref>class_RandomAccessIter_E5BB3CAC7F9DBE190F290EC17E5DCE3406706484</ref>.
     </details>
   </doc>
   <doc id="concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7">
@@ -1230,7 +1096,7 @@
       A type that can be default constructed and either copied or moved or both.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
     </details>
   </doc>
   <doc id="concept_Regular_A56EC84F9A51535281FA2B6B074E90F9B3BBCCC1">
@@ -1238,7 +1104,7 @@
       A <ref>concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7</ref> type that can be compared for equality and inequality.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
     </details>
   </doc>
   <doc id="concept_EqualityComparable_CBC8491006C76A67817EB0837FEB706E443E77B6">
@@ -1246,7 +1112,7 @@
       A type whose objects can be compared with operators == and !=.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
     </details>
   </doc>
   <doc id="concept_LessThanComparable_90ED44B8D61617C1FB8517CD74D7D087E77A0AA5">
@@ -1254,7 +1120,7 @@
       A type whose objects can be compared with operators &lt;, &gt;, &lt;= and &gt;=.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
     </details>
   </doc>
   <doc id="concept_TotallyOrdered_E99156F9F67A4CDD40DFE7EAC64E14E2CF6B24F2">
@@ -1262,7 +1128,7 @@
       A <ref>concept_Regular_A56EC84F9A51535281FA2B6B074E90F9B3BBCCC1</ref> type whose objects can be compared with operators &lt;, &gt;, &lt;= and &gt;=.
     </desc>
     <details title="Examples">
-      <strong>int</strong>, <ref>class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
+      <strong>int</strong>, <ref>class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC</ref>, <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>.
     </details>
   </doc>
   <doc id="concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344">
@@ -1270,8 +1136,8 @@
       A function object whose function call operator has one parameter.
     </desc>
     <details title="Examples">
-      <ref>class_Negate_T_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E</ref>,
-      <ref>class_Identity_T_88B6920757B097108E06B2CB21F8C2B6DE39E909</ref>.
+      <ref>class_Negate_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E</ref>,
+      <ref>class_Identity_88B6920757B097108E06B2CB21F8C2B6DE39E909</ref>.
     </details>
   </doc>
   <doc id="concept_UnaryPredicate_817CC9DCD26C0954E03389EC0C9357DB1879C53F">
@@ -1279,7 +1145,7 @@
       A Boolean-valued <ref>concept_UnaryFunction_DDD936ABC21BA268C3B3C9F4820F5DFE1ACAA344</ref> object.
     </desc>
     <details title="Examples">
-      <ref>class_LogicalNot_T_8969C1691917DD5CA5D11CA01EF0BFCBDC2D486E</ref>.
+      <ref>class_LogicalNot_8969C1691917DD5CA5D11CA01EF0BFCBDC2D486E</ref>.
     </details>
   </doc>
   <doc id="concept_UnaryOperation_A42C7312D25FC827BE924605B8EB6CAF29F5668A">
@@ -1288,8 +1154,8 @@
       the return type and the parameter type of the function call operator are the same type.
     </desc>
     <details title="Examples">
-      <ref>class_Negate_T_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E</ref>,
-      <ref>class_Identity_T_88B6920757B097108E06B2CB21F8C2B6DE39E909</ref>.
+      <ref>class_Negate_0968FCEADBF1F3ACFE5962D8AA44DA01A314480E</ref>,
+      <ref>class_Identity_88B6920757B097108E06B2CB21F8C2B6DE39E909</ref>.
     </details>
   </doc>
   <doc id="concept_BinaryFunction_7F3A6EF707F08A997487EC3748D74CC2156DB250">
@@ -1297,8 +1163,8 @@
       A function object whose function call operator has two parameters.
     </desc>
     <details title="Examples">
-      <ref>class_Plus_T_6DE5E429D028D7343BC491CB6AA869D7DF7D5121</ref>, <ref>class_Minus_T_C7D959DFE0FDC4A65AAF0525637E69033072BBD4</ref>,
-      <ref>class_Multiplies_T_DDF4693577D1A42BE4AFA2F1B93B740D8B5ED381</ref>.
+      <ref>class_Plus_6DE5E429D028D7343BC491CB6AA869D7DF7D5121</ref>, <ref>class_Minus_C7D959DFE0FDC4A65AAF0525637E69033072BBD4</ref>,
+      <ref>class_Multiplies_DDF4693577D1A42BE4AFA2F1B93B740D8B5ED381</ref>.
     </details>
   </doc>
   <doc id="concept_BinaryPredicate_47B7E65D192BA156398E605E540F0BEF2A7473D7">
@@ -1306,8 +1172,8 @@
       A Boolean-valued <ref>concept_BinaryFunction_7F3A6EF707F08A997487EC3748D74CC2156DB250</ref> object.
     </desc>
     <details title="Examples">
-      <ref>class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E</ref>,
-      <ref>class_Less_T_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B</ref>-
+      <ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>,
+      <ref>class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B</ref>-
     </details>
   </doc>
   <doc id="concept_BinaryOperation_E7FA71F85EB4750A92189AC872008306AEFD4D01">
@@ -1316,8 +1182,8 @@
       the return type and the first parameter type of the function call operator are the same type.
     </desc>
     <details title="Examples">
-      <ref>class_Plus_T_6DE5E429D028D7343BC491CB6AA869D7DF7D5121</ref>, <ref>class_Minus_T_C7D959DFE0FDC4A65AAF0525637E69033072BBD4</ref>,
-      <ref>class_Multiplies_T_DDF4693577D1A42BE4AFA2F1B93B740D8B5ED381</ref>.
+      <ref>class_Plus_6DE5E429D028D7343BC491CB6AA869D7DF7D5121</ref>, <ref>class_Minus_C7D959DFE0FDC4A65AAF0525637E69033072BBD4</ref>,
+      <ref>class_Multiplies_DDF4693577D1A42BE4AFA2F1B93B740D8B5ED381</ref>.
     </details>
   </doc>
   <doc id="concept_Relation_EA6D5281439518EB11DD9152636FEB86745EE746">
@@ -1326,9 +1192,64 @@
       The domain of the relation is the type of the parameters.
     </desc>
     <details title="Examples">
-      <ref>class_EqualTo_T_763B7164C155EA5D8436A30331F33E4E7267599E</ref>,
-      <ref>class_Less_T_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B</ref>-
+      <ref>class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E</ref>,
+      <ref>class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B</ref>-
     </details>
+  </doc>
+  <doc id="concept_DefaultConstructible_928F89FC5607554E7244359D8FE40432C96E53DC">
+    <desc>
+      Requires a type to have a user defined or compiler generated default constructor or be of a basic type.
+    </desc>
+  </doc>
+
+  <doc id="concept_CopyConstructible_B11BFA55AF39E78A7C14C35837E65D9DD09586C3">
+    <desc>
+      Requires a type to have a user defined or compiler generated copy constructor or be of a basic type.
+      A compiler can generate a copy constructor if the class has no suppressed copy constructor and no member variables of a move-only type.
+    </desc>
+  </doc>
+
+  <doc id="concept_MoveConstructible_21D36F4E96F5E3072DD6AAB34A26DF5F90FBC262">
+    <desc>
+      Requires a type to have a user defined or compiler generated move constructor or be of a basic type.
+    </desc>
+  </doc>
+
+  <doc id="concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6">
+    <desc>
+      Requires type arguments T and U to have a common type.
+      If they have a common type, that type is bound to <strong>CommonType</strong> symbol that can be used for example in concepts that refine this concept.
+    </desc>
+    <details>
+      Types T and U have a common type if the types T and U are exactly the same type,
+      type T is implicitly convertible to type U, or type U is implicitly convertible to type U.
+      In the first case the common type will be T, in the second case it will be U and in the third case it will be T.
+    </details>
+  </doc>
+  <doc id="concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81">
+    <desc>
+      Requires type T to be implicitly convertible to type U.
+    </desc>
+  </doc>
+  <doc id="concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552">
+    <desc>
+      Requires a class type T to derive from a class type U.
+    </desc>
+  </doc>
+  <doc id="concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA">
+    <desc>
+      Requires type T to be explicitly convertible to type U. If type T is explicitly convertible to U, it can be casted to U.
+    </desc>
+  </doc>
+  <doc id="concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3">
+    <desc>
+      Requires type T to be exactly the same type as U.
+    </desc>
+  </doc>
+  <doc id="concept_NonreferenceType_9BD78EA2665D4260E5514999AD8FCEA945606407">
+    <desc>
+      Requires type T to be a non-reference type.
+    </desc>
   </doc>
 
   <doc id="class_Process_6FDB48284B5FF1E26D28956730DFB867F0A83291">
@@ -1350,29 +1271,23 @@
       This <a href="../../../../code/threading/cmdoc/content/ThreadFunction/file/threadFunction.cm.html">threadFunction</a> example shows how to execute a function
       in a separate thread. Main function starts a thread that executes the <em>ThreadFunction</em> function, and waits the thread to end by calling the
       <ref>member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750</ref> member function of the started thread.
-      A thread function should handle all exceptions. Since all exceptions derive from the <ref>class_Exception_02AEA5204AD1035A91C2D843597EACBE078C8989</ref> class,
-      handling it suffices.
     </details>
     <details>
       This <a href="../../../../code/threading/cmdoc/content/threadSynchronization/file/threadSynchronization.cm.html">threadSynchronization</a> example
-      shows how to use <ref>class_LockGuard_Mtx_71F3BB945476C1B401D53113AACA649C83322BA2</ref>, <ref>class_RecursiveMutex_B9ED5479754BBDDED6A4491348BBD2F20F701D82</ref>
+      shows how to use <ref>class_LockGuard_71F3BB945476C1B401D53113AACA649C83322BA2</ref>, <ref>class_RecursiveMutex_B9ED5479754BBDDED6A4491348BBD2F20F701D82</ref>
       and a <ref>class_ConditionVariable_019A80625043CF98EC88D8F55238C84CFD4A9C26</ref> to synchronize threads.
       The main function starts first the <em>Run</em> member function of the
       <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html">OutputCollector</a>
       class in a separate thread. Then it queries the number of cores by calling the
-      <ref>function_HardwareConcurrency_B1B8105140D7AEFC1E753360624D21D1C3947146</ref> function, and starts twice as many output threads.
+      <ref>function_HardwareConcurrency_1205CA22BE5F7C8523C7C99C25B03568E302190F</ref> function, and starts twice as many output threads.
       The output threads enqueue message lines by calling the <em>EnqueueLine</em> member function of the
       <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html">OutputCollector</a>.
       Finally main thread <ref>member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750</ref>s the output threads and the output collector thread.
     </details>
-    <details>
-      This <a href="../../../../code/threading/cmdoc/content/transferringExceptions/file/transferringExceptions.cm.html">third example</a> shows
-      how to transfer exceptions from a separate thread to the main thread.
-    </details>
   </doc>
   <doc id="member_function_Join_Thread_2321207B993A5A106E72F80F93CBAD2DA409A166">
     <desc>
-        Waits a thread to end. If the thread is not joinable, throws a <ref>class_ThreadingException_4952259FBBDB6BDFCF1A52EABE2C1A61BF601670</ref>.
+        Waits a thread to end. If the thread is not joinable, // TODO
     </desc>
   </doc>
   <doc id="member_function_NotifyAll_ConditionVariable_2CAF36B95B161BDAF58DE556C3363A2E94D6BDA5">
@@ -1489,40 +1404,114 @@
       It does not have any source code.
     </desc>>
   </doc>
-  <doc id="concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6">
+
+  <doc id="class_MemoryWriter_BC3E557B84654B5DB52F9A019B7E85AF4A0D7C48">
     <desc>
-      Requires type arguments T and U to have a common type.
-      If they have a common type, that type is bound to <strong>CommonType</strong> symbol that can be used for example in concepts that refine this concept.
+      A class for writing data in binary form to a block of memory. The data is written in big-endian byte order.
+    </desc>
+  </doc>
+  <doc id="class_MemoryReader_7C2B5BA19453DDDA4428C8201D93E07311596E12">
+    <desc>
+      A class for reading data in binary form from a block of memory. The data is expected to be in big-endian byte order.
+    </desc>
+  </doc>
+  <doc id="member_function_ReadByte_Stream_EB804D3E1DFABC1CAAA5E911DE5D989C3D1FB588">
+    <desc>
+      If at the end of the stream returns a result containing -1, otherwise reads a byte from the stream and returns a result that contains it.
+      In case of an error returns an error result.
+    </desc>
+  </doc>
+  <doc id="member_function_ReadByte_FileStream_71156A4D45D7DF2AA25E2CFAF8A4C91A39CD34DF">
+    <desc>
+      If at the end of the stream returns a result containing -1, otherwise reads a byte from the stream and returns a result that contains it.
+      In case of an error returns an error result.
+    </desc>
+  </doc>
+  <doc id="member_function_ReadByte_BufferedStream_D21B200A7FD5BB16D845831DDA3DDA69BAF3A60D">
+    <desc>
+      If at the end of the stream returns a result containing -1, otherwise if has buffered bytes, returns a result containing the next buffered byte, 
+      otherwise fills the buffer and returns a result containing the next buffered byte.
+      In case of an error returns an error result.
+    </desc>
+  </doc>
+  <doc id="member_function_ReadByte_MemoryStream_9B6EED5D584D4A6806293D4E810DF24FC4D60A48">
+    <desc>
+      If at the end of the stream returns a result containing -1, otherwise returns a result that contains the byte read from the 'readPos' content location.
+    </desc>
+  </doc>
+  <doc id="member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C">
+    <desc>
+      If at the end of the stream returns a result containing -1, otherwise returns a result that contains the next byte read from the socket.
+      In case of an error returns an error result.
+    </desc>
+  </doc>
+  <doc id="member_function_ReadByte_DeflateStream_E8027D714F71B7C08E0568E8F392606F7C2DCF0A">
+    <desc>
+      If at the end of the stream returns a result containing -1, otherwise returns a result that contains the next uncompressed byte.
+    </desc>
+  </doc>
+  <doc id="function_Sort_B69A17D108D37F52F76C89E93A071E98D4316261">
+    <desc>
+      Sorts a range of elements with respect to a relation.
     </desc>
     <details>
-      Types T and U have a common type if the types T and U are exactly the same type,
-      type T is implicitly convertible to type U, or type U is implicitly convertible to type U.
-      In the first case the common type will be T, in the second case it will be U and in the third case it will be T.
+      The range must be defined by two random access iterators and the element type must be copyable.
+      If the number of elements in the range is less than or equal to <ref>constant_insertionSortThreshold_56F85BEA8266D9529E96B6415FF32EC6B8AB62C5</ref>
+      sorts the elements using <ref>function_InsertionSort_DAB06B7BFD64D40675CA84057B703C3B4C534755</ref>,
+      otherwise sorts them using <ref>function_QuickSort_69A6F4919BF3D252BCD209583330F66DF9EA5806</ref>.
     </details>
   </doc>
-  <doc id="concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81">
+  <doc id="function_Sort_EF32C4020F3A981412DA6D8D74326E57C67DBD4C">
     <desc>
-      Requires type T to be implicitly convertible to type U.
+      Sorts a range of elements with respect to a relation.
     </desc>
+    <details>
+      The range must be defined by two random access iterators and the element type can be a move-only type.
+      Sorts the elements using <ref>function_InsertionSort_DAB06B7BFD64D40675CA84057B703C3B4C534755</ref>.
+    </details>
   </doc>
-  <doc id="concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552">
+  <doc id="function_Sort_C9A173F20B11020769C780AF6DCA83382513E394">
     <desc>
-      Requires a class type T to derive from a class type U.
+      Sorts a range of elements with respect to the less than relation.
     </desc>
+    <details>
+      Delegates sorting to this <ref>function_Sort_B69A17D108D37F52F76C89E93A071E98D4316261</ref> or this <ref>function_Sort_EF32C4020F3A981412DA6D8D74326E57C67DBD4C</ref>
+      function regarding whether the element type is copyable or not.
+    </details>
   </doc>
-  <doc id="concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA">
+  <doc id="function_Sort_D659DB603D990251C11BDB5212F9BE088CD9D842">
     <desc>
-      Requires type T to be explicitly convertible to type U. If type T is explicitly convertible to U, it can be casted to U.
+      Sorts a random access container with respect to a relation.
     </desc>
+    <details>
+      Delegates sorting to this <ref>function_Sort_B69A17D108D37F52F76C89E93A071E98D4316261</ref> or this <ref>function_Sort_EF32C4020F3A981412DA6D8D74326E57C67DBD4C</ref>
+      function regarding whether the element type is copyable or not.
+    </details>
   </doc>
-  <doc id="concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3">
+  <doc id="function_Sort_7C73E3E1EEACFDE0A07AA0DF6F0DFE4B25935987">
     <desc>
-      Requires type T to be exactly the same type as U.
+      Sorts a random access container with respect to the less than relation.
     </desc>
+    <details>
+      Delegates sorting to this <ref>function_Sort_C9A173F20B11020769C780AF6DCA83382513E394</ref> function.
+    </details>
   </doc>
-  <doc id="concept_NonreferenceType_9BD78EA2665D4260E5514999AD8FCEA945606407">
+  <doc id="function_Sort_D5E0D4CCA744D7C9467BD4BD5F0263CFC967F67D">
     <desc>
-      Requires type T to be a non-reference type.
+      Sorts a forward container with respected to a relation by copying the forward container to a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
+      sorting the list and then copying elements back to the forward container.
     </desc>
+    <details>
+      Delegates sorting to this <ref>function_Sort_D659DB603D990251C11BDB5212F9BE088CD9D842</ref> function.
+    </details>
+  </doc>
+  <doc id="function_Sort_1060E96646527D20A7A7F3864F1DAF6250E6E24C">
+    <desc>
+      Sorts a forward container with respected to the less than relation by copying the forward container to a <ref>class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11</ref>,
+      sorting the list and then copying elements back to the forward container.
+    </desc>
+    <details>
+      Delegates sorting to this <ref>function_Sort_7C73E3E1EEACFDE0A07AA0DF6F0DFE4B25935987</ref> function.
+    </details>
   </doc>
 </docs>

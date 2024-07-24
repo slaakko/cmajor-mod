@@ -27,47 +27,49 @@ XmlAttributeProcessor::XmlAttributeProcessor() : AttributeProcessor(U"xml")
     reservedMemberFunctionNames.insert(U"StaticClassName");
     reservedMemberFunctionNames.insert(U"Register");
     reservedMemberFunctionNames.insert(U"Create");
-    reservedMemberFunctionNames.insert(U"DestroyObject");
-    reservedMemberFunctionNames.insert(U"ObjectId");
-    reservedMemberFunctionNames.insert(U"SetObjectId");
-    reservedMemberFunctionNames.insert(U"Container");
-    reservedMemberFunctionNames.insert(U"SetContainer");
-    reservedMemberFunctionNames.insert(U"ClassId");
-    reservedMemberFunctionNames.insert(U"ClassName");
+    //reservedMemberFunctionNames.insert(U"DestroyObject");
+    //reservedMemberFunctionNames.insert(U"ObjectId");
+    //reservedMemberFunctionNames.insert(U"SetObjectId");
+    //reservedMemberFunctionNames.insert(U"Container");
+    //reservedMemberFunctionNames.insert(U"SetContainer");
+    //reservedMemberFunctionNames.insert(U"ClassId");
+    //reservedMemberFunctionNames.insert(U"ClassName");
     reservedMemberFunctionNames.insert(U"SetObjectXmlAttributes");
-    reservedMemberFunctionNames.insert(U"ToXml");
-    reservedMemberFunctionNames.insert(U"FromXml");
-    reservedMemberFunctionNames.insert(U"IsOwned");
-    reservedMemberFunctionNames.insert(U"SetOwned");
-    reservedMemberFunctionNames.insert(U"ResetOwned");
+    //reservedMemberFunctionNames.insert(U"ToXml");
+    //reservedMemberFunctionNames.insert(U"FromXml");
+    //reservedMemberFunctionNames.insert(U"IsOwned");
+    //reservedMemberFunctionNames.insert(U"SetOwned");
+    //reservedMemberFunctionNames.insert(U"ResetOwned");
     reservedMemberVariableNames.insert(U"classId");
-    reservedMemberVariableNames.insert(U"objectId");
-    reservedMemberVariableNames.insert(U"container");
-    reservedMemberVariableNames.insert(U"isOwned");
+    //reservedMemberVariableNames.insert(U"objectId");
+    //reservedMemberVariableNames.insert(U"container");
+    //reservedMemberVariableNames.insert(U"isOwned");
 }
 
 void XmlAttributeProcessor::TypeCheck(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol)
 {
     switch (symbol->GetSymbolType())
     {
-    case cmajor::symbols::SymbolType::classTypeSymbol: case cmajor::symbols::SymbolType::classTemplateSpecializationSymbol: case cmajor::symbols::SymbolType::memberVariableSymbol:
-    {
-        if (attribute->Value() == U"true" || attribute->Value() == U"false")
+        case cmajor::symbols::SymbolType::classTypeSymbol: 
+        case cmajor::symbols::SymbolType::classTemplateSpecializationSymbol: 
+        case cmajor::symbols::SymbolType::memberVariableSymbol:
         {
-            if (attribute->Value() == U"true" && (symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
-                symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol))
+            if (attribute->Value() == U"true" || attribute->Value() == U"false")
             {
-                TypeCheckClass(static_cast<cmajor::symbols::ClassTypeSymbol*>(symbol));
+                if (attribute->Value() == U"true" && (symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTypeSymbol || 
+                    symbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol))
+                {
+                    TypeCheckClass(static_cast<cmajor::symbols::ClassTypeSymbol*>(symbol));
+                }
+                return;
             }
-            return;
+            else
+            {
+                throw cmajor::symbols::Exception("unknown attribute value '" + util::ToUtf8(attribute->Value()) + "' for attribute '" + util::ToUtf8(attribute->Name()) + "'",
+                    attribute->GetFullSpan());
+            }
+            break;
         }
-        else
-        {
-            throw cmajor::symbols::Exception("unknown attribute value '" + util::ToUtf8(attribute->Value()) + "' for attribute '" + util::ToUtf8(attribute->Name()) + "'",
-                attribute->GetFullSpan());
-        }
-        break;
-    }
     }
     AttributeProcessor::TypeCheck(attribute, symbol);
 }
@@ -104,7 +106,8 @@ void XmlAttributeProcessor::TypeCheckClass(cmajor::symbols::ClassTypeSymbol* cla
     classType->SetHasXmlAttribute();
 }
 
-void XmlAttributeProcessor::GenerateMemberSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
+void XmlAttributeProcessor::GenerateMemberSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classType, 
+    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
     for (cmajor::symbols::MemberVariableSymbol* memberVariableSymbol : classType->MemberVariables())
     {
@@ -141,99 +144,52 @@ const int destructorId = 0;
 const int staticClassNameId = 1;
 const int createId = 2;
 const int registerId = 3;
-const int destroyObjectId = 4;
-const int objectIdId = 5;
-const int setObjectIdId = 6;
-const int containerId = 7;
-const int setContainerId = 8;
-const int classIdId = 9;
-const int classNameId = 10;
-const int setObjectXmlAttributesId = 11;
-const int toXmlPlainId = 12;
-const int toXmlId = 13;
-const int fromXmlId = 14;
-const int getPtrsId = 15;
-const int isOwnedMemFunId = 16;
-const int setOwnedMemFunId = 17;
-const int resetOwnedMemFunId = 18;
+const int classIdId = 4;
+const int setObjectXmlAttributesId = 5;
+const int toXmlId = 6;
+const int fromXmlId = 7;
 
-void XmlAttributeProcessor::GenerateSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
+void XmlAttributeProcessor::GenerateSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::Symbol* symbol, BoundCompileUnit& boundCompileUnit, 
+    cmajor::symbols::ContainerScope* containerScope)
 {
     if (symbol->IsClassTypeSymbol())
     {
         cmajor::symbols::ClassTypeSymbol* classTypeSymbol = static_cast<cmajor::symbols::ClassTypeSymbol*>(symbol);
         if (attribute->Value() == U"true")
         {
-            CheckXmlSerializableInterface(classTypeSymbol, boundCompileUnit, containerScope);
-            if (!classTypeSymbol->BaseClass())
-            {
-                CheckVirtualDestructor(classTypeSymbol);
-            }
+            SetBaseClass(classTypeSymbol, boundCompileUnit, containerScope);
             GenerateMemberSymbols(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateMemberVariableSymbols(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateStaticClassNameSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateCreateFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateRegisterFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateDestroyObjectFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateObjectIdFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateSetObjectIdFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateContainerFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateSetContainerFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateClassIdFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateClassNameFunctionSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateSetObjectXmlAttributesSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateToXmlPlainSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateToXmlSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
             GenerateFromXmlSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateGetPtrsSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateIsOwnedSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateSetOwnedSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
-            GenerateResetOwnedSymbol(attribute, classTypeSymbol, boundCompileUnit, containerScope);
         }
     }
 }
 
-void XmlAttributeProcessor::CheckXmlSerializableInterface(cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
+void XmlAttributeProcessor::SetBaseClass(cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit,
+    cmajor::symbols::ContainerScope* containerScope)
 {
-    const std::vector<cmajor::symbols::InterfaceTypeSymbol*>& interfaces = classType->ImplementedInterfaces();
-    bool xmlSerializableInterfaceFound = false;
-    for (cmajor::symbols::InterfaceTypeSymbol* intf : interfaces)
+    if (!classTypeSymbol->BaseClass())
     {
-        if (intf->FullName() == U"System.Xml.Serialization.XmlSerializable")
+        cmajor::ast::IdentifierNode xmlSerializableNode(classTypeSymbol->GetSpan(), U"System.Xml.Serialization.XmlSerializable");
+        cmajor::symbols::TypeSymbol* baseClassType = ResolveType(&xmlSerializableNode, boundCompileUnit, containerScope);
+        if (baseClassType->IsClassTypeSymbol())
         {
-            xmlSerializableInterfaceFound = true;
-            break;
+            classTypeSymbol->SetBaseClass(static_cast<cmajor::symbols::ClassTypeSymbol*>(baseClassType));
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("class type expected", classTypeSymbol->GetFullSpan());
         }
     }
-    if (!xmlSerializableInterfaceFound)
+    else if (!classTypeSymbol->BaseClass()->HasXmlAttribute())
     {
-        cmajor::ast::IdentifierNode xmlSerializableInterfaceNode(classType->GetSpan(), U"System.Xml.Serialization.XmlSerializable");
-        cmajor::symbols::TypeSymbol* xmlSerializableType = ResolveType(&xmlSerializableInterfaceNode, boundCompileUnit, containerScope);
-        if (xmlSerializableType->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
-        {
-            cmajor::symbols::InterfaceTypeSymbol* xmlSerialiableInterfaceType = static_cast<cmajor::symbols::InterfaceTypeSymbol*>(xmlSerializableType);
-            classType->AddImplementedInterface(xmlSerialiableInterfaceType);
-        }
-    }
-
-}
-
-void XmlAttributeProcessor::CheckVirtualDestructor(cmajor::symbols::ClassTypeSymbol* classTypeSymbol)
-{
-    if (classTypeSymbol->Destructor())
-    {
-        if (!classTypeSymbol->Destructor()->IsVirtual())
-        {
-            throw cmajor::symbols::Exception("destructor of an XML class '" + util::ToUtf8(classTypeSymbol->Name()) + "' is not virtual",
-                classTypeSymbol->GetFullSpan());
-        }
-    }
-    else
-    {
-        classTypeSymbol->CreateDestructorSymbol();
-        classTypeSymbol->Destructor()->SetVirtual();
-        auto& m = functionSymbolMap[classTypeSymbol];
-        m.push_back(std::make_pair(classTypeSymbol->Destructor(), destructorId));
+        throw cmajor::symbols::Exception("base class of class '" + util::ToUtf8(classTypeSymbol->Name()) + "' should have [xml] attribute", classTypeSymbol->GetFullSpan());
     }
 }
 
@@ -257,107 +213,52 @@ void XmlAttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* a
                 cmajor::symbols::FunctionSymbol* functionSymbol = p.first;
                 switch (p.second)
                 {
-                case destructorId:
-                {
-                    GenerateDestructorImplementation(attribute, static_cast<cmajor::symbols::DestructorSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case staticClassNameId:
-                {
-                    GenerateStaticClassNameImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case createId:
-                {
-                    GenerateCreateImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case registerId:
-                {
-                    GenerateRegisterImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case destroyObjectId:
-                {
-                    GenerateDestroyObjectImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case objectIdId:
-                {
-                    GenerateObjectIdImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case setObjectIdId:
-                {
-                    GenerateSetObjectIdImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case containerId:
-                {
-                    GenerateContainerImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case setContainerId:
-                {
-                    GenerateSetContainerImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case classIdId:
-                {
-                    GenerateClassIdImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case classNameId:
-                {
-                    GenerateClassNameImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case setObjectXmlAttributesId:
-                {
-                    GenerateSetObjectXmlAttributesImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case toXmlPlainId:
-                {
-                    GenerateToXmlPlainImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case toXmlId:
-                {
-                    GenerateToXmlImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case fromXmlId:
-                {
-                    GenerateFromXmlImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case getPtrsId:
-                {
-                    GenerateGetPtrsImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case isOwnedMemFunId:
-                {
-                    GenerateIsOwnedImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case setOwnedMemFunId:
-                {
-                    GenerateSetOwnedImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                case resetOwnedMemFunId:
-                {
-                    GenerateSetOwnedImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
-                    break;
-                }
-                default:
-                {
-                    throw cmajor::symbols::Exception("internal error in XML attribute implementation: member function symbol map for class type symbol '" + 
-                        util::ToUtf8(classTypeSymbol->FullName()) +
-                        "' contains invalid member function id " + std::to_string(p.second), attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
-                }
+                    case destructorId:
+                    {
+                        GenerateDestructorImplementation(attribute, static_cast<cmajor::symbols::DestructorSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    case staticClassNameId:
+                    {
+                        GenerateStaticClassNameImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    case createId:
+                    {
+                        GenerateCreateImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    case registerId:
+                    {
+                        GenerateRegisterImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    case classIdId:
+                    {
+                        GenerateClassIdImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    case setObjectXmlAttributesId:
+                    {
+                        GenerateSetObjectXmlAttributesImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    case toXmlId:
+                    {
+                        GenerateToXmlImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    case fromXmlId:
+                    {
+                        GenerateFromXmlImplementation(attribute, classTypeSymbol, static_cast<cmajor::symbols::MemberFunctionSymbol*>(functionSymbol), statementBinder);
+                        break;
+                    }
+                    default:
+                    {
+                        throw cmajor::symbols::Exception("internal error in XML attribute implementation: member function symbol map for class type symbol '" + 
+                            util::ToUtf8(classTypeSymbol->FullName()) +
+                            "' contains invalid member function id " + std::to_string(p.second), attribute->GetFullSpan(), classTypeSymbol->GetFullSpan());
+                    }
                 }
             }
         }
@@ -370,7 +271,8 @@ void XmlAttributeProcessor::GenerateImplementation(cmajor::ast::AttributeNode* a
     }
 }
 
-void XmlAttributeProcessor::GenerateDestructorImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::DestructorSymbol* destructorSymbol, StatementBinder* statementBinder)
+void XmlAttributeProcessor::GenerateDestructorImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::DestructorSymbol* destructorSymbol, 
+    StatementBinder* statementBinder)
 {
     BoundCompileUnit& boundCompileUnit = statementBinder->GetBoundCompileUnit();
     if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
@@ -381,39 +283,21 @@ void XmlAttributeProcessor::GenerateDestructorImplementation(cmajor::ast::Attrib
     }
 }
 
-void XmlAttributeProcessor::GenerateMemberVariableSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classType, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
+void XmlAttributeProcessor::GenerateMemberVariableSymbols(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classType, 
+    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
     cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
+
     cmajor::symbols::MemberVariableSymbol* classIdSymbol = new cmajor::symbols::MemberVariableSymbol(attribute->GetSpan(), U"classId");
     classIdSymbol->SetModule(&boundCompileUnit.GetModule());
     classIdSymbol->SetStatic();
     classIdSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     classIdSymbol->SetType(symbolTable.GetTypeByName(U"int"));
     classType->AddMember(classIdSymbol);
-
-    if (!HasXmlBaseClass(classType))
-    {
-        cmajor::symbols::MemberVariableSymbol* objectIdSymbol = new cmajor::symbols::MemberVariableSymbol(attribute->GetSpan(), U"objectId");
-        objectIdSymbol->SetModule(&boundCompileUnit.GetModule());
-        objectIdSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-        objectIdSymbol->SetType(symbolTable.GetTypeByName(U"System.Uuid"));
-        classType->AddMember(objectIdSymbol);
-
-        cmajor::symbols::MemberVariableSymbol* containerSymbol = new cmajor::symbols::MemberVariableSymbol(attribute->GetSpan(), U"container");
-        containerSymbol->SetModule(&boundCompileUnit.GetModule());
-        containerSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-        containerSymbol->SetType(symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlContainer")->AddPointer());
-        classType->AddMember(containerSymbol);
-
-        cmajor::symbols::MemberVariableSymbol* isOwnedSymbol = new cmajor::symbols::MemberVariableSymbol(attribute->GetSpan(), U"isOwned");
-        isOwnedSymbol->SetModule(&boundCompileUnit.GetModule());
-        isOwnedSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-        isOwnedSymbol->SetType(symbolTable.GetTypeByName(U"bool"));
-        classType->AddMember(isOwnedSymbol);
-    }
 }
 
-void XmlAttributeProcessor::GenerateStaticClassNameSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
+void XmlAttributeProcessor::GenerateStaticClassNameSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
+    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
     try
     {
@@ -445,8 +329,8 @@ void XmlAttributeProcessor::GenerateStaticClassNameSymbol(cmajor::ast::Attribute
     }
 }
 
-void XmlAttributeProcessor::GenerateStaticClassNameImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cmajor::symbols::MemberFunctionSymbol* staticClassNameSymbol,
-    StatementBinder* statementBinder)
+void XmlAttributeProcessor::GenerateStaticClassNameImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
+    cmajor::symbols::MemberFunctionSymbol* staticClassNameSymbol, StatementBinder* statementBinder)
 {
     try
     {
@@ -486,8 +370,8 @@ void XmlAttributeProcessor::GenerateCreateFunctionSymbol(cmajor::ast::AttributeN
 
     cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(createSymbol);
 
-    cmajor::symbols::TypeSymbol* voidPtrTypeSymbol = symbolTable.GetTypeByName(U"void")->AddPointer();
-    createSymbol->SetReturnType(voidPtrTypeSymbol);
+    cmajor::symbols::TypeSymbol* serializablePtrTypeSymbol = symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializable")->AddPointer();
+    createSymbol->SetReturnType(serializablePtrTypeSymbol);
 
     classTypeSymbol->AddMember(createSymbol);
     createSymbol->ComputeName();
@@ -538,13 +422,19 @@ void XmlAttributeProcessor::GenerateRegisterFunctionSymbol(cmajor::ast::Attribut
 
     cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(registerSymbol);
 
-    cmajor::symbols::TypeSymbol* voidTypeSymbol = symbolTable.GetTypeByName(U"void");
-    registerSymbol->SetReturnType(voidTypeSymbol);
+    cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
+        new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
+    cmajor::ast::TemplateIdNode resultBoolNode(attribute->GetSpan(), systemResultNode);
+    resultBoolNode.AddTemplateArgument(new cmajor::ast::BoolNode(attribute->GetSpan()));
+    cmajor::symbols::TypeSymbol* returnType = ResolveType(&resultBoolNode, boundCompileUnit, containerScope);
 
-    cmajor::symbols::ParameterSymbol* classIdParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"classId_");
-    cmajor::symbols::TypeSymbol* intTypeSymbol = symbolTable.GetTypeByName(U"int");
-    classIdParam->SetType(intTypeSymbol);
-    registerSymbol->AddMember(classIdParam);
+    registerSymbol->SetReturnType(returnType);
+
+    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
+    returnParam->SetParent(registerSymbol);
+    returnParam->SetType(returnType->AddPointer());
+    registerSymbol->SetReturnParam(returnParam);
+
     classTypeSymbol->AddMember(registerSymbol);
     registerSymbol->ComputeName();
 
@@ -552,7 +442,8 @@ void XmlAttributeProcessor::GenerateRegisterFunctionSymbol(cmajor::ast::Attribut
     m.push_back(std::make_pair(registerSymbol, registerId));
 }
 
-void XmlAttributeProcessor::GenerateRegisterImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, cmajor::symbols::MemberFunctionSymbol* registerSymbol, StatementBinder* statementBinder)
+void XmlAttributeProcessor::GenerateRegisterImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
+    cmajor::symbols::MemberFunctionSymbol* registerSymbol, StatementBinder* statementBinder)
 {
     try
     {
@@ -563,15 +454,19 @@ void XmlAttributeProcessor::GenerateRegisterImplementation(cmajor::ast::Attribut
         cmajor::ast::MemberFunctionNode memberFunctionNode(span);
         cmajor::ast::CompoundStatementNode compoundStatementNode(span);
 
+        std::string mangledName = util::ToUtf8(classTypeSymbol->MangledName());
+        int classId = std::hash<std::string>()(mangledName) & 0x7FFFFFFF;
+
         cmajor::ast::AssignmentStatementNode* assignClassIdStatement = new cmajor::ast::AssignmentStatementNode(span, 
-            new cmajor::ast::IdentifierNode(span, U"classId"), new cmajor::ast::IdentifierNode(span, U"classId_"));
+            new cmajor::ast::IdentifierNode(span, U"classId"), new cmajor::ast::IntLiteralNode(span, classId));
         compoundStatementNode.AddStatement(assignClassIdStatement);
 
+        // return System.Xml.Serialization.XmlRegister(classId);
         cmajor::ast::TemplateIdNode* xmlRegister = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.Serialization.XmlRegister"));
         xmlRegister->AddTemplateArgument(new cmajor::ast::IdentifierNode(span, classTypeSymbol->FullName()));
         cmajor::ast::InvokeNode* invokeXmlRegisterFunction = new cmajor::ast::InvokeNode(span, xmlRegister);
         invokeXmlRegisterFunction->AddArgument(new cmajor::ast::IdentifierNode(span, U"classId"));
-        cmajor::ast::ExpressionStatementNode* invokeXmlRegisterStatement = new cmajor::ast::ExpressionStatementNode(span, invokeXmlRegisterFunction);
+        cmajor::ast::ReturnStatementNode* invokeXmlRegisterStatement = new cmajor::ast::ReturnStatementNode(span, invokeXmlRegisterFunction);
         compoundStatementNode.AddStatement(invokeXmlRegisterStatement);
 
         CompileMemberFunction(registerSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
@@ -587,189 +482,6 @@ void XmlAttributeProcessor::GenerateRegisterImplementation(cmajor::ast::Attribut
     }
 }
 
-void XmlAttributeProcessor::GenerateDestroyObjectFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* destroyObjectSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"DestroyObject");
-    destroyObjectSymbol->SetModule(&boundCompileUnit.GetModule());
-    destroyObjectSymbol->SetGroupName(U"DestroyObject");
-    destroyObjectSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        destroyObjectSymbol->SetOverride();
-    }
-    else
-    {
-        destroyObjectSymbol->SetVirtual();
-    }
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    destroyObjectSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(destroyObjectSymbol);
-
-    cmajor::symbols::TypeSymbol* voidTypeSymbol = symbolTable.GetTypeByName(U"void");
-    destroyObjectSymbol->SetReturnType(voidTypeSymbol);
-
-    classTypeSymbol->AddMember(destroyObjectSymbol);
-    destroyObjectSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(destroyObjectSymbol, destroyObjectId));
-}
-
-void XmlAttributeProcessor::GenerateDestroyObjectImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* destroyObjectSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), destroyObjectSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"DestroyObject"));
-            cmajor::ast::InvokeNode* baseDestroyObjectCall = new cmajor::ast::InvokeNode(span, arrowNode);
-            statementNode = new cmajor::ast::ExpressionStatementNode(span, baseDestroyObjectCall);
-        }
-        else
-        {
-            statementNode = new cmajor::ast::DeleteStatementNode(span, new cmajor::ast::ThisNode(span));
-        }
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(destroyObjectSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'DestroyObject' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateObjectIdFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* objectIdSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ObjectId");
-    objectIdSymbol->SetModule(&boundCompileUnit.GetModule());
-    objectIdSymbol->SetGroupName(U"ObjectId");
-    objectIdSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        objectIdSymbol->SetOverride();
-    }
-    else
-    {
-        objectIdSymbol->SetVirtual();
-    }
-    objectIdSymbol->SetConst();
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    objectIdSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(objectIdSymbol);
-
-    cmajor::symbols::TypeSymbol* uuidTypeSymbol = symbolTable.GetTypeByName(U"System.Uuid");
-    objectIdSymbol->SetReturnType(uuidTypeSymbol);
-
-    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
-    returnParam->SetParent(objectIdSymbol);
-    returnParam->SetType(uuidTypeSymbol->AddPointer());
-    objectIdSymbol->SetReturnParam(returnParam);
-
-    classTypeSymbol->AddMember(objectIdSymbol);
-    objectIdSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(objectIdSymbol, objectIdId));
-}
-
-void XmlAttributeProcessor::GenerateObjectIdImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* objectIdSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), objectIdSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"ObjectId"));
-            cmajor::ast::InvokeNode* baseObjectIdCall = new cmajor::ast::InvokeNode(span, arrowNode);
-            statementNode = new cmajor::ast::ReturnStatementNode(span, baseObjectIdCall);
-        }
-        else
-        {
-            cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"objectId"));
-            statementNode = returnStatementNode;
-        }
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(objectIdSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'ObjectId' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateSetObjectIdFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* setObjectIdSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"SetObjectId");
-    setObjectIdSymbol->SetModule(&boundCompileUnit.GetModule());
-    setObjectIdSymbol->SetGroupName(U"SetObjectId");
-    setObjectIdSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        setObjectIdSymbol->SetOverride();
-    }
-    else
-    {
-        setObjectIdSymbol->SetVirtual();
-    }
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    setObjectIdSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(setObjectIdSymbol);
-
-    cmajor::symbols::TypeSymbol* uuidTypeSymbol = symbolTable.GetTypeByName(U"System.Uuid");
-    cmajor::symbols::ParameterSymbol* objectIdParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"objectId_");
-    objectIdParam->SetType(uuidTypeSymbol->AddConst()->AddLvalueReference());
-    setObjectIdSymbol->AddMember(objectIdParam);
-
-    setObjectIdSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
-
-    classTypeSymbol->AddMember(setObjectIdSymbol);
-    setObjectIdSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(setObjectIdSymbol, setObjectIdId));
-}
-
 bool XmlAttributeProcessor::HasXmlBaseClass(cmajor::symbols::ClassTypeSymbol* classType) const
 {
     cmajor::symbols::ClassTypeSymbol* baseClass = classType->BaseClass();
@@ -778,197 +490,6 @@ bool XmlAttributeProcessor::HasXmlBaseClass(cmajor::symbols::ClassTypeSymbol* cl
         return baseClass->HasXmlAttribute();
     }
     return false;
-}
-
-void XmlAttributeProcessor::GenerateSetObjectIdImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* setObjectIdSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), setObjectIdSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"SetObjectId"));
-            cmajor::ast::InvokeNode* baseObjectIdCall = new cmajor::ast::InvokeNode(span, arrowNode);
-            baseObjectIdCall->AddArgument(new cmajor::ast::IdentifierNode(span, U"objectId_"));
-            statementNode = new cmajor::ast::ExpressionStatementNode(span, baseObjectIdCall);
-        }
-        else
-        {
-            cmajor::ast::AssignmentStatementNode* assignmentStatementNode = new cmajor::ast::AssignmentStatementNode(span,
-                new cmajor::ast::IdentifierNode(span, U"objectId"),
-                new cmajor::ast::IdentifierNode(span, U"objectId_"));
-            statementNode = assignmentStatementNode;
-        }
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(setObjectIdSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'SetObjectId' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateContainerFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* containerSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"Container");
-    containerSymbol->SetModule(&boundCompileUnit.GetModule());
-    containerSymbol->SetGroupName(U"Container");
-    containerSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        containerSymbol->SetOverride();
-    }
-    else
-    {
-        containerSymbol->SetVirtual();
-    }
-    containerSymbol->SetConst();
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    containerSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(containerSymbol);
-
-    cmajor::symbols::TypeSymbol* containerTypeSymbol = symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlContainer")->AddPointer();
-    containerSymbol->SetReturnType(containerTypeSymbol);
-
-    classTypeSymbol->AddMember(containerSymbol);
-    containerSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(containerSymbol, containerId));
-}
-
-void XmlAttributeProcessor::GenerateContainerImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* containerSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), containerSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"Container"));
-            cmajor::ast::InvokeNode* baseObjectIdCall = new cmajor::ast::InvokeNode(span, arrowNode);
-            statementNode = new cmajor::ast::ReturnStatementNode(span, baseObjectIdCall);
-        }
-        else
-        {
-            cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"container"));
-            statementNode = returnStatementNode;
-        }
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(containerSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'Container' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateSetContainerFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* setContainerSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"SetContainer");
-    setContainerSymbol->SetModule(&boundCompileUnit.GetModule());
-    setContainerSymbol->SetGroupName(U"SetContainer");
-    setContainerSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        setContainerSymbol->SetOverride();
-    }
-    else
-    {
-        setContainerSymbol->SetVirtual();
-    }
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    setContainerSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(setContainerSymbol);
-
-    cmajor::symbols::TypeSymbol* containerTypeSymbol = symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlContainer");
-    cmajor::symbols::ParameterSymbol* containerParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"container_");
-    containerParam->SetType(containerTypeSymbol->AddPointer());
-    setContainerSymbol->AddMember(containerParam);
-
-    setContainerSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
-
-    classTypeSymbol->AddMember(setContainerSymbol);
-    setContainerSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(setContainerSymbol, setContainerId));
-}
-
-void XmlAttributeProcessor::GenerateSetContainerImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* setContainerSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), setContainerSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"SetContainer"));
-            cmajor::ast::InvokeNode* baseContainerCall = new cmajor::ast::InvokeNode(span, arrowNode);
-            baseContainerCall->AddArgument(new cmajor::ast::IdentifierNode(span, U"container_"));
-            statementNode = new cmajor::ast::ExpressionStatementNode(span, baseContainerCall);
-        }
-        else
-        {
-            cmajor::ast::AssignmentStatementNode* assignmentStatementNode = new cmajor::ast::AssignmentStatementNode(span,
-                new cmajor::ast::IdentifierNode(span, U"container"),
-                new cmajor::ast::IdentifierNode(span, U"container_"));
-            statementNode = assignmentStatementNode;
-        }
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(setContainerSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'SetContainer' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
-    }
 }
 
 void XmlAttributeProcessor::GenerateClassIdFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
@@ -980,6 +501,16 @@ void XmlAttributeProcessor::GenerateClassIdFunctionSymbol(cmajor::ast::Attribute
     classIdSymbol->SetGroupName(U"ClassId");
     classIdSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
     classIdSymbol->SetConst();
+
+    if (HasXmlBaseClass(classTypeSymbol))
+    {
+        classIdSymbol->SetOverride();
+    }
+    else
+    {
+        classIdSymbol->SetOverride();
+    }
+
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
     thisParam->SetType(classTypeSymbol->AddPointer());
     classIdSymbol->AddMember(thisParam);
@@ -1024,66 +555,6 @@ void XmlAttributeProcessor::GenerateClassIdImplementation(cmajor::ast::Attribute
     }
 }
 
-void XmlAttributeProcessor::GenerateClassNameFunctionSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* classNameSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ClassName");
-    classNameSymbol->SetModule(&boundCompileUnit.GetModule());
-    classNameSymbol->SetGroupName(U"ClassName");
-    classNameSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    classNameSymbol->SetConst();
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    classNameSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(classNameSymbol);
-
-    cmajor::symbols::TypeSymbol* stringTypeSymbol = symbolTable.GetTypeByName(U"String<char>");
-    classNameSymbol->SetReturnType(stringTypeSymbol);
-
-    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
-    returnParam->SetParent(classNameSymbol);
-    returnParam->SetType(stringTypeSymbol->AddPointer());
-    classNameSymbol->SetReturnParam(returnParam);
-    classTypeSymbol->AddMember(classNameSymbol);
-    classNameSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(classNameSymbol, classNameId));
-}
-
-void XmlAttributeProcessor::GenerateClassNameImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* classNameSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), classNameSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        cmajor::ast::TypeNameNode* typeNameNode = new cmajor::ast::TypeNameNode(span, new cmajor::ast::DerefNode(span, new cmajor::ast::ThisNode(span)));
-        cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, typeNameNode);
-        statementNode = returnStatementNode;
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(classNameSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'ClassName' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
 void XmlAttributeProcessor::GenerateSetObjectXmlAttributesSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
     BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
 {
@@ -1098,7 +569,7 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesSymbol(cmajor::ast::At
     }
     else
     {
-        setObjectXmlAttributesSymbol->SetVirtual();
+        setObjectXmlAttributesSymbol->SetOverride();
     }
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
     thisParam->SetType(classTypeSymbol->AddPointer());
@@ -1106,12 +577,23 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesSymbol(cmajor::ast::At
 
     cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(setObjectXmlAttributesSymbol);
 
-    cmajor::symbols::TypeSymbol* domElementTypeSymbol = symbolTable.GetTypeByName(U"System.Dom.Element");
+    cmajor::symbols::TypeSymbol* xmlElementTypeSymbol = symbolTable.GetTypeByName(U"System.Xml.Element");
     cmajor::symbols::ParameterSymbol* elementParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"element");
-    elementParam->SetType(domElementTypeSymbol->AddPointer());
+    elementParam->SetType(xmlElementTypeSymbol->AddPointer());
     setObjectXmlAttributesSymbol->AddMember(elementParam);
 
-    setObjectXmlAttributesSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
+    cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
+        new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
+    cmajor::ast::TemplateIdNode resultBoolNode(attribute->GetSpan(), systemResultNode);
+    resultBoolNode.AddTemplateArgument(new cmajor::ast::BoolNode(attribute->GetSpan()));
+    cmajor::symbols::TypeSymbol* returnType = ResolveType(&resultBoolNode, boundCompileUnit, containerScope);
+
+    setObjectXmlAttributesSymbol->SetReturnType(returnType);
+
+    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
+    returnParam->SetParent(setObjectXmlAttributesSymbol);
+    returnParam->SetType(returnType->AddPointer());
+    setObjectXmlAttributesSymbol->SetReturnParam(returnParam);
 
     classTypeSymbol->AddMember(setObjectXmlAttributesSymbol);
     setObjectXmlAttributesSymbol->ComputeName();
@@ -1132,42 +614,79 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesImplementation(cmajor:
         cmajor::ast::MemberFunctionNode memberFunctionNode(span);
         cmajor::ast::CompoundStatementNode compoundStatementNode(span);
 
+        // element->SetAttribute("classId", ToString(classId));
         cmajor::ast::ArrowNode* setClassIdArrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::IdentifierNode(span, U"element"), 
             new cmajor::ast::IdentifierNode(span, U"SetAttribute"));
         cmajor::ast::InvokeNode* invokeSetClassIdAttribute = new cmajor::ast::InvokeNode(span, setClassIdArrowNode);
-        cmajor::ast::UStringLiteralNode* classIdLiteralArg = new cmajor::ast::UStringLiteralNode(span, U"classId");
+        cmajor::ast::StringLiteralNode* classIdLiteralArg = new cmajor::ast::StringLiteralNode(span, "classId");
         invokeSetClassIdAttribute->AddArgument(classIdLiteralArg);
         cmajor::ast::InvokeNode* invokeClassIdToStringFun = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToString"));
         invokeClassIdToStringFun->AddArgument(new cmajor::ast::IdentifierNode(span, U"classId"));
-        cmajor::ast::InvokeNode* invokeClassIdToUtf32Fun = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToUtf32"));
-        invokeClassIdToUtf32Fun->AddArgument(invokeClassIdToStringFun);
-        invokeSetClassIdAttribute->AddArgument(invokeClassIdToUtf32Fun);
+        invokeSetClassIdAttribute->AddArgument(invokeClassIdToStringFun);
         cmajor::ast::ExpressionStatementNode* setClassIdAttributeStatementNode = new cmajor::ast::ExpressionStatementNode(span, invokeSetClassIdAttribute);
         compoundStatementNode.AddStatement(setClassIdAttributeStatementNode);
 
+        // auto objectIdResult = ObjectId()->ToString();
+        cmajor::ast::ConstructionStatementNode* constructObjectIdResult = new cmajor::ast::ConstructionStatementNode(span,
+            new cmajor::ast::AutoNode(span),
+            new cmajor::ast::IdentifierNode(span, U"objectIdResult"));
+        cmajor::ast::InvokeNode* invokeObjectIdToStringFun = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToString"));
+        invokeObjectIdToStringFun->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ObjectId")));
+        constructObjectIdResult->AddArgument(invokeObjectIdToStringFun);
+        compoundStatementNode.AddStatement(constructObjectIdResult);
+
+        // if (objectIdResult.Error()) return System.Result<bool>(System.ErrorId(objectIdResult.GetErrorId()));
+        cmajor::ast::DotNode* objectIdResultErrorCond = new cmajor::ast::DotNode(span,
+            new cmajor::ast::IdentifierNode(span, U"objectIdResult"),
+            new cmajor::ast::IdentifierNode(span, U"Error"));
+        cmajor::ast::InvokeNode* invokeObjectIdResultErrorCond = new cmajor::ast::InvokeNode(span, objectIdResultErrorCond);
+        cmajor::ast::TemplateIdNode* resultBoolNode = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Result"));
+        resultBoolNode->AddTemplateArgument(new cmajor::ast::BoolNode(span));
+        cmajor::ast::InvokeNode* invokeResultBoolNode = new cmajor::ast::InvokeNode(span, resultBoolNode);
+        cmajor::ast::IdentifierNode * systemErrorIdNode = new cmajor::ast::IdentifierNode(span, U"System.ErrorId");
+        cmajor::ast::InvokeNode* invokeSystemErrorIdNode = new cmajor::ast::InvokeNode(span, systemErrorIdNode);
+        cmajor::ast::DotNode* getErrorIdNode = new cmajor::ast::DotNode(span,
+            new cmajor::ast::IdentifierNode(span, U"objectIdResult"),
+            new cmajor::ast::IdentifierNode(span, U"GetErrorId"));
+        cmajor::ast::InvokeNode* invokeGetErrorIdNode = new cmajor::ast::InvokeNode(span, getErrorIdNode);
+        invokeSystemErrorIdNode->AddArgument(invokeGetErrorIdNode);
+        invokeResultBoolNode->AddArgument(invokeSystemErrorIdNode);
+        cmajor::ast::ReturnStatementNode* returnErrorIdStatement = new cmajor::ast::ReturnStatementNode(span, invokeResultBoolNode);
+        cmajor::ast::IfStatementNode* ifObjectIdResultStatement = new cmajor::ast::IfStatementNode(span,
+            invokeObjectIdResultErrorCond, returnErrorIdStatement, nullptr);
+        compoundStatementNode.AddStatement(ifObjectIdResultStatement);
+
+        // element->SetAttribute("objectId", objectIdResult.Value());
         cmajor::ast::ArrowNode* setObjectIdArrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::IdentifierNode(span, U"element"), 
             new cmajor::ast::IdentifierNode(span, U"SetAttribute"));
         cmajor::ast::InvokeNode* invokeSetObjectIdAttribute = new cmajor::ast::InvokeNode(span, setObjectIdArrowNode);
-        cmajor::ast::UStringLiteralNode* objectIdLiteralArg = new cmajor::ast::UStringLiteralNode(span, U"objectId");
+        cmajor::ast::StringLiteralNode* objectIdLiteralArg = new cmajor::ast::StringLiteralNode(span, "objectId");
         invokeSetObjectIdAttribute->AddArgument(objectIdLiteralArg);
-        cmajor::ast::InvokeNode* invokeObjectIdToStringFun = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToString"));
-        invokeObjectIdToStringFun->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ObjectId")));
-        cmajor::ast::InvokeNode* invokeObjectIdToUtf32Fun = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToUtf32"));
-        invokeObjectIdToUtf32Fun->AddArgument(invokeObjectIdToStringFun);
-        invokeSetObjectIdAttribute->AddArgument(invokeObjectIdToUtf32Fun);
+        cmajor::ast::DotNode* objectIdResultValueNode = new cmajor::ast::DotNode(span,
+            new cmajor::ast::IdentifierNode(span, U"objectIdResult"),
+            new cmajor::ast::IdentifierNode(span, U"Value"));
+        cmajor::ast::InvokeNode* invokeObjectIdResultValue = new cmajor::ast::InvokeNode(span, objectIdResultValueNode);
+        invokeSetObjectIdAttribute->AddArgument(invokeObjectIdResultValue);
         cmajor::ast::ExpressionStatementNode* setObjectIdAttributeStatementNode = new cmajor::ast::ExpressionStatementNode(span, invokeSetObjectIdAttribute);
         compoundStatementNode.AddStatement(setObjectIdAttributeStatementNode);
 
+        // element->SetAttribute("className", ClassName());
         cmajor::ast::ArrowNode* setClassNameArrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::IdentifierNode(span, U"element"), 
             new cmajor::ast::IdentifierNode(span, U"SetAttribute"));
         cmajor::ast::InvokeNode* invokeSetClassNameAttribute = new cmajor::ast::InvokeNode(span, setClassNameArrowNode);
-        cmajor::ast::UStringLiteralNode* classNameLiteralArg = new cmajor::ast::UStringLiteralNode(span, U"className");
+        cmajor::ast::StringLiteralNode* classNameLiteralArg = new cmajor::ast::StringLiteralNode(span, "className");
         invokeSetClassNameAttribute->AddArgument(classNameLiteralArg);
-        cmajor::ast::InvokeNode* invokeClassNameToUtf32Fun = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToUtf32"));
-        invokeClassNameToUtf32Fun->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ClassName")));
-        invokeSetClassNameAttribute->AddArgument(invokeClassNameToUtf32Fun);
+        invokeSetClassNameAttribute->AddArgument(new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ClassName")));
         cmajor::ast::ExpressionStatementNode* setClassNameAttributeStatementNode = new cmajor::ast::ExpressionStatementNode(span, invokeSetClassNameAttribute);
         compoundStatementNode.AddStatement(setClassNameAttributeStatementNode);
+
+        // return System.Result<bool>(true);
+        cmajor::ast::TemplateIdNode* resultBool = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Result"));
+        resultBool->AddTemplateArgument(new cmajor::ast::BoolNode(span));
+        cmajor::ast::InvokeNode* invokeResultBoolTrue = new cmajor::ast::InvokeNode(span, resultBool);
+        invokeResultBoolTrue->AddArgument(new cmajor::ast::BooleanLiteralNode(span, true));
+        cmajor::ast::ReturnStatementNode* returnStatmentNode = new cmajor::ast::ReturnStatementNode(span, invokeResultBoolTrue);
+        compoundStatementNode.AddStatement(returnStatmentNode);
 
         CompileMemberFunction(setObjectXmlAttributesSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
     }
@@ -1178,70 +697,6 @@ void XmlAttributeProcessor::GenerateSetObjectXmlAttributesImplementation(cmajor:
         references.insert(references.end(), ex.References().begin(), ex.References().end());
         throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'SetObjectXmlAttributes' function for the class '" + 
             util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateToXmlPlainSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* toXmlSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ToXml");
-    toXmlSymbol->SetModule(&boundCompileUnit.GetModule());
-    toXmlSymbol->SetGroupName(U"ToXml");
-    toXmlSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    toXmlSymbol->AddMember(thisParam);
-
-    cmajor::symbols::ParameterSymbol* elementNameParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"elementName");
-    elementNameParam->SetType(symbolTable.GetTypeByName(U"String<char>")->AddConst()->AddLvalueReference());
-    toXmlSymbol->AddMember(elementNameParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(toXmlSymbol);
-
-    cmajor::symbols::TypeSymbol* elementTypeSymbol = symbolTable.GetTypeByName(U"System.Dom.Element")->AddPointer();
-    toXmlSymbol->SetReturnType(elementTypeSymbol);
-
-    classTypeSymbol->AddMember(toXmlSymbol);
-    toXmlSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(toXmlSymbol, toXmlPlainId));
-}
-
-void XmlAttributeProcessor::GenerateToXmlPlainImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* toXmlSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), toXmlSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::ConstructionStatementNode* constructionStatementNode = new cmajor::ast::ConstructionStatementNode(span,
-            new cmajor::ast::IdentifierNode(span, U"System.Xml.Serialization.XmlSerializationContext"), new cmajor::ast::IdentifierNode(span, U"ctx"));
-        compoundStatementNode.AddStatement(constructionStatementNode);
-
-        cmajor::ast::InvokeNode* invokeToXmlNode = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToXml"));
-        invokeToXmlNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"elementName"));
-        invokeToXmlNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"ctx"));
-        cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, invokeToXmlNode);
-        compoundStatementNode.AddStatement(returnStatementNode);
-
-        CompileMemberFunction(toXmlSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'ToXml' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
     }
 }
 
@@ -1259,7 +714,7 @@ void XmlAttributeProcessor::GenerateToXmlSymbol(cmajor::ast::AttributeNode* attr
     }
     else
     {
-        toXmlSymbol->SetVirtual();
+        toXmlSymbol->SetOverride();
     }
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
     thisParam->SetType(classTypeSymbol->AddPointer());
@@ -1275,8 +730,18 @@ void XmlAttributeProcessor::GenerateToXmlSymbol(cmajor::ast::AttributeNode* attr
 
     cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(toXmlSymbol);
 
-    cmajor::symbols::TypeSymbol* elementTypeSymbol = symbolTable.GetTypeByName(U"System.Dom.Element")->AddPointer();
-    toXmlSymbol->SetReturnType(elementTypeSymbol);
+    cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
+        new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
+    cmajor::ast::TemplateIdNode resultXmlElementNode(attribute->GetSpan(), systemResultNode);
+    resultXmlElementNode.AddTemplateArgument(new cmajor::ast::PointerNode(attribute->GetSpan(), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System.Xml.Element")));
+    cmajor::symbols::TypeSymbol* returnType = ResolveType(&resultXmlElementNode, boundCompileUnit, containerScope);
+
+    toXmlSymbol->SetReturnType(returnType);
+
+    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
+    returnParam->SetParent(toXmlSymbol);
+    returnParam->SetType(returnType->AddPointer());
+    toXmlSymbol->SetReturnParam(returnParam);
 
     classTypeSymbol->AddMember(toXmlSymbol);
     toXmlSymbol->ComputeName();
@@ -1299,9 +764,10 @@ void XmlAttributeProcessor::GenerateToXmlImplementation(cmajor::ast::AttributeNo
 
         if (HasXmlBaseClass(classTypeSymbol))
         {
+            // auto result = base->ToXml(elementName, ctx);
             cmajor::ast::ConstructionStatementNode* constructionStatementNode = new cmajor::ast::ConstructionStatementNode(span,
-                new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Dom.Element")),
-                new cmajor::ast::IdentifierNode(span, U"element"));
+                new cmajor::ast::AutoNode(span),
+                new cmajor::ast::IdentifierNode(span, U"result"));
             cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"ToXml"));
             cmajor::ast::InvokeNode* invokeNode = new cmajor::ast::InvokeNode(span, arrowNode);
             invokeNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"elementName"));
@@ -1309,17 +775,35 @@ void XmlAttributeProcessor::GenerateToXmlImplementation(cmajor::ast::AttributeNo
             constructionStatementNode->AddArgument(invokeNode);
             constructionStatementNode->SetAssignment();
             compoundStatementNode.AddStatement(constructionStatementNode);
+            // if (result.Error()) return result;
+            cmajor::ast::DotNode* resultDotError = new cmajor::ast::DotNode(
+                span,
+                new cmajor::ast::IdentifierNode(span, U"result"),
+                new cmajor::ast::IdentifierNode(span, U"Error"));
+            cmajor::ast::InvokeNode* invokeResultError = new cmajor::ast::InvokeNode(span, resultDotError);
+            cmajor::ast::ReturnStatementNode* returnResultStmt = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"result"));
+            cmajor::ast::IfStatementNode* ifStmt = new cmajor::ast::IfStatementNode(span, invokeResultError, returnResultStmt, nullptr);
+            compoundStatementNode.AddStatement(ifStmt);
+            // System.Xml.Element* element = result.Value();
+            cmajor::ast::DotNode* resultValueNode = new cmajor::ast::DotNode(span,
+                new cmajor::ast::IdentifierNode(span, U"result"),
+                new cmajor::ast::IdentifierNode(span, U"Value"));
+            cmajor::ast::InvokeNode* invokeResultValueNode = new cmajor::ast::InvokeNode(span, resultValueNode);
+            cmajor::ast::ConstructionStatementNode* constructElementNode = new cmajor::ast::ConstructionStatementNode(span,
+                new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.Element")),
+                new cmajor::ast::IdentifierNode(span, U"element"));
+            constructElementNode->SetAssignment();
+            constructElementNode->AddArgument(invokeResultValueNode);
+            compoundStatementNode.AddStatement(constructElementNode);
         }
         else
         {
             cmajor::ast::ConstructionStatementNode* constructionStatementNode = new cmajor::ast::ConstructionStatementNode(span,
-                new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Dom.Element")),
+                new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.Element")),
                 new cmajor::ast::IdentifierNode(span, U"element"));
-            cmajor::ast::NewNode* newElementNode = new cmajor::ast::NewNode(span, new cmajor::ast::IdentifierNode(span, U"System.Dom.Element"));
-            cmajor::ast::InvokeNode* toUtf32Node = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToUtf32"));
-            toUtf32Node->AddArgument(new cmajor::ast::IdentifierNode(span, U"elementName"));
-            newElementNode->AddArgument(toUtf32Node);
-            constructionStatementNode->AddArgument(newElementNode);
+            cmajor::ast::InvokeNode* makeElementNode = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.MakeElement"));
+            makeElementNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"elementName"));
+            constructionStatementNode->AddArgument(makeElementNode);
             constructionStatementNode->SetAssignment();
             compoundStatementNode.AddStatement(constructionStatementNode);
 
@@ -1330,12 +814,42 @@ void XmlAttributeProcessor::GenerateToXmlImplementation(cmajor::ast::AttributeNo
 
             cmajor::ast::InvokeNode* invokeSetObjectXmlAttributesNode = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"SetObjectXmlAttributes"));
             invokeSetObjectXmlAttributesNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"element"));
-            cmajor::ast::ExpressionStatementNode* expressionStatement = new cmajor::ast::ExpressionStatementNode(span, invokeSetObjectXmlAttributesNode);
-            cmajor::ast::IfStatementNode* ifStatementNode = new cmajor::ast::IfStatementNode(span, cond, expressionStatement, nullptr);
+            // auto setResult = SetObjectXmlAttributes(element);
+            cmajor::ast::ConstructionStatementNode* constructSetResultStatementNode = new cmajor::ast::ConstructionStatementNode(span,
+                new cmajor::ast::AutoNode(span),
+                new cmajor::ast::IdentifierNode(span, U"setResult"));
+            constructSetResultStatementNode->SetAssignment();
+            constructSetResultStatementNode->AddArgument(invokeSetObjectXmlAttributesNode);
+
+            // if (setResult.Error()) return System.Result<System.Xml.Element*>(System.ErrorId(setResult.GetErrorId()));
+            cmajor::ast::DotNode* setResultErrorCond = new cmajor::ast::DotNode(span,
+                new cmajor::ast::IdentifierNode(span, U"setResult"),
+                new cmajor::ast::IdentifierNode(span, U"Error"));
+            cmajor::ast::InvokeNode* invokeSetResultErrorCond = new cmajor::ast::InvokeNode(span, setResultErrorCond);
+            cmajor::ast::TemplateIdNode* systemResultNode = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Result"));
+            cmajor::ast::PointerNode* systemXmlElement = new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.Element"));
+            systemResultNode->AddTemplateArgument(systemXmlElement);
+            cmajor::ast::InvokeNode* invokeSystemResultNode = new cmajor::ast::InvokeNode(span, systemResultNode);
+            cmajor::ast::IdentifierNode* systemErrorId = new cmajor::ast::IdentifierNode(span, U"System.ErrorId");
+            cmajor::ast::InvokeNode* invokeSystemErrorId = new cmajor::ast::InvokeNode(span, systemErrorId);
+            cmajor::ast::DotNode* getErrorIdNode = new cmajor::ast::DotNode(span,
+                new cmajor::ast::IdentifierNode(span, U"setResult"),
+                new cmajor::ast::IdentifierNode(span, U"GetErrorId"));
+            cmajor::ast::InvokeNode* invokeGetErrorId = new cmajor::ast::InvokeNode(span, getErrorIdNode);
+            invokeSystemErrorId->AddArgument(invokeGetErrorId);
+            invokeSystemResultNode->AddArgument(invokeSystemErrorId);
+            cmajor::ast::ReturnStatementNode* returnErrorStatement = new cmajor::ast::ReturnStatementNode(span, invokeSystemResultNode);
+            cmajor::ast::IfStatementNode* ifSetResultErrorStatement = new cmajor::ast::IfStatementNode(span, invokeSetResultErrorCond, returnErrorStatement, nullptr);
+
+            cmajor::ast::CompoundStatementNode* compoundSetObjectXmlAttributesStatement = new cmajor::ast::CompoundStatementNode(span);
+            compoundSetObjectXmlAttributesStatement->AddStatement(constructSetResultStatementNode);
+            compoundSetObjectXmlAttributesStatement->AddStatement(ifSetResultErrorStatement);
+            cmajor::ast::IfStatementNode* ifStatementNode = new cmajor::ast::IfStatementNode(span, cond, compoundSetObjectXmlAttributesStatement, nullptr);
 
             compoundStatementNode.AddStatement(ifStatementNode);
         }
 
+        bool first = true;
         for (cmajor::symbols::MemberVariableSymbol* memberVariableSymbol : classTypeSymbol->MemberVariables())
         {
             cmajor::ast::AttributesNode* attributes = memberVariableSymbol->GetAttributes();
@@ -1365,24 +879,53 @@ void XmlAttributeProcessor::GenerateToXmlImplementation(cmajor::ast::AttributeNo
             toXmlInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), memberVariableSymbol->Name()));
             toXmlInvokeNode->AddArgument(new cmajor::ast::StringLiteralNode(memberVariableSymbol->GetSpan(), util::ToUtf8(memberVariableSymbol->Name())));
             toXmlInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"ctx"));
-            cmajor::ast::DotNode* dotNode = new cmajor::ast::DotNode(memberVariableSymbol->GetSpan(), toXmlInvokeNode, new cmajor::ast::IdentifierNode(
-                memberVariableSymbol->GetSpan(), U"Release"));
-            cmajor::ast::InvokeNode* dotInvokeNode = new cmajor::ast::InvokeNode(memberVariableSymbol->GetSpan(), dotNode);
-            cmajor::ast::TemplateIdNode* uniquePtrNode = new cmajor::ast::TemplateIdNode(memberVariableSymbol->GetSpan(),
-                new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"System.UniquePtr"));
-            uniquePtrNode->AddTemplateArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(),
-                U"System.Dom.cmajor::ast::Node"));
-            cmajor::ast::InvokeNode* uniquePtrNodeInvokeNode = new cmajor::ast::InvokeNode(memberVariableSymbol->GetSpan(), uniquePtrNode);
-            uniquePtrNodeInvokeNode->AddArgument(dotInvokeNode);
+
+            if (first)
+            {
+                first = false;
+                // auto memberResult = System.Xml.Serialization.ToXml(variableName, "variableName", ctx);
+                cmajor::ast::ConstructionStatementNode* constructionStatement = new cmajor::ast::ConstructionStatementNode(memberVariableSymbol->GetSpan(),
+                    new cmajor::ast::AutoNode(memberVariableSymbol->GetSpan()), new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"memberResult"));
+                constructionStatement->SetAssignment();
+                constructionStatement->AddArgument(toXmlInvokeNode);
+                compoundStatementNode.AddStatement(constructionStatement);
+            }
+            else
+            {
+                cmajor::ast::AssignmentStatementNode* assignmentStatement = new cmajor::ast::AssignmentStatementNode(memberVariableSymbol->GetSpan(),
+                    new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"memberResult"), toXmlInvokeNode);
+                compoundStatementNode.AddStatement(assignmentStatement);
+            }
+
+            // if (memberResult.Error()) return memberResult;
+            cmajor::ast::DotNode* memberResultDotError = new cmajor::ast::DotNode(
+                span,
+                new cmajor::ast::IdentifierNode(span, U"memberResult"),
+                new cmajor::ast::IdentifierNode(span, U"Error"));
+            cmajor::ast::InvokeNode* invokeMemberResultError = new cmajor::ast::InvokeNode(span, memberResultDotError);
+            cmajor::ast::ReturnStatementNode* returnMemberResultStmt = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"memberResult"));
+            cmajor::ast::IfStatementNode* ifStmt = new cmajor::ast::IfStatementNode(span, invokeMemberResultError, returnMemberResultStmt, nullptr);
+            compoundStatementNode.AddStatement(ifStmt);
+
+            cmajor::ast::DotNode* memberResultValueNode = new cmajor::ast::DotNode(span,
+                new cmajor::ast::IdentifierNode(span, U"memberResult"),
+                new cmajor::ast::IdentifierNode(span, U"Value"));
+            cmajor::ast::InvokeNode* invokeMemberResultValueNode = new cmajor::ast::InvokeNode(span, memberResultValueNode);
+
+            // element->AppendChild(memberResult.Value());
             cmajor::ast::ArrowNode* appendChildArrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::IdentifierNode(span, U"element"), 
                 new cmajor::ast::IdentifierNode(span, U"AppendChild"));
             cmajor::ast::InvokeNode* appendChildInvokeNode = new cmajor::ast::InvokeNode(span, appendChildArrowNode);
-            appendChildInvokeNode->AddArgument(uniquePtrNodeInvokeNode);
+            appendChildInvokeNode->AddArgument(invokeMemberResultValueNode);
             cmajor::ast::ExpressionStatementNode* appendChildStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSpan(), appendChildInvokeNode);
             compoundStatementNode.AddStatement(appendChildStatement);
         }
 
-        cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"element"));
+        cmajor::ast::TemplateIdNode* resultNode = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Result"));
+        resultNode->AddTemplateArgument(new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.Element")));
+        cmajor::ast::InvokeNode* invokeResultNode = new cmajor::ast::InvokeNode(span, resultNode);
+        invokeResultNode->AddArgument(new cmajor::ast::IdentifierNode(span, U"element"));
+        cmajor::ast::ReturnStatementNode* returnStatement = new cmajor::ast::ReturnStatementNode(span, invokeResultNode);
         compoundStatementNode.AddStatement(returnStatement);
 
         CompileMemberFunction(toXmlSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
@@ -1412,19 +955,34 @@ void XmlAttributeProcessor::GenerateFromXmlSymbol(cmajor::ast::AttributeNode* at
     }
     else
     {
-        fromXmlSymbol->SetVirtual();
+        fromXmlSymbol->SetOverride();
     }
     cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
     thisParam->SetType(classTypeSymbol->AddPointer());
     fromXmlSymbol->AddMember(thisParam);
 
     cmajor::symbols::ParameterSymbol* elementParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"element");
-    elementParam->SetType(symbolTable.GetTypeByName(U"System.Dom.Element")->AddPointer());
+    elementParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Element")->AddPointer());
     fromXmlSymbol->AddMember(elementParam);
+
+    cmajor::symbols::ParameterSymbol* ctxParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"ctx");
+    ctxParam->SetType(symbolTable.GetTypeByName(U"System.Xml.Serialization.XmlSerializationContext")->AddLvalueReference());
+    fromXmlSymbol->AddMember(ctxParam);
 
     cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(fromXmlSymbol);
 
-    fromXmlSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
+    cmajor::ast::DotNode* systemResultNode = new cmajor::ast::DotNode(attribute->GetSpan(),
+        new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"System"), new cmajor::ast::IdentifierNode(attribute->GetSpan(), U"Result"));
+    cmajor::ast::TemplateIdNode resultBoolNode(attribute->GetSpan(), systemResultNode);
+    resultBoolNode.AddTemplateArgument(new cmajor::ast::BoolNode(attribute->GetSpan()));
+    cmajor::symbols::TypeSymbol* returnType = ResolveType(&resultBoolNode, boundCompileUnit, containerScope);
+
+    fromXmlSymbol->SetReturnType(returnType); 
+
+    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
+    returnParam->SetParent(fromXmlSymbol);
+    returnParam->SetType(returnType->AddPointer());
+    fromXmlSymbol->SetReturnParam(returnParam);
 
     classTypeSymbol->AddMember(fromXmlSymbol);
     fromXmlSymbol->ComputeName();
@@ -1447,40 +1005,96 @@ void XmlAttributeProcessor::GenerateFromXmlImplementation(cmajor::ast::Attribute
 
         if (HasXmlBaseClass(classTypeSymbol))
         {
+            // auto result = base->FromXml(element);
             cmajor::ast::InvokeNode* invokeBaseFromXml = new cmajor::ast::InvokeNode(span, new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), 
                 new cmajor::ast::IdentifierNode(span, U"FromXml")));
             invokeBaseFromXml->AddArgument(new cmajor::ast::IdentifierNode(span, U"element"));
-            cmajor::ast::ExpressionStatementNode* baseFromXmlStatement = new cmajor::ast::ExpressionStatementNode(span, invokeBaseFromXml);
+            invokeBaseFromXml->AddArgument(new cmajor::ast::IdentifierNode(span, U"ctx"));
+            cmajor::ast::ConstructionStatementNode* baseFromXmlStatement = new cmajor::ast::ConstructionStatementNode(span,
+                new cmajor::ast::AutoNode(span),
+                new cmajor::ast::IdentifierNode(span, U"result"));
+            baseFromXmlStatement->SetAssignment();
+            baseFromXmlStatement->AddArgument(invokeBaseFromXml);
             compoundStatementNode.AddStatement(baseFromXmlStatement);
+
+            // if (result.Error()) return result;
+            cmajor::ast::DotNode* resultDotError = new cmajor::ast::DotNode(
+                span,
+                new cmajor::ast::IdentifierNode(span, U"result"),
+                new cmajor::ast::IdentifierNode(span, U"Error"));
+            cmajor::ast::InvokeNode* invokeResultError = new cmajor::ast::InvokeNode(span, resultDotError);
+            cmajor::ast::ReturnStatementNode* returnResultStmt = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"result"));
+            cmajor::ast::IfStatementNode* ifStmt = new cmajor::ast::IfStatementNode(span, invokeResultError, returnResultStmt, nullptr);
+            compoundStatementNode.AddStatement(ifStmt);
         }
         else
         {
+            // System.string objectIdAttr = element->GetAttribute("objectId");
             cmajor::ast::ConstructionStatementNode* constructionStatementNode = new cmajor::ast::ConstructionStatementNode(span,
-                new cmajor::ast::IdentifierNode(span, U"System.ustring"),
+                new cmajor::ast::IdentifierNode(span, U"System.string"),
                 new cmajor::ast::IdentifierNode(span, U"objectIdAttr"));
             constructionStatementNode->SetAssignment();
             cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::IdentifierNode(span, U"element"), 
                 new cmajor::ast::IdentifierNode(span, U"GetAttribute"));
-            cmajor::ast::UStringLiteralNode* objectIdLiteral = new cmajor::ast::UStringLiteralNode(span, U"objectId");
+            cmajor::ast::StringLiteralNode* objectIdLiteral = new cmajor::ast::StringLiteralNode(span, "objectId");
             cmajor::ast::InvokeNode* elementGetAttributeNode = new cmajor::ast::InvokeNode(span, arrowNode);
             elementGetAttributeNode->AddArgument(objectIdLiteral);
             constructionStatementNode->AddArgument(elementGetAttributeNode);
             constructionStatementNode->SetAssignment();
             compoundStatementNode.AddStatement(constructionStatementNode);
 
-            cmajor::ast::InvokeNode* invokeParseUuid = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ParseUuid"));
-            cmajor::ast::InvokeNode* toUtf8Node = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ToUtf8"));
-            toUtf8Node->AddArgument(new cmajor::ast::IdentifierNode(span, U"objectIdAttr"));
-            invokeParseUuid->AddArgument(toUtf8Node);
-            cmajor::ast::AssignmentStatementNode* assignObjectIdStatement = new cmajor::ast::AssignmentStatementNode(span, 
-                new cmajor::ast::IdentifierNode(span, U"objectId"), invokeParseUuid);
-            cmajor::ast::DotNode* dotNode = new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"objectIdAttr"), 
+            // if (!objectIdAttr.IsEmpty())
+            // {
+            cmajor::ast::DotNode* dotNode = new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"objectIdAttr"),
                 new cmajor::ast::IdentifierNode(span, U"IsEmpty"));
             cmajor::ast::NotNode* notObjectIdAttrIsEmpty = new cmajor::ast::NotNode(span, new cmajor::ast::InvokeNode(span, dotNode));
-            cmajor::ast::IfStatementNode* ifStatementNode = new cmajor::ast::IfStatementNode(span, notObjectIdAttrIsEmpty, assignObjectIdStatement, nullptr);
+            cmajor::ast::CompoundStatementNode* assignObjectIdCompoundStatement = new cmajor::ast::CompoundStatementNode(span);
+            cmajor::ast::IfStatementNode* ifStatementNode = new cmajor::ast::IfStatementNode(span, notObjectIdAttrIsEmpty, assignObjectIdCompoundStatement, nullptr);
             compoundStatementNode.AddStatement(ifStatementNode);
+
+            //      auto uuidResult = ParseUuid(objectIdAttr);
+            cmajor::ast::InvokeNode* invokeParseUuid = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"ParseUuid"));
+            invokeParseUuid->AddArgument(new cmajor::ast::IdentifierNode(span, U"objectIdAttr"));
+            cmajor::ast::ConstructionStatementNode* constructParseResultNode = new cmajor::ast::ConstructionStatementNode(span,
+                new cmajor::ast::AutoNode(span),
+                new cmajor::ast::IdentifierNode(span, U"uuidResult"));
+            constructParseResultNode->SetAssignment();
+            constructParseResultNode->AddArgument(invokeParseUuid);
+            assignObjectIdCompoundStatement->AddStatement(constructParseResultNode);
+
+            cmajor::ast::DotNode* uuidResultErrorNode = new cmajor::ast::DotNode(span,
+                new cmajor::ast::IdentifierNode(span, U"uuidResult"),
+                new cmajor::ast::IdentifierNode(span, U"Error"));
+            cmajor::ast::InvokeNode* invokeUuidResultErrorNode = new cmajor::ast::InvokeNode(span, uuidResultErrorNode);
+            // if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            cmajor::ast::TemplateIdNode* resultBoolNode = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Result"));
+            resultBoolNode->AddTemplateArgument(new cmajor::ast::BoolNode(span));
+            cmajor::ast::InvokeNode* invokeResultBoolNode = new cmajor::ast::InvokeNode(span, resultBoolNode);
+            cmajor::ast::IdentifierNode* errorIdNode = new cmajor::ast::IdentifierNode(span, U"System.ErrorId");
+            cmajor::ast::InvokeNode* invokeErrorIdNode = new cmajor::ast::InvokeNode(span, errorIdNode);
+            cmajor::ast::DotNode* uuidResultGetErrorIdNode = new cmajor::ast::DotNode(span,
+                new cmajor::ast::IdentifierNode(span, U"uuidResult"),
+                new cmajor::ast::IdentifierNode(span, U"GetErrorId"));
+            cmajor::ast::InvokeNode* invokeUuidResultGetErrorIdNode = new cmajor::ast::InvokeNode(span, uuidResultGetErrorIdNode);
+            invokeErrorIdNode->AddArgument(invokeUuidResultGetErrorIdNode);
+            invokeResultBoolNode->AddArgument(invokeErrorIdNode);
+            cmajor::ast::ReturnStatementNode* returnUuidResultErrorNode = new cmajor::ast::ReturnStatementNode(span, invokeResultBoolNode);
+            cmajor::ast::IfStatementNode* ifUuidResultError = new cmajor::ast::IfStatementNode(span, invokeUuidResultErrorNode, returnUuidResultErrorNode, nullptr);
+            assignObjectIdCompoundStatement->AddStatement(ifUuidResultError);
+
+            // SetObjectId(uuidResult.Value());
+            cmajor::ast::DotNode* uuidResultValue = new cmajor::ast::DotNode(span,
+                new cmajor::ast::IdentifierNode(span, U"uuidResult"),
+                new cmajor::ast::IdentifierNode(span, U"Value"));
+            cmajor::ast::InvokeNode* invokeUuidResultValue = new cmajor::ast::InvokeNode(span, uuidResultValue);
+            cmajor::ast::InvokeNode* invokeSetObjectId = new cmajor::ast::InvokeNode(span, new cmajor::ast::IdentifierNode(span, U"SetObjectId"));
+            invokeSetObjectId->AddArgument(invokeUuidResultValue);
+            cmajor::ast::ExpressionStatementNode* setObjectIdStatement = new cmajor::ast::ExpressionStatementNode(span, invokeSetObjectId);
+            assignObjectIdCompoundStatement->AddStatement(setObjectIdStatement);
+            // }
         }
 
+        bool first = true;
         for (cmajor::symbols::MemberVariableSymbol* memberVariableSymbol : classTypeSymbol->MemberVariables())
         {
             cmajor::ast::AttributesNode* attributes = memberVariableSymbol->GetAttributes();
@@ -1508,11 +1122,48 @@ void XmlAttributeProcessor::GenerateFromXmlImplementation(cmajor::ast::Attribute
                 new cmajor::ast::IdentifierNode(span, U"FromXml"));
             cmajor::ast::InvokeNode* fromXmlInvokeNode = new cmajor::ast::InvokeNode(memberVariableSymbol->GetSpan(), fromXmlDotNode);
             fromXmlInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"element"));
+            fromXmlInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"ctx"));
             fromXmlInvokeNode->AddArgument(new cmajor::ast::StringLiteralNode(memberVariableSymbol->GetSpan(), util::ToUtf8(memberVariableSymbol->Name())));
             fromXmlInvokeNode->AddArgument(new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), memberVariableSymbol->Name()));
-            cmajor::ast::ExpressionStatementNode* fromXmlStatement = new cmajor::ast::ExpressionStatementNode(memberVariableSymbol->GetSpan(), fromXmlInvokeNode);
-            compoundStatementNode.AddStatement(fromXmlStatement);
+
+            if (first)
+            {
+                first = false;
+                // auto memberResult = System.Xml.Serialization.FromXml(element, "memberVariable", memberVariable);
+                
+                cmajor::ast::ConstructionStatementNode* constructMemberResult = new cmajor::ast::ConstructionStatementNode(memberVariableSymbol->GetSpan(),
+                    new cmajor::ast::AutoNode(memberVariableSymbol->GetSpan()), new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"memberResult"));
+                constructMemberResult->AddArgument(fromXmlInvokeNode);
+                compoundStatementNode.AddStatement(constructMemberResult);
+            }
+            else
+            {
+                // memberResult = System.Xml.Serialization.FromXml(element, "memberVariable", memberVariable);
+                cmajor::ast::AssignmentStatementNode* assignmentStatement = new cmajor::ast::AssignmentStatementNode(memberVariableSymbol->GetSpan(),
+                    new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"memberResult"),
+                    fromXmlInvokeNode);
+                compoundStatementNode.AddStatement(assignmentStatement);
+            }
+
+            // if (memberResult.Error()) return memberResult;
+            cmajor::ast::DotNode* memberResultErrorCond = new cmajor::ast::DotNode(memberVariableSymbol->GetSpan(),
+                new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"memberResult"),
+                new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"Error"));
+            cmajor::ast::InvokeNode* invokeMemberResultErrorCond = new cmajor::ast::InvokeNode(memberVariableSymbol->GetSpan(), memberResultErrorCond);
+            cmajor::ast::ReturnStatementNode* returnMemberResultStatement = new cmajor::ast::ReturnStatementNode(memberVariableSymbol->GetSpan(),
+                new cmajor::ast::IdentifierNode(memberVariableSymbol->GetSpan(), U"memberResult"));
+            cmajor::ast::IfStatementNode* ifStatementNode = new cmajor::ast::IfStatementNode(memberVariableSymbol->GetSpan(),
+                invokeMemberResultErrorCond, returnMemberResultStatement, nullptr);
+            compoundStatementNode.AddStatement(ifStatementNode);
         }
+
+        // return System.Result<bool>(true);
+        cmajor::ast::TemplateIdNode* resultBool = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Result"));
+        resultBool->AddTemplateArgument(new cmajor::ast::BoolNode(span));
+        cmajor::ast::InvokeNode* invokeResultBoolTrue = new cmajor::ast::InvokeNode(span, resultBool);
+        invokeResultBoolTrue->AddArgument(new cmajor::ast::BooleanLiteralNode(span, true));
+        cmajor::ast::ReturnStatementNode* returnStatmentNode = new cmajor::ast::ReturnStatementNode(span, invokeResultBoolTrue);
+        compoundStatementNode.AddStatement(returnStatmentNode);
 
         CompileMemberFunction(fromXmlSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
     }
@@ -1522,372 +1173,6 @@ void XmlAttributeProcessor::GenerateFromXmlImplementation(cmajor::ast::Attribute
         references.push_back(ex.Defined());
         references.insert(references.end(), ex.References().begin(), ex.References().end());
         throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'FromXml' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateGetPtrsSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* getPtrsSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"GetPtrs");
-    getPtrsSymbol->SetModule(&boundCompileUnit.GetModule());
-    getPtrsSymbol->SetGroupName(U"GetPtrs");
-    getPtrsSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    getPtrsSymbol->SetConst();
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        getPtrsSymbol->SetOverride();
-    }
-    else
-    {
-        getPtrsSymbol->SetVirtual();
-    }
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    getPtrsSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(getPtrsSymbol);
-
-    cmajor::symbols::TypeSymbol* listOfXmlPtrBasePtrs = symbolTable.GetTypeByName(U"List<XmlPtrBase*>");
-    getPtrsSymbol->SetReturnType(listOfXmlPtrBasePtrs);
-
-    cmajor::symbols::ParameterSymbol* returnParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"@return");
-    returnParam->SetParent(getPtrsSymbol);
-    returnParam->SetType(listOfXmlPtrBasePtrs->AddPointer());
-    getPtrsSymbol->SetReturnParam(returnParam);
-
-    classTypeSymbol->AddMember(getPtrsSymbol);
-    getPtrsSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(getPtrsSymbol, getPtrsId));
-}
-
-void XmlAttributeProcessor::GenerateGetPtrsImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* getPtrsSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), getPtrsSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::TemplateIdNode* ptrsList = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Collections.List"));
-            ptrsList->AddTemplateArgument(new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.Serialization.XmlPtrBase")));
-            cmajor::ast::ConstructionStatementNode* constructPtrsList = new cmajor::ast::ConstructionStatementNode(span, ptrsList, 
-                new cmajor::ast::IdentifierNode(span, U"ptrs"));
-            constructPtrsList->SetAssignment();
-            cmajor::ast::ArrowNode* arrow = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"GetPtrs"));
-            constructPtrsList->AddArgument(new cmajor::ast::InvokeNode(span, arrow));
-            compoundStatementNode.AddStatement(constructPtrsList);
-        }
-        else
-        {
-            cmajor::ast::TemplateIdNode* ptrsList = new cmajor::ast::TemplateIdNode(span, new cmajor::ast::IdentifierNode(span, U"System.Collections.List"));
-            ptrsList->AddTemplateArgument(new cmajor::ast::PointerNode(span, new cmajor::ast::IdentifierNode(span, U"System.Xml.Serialization.XmlPtrBase")));
-            cmajor::ast::ConstructionStatementNode* constructPtrsList = new cmajor::ast::ConstructionStatementNode(span, ptrsList, 
-                new cmajor::ast::IdentifierNode(span, U"ptrs"));
-            compoundStatementNode.AddStatement(constructPtrsList);
-        }
-
-        for (cmajor::symbols::MemberVariableSymbol* memberVariableSymbol : classTypeSymbol->MemberVariables())
-        {
-            cmajor::ast::AttributesNode* attributes = memberVariableSymbol->GetAttributes();
-            if (attributes)
-            {
-                cmajor::ast::AttributeNode* xmlAttribute = attributes->GetAttribute(U"xml");
-                if (xmlAttribute)
-                {
-                    if (xmlAttribute->Value() == U"false")
-                    {
-                        continue;
-                    }
-                }
-            }
-            if (reservedMemberVariableNames.find(memberVariableSymbol->Name()) != reservedMemberVariableNames.cend())
-            {
-                continue;
-            }
-            cmajor::symbols::TypeSymbol* typeSymbol = memberVariableSymbol->GetType();
-            if (typeSymbol->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
-            {
-                cmajor::symbols::ClassTemplateSpecializationSymbol* specialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(typeSymbol);
-                cmajor::symbols::ClassTypeSymbol* primaryType = specialization->GetClassTemplate();
-                std::u32string primaryTypeGroupName = primaryType->GroupName();
-                if (primaryTypeGroupName == U"XmlPtr" || primaryTypeGroupName == U"UniqueXmlPtr")
-                {
-                    // ptrs.Add(&x)
-                    cmajor::ast::DotNode* addDot = new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"ptrs"), 
-                        new cmajor::ast::IdentifierNode(span, U"Add"));
-                    cmajor::ast::InvokeNode* invokeAdd = new cmajor::ast::InvokeNode(span, addDot);
-                    invokeAdd->AddArgument(new cmajor::ast::AddrOfNode(span, new cmajor::ast::IdentifierNode(span, memberVariableSymbol->Name())));
-                    cmajor::ast::ExpressionStatementNode* addStatement = new cmajor::ast::ExpressionStatementNode(span, invokeAdd);
-                    compoundStatementNode.AddStatement(addStatement);
-                }
-                else if (primaryTypeGroupName == U"List")
-                {
-                    if (specialization->TemplateArgumentTypes().size() == 1)
-                    {
-                        cmajor::symbols::TypeSymbol* argType = specialization->TemplateArgumentTypes()[0];
-                        if (argType->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
-                        {
-                            cmajor::symbols::ClassTemplateSpecializationSymbol* argSpecialization = static_cast<cmajor::symbols::ClassTemplateSpecializationSymbol*>(argType);
-                            cmajor::symbols::ClassTypeSymbol* argPrimaryType = argSpecialization->GetClassTemplate();
-                            std::u32string argGroupName = argPrimaryType->GroupName();
-                            if (argGroupName == U"XmlPtr" || argGroupName == U"UniqueXmlPtr")
-                            {
-                                // long n_x = x.Count();
-                                // for (long i = 0; i < n_x; ++i)
-                                //{
-                                //     ptrs.Add(&x[i]);
-                                //}
-                                cmajor::ast::ConstructionStatementNode* count = new cmajor::ast::ConstructionStatementNode(span, 
-                                    new cmajor::ast::IdentifierNode(span, U"long"),
-                                    new cmajor::ast::IdentifierNode(span, U"n_" + memberVariableSymbol->Name()));
-                                count->SetAssignment();
-                                cmajor::ast::DotNode* dotCount = new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, memberVariableSymbol->Name()), 
-                                    new cmajor::ast::IdentifierNode(span, U"Count"));
-                                cmajor::ast::InvokeNode* invokeCount = new cmajor::ast::InvokeNode(span, dotCount);
-                                count->AddArgument(invokeCount);
-                                compoundStatementNode.AddStatement(count);
-
-                                cmajor::ast::ConstructionStatementNode* constructI = new cmajor::ast::ConstructionStatementNode(span, 
-                                    new cmajor::ast::IdentifierNode(span, U"long"),
-                                    new cmajor::ast::IdentifierNode(span, U"i"));
-                                cmajor::ast::LessNode* testI = new cmajor::ast::LessNode(span, new cmajor::ast::IdentifierNode(span, U"i"), 
-                                    new cmajor::ast::IdentifierNode(span, U"n_" + memberVariableSymbol->Name()));
-                                cmajor::ast::ExpressionStatementNode* incI = new cmajor::ast::ExpressionStatementNode(span, 
-                                    new cmajor::ast::PrefixIncrementNode(span, new cmajor::ast::IdentifierNode(span, U"i")));
-                                cmajor::ast::DotNode* addDot = new cmajor::ast::DotNode(span, new cmajor::ast::IdentifierNode(span, U"ptrs"), 
-                                    new cmajor::ast::IdentifierNode(span, U"Add"));
-                                cmajor::ast::InvokeNode* invokeAdd = new cmajor::ast::InvokeNode(span, addDot);
-                                cmajor::ast::IndexingNode* indexing = new cmajor::ast::IndexingNode(span, new cmajor::ast::IdentifierNode(span, memberVariableSymbol->Name()),
-                                    new cmajor::ast::IdentifierNode(span, U"i"));
-                                invokeAdd->AddArgument(new cmajor::ast::AddrOfNode(span, indexing));
-                                cmajor::ast::ExpressionStatementNode* actionS = new cmajor::ast::ExpressionStatementNode(span, invokeAdd);
-                                cmajor::ast::ForStatementNode* forStatement = new cmajor::ast::ForStatementNode(span, constructI, testI, incI, actionS);
-                                compoundStatementNode.AddStatement(forStatement);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"ptrs"));
-        compoundStatementNode.AddStatement(returnStatementNode);
-
-        CompileMemberFunction(getPtrsSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'GetPtrs' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateIsOwnedSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* isOwnedMemFunSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"IsOwned");
-    isOwnedMemFunSymbol->SetModule(&boundCompileUnit.GetModule());
-    isOwnedMemFunSymbol->SetGroupName(U"IsOwned");
-    isOwnedMemFunSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    isOwnedMemFunSymbol->SetConst();
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    isOwnedMemFunSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(isOwnedMemFunSymbol);
-
-    isOwnedMemFunSymbol->SetReturnType(symbolTable.GetTypeByName(U"bool"));
-
-    classTypeSymbol->AddMember(isOwnedMemFunSymbol);
-    isOwnedMemFunSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(isOwnedMemFunSymbol, isOwnedMemFunId));
-}
-
-void XmlAttributeProcessor::GenerateIsOwnedImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* isOwnedMemFunSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), isOwnedMemFunSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        cmajor::ast::ReturnStatementNode* returnStatementNode = new cmajor::ast::ReturnStatementNode(span, new cmajor::ast::IdentifierNode(span, U"isOwned"));
-        statementNode = returnStatementNode;
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(isOwnedMemFunSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'IsOwned' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(),
-            classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateSetOwnedSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* setOwnedMemFunSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"SetOwned");
-    setOwnedMemFunSymbol->SetModule(&boundCompileUnit.GetModule());
-    setOwnedMemFunSymbol->SetGroupName(U"SetOwned");
-    setOwnedMemFunSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        setOwnedMemFunSymbol->SetOverride();
-    }
-    else
-    {
-        setOwnedMemFunSymbol->SetVirtual();
-    }
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    setOwnedMemFunSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(setOwnedMemFunSymbol);
-
-    setOwnedMemFunSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
-
-    classTypeSymbol->AddMember(setOwnedMemFunSymbol);
-    setOwnedMemFunSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(setOwnedMemFunSymbol, setOwnedMemFunId));
-}
-
-void XmlAttributeProcessor::GenerateSetOwnedImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* setOwnedMemFunSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), setOwnedMemFunSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"SetOwned"));
-            cmajor::ast::InvokeNode* baseSetOwnedCall = new cmajor::ast::InvokeNode(span, arrowNode);
-            statementNode = new cmajor::ast::ExpressionStatementNode(span, baseSetOwnedCall);
-        }
-        else
-        {
-            cmajor::ast::AssignmentStatementNode* assignmentStatementNode = new cmajor::ast::AssignmentStatementNode(span,
-                new cmajor::ast::IdentifierNode(span, U"isOwned"),
-                new cmajor::ast::BooleanLiteralNode(span, true));
-            statementNode = assignmentStatementNode;
-        }
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(setOwnedMemFunSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'SetOwned' function for the class '" + 
-            util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
-    }
-}
-
-void XmlAttributeProcessor::GenerateResetOwnedSymbol(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    BoundCompileUnit& boundCompileUnit, cmajor::symbols::ContainerScope* containerScope)
-{
-    cmajor::symbols::SymbolTable& symbolTable = boundCompileUnit.GetSymbolTable();
-    cmajor::symbols::MemberFunctionSymbol* resetOwnedMemFunSymbol = new cmajor::symbols::MemberFunctionSymbol(attribute->GetSpan(), U"ResetOwned");
-    resetOwnedMemFunSymbol->SetModule(&boundCompileUnit.GetModule());
-    resetOwnedMemFunSymbol->SetGroupName(U"ResetOwned");
-    resetOwnedMemFunSymbol->SetAccess(cmajor::symbols::SymbolAccess::public_);
-    if (HasXmlBaseClass(classTypeSymbol))
-    {
-        resetOwnedMemFunSymbol->SetOverride();
-    }
-    else
-    {
-        resetOwnedMemFunSymbol->SetVirtual();
-    }
-    cmajor::symbols::ParameterSymbol* thisParam = new cmajor::symbols::ParameterSymbol(attribute->GetSpan(), U"this");
-    thisParam->SetType(classTypeSymbol->AddPointer());
-    resetOwnedMemFunSymbol->AddMember(thisParam);
-
-    cmajor::symbols::GetRootModuleForCurrentThread()->GetSymbolTable().SetFunctionIdFor(resetOwnedMemFunSymbol);
-
-    resetOwnedMemFunSymbol->SetReturnType(symbolTable.GetTypeByName(U"void"));
-
-    classTypeSymbol->AddMember(resetOwnedMemFunSymbol);
-    resetOwnedMemFunSymbol->ComputeName();
-
-    auto& m = functionSymbolMap[classTypeSymbol];
-    m.push_back(std::make_pair(resetOwnedMemFunSymbol, resetOwnedMemFunId));
-}
-
-void XmlAttributeProcessor::GenerateResetOwnedImplementation(cmajor::ast::AttributeNode* attribute, cmajor::symbols::ClassTypeSymbol* classTypeSymbol, 
-    cmajor::symbols::MemberFunctionSymbol* resetOwnedMemFunSymbol, StatementBinder* statementBinder)
-{
-    try
-    {
-        cmajor::symbols::FileScope* fileScope = new cmajor::symbols::FileScope();
-        statementBinder->GetBoundCompileUnit().AddFileScope(fileScope);
-        std::unique_ptr<BoundFunction> boundFunction(new BoundFunction(&statementBinder->GetBoundCompileUnit(), resetOwnedMemFunSymbol));
-        soul::ast::Span span = attribute->GetSpan();
-        cmajor::ast::MemberFunctionNode memberFunctionNode(span);
-        cmajor::ast::CompoundStatementNode compoundStatementNode(span);
-
-        cmajor::ast::StatementNode* statementNode = nullptr;
-        if (HasXmlBaseClass(classTypeSymbol))
-        {
-            cmajor::ast::ArrowNode* arrowNode = new cmajor::ast::ArrowNode(span, new cmajor::ast::BaseNode(span), new cmajor::ast::IdentifierNode(span, U"ResetOwned"));
-            cmajor::ast::InvokeNode* baseResetOwnedCall = new cmajor::ast::InvokeNode(span, arrowNode);
-            statementNode = new cmajor::ast::ExpressionStatementNode(span, baseResetOwnedCall);
-        }
-        else
-        {
-            cmajor::ast::AssignmentStatementNode* assignmentStatementNode = new cmajor::ast::AssignmentStatementNode(span,
-                new cmajor::ast::IdentifierNode(span, U"isOwned"),
-                new cmajor::ast::BooleanLiteralNode(span, false));
-            statementNode = assignmentStatementNode;
-        }
-        compoundStatementNode.AddStatement(statementNode);
-
-        CompileMemberFunction(resetOwnedMemFunSymbol, compoundStatementNode, memberFunctionNode, std::move(boundFunction), statementBinder);
-    }
-    catch (const cmajor::symbols::Exception& ex)
-    {
-        std::vector<soul::ast::FullSpan> references;
-        references.push_back(ex.Defined());
-        references.insert(references.end(), ex.References().begin(), ex.References().end());
-        throw cmajor::symbols::Exception("error in XML attribute generation: could not create 'ResetOwned' function for the class '" + 
             util::ToUtf8(classTypeSymbol->FullName()) + "': " + ex.Message(), classTypeSymbol->GetFullSpan(), references);
     }
 }
@@ -1914,7 +1199,6 @@ void XmlAttributeProcessor::CompileMemberFunction(cmajor::symbols::MemberFunctio
     compoundStatementNode.Accept(*statementBinder);
     statementBinder->SetContainerScope(containerScope);
     BoundStatement* boundStatement = statementBinder->ReleaseStatement();
-    //Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected");
     BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);
     boundFunction->SetBody(std::unique_ptr<BoundCompoundStatement>(compoundStatement));
     statementBinder->CurrentClass()->AddMember(std::move(boundFunction));

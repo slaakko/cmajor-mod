@@ -54,6 +54,10 @@ public:
     bool IsProgramMain() const { return programMain; }
     void SetProgramMain() { programMain = true; }
     AttributesNode* GetAttributes() const { return attributes.get(); }
+    const soul::ast::Span& SpecifierSpan() const { return specifierSpan; }
+    void SetSpecifierSpan(const soul::ast::Span& specifierSpan_) { specifierSpan = specifierSpan_; }
+    const soul::ast::Span& GroupIdSpan() const { return groupIdSpan; }
+    void SetGroupIdSpan(const soul::ast::Span& groupIdSpan_) { groupIdSpan = groupIdSpan_; }
 private:
     Specifiers specifiers;
     std::unique_ptr<Node> returnTypeExpr;
@@ -65,6 +69,8 @@ private:
     std::unique_ptr<CompoundStatementNode> bodySource;
     std::unique_ptr<AttributesNode> attributes;
     bool programMain;
+    soul::ast::Span specifierSpan;
+    soul::ast::Span groupIdSpan;
 };
 
 class FunctionPtrNode : public Node

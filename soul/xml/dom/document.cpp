@@ -146,6 +146,16 @@ void Document::CheckValidInsert(Node* node)
     }
 }
 
+Node* Document::Clone(bool deep) const
+{
+    Document* clone = new Document(GetSourcePos());
+    if (deep)
+    {
+        clone->AppendChild(documentElement->Clone(deep));
+    }
+    return clone;
+}
+
 std::unique_ptr<Document> MakeDocument()
 {
     return std::unique_ptr<Document>(new Document(soul::ast::SourcePos()));

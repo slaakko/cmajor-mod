@@ -4,6 +4,7 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <llvm/BinaryFormat/COFF.h>
 #include <llvm/BinaryFormat/Magic.h>
 #include <llvm/Object/ArchiveWriter.h>
@@ -16,6 +17,7 @@ module;
 #include <llvm/Support/Path.h>
 #include <llvm/Support/StringSaver.h>
 #include <llvm/IR/DebugInfoMetadata.h>
+#pragma warning(default : 4996)
 
 module cmajor.llvm.archive.windows;
 

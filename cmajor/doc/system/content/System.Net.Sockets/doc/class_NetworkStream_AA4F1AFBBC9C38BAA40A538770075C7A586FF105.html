@@ -1,0 +1,105 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>NetworkStream Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>NetworkStream Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html#11">11</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html">System.Net.Sockets/NetworkStream.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#constructor_NetworkStream_EB90812B4B0677D30555A443E7CE8F9EC6BF2049">NetworkStream</a>(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&amp;&nbsp;socket_)</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14">Read</a>(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C">ReadByte</a>()</td>
+    <td xml:space="preserve">If at the end of the stream returns a result containing -1, otherwise returns a result that contains the next byte read from the socket. In case of an error returns an error result.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6">Socket</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5">Write</a>(<span class="kw">byte</span>&nbsp;x)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4">Write</a>(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_socket_28734F5C2476847903835EA68FC0A1B3F038DFD0" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a></td>
+    <td xml:space="preserve">socket</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_NetworkStream_EB90812B4B0677D30555A443E7CE8F9EC6BF2049" xml:space="preserve">NetworkStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;NetworkStream(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&amp;&nbsp;socket_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html#13">13</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html">System.Net.Sockets/NetworkStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14" xml:space="preserve">Read&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>>&nbsp;Read(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html#36">36</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html">System.Net.Sockets/NetworkStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C" xml:space="preserve">ReadByte&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>>&nbsp;ReadByte()</h4>
+  <p class="description" xml:space="preserve">If at the end of the stream returns a result containing -1, otherwise returns a result that contains the next byte read from the socket. In case of an error returns an error result.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html#17">17</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html">System.Net.Sockets/NetworkStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6" xml:space="preserve">Socket&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;Socket()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html#56">56</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html">System.Net.Sockets/NetworkStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5" xml:space="preserve">Write&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<span class="kw">byte</span>&nbsp;x)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html#47">47</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html">System.Net.Sockets/NetworkStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4" xml:space="preserve">Write&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html#52">52</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/NetworkStream.cm.html">System.Net.Sockets/NetworkStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

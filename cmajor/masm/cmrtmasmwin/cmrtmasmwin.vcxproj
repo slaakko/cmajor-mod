@@ -117,7 +117,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>5050;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -137,7 +137,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>5050;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>

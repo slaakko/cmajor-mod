@@ -136,16 +136,6 @@ namespace System.Collections
                 return n;
             }
         }
-        /*
-            REBALANCE-AFTER-INSERT:
-
-                 g            g
-                /  \         /  \
-               p    u   OR  u    p
-              /                   \
-             n                     n
-
-        */
         public static void RebalanceAfterInsert(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
         {
             #assert(n != null);
@@ -199,9 +189,6 @@ namespace System.Collections
             }
             root->color = Color.black;
         }
-        /*
-            REBALANCE-FOR-REMOVE:
-        */
         public static RedBlackTreeNodeBase* RebalanceForRemove(RedBlackTreeNodeBase* z, RedBlackTreeNodeBase*& root, RedBlackTreeNodeBase*& leftmost, RedBlackTreeNodeBase*& rightmost)
         {
             #assert(z != null);
@@ -401,13 +388,12 @@ namespace System.Collections
             }
             return y;
         }
-        /*  ROTATE LEFT:
-                  n              u
-                 / \            / \
-                a   u    =>    n   c
-                   / \        / \
-                  b   c      a   b
-        */
+        //  ROTATE LEFT:
+        //        n              u
+        //       / \            / \
+        //      a   u    =>    n   c
+        //         / \        / \
+        //        b   c      a   b
         private static inline void RotateLeft(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
         {
             #assert(n != null);
@@ -434,13 +420,12 @@ namespace System.Collections
             u->left = n;
             n->parent = u;
         }
-        /*  ROTATE RIGHT:
-                n                u
-               / \              / \
-              u   c     =>     a   n
-             / \                  / \
-            a   b               b    c
-        */
+        //  ROTATE RIGHT:
+        //      n                u
+        //     / \              / \
+        //    u   c     =>     a   n
+        //   / \                  / \
+        //  a   b               b    c
         private static inline void RotateRight(RedBlackTreeNodeBase* n, RedBlackTreeNodeBase*& root)
         {
             #assert(n != null);

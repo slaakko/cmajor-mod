@@ -114,6 +114,7 @@ public:
     MetadataRef* CreateMetadataRef(const soul::ast::Span& span, int32_t nodeId);
     void AddMetadataStructItem(MetadataStruct* metadataStruct, const std::string& fieldName, MetadataItem* item);
     void SetCompileUnitId(const std::string& compileUnitId_);
+    const std::string& CompileUnitId() const;
     void AddValue(Value* value);
     TypeRepository& GetTypeRepository() { return typeRepository; }
     DataRepository& GetDataRepository() { return dataRepository; }

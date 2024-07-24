@@ -133,5 +133,11 @@ constexpr int64_t SEMICOLON = (static_cast<int64_t>(tokenSetID) << 32) | 121;
 constexpr int64_t HASH = (static_cast<int64_t>(tokenSetID) << 32) | 122;
 constexpr int64_t COMMENT = (static_cast<int64_t>(tokenSetID) << 32) | 123;
 constexpr int64_t WS = (static_cast<int64_t>(tokenSetID) << 32) | 124;
+constexpr int64_t KEYWORD = (static_cast<int64_t>(tokenSetID) << 32) | 125;
+constexpr int64_t NUMBER = (static_cast<int64_t>(tokenSetID) << 32) | 126;
+constexpr int64_t OTHER = (static_cast<int64_t>(tokenSetID) << 32) | 127;
+constexpr int64_t LINECOMMENT = (static_cast<int64_t>(tokenSetID) << 32) | 128;
+constexpr int64_t BLOCKCOMMENT = (static_cast<int64_t>(tokenSetID) << 32) | 129;
+constexpr int64_t BLOCKCOMMENTLINE = (static_cast<int64_t>(tokenSetID) << 32) | 130;
 
 } // cmajor::token

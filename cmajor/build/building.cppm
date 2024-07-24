@@ -18,6 +18,9 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
 
 void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules);
 
+void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules, 
+    std::string& solutionName,  std::vector<std::string>& moduleNames);
+
 void StopBuild();
 
 void ResetStopBuild();

@@ -24,12 +24,10 @@ public:
     JsonRpcException(int code_, const std::string& message_);
     const int Code() const { return code; }
     const std::string& Message() const { return message; }
-    void SetInfo(std::unique_ptr<util::JsonValue>&& info_);
     std::unique_ptr<util::JsonObject> ToErrorObject();
 private:
     int code;
     std::string message;
-    std::unique_ptr<util::JsonValue> info;
 };
 
 } // namespace soul::json::rpc

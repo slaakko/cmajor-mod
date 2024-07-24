@@ -204,18 +204,24 @@
           <action first="{IF}">
            <token first="{IF}" name="IF"/>
           </action>
-          <token first="{LPAREN}" name="LPAREN"/>
+          <action first="{LPAREN}">
+           <token first="{LPAREN}" name="LPAREN"/>
+          </action>
          </sequence>
          <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
         </sequence>
-        <token first="{RPAREN}" name="RPAREN"/>
+        <action first="{RPAREN}">
+         <token first="{RPAREN}" name="RPAREN"/>
+        </action>
        </sequence>
        <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}" ruleName="Statement"/>
       </sequence>
       <optional first="{#, ELSE}">
        <group first="{ELSE}">
         <sequence first="{ELSE}">
-         <token first="{ELSE}" name="ELSE"/>
+         <action first="{ELSE}">
+          <token first="{ELSE}" name="ELSE"/>
+         </action>
          <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}" ruleName="Statement"/>
         </sequence>
        </group>
@@ -234,11 +240,15 @@
          <action first="{WHILE}">
           <token first="{WHILE}" name="WHILE"/>
          </action>
-         <token first="{LPAREN}" name="LPAREN"/>
+         <action first="{LPAREN}">
+          <token first="{LPAREN}" name="LPAREN"/>
+         </action>
         </sequence>
         <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
        </sequence>
-       <token first="{RPAREN}" name="RPAREN"/>
+       <action first="{RPAREN}">
+        <token first="{RPAREN}" name="RPAREN"/>
+       </action>
       </sequence>
       <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}" ruleName="Statement"/>
      </sequence>
@@ -259,13 +269,19 @@
            </action>
            <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}" ruleName="Statement"/>
           </sequence>
-          <token first="{WHILE}" name="WHILE"/>
+          <action first="{WHILE}">
+           <token first="{WHILE}" name="WHILE"/>
+          </action>
          </sequence>
-         <token first="{LPAREN}" name="LPAREN"/>
+         <action first="{LPAREN}">
+          <token first="{LPAREN}" name="LPAREN"/>
+         </action>
         </sequence>
         <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
        </sequence>
-       <token first="{RPAREN}" name="RPAREN"/>
+       <action first="{RPAREN}">
+        <token first="{RPAREN}" name="RPAREN"/>
+       </action>
       </sequence>
       <token first="{SEMICOLON}" name="SEMICOLON"/>
      </sequence>
@@ -285,17 +301,23 @@
             <action first="{FOR}">
              <token first="{FOR}" name="FOR"/>
             </action>
-            <token first="{LPAREN}" name="LPAREN"/>
+            <action first="{LPAREN}">
+             <token first="{LPAREN}" name="LPAREN"/>
+            </action>
            </sequence>
            <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
           </sequence>
           <nonterminal first="{ID}" ruleName="Identifier"/>
          </sequence>
-         <token first="{COLON}" name="COLON"/>
+         <action first="{COLON}">
+          <token first="{COLON}" name="COLON"/>
+         </action>
         </sequence>
         <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
        </sequence>
-       <token first="{RPAREN}" name="RPAREN"/>
+       <action first="{RPAREN}">
+        <token first="{RPAREN}" name="RPAREN"/>
+       </action>
       </sequence>
       <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}" ruleName="Statement"/>
      </sequence>
@@ -315,7 +337,9 @@
             <action first="{FOR}">
              <token first="{FOR}" name="FOR"/>
             </action>
-            <token first="{LPAREN}" name="LPAREN"/>
+            <action first="{LPAREN}">
+             <token first="{LPAREN}" name="LPAREN"/>
+            </action>
            </sequence>
            <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ForInitStatement"/>
           </sequence>
@@ -327,7 +351,9 @@
         </sequence>
         <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="ForLoopStatementExpr"/>
        </sequence>
-       <token first="{RPAREN}" name="RPAREN"/>
+       <action first="{RPAREN}">
+        <token first="{RPAREN}" name="RPAREN"/>
+       </action>
       </sequence>
       <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}" ruleName="Statement"/>
      </sequence>
@@ -421,15 +447,23 @@
            <action first="{SWITCH}">
             <token first="{SWITCH}" name="SWITCH"/>
            </action>
-           <token first="{LPAREN}" name="LPAREN"/>
+           <action first="{LPAREN}">
+            <token first="{LPAREN}" name="LPAREN"/>
+           </action>
           </sequence>
           <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
          </sequence>
          <action first="{RPAREN}">
-          <token first="{RPAREN}" name="RPAREN"/>
+          <group first="{RPAREN}">
+           <action first="{RPAREN}">
+            <token first="{RPAREN}" name="RPAREN"/>
+           </action>
+          </group>
          </action>
         </sequence>
-        <token first="{LBRACE}" name="LBRACE"/>
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </action>
        </sequence>
        <kleene first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CASE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DEFAULT, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}">
         <group first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CASE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DEFAULT, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}">
@@ -444,7 +478,9 @@
         </group>
        </kleene>
       </sequence>
-      <token first="{RBRACE}" name="RBRACE"/>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
      </sequence>
     </group>
    </action>
@@ -461,7 +497,9 @@
         <group first="{CASE}">
          <sequence first="{CASE}">
           <sequence first="{CASE}">
-           <token first="{CASE}" name="CASE"/>
+           <action first="{CASE}">
+            <token first="{CASE}" name="CASE"/>
+           </action>
            <action first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}">
             <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="Expression"/>
            </action>
@@ -716,7 +754,9 @@
           <action first="{CATCH}">
            <token first="{CATCH}" name="CATCH"/>
           </action>
-          <token first="{LPAREN}" name="LPAREN"/>
+          <action first="{LPAREN}">
+           <token first="{LPAREN}" name="LPAREN"/>
+          </action>
          </sequence>
          <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
         </sequence>
@@ -724,7 +764,9 @@
          <nonterminal first="{ID}" ruleName="Identifier"/>
         </optional>
        </sequence>
-       <token first="{RPAREN}" name="RPAREN"/>
+       <action first="{RPAREN}">
+        <token first="{RPAREN}" name="RPAREN"/>
+       </action>
       </sequence>
       <nonterminal first="{LBRACE}" ruleName="CompoundStatement"/>
      </sequence>
@@ -765,13 +807,17 @@
              </action>
              <token first="{IF}" name="IF"/>
             </sequence>
-            <token first="{LPAREN}" name="LPAREN"/>
+            <action first="{LPAREN}">
+             <token first="{LPAREN}" name="LPAREN"/>
+            </action>
            </sequence>
            <action first="{EXCLAMATION, ID, LPAREN}">
             <nonterminal first="{EXCLAMATION, ID, LPAREN}" ruleName="ConditionalCompilationExpression"/>
            </action>
           </sequence>
-          <token first="{RPAREN}" name="RPAREN"/>
+          <action first="{RPAREN}">
+           <token first="{RPAREN}" name="RPAREN"/>
+          </action>
          </sequence>
          <kleene first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}">
           <group first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}">
@@ -793,13 +839,17 @@
                </action>
                <token first="{ELIF}" name="ELIF"/>
               </sequence>
-              <token first="{LPAREN}" name="LPAREN"/>
+              <action first="{LPAREN}">
+               <token first="{LPAREN}" name="LPAREN"/>
+              </action>
              </sequence>
              <action first="{EXCLAMATION, ID, LPAREN}">
               <nonterminal first="{EXCLAMATION, ID, LPAREN}" ruleName="ConditionalCompilationExpression"/>
              </action>
             </sequence>
-            <token first="{RPAREN}" name="RPAREN"/>
+            <action first="{RPAREN}">
+             <token first="{RPAREN}" name="RPAREN"/>
+            </action>
            </sequence>
            <kleene first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}">
             <group first="{#, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BREAK, BYTE, CAST, CHAR, CHARLIT, CONST, CONSTRUCT, CONTINUE, CPL, DELETE, DESTROY, DISJUNCTION, DIV, DO, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, FOR, GEQ, GOTO, HASH, ID, IF, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, RETURN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, SWITCH, THIS, THROW, TRUE, TRY, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR, WHILE}">
@@ -834,7 +884,9 @@
       </sequence>
       <group first="{HASH}">
        <sequence first="{HASH}">
-        <token first="{HASH}" name="HASH"/>
+        <action first="{HASH}">
+         <token first="{HASH}" name="HASH"/>
+        </action>
         <token first="{ENDIF}" name="ENDIF"/>
        </sequence>
       </group>

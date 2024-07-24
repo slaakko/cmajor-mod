@@ -314,7 +314,7 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
-    std::string ToString() const override { return "array"; }
+    std::string ToString() const override { return std::string(); }
     void AddValue(Node* value);
     const NodeList<Node>& Values() const { return values; }
     NodeList<Node>& Values() { return values; }
@@ -330,7 +330,7 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
-    std::string ToString() const override { return "structure"; }
+    std::string ToString() const override { return std::string(); }
     void AddMember(Node* member);
     const NodeList<Node>& Members() const { return members; }
     NodeList<Node>& Members() { return members; }

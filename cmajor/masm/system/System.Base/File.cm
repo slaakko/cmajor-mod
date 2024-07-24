@@ -29,7 +29,7 @@ namespace System.IO
             long fileSize = RtmGetFileSize(filePath.Chars(), errorId);
             if (fileSize == -1)
             {
-                return Result<long>(-1, ErrorId(errorId));
+                return Result<long>(ErrorId(errorId));
             }
             else
             {
@@ -42,7 +42,7 @@ namespace System.IO
             bool result = RtmLastWriteTimeLess(filePath1.Chars(), filePath2.Chars(), errorId);
             if (errorId != 0)
             {
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(result);
         }
@@ -217,8 +217,8 @@ namespace System.IO
             int errorId = 0;
             if (!RtmRemoveFile(filePath.Chars(), errorId))
             {
-                return Result<bool>(false, ErrorId(errorId));
-            }   
+                return Result<bool>(ErrorId(errorId));
+            }
             return Result<bool>(true);
         }
         public static Result<bool> Copy(const string& sourceFilePath, const string& targetFilePath)
@@ -226,7 +226,7 @@ namespace System.IO
             int errorId = 0;
             if (!RtmCopyFile(sourceFilePath.Chars(), targetFilePath.Chars(), errorId))
             {
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
         }
@@ -235,7 +235,7 @@ namespace System.IO
             int errorId = 0;
             if (!RtmMoveFile(sourceFilePath.Chars(), targetFilePath.Chars(), errorId))
             {
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
         }

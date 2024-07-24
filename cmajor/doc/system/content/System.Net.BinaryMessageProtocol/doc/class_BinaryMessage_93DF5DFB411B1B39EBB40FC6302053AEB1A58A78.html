@@ -1,0 +1,98 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>BinaryMessage Abstract Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>BinaryMessage Abstract Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html">System.Net.BinaryMessageProtocol/Protocol.cm</a></span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#constructor_BinaryMessage_2D1FA2B8A1B300E373D2C4EFBFAAD0BF1228358D">BinaryMessage</a>(<span class="kw">uint</span>&nbsp;id_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#destructor_BinaryMessage_56B2581061338B7404D58CA9CD52738861478CA7">~BinaryMessage</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">uint</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A">Id</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">uint</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98">Length</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B">Read</a>(<a href="../../System.Base/doc/class_MemoryReader_7C2B5BA19453DDDA4428C8201D93E07311596E12.html">MemoryReader</a>&amp;&nbsp;reader)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176">Write</a>(<a href="../../System.Base/doc/class_MemoryWriter_BC3E557B84654B5DB52F9A019B7E85AF4A0D7C48.html">MemoryWriter</a>&amp;&nbsp;writer)</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_id_A27E167FB607145C158A3ECFE2DBB31F811AB21E" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
+    <td xml:space="preserve">id</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_BinaryMessage_2D1FA2B8A1B300E373D2C4EFBFAAD0BF1228358D" xml:space="preserve">BinaryMessage&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;BinaryMessage(<span class="kw">uint</span>&nbsp;id_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html#14">14</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html">System.Net.BinaryMessageProtocol/Protocol.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_BinaryMessage_56B2581061338B7404D58CA9CD52738861478CA7" xml:space="preserve">~BinaryMessage&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;~BinaryMessage()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html#17">17</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html">System.Net.BinaryMessageProtocol/Protocol.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A" xml:space="preserve">Id&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">uint</span>&nbsp;Id()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html#25">25</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html">System.Net.BinaryMessageProtocol/Protocol.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98" xml:space="preserve">Length&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">uint</span>&nbsp;Length()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html#20">20</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html">System.Net.BinaryMessageProtocol/Protocol.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B" xml:space="preserve">Read&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Read(<a href="../../System.Base/doc/class_MemoryReader_7C2B5BA19453DDDA4428C8201D93E07311596E12.html">MemoryReader</a>&amp;&nbsp;reader)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html">System.Net.BinaryMessageProtocol/Protocol.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176" xml:space="preserve">Write&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<a href="../../System.Base/doc/class_MemoryWriter_BC3E557B84654B5DB52F9A019B7E85AF4A0D7C48.html">MemoryWriter</a>&amp;&nbsp;writer)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html#22">22</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html">System.Net.BinaryMessageProtocol/Protocol.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

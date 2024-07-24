@@ -268,8 +268,9 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.Lex.Lexer", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html" },
-        { name: "JsonLexer", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: false, link: "../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html" }];
+        { name: "System.IO.IOBase", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/class_IOBase_325A635E11759F146842FF3D54DFAE621782FC86.html" },
+        { name: "System.Lex.Lexer", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html" },
+        { name: "JsonLexer", id: "diagram_node_2", level: 2, subject: true, hasDerivedNodes: false, link: "../../System.Json/doc/class_JsonLexer_C48B52C0C81DC3674C6280261D8793084F6A8CE8.html" }];
     drawDiagram(diagramNodes);
 }
 

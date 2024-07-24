@@ -33,6 +33,14 @@ public:
     {
         return nodes[index].release();
     }
+    T* Front() const
+    {
+        return nodes.front().get();
+    }
+    T* Back() const
+    {
+        return nodes.back().get();
+    }
     void Insert(int index, T* node)
     {
         if (index >= static_cast<int>(nodes.size()))

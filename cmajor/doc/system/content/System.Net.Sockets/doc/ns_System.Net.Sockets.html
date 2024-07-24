@@ -6,28 +6,18 @@
  </head>
  <body>
   <h1>System.Net.Sockets Namespace</h1>
-  <h2>Classes</h2>
+  <span class="indent">
+   <a href="#classes">Classes</a>
+    | <a href="#functions">Functions</a>
+    | <a href="#enumTypes">Enumerated Types</a>
+  </span>
+  <h2 id="classes">Classes</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
     <td>
-     <a href="../../System.Net.Sockets/doc/class_NetworkByteStream_5A7A9D75DF6B7A874E386D849EB0B8F0D28C226D.html">NetworkByteStream</a>
+     <a href="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html">NetworkStream</a>
     </td>
-    <td xml:space="preserve">Represents a stream connected to a <a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a> .</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
-    <td>
-     <a href="../../System.Net.Sockets/doc/class_SocketException_543E6533D1008D044BED00CE9B250109F27F18FB.html">SocketException</a>
-    </td>
-    <td xml:space="preserve">Thrown when an error in a socket operation is detected.</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
-    <td>
-     <a href="../../System.Net.Sockets/doc/class_TcpClient_BEAB95A1A35E77E97DFDF4C9915EEDD66CFDEF21.html">TcpClient</a>
-    </td>
-    <td xml:space="preserve">Represents a client-side socket connection that provides a <a href="../../System.Net.Sockets/doc/class_NetworkByteStream_5A7A9D75DF6B7A874E386D849EB0B8F0D28C226D.html">NetworkByteStream</a> .</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
@@ -44,40 +34,36 @@
     <td xml:space="preserve">Represents a synchronous reliable connection-oriented socket.</td>
    </tr>
   </table>
-  <h2>Functions</h2>
+  <h2 id="functions">Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
-    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_ReadStr_48742E8564C8B4F4A09CDD23DCC86613F267EA67">ReadStr</a>(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97">ReceiveString</a>(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_Write_C898F10E5373C79AF9ED51D3ECC940CAFF4F6ACB">Write</a>(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;str)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41">SendString</a>(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;s)</td>
    </tr>
   </table>
-  <h2>Enumerated Types</h2>
+  <h2 id="enumTypes">Enumerated Types</h2>
   <table>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span></td>
-    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/enumerated_type_ConnectOptions_B1107B03A462E820956983F4014CEDB5074783C1.html">ConnectOptions</a></td>
-   </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span></td>
     <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D.html">ShutdownMode</a></td>
    </tr>
   </table>
   <h2>Function Details</h2>
-  <h3 id="function_ReadStr_48742E8564C8B4F4A09CDD23DCC86613F267EA67" xml:space="preserve">ReadStr&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;ReadStr(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket)</h4>
+  <h3 id="function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97" xml:space="preserve">ReceiveString&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>&nbsp;ReceiveString(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpSocket.cm.html#232">232</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpSocket.cm.html">System.Net.Sockets/TcpSocket.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/StringNetIO.cm.html#36">36</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/StringNetIO.cm.html">System.Net.Sockets/StringNetIO.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="function_Write_C898F10E5373C79AF9ED51D3ECC940CAFF4F6ACB" xml:space="preserve">Write&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Write(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;str)</h4>
+  <h3 id="function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41" xml:space="preserve">SendString&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;SendString(<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;socket, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;s)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpSocket.cm.html#208">208</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpSocket.cm.html">System.Net.Sockets/TcpSocket.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/StringNetIO.cm.html#11">11</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/StringNetIO.cm.html">System.Net.Sockets/StringNetIO.cm</a></span>
   <br/>
   <br/>
   <hr/>

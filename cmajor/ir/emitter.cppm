@@ -82,6 +82,7 @@ public:
     virtual void* GetIrTypeForPtrType(void* baseIrType) = 0;
     virtual std::string GetIrTypeName(void* irType) = 0;
     virtual std::string MakeVmtVariableName(const std::string& vmtObjectName) = 0;
+    virtual std::string MakeSymbolName(const std::string& name) { return name; }
     virtual void* CreateDefaultIrValueForArrayType(void* arrayIrType, const std::vector<void*>& arrayOfDefaults) = 0;
     virtual void* CreateDefaultIrValueForBool() = 0;
     virtual void* CreateDefaultIrValueForSByte() = 0;
@@ -366,6 +367,7 @@ public:
     virtual void AddCase(void* switchInst, void* caseValue, void* caseDest) = 0;
     virtual void* GenerateTrap(const std::vector<void*>& args) = 0;
     virtual void SetCompileUnitId(const std::string& compileUnitId) = 0;
+    virtual const std::string& CompileUnitId() const = 0;
     virtual void* GetClsIdValue(const std::string& typeId) = 0;
     virtual void* CreateMDBool(bool value) = 0;
     virtual void* CreateMDLong(int64_t value) = 0;

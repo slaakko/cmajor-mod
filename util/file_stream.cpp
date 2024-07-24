@@ -76,10 +76,16 @@ FileStream::FileStream(const std::string& filePath_, OpenMode openMode) : filePa
         mode += "b";
     }
     std::string nativeFilePath = Utf8StringToPlatformString(filePath);
-    file = fopen(nativeFilePath.c_str(), mode.c_str());
-    if (!file)
+    errno_t result = fopen_s(&file, nativeFilePath.c_str(), mode.c_str());
+    if (result != 0)
     {
-        std::string s = strerror(errno);
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), result);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
         throw std::runtime_error("could not open file '" + std::string(filePath) + "': " + PlatformStringToUtf8(s));
     }
     needToClose = true;
@@ -104,7 +110,13 @@ int FileStream::ReadByte()
         }
         else
         {
-            std::string s = strerror(errno);
+            char buf[1024];
+            errno_t res = strerror_s(buf, sizeof(buf), errno);
+            std::string s;
+            if (res == 0)
+            {
+                s = buf;
+            }
             throw std::runtime_error("could not read from file '" + filePath + "': " + PlatformStringToUtf8(s));
         }
     }
@@ -117,7 +129,13 @@ int64_t FileStream::Read(uint8_t* buf, int64_t count)
     int64_t result = std::fread(buf, 1, count, file);
     if (std::ferror(file))
     {
-        std::string s = strerror(errno);
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
         throw std::runtime_error("could not read from file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     SetPosition(Position() + result);
@@ -129,7 +147,13 @@ void FileStream::Write(uint8_t x)
     int result = std::fputc(x, file);
     if (result == EOF)
     {
-        std::string s = strerror(errno);
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
         throw std::runtime_error("could not write to file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     SetPosition(Position() + 1);
@@ -140,7 +164,13 @@ void FileStream::Write(uint8_t* buf, int64_t count)
     int64_t result = std::fwrite(buf, 1, count, file);
     if (result != count)
     {
-        std::string s = strerror(errno);
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
         throw std::runtime_error("could not write to file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     SetPosition(Position() + result);
@@ -151,7 +181,13 @@ void FileStream::Flush()
     int result = std::fflush(file);
     if (result != 0)
     {
-        std::string s = strerror(errno);
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
         throw std::runtime_error("could not flush file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
 }
@@ -184,7 +220,13 @@ void FileStream::Seek(int64_t pos, Origin origin)
 #endif
     if (result != 0)
     {
-        std::string s = strerror(errno);
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
         throw std::runtime_error("could not seek file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     switch (origin)
@@ -212,7 +254,13 @@ int64_t FileStream::Tell()
     int64_t result = std::ftell(file);
     if (result == -1)
     {
-        std::string s = strerror(errno);
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
         throw std::runtime_error("could not tell file '" + filePath + "': " + PlatformStringToUtf8(s));
     }
     return result;

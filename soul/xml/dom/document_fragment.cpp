@@ -11,6 +11,21 @@ DocumentFragment::DocumentFragment(const soul::ast::SourcePos& sourcePos_) : Par
 {
 }
 
+Node* DocumentFragment::Clone(bool deep) const
+{
+    DocumentFragment* clone = new DocumentFragment(GetSourcePos());
+    if (deep)
+    {
+        Node* child = FirstChild();
+        while (child != nullptr)
+        {
+            clone->AppendChild(child->Clone(deep));
+            child = child->Next();
+        }
+    }
+    return clone;
+}
+
 DocumentFragment* MakeDocumentFragment()
 {
     return new DocumentFragment(soul::ast::SourcePos());

@@ -28,19 +28,21 @@ parser InterfaceParser
     using TypeExprParser.TypeExpr;
     using ParameterParser.ParameterList;
 
-    Interface(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::InterfaceNode> interfaceNode) : cmajor::ast::InterfaceNode*
+    Interface(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span specifierSpan, 
+        var std::unique_ptr<cmajor::ast::InterfaceNode> interfaceNode) : cmajor::ast::InterfaceNode*
         ::= 
         (
             Attributes(context):attrs?
-            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); specifierSpan = s; }
             INTERFACE 
             Identifier(context):id
             {
                 interfaceNode.reset(new cmajor::ast::InterfaceNode(s, specifiers, id, attrs));
+                interfaceNode->SetSpecifierSpan(specifierSpan);
             }
-            LBRACE
+            LBRACE{ interfaceNode->SetBeginBraceSpan(lexer.GetSpan(pos)); }
             InterfaceContent(context, interfaceNode.get()):interfaceContent
-            RBRACE
+            RBRACE{ interfaceNode->SetEndBraceSpan(lexer.GetSpan(pos)); }
         )
         {
             return interfaceNode.release();
@@ -54,15 +56,17 @@ parser InterfaceParser
         )*
         ;
 
-    InterfaceMemberFunction(cmajor::parser::context::Context* context, var soul::ast::Span s, 
+    InterfaceMemberFunction(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span groupIdSpan,
         var std::unique_ptr<cmajor::ast::MemberFunctionNode> memberFunctionNode) : cmajor::ast::MemberFunctionNode*
         ::=
         (
             Attributes(context):attrs?
             TypeExpr(context):returnType{ s = lexer.GetSpan(pos); }
-            InterfaceFunctionGroupId(context):groupId
+            (InterfaceFunctionGroupId(context):groupId{ groupIdSpan = lexer.GetSpan(pos); })
             {
+
                 memberFunctionNode.reset(new cmajor::ast::MemberFunctionNode(s, cmajor::ast::Specifiers(), returnType, groupId, attrs));
+                memberFunctionNode->SetGroupIdSpan(groupIdSpan);
             }
             ParameterList(context, memberFunctionNode.get()):paramList 
             SEMICOLON

@@ -7,65 +7,70 @@
  </head>
  <body onload="drawInheritanceDiagram()">
   <h1>BacktabCommand Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#256">256</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#321">321</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <h2>Inheritance</h2>
   <div class="diagram">
    <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
   </div>
-  <h2>Constructors &amp; Destructor</h2>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_BacktabCommand_D977EE800B3F7AE4962AF8D2BD326975905E5B35.html#constructor_BacktabCommand_BFEB5DD5A0A48A67D6FEB210E37B1B364A4F21F1">BacktabCommand</a>(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;numSpaces_)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_BacktabCommand_D977EE800B3F7AE4962AF8D2BD326975905E5B35.html#constructor_BacktabCommand_F5FB94EF1A1C69A89D73E6E03638D596436B545C">BacktabCommand</a>(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;numSpaces_)</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_BacktabCommand_D977EE800B3F7AE4962AF8D2BD326975905E5B35.html#member_function_Redo_BacktabCommand_5F406533CC1ADA2E78F44E214B86223A28381F4F">Redo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_BacktabCommand_D977EE800B3F7AE4962AF8D2BD326975905E5B35.html#member_function_Redo_BacktabCommand_C896EBCAF16490A65A4BC8AA419E443864FD221C">Redo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_BacktabCommand_D977EE800B3F7AE4962AF8D2BD326975905E5B35.html#member_function_Undo_BacktabCommand_D219C8E839EC97FCFBDF37FF4F2B5F66707AD097">Undo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_BacktabCommand_D977EE800B3F7AE4962AF8D2BD326975905E5B35.html#member_function_Undo_BacktabCommand_BE1EB93F4ED504C1E6D66F24CADF03D3BBA9BA08">Undo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_columnIndex_B565EEF140C19E3BBCB05FC5E41D2B491E43C827" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">columnIndex</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_lineIndex_5AE20DDD07C77C9577ACB1FFE8CBE8416DB99A5D" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">lineIndex</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_numSpaces_D0ED1EA663762DD23C7D844FE2FAFF8CCED5E487" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">numSpaces</td>
    </tr>
   </table>
   <h2>Constructor&amp; Destructor Details</h2>
-  <h3 id="constructor_BacktabCommand_BFEB5DD5A0A48A67D6FEB210E37B1B364A4F21F1" xml:space="preserve">BacktabCommand&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;BacktabCommand(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;numSpaces_)</h4>
+  <h3 id="constructor_BacktabCommand_F5FB94EF1A1C69A89D73E6E03638D596436B545C" xml:space="preserve">BacktabCommand&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;BacktabCommand(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;numSpaces_)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#258">258</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#323">323</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
-  <h3 id="member_function_Redo_BacktabCommand_5F406533CC1ADA2E78F44E214B86223A28381F4F" xml:space="preserve">Redo&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;Redo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
+  <h3 id="member_function_Redo_BacktabCommand_C896EBCAF16490A65A4BC8AA419E443864FD221C" xml:space="preserve">Redo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Redo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#265">265</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#333">333</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_Undo_BacktabCommand_D219C8E839EC97FCFBDF37FF4F2B5F66707AD097" xml:space="preserve">Undo&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;Undo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
+  <h3 id="member_function_Undo_BacktabCommand_BE1EB93F4ED504C1E6D66F24CADF03D3BBA9BA08" xml:space="preserve">Undo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Undo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#261">261</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#327">327</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>

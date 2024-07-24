@@ -268,10 +268,11 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.Windows.Component", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
-        { name: "System.Windows.MenuItemBase", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: true, link: "../../System.Windows/doc/class_MenuItemBase_C0EEC523974B5E920D68BE120F0093127668CCD3.html" },
-        { name: "System.Windows.MenuItem", id: "diagram_node_2", level: 2, subject: false, hasDerivedNodes: false, link: "../../System.Windows/doc/class_MenuItem_4DA94BB6D1B0CFA968E2A33ED1F77C58EAECDD67.html" },
-        { name: "System.Windows.MenuItemSeparator", id: "diagram_node_3", level: 2, subject: false, hasDerivedNodes: false, link: "../../System.Windows/doc/class_MenuItemSeparator_161F40F444BF921923CEF3AD6D9243DBA9186D61.html" }];
+        { name: "System.Windows.GraphicsObject", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_GraphicsObject_7C98CD08CF463746DBA93565958E3CB9D87DFDF9.html" },
+        { name: "System.Windows.Component", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
+        { name: "System.Windows.MenuItemBase", id: "diagram_node_2", level: 2, subject: true, hasDerivedNodes: true, link: "../../System.Windows/doc/class_MenuItemBase_C0EEC523974B5E920D68BE120F0093127668CCD3.html" },
+        { name: "System.Windows.MenuItem", id: "diagram_node_4", level: 3, subject: false, hasDerivedNodes: false, link: "../../System.Windows/doc/class_MenuItem_4DA94BB6D1B0CFA968E2A33ED1F77C58EAECDD67.html" },
+        { name: "System.Windows.MenuItemSeparator", id: "diagram_node_3", level: 3, subject: false, hasDerivedNodes: false, link: "../../System.Windows/doc/class_MenuItemSeparator_161F40F444BF921923CEF3AD6D9243DBA9186D61.html" }];
     drawDiagram(diagramNodes);
 }
 

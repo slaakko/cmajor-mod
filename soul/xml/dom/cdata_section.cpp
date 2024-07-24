@@ -29,6 +29,11 @@ void CDataSection::Write(util::CodeFormatter& formatter)
     formatter.Write("]]>");
 }
 
+Node* CDataSection::Clone(bool deep) const
+{
+    return new CDataSection(GetSourcePos(), Data());
+}
+
 CDataSection* MakeCDataSection(const std::string& text)
 {
     return new CDataSection(soul::ast::SourcePos(), text);

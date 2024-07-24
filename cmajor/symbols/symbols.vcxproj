@@ -120,7 +120,7 @@
       <EnableModules>true</EnableModules>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>5050;4267;4244;4146;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4146</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -140,7 +140,7 @@
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4146;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244;4146</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>.;..;../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

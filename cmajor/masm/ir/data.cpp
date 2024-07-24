@@ -15,7 +15,7 @@ GlobalVariable::GlobalVariable(Type* type_, const std::string& name_) : type(typ
 
 std::string GlobalVariable::Name(Context& context)
 {
-    return name;
+    return name; 
 }
 
 Type* GlobalVariable::GetType(Context& context)

@@ -231,9 +231,9 @@ public:
     void* VmtArrayType(cmajor::ir::Emitter& emitter);
     void* VmtPtrType(cmajor::ir::Emitter& emitter);
     std::string VmtObjectName(cmajor::ir::Emitter& emitter);
-    std::string VmtObjectNameStr();
+    std::string VmtObjectNameStr(cmajor::ir::Emitter& emitter);
     std::string ImtArrayObjectName(cmajor::ir::Emitter& emitter);
-    std::string ImtObjectName(int index);
+    std::string ImtObjectName(int index, cmajor::ir::Emitter& emitter);
     int32_t VmtPtrIndex() const { return vmtPtrIndex; }
     ClassTypeSymbol* VmtPtrHolderClass();
     void* StaticObject(cmajor::ir::Emitter& emitter, bool create);

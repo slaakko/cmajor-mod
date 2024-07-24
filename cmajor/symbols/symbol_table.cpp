@@ -1318,7 +1318,6 @@ void SymbolTable::AddEnumConstant(cmajor::ast::EnumConstantNode& enumConstantNod
     }
     enumConstantSymbol->SetCompileUnit(currentCompileUnit);
     enumConstantSymbol->SetModule(module);
-    enumConstantSymbol->SetStrValue(enumConstantNode.StrValue());
     MapNode(&enumConstantNode, enumConstantSymbol);
     container->AddMember(enumConstantSymbol);
 }
@@ -1976,10 +1975,6 @@ void SymbolTable::MapIdentifierToSymbolDefinition(cmajor::ast::IdentifierNode* i
 {
     if (GetGlobalFlag(GlobalFlags::cmdoc)) return;
     if (identifierSymbolDefinitionMap.find(identifierNode) != identifierSymbolDefinitionMap.cend()) return;
-    if (symbol->Name() == U"ClickAction")
-    {
-        int x = 0;
-    }
     identifierSymbolDefinitionMap[identifierNode] = symbol;
     SymbolLocation identifierLocation = MakeSymbolLocation(identifierNode->GetSpan(), module, identifierNode->FileIndex());
     SymbolLocation definitionLocation;

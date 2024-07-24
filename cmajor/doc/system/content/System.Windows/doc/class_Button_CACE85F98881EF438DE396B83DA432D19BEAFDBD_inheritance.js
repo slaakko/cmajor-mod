@@ -268,10 +268,11 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.Windows.Component", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
-        { name: "System.Windows.Control", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Control_0EB43E34C2C7F73B847C59F69B43675667D9AF58.html" },
-        { name: "System.Windows.ButtonBase", id: "diagram_node_2", level: 2, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_ButtonBase_5490FC832D4E0038352B09CB8F04FDD3AF4C978D.html" },
-        { name: "System.Windows.Button", id: "diagram_node_3", level: 3, subject: true, hasDerivedNodes: false, link: "../../System.Windows/doc/class_Button_CACE85F98881EF438DE396B83DA432D19BEAFDBD.html" }];
+        { name: "System.Windows.GraphicsObject", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_GraphicsObject_7C98CD08CF463746DBA93565958E3CB9D87DFDF9.html" },
+        { name: "System.Windows.Component", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
+        { name: "System.Windows.Control", id: "diagram_node_2", level: 2, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Control_0EB43E34C2C7F73B847C59F69B43675667D9AF58.html" },
+        { name: "System.Windows.ButtonBase", id: "diagram_node_3", level: 3, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_ButtonBase_5490FC832D4E0038352B09CB8F04FDD3AF4C978D.html" },
+        { name: "System.Windows.Button", id: "diagram_node_4", level: 4, subject: true, hasDerivedNodes: false, link: "../../System.Windows/doc/class_Button_CACE85F98881EF438DE396B83DA432D19BEAFDBD.html" }];
     drawDiagram(diagramNodes);
 }
 

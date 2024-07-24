@@ -1,0 +1,89 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>System.Dom/Text.cm</title>
+  <link href="../../../style/code.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <span class="code" id="1" xml:space="preserve"><span class="lineNumber">&nbsp;1</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="2" xml:space="preserve"><span class="lineNumber">&nbsp;2</span>&nbsp;<span class="comment">//&nbsp;Copyright&nbsp;(c)&nbsp;2024&nbsp;Seppo&nbsp;Laakko
+</span></span>
+  <br/>
+  <span class="code" id="3" xml:space="preserve"><span class="lineNumber">&nbsp;3</span>&nbsp;<span class="comment">//&nbsp;Distributed&nbsp;under&nbsp;the&nbsp;MIT&nbsp;license
+</span></span>
+  <br/>
+  <span class="code" id="4" xml:space="preserve"><span class="lineNumber">&nbsp;4</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="5" xml:space="preserve"><span class="lineNumber">&nbsp;5</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="6" xml:space="preserve"><span class="lineNumber">&nbsp;6</span>&nbsp;<span class="keyword">using</span>&nbsp;<span class="identifier">System</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="7" xml:space="preserve"><span class="lineNumber">&nbsp;7</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="8" xml:space="preserve"><span class="lineNumber">&nbsp;8</span>&nbsp;<span class="keyword">namespace</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">Xml</span></span>
+  <br/>
+  <span class="code" id="9" xml:space="preserve"><span class="lineNumber">&nbsp;9</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="10" xml:space="preserve"><span class="lineNumber">10</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">class</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html">Text</a><span class="other">&nbsp;:&nbsp;</span><a href="../doc/class_CharacterData_A72F3B458285D023971EA719EE91CDE672B369C6.html">CharacterData</a></span>
+  <br/>
+  <span class="code" id="11" xml:space="preserve"><span class="lineNumber">11</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="12" xml:space="preserve"><span class="lineNumber">12</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html#constructor_Text_133CE1B44128A5C9ECEB2E826F371BD18F4DC157">Text</a><span class="other">(</span><span class="keyword">const</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">Lex</span><span class="other">.</span><a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a><span class="other">&amp;</span>&nbsp;<span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="keyword">int</span>&nbsp;<span class="identifier">fileIndex_</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="keyword">this</span><span class="other">(</span><a href="../doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html">NodeKind</a><span class="other">.</span><a href="../doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html#enumeration_constant_textNode_18EE06E422C689FEF029153411E120BB45E9D752">textNode</a><span class="other">,&nbsp;</span><span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="identifier">fileIndex_</span><span class="other">,&nbsp;</span><span class="string">"text"</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="13" xml:space="preserve"><span class="lineNumber">13</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="14" xml:space="preserve"><span class="lineNumber">14</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="15" xml:space="preserve"><span class="lineNumber">15</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html#constructor_Text_139BBA5DB8096C9B97903CDE08D5815A836BA03A">Text</a><span class="other">(</span><span class="keyword">const</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">Lex</span><span class="other">.</span><a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a><span class="other">&amp;</span>&nbsp;<span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="keyword">int</span>&nbsp;<span class="identifier">fileIndex_</span><span class="other">,&nbsp;</span><span class="keyword">const</span>&nbsp;<a href="../../System.Base/doc/ns_System.html#aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">string</a><span class="other">&amp;</span>&nbsp;<span class="identifier">text_</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="keyword">base</span><span class="other">(</span><a href="../doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html">NodeKind</a><span class="other">.</span><a href="../doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html#enumeration_constant_textNode_18EE06E422C689FEF029153411E120BB45E9D752">textNode</a><span class="other">,&nbsp;</span><span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="other">-</span><span class="number">1</span><span class="other">,&nbsp;</span><span class="string">"text"</span><span class="other">,&nbsp;</span><span class="identifier">text_</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="16" xml:space="preserve"><span class="lineNumber">16</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="17" xml:space="preserve"><span class="lineNumber">17</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="18" xml:space="preserve"><span class="lineNumber">18</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html#constructor_Text_995697641E5B1F62DAA971FC329351912A229574">Text</a><span class="other">(</span><a href="../doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html">NodeKind</a>&nbsp;<span class="identifier">kind_</span><span class="other">,&nbsp;</span><span class="keyword">const</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">Lex</span><span class="other">.</span><a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a><span class="other">&amp;</span>&nbsp;<span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="keyword">int</span>&nbsp;<span class="identifier">fileIndex_</span><span class="other">,&nbsp;</span><span class="keyword">const</span>&nbsp;<a href="../../System.Base/doc/ns_System.html#aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">string</a><span class="other">&amp;</span>&nbsp;<span class="identifier">name_</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="keyword">base</span><span class="other">(</span><span class="identifier">kind_</span><span class="other">,&nbsp;</span><span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="identifier">fileIndex_</span><span class="other">,&nbsp;</span><span class="identifier">name_</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="19" xml:space="preserve"><span class="lineNumber">19</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="20" xml:space="preserve"><span class="lineNumber">20</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="21" xml:space="preserve"><span class="lineNumber">21</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html#constructor_Text_E8B2BDD2B203311B9CE3A094ECF2C4C174B4183E">Text</a><span class="other">(</span><a href="../doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html">NodeKind</a>&nbsp;<span class="identifier">kind_</span><span class="other">,&nbsp;</span><span class="keyword">const</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">Lex</span><span class="other">.</span><a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a><span class="other">&amp;</span>&nbsp;<span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="keyword">int</span>&nbsp;<span class="identifier">fileIndex_</span><span class="other">,&nbsp;</span><span class="keyword">const</span>&nbsp;<a href="../../System.Base/doc/ns_System.html#aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">string</a><span class="other">&amp;</span>&nbsp;<span class="identifier">name_</span><span class="other">,&nbsp;</span><span class="keyword">const</span>&nbsp;<a href="../../System.Base/doc/ns_System.html#aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">string</a><span class="other">&amp;</span>&nbsp;<span class="identifier">text_</span><span class="other">)</span><span class="other">&nbsp;:&nbsp;</span><span class="keyword">base</span><span class="other">(</span><span class="identifier">kind_</span><span class="other">,&nbsp;</span><span class="identifier">span_</span><span class="other">,&nbsp;</span><span class="identifier">fileIndex_</span><span class="other">,&nbsp;</span><span class="identifier">name_</span><span class="other">,&nbsp;</span><span class="identifier">text_</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="22" xml:space="preserve"><span class="lineNumber">22</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="23" xml:space="preserve"><span class="lineNumber">23</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="24" xml:space="preserve"><span class="lineNumber">24</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<span class="keyword">void</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html#member_function_Accept_Text_28A8CB7C6602EE519B7EE51C248E7D99921DAFB9">Accept</a><span class="other">(</span><a href="../doc/class_Visitor_A090E76CBEE7ABAF8EEEEAEDE6EAB5AEF69D7B63.html">Visitor</a><span class="other">&amp;</span>&nbsp;<span class="identifier">visitor</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="25" xml:space="preserve"><span class="lineNumber">25</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="26" xml:space="preserve"><span class="lineNumber">26</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="identifier">visitor</span><span class="other">.</span><a href="../doc/class_Visitor_A090E76CBEE7ABAF8EEEEAEDE6EAB5AEF69D7B63.html#member_function_Visit_Visitor_5757C1D6E445E4B1760D860A28AD7925BDDAEE5F">Visit</a><span class="other">(</span><span class="other">*</span><span class="keyword">this</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="27" xml:space="preserve"><span class="lineNumber">27</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="28" xml:space="preserve"><span class="lineNumber">28</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">override</span>&nbsp;<a href="../doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a><span class="other">*</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html#member_function_Clone_Text_4070EB03A68D19FB1F591FA242C27E6EDF26C1BC">Clone</a><span class="other">(</span><span class="keyword">bool</span>&nbsp;<span class="identifier">deep</span><span class="other">)</span>&nbsp;<span class="keyword">const</span></span>
+  <br/>
+  <span class="code" id="29" xml:space="preserve"><span class="lineNumber">29</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="30" xml:space="preserve"><span class="lineNumber">30</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<span class="keyword">new</span>&nbsp;<span class="identifier">Text</span><span class="other">(</span><a href="../doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html#member_function_Span_Node_60BC36FD228FE191C007C0C3A33A9D1AECEB1B5C">Span</a><span class="other">(</span><span class="other">)</span><span class="other">,&nbsp;</span><a href="../doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html#member_function_FileIndex_Node_3A5EBCDA7F4F38F4983AED774DD9EA1EAAD125A6">FileIndex</a><span class="other">(</span><span class="other">)</span><span class="other">,&nbsp;</span><a href="../doc/class_CharacterData_A72F3B458285D023971EA719EE91CDE672B369C6.html#member_function_Data_CharacterData_05FC971C9DFC7A7B1816BB4EC4F1C5452F5EAF34">Data</a><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="31" xml:space="preserve"><span class="lineNumber">31</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="32" xml:space="preserve"><span class="lineNumber">32</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="33" xml:space="preserve"><span class="lineNumber">33</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="34" xml:space="preserve"><span class="lineNumber">34</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../doc/class_Text_C84BC4B490CBD2AF104E306432357D661D37D6D8.html">Text</a><span class="other">*</span>&nbsp;<a href="../doc/ns_System.Xml.html#function_MakeText_C37990FC6DDC1999D0E405987CA72A93C16878C3">MakeText</a><span class="other">(</span><span class="keyword">const</span>&nbsp;<a href="../../System.Base/doc/ns_System.html#aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">string</a><span class="other">&amp;</span>&nbsp;<span class="identifier">text</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="35" xml:space="preserve"><span class="lineNumber">35</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="36" xml:space="preserve"><span class="lineNumber">36</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<span class="keyword">new</span>&nbsp;<span class="identifier">Text</span><span class="other">(</span><span class="identifier">System</span><span class="other">.</span><span class="identifier">Lex</span><span class="other">.</span><a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html#default_constructor_Span_4EB9AB67AA30E1FCF54523E6E9F953CD7511CDF2">Span</a><span class="other">(</span><span class="other">)</span><span class="other">,&nbsp;</span><span class="other">-</span><span class="number">1</span><span class="other">,&nbsp;</span><span class="identifier">text</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="37" xml:space="preserve"><span class="lineNumber">37</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="38" xml:space="preserve"><span class="lineNumber">38</span>&nbsp;<span class="other">}</span></span>
+  <br/>
+ </body>
+</html>

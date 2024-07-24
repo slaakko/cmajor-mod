@@ -136,6 +136,12 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(HASH, "HASH", "'#'"));
         tokens.AddToken(new soul::ast::slg::Token(COMMENT, "COMMENT", "comment"));
         tokens.AddToken(new soul::ast::slg::Token(WS, "WS", "ws"));
+        tokens.AddToken(new soul::ast::slg::Token(KEYWORD, "KEYWORD", "keyword"));
+        tokens.AddToken(new soul::ast::slg::Token(NUMBER, "NUMBER", "number"));
+        tokens.AddToken(new soul::ast::slg::Token(OTHER, "OTHER", "other"));
+        tokens.AddToken(new soul::ast::slg::Token(LINECOMMENT, "LINECOMMENT", "line comment"));
+        tokens.AddToken(new soul::ast::slg::Token(BLOCKCOMMENT, "BLOCKCOMMENT", "block comment"));
+        tokens.AddToken(new soul::ast::slg::Token(BLOCKCOMMENTLINE, "BLOCKCOMMENTLINE", "block comment line"));
     }
     return &tokens;
 }

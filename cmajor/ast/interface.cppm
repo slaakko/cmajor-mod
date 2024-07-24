@@ -29,10 +29,19 @@ public:
     const NodeList<Node>& Members() const { return members; }
     void AddMember(Node* member);
     AttributesNode* GetAttributes() const { return attributes.get(); }
+    const soul::ast::Span& SpecifierSpan() const { return specifierSpan; }
+    void SetSpecifierSpan(const soul::ast::Span& specifierSpan_) { specifierSpan = specifierSpan_; }
+    const soul::ast::Span& BeginBraceSpan() const { return beginBraceSpan; }
+    void SetBeginBraceSpan(const soul::ast::Span& beginBraceSpan_) { beginBraceSpan = beginBraceSpan_; }
+    const soul::ast::Span& EndBraceSpan() const { return endBraceSpan; }
+    void SetEndBraceSpan(const soul::ast::Span& endBraceSpan_) { endBraceSpan = endBraceSpan_; }
 private:
     Specifiers specifiers;
     std::unique_ptr<IdentifierNode> id;
     NodeList<Node> members;
     std::unique_ptr<AttributesNode> attributes;
+    soul::ast::Span specifierSpan;
+    soul::ast::Span beginBraceSpan;
+    soul::ast::Span endBraceSpan;
 };
 } // namespace cmajor::ast

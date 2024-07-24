@@ -169,7 +169,7 @@ void JsonAttributeProcessor::GenerateMemberVariableJsonFieldNames(cmajor::symbol
         }
         if (!hasJsonFieldAttribute)
         {
-            attributes->AddAttribute(memberVariableSymbol->GetSpan(), U"jsonFieldName", memberVariableSymbol->Name());
+            attributes->AddAttribute(memberVariableSymbol->GetSpan(), U"jsonFieldName", memberVariableSymbol->Name(), false);
         }
     }
 }

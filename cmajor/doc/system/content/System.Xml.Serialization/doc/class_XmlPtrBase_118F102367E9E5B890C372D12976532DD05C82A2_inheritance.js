@@ -269,8 +269,8 @@ function drawDiagram(diagramNodes) {
 function drawInheritanceDiagram() {
     var diagramNodes = [
         { name: "System.Xml.Serialization.XmlPtrBase", id: "diagram_node_0", level: 0, subject: true, hasDerivedNodes: true, link: "../../System.Xml.Serialization/doc/class_XmlPtrBase_118F102367E9E5B890C372D12976532DD05C82A2.html" },
-        { name: "System.Xml.Serialization.UniqueXmlPtr&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Xml.Serialization/doc/class_UniqueXmlPtr_T_8EF0E7B4A0FAC86A34F0BA492592F23BB7277902.html" },
-        { name: "System.Xml.Serialization.XmlPtr&lt;T&gt;", id: "diagram_node_2", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Xml.Serialization/doc/class_XmlPtr_T_7D32CC0147CF6ED6252FD10F4FA67369B25A0035.html" }];
+        { name: "System.Xml.Serialization.UniqueXmlPtr&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Xml.Serialization/doc/class_UniqueXmlPtr_8EF0E7B4A0FAC86A34F0BA492592F23BB7277902.html" },
+        { name: "System.Xml.Serialization.XmlPtr&lt;T&gt;", id: "diagram_node_2", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Xml.Serialization/doc/class_XmlPtr_7D32CC0147CF6ED6252FD10F4FA67369B25A0035.html" }];
     drawDiagram(diagramNodes);
 }
 

@@ -31,6 +31,7 @@ public:
     std::unique_ptr<Node> ReplaceChild(Node* newChild, Node* oldChild) override;
     void Accept(Visitor& visitor) override;
     void Write(util::CodeFormatter& formatter) override;
+    Node* Clone(bool deep) const override;
 private:
     friend class ParentNode;
     void InvalidateIndex();

@@ -7,69 +7,74 @@
  </head>
  <body onload="drawInheritanceDiagram()">
   <h1>NewLineCommand Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#161">161</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#195">195</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <h2>Inheritance</h2>
   <div class="diagram">
    <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
   </div>
-  <h2>Constructors &amp; Destructor</h2>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_NewLineCommand_EB4D2E198DB43AD79631F22387EA56FD5E6E9797.html#constructor_NewLineCommand_EDB684C8CE6F612C6D1F965BB95063D08BA556BE">NewLineCommand</a>(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;indent_, <span class="kw">int</span>&nbsp;numSpaces_)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_NewLineCommand_EB4D2E198DB43AD79631F22387EA56FD5E6E9797.html#constructor_NewLineCommand_B3F17611A2996F6F4679404EE0C88C679F0156FB">NewLineCommand</a>(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;indent_, <span class="kw">int</span>&nbsp;numSpaces_)</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_NewLineCommand_EB4D2E198DB43AD79631F22387EA56FD5E6E9797.html#member_function_Redo_NewLineCommand_69F17226857CE2067686740CB2F02A93C365607F">Redo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_NewLineCommand_EB4D2E198DB43AD79631F22387EA56FD5E6E9797.html#member_function_Redo_NewLineCommand_62EED9C34FF720B79FE41A117D352D674F8FD0F1">Redo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_NewLineCommand_EB4D2E198DB43AD79631F22387EA56FD5E6E9797.html#member_function_Undo_NewLineCommand_188C9D7FA1000D076B509F63062282C07D519384">Undo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_NewLineCommand_EB4D2E198DB43AD79631F22387EA56FD5E6E9797.html#member_function_Undo_NewLineCommand_7CD8463E1BE4F8F3B476E086E2C02C186D564F90">Undo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_columnIndex_9F75FF957882DEFAEC7AFA4CD467CA95384378E2" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">columnIndex</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_indent_AD8AD54E5C75A213C605869C7BCFE6BA140D3814" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">indent</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_lineIndex_C47AF199B6DB6373444F9E31588FE5A543585C32" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">lineIndex</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" id="member_variable_numSpaces_6672EBCA3E0058A81CB70356164B66E98831B80D" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
     <td xml:space="preserve">numSpaces</td>
    </tr>
   </table>
   <h2>Constructor&amp; Destructor Details</h2>
-  <h3 id="constructor_NewLineCommand_EDB684C8CE6F612C6D1F965BB95063D08BA556BE" xml:space="preserve">NewLineCommand&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;NewLineCommand(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;indent_, <span class="kw">int</span>&nbsp;numSpaces_)</h4>
+  <h3 id="constructor_NewLineCommand_B3F17611A2996F6F4679404EE0C88C679F0156FB" xml:space="preserve">NewLineCommand&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;NewLineCommand(<span class="kw">int</span>&nbsp;lineIndex_, <span class="kw">int</span>&nbsp;columnIndex_, <span class="kw">int</span>&nbsp;indent_, <span class="kw">int</span>&nbsp;numSpaces_)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#163">163</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#197">197</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
-  <h3 id="member_function_Redo_NewLineCommand_69F17226857CE2067686740CB2F02A93C365607F" xml:space="preserve">Redo&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;Redo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
+  <h3 id="member_function_Redo_NewLineCommand_62EED9C34FF720B79FE41A117D352D674F8FD0F1" xml:space="preserve">Redo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Redo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#171">171</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#209">209</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_Undo_NewLineCommand_188C9D7FA1000D076B509F63062282C07D519384" xml:space="preserve">Undo&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;Undo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
+  <h3 id="member_function_Undo_NewLineCommand_7CD8463E1BE4F8F3B476E086E2C02C186D564F90" xml:space="preserve">Undo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Undo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#167">167</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#202">202</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>

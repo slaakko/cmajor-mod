@@ -169,10 +169,20 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
                         soul::parser::Match* parentMatch16 = &match;
                         {
                             soul::parser::Match match(false);
-                            if (*lexer == LBRACE)
+                            soul::parser::Match* parentMatch17 = &match;
                             {
-                                ++lexer;
-                                match.hit = true;
+                                int64_t pos = lexer.GetPos();
+                                soul::parser::Match match(false);
+                                if (*lexer == LBRACE)
+                                {
+                                    ++lexer;
+                                    match.hit = true;
+                                }
+                                if (match.hit)
+                                {
+                                    enumTypeNode->SetBeginBraceSpan(lexer.GetSpan(pos));
+                                }
+                                *parentMatch17 = match;
                             }
                             *parentMatch16 = match;
                         }
@@ -183,10 +193,10 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
                 if (match.hit)
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch17 = &match;
+                    soul::parser::Match* parentMatch18 = &match;
                     {
                         soul::parser::Match match = EnumerationParser<LexerT>::EnumConstants(lexer, context, enumTypeNode.get());
-                        *parentMatch17 = match;
+                        *parentMatch18 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -195,15 +205,25 @@ soul::parser::Match EnumerationParser<LexerT>::EnumType(LexerT& lexer, cmajor::p
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch18 = &match;
+                soul::parser::Match* parentMatch19 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RBRACE)
+                    soul::parser::Match* parentMatch20 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RBRACE)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            enumTypeNode->SetEndBraceSpan(lexer.GetSpan(pos));
+                        }
+                        *parentMatch20 = match;
                     }
-                    *parentMatch18 = match;
+                    *parentMatch19 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -488,6 +508,7 @@ soul::parser::Match EnumerationParser<LexerT>::EnumConstant(LexerT& lexer, cmajo
                                     {
                                         cmajor::ast::EnumConstantNode *enumConstant = new cmajor::ast::EnumConstantNode(s, constantId.release(), constantValue.release());
                                         enumConstant->SetHasValue();
+                                        enumConstant->SetStrValue(enumConstant->GetValue()->ToString());
                                         {
                                             #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                             if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "EnumConstant");
@@ -515,11 +536,12 @@ soul::parser::Match EnumerationParser<LexerT>::EnumConstant(LexerT& lexer, cmajo
                                     soul::parser::Match match(true);
                                     if (match.hit)
                                     {
+                                        cmajor::ast::EnumConstantNode *enumConstant = new cmajor::ast::EnumConstantNode(s, constantId.release(), cmajor::ast::MakeNextEnumConstantValue(s, enumType));
                                         {
                                             #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                             if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "EnumConstant");
                                             #endif
-                                            return soul::parser::Match(true, new cmajor::ast::EnumConstantNode(s, constantId.release(), cmajor::ast::MakeNextEnumConstantValue(s, enumType)));
+                                            return soul::parser::Match(true, enumConstant);
                                         }
                                     }
                                     *parentMatch10 = match;

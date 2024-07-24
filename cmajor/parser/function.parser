@@ -34,16 +34,19 @@ parser FunctionParser
     using IdentifierParser.Identifier;
     using StatementParser.CompoundStatement;
 
-    Function(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FunctionNode> functionNode, var soul::ast::Span s) : cmajor::ast::Node*
+    Function(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::FunctionNode> functionNode, 
+        var soul::ast::Span s, var soul::ast::Span specifierSpan, var soul::ast::Span groupIdSpan) : cmajor::ast::Node*
         ::= 
         (
             empty{ s = lexer.GetSpan(pos); }
             Attributes(context):attributes?
-            Specifiers:specifiers
+            Specifiers:specifiers{ specifierSpan = lexer.GetSpan(pos); }
             TypeExpr(context):returnType
-            FunctionGroupId(context):functionGroupId
+            (FunctionGroupId(context):functionGroupId{ groupIdSpan = lexer.GetSpan(pos); })
             {
                 functionNode.reset(new cmajor::ast::FunctionNode(s, specifiers, returnType, functionGroupId, attributes));
+                functionNode->SetSpecifierSpan(specifierSpan);
+                functionNode->SetGroupIdSpan(groupIdSpan);
             }
         )
         TemplateParameterList(context, functionNode.get()):templateParameterList? 

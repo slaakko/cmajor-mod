@@ -14,6 +14,7 @@ class DocumentFragment : public ParentNode
 {
 public:
     DocumentFragment(const soul::ast::SourcePos& sourcePos_);
+    Node* Clone(bool deep) const override;
 };
 
 DocumentFragment* MakeDocumentFragment();

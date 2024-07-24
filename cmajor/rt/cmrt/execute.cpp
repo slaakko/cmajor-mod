@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
 
 namespace cmajor::rt {
 
@@ -40,7 +41,7 @@ struct Handle
     {
         if (handle != -1)
         {
-            close(handle);
+            _close(handle);
         }
     }
     int handle;
@@ -83,10 +84,11 @@ int32_t Executor::Execute(Exec* exec)
         {
             toRestore.push_back(std::make_pair(handle, std::move(oldHandle)));
             int pmode = _S_IREAD | _S_IWRITE;
-            Handle fd = _creat(file.c_str(), pmode);
-            if (fd != -1)
+            int pfh = 0;
+            errno_t result = _sopen_s(&pfh, file.c_str(), _O_CREAT, 0, pmode);
+            if (pfh != -1)
             {
-                _dup2(fd, handle);
+                _dup2(pfh, handle);
             }
         }
     }

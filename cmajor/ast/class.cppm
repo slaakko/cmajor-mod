@@ -41,6 +41,14 @@ public:
     AttributesNode* GetAttributes() const { return attributes.get(); }
     void ArrangeMembers();
     int Level() const;
+    const soul::ast::Span& SpecifierSpan() const { return specifierSpan; }
+    void SetSpecifierSpan(const soul::ast::Span& specifierSpan_) { specifierSpan = specifierSpan_; }
+    const soul::ast::Span& ClassSpan() const { return classSpan; }
+    void SetClassSpan(const soul::ast::Span& classSpan_) { classSpan = classSpan_; }
+    const soul::ast::Span& BeginBraceSpan() const { return beginBraceSpan; }
+    void SetBeginBraceSpan(const soul::ast::Span& beginBraceSpan_) { beginBraceSpan = beginBraceSpan_; }
+    const soul::ast::Span& EndBraceSpan() const { return endBraceSpan; }
+    void SetEndBraceSpan(const soul::ast::Span& endBraceSpan_) { endBraceSpan = endBraceSpan_; }
 private:
     Specifiers specifiers;
     std::unique_ptr<IdentifierNode> id;
@@ -49,6 +57,10 @@ private:
     std::unique_ptr<WhereConstraintNode> constraint;
     NodeList<Node> members;
     std::unique_ptr<AttributesNode> attributes;
+    soul::ast::Span specifierSpan;
+    soul::ast::Span classSpan;
+    soul::ast::Span beginBraceSpan;
+    soul::ast::Span endBraceSpan;
 };
 
 class InitializerNode : public Node
@@ -180,15 +192,13 @@ public:
     Node* TypeExpr() const { return typeExpr.get(); }
     IdentifierNode* Id() const { return id.get(); }
     AttributesNode* GetAttributes() const { return attributes.get(); }
-/*
-    void SetSpecifierSourcePos(const soul::ast::SourcePos& specifierSourcePos_) { specifierSourcePos = specifierSourcePos_; }
-    const soul::ast::SourcePos& SpecifierSourcePos() const { return specifierSourcePos; }
-*/
+    const soul::ast::Span& SpecifierSpan() const { return specifierSpan; }
+    void SetSpecifierSpan(const soul::ast::Span& specifierSpan_) { specifierSpan = specifierSpan_; }
 private:
     Specifiers specifiers;
-    //soul::ast::SourcePos specifierSourcePos;
     std::unique_ptr<Node> typeExpr;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<AttributesNode> attributes;
+    soul::ast::Span specifierSpan;
 };
 } // namespace cmajor::ast

@@ -47,6 +47,7 @@ public:
     void* GetIrTypeForPtrType(void* baseIrType) override;
     std::string GetIrTypeName(void* irType) override;
     std::string MakeVmtVariableName(const std::string& vmtObjectName) override;
+    std::string MakeSymbolName(const std::string& name) override { return "@" + name; } 
     void* CreateDefaultIrValueForArrayType(void* arrayIrType, const std::vector<void*>& arrayOfDefaults) override;
     void* CreateDefaultIrValueForBool() override;
     void* CreateDefaultIrValueForSByte() override;
@@ -330,6 +331,7 @@ public:
     void AddCase(void* switchInst, void* caseValue, void* caseDest) override;
     void* GenerateTrap(const std::vector<void*>& args) override;
     void SetCompileUnitId(const std::string& compileUnitId) override;
+    const std::string& CompileUnitId() const override;
     void* GetClsIdValue(const std::string& typeId) override;
     void* CreateMDBool(bool value) override;
     void* CreateMDLong(int64_t value) override;

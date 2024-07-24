@@ -29,11 +29,17 @@ public:
     void SetUnderlyingType(Node* underlyingType_);
     Node* GetUnderlyingType() const { return underlyingType.get(); }
     const NodeList<EnumConstantNode>& Constants() const { return constants; }
+    const soul::ast::Span& BeginBraceSpan() const { return beginBraceSpan; }
+    void SetBeginBraceSpan(const soul::ast::Span& beginBraceSpan_) { beginBraceSpan = beginBraceSpan_; }
+    const soul::ast::Span& EndBraceSpan() const { return endBraceSpan; }
+    void SetEndBraceSpan(const soul::ast::Span& endBraceSpan_) { endBraceSpan = endBraceSpan_; }
 private:
     Specifiers specifiers;
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<Node> underlyingType;
     NodeList<EnumConstantNode> constants;
+    soul::ast::Span beginBraceSpan;
+    soul::ast::Span endBraceSpan;
 };
 
 class EnumConstantNode : public Node
@@ -49,13 +55,13 @@ public:
     IdentifierNode* Id() const { return id.get(); }
     void SetHasValue() { hasValue = true; }
     bool HasValue() const { return hasValue; }
-    void SetStrValue(const std::u32string& strValue_) { strValue = strValue_; }
-    const std::u32string& StrValue() const { return strValue; }
+    void SetStrValue(const std::string& strValue_) { strValue = strValue_; }
+    const std::string& StrValue() const { return strValue; }
 private:
     std::unique_ptr<IdentifierNode> id;
     std::unique_ptr<Node> value;
     bool hasValue;
-    std::u32string strValue;
+    std::string strValue;
 };
 
 Node* MakeNextEnumConstantValue(const soul::ast::Span& span, EnumTypeNode* enumType);

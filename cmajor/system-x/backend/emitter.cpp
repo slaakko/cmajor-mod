@@ -1687,6 +1687,11 @@ void SystemXEmitter::SetCompileUnitId(const std::string& compileUnitId)
     context->SetCompileUnitId(compileUnitId);
 }
 
+const std::string& SystemXEmitter::CompileUnitId() const
+{
+    return context->CompileUnitId();
+}
+
 void* SystemXEmitter::GetClsIdValue(const std::string& typeId)
 {
     return context->GetClsIdValue(typeId);

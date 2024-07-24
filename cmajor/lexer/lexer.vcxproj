@@ -161,6 +161,8 @@
     <None Include="cmajor.slg" />
     <None Include="cmajor.token" />
     <None Include="cmajor.container.file.token" />
+    <None Include="cmajor.token.expr" />
+    <None Include="cmajor.token.lexer" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cmajor.container.file.lexer.cpp" />
@@ -169,6 +171,8 @@
     <ClCompile Include="cmajor.lexer.cpp" />
     <ClCompile Include="cmajor.lexer.cppm" />
     <ClCompile Include="cmajor.token.cppm" />
+    <ClCompile Include="cmajor.token.lexer.cpp" />
+    <ClCompile Include="cmajor.token.lexer.cppm" />
     <ClCompile Include="lexer.cppm" />
   </ItemGroup>
   <ItemGroup>

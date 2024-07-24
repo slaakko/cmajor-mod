@@ -268,9 +268,10 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.Windows.Component", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
-        { name: "System.Windows.ToolButtonBase", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_ToolButtonBase_FFB5173A54667AA4A27B0C3397672C2E9B3B1CF4.html" },
-        { name: "System.Windows.ToolButtonSeparator", id: "diagram_node_2", level: 2, subject: true, hasDerivedNodes: false, link: "../../System.Windows/doc/class_ToolButtonSeparator_B033A955FCBDD2E5684D6CAB847253AADB909AA5.html" }];
+        { name: "System.Windows.GraphicsObject", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_GraphicsObject_7C98CD08CF463746DBA93565958E3CB9D87DFDF9.html" },
+        { name: "System.Windows.Component", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
+        { name: "System.Windows.ToolButtonBase", id: "diagram_node_2", level: 2, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_ToolButtonBase_FFB5173A54667AA4A27B0C3397672C2E9B3B1CF4.html" },
+        { name: "System.Windows.ToolButtonSeparator", id: "diagram_node_3", level: 3, subject: true, hasDerivedNodes: false, link: "../../System.Windows/doc/class_ToolButtonSeparator_B033A955FCBDD2E5684D6CAB847253AADB909AA5.html" }];
     drawDiagram(diagramNodes);
 }
 

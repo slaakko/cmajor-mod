@@ -26,7 +26,9 @@
                 <nonterminal first="{ID}" ruleName="Identifier"/>
                </action>
               </sequence>
-              <token first="{LANGLE}" name="LANGLE"/>
+              <action first="{LANGLE}">
+               <token first="{LANGLE}" name="LANGLE"/>
+              </action>
              </sequence>
              <group first="{ID}">
               <list first="{ID}">
@@ -46,7 +48,9 @@
               </list>
              </group>
             </sequence>
-            <token first="{RANGLE}" name="RANGLE"/>
+            <action first="{RANGLE}">
+             <token first="{RANGLE}" name="RANGLE"/>
+            </action>
            </sequence>
            <optional first="{#, COLON}">
             <group first="{COLON}">
@@ -264,7 +268,9 @@
    <action first="{WHERE}">
     <group first="{WHERE}">
      <sequence first="{WHERE}">
-      <nonterminal first="{WHERE}" ruleName="WhereConstraint"/>
+      <action first="{WHERE}">
+       <nonterminal first="{WHERE}" ruleName="WhereConstraint"/>
+      </action>
       <token first="{SEMICOLON}" name="SEMICOLON"/>
      </sequence>
     </group>
@@ -455,11 +461,15 @@
           <nonterminal first="{LPAREN}" ruleName="ParameterList"/>
          </optional>
         </sequence>
-        <token first="{LBRACE}" name="LBRACE"/>
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </action>
        </sequence>
        <nonterminal first="{#, AMP, AMPAMP, ARROW, AS, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CHAR, CHARLIT, CONSTRUCT, CPL, DISJUNCTION, DIV, DOT, DOUBLE, EQ, EQUIVALENCE, EXCLAMATION, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INT, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NULLLIT, PLUS, PLUSPLUS, RANGLE, REM, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STRINGLIT, THIS, TRUE, TYPEID, TYPENAME, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="AxiomBody"/>
       </sequence>
-      <token first="{RBRACE}" name="RBRACE"/>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
      </sequence>
     </group>
    </action>

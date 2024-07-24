@@ -1701,6 +1701,11 @@ void MasmEmitter::SetCompileUnitId(const std::string& compileUnitId)
     context->SetCompileUnitId(compileUnitId);
 }
 
+const std::string& MasmEmitter::CompileUnitId() const
+{
+    return context->CompileUnitId();
+}
+
 void* MasmEmitter::GetClsIdValue(const std::string& typeId)
 {
     return context->GetClsIdValue(typeId);

@@ -6,8 +6,26 @@
  </head>
  <body>
   <h1>System.Lex Namespace</h1>
-  <h2>Classes</h2>
+  <span class="indent">
+   <a href="#classes">Classes</a>
+    | <a href="#functions">Functions</a>
+    | <a href="#constants">Constants</a>
+  </span>
+  <h2 id="classes">Classes</h2>
   <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
+    <td>
+     <a href="../../System.Lex/doc/class_FileMap_00D83B1C90CC59AC4180663F35CB02A6FD057151.html">FileMap</a>
+    </td>
+    <td xml:space="preserve">A utility class for maintaining a mapping from a file index to a file name. Also can be used for maintaining a mapping from a file index to a contents of a source text file represented as a <a href="../../System.Lex/doc/class_SourceFile_A569605C01F5CA27D47A3A02B17A80A76E51D822.html">SourceFile</a> .</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
+    <td>
+     <a href="../../System.Lex/doc/class_FullSpan_E2EF82D1C1115E88CA4D8AB7E7E25EAC5D02AFB8.html">FullSpan</a>
+    </td>
+   </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
     <td>
@@ -35,7 +53,7 @@
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
     <td>
-     <a href="../../System.Lex/doc/class_ParsingException_05B147C5054E1ADB84074F65FDF2E8CFBF5052EF.html">ParsingException</a>
+     <a href="../../System.Lex/doc/class_LineColLen_FA1CA7E21F76C2D11D01315F0C3C938ECEF18CF0.html">LineColLen</a>
     </td>
    </tr>
    <tr>
@@ -47,7 +65,13 @@
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
     <td>
-     <a href="../../System.Lex/doc/class_RuleGuard_DA914C1C2140C64CE4F3183652372870605B2422.html">RuleGuard</a>
+     <a href="../../System.Lex/doc/class_RuleGuard_83993EE0D74A6F8F8384A226FA61DC1413F433B7.html">RuleGuard&lt;LexerT></a>
+    </td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
+    <td>
+     <a href="../../System.Lex/doc/class_SourceFile_A569605C01F5CA27D47A3A02B17A80A76E51D822.html">SourceFile</a>
     </td>
    </tr>
    <tr>
@@ -55,7 +79,7 @@
     <td>
      <a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>
     </td>
-    <td xml:space="preserve">Represents either a span of tokens during parsing or a span of text after parsing.</td>
+    <td xml:space="preserve">Represents a span of text during and after parsing.</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
@@ -72,27 +96,33 @@
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
     <td>
+     <a href="../../System.Lex/doc/class_TrivialLexer_D2AF04F9E113F784164357E3E8A18741D62942DF.html">TrivialLexer</a>
+    </td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
+    <td>
      <a href="../../System.Lex/doc/class_XmlParsingLog_A3B32C7CF230593C4D66BBA4EF014317B1324074.html">XmlParsingLog</a>
     </td>
    </tr>
   </table>
-  <h2>Functions</h2>
+  <h2 id="functions">Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span>*</td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_CreateClassMap_B7015BD5BCB6CCC2108A7BE164445BEEFD3E8D42">CreateClassMap</a>(<span class="kw">byte</span>*&nbsp;classMapData, <span class="kw">long</span>&nbsp;classMapDataLength, <span class="kw">bool</span>&nbsp;classMapDataCompressed)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>*></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_GetClassMap_3B084170C68EEB16EC4DE465F40841B58B8572F7">GetClassMap</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;classMapName)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_GetColumns_1E857A86E9B2226DA5CBD31E37C514D828E8F5CC">GetColumns</a>(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;start, <span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;end, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;externalSpan, <span class="kw">int</span>&amp;&nbsp;startCol, <span class="kw">int</span>&amp;&nbsp;endCol)</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
     <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_GetEndTokenInfo_44C341E1A31DF89AED108C7F007B49777E7CB220">GetEndTokenInfo</a>()</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_GetErrorLines_051F23E95DC2DEFD5E22FC2EB66C79E3060A6D58">GetErrorLines</a>(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;start, <span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;end, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;externalSpan)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_GetTrivialTokenInfo_7448ECBA06FD6A97AAA80F6585019A9684E77122">GetTrivialTokenInfo</a>(<span class="kw">int</span>&nbsp;tokenId)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_LineColLenToPos_4D976D24A362F5BC7447101A53D7FDC1864E6B4D">LineColLenToPos</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_LineColLen_FA1CA7E21F76C2D11D01315F0C3C938ECEF18CF0.html">LineColLen</a>&amp;&nbsp;lineColLen, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">int</span>>&amp;&nbsp;lineStarts)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*</td>
@@ -103,130 +133,138 @@
     <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_LineStart_B97967ED49597C86B1710EE8E05469CF26AC6E01">LineStart</a>(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;start, <span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;p)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_MakeClassMapData_CA3C58861EEBAE07D91FFDA4264A072E81B74525">MakeClassMapData</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">int</span>>&amp;&nbsp;classMapVec, <span class="kw">bool</span>&nbsp;compressData)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_MakeMessage_95CC7DFD9912B3D0069DE1DE556A9D3B978B5EE2">MakeMessage</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;message, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;span, <span class="kw">int</span>&nbsp;fileIndex, <a href="../../System.Lex/doc/class_FileMap_00D83B1C90CC59AC4180663F35CB02A6FD057151.html">FileMap</a>&amp;&nbsp;fileMap)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span></td>
     <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_NoWhiteSpaceBetweenTokens_1194A0BC6EE22678E6900E614C22BC07CF9545AC">NoWhiteSpaceBetweenTokens</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Token_E6EEFBE84F923BCFEB8C1E58441CCE09B4F77A1E.html">Token</a>&amp;&nbsp;first, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Token_E6EEFBE84F923BCFEB8C1E58441CCE09B4F77A1E.html">Token</a>&amp;&nbsp;second)</td>
    </tr>
    <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Lex/doc/class_LineColLen_FA1CA7E21F76C2D11D01315F0C3C938ECEF18CF0.html">LineColLen</a></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_SpanToLineColLen_59DA2C45DBE31BF7A613EA8D25AA61A97B315E35">SpanToLineColLen</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;span, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">int</span>>&amp;&nbsp;lineStarts)</td>
+   </tr>
+   <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*</td>
     <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_StrEnd_C2839DA903F0EB568ED9BB2BE70E84C5E2962D71">StrEnd</a>(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;s)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_WriteBeginRuleToLog_FB006EB3339DB52217B8A1BBFD20D3DBB361D347">WriteBeginRuleToLog</a>(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_WriteBeginRuleToLog_FB006EB3339DB52217B8A1BBFD20D3DBB361D347">WriteBeginRuleToLog</a>(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_WriteFailureToLog_3A53D2E9E8964DF1CD56F6F4C3C4DB00515CE76E">WriteFailureToLog</a>(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_WriteFailureToLog_3A53D2E9E8964DF1CD56F6F4C3C4DB00515CE76E">WriteFailureToLog</a>(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_WriteSuccessToLog_EE8DD629089ABEAE6E7C5FEC627CB98FD075B3BE">WriteSuccessToLog</a>(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;matchSpan, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_WriteSuccessToLog_E6158F38F039D6230965EBE7B6F0E220D080B2B5">WriteSuccessToLog</a>(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">long</span>&nbsp;pos, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>></td>
     <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_XmlCharStr_B45D49E4DAFC99A75F8EC413AE0BBBAD32699169">XmlCharStr</a>(<span class="kw">uchar</span>&nbsp;c)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_XmlEscape_723CF3C2EF05B9F81481ABF0825A66B4551E116B">XmlEscape</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;s)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_XmlEscape_723CF3C2EF05B9F81481ABF0825A66B4551E116B">XmlEscape</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;s)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>></td>
     <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_XmlHexEscape_8E680D4EB7C0BD84C0FE835F9A9F5184574D9270">XmlHexEscape</a>(<span class="kw">uchar</span>&nbsp;c)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_op_less_01C630278477751B60983356B8D3D63D9EB36B88">operator&lt;</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_op_less_C1BC5C3090169B148C1EF842268493D231FA545E">operator&lt;</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_op_eq_D7AE7B9E35256AC9FF8DA6533E8CAB3E650E90A7">operator==</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_op_eq_AD1B0044B74320296AF21FDAB9CB5D98E28B59AB">operator==</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_FullSpan_E2EF82D1C1115E88CA4D8AB7E7E25EAC5D02AFB8.html">FullSpan</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_FullSpan_E2EF82D1C1115E88CA4D8AB7E7E25EAC5D02AFB8.html">FullSpan</a>&amp;&nbsp;right)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_op_eq_65A9B18F759881CAA4B22195AF88A0F2AECB75F5">operator==</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span></td>
     <td xml:space="preserve"><a href="../../System.Lex/doc/ns_System.Lex.html#function_op_eq_1270691F2DD33417D70E5F4942C236CAF39227E3">operator==</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;right)</td>
    </tr>
   </table>
-  <h2>Enumerated Types</h2>
+  <h2 id="constants">Constants</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span></td>
-    <td xml:space="preserve"><a href="../../System.Lex/doc/enumerated_type_LexerFlags_9030F680ABF75D0D4CAC20356859CB8545090A47.html">LexerFlags</a></td>
-   </tr>
-  </table>
-  <h2>Constants</h2>
-  <table>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve">CONTINUE_TOKEN = -2</td>
+    <td class="rightAlignedCol" id="constant_CONTINUE_TOKEN_A92C56B6395CB72E7FE65BA7F9B97E1A4B7345CE" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;CONTINUE_TOKEN</td>
+    <td xml:space="preserve">-2</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve">END_TOKEN = 0</td>
+    <td class="rightAlignedCol" id="constant_END_TOKEN_9C1E940942E955C38F19ECDA337B12FB5840D88F" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;END_TOKEN</td>
+    <td xml:space="preserve">0</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve">INVALID_TOKEN = -1</td>
+    <td class="rightAlignedCol" id="constant_INVALID_TOKEN_7306D1CD7F0ACCDB7CC7EE83EFFAA5F68B3D576E" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">long</span>&nbsp;INVALID_TOKEN</td>
+    <td xml:space="preserve">-1</td>
    </tr>
   </table>
   <h2>Function Details</h2>
-  <h3 id="function_CreateClassMap_B7015BD5BCB6CCC2108A7BE164445BEEFD3E8D42" xml:space="preserve">CreateClassMap&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span>*&nbsp;CreateClassMap(<span class="kw">byte</span>*&nbsp;classMapData, <span class="kw">long</span>&nbsp;classMapDataLength, <span class="kw">bool</span>&nbsp;classMapDataCompressed)</h4>
+  <h3 id="function_GetClassMap_3B084170C68EEB16EC4DE465F40841B58B8572F7" xml:space="preserve">GetClassMap&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>*>&nbsp;GetClassMap(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;classMapName)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/ClassMap.cm.html#51">51</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/ClassMap.cm.html">System.Lex/ClassMap.cm</a></span>
-  <br/>
-  <br/>
-  <hr/>
-  <h3 id="function_GetColumns_1E857A86E9B2226DA5CBD31E37C514D828E8F5CC" xml:space="preserve">GetColumns&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;GetColumns(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;start, <span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;end, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;externalSpan, <span class="kw">int</span>&amp;&nbsp;startCol, <span class="kw">int</span>&amp;&nbsp;endCol)</h4>
-  <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#682">682</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#13">13</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_GetEndTokenInfo_44C341E1A31DF89AED108C7F007B49777E7CB220" xml:space="preserve">GetEndTokenInfo&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;GetEndTokenInfo()</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;GetEndTokenInfo()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Token.cm.html#36">36</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Token.cm.html">System.Lex/Token.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Token.cm.html#45">45</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Token.cm.html">System.Lex/Token.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="function_GetErrorLines_051F23E95DC2DEFD5E22FC2EB66C79E3060A6D58" xml:space="preserve">GetErrorLines&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;GetErrorLines(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;start, <span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;end, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;externalSpan)</h4>
+  <h3 id="function_GetTrivialTokenInfo_7448ECBA06FD6A97AAA80F6585019A9684E77122" xml:space="preserve">GetTrivialTokenInfo&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;GetTrivialTokenInfo(<span class="kw">int</span>&nbsp;tokenId)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#658">658</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/TrivialLexer.cm.html#28">28</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/TrivialLexer.cm.html">System.Lex/TrivialLexer.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="function_LineColLenToPos_4D976D24A362F5BC7447101A53D7FDC1864E6B4D" xml:space="preserve">LineColLenToPos&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span>&nbsp;LineColLenToPos(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_LineColLen_FA1CA7E21F76C2D11D01315F0C3C938ECEF18CF0.html">LineColLen</a>&amp;&nbsp;lineColLen, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">int</span>>&amp;&nbsp;lineStarts)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Span.cm.html#96">96</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Span.cm.html">System.Lex/Span.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_LineEnd_36212ECBCCDBAABB4576DFC453E945BD5CE9126D" xml:space="preserve">LineEnd&nbsp;Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;LineEnd(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;end, <span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;p)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#650">650</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#581">581</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_LineStart_B97967ED49597C86B1710EE8E05469CF26AC6E01" xml:space="preserve">LineStart&nbsp;Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;LineStart(<span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;start, <span class="kw">const</span>&nbsp;<span class="kw">uchar</span>*&nbsp;p)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#638">638</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#568">568</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="function_MakeClassMapData_CA3C58861EEBAE07D91FFDA4264A072E81B74525" xml:space="preserve">MakeClassMapData&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&nbsp;MakeClassMapData(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">int</span>>&amp;&nbsp;classMapVec, <span class="kw">bool</span>&nbsp;compressData)</h4>
+  <h3 id="function_MakeMessage_95CC7DFD9912B3D0069DE1DE556A9D3B978B5EE2" xml:space="preserve">MakeMessage&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>&nbsp;MakeMessage(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;message, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;span, <span class="kw">int</span>&nbsp;fileIndex, <a href="../../System.Lex/doc/class_FileMap_00D83B1C90CC59AC4180663F35CB02A6FD057151.html">FileMap</a>&amp;&nbsp;fileMap)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/ClassMap.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/ClassMap.cm.html">System.Lex/ClassMap.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/FileMap.cm.html#94">94</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/FileMap.cm.html">System.Lex/FileMap.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_NoWhiteSpaceBetweenTokens_1194A0BC6EE22678E6900E614C22BC07CF9545AC" xml:space="preserve">NoWhiteSpaceBetweenTokens&nbsp;Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;NoWhiteSpaceBetweenTokens(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Token_E6EEFBE84F923BCFEB8C1E58441CCE09B4F77A1E.html">Token</a>&amp;&nbsp;first, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Token_E6EEFBE84F923BCFEB8C1E58441CCE09B4F77A1E.html">Token</a>&amp;&nbsp;second)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Token.cm.html#31">31</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Token.cm.html">System.Lex/Token.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Token.cm.html#39">39</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Token.cm.html">System.Lex/Token.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="function_SpanToLineColLen_59DA2C45DBE31BF7A613EA8D25AA61A97B315E35" xml:space="preserve">SpanToLineColLen&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Lex/doc/class_LineColLen_FA1CA7E21F76C2D11D01315F0C3C938ECEF18CF0.html">LineColLen</a>&nbsp;SpanToLineColLen(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;span, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">int</span>>&amp;&nbsp;lineStarts)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Span.cm.html#61">61</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Span.cm.html">System.Lex/Span.cm</a></span>
   <br/>
   <br/>
   <hr/>
@@ -238,65 +276,72 @@
   <br/>
   <hr/>
   <h3 id="function_WriteBeginRuleToLog_FB006EB3339DB52217B8A1BBFD20D3DBB361D347" xml:space="preserve">WriteBeginRuleToLog&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;WriteBeginRuleToLog(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;WriteBeginRuleToLog(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#707">707</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#590">590</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_WriteFailureToLog_3A53D2E9E8964DF1CD56F6F4C3C4DB00515CE76E" xml:space="preserve">WriteFailureToLog&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;WriteFailureToLog(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;WriteFailureToLog(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#721">721</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#622">622</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="function_WriteSuccessToLog_EE8DD629089ABEAE6E7C5FEC627CB98FD075B3BE" xml:space="preserve">WriteSuccessToLog&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;WriteSuccessToLog(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;matchSpan, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</h4>
+  <h3 id="function_WriteSuccessToLog_E6158F38F039D6230965EBE7B6F0E220D080B2B5" xml:space="preserve">WriteSuccessToLog&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;WriteSuccessToLog(<a href="../../System.Lex/doc/class_Lexer_156A4FBAF81A8279F7218814A16ED516A1B97F23.html">Lexer</a>&amp;&nbsp;lexer, <span class="kw">long</span>&nbsp;pos, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;ruleName)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#714">714</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexer.cm.html#608">608</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexer.cm.html">System.Lex/Lexer.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_XmlCharStr_B45D49E4DAFC99A75F8EC413AE0BBBAD32699169" xml:space="preserve">XmlCharStr&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;XmlCharStr(<span class="kw">uchar</span>&nbsp;c)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>>&nbsp;XmlCharStr(<span class="kw">uchar</span>&nbsp;c)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html#81">81</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html">System.Lex/XmlParsingLog.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html#122">122</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html">System.Lex/XmlParsingLog.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_XmlEscape_723CF3C2EF05B9F81481ABF0825A66B4551E116B" xml:space="preserve">XmlEscape&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;XmlEscape(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;s)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>>&nbsp;XmlEscape(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;s)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html#109">109</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html">System.Lex/XmlParsingLog.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html#152">152</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html">System.Lex/XmlParsingLog.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_XmlHexEscape_8E680D4EB7C0BD84C0FE835F9A9F5184574D9270" xml:space="preserve">XmlHexEscape&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;XmlHexEscape(<span class="kw">uchar</span>&nbsp;c)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>>&nbsp;XmlHexEscape(<span class="kw">uchar</span>&nbsp;c)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html#75">75</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html">System.Lex/XmlParsingLog.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html#100">100</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/XmlParsingLog.cm.html">System.Lex/XmlParsingLog.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="function_op_less_01C630278477751B60983356B8D3D63D9EB36B88" xml:space="preserve">operator&lt;&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;operator&lt;(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</h4>
+  <h3 id="function_op_less_C1BC5C3090169B148C1EF842268493D231FA545E" xml:space="preserve">operator&lt;&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;operator&lt;(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html#40">40</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html">System.Lex/Lexeme.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html#45">45</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html">System.Lex/Lexeme.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="function_op_eq_D7AE7B9E35256AC9FF8DA6533E8CAB3E650E90A7" xml:space="preserve">operator==&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;operator==(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</h4>
+  <h3 id="function_op_eq_AD1B0044B74320296AF21FDAB9CB5D98E28B59AB" xml:space="preserve">operator==&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;operator==(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_FullSpan_E2EF82D1C1115E88CA4D8AB7E7E25EAC5D02AFB8.html">FullSpan</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_FullSpan_E2EF82D1C1115E88CA4D8AB7E7E25EAC5D02AFB8.html">FullSpan</a>&amp;&nbsp;right)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html#27">27</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html">System.Lex/Lexeme.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Span.cm.html#115">115</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Span.cm.html">System.Lex/Span.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="function_op_eq_65A9B18F759881CAA4B22195AF88A0F2AECB75F5" xml:space="preserve">operator==&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;operator==(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Lexeme_5FCE9FBA0D8AC1020E61CFD5FB22210848626AE2.html">Lexeme</a>&amp;&nbsp;right)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html#31">31</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Lexeme.cm.html">System.Lex/Lexeme.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="function_op_eq_1270691F2DD33417D70E5F4942C236CAF39227E3" xml:space="preserve">operator==&nbsp;Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;operator==(<span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;right)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Span.cm.html#33">33</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Span.cm.html">System.Lex/Span.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Lex/file/Span.cm.html#36">36</a>&nbsp;of&nbsp;<a href="../../System.Lex/file/Span.cm.html">System.Lex/Span.cm</a></span>
   <br/>
   <br/>
   <hr/>

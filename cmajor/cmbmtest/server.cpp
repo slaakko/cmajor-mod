@@ -57,7 +57,7 @@ void Server::Stop()
         }
         thread.join();
     }
-    catch (const std::exception& ex)
+    catch (const std::exception&)
     {
         // todo
     }
@@ -94,7 +94,7 @@ void Server::Run()
             }
         }
     }
-    catch (const std::exception& ex)
+    catch (const std::exception&)
     {
         // todo
     }

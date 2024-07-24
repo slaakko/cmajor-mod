@@ -736,8 +736,13 @@ void FunctionSymbol::ComputeMangledName()
     {
         templateArgumentStr.append(".").append(util::ToUtf8(templateArgumentType->FullName()));
     }
+    std::string constraintStr;
+    if (constraint)
+    {
+        constraintStr = constraint->ToString();
+    }
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(
-        util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentStr + compileUnitId)));
+        util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentStr + compileUnitId + constraintStr)));
     SetMangledName(mangledName);
 }
 

@@ -351,6 +351,10 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
     {
         cmajor::ast::IdentifierNode* primaryIdNode = static_cast<cmajor::ast::IdentifierNode*>(templateIdNode.Primary());
         cmajor::symbols::MapIdentifierToSymbolDefinition(primaryIdNode, classTemplate);
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+        {
+            symbolTable.MapSymbol(primaryIdNode, classTemplate);
+        }
     }
 /*  TODO
     cmajor::ast::IdentifierNode* idNode = boundCompileUnit.GetLatestIdentifier();
@@ -381,6 +385,15 @@ void TypeResolver::Visit(cmajor::ast::TemplateIdNode& templateIdNode)
         boundCompileUnit.SetLatestIdentifier(nullptr);
         cmajor::symbols::TypeSymbol* templateArgumentType = ResolveType(templateIdNode.TemplateArguments()[i], boundCompileUnit, containerScope, currentClass);
         templateArgumentTypes.push_back(templateArgumentType);
+        if (templateIdNode.TemplateArguments()[i]->IsIdentifierNode())
+        {
+            cmajor::ast::IdentifierNode* idNode = static_cast<cmajor::ast::IdentifierNode*>(templateIdNode.TemplateArguments()[i]);
+            cmajor::symbols::MapIdentifierToSymbolDefinition(idNode, templateArgumentType);
+            if (idNode && cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+            {
+                symbolTable.MapSymbol(idNode, templateArgumentType);
+            }
+        }
 /*      TODO
         cmajor::ast::IdentifierNode* idNode = boundCompileUnit.GetLatestIdentifier();
         if (idNode && cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))

@@ -1,0 +1,73 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+export module cmajor.token.lexer;
+
+import cmajor.token;
+import cmajor.keyword;
+import cmajor.token.expr;
+
+lexer CmajorTokenLexer
+{
+    rules
+    {
+        "{ws}" { return WS; }
+        "{id}" { auto& token = lexer.CurrentToken(); int64_t kw = lexer.GetKeywordToken(token.match); if (kw == soul::lexer::INVALID_TOKEN) return ID; else return KEYWORD; }
+        "{linecomment}" { return LINECOMMENT; }
+        "{blockcomment}" { return BLOCKCOMMENT; }
+        "{blockcommentline}" $(1) { return BLOCKCOMMENTLINE; }
+        "{integer}" { return NUMBER; }
+        "{floating}" { return NUMBER; }
+        "{character}" { return CHARLIT; }
+        "{string}" { return STRINGLIT; }
+        "<=>" { return OTHER; }
+        "=>" { return OTHER; }
+        "\|\|" { return OTHER; }
+        "&&" { return OTHER; }
+        "\|" { return OTHER; }
+        "^" { return OTHER; }
+        "&" { return OTHER; }
+        "==" { return OTHER; }
+        "!=" { return OTHER; }
+        "<=" { return OTHER; }
+        ">=" { return OTHER; }
+        "<" { return OTHER; }
+        ">" { return OTHER; }
+        "<<" { return OTHER; }
+        ">>" { return OTHER; }
+        "\+" { return OTHER; }
+        "-" { return OTHER; }
+        "\*" { return OTHER; }
+        "/" { return OTHER; }
+        "%" { return OTHER; }
+        "\+\+" { return OTHER; }
+        "--" { return OTHER; }
+        "!" { return OTHER; }
+        "~" { return OTHER; }
+        "\." { return OTHER; }
+        "->" { return OTHER; }
+        "\[" { return OTHER; }
+        "\]" { return OTHER; }
+        "\(" { return OTHER; }
+        "\)" { return OTHER; }
+        "\{" { return OTHER; }
+        "\}" { return OTHER; }
+        "," { return OTHER; }
+        "=" { return OTHER; }
+        ":" { return OTHER; }
+        ";" { return OTHER; }
+        "#" { return OTHER; }
+    }
+
+    actions
+    {
+        $(1)={ if (!vars->inBlockComment) return INVALID_TOKEN; }
+    }
+
+    variables
+    {
+        bool inBlockComment;
+    }
+}

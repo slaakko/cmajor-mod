@@ -1,0 +1,91 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>MessageRegistry Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>MessageRegistry Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html#13">13</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html">System.Net.BinaryMessageProtocol/Registry.cm</a></span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">static</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#static_constructor_MessageRegistry_3916CBD5BC86A7E796E778082879D55C174B330B">MessageRegistry</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#default_constructor_MessageRegistry_250B8DDBA5C01F264AB9EEF796FEBD6147529345">MessageRegistry</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html">BinaryMessage</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8">Create</a>(<span class="kw">uint</span>&nbsp;messageId)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html">MessageRegistry</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327">Instance</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A">Register</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;className, <a href="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD">FactoryFunction</a>&nbsp;factoryFunc)</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<span class="kw">uint</span>, <a href="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD">FactoryFunction</a>, <a href="../../System.Base/doc/class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<span class="kw">uint</span>>></td>
+    <td xml:space="preserve">factoryMap</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html">MessageRegistry</a>></td>
+    <td xml:space="preserve">instance</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="static_constructor_MessageRegistry_3916CBD5BC86A7E796E778082879D55C174B330B" xml:space="preserve">MessageRegistry&nbsp;Static Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">static</span>&nbsp;MessageRegistry()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html#15">15</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html">System.Net.BinaryMessageProtocol/Registry.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="default_constructor_MessageRegistry_250B8DDBA5C01F264AB9EEF796FEBD6147529345" xml:space="preserve">MessageRegistry&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;MessageRegistry()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html#22">22</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html">System.Net.BinaryMessageProtocol/Registry.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8" xml:space="preserve">Create&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html">BinaryMessage</a>*>&nbsp;Create(<span class="kw">uint</span>&nbsp;messageId)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html#42">42</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html">System.Net.BinaryMessageProtocol/Registry.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327" xml:space="preserve">Instance&nbsp;Static Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html">MessageRegistry</a>&amp;&nbsp;Instance()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html#18">18</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html">System.Net.BinaryMessageProtocol/Registry.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A" xml:space="preserve">Register&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Register(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;className, <a href="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD">FactoryFunction</a>&nbsp;factoryFunc)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html#26">26</a>&nbsp;of&nbsp;<a href="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html">System.Net.BinaryMessageProtocol/Registry.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

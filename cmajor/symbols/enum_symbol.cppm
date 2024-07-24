@@ -73,14 +73,14 @@ public:
     Value* GetValue() { return value.get(); }
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "EnumConstantSymbol"; }
-    void SetStrValue(const std::u32string& strValue_) { strValue = strValue_; }
-    const std::u32string& StrValue() const { return strValue; }
+    void SetStrValue(const std::string& strValue_) { strValue = strValue_; }
+    const std::string& StrValue() const { return strValue; }
     std::string GetSymbolCategoryStr() const override { return "EC"; }
     std::string GetSymbolCategoryDescription() const override { return "enumeration constant"; }
 private:
     std::unique_ptr<Value> value;
     bool evaluating;
-    std::u32string strValue;
+    std::string strValue;
 };
 
 class EnumTypeDefaultConstructor : public FunctionSymbol

@@ -15,14 +15,18 @@
               <optional first="{#, LBRACKET}">
                <nonterminal first="{LBRACKET}" ruleName="Attributes"/>
               </optional>
-              <group first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
-               <difference first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
-                <nonterminal first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifiers"/>
-                <token first="{}" name="NEW"/>
-               </difference>
-              </group>
+              <action first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+               <group first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+                <difference first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+                 <nonterminal first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifiers"/>
+                 <token first="{}" name="NEW"/>
+                </difference>
+               </group>
+              </action>
              </sequence>
-             <token first="{CLASS}" name="CLASS"/>
+             <action first="{CLASS}">
+              <token first="{CLASS}" name="CLASS"/>
+             </action>
             </sequence>
             <action first="{ID}">
              <nonterminal first="{ID}" ruleName="Identifier"/>
@@ -44,11 +48,15 @@
           </group>
          </optional>
         </sequence>
-        <token first="{LBRACE}" name="LBRACE"/>
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </action>
        </sequence>
        <nonterminal first="{#, ABSTRACT, AMP, AMPAMP, ARROW, AS, ASSIGN, AUTO, BASE, BITOR, BITXOR, BOOL, BYTE, CAST, CDECL, CHAR, CHARLIT, CLASS, COLON, CONST, CONSTEXPR, CONSTRUCT, CPL, DEFAULT, DELEGATE, DISJUNCTION, DIV, DOT, DOUBLE, ENUM, EQ, EQUIVALENCE, EXCLAMATION, EXPLICIT, EXTERN, FALSE, FLOAT, FLOATINGLIT, GEQ, ID, IMPLICATION, INLINE, INT, INTERNAL, INTLIT, IS, LANGLE, LBRACE, LBRACKET, LEQ, LONG, LPAREN, MINUS, MINUSMINUS, NEQ, NEW, NOTHROW, NULLLIT, OPERATOR, OVERRIDE, PLUS, PLUSPLUS, PRIVATE, PROTECTED, PUBLIC, RANGLE, RBRACE, REM, RPAREN, SBYTE, SEMICOLON, SHIFTLEFT, SHIFTRIGHT, SHORT, SIZEOF, STAR, STATIC, STRINGLIT, SUPPRESS, THIS, THROW, TRUE, TYPEDEF, TYPEID, TYPENAME, UCHAR, UINT, ULONG, UNIT_TEST, USHORT, USING, VIRTUAL, VOID, WCHAR, WHERE, WINAPI}" ruleName="ClassContent"/>
       </sequence>
-      <token first="{RBRACE}" name="RBRACE"/>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
      </sequence>
     </group>
    </action>
@@ -429,7 +437,11 @@
            <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
           </sequence>
           <action first="{#, ID, OPERATOR}">
-           <nonterminal first="{#, ID, OPERATOR}" ruleName="FunctionGroupId"/>
+           <group first="{#, ID, OPERATOR}">
+            <action first="{#, ID, OPERATOR}">
+             <nonterminal first="{#, ID, OPERATOR}" ruleName="FunctionGroupId"/>
+            </action>
+           </group>
           </action>
          </sequence>
          <nonterminal first="{LPAREN}" ruleName="ParameterList"/>

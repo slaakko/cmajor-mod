@@ -1,0 +1,499 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Hashtable&lt;KeyType, ValueType, KeyOfValue, HashFun, Compare> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>Hashtable&lt;KeyType, ValueType, KeyOfValue, HashFun, Compare> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#constraint">Constraint</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#typeAliases">Type Aliases</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">A hashtable.</p><span xml:space="preserve"><p class="description" xml:space="preserve">Model of <a href="../../System.Base/doc/concept_ForwardContainer_98A0A5CEE1E1C33CCABCFC2F31BF6EE7C21229F2.html">ForwardContainer</a> .</p></span></span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#197">197</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="fcdf868a-16c4-e36a-f59a-f071952edf08">
+    <td class="rightAlignedCol" xml:space="preserve">KeyType</td>
+    <td xml:space="preserve"/>
+   </tr>
+   <tr id="181e2700-8515-ead5-e229-ffb0c1b3d5d6">
+    <td class="rightAlignedCol" xml:space="preserve">ValueType</td>
+    <td xml:space="preserve"/>
+   </tr>
+   <tr id="85373066-36e5-26f2-5dfd-675a59afd0df">
+    <td class="rightAlignedCol" xml:space="preserve">KeyOfValue</td>
+    <td xml:space="preserve"/>
+   </tr>
+   <tr id="ed1d06ab-7f8a-6627-9c9a-a4e8df7c3e29">
+    <td class="rightAlignedCol" xml:space="preserve">HashFun</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hasher_9E06FCD9B56B8B3B7E7F8286BE8179D3B1CB8325.html">Hasher</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>></td>
+   </tr>
+   <tr id="c4a5e8ca-c57c-1684-851a-7c07df596ed6">
+    <td class="rightAlignedCol" xml:space="preserve">Compare</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_EqualTo_763B7164C155EA5D8436A30331F33E4E7267599E.html">EqualTo</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>></td>
+   </tr>
+  </table>
+  <h2 id="constraint">Constraint</h2>
+  <span class="indent">
+   <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7.html">Semiregular</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Semiregular_E2C46E5F0F7E452605B56E425903C7CB77E861C7.html">Semiregular</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/concept_KeySelectionFunction_719538A539328921CB0D528AECE6DCBE1B8C6E19.html">KeySelectionFunction</a>
+   &lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#85373066-36e5-26f2-5dfd-675a59afd0df">KeyOfValue</a>
+   , <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>
+   , <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>
+   >&nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/concept_HashFunction_996DE63476FF956BFF568F751960AF2CB4A097A8.html">HashFunction</a>
+   &lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#ed1d06ab-7f8a-6627-9c9a-a4e8df7c3e29">HashFun</a>
+   , <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>
+   >&nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#c4a5e8ca-c57c-1684-851a-7c07df596ed6">Compare</a>
+   &nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/concept_Relation_EA6D5281439518EB11DD9152636FEB86745EE746.html">Relation</a>
+   &nbsp;<span class="kw">and</span>
+   &nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#c4a5e8ca-c57c-1684-851a-7c07df596ed6">Compare</a>
+   .Domain&nbsp;<span class="kw">is</span>
+   &nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>
+  </span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#default_constructor_Hashtable_B9B01308A5C5E8D370438DD0FC5779DBE571EB03">Hashtable</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#move_constructor_Hashtable_0F302AC6DD5303CA1346F4C7018AE000A7AF00BD">Hashtable</a>(<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#copy_constructor_Hashtable_2E2C9AD6E7EFFF2EFB7894D41A73E4D02F8C0472">Hashtable</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#destructor_Hashtable_1C7FF2303526B86502FE64936193C1DFFBE3526A">~Hashtable</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Begin_Hashtable_DB9EAEB67393F32D23DD72AB9366D5CB7EA9EBCC">Begin</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Begin_Hashtable_96A1E9A290DA84C88E35E86BC3094E919FDEAA77">Begin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_CBegin_Hashtable_EB188FE2FC45444A88B7F6A70EC0FDCA7B0005DD">CBegin</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_CEnd_Hashtable_EA3B0AD34937498012B9254FC1D8603738A89240">CEnd</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_CFind_Hashtable_C3775E8B32104E4D7894DED58E0689CFE6B016C8">CFind</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_CheckForRehash_Hashtable_F87A1AC9DD068A4C06F6ACEFB067EEEA3458A4D9">CheckForRehash</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Clear_Hashtable_DBF413B850E746CF203E3E4DBCDF4277B77F734F">Clear</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_CopyFrom_Hashtable_4AC1A30643EC74748ED35F56ED43C856B8C02B98">CopyFrom</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Count_Hashtable_329FC8A9CAB72B269AF7B063A2F47E311B94D30B">Count</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_End_Hashtable_34667F16AA923CBAEDADDB110FA4B5B47950CA6E">End</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_End_Hashtable_EEE9CED8DEE5D1F523B416B3B5AF838E8B59E13D">End</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Find_Hashtable_0CD97948F9CB3B584575C5DA1BAD72C1A87872AD">Find</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Find_Hashtable_C1E1E998BA08D1616EDEC8124DBFF6E33846C812">Find</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Bucket_1501F0E9976F59445EEE61363455BF34D499D108.html">Bucket</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_GetBucket_Hashtable_33030E762B37DAFB562176E7F3F3CD57BEEB7731">GetBucket</a>(<span class="kw">long</span>&nbsp;index)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_GetBucketCount_Hashtable_E5761DC94CD34CE6AC01A38CF946106C1DEF2325">GetBucketCount</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_GetBucketIndex_Hashtable_426C620F09C878D3C01A8A20D2025E1C143C4E50">GetBucketIndex</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&nbsp;value)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Bucket_1501F0E9976F59445EEE61363455BF34D499D108.html">Bucket</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_GetFirstBucket_Hashtable_A8C77BAA29A56F25FC7FAD606512B836B5DBB6D5">GetFirstBucket</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Hash_Hashtable_19276AAD7F8E3A0BAE3E4FC9E5A5958BE17FDD86">Hash</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_F2AB6847487837870009F01B70FA9E7FF2466BDA.html">Pair</a>&lt;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>, <span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Insert_Hashtable_1E7D62FD75C15EF8A12667F3EDEB7EA4D71399C4">Insert</a>(<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_F2AB6847487837870009F01B70FA9E7FF2466BDA.html">Pair</a>&lt;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>, <span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Insert_Hashtable_3F4A821EA01CC19B26CA0592BA54A4596D9E77D8">Insert</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&nbsp;value)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_IsEmpty_Hashtable_634871D732F21803D390665E3884B07052E44182">IsEmpty</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_KeyOf_Hashtable_BD6CA75E462F66F138B3D0EDA7249A713889A73E">KeyOf</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&nbsp;value)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_KeysEqual_Hashtable_DD50F55ADCB3F3A7E4D7DFFF10B8A2ED3D7A8903">KeysEqual</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;right)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Rehash_Hashtable_54DB0385567127F9AB690EE83BD8FC512A7FBA33">Rehash</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Remove_Hashtable_C20384B6B9F314675E7EB5131ABCC7A6C6C55168">Remove</a>(<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;pos)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_Remove_Hashtable_0CFB4AAF78F090B570BC4641ED4CFF171F2D50D4">Remove</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_SetLoadFactor_Hashtable_8E4DD6AAB7E9754F4A1C9DEC65ED2247C3302ADC">SetLoadFactor</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#member_function_SetMaxLoadFactor_Hashtable_8F857D558F0149406F3175BD14438A964113442E">SetMaxLoadFactor</a>(<span class="kw">double</span>&nbsp;maxLoadFactor_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#move_assignment_op_assign_Hashtable_7BDB02083DE6455287440630A38FD528C1486F4E">operator=</a>(<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#copy_assignment_op_assign_Hashtable_DBC867C76F8A4FFE047C5FB20BB5FC2BA9F06941">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&nbsp;that)</td>
+   </tr>
+  </table>
+  <h2 id="typeAliases">Type Aliases</h2>
+  <table>
+   <tr id="aliasType_ConstIterator_D8ACCB1653C3EB7755971A84668EF382C37E1DE7">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;ConstIterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+   </tr>
+   <tr id="aliasType_Iterator_065E4E1FBB70AED7A93ED6E652821B859BECB7DD">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">typedef</span>&nbsp;Iterator</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>></td>
+   </tr>
+   <tr id="aliasType_Self_2F6126A4689B6E4F94B1720E009E62221EA737F7">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;Self</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_buckets_D9A58C0C7CEB969741BBF4D69E1B08248F7699AB" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../System.Base/doc/class_Bucket_1501F0E9976F59445EEE61363455BF34D499D108.html">Bucket</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>>*></td>
+    <td xml:space="preserve">buckets</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_count_32CB76E9DB2F6593608B14C88587620A2BB1721F" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve">count</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_equal_233083FD99381A9FFCFD6A651FE202DC3716F748" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#c4a5e8ca-c57c-1684-851a-7c07df596ed6">Compare</a></td>
+    <td xml:space="preserve">equal</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_hash_233E9820297B7FD4D7C52CF966786AC9AA74DC8C" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#ed1d06ab-7f8a-6627-9c9a-a4e8df7c3e29">HashFun</a></td>
+    <td xml:space="preserve">hash</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_keyOf_C94E876D88B5632DB93BD5D18FE69B14FCD8E00E" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#85373066-36e5-26f2-5dfd-675a59afd0df">KeyOfValue</a></td>
+    <td xml:space="preserve">keyOf</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_loadFactor_93088789C8362ED336BA55B107C4F6D7A5390002" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">double</span></td>
+    <td xml:space="preserve">loadFactor</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_maxLoadFactor_B00B548A638B2C8E739004CAC0FE4FEAE5081E8F" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">double</span></td>
+    <td xml:space="preserve">maxLoadFactor</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_Hashtable_B9B01308A5C5E8D370438DD0FC5779DBE571EB03" xml:space="preserve">Hashtable&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Hashtable()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#209">209</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_constructor_Hashtable_0F302AC6DD5303CA1346F4C7018AE000A7AF00BD" xml:space="preserve">Hashtable&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Hashtable(<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#216">216</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_Hashtable_2E2C9AD6E7EFFF2EFB7894D41A73E4D02F8C0472" xml:space="preserve">Hashtable&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Hashtable(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#212">212</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_Hashtable_1C7FF2303526B86502FE64936193C1DFFBE3526A" xml:space="preserve">~Hashtable&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~Hashtable()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#236">236</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Begin_Hashtable_DB9EAEB67393F32D23DD72AB9366D5CB7EA9EBCC" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#264">264</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Begin_Hashtable_96A1E9A290DA84C88E35E86BC3094E919FDEAA77" xml:space="preserve">Begin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;Begin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#268">268</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CBegin_Hashtable_EB188FE2FC45444A88B7F6A70EC0FDCA7B0005DD" xml:space="preserve">CBegin&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;CBegin()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#272">272</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CEnd_Hashtable_EA3B0AD34937498012B9254FC1D8603738A89240" xml:space="preserve">CEnd&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;CEnd()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#284">284</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CFind_Hashtable_C3775E8B32104E4D7894DED58E0689CFE6B016C8" xml:space="preserve">CFind&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;CFind(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#433">433</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CheckForRehash_Hashtable_F87A1AC9DD068A4C06F6ACEFB067EEEA3458A4D9" xml:space="preserve">CheckForRehash&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span>&nbsp;CheckForRehash()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#475">475</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Clear_Hashtable_DBF413B850E746CF203E3E4DBCDF4277B77F734F" xml:space="preserve">Clear&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Clear()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#248">248</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_CopyFrom_Hashtable_4AC1A30643EC74748ED35F56ED43C856B8C02B98" xml:space="preserve">CopyFrom&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;CopyFrom(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#517">517</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Count_Hashtable_329FC8A9CAB72B269AF7B063A2F47E311B94D30B" xml:space="preserve">Count&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Count()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#240">240</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_Hashtable_34667F16AA923CBAEDADDB110FA4B5B47950CA6E" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#276">276</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_End_Hashtable_EEE9CED8DEE5D1F523B416B3B5AF838E8B59E13D" xml:space="preserve">End&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;End()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#280">280</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Find_Hashtable_0CD97948F9CB3B584575C5DA1BAD72C1A87872AD" xml:space="preserve">Find&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;Find(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#399">399</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Find_Hashtable_C1E1E998BA08D1616EDEC8124DBFF6E33846C812" xml:space="preserve">Find&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;Find(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#416">416</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetBucket_Hashtable_33030E762B37DAFB562176E7F3F3CD57BEEB7731" xml:space="preserve">GetBucket&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Bucket_1501F0E9976F59445EEE61363455BF34D499D108.html">Bucket</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>>*&nbsp;GetBucket(<span class="kw">long</span>&nbsp;index)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#458">458</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetBucketCount_Hashtable_E5761DC94CD34CE6AC01A38CF946106C1DEF2325" xml:space="preserve">GetBucketCount&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;GetBucketCount()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#450">450</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetBucketIndex_Hashtable_426C620F09C878D3C01A8A20D2025E1C143C4E50" xml:space="preserve">GetBucketIndex&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;GetBucketIndex(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#454">454</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetFirstBucket_Hashtable_A8C77BAA29A56F25FC7FAD606512B836B5DBB6D5" xml:space="preserve">GetFirstBucket&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Bucket_1501F0E9976F59445EEE61363455BF34D499D108.html">Bucket</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>>*&nbsp;GetFirstBucket()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#503">503</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Hash_Hashtable_19276AAD7F8E3A0BAE3E4FC9E5A5958BE17FDD86" xml:space="preserve">Hash&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Hash(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#538">538</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_Hashtable_1E7D62FD75C15EF8A12667F3EDEB7EA4D71399C4" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_F2AB6847487837870009F01B70FA9E7FF2466BDA.html">Pair</a>&lt;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>, <span class="kw">bool</span>>&nbsp;Insert(<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#317">317</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Insert_Hashtable_3F4A821EA01CC19B26CA0592BA54A4596D9E77D8" xml:space="preserve">Insert&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Pair_F2AB6847487837870009F01B70FA9E7FF2466BDA.html">Pair</a>&lt;<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>, <span class="kw">bool</span>>&nbsp;Insert(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#292">292</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsEmpty_Hashtable_634871D732F21803D390665E3884B07052E44182" xml:space="preserve">IsEmpty&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;IsEmpty()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#244">244</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_KeyOf_Hashtable_BD6CA75E462F66F138B3D0EDA7249A713889A73E" xml:space="preserve">KeyOf&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;KeyOf(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;&nbsp;value)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#534">534</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_KeysEqual_Hashtable_DD50F55ADCB3F3A7E4D7DFFF10B8A2ED3D7A8903" xml:space="preserve">KeysEqual&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;KeysEqual(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;left, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;right)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#543">543</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Rehash_Hashtable_54DB0385567127F9AB690EE83BD8FC512A7FBA33" xml:space="preserve">Rehash&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;Rehash()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#482">482</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_Hashtable_C20384B6B9F314675E7EB5131ABCC7A6C6C55168" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Remove(<a href="../../System.Base/doc/class_HashtableIterator_096790EBD70A9327536FC43A710AF00FB8221CA1.html">HashtableIterator</a>&lt;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>&amp;, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#181e2700-8515-ead5-e229-ffb0c1b3d5d6">ValueType</a>*, <a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>>&nbsp;pos)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#369">369</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Remove_Hashtable_0CFB4AAF78F090B570BC4641ED4CFF171F2D50D4" xml:space="preserve">Remove&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Remove(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html#fcdf868a-16c4-e36a-f59a-f071952edf08">KeyType</a>&amp;&nbsp;key)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#342">342</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetLoadFactor_Hashtable_8E4DD6AAB7E9754F4A1C9DEC65ED2247C3302ADC" xml:space="preserve">SetLoadFactor&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span>&nbsp;SetLoadFactor()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#462">462</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetMaxLoadFactor_Hashtable_8F857D558F0149406F3175BD14438A964113442E" xml:space="preserve">SetMaxLoadFactor&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">void</span>&nbsp;SetMaxLoadFactor(<span class="kw">double</span>&nbsp;maxLoadFactor_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#288">288</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_assignment_op_assign_Hashtable_7BDB02083DE6455287440630A38FD528C1486F4E" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#226">226</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_Hashtable_DBC867C76F8A4FFE047C5FB20BB5FC2BA9F06941" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Hashtable_FBD9251EB950A78EE050BDE91F52C6924E0BB5D3.html">Hashtable</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Hashtable.cm.html#221">221</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Hashtable.cm.html">System.Base/Hashtable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

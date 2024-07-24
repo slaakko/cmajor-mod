@@ -50,23 +50,26 @@ parser ClassParser
     using DelegateParser.Delegate;
     using DelegateParser.ClassDelegate;
 
-    Class(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::ClassNode> classNode) : cmajor::ast::ClassNode*
+    Class(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span specifierSpan, var soul::ast::Span classSpan, 
+        var std::unique_ptr<cmajor::ast::ClassNode> classNode) : cmajor::ast::ClassNode*
         ::= 
         (
             Attributes(context):attrs?
-            (Specifiers:specifiers - NEW)
-            CLASS
+            (Specifiers:specifiers - NEW){ specifierSpan = lexer.GetSpan(pos); }
+            CLASS{ classSpan = lexer.GetSpan(pos); }
             Identifier(context):id
             {
                 s = lexer.GetSpan(pos);
                 classNode.reset(new cmajor::ast::ClassNode(s, specifiers, id, attrs));
+                classNode->SetSpecifierSpan(specifierSpan);
+                classNode->SetClassSpan(classSpan);
             }
             TemplateParameterList(context, classNode.get()):templateParams?
             InheritanceAndInterfaces(context, classNode.get()):inheritance?
             (WhereConstraint(context):constraint{ classNode->SetConstraint(constraint); })?
-            LBRACE
+            LBRACE{ classNode->SetBeginBraceSpan(lexer.GetSpan(pos)); }
             ClassContent(context, classNode.get()):content
-            RBRACE
+            RBRACE{ classNode->SetEndBraceSpan(lexer.GetSpan(pos)); }
         )
         {
             return classNode.release();
@@ -123,11 +126,12 @@ parser ClassParser
         ;
 
     StaticConstructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::Span s,
+        var soul::ast::Span specifierSpan,
         var std::unique_ptr<cmajor::ast::StaticConstructorNode> staticConstructorNode, var std::u32string className) : cmajor::ast::StaticConstructorNode*
         ::=
         (
             Attributes(context):attrs?
-            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); specifierSpan = s; }
             Identifier(context):id{ className = lexer.GetToken(pos).ToString(); }
             LPAREN
             RPAREN
@@ -140,6 +144,7 @@ parser ClassParser
                 {
                     staticConstructorNode.reset(new cmajor::ast::StaticConstructorNode(s, specifiers, attrs));
                     staticConstructorNode->SetClassId(id);
+                    staticConstructorNode->SetSpecifierSpan(specifierSpan);
                 }
             }
             (
@@ -157,12 +162,12 @@ parser ClassParser
         }
         ;
 
-    Constructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::Span s, 
+    Constructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::Span s, var soul::ast::Span specifierSpan,
         var std::unique_ptr<cmajor::ast::ConstructorNode> constructorNode) : cmajor::ast::ConstructorNode*
         ::= 
         (
             Attributes(context):attrs?
-            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); specifierSpan = s; }
             Identifier(context):id
             { 
                 std::u32string className = lexer.GetToken(pos).ToString(); 
@@ -174,6 +179,7 @@ parser ClassParser
                 {
                     constructorNode.reset(new cmajor::ast::ConstructorNode(s, specifiers, attrs));
                     constructorNode->SetClassId(id);
+                    constructorNode->SetSpecifierSpan(specifierSpan);
                 }
             }
             ParameterList(context, constructorNode.get()):paramList
@@ -192,12 +198,12 @@ parser ClassParser
         }
         ;
 
-    Destructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::Span s, 
+    Destructor(cmajor::parser::context::Context* context, cmajor::ast::ClassNode* classNode, var soul::ast::Span s, var soul::ast::Span specifierSpan, 
         var std::unique_ptr<cmajor::ast::DestructorNode> destructorNode, var std::u32string className) : cmajor::ast::DestructorNode*
         ::=
         (
             Attributes(context):attrs?
-            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); specifierSpan = s; }
             CPL
             Identifier(context):id
             {
@@ -214,6 +220,7 @@ parser ClassParser
                 {
                     destructorNode.reset(new cmajor::ast::DestructorNode(s, specifiers, attrs));
                     destructorNode->SetClassId(id);
+                    destructorNode->SetSpecifierSpan(specifierSpan);
                 }
             }
             (
@@ -249,15 +256,17 @@ parser ClassParser
         ;
 
     MemberFunction(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::MemberFunctionNode> memberFunctionNode, 
-        var soul::ast::Span s) : cmajor::ast::MemberFunctionNode*
+        var soul::ast::Span s, var soul::ast::Span specifierSpan, var soul::ast::Span groupIdSpan) : cmajor::ast::MemberFunctionNode*
         ::= 
         (
             Attributes(context):attrs?
-            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); specifierSpan = s; }
             TypeExpr(context):returnType
-            FunctionGroupId(context):groupId
+            (FunctionGroupId(context):groupId{ groupIdSpan = lexer.GetSpan(pos); })
             {
                 memberFunctionNode.reset(new cmajor::ast::MemberFunctionNode(s, specifiers, returnType, groupId, attrs));
+                memberFunctionNode->SetSpecifierSpan(specifierSpan);
+                memberFunctionNode->SetGroupIdSpan(groupIdSpan);
             }
             ParameterList(context, memberFunctionNode.get()):paramList 
             (
@@ -276,17 +285,18 @@ parser ClassParser
         ;
 
     ConversionFunction(cmajor::parser::context::Context* context, var std::unique_ptr<cmajor::ast::ConversionFunctionNode> conversionFunctionNode, 
-        var soul::ast::Span s) : cmajor::ast::ConversionFunctionNode*
+        var soul::ast::Span s, var soul::ast::Span specifierSpan) : cmajor::ast::ConversionFunctionNode*
         ::=
         (
             Attributes(context):attrs?
-            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); specifierSpan = s; }
             OPERATOR
             TypeExpr(context):type
             LPAREN
             RPAREN
             {
                 conversionFunctionNode.reset(new cmajor::ast::ConversionFunctionNode(s, specifiers, type, attrs));
+                conversionFunctionNode->SetSpecifierSpan(specifierSpan);
             }
             (
                 CONST{ conversionFunctionNode->SetConst(); }
@@ -303,17 +313,19 @@ parser ClassParser
         }
         ;
 
-    MemberVariable(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::MemberVariableNode*
+    MemberVariable(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span specifierSpan) : cmajor::ast::MemberVariableNode*
         ::=
         (
             Attributes(context):attrs?
-            Specifiers:specifiers{ s = lexer.GetSpan(pos); }
+            Specifiers:specifiers{ s = lexer.GetSpan(pos); specifierSpan = s; }
             TypeExpr(context):type
             Identifier(context):id
             SEMICOLON
         )
         {
-            return new cmajor::ast::MemberVariableNode(s, specifiers, type, id, attrs);
+            cmajor::ast::MemberVariableNode* memberVariableNode = new cmajor::ast::MemberVariableNode(s, specifiers, type, id, attrs);
+            memberVariableNode->SetSpecifierSpan(specifierSpan);
+            return memberVariableNode;
         }
         ;
 }

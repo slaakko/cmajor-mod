@@ -4,6 +4,7 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <llvm/Config/llvm-config.h>
 #if LLVM_VERSION_MAJOR >= 16
 #define HAS_LLD_LIBRARY 1
@@ -12,6 +13,7 @@ module;
 #include <lld/Common/Driver.h>
 #include <llvm/Support/raw_os_ostream.h>
 #endif
+#pragma warning(default : 4996)
 
 module cmajor.llvm.link.windows;
 

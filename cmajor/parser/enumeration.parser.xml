@@ -26,11 +26,15 @@
           </group>
          </optional>
         </sequence>
-        <token first="{LBRACE}" name="LBRACE"/>
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </action>
        </sequence>
        <nonterminal first="{ID}" ruleName="EnumConstants"/>
       </sequence>
-      <token first="{RBRACE}" name="RBRACE"/>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
      </sequence>
     </group>
    </action>

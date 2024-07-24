@@ -3,12 +3,22 @@
   <meta charset="utf-8"/>
   <title>Clipboard Class</title>
   <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD_inheritance.js" type="text/javascript"> </script>
  </head>
- <body>
+ <body onload="drawInheritanceDiagram()">
   <h1>Clipboard Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#93">93</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
-  <h2>Constructors &amp; Destructor</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#113">113</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
@@ -19,14 +29,14 @@
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#destructor_Clipboard_80B7607F2C34C7EBF78299FC07C0A30ADEEDD54A">~Clipboard</a>()</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Windows/doc/class_MemoryHandle_0A081979CBB96891CF12A70E1413A652E2B6232D.html">MemoryHandle</a></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Windows/doc/class_MemoryHandle_0A081979CBB96891CF12A70E1413A652E2B6232D.html">MemoryHandle</a>></td>
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#member_function_GetData_Clipboard_DD1A5A815D743340A307CB6BDF8A174ACB0E52F5">GetData</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>></td>
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#member_function_GetStringData_Clipboard_F159D71B7B9EFC92290D6170A73DE01180DBA8ED">GetStringData</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)</td>
    </tr>
    <tr>
@@ -34,22 +44,22 @@
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#member_function_IsClipboardFormatAvailable_Clipboard_458FC870CF8A5CBCD764520CF2EFA23F4F394F48">IsClipboardFormatAvailable</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)&nbsp;<span class="kw">const</span></td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#member_function_SetData_Clipboard_AE178330BE9AA0999D59B2D7FE8864D2349C01A2">SetData</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat, <span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_MemoryHandle_0A081979CBB96891CF12A70E1413A652E2B6232D.html">MemoryHandle</a>&amp;&nbsp;memoryHandle)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#member_function_SetEmpty_Clipboard_65B672D1A9420765270B81ADCA9FAED94856358C">SetEmpty</a>()</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#member_function_SetStringData_Clipboard_5E3179D6FB9520B0C44871F5D6B4B6204B7E083B">SetStringData</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;str)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_Clipboard_BEF52383BEE1E309B6D9B850259124D33E8B10CD.html#member_function_SetStringData_Clipboard_5E3179D6FB9520B0C44871F5D6B4B6204B7E083B">SetStringData</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;str)</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>*</td>
+    <td class="rightAlignedCol" id="member_variable_windowHandle_93F89B0BDBA28406425ED8A63B8D5A7444383265" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>*</td>
     <td xml:space="preserve">windowHandle</td>
    </tr>
   </table>
@@ -57,57 +67,57 @@
   <h3 id="constructor_Clipboard_ACB94C5735973EB830AE935E9032F015342167CD" xml:space="preserve">Clipboard&nbsp;Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Clipboard(<span class="kw">void</span>*&nbsp;windowHandle_)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#95">95</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#115">115</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="destructor_Clipboard_80B7607F2C34C7EBF78299FC07C0A30ADEEDD54A" xml:space="preserve">~Clipboard&nbsp;Destructor</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~Clipboard()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#99">99</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#123">123</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
   <h3 id="member_function_GetData_Clipboard_DD1A5A815D743340A307CB6BDF8A174ACB0E52F5" xml:space="preserve">GetData&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Windows/doc/class_MemoryHandle_0A081979CBB96891CF12A70E1413A652E2B6232D.html">MemoryHandle</a>&nbsp;GetData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Windows/doc/class_MemoryHandle_0A081979CBB96891CF12A70E1413A652E2B6232D.html">MemoryHandle</a>>&nbsp;GetData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#111">111</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#137">137</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_GetStringData_Clipboard_F159D71B7B9EFC92290D6170A73DE01180DBA8ED" xml:space="preserve">GetStringData&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&nbsp;GetStringData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>>&nbsp;GetStringData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#120">120</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#162">162</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_IsClipboardFormatAvailable_Clipboard_458FC870CF8A5CBCD764520CF2EFA23F4F394F48" xml:space="preserve">IsClipboardFormatAvailable&nbsp;Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">bool</span>&nbsp;IsClipboardFormatAvailable(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#103">103</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#127">127</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_SetData_Clipboard_AE178330BE9AA0999D59B2D7FE8864D2349C01A2" xml:space="preserve">SetData&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat, <span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_MemoryHandle_0A081979CBB96891CF12A70E1413A652E2B6232D.html">MemoryHandle</a>&amp;&nbsp;memoryHandle)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;SetData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat, <span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_MemoryHandle_0A081979CBB96891CF12A70E1413A652E2B6232D.html">MemoryHandle</a>&amp;&nbsp;memoryHandle)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#115">115</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#147">147</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_SetEmpty_Clipboard_65B672D1A9420765270B81ADCA9FAED94856358C" xml:space="preserve">SetEmpty&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetEmpty()</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;SetEmpty()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#107">107</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#132">132</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_SetStringData_Clipboard_5E3179D6FB9520B0C44871F5D6B4B6204B7E083B" xml:space="preserve">SetStringData&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetStringData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;str)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;SetStringData(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_ClipboardFormat_2771AE1E544915FC91A832C29F5EB3E6021E3200.html">ClipboardFormat</a>&amp;&nbsp;clipboardFormat, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">uchar</span>>&amp;&nbsp;str)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#146">146</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html#209">209</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Clipboard.cm.html">System.Windows/Clipboard.cm</a></span>
   <br/>
   <br/>
   <hr/>

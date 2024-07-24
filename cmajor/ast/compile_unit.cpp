@@ -18,6 +18,11 @@ CompileUnitNode::CompileUnitNode(const soul::ast::Span& span_) :
 {
 }
 
+void CompileUnitNode::CreateGlobalNs()
+{
+    globalNs.reset(new NamespaceNode(soul::ast::Span(), new IdentifierNode(soul::ast::Span(), U"")));
+}
+
 CompileUnitNode::CompileUnitNode(const soul::ast::Span& span_, const std::string& filePath_) :
     Node(NodeType::compileUnitNode, span_), filePath(filePath_), globalNs(new NamespaceNode(span_, new IdentifierNode(span_, U""))), 
     isSynthesizedUnit(false), isProgramMainUnit(false), fileIndex(-1)
@@ -96,6 +101,7 @@ soul::ast::Span CompileUnitNode::GlobalNsSpan() const
 
 void CompileUnitNode::ComputeLineStarts(const std::u32string& sourceFileContent)
 {
+    lineStarts.push_back(0);
     int32_t index = 0;
     bool startOfLine = true;
     for (const char32_t& c : sourceFileContent)
@@ -111,6 +117,7 @@ void CompileUnitNode::ComputeLineStarts(const std::u32string& sourceFileContent)
         }
         ++index;
     }
+    lineStarts.push_back(index);
 }
 
 int CompileUnitNode::GetColumn(const soul::ast::Span& span) const
@@ -154,6 +161,11 @@ const std::string& CompileUnitNode::Id()
         id = baseName + "_" + util::GetSha1MessageDigest(filePath);
     }
     return id;
+}
+
+void CompileUnitNode::SetId(const std::string& id_)
+{
+    id = id_;
 }
 
 class NamespaceCombiner : public Visitor

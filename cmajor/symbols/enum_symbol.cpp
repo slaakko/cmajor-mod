@@ -263,7 +263,7 @@ void EnumConstantSymbol::Read(SymbolReader& reader)
 {
     Symbol::Read(reader);
     value = ReadValue(reader.GetBinaryStreamReader());
-    strValue = reader.GetBinaryStreamReader().ReadUtf32String();
+    strValue = reader.GetBinaryStreamReader().ReadUtf8String();
 }
 
 EnumTypeDefaultConstructor::EnumTypeDefaultConstructor(const soul::ast::Span& span_, const std::u32string& name_) :

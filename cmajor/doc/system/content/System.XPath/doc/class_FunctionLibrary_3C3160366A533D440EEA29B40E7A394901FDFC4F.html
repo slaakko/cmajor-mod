@@ -1,0 +1,107 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>FunctionLibrary Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>FunctionLibrary Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">The function library contains only a minimal set of XPath functions: <strong> boolean</strong> , <strong> number</strong> , <strong> string</strong> , <strong> last</strong> , <strong> position</strong> and <strong> count</strong> .</p><span xml:space="preserve"><p class="description" xml:space="preserve">The implemented functions are: <a href="../../System.XPath/doc/class_BooleanFunction_79F14FC3DFA8C47C2EE90BB7288F2D3E707DCAF4.html">BooleanFunction</a> , <a href="../../System.XPath/doc/class_NumberFunction_7E4C45FEF142926E9059C4B09CA72A9A0828E671.html">NumberFunction</a> , <a href="../../System.XPath/doc/class_StringFunction_4D59657A7F0A08D5D3284630824612CC44636382.html">StringFunction</a> , <a href="../../System.XPath/doc/class_LastFunction_3FCC71B59BB2DFDDE80BD4B3983DCC778283862B.html">LastFunction</a> , <a href="../../System.XPath/doc/class_PositionFunction_0C9A78BCB749ECF886731E893B5D0D5DAD42D809.html">PositionFunction</a> , and <a href="../../System.XPath/doc/class_CountFunction_679D9777A259BC791727E5FBAF786BD04AD81CC7.html">CountFunction</a> .</p></span></span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html#261">261</a>&nbsp;of&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">static</span></td>
+    <td xml:space="preserve"><a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html#static_constructor_FunctionLibrary_566E50718CDFE9CFABD2D059702A66E778DDF0F8">FunctionLibrary</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span></td>
+    <td xml:space="preserve"><a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html#default_constructor_FunctionLibrary_5377CB9ABF03B93E98891A429C21A42D6AC72EA2">FunctionLibrary</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>*></td>
+    <td xml:space="preserve"><a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html#member_function_GetFunction_FunctionLibrary_60B8F4405B830395722998D019792DB05F26047D">GetFunction</a>(<a href="../../System.XPath/doc/enumerated_type_FunctionKind_9ECBBAC13E7C0DE1D8E04CDEB665B49CACB1C2CF.html">FunctionKind</a>&nbsp;kind)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>*></td>
+    <td xml:space="preserve"><a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html#member_function_GetFunction_FunctionLibrary_2FB2D9DBE9026CEA078FA8D8CC49F421127A5186">GetFunction</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name)&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html#member_function_Install_FunctionLibrary_81F5B29D7BFFFEBE49A2F4184D3175E4BFEE2203">Install</a>(<a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>*&nbsp;function)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html">FunctionLibrary</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html#member_function_Instance_FunctionLibrary_35206F8B23CEF75667040F37D6488EC71E04032F">Instance</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_functionMap_7EAED9758948C8182232BFED0EAA2061FED3F7C2" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>, <a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>*, <a href="../../System.Base/doc/class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>>></td>
+    <td xml:space="preserve">functionMap</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_functions_65B20BC1821635EADABF05B2CB899A6BAD24AC8C" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>>></td>
+    <td xml:space="preserve">functions</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_instance_C417DD7987A4BE97BAD0CD6C4246A897D04FBB5A" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html">FunctionLibrary</a>></td>
+    <td xml:space="preserve">instance</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="static_constructor_FunctionLibrary_566E50718CDFE9CFABD2D059702A66E778DDF0F8" xml:space="preserve">FunctionLibrary&nbsp;Static Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">static</span>&nbsp;FunctionLibrary()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html#263">263</a>&nbsp;of&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="default_constructor_FunctionLibrary_5377CB9ABF03B93E98891A429C21A42D6AC72EA2" xml:space="preserve">FunctionLibrary&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;FunctionLibrary()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html#270">270</a>&nbsp;of&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_GetFunction_FunctionLibrary_60B8F4405B830395722998D019792DB05F26047D" xml:space="preserve">GetFunction&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>*>&nbsp;GetFunction(<a href="../../System.XPath/doc/enumerated_type_FunctionKind_9ECBBAC13E7C0DE1D8E04CDEB665B49CACB1C2CF.html">FunctionKind</a>&nbsp;kind)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html#281">281</a>&nbsp;of&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetFunction_FunctionLibrary_2FB2D9DBE9026CEA078FA8D8CC49F421127A5186" xml:space="preserve">GetFunction&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>*>&nbsp;GetFunction(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html#294">294</a>&nbsp;of&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Install_FunctionLibrary_81F5B29D7BFFFEBE49A2F4184D3175E4BFEE2203" xml:space="preserve">Install&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Install(<a href="../../System.XPath/doc/class_Function_E66E9AA8D5AA0A82ED455036498ED61EEF2FAB54.html">Function</a>*&nbsp;function)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html#307">307</a>&nbsp;of&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Instance_FunctionLibrary_35206F8B23CEF75667040F37D6488EC71E04032F" xml:space="preserve">Instance&nbsp;Static Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.XPath/doc/class_FunctionLibrary_3C3160366A533D440EEA29B40E7A394901FDFC4F.html">FunctionLibrary</a>&amp;&nbsp;Instance()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html#266">266</a>&nbsp;of&nbsp;<a href="../../System.XPath/file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

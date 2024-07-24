@@ -1,0 +1,279 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Xml.Serialization
+{
+    public concept XmlExportableClassType<T>
+    {
+        Result<System.Xml.Element*> T.ToXml(const string& fieldName);
+        Result<System.Xml.Element*> T.ToXml(const string& fieldName, XmlSerializationContext& ctx);
+    }
+
+    public concept XmlExportableScalarType<T>
+    {
+        where
+            T is bool or
+            T is sbyte or
+            T is byte or
+            T is short or
+            T is ushort or
+            T is int or
+            T is uint or
+            T is long or
+            T is ulong or
+            T is float or
+            T is double or
+            T is char or
+            T is wchar or
+            T is uchar;
+    }
+
+    public concept XmlExportableEnumeratedType<T>
+    {
+        where System.Meta.IsEnumeratedType<T>();
+    }
+
+    public concept XmlExportableTimeType<T>
+    {
+        where T is System.Date or T is System.DateTime;
+    }
+
+    public concept XmlExportable<T>
+    {
+        where
+            T is XmlExportableClassType or
+            T is XmlExportableScalarType or
+            T is XmlExportableEnumeratedType or
+            T is XmlExportableTimeType or
+            T is string or
+            T is wstring or
+            T is ustring or
+            T is System.TimePoint or
+            T is System.Duration or
+            T is System.Uuid;
+    }
+
+    public Result<System.Xml.Element*> ToXml(const System.Uuid& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        auto stringResult = ToString(value);
+        if (stringResult.Error()) return Result<System.Xml.Element*>(ErrorId(stringResult.GetErrorId()));
+        element->SetAttribute("value", stringResult.Value());
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const T& object, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableClassType
+    {
+        auto result = object.ToXml(fieldName, ctx);
+        if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+        System.Xml.Element* xmlElement = result.Value();
+        UniquePtr<System.Xml.Element> element(xmlElement);
+        if (!ctx.GetFlag(System.Xml.Serialization.XmlSerializationFlags.suppressMetadata))
+        {
+            int classId = object.ClassId();
+            element->SetAttribute("classId", ToString(classId));
+        }
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const UniquePtr<T>& objectPtr, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableClassType
+    {
+        if (objectPtr.IsNull())
+        {
+            UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+            element->SetAttribute("value", "null");
+            return Result<System.Xml.Element*>(element.Release());
+        }
+        else
+        {
+            auto result = objectPtr->ToXml(fieldName, ctx);
+            if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+            System.Xml.Element* xmlElement = result.Value();
+            UniquePtr<System.Xml.Element> element(xmlElement);
+            if (!ctx.GetFlag(System.Xml.Serialization.XmlSerializationFlags.suppressMetadata))
+            {
+                int classId = objectPtr->ClassId();
+                element->SetAttribute("classId", ToString(classId));
+            }
+            return Result<System.Xml.Element*>(element.Release());
+        }
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const SharedPtr<T>& objectPtr, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableClassType
+    {
+        if (objectPtr.IsNull())
+        {
+            UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+            element->SetAttribute("value", "null");
+            return Result<System.Xml.Element*>(element.Release());
+        }
+        else
+        {
+            auto result = objectPtr->ToXml(fieldName, ctx);
+            if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+            System.Xml.Element* xmlElement = result.Value();
+            UniquePtr<System.Xml.Element> element(xmlElement);
+            if (!ctx.GetFlag(System.Xml.Serialization.XmlSerializationFlags.suppressMetadata))
+            {
+                int classId = objectPtr->ClassId();
+                element->SetAttribute("classId", ToString(classId));
+            }
+            return Result<System.Xml.Element*>(element.Release());
+        }
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const XmlPtr<T>& xmlPtr, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableClassType
+    {
+        if (xmlPtr.IsNull())
+        {
+            UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+            element->SetAttribute("value", "null");
+            return Result<System.Xml.Element*>(element.Release());
+        }
+        else
+        {
+            UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+            auto result = ToString(xmlPtr.TargetObjectId());
+            if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+            string objectIdStr = Rvalue(result.Value());
+            element->SetAttribute("objectId", objectIdStr);
+            return Result<System.Xml.Element*>(element.Release());
+        }
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const List<T>& list, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportable
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        for (const T& item : list)
+        {
+            auto result = ToXml(item, "item", ctx);
+            if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+            System.Xml.Element* xmlElement = result.Value();
+            element->AppendChild(xmlElement);
+        }
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const List<UniquePtr<T>>& list, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableClassType
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        for (const UniquePtr<T>& item : list)
+        {
+            auto result = ToXml(item, "item", ctx);
+            if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+            System.Xml.Element* xmlElement = result.Value();
+            element->AppendChild(xmlElement);
+        }
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const List<SharedPtr<T>>& list, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableClassType
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        for (const SharedPtr<T>& item : list)
+        {
+            auto result = ToXml(item, "item", ctx);
+            if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+            System.Xml.Element* xmlElement = result.Value();
+            element->AppendChild(xmlElement);
+        }
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const List<XmlPtr<T>>& list, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableClassType
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        for (const XmlPtr<T>& item : list)
+        {
+            auto result = ToXml(item, "item", ctx);
+            if (result.Error()) return Result<System.Xml.Element*>(ErrorId(result.GetErrorId()));
+            System.Xml.Element* xmlElement = result.Value();
+            element->AppendChild(xmlElement);
+        }
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml(const string& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        element->SetAttribute("value", value);
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml(const wstring& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        auto utf8Result = ToUtf8(value);
+        if (utf8Result.Error()) return Result<System.Xml.Element*>(ErrorId(utf8Result.GetErrorId()));
+        element->SetAttribute("value", utf8Result.Value());
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml(const ustring& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        auto utf8Result = ToUtf8(value);
+        if (utf8Result.Error()) return Result<System.Xml.Element*>(ErrorId(utf8Result.GetErrorId()));
+        element->SetAttribute("value", utf8Result.Value());
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml(const System.TimePoint& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        element->SetAttribute("value", ToString(value.Rep()));
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml(const System.Duration& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        element->SetAttribute("value", ToString(value.Rep()));
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(const T& value, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableScalarType
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        element->SetAttribute("value", ToString(value));
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml<T>(T value, const string& fieldName, XmlSerializationContext& ctx)
+        where T is XmlExportableEnumeratedType
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        T.UnderlyingType x = cast<T.UnderlyingType>(value);
+        element->SetAttribute("value", ToString(cast<long>(x)));
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml(const System.Date& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        element->SetAttribute("value", value.ToString());
+        return Result<System.Xml.Element*>(element.Release());
+    }
+
+    public Result<System.Xml.Element*> ToXml(const System.DateTime& value, const string& fieldName, XmlSerializationContext& ctx)
+    {
+        UniquePtr<System.Xml.Element> element(System.Xml.MakeElement(fieldName));
+        element->SetAttribute("value", value.ToString());
+        return Result<System.Xml.Element*>(element.Release());
+    }
+}
+

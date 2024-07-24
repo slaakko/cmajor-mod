@@ -1481,6 +1481,14 @@ void TypeBinder::Visit(cmajor::ast::EnumConstantNode& enumConstantNode)
     enumConstantSymbol->SetEvaluating();
     std::unique_ptr<cmajor::symbols::Value> value = Evaluate(enumConstantNode.GetValue(), enumType->UnderlyingType(), containerScope, boundCompileUnit, false, nullptr);
     enumConstantSymbol->SetValue(value.release());
+    if (enumConstantNode.StrValue().empty())
+    {
+        enumConstantSymbol->SetStrValue(enumConstantSymbol->GetValue()->ToString());
+    }
+    else
+    {
+        enumConstantSymbol->SetStrValue(enumConstantNode.StrValue());
+    }
     enumConstantSymbol->ResetEvaluating();
 }
 

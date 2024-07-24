@@ -1,0 +1,186 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>MemoryStream Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>MemoryStream Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#11">11</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#default_constructor_MemoryStream_2BF6711C9B19007B26221E165595B0F5B5275A3E">MemoryStream</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#constructor_MemoryStream_B068395773B7F2B56E33C121B4B9716A5507E774">MemoryStream</a>(<span class="kw">byte</span>*&nbsp;data, <span class="kw">long</span>&nbsp;count)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#copy_constructor_MemoryStream_5B6F5AF3CF0930042925A7E47A14F54B372E1660">MemoryStream</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a>&amp;)</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Count_MemoryStream_9AD16E1CC7D33CAB277FB173112C6128726EB06C">Count</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Data_MemoryStream_56992BD702C1FAC0AAD289CDDD7E5636FFE5FD4B">Data</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Read_MemoryStream_519A4CCD807BF27344948E14ADE20AFD6C1C0F2F">Read</a>(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_ReadByte_MemoryStream_9B6EED5D584D4A6806293D4E810DF24FC4D60A48">ReadByte</a>()</td>
+    <td xml:space="preserve">If at the end of the stream returns a result containing -1, otherwise returns a result that contains the byte read from the 'readPos' content location.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_ReadPos_MemoryStream_BF15E295947F4C3D69962F772A73E813ECAF83C8">ReadPos</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Seek_MemoryStream_8B3B34C2E7AA4C88CB20B1EBBD51A9E314D8BE13">Seek</a>(<span class="kw">long</span>&nbsp;pos, <a href="../../System.Base/doc/enumerated_type_Origin_A770811A120AA0D85B3AD4E90D4A9AF5ADC90D70.html">Origin</a>&nbsp;origin)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Tell_MemoryStream_F82DE67ACEC3D932A91350866B98C47746712C34">Tell</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Write_MemoryStream_CDA1924FC9D50E46EA8063B6405161B349FDF623">Write</a>(<span class="kw">byte</span>&nbsp;x)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#member_function_Write_MemoryStream_B202C78A36B29DDB9FEE181EA884B7608BE8A752">Write</a>(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html#copy_assignment_op_assign_MemoryStream_9A9840DF7D1BA54E700B01CCE321A79A4ADCF434">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a>&amp;)</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_content_5EE1521FCEC605E36C64B8B7AD6E79885E80BBD0" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<span class="kw">byte</span>></td>
+    <td xml:space="preserve">content</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_readPos_B0B44733FD68E9C66C5983A6295047CEE7272C79" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td xml:space="preserve">readPos</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_MemoryStream_2BF6711C9B19007B26221E165595B0F5B5275A3E" xml:space="preserve">MemoryStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;MemoryStream()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#13">13</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_MemoryStream_B068395773B7F2B56E33C121B4B9716A5507E774" xml:space="preserve">MemoryStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;MemoryStream(<span class="kw">byte</span>*&nbsp;data, <span class="kw">long</span>&nbsp;count)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#16">16</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_MemoryStream_5B6F5AF3CF0930042925A7E47A14F54B372E1660" xml:space="preserve">MemoryStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;MemoryStream(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a>&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#20">20</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Count_MemoryStream_9AD16E1CC7D33CAB277FB173112C6128726EB06C" xml:space="preserve">Count&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;Count()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#28">28</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Data_MemoryStream_56992BD702C1FAC0AAD289CDDD7E5636FFE5FD4B" xml:space="preserve">Data&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="kw">byte</span>*&nbsp;Data()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Read_MemoryStream_519A4CCD807BF27344948E14ADE20AFD6C1C0F2F" xml:space="preserve">Read&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>>&nbsp;Read(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#47">47</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReadByte_MemoryStream_9B6EED5D584D4A6806293D4E810DF24FC4D60A48" xml:space="preserve">ReadByte&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>>&nbsp;ReadByte()</h4>
+  <p class="description" xml:space="preserve">If at the end of the stream returns a result containing -1, otherwise returns a result that contains the byte read from the 'readPos' content location.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#37">37</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReadPos_MemoryStream_BF15E295947F4C3D69962F772A73E813ECAF83C8" xml:space="preserve">ReadPos&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">long</span>&nbsp;ReadPos()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#32">32</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Seek_MemoryStream_8B3B34C2E7AA4C88CB20B1EBBD51A9E314D8BE13" xml:space="preserve">Seek&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Seek(<span class="kw">long</span>&nbsp;pos, <a href="../../System.Base/doc/enumerated_type_Origin_A770811A120AA0D85B3AD4E90D4A9AF5ADC90D70.html">Origin</a>&nbsp;origin)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#76">76</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Tell_MemoryStream_F82DE67ACEC3D932A91350866B98C47746712C34" xml:space="preserve">Tell&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>>&nbsp;Tell()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#86">86</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Write_MemoryStream_CDA1924FC9D50E46EA8063B6405161B349FDF623" xml:space="preserve">Write&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<span class="kw">byte</span>&nbsp;x)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#60">60</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Write_MemoryStream_B202C78A36B29DDB9FEE181EA884B7608BE8A752" xml:space="preserve">Write&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#66">66</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_MemoryStream_9A9840DF7D1BA54E700B01CCE321A79A4ADCF434" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_MemoryStream_2C3577A3D1CF528A948E5241C07F06DFAADDDD6C.html">MemoryStream</a>&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html#21">21</a>&nbsp;of&nbsp;<a href="../../System.Base/file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

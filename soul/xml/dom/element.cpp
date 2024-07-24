@@ -173,6 +173,25 @@ std::string Element::ToString()
     return stream.str();
 }
 
+Node* Element::Clone(bool deep) const
+{
+    Element* clone = new Element(GetSourcePos(), Name());
+    for (const auto& a : attributeMap)
+    {
+        clone->AddAttribute(static_cast<AttributeNode*>(a.second->Clone(deep)));
+    }
+    if (deep)
+    {
+        Node* child = FirstChild();
+        while (child != nullptr)
+        {
+            clone->AppendChild(child->Clone(deep));
+            child = child->Next();
+        }
+    }
+    return clone;
+}
+
 Element* MakeElement(const std::string& name)
 {
     return new Element(soul::ast::SourcePos(), name);

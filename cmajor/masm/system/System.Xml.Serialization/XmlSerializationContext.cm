@@ -1,0 +1,43 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml.Serialization
+{
+    public enum XmlSerializationFlags : int
+    {
+        none = 0, suppressMetadata = 1 << 0, failOnNotFoundObjects = 1 << 1
+    }
+
+    public class XmlSerializationContext
+    {
+        public XmlSerializationContext() : flags(XmlSerializationFlags.none), xmlBundle(null)
+        {
+        }
+        public inline bool GetFlag(XmlSerializationFlags flag) const
+        {
+            return (flags & flag) != XmlSerializationFlags.none;
+        }
+        public void SetFlag(XmlSerializationFlags flag)
+        {
+            flags = cast<XmlSerializationFlags>(flags | flag);
+        }
+        public void ResetFlag(XmlSerializationFlags flag)
+        {
+            flags = cast<XmlSerializationFlags>(flags & ~flag);
+        }
+        public void SetXmlBundle(XmlBundle* xmlBundle_)
+        {
+            xmlBundle = xmlBundle_;
+        }
+        public XmlBundle* GetXmlBundle() const
+        {
+            return xmlBundle;
+        }
+        private XmlSerializationFlags flags;
+        private XmlBundle* xmlBundle;
+    }
+}

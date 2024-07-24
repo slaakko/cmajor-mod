@@ -20,6 +20,7 @@ public:
     virtual std::unique_ptr<Node> RemoveChild(Node* child);
     virtual std::unique_ptr<Node> ReplaceChild(Node* newChild, Node* oldChild);
     bool HasChildNodes() const final { return firstChild != nullptr; }
+    std::vector<Node*> ChildNodes() const;
     Node* FirstChild() const { return firstChild; }
     Node* LastChild() const { return lastChild; }
     void Accept(Visitor& visitor) override;

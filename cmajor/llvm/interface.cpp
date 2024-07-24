@@ -4,8 +4,10 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <llvm/ADT/ilist_base.h>
 #include <llvm/IR/DebugInfoMetadata.h>
+#pragma warning(default : 4996)
 
 module cmajor.llvm.interface;
 

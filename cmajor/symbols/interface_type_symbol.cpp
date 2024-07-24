@@ -709,8 +709,9 @@ void ClassToInterfaceConversion::GenerateCall(cmajor::ir::Emitter& emitter, std:
     void* temporaryInterfaceObjectVar = emitter.Stack().Pop();
     void* objectPtr = emitter.GetObjectPtrFromInterface(targetInterfaceType->IrType(emitter), temporaryInterfaceObjectVar);
     emitter.CreateStore(classPtrAsVoidPtr, objectPtr);
-    void* vmtObjectPtr = sourceClassType->VmtObject(emitter, false);
-    void* imtArray = emitter.GetImtArray(sourceClassType->IrType(emitter), vmtObjectPtr, GetImtsVmtIndexOffset());
+    ClassTypeSymbol* vmtHolder = sourceClassType->VmtPtrHolderClass();
+    void* vmtObjectPtr = vmtHolder->VmtObject(emitter, true);
+    void* imtArray = emitter.GetImtArray(vmtHolder->IrType(emitter), vmtObjectPtr, GetImtsVmtIndexOffset());
     void* imtArrayType = emitter.GetIrTypeForArrayType(emitter.GetIrTypeForVoidPtrType(), sourceClassType->ImplementedInterfaces().size());
     void* imt = emitter.GetImt(imtArrayType, imtArray, interfaceIndex);
     void* imtPtr = emitter.GetImtPtrPtrFromInterface(targetInterfaceType->IrType(emitter), temporaryInterfaceObjectVar);

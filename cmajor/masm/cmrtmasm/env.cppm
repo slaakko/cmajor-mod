@@ -9,6 +9,6 @@ import std.core;
 
 export {
 
-extern "C" const char* RtmGetEnvironmentVariable(const char* envVarName);
+extern "C" int RtmGetEnvironmentVariable(const char* envVarName);
 
 }

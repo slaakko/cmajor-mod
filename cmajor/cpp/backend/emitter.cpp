@@ -1724,6 +1724,11 @@ void CppEmitter::SetCompileUnitId(const std::string& compileUnitId)
     context->SetCompileUnitId(compileUnitId);
 }
 
+const std::string& CppEmitter::CompileUnitId() const
+{
+    return context->CompileUnitId();
+}
+
 void* CppEmitter::GetClsIdValue(const std::string& typeId)
 {
     return nullptr;

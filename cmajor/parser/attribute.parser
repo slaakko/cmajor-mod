@@ -34,7 +34,8 @@ parser AttributeParser
         }
         ;
 
-    Attribute(cmajor::parser::context::Context* context, cmajor::ast::AttributesNode* attributes, var std::u32string value, var std::u32string name, var soul::ast::Span s)
+    Attribute(cmajor::parser::context::Context* context, cmajor::ast::AttributesNode* attributes, var std::u32string value, var std::u32string name, var soul::ast::Span s,
+        var bool hasValue)
         ::= 
         (
             empty{ value = U"true"; }
@@ -44,12 +45,13 @@ parser AttributeParser
                 {
                     cmajor::ast::StringLiteralPrefix prefix;
                     value = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                    hasValue = true;
                 }
             )?
 
         )
         {
-            attributes->AddAttribute(s, name, value);
+            attributes->AddAttribute(s, name, value, hasValue);
         }
         ;
 }

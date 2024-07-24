@@ -22,11 +22,15 @@
           <nonterminal first="{ID}" ruleName="Identifier"/>
          </action>
         </sequence>
-        <token first="{LBRACE}" name="LBRACE"/>
+        <action first="{LBRACE}">
+         <token first="{LBRACE}" name="LBRACE"/>
+        </action>
        </sequence>
        <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, LPAREN, SBYTE, SEMICOLON, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="InterfaceContent"/>
       </sequence>
-      <token first="{RBRACE}" name="RBRACE"/>
+      <action first="{RBRACE}">
+       <token first="{RBRACE}" name="RBRACE"/>
+      </action>
      </sequence>
     </group>
    </action>
@@ -55,7 +59,11 @@
          </action>
         </sequence>
         <action first="{ID}">
-         <nonterminal first="{ID}" ruleName="InterfaceFunctionGroupId"/>
+         <group first="{ID}">
+          <action first="{ID}">
+           <nonterminal first="{ID}" ruleName="InterfaceFunctionGroupId"/>
+          </action>
+         </group>
         </action>
        </sequence>
        <nonterminal first="{LPAREN}" ruleName="ParameterList"/>

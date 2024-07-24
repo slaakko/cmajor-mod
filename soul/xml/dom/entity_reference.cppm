@@ -17,6 +17,7 @@ public:
     EntityReference(const soul::ast::SourcePos& sourcePos_, const std::string& entityRef_);
     void Accept(Visitor& visitor) override;
     void Write(util::CodeFormatter& formatter) override;
+    Node* Clone(bool deep) const override;
 };
 
 EntityReference* MakeEntityReference(const std::string& entityRef);

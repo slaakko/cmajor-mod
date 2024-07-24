@@ -175,6 +175,7 @@ soul::parser::Match ConstantParser<LexerT>::Constant(LexerT& lexer, cmajor::pars
         if (match.hit)
         {
             cmajor::ast::ConstantNode *node = new cmajor::ast::ConstantNode(s, specifiers->value, type.release(), id.release(), expr.release());
+            node->SetStrValue(node->Value()->ToString());
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "Constant");

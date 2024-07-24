@@ -334,6 +334,7 @@ public:
     void AddCase(void* switchInst, void* caseValue, void* caseDest) override;
     void* GenerateTrap(const std::vector<void*>& args) override;
     void SetCompileUnitId(const std::string& compileUnitId) override;
+    const std::string& CompileUnitId() const override;
     void* GetClsIdValue(const std::string& typeId) override;
     void* CreateMDBool(bool value) override;
     void* CreateMDLong(int64_t value) override;

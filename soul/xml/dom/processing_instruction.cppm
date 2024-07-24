@@ -19,6 +19,7 @@ public:
     const std::string& Data() const { return data; }
     void Accept(Visitor& visitor) override;
     void Write(util::CodeFormatter& formatter) override;
+    Node* Clone(bool deep) const override;
 private:
     std::string target;
     std::string data;

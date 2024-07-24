@@ -121,14 +121,14 @@ namespace System.IO
             {
                 int errorId = RtmAllocateError("FileStream.Read: count less than zero");
                 SetErrorId(errorId);
-                return Result<long>(-1, ErrorId(errorId));
+                return Result<long>(ErrorId(errorId));
             }
             int errorId = 0;
             long result = RtmRead(file, buffer, count, errorId);
             if (result == -1)
             {
                 SetErrorId(errorId);
-                return Result<long>(-1, ErrorId(errorId));
+                return Result<long>(ErrorId(errorId));
             }
             return Result<long>(result);
         }
@@ -139,7 +139,7 @@ namespace System.IO
             if (!RtmWriteByte(file, x, errorId))
             {
                 SetErrorId(errorId);
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
         }
@@ -150,14 +150,14 @@ namespace System.IO
             {
                 int errorId = RtmAllocateError("FileStream.Write: count less than zero");
                 SetErrorId(errorId);
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             int errorId = 0;
             long result = RtmWrite(file, buffer, count, errorId);
             if (result == -1)
             {
                 SetErrorId(errorId);
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
         }
@@ -168,7 +168,7 @@ namespace System.IO
             if (!RtmSeek(file, pos, origin, errorId))
             {
                 SetErrorId(errorId);
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
         }
@@ -180,7 +180,7 @@ namespace System.IO
             if (result == -1)
             {
                 SetErrorId(errorId);
-                return Result<long>(-1, ErrorId(errorId));
+                return Result<long>(ErrorId(errorId));
             }
             return Result<long>(result);
         }
@@ -191,7 +191,7 @@ namespace System.IO
             if (!RtmFlush(file, errorId))
             {
                 SetErrorId(errorId);
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return Result<bool>(true);
         }

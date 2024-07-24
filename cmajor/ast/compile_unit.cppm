@@ -17,6 +17,7 @@ class CompileUnitNode : public Node
 public:
     CompileUnitNode(const soul::ast::Span& span_);
     CompileUnitNode(const soul::ast::Span& span_, const std::string& filePath_);
+    void CreateGlobalNs();
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
@@ -32,6 +33,7 @@ public:
     bool IsSynthesizedUnit() const { return isSynthesizedUnit; }
     int GetColumn(const soul::ast::Span& span) const;
     const std::string& Id();
+    void SetId(const std::string& id_);
     const std::string& Hash() const { return hash; }
     void SetHash(const std::string& hash_) { hash = hash_; }
     bool IsProgramMainUnit() const { return isProgramMainUnit; }

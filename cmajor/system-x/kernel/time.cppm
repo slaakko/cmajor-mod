@@ -12,6 +12,7 @@ export namespace cmajor::systemx::kernel {
 
 struct Date
 {
+    Date() : year(0), month(0), day() {}
     Date(int16_t year_, int8_t month_, int8_t day_) : year(year_), month(month_), day(day_) {}
     int16_t year;
     int8_t month;
@@ -20,6 +21,8 @@ struct Date
 
 struct DateTime
 {
+    DateTime() : date(), secs() {}
+    DateTime(Date date_, int32_t secs_) : date(date_), secs(secs_) {}
     Date date;
     int32_t secs;
 };

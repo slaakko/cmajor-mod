@@ -13,4 +13,5 @@ reference <../System.RegularExpressions/System.RegularExpressions.cmp>;
 reference <../System.Runtime/System.Runtime.cmp>;
 reference <../System.XPath/System.XPath.cmp>;
 reference <../System.Xml/System.Xml.cmp>;
+reference <../System.Xml.Serialization/System.Xml.Serialization.cmp>;
 source <System.cm>;

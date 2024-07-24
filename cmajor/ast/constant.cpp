@@ -74,7 +74,7 @@ void ConstantNode::Read(AstReader& reader)
         value.reset(reader.ReadNode());
         value->SetParent(this);
     }
-    strValue = reader.GetBinaryStreamReader().ReadUtf32String();
+    strValue = reader.GetBinaryStreamReader().ReadUtf8String();
 }
 
 } // namespace cmajor::ast

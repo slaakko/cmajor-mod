@@ -11,10 +11,11 @@ namespace System.Windows
     public string CmajorRootDir()
     {
         string cmajorRootDir;
-        const char* cmajorRootEnv = RtmGetEnvironmentVariable("CMAJOR_ROOT");
-        if (cmajorRootEnv != null && *cmajorRootEnv != '\0')
+        int stringHandle = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (stringHandle != -1)
         {
-            cmajorRootDir = cmajorRootEnv;
+            cmajorRootDir = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
         }
         if (cmajorRootDir.IsEmpty())
         {

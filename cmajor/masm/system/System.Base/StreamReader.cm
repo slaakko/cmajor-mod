@@ -157,13 +157,13 @@ namespace System.IO
                 {
                     int errorId = RtmAllocateError("StreamReader.Get: stream is null");
                     SetErrorId(errorId);
-                    return Result<int>(-1, ErrorId(errorId));
+                    return Result<int>(ErrorId(errorId));
                 }
                 auto x = stream->ReadByte();
                 if (x.Error())
                 {
                     SetErrorId(x.GetErrorId());
-                    return Result<int>(-1, x.GetErrorId());
+                    return Result<int>(ErrorId(x.GetErrorId()));
                 }
                 if (peek)
                 {

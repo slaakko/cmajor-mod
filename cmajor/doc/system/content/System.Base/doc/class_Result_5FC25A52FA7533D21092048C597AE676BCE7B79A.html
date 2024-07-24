@@ -1,0 +1,186 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>Result&lt;T> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>Result&lt;T> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <p class="description" xml:space="preserve">Represents either an expected function return value or an error result.</p>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#18">18</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="ba675396-ad8b-d994-2acc-ecad4bf4d102">
+    <td class="rightAlignedCol" xml:space="preserve">T</td>
+    <td xml:space="preserve"/>
+   </tr>
+  </table>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#default_constructor_Result_E3D22AC6480A3B2F401BAB42CD062062EBE8E285">Result</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_180DCE55562CA5F4DA45580226198E172402C1E7">Result</a>(<a href="../../System.Base/doc/class_ErrorId_0E4B2140259AADB7DB40D7239F8FEA3526DD7F6B.html">ErrorId</a>&nbsp;errorId_)</td>
+    <td xml:space="preserve">Use this constructor when constructing an error result.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_127474B682C86342EB1948328E1D19D34E21F263">Result</a>(<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;&amp;&nbsp;value_)</td>
+    <td xml:space="preserve">Constructs an expected function result.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01">Result</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;&nbsp;value_)</td>
+    <td xml:space="preserve">Constructs an expected function result.</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#member_function_AndThen_Result_512E0262CA0F74EA43585B1EE500A86B2630CD7A">AndThen</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&amp;&nbsp;second)</td>
+    <td xml:space="preserve">If the result represented by this result is an error result, returns this result. Otherwise returns the second result.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#member_function_Error_Result_B003457B7051E2B567FD3A8C392B6448A609CD5A">Error</a>()&nbsp;<span class="kw">const</span></td>
+    <td xml:space="preserve">Returns true if the result represents an error result and false otherwise.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#member_function_GetErrorId_Result_544DAE1573CDBA0F3EBFAA27421D7C3FCEB0BFEB">GetErrorId</a>()&nbsp;<span class="kw">const</span></td>
+    <td xml:space="preserve">Returns the contained error id.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#member_function_GetErrorMessage_Result_3398AF48FF6871CE07D8602497C95049EFF7965B">GetErrorMessage</a>()&nbsp;<span class="kw">const</span></td>
+    <td xml:space="preserve">Returns the error message associated with the error id.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#member_function_SetErrorId_Result_28864A901366526BA820BA21713D38EAA6FBA2AA">SetErrorId</a>(<span class="kw">int</span>&nbsp;errorId_)</td>
+    <td xml:space="preserve">Sets the contained error id.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#member_function_Value_Result_6B212DC641E37E1AADE44E0A58D7C2F1E3CA7E1D">Value</a>()</td>
+    <td xml:space="preserve">Returns the expected return value.</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#member_function_Value_Result_BEA160CA481B9C2B7EF5A04232C68B3762FC6C35">Value</a>()&nbsp;<span class="kw">const</span></td>
+    <td xml:space="preserve">Returns the expected return value.</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_errorId_0F2697E47037B4814DD9A95B44F1FFEBEB3CD349" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve">errorId</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_value_CA6EA6914E036A2E0D5D37ADCD7C1E2F04C1A30E" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a></td>
+    <td xml:space="preserve">value</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_Result_E3D22AC6480A3B2F401BAB42CD062062EBE8E285" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#20">20</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_Result_180DCE55562CA5F4DA45580226198E172402C1E7" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result(<a href="../../System.Base/doc/class_ErrorId_0E4B2140259AADB7DB40D7239F8FEA3526DD7F6B.html">ErrorId</a>&nbsp;errorId_)</h4>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">Use this constructor when constructing an error result.</p><span xml:space="preserve"><p class="description" xml:space="preserve">The error id can be obtained by calling the <a href="../../System.Base/doc/ns_System.html#function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456">AllocateError</a> function.</p></span></span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#23">23</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_Result_127474B682C86342EB1948328E1D19D34E21F263" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result(<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;&amp;&nbsp;value_)</h4>
+  <p class="description" xml:space="preserve">Constructs an expected function result.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#22">22</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_Result_5442F5D8157B8EFA5BDE426ABE4051B6757CCD01" xml:space="preserve">Result&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;Result(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;&nbsp;value_)</h4>
+  <p class="description" xml:space="preserve">Constructs an expected function result.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#21">21</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AndThen_Result_512E0262CA0F74EA43585B1EE500A86B2630CD7A" xml:space="preserve">AndThen&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&nbsp;AndThen(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&amp;&nbsp;second)</h4>
+  <p class="description" xml:space="preserve">If the result represented by this result is an error result, returns this result. Otherwise returns the second result.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Error_Result_B003457B7051E2B567FD3A8C392B6448A609CD5A" xml:space="preserve">Error&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;Error()</h4>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">Returns true if the result represents an error result and false otherwise.</p><span xml:space="preserve"><p class="description" xml:space="preserve">An error result will have an error id that is a positive integer. A successful result will have an error id that is zero.</p></span></span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#27">27</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetErrorId_Result_544DAE1573CDBA0F3EBFAA27421D7C3FCEB0BFEB" xml:space="preserve">GetErrorId&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">int</span>&nbsp;GetErrorId()</h4>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">Returns the contained error id.</p><span xml:space="preserve"><p class="description" xml:space="preserve">A positive error id indicates error. A zero error id indicates success.</p></span></span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#28">28</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetErrorMessage_Result_3398AF48FF6871CE07D8602497C95049EFF7965B" xml:space="preserve">GetErrorMessage&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;GetErrorMessage()</h4>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">Returns the error message associated with the error id.</p><span xml:space="preserve"><p class="description" xml:space="preserve">The error message will contain a stack trace on debug builds.</p></span></span>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetErrorId_Result_28864A901366526BA820BA21713D38EAA6FBA2AA" xml:space="preserve">SetErrorId&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetErrorId(<span class="kw">int</span>&nbsp;errorId_)</h4>
+  <p class="description" xml:space="preserve">Sets the contained error id.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#29">29</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Value_Result_6B212DC641E37E1AADE44E0A58D7C2F1E3CA7E1D" xml:space="preserve">Value&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;&nbsp;Value()</h4>
+  <p class="description" xml:space="preserve">Returns the expected return value.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#26">26</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Value_Result_BEA160CA481B9C2B7EF5A04232C68B3762FC6C35" xml:space="preserve">Value&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#ba675396-ad8b-d994-2acc-ecad4bf4d102">T</a>&amp;&nbsp;Value()</h4>
+  <p class="description" xml:space="preserve">Returns the expected return value.</p>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Result.cm.html#25">25</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Result.cm.html">System.Base/Result.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

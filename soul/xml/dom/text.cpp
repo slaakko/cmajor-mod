@@ -30,6 +30,11 @@ void Text::Accept(Visitor& visitor)
     visitor.Visit(*this);
 }
 
+Node* Text::Clone(bool deep) const
+{
+    return new Text(GetSourcePos(), Data());
+}
+
 Text* MakeText(const std::string& text)
 {
     return new Text(soul::ast::SourcePos(), text);

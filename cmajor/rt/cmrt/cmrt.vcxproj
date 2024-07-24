@@ -134,7 +134,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>.;..</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4267;4996;4244;4146</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4267;4244;4146</DisableSpecificWarnings>
       <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>

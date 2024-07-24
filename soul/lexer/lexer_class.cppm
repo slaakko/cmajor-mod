@@ -138,6 +138,10 @@ public:
     {
         ComputeLineStarts();
     }
+    void SetSeparatorChar(char32_t separatorChar_)
+    {
+        separatorChar = separatorChar_;
+    }
     int64_t operator*() const
     {
         return current->id;

@@ -468,4 +468,9 @@ void Context::SetCompileUnitId(const std::string& compileUnitId_)
     dataRepository.SetCompileUnitId(compileUnitId_);
 }
 
+const std::string& Context::CompileUnitId() const
+{
+    return dataRepository.CompileUnitId();
+}
+
 } // namespace cmajor::masm::ir

@@ -10,20 +10,36 @@ namespace cmajor::systemx::kernel {
 Date CurrentDate()
 {
     time_t t = std::time(nullptr);
-    struct tm lt = *std::localtime(&t);
-    int16_t year = 1900 + lt.tm_year;
-    int8_t month = 1 + lt.tm_mon;
-    int8_t day = lt.tm_mday;
-    return Date(year, month, day);
+    struct tm localTime;
+    errno_t result = localtime_s(&localTime, &t);
+    if (result == 0)
+    {
+        int16_t year = 1900 + localTime.tm_year;
+        int8_t month = 1 + localTime.tm_mon;
+        int8_t day = localTime.tm_mday;
+        return Date(year, month, day);
+    }
+    else
+    {
+        return Date();
+    }
 }
 
 DateTime CurrentDateTime()
 {
     time_t t = std::time(nullptr);
-    struct tm lt = *std::localtime(&t);
-    int32_t secs = 3600 * lt.tm_hour + 60 * lt.tm_min + lt.tm_sec;
-    DateTime dt(CurrentDate(), secs);
-    return dt;
+    struct tm localTime;
+    errno_t result = localtime_s(&localTime, &t);
+    if (result == 0)
+    {
+        int32_t secs = 3600 * localTime.tm_hour + 60 * localTime.tm_min + localTime.tm_sec;
+        DateTime dt(CurrentDate(), secs);
+        return dt;
+    }
+    else
+    {
+        return DateTime();
+    }
 }
 
 void WriteDate(const Date& date, int64_t yearAddr, int64_t monthAddr, int64_t dayAddr, uint64_t rv, cmajor::systemx::machine::Memory& mem)

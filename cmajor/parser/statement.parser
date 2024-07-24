@@ -119,84 +119,106 @@ parser StatementParser
         }
         ;
 
-    IfStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
+    IfStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan, 
+        var soul::ast::Span elseSpan) : cmajor::ast::StatementNode*
         ::= 
         (   
             IF{ s = lexer.GetSpan(pos); }
-            LPAREN
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             Expression(context):cond
-            RPAREN
+            RPAREN{ rparenSpan = lexer.GetSpan(pos); }
             Statement(context):thenS
-            (   ELSE
+            (   ELSE{ elseSpan = lexer.GetSpan(pos); }
                 Statement(context):elseS
             )?
         )
         {
-            return new cmajor::ast::IfStatementNode(s, cond, thenS, elseS);
+            cmajor::ast::IfStatementNode* ifStatementNode = new cmajor::ast::IfStatementNode(s, cond, thenS, elseS);
+            ifStatementNode->SetLParenSpan(lparenSpan);
+            ifStatementNode->SetRParenSpan(rparenSpan);
+            ifStatementNode->SetElseSpan(elseSpan);
+            return ifStatementNode;
         }
         ;
 
-    WhileStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
+    WhileStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan) : 
+        cmajor::ast::StatementNode*
         ::= 
         (   
             WHILE{ s = lexer.GetSpan(pos); }
-            LPAREN
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             Expression(context):cond
-            RPAREN
+            RPAREN{ rparenSpan = lexer.GetSpan(pos); }
             Statement(context):stmt
         )
         {
-            return new cmajor::ast::WhileStatementNode(s, cond, stmt);
+            cmajor::ast::WhileStatementNode* whileStatementNode = new cmajor::ast::WhileStatementNode(s, cond, stmt);
+            whileStatementNode->SetLParenSpan(lparenSpan);
+            whileStatementNode->SetRParenSpan(rparenSpan);
+            return whileStatementNode;
         }
         ;
 
-    DoStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
+    DoStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan, 
+        var soul::ast::Span whileSpan) : cmajor::ast::StatementNode*
         ::= 
         (   
             DO{ s = lexer.GetSpan(pos); }
             Statement(context):stmt
-            WHILE
-            LPAREN
+            WHILE{ whileSpan = lexer.GetSpan(pos); }
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             Expression(context):cond
-            RPAREN
+            RPAREN{ rparenSpan = lexer.GetSpan(pos); }
             SEMICOLON
         )
         {
-            return new cmajor::ast::DoStatementNode(s, stmt, cond);
+            cmajor::ast::DoStatementNode* doStatementNode = new cmajor::ast::DoStatementNode(s, stmt, cond);
+            doStatementNode->SetWhileSpan(whileSpan);
+            doStatementNode->SetLParenSpan(lparenSpan);
+            doStatementNode->SetRParenSpan(rparenSpan);
+            return doStatementNode;
         }
         ;
 
-    RangeForStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
+    RangeForStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan, 
+        var soul::ast::Span colonSpan) : cmajor::ast::StatementNode*
         ::= 
         (   
             FOR{ s = lexer.GetSpan(pos); }
-            LPAREN
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             TypeExpr(context):type
             Identifier(context):id
-            COLON
+            COLON{ colonSpan = lexer.GetSpan(pos); }
             Expression(context):container
-            RPAREN
+            RPAREN{ rparenSpan = lexer.GetSpan(pos); }
             Statement(context):stmt
         )
         {
-            return new cmajor::ast::RangeForStatementNode(s, type, id, container, stmt);
+            cmajor::ast::RangeForStatementNode* rangeForStatementNode = new cmajor::ast::RangeForStatementNode(s, type, id, container, stmt);
+            rangeForStatementNode->SetLParenSpan(lparenSpan);
+            rangeForStatementNode->SetColonSpan(colonSpan);
+            rangeForStatementNode->SetRParenSpan(rparenSpan);
+            return rangeForStatementNode;
         }
         ;
 
-    ForStatement(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::StatementNode*
+    ForStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan) : cmajor::ast::StatementNode*
         ::= 
         (   
             FOR{ s = lexer.GetSpan(pos); }
-            LPAREN
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             ForInitStatement(context):init
             Expression(context):cond?
             SEMICOLON
             ForLoopStatementExpr(context):loop
-            RPAREN
+            RPAREN{ rparenSpan = lexer.GetSpan(pos); }
             Statement(context):stmt
         )
         {
-            return new cmajor::ast::ForStatementNode(s, init, cond, loop, stmt);
+            cmajor::ast::ForStatementNode* forStatementNode = new cmajor::ast::ForStatementNode(s, init, cond, loop, stmt);
+            forStatementNode->SetLParenSpan(lparenSpan);
+            forStatementNode->SetRParenSpan(rparenSpan);
+            return forStatementNode;
         }
         ;
 
@@ -250,24 +272,30 @@ parser StatementParser
         }
         ;
 
-    SwitchStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var std::unique_ptr<cmajor::ast::SwitchStatementNode> switchStatementNode) : 
+    SwitchStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, 
+        var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan, var soul::ast::Span beginBraceSpan, var soul::ast::Span endBraceSpan, 
+        var std::unique_ptr<cmajor::ast::SwitchStatementNode> switchStatementNode) : 
         cmajor::ast::StatementNode*
         ::= 
         (   
             SWITCH{ s = lexer.GetSpan(pos); }
-            LPAREN
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             Expression(context):cond
-            RPAREN
+            (RPAREN{ rparenSpan = lexer.GetSpan(pos); })
             {
                 switchStatementNode.reset(new cmajor::ast::SwitchStatementNode(s, cond));
             }
-            LBRACE
+            LBRACE{ beginBraceSpan = lexer.GetSpan(pos); }
             (   CaseStatement(context):caseStatement{ switchStatementNode->AddCase(caseStatement); }
             |   DefaultStatement(context):defaultStatement{ switchStatementNode->SetDefault(defaultStatement); }
             )*
-            RBRACE
+            RBRACE{ endBraceSpan = lexer.GetSpan(pos); }
         )
         {
+            switchStatementNode->SetLParenSpan(lparenSpan);
+            switchStatementNode->SetRParenSpan(rparenSpan);
+            switchStatementNode->SetBeginBraceSpan(beginBraceSpan);
+            switchStatementNode->SetEndBraceSpan(endBraceSpan);
             return switchStatementNode.release();
         }
         ;
@@ -276,7 +304,7 @@ parser StatementParser
         ::= 
         (   
             empty{ caseStatementNode.reset(new cmajor::ast::CaseStatementNode(lexer.GetSpan(pos))); }
-            (   CASE
+            (   CASE{ caseStatementNode->AddCaseSpan(lexer.GetSpan(pos)); }
                 Expression(context):caseExpr{ caseStatementNode->AddCaseExpr(caseExpr); }
                 COLON
             )+
@@ -449,18 +477,21 @@ parser StatementParser
         }
         ;
 
-    Catch(cmajor::parser::context::Context* context, var soul::ast::Span s) : cmajor::ast::CatchNode*
+    Catch(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan) : cmajor::ast::CatchNode*
         ::= 
         (
             CATCH{ s = lexer.GetSpan(pos); }
-            LPAREN
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             TypeExpr(context):catchType
             Identifier(context):catchId?
-            RPAREN
+            RPAREN{ rparenSpan = lexer.GetSpan(pos); }
             CompoundStatement(context):catchBlock
         )
         {
-            return new cmajor::ast::CatchNode(s, catchType, catchId, catchBlock);
+            cmajor::ast::CatchNode* catchNode = new cmajor::ast::CatchNode(s, catchType, catchId, catchBlock);
+            catchNode->SetLParenSpan(lparenSpan);
+            catchNode->SetRParenSpan(rparenSpan);
+            return catchNode;
         }
         ;
 
@@ -478,23 +509,37 @@ parser StatementParser
         ;
 
     ConditionalCompilationStatement(cmajor::parser::context::Context* context, var soul::ast::Span s, var soul::ast::Span elifSpan, var soul::ast::Span elseSpan,
+        var soul::ast::Span lparenSpan, var soul::ast::Span rparenSpan,
         var std::unique_ptr<cmajor::ast::ConditionalCompilationStatementNode> condCompStmt) : cmajor::ast::StatementNode*
         ::= 
         (   
             HASH{ s = lexer.GetSpan(pos); }
             IF
-            LPAREN
+            LPAREN{ lparenSpan = lexer.GetSpan(pos); }
             ConditionalCompilationExpression(context):ifExpr{ condCompStmt.reset(new cmajor::ast::ConditionalCompilationStatementNode(s, ifExpr)); }
             RPAREN
+            { 
+                rparenSpan = lexer.GetSpan(pos); 
+                condCompStmt->IfPart()->SetKeywordSpan(s); 
+                condCompStmt->IfPart()->SetLParenSpan(lparenSpan); 
+                condCompStmt->IfPart()->SetRParenSpan(rparenSpan); 
+            }
             (
                 Statement(context):ifs{ condCompStmt->AddIfStatement(ifs); }
             )*
             (
                 HASH{ elifSpan = lexer.GetSpan(pos); } 
                 ELIF
-                LPAREN
+                LPAREN{ lparenSpan = lexer.GetSpan(pos); }
                 ConditionalCompilationExpression(context):elifExpr{ condCompStmt->AddElifExpr(elifSpan, elifExpr); }
                 RPAREN
+                { 
+                    cmajor::ast::ConditionalCompilationPartNode* ep = condCompStmt->ElifParts().Back();
+                    rparenSpan = lexer.GetSpan(pos); 
+                    ep->SetKeywordSpan(elifSpan);
+                    ep->SetLParenSpan(lparenSpan);
+                    ep->SetRParenSpan(rparenSpan);
+                }
                 (
                     Statement(context):elifs{ condCompStmt->AddElifStatement(elifs); }
                 )*
@@ -507,11 +552,15 @@ parser StatementParser
                 )*
             )?
             (
-                HASH 
+                HASH{ condCompStmt->SetEndIfSpan(lexer.GetSpan(pos)); } 
                 ENDIF
             )
         )
         {
+            if (condCompStmt->ElsePart())
+            {
+                condCompStmt->ElsePart()->SetKeywordSpan(elseSpan);
+            }
             return condCompStmt.release();
         }
         ;

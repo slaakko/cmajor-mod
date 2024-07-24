@@ -10,6 +10,7 @@ module;
 #include <sys/stat.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
 
 module cmajor.masm.rt.execute;
 
@@ -37,7 +38,7 @@ struct Handle
     {
         if (handle != -1)
         {
-            close(handle);
+            _close(handle);
         }
     }
     int handle;
@@ -80,7 +81,10 @@ int32_t Executor::Execute(Exec* exec)
         {
             toRestore.push_back(std::make_pair(handle, std::move(oldHandle)));
             int pmode = _S_IREAD | _S_IWRITE;
-            Handle fd = _creat(file.c_str(), pmode);
+            int pfh = 0;
+            errno_t result = _sopen_s(&pfh, file.c_str(), _O_CREAT, 0, pmode);
+            //Handle fd = _creat(file.c_str(), pmode); // OLD CODE
+            Handle fd = pfh;
             if (fd != -1)
             {
                 _dup2(fd, handle);

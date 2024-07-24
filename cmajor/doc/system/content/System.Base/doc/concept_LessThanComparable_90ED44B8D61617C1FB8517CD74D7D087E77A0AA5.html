@@ -6,12 +6,12 @@
  </head>
  <body>
   <h1>LessThanComparable&lt;T> Concept</h1>
-  <span xml:space="preserve"><p class="description" xml:space="preserve">A type whose objects can be compared with operators &lt;, >, &lt;= and >=.</p><span xml:space="preserve"><h2>Examples</h2><p class="description" xml:space="preserve"><strong> int</strong> , <a href="../../System.Base/doc/class_String_CharT_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a> , <a href="../../System.Base/doc/class_List_T_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a> .</p></span></span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">A type whose objects can be compared with operators &lt;, >, &lt;= and >=.</p><span xml:space="preserve"><h2>Examples</h2><p class="description" xml:space="preserve"><strong> int</strong> , <a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a> , <a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a> .</p></span></span>
   <h2>Definition</h2>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Concept.cm.html#77">77</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Concept.cm.html">System.Base/Concept.cm</a></span>
   <h2>Type Parameters</h2>
   <table>
-   <tr id="6509136c-0db6-4882-a941-7a85185f2273">
+   <tr id="a8b242c2-30c5-7fd7-8748-34f1730b42ee">
     <td class="rightAlignedCol" xml:space="preserve">T</td>
     <td xml:space="preserve"/>
    </tr>
@@ -24,7 +24,7 @@
   </span>
   <span class="indent" xml:space="preserve">{<br/>
   </span>
-  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;!(a &lt; a);<br/>
+  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;!(a &lt; a)<br/>
   </span>
   <span class="indent" xml:space="preserve">}<br/>
   </span>
@@ -33,7 +33,7 @@
   </span>
   <span class="indent" xml:space="preserve">{<br/>
   </span>
-  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt; b => !(b &lt; a);<br/>
+  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt; b=>!(b &lt; a)<br/>
   </span>
   <span class="indent" xml:space="preserve">}<br/>
   </span>
@@ -42,7 +42,7 @@
   </span>
   <span class="indent" xml:space="preserve">{<br/>
   </span>
-  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt; b &amp;&amp; b &lt; c => a &lt; c;<br/>
+  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt; b &amp;&amp; b &lt; c=>a &lt; c<br/>
   </span>
   <span class="indent" xml:space="preserve">}<br/>
   </span>
@@ -51,7 +51,7 @@
   </span>
   <span class="indent" xml:space="preserve">{<br/>
   </span>
-  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt; b || a == b || a > b;<br/>
+  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt; b || a == b || a > b<br/>
   </span>
   <span class="indent" xml:space="preserve">}<br/>
   </span>
@@ -60,7 +60,7 @@
   </span>
   <span class="indent" xml:space="preserve">{<br/>
   </span>
-  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a > b &lt;=> b &lt; a;<br/>
+  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a > b&lt;=>b &lt; a<br/>
   </span>
   <span class="indent" xml:space="preserve">}<br/>
   </span>
@@ -69,7 +69,7 @@
   </span>
   <span class="indent" xml:space="preserve">{<br/>
   </span>
-  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a >= b &lt;=> !(a &lt; b);<br/>
+  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a >= b&lt;=>!(a &lt; b)<br/>
   </span>
   <span class="indent" xml:space="preserve">}<br/>
   </span>
@@ -78,7 +78,7 @@
   </span>
   <span class="indent" xml:space="preserve">{<br/>
   </span>
-  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt;= b &lt;=> !(b &lt; a);<br/>
+  <span class="indent" xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;a &lt;= b&lt;=>!(b &lt; a)<br/>
   </span>
   <span class="indent" xml:space="preserve">}<br/>
   </span>

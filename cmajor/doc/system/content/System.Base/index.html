@@ -6,8 +6,13 @@
  </head>
  <body>
   <h1>System.Base Module</h1>
+  <span class="indent">
+   <a href="#namespaces">Namespaces</a>
+    | <a href="#files">Files</a>
+    | <a href="#functions">Functions</a>
+  </span>
   <p class="description" xml:space="preserve">The System.Base module contains basic facilities, containers, algorithms, and I/O.</p>
-  <h2>Namespaces</h2>
+  <h2 id="namespaces">Namespaces</h2>
   <table>
    <tr>
     <td>
@@ -70,7 +75,7 @@
     </td>
    </tr>
   </table>
-  <h2>Files</h2>
+  <h2 id="files">Files</h2>
   <table>
    <tr>
     <td xml:space="preserve"><a href="file/Algorithm.cm.html">System.Base/Algorithm.cm</a></td>
@@ -97,19 +102,13 @@
     <td xml:space="preserve"><a href="file/Bitset.cm.html">System.Base/Bitset.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/BufferedByteStream.cm.html">System.Base/BufferedByteStream.cm</a></td>
-   </tr>
-   <tr>
-    <td xml:space="preserve"><a href="file/ByteStream.cm.html">System.Base/ByteStream.cm</a></td>
+    <td xml:space="preserve"><a href="file/BufferedStream.cm.html">System.Base/BufferedStream.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/CodeFormatter.cm.html">System.Base/CodeFormatter.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/Color.cm.html">System.Base/Color.cm</a></td>
-   </tr>
-   <tr>
-    <td xml:space="preserve"><a href="file/Compression.cm.html">System.Base/Compression.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/Concept.cm.html">System.Base/Concept.cm</a></td>
@@ -127,9 +126,6 @@
     <td xml:space="preserve"><a href="file/Directory.cm.html">System.Base/Directory.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/Exception.cm.html">System.Base/Exception.cm</a></td>
-   </tr>
-   <tr>
     <td xml:space="preserve"><a href="file/Execute.cm.html">System.Base/Execute.cm</a></td>
    </tr>
    <tr>
@@ -139,7 +135,7 @@
     <td xml:space="preserve"><a href="file/File.cm.html">System.Base/File.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/FileByteStream.cm.html">System.Base/FileByteStream.cm</a></td>
+    <td xml:space="preserve"><a href="file/FileStream.cm.html">System.Base/FileStream.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/ForwardList.cm.html">System.Base/ForwardList.cm</a></td>
@@ -158,6 +154,9 @@
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/Hashtable.cm.html">System.Base/Hashtable.cm</a></td>
+   </tr>
+   <tr>
+    <td xml:space="preserve"><a href="file/IOBase.cm.html">System.Base/IOBase.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/InsertIterator.cm.html">System.Base/InsertIterator.cm</a></td>
@@ -181,10 +180,13 @@
     <td xml:space="preserve"><a href="file/Math.cm.html">System.Base/Math.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/MemoryByteStream.cm.html">System.Base/MemoryByteStream.cm</a></td>
+    <td xml:space="preserve"><a href="file/Memory.cm.html">System.Base/Memory.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/MemoryReader.cm.html">System.Base/MemoryReader.cm</a></td>
+   </tr>
+   <tr>
+    <td xml:space="preserve"><a href="file/MemoryStream.cm.html">System.Base/MemoryStream.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/MemoryWriter.cm.html">System.Base/MemoryWriter.cm</a></td>
@@ -199,9 +201,6 @@
     <td xml:space="preserve"><a href="file/Path.cm.html">System.Base/Path.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/Process.cm.html">System.Base/Process.cm</a></td>
-   </tr>
-   <tr>
     <td xml:space="preserve"><a href="file/Queue.cm.html">System.Base/Queue.cm</a></td>
    </tr>
    <tr>
@@ -209,6 +208,9 @@
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/RedBlackTree.cm.html">System.Base/RedBlackTree.cm</a></td>
+   </tr>
+   <tr>
+    <td xml:space="preserve"><a href="file/Result.cm.html">System.Base/Result.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/Rvalue.cm.html">System.Base/Rvalue.cm</a></td>
@@ -224,6 +226,9 @@
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/Stack.cm.html">System.Base/Stack.cm</a></td>
+   </tr>
+   <tr>
+    <td xml:space="preserve"><a href="file/Stream.cm.html">System.Base/Stream.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/StreamReader.cm.html">System.Base/StreamReader.cm</a></td>
@@ -268,82 +273,82 @@
     <td xml:space="preserve"><a href="file/Uuid.cm.html">System.Base/Uuid.cm</a></td>
    </tr>
   </table>
-  <h2>Functions</h2>
+  <h2 id="functions">Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtGetHardwareConcurrency">RtGetHardwareConcurrency</a>()</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmGetHardwareConcurrency">RtmGetHardwareConcurrency</a>()</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">bool</span></td>
-    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtJoinThread">RtJoinThread</a>(<span class="kw">int</span>&nbsp;threadId)</td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmJoinThread">RtmJoinThread</a>(<span class="kw">int</span>&nbsp;threadId)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtStartThreadFunction">RtStartThreadFunction</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ThreadStartFunction_56B97B5DFF5ED9F3C1C29C2C8655A9ED8753032F">ThreadStartFunction</a>&nbsp;function)</td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmStartThreadFunction">RtmStartThreadFunction</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ThreadStartFunction_56B97B5DFF5ED9F3C1C29C2C8655A9ED8753032F">ThreadStartFunction</a>&nbsp;function)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtStartThreadFunctionWithParam">RtStartThreadFunctionWithParam</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ParameterizedThreadStartFunction_DD6656F70DA69DAAB71974F21E5A0D93440297D6">ParameterizedThreadStartFunction</a>&nbsp;function, <span class="kw">void</span>*&nbsp;param)</td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmStartThreadFunctionWithParam">RtmStartThreadFunctionWithParam</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ParameterizedThreadStartFunction_DD6656F70DA69DAAB71974F21E5A0D93440297D6">ParameterizedThreadStartFunction</a>&nbsp;function, <span class="kw">void</span>*&nbsp;param)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtStartThreadMethod">RtStartThreadMethod</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ThreadStartMethod_3044EADA25CA797E0DE0095ECAC529EAFE935B55">ThreadStartMethod</a>&nbsp;method)</td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmStartThreadMethod">RtmStartThreadMethod</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ThreadStartMethod_3044EADA25CA797E0DE0095ECAC529EAFE935B55">ThreadStartMethod</a>&nbsp;method)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtStartThreadMethodWithParam">RtStartThreadMethodWithParam</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ParameterizedThreadStartMethod_5E0C0A086D78D261BA64121171B8AFD03CDD9752">ParameterizedThreadStartMethod</a>&nbsp;method, <span class="kw">void</span>*&nbsp;param)</td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmStartThreadMethodWithParam">RtmStartThreadMethodWithParam</a>(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ParameterizedThreadStartMethod_5E0C0A086D78D261BA64121171B8AFD03CDD9752">ParameterizedThreadStartMethod</a>&nbsp;method, <span class="kw">void</span>*&nbsp;param)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtThisThreadId">RtThisThreadId</a>()</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="doc/../../System.Base/doc/../index.html#RtmThisThreadId">RtmThisThreadId</a>()</td>
    </tr>
   </table>
   <h2>Function Details</h2>
-  <h3 id="RtGetHardwareConcurrency" xml:space="preserve">RtGetHardwareConcurrency&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span>&nbsp;RtGetHardwareConcurrency()</h4>
+  <h3 id="RtmGetHardwareConcurrency" xml:space="preserve">RtmGetHardwareConcurrency&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmGetHardwareConcurrency()</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#8">8</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="RtJoinThread" xml:space="preserve">RtJoinThread&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">bool</span>&nbsp;RtJoinThread(<span class="kw">int</span>&nbsp;threadId)</h4>
+  <h3 id="RtmJoinThread" xml:space="preserve">RtmJoinThread&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">bool</span>&nbsp;RtmJoinThread(<span class="kw">int</span>&nbsp;threadId)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#13">13</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="RtStartThreadFunction" xml:space="preserve">RtStartThreadFunction&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtStartThreadFunction(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ThreadStartFunction_56B97B5DFF5ED9F3C1C29C2C8655A9ED8753032F">ThreadStartFunction</a>&nbsp;function)</h4>
+  <h3 id="RtmStartThreadFunction" xml:space="preserve">RtmStartThreadFunction&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmStartThreadFunction(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ThreadStartFunction_56B97B5DFF5ED9F3C1C29C2C8655A9ED8753032F">ThreadStartFunction</a>&nbsp;function)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#9">9</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="RtStartThreadFunctionWithParam" xml:space="preserve">RtStartThreadFunctionWithParam&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtStartThreadFunctionWithParam(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ParameterizedThreadStartFunction_DD6656F70DA69DAAB71974F21E5A0D93440297D6">ParameterizedThreadStartFunction</a>&nbsp;function, <span class="kw">void</span>*&nbsp;param)</h4>
+  <h3 id="RtmStartThreadFunctionWithParam" xml:space="preserve">RtmStartThreadFunctionWithParam&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmStartThreadFunctionWithParam(<a href="doc/../../System.Base/doc/ns_System.Threading.html#delegate_ParameterizedThreadStartFunction_DD6656F70DA69DAAB71974F21E5A0D93440297D6">ParameterizedThreadStartFunction</a>&nbsp;function, <span class="kw">void</span>*&nbsp;param)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#10">10</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="RtStartThreadMethod" xml:space="preserve">RtStartThreadMethod&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtStartThreadMethod(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ThreadStartMethod_3044EADA25CA797E0DE0095ECAC529EAFE935B55">ThreadStartMethod</a>&nbsp;method)</h4>
+  <h3 id="RtmStartThreadMethod" xml:space="preserve">RtmStartThreadMethod&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmStartThreadMethod(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ThreadStartMethod_3044EADA25CA797E0DE0095ECAC529EAFE935B55">ThreadStartMethod</a>&nbsp;method)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#11">11</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="RtStartThreadMethodWithParam" xml:space="preserve">RtStartThreadMethodWithParam&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtStartThreadMethodWithParam(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ParameterizedThreadStartMethod_5E0C0A086D78D261BA64121171B8AFD03CDD9752">ParameterizedThreadStartMethod</a>&nbsp;method, <span class="kw">void</span>*&nbsp;param)</h4>
+  <h3 id="RtmStartThreadMethodWithParam" xml:space="preserve">RtmStartThreadMethodWithParam&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmStartThreadMethodWithParam(<a href="doc/../../System.Base/doc/ns_System.Threading.html#class_delegate_ParameterizedThreadStartMethod_5E0C0A086D78D261BA64121171B8AFD03CDD9752">ParameterizedThreadStartMethod</a>&nbsp;method, <span class="kw">void</span>*&nbsp;param)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#12">12</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="RtThisThreadId" xml:space="preserve">RtThisThreadId&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span>&nbsp;RtThisThreadId()</h4>
+  <h3 id="RtmThisThreadId" xml:space="preserve">RtmThisThreadId&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">extern</span>&nbsp;<span class="kw">cdecl</span>&nbsp;<span class="kw">int</span>&nbsp;RtmThisThreadId()</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html#14">14</a>&nbsp;of&nbsp;<a href="doc/../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>

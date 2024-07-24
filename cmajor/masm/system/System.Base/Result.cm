@@ -21,8 +21,6 @@ namespace System
         public Result(const T& value_) : value(value_), errorId(0) {}
         public Result(T&& value_) : value(Rvalue(value_)), errorId(0) {}
         public Result(ErrorId errorId_) : value(), errorId(errorId_.value) {}
-        public Result(const T& value_, ErrorId errorId_) : value(value_), errorId(errorId_.value) {}
-        public Result(T&& value_, ErrorId errorId_) : value(Rvalue(value_)), errorId(errorId_.value) {}
         public Result<T> AndThen(const Result<T>& second) { if (Error()) return *this; else return second; }
         public inline const T& Value() const { return value; }
         public inline T& Value() { return value; }

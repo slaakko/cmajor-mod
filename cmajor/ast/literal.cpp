@@ -715,7 +715,7 @@ void WStringLiteralNode::Read(AstReader& reader)
 
 std::string WStringLiteralNode::ToString() const
 {
-    return "\"" + util::StringStr(util::ToUtf8(value)) + "\"";
+    return "w\"" + util::StringStr(util::ToUtf8(value)) + "\"";
 }
 
 UStringLiteralNode::UStringLiteralNode(const soul::ast::Span& span_) :
@@ -753,7 +753,7 @@ void UStringLiteralNode::Read(AstReader& reader)
 
 std::string UStringLiteralNode::ToString() const
 {
-    return "\"" + util::StringStr(util::ToUtf8(value)) + "\"";
+    return "u\"" + util::StringStr(util::ToUtf8(value)) + "\"";
 }
 
 NullLiteralNode::NullLiteralNode(const soul::ast::Span& span_) :

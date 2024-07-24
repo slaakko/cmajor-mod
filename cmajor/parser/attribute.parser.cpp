@@ -204,6 +204,7 @@ soul::parser::Match AttributeParser<LexerT>::Attribute(LexerT& lexer, cmajor::pa
     std::u32string value = std::u32string();
     std::u32string name = std::u32string();
     soul::ast::Span s = soul::ast::Span();
+    bool hasValue = bool();
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -300,6 +301,7 @@ soul::parser::Match AttributeParser<LexerT>::Attribute(LexerT& lexer, cmajor::pa
                                         {
                                             cmajor::ast::StringLiteralPrefix prefix;
                                             value = ParseStringLiteral(lexer.FileName(), lexer.GetToken(pos), prefix);
+                                            hasValue = true;
                                         }
                                         *parentMatch12 = match;
                                     }
@@ -326,7 +328,7 @@ soul::parser::Match AttributeParser<LexerT>::Attribute(LexerT& lexer, cmajor::pa
         }
         if (match.hit)
         {
-            attributes->AddAttribute(s, name, value);
+            attributes->AddAttribute(s, name, value, hasValue);
         }
         *parentMatch0 = match;
     }

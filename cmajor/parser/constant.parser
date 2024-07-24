@@ -39,6 +39,7 @@ parser ConstantParser
         )
         {
             cmajor::ast::ConstantNode* node = new cmajor::ast::ConstantNode(s, specifiers, type, id, expr);
+            node->SetStrValue(node->Value()->ToString());
             return node;
         }
         ;

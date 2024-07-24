@@ -29,6 +29,11 @@ void ProcessingInstruction::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("<?" + target + " " + data + "?>");
 }
 
+Node* ProcessingInstruction::Clone(bool deep) const
+{
+    return new ProcessingInstruction(GetSourcePos(), target, data);
+}
+
 ProcessingInstruction* MakeProcessingInstruction(const std::string& target, const std::string& data)
 {
     return new ProcessingInstruction(soul::ast::SourcePos(), target, data);

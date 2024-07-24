@@ -35,9 +35,9 @@ parser EnumerationParser
             (
                 UnderlyingType(context):underlyingType{ enumTypeNode->SetUnderlyingType(underlyingType); }
             )?
-            LBRACE
+            LBRACE{ enumTypeNode->SetBeginBraceSpan(lexer.GetSpan(pos)); }
             EnumConstants(context, enumTypeNode.get()):enumConstants
-            RBRACE
+            RBRACE{ enumTypeNode->SetEndBraceSpan(lexer.GetSpan(pos)); }
         )
         {
             return enumTypeNode.release();
@@ -70,11 +70,13 @@ parser EnumerationParser
                 { 
                     cmajor::ast::EnumConstantNode* enumConstant = new cmajor::ast::EnumConstantNode(s, constantId, constantValue);
                     enumConstant->SetHasValue();
+                    enumConstant->SetStrValue(enumConstant->GetValue()->ToString());
                     return enumConstant;
                 }
             |   empty
                 {
-                    return new cmajor::ast::EnumConstantNode(s, constantId, cmajor::ast::MakeNextEnumConstantValue(s, enumType));
+                    cmajor::ast::EnumConstantNode* enumConstant = new cmajor::ast::EnumConstantNode(s, constantId, cmajor::ast::MakeNextEnumConstantValue(s, enumType));
+                    return enumConstant;
                 }
             )
         )

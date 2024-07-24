@@ -1,0 +1,217 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>ParentNode Abstract Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+  <script src="class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50_inheritance.js" type="text/javascript"> </script>
+ </head>
+ <body onload="drawInheritanceDiagram()">
+  <h1>ParentNode Abstract Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#10">10</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <h2>Inheritance</h2>
+  <div class="diagram">
+   <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
+  </div>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#constructor_ParentNode_202BFF02238BA159A52E695C67880C160DF84DC2">ParentNode</a>(<a href="../../System.Dom/doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html">NodeKind</a>&nbsp;kind_, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;span_, <span class="kw">int</span>&nbsp;fileIndex_, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#destructor_ParentNode_0FAC7FDB681E87F2DCBD87F1E9094725DF89D922">~ParentNode</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_Accept_ParentNode_DBD57778E0EA22D14E558B1F43B81E9293CEBEB9">Accept</a>(<a href="../../System.Dom/doc/class_Visitor_A090E76CBEE7ABAF8EEEEAEDE6EAB5AEF69D7B63.html">Visitor</a>&amp;&nbsp;visitor)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_AppendChild_ParentNode_77D33E923C4D657A49C245B874E732B19EC652C3">AppendChild</a>(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;child)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_FirstChild_ParentNode_1A41D1C0F57FDB6DED55B9C25F629228D36CD7B2">FirstChild</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_HasChildNodes_ParentNode_8B1CF3C9E64A701FFC865B9AD1CC02C6FCE49E3B">HasChildNodes</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_InsertBefore_ParentNode_0FF18BAE5C9E271D083398E61A4BB71EB7228AB4">InsertBefore</a>(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;newChild, <a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;refChild)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_LastChild_ParentNode_5F743E8B11517DBF34AFC7A5679636C2639995F0">LastChild</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_RemoveChild_ParentNode_33383DE1D27F72458B0DAEFEA34C1FCD4B030F7F">RemoveChild</a>(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;child)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_ReplaceChild_ParentNode_6712BDBA0A2327C06D0186A46DA8936432DAB3CC">ReplaceChild</a>(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;newChild, <a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;oldChild)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_WalkChildren_ParentNode_1D71CB8AB50AE0F623B250AEF068409619D267E4">WalkChildren</a>(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_WalkDescendant_ParentNode_BE4D56ADEC9DFD98BDCBF9AEF2FBF3A57A3EF97A">WalkDescendant</a>(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_WalkDescendantOrSelf_ParentNode_9854424379237EF2A56E41B0BEAE007F03346E45">WalkDescendantOrSelf</a>(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_WalkPreceding_ParentNode_E7C90F3ADA85F93E39834CC4D402BC17D74E42F8">WalkPreceding</a>(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_WalkPrecedingOrSelf_ParentNode_4B1502A3829C2ACB22707FD7D0E38D576B0B014C">WalkPrecedingOrSelf</a>(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Dom/doc/class_ParentNode_5F4087531FD9070C05C4059B7462E9EC681CBE50.html#member_function_Write_ParentNode_5AB654FD631BBC18FE8B3E1ABF75262AE584D12B">Write</a>(<a href="../../System.Base/doc/class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99.html">CodeFormatter</a>&amp;&nbsp;formatter)</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_firstChild_CC6D848289E88846314B7973B2F1F6AB985CAEB0" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*</td>
+    <td xml:space="preserve">firstChild</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_lastChild_A90DE6BB9EF144A27AB7B81AD695FD9B4AB25C3F" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*</td>
+    <td xml:space="preserve">lastChild</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_ParentNode_202BFF02238BA159A52E695C67880C160DF84DC2" xml:space="preserve">ParentNode&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;ParentNode(<a href="../../System.Dom/doc/enumerated_type_NodeKind_9AE59C2004501716C2DF8B758DE81FE6E7F630B0.html">NodeKind</a>&nbsp;kind_, <span class="kw">const</span>&nbsp;<a href="../../System.Lex/doc/class_Span_BD14F38E21FE17B2F59D2E90BFB5D984755F9267.html">Span</a>&amp;&nbsp;span_, <span class="kw">int</span>&nbsp;fileIndex_, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;name_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_ParentNode_0FAC7FDB681E87F2DCBD87F1E9094725DF89D922" xml:space="preserve">~ParentNode&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;~ParentNode()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#16">16</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Accept_ParentNode_DBD57778E0EA22D14E558B1F43B81E9293CEBEB9" xml:space="preserve">Accept&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Accept(<a href="../../System.Dom/doc/class_Visitor_A090E76CBEE7ABAF8EEEEAEDE6EAB5AEF69D7B63.html">Visitor</a>&amp;&nbsp;visitor)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#145">145</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_AppendChild_ParentNode_77D33E923C4D657A49C245B874E732B19EC652C3" xml:space="preserve">AppendChild&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;AppendChild(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;child)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#34">34</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_FirstChild_ParentNode_1A41D1C0F57FDB6DED55B9C25F629228D36CD7B2" xml:space="preserve">FirstChild&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;FirstChild()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#26">26</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_HasChildNodes_ParentNode_8B1CF3C9E64A701FFC865B9AD1CC02C6FCE49E3B" xml:space="preserve">HasChildNodes&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">bool</span>&nbsp;HasChildNodes()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#141">141</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_InsertBefore_ParentNode_0FF18BAE5C9E271D083398E61A4BB71EB7228AB4" xml:space="preserve">InsertBefore&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;InsertBefore(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;newChild, <a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;refChild)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#71">71</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_LastChild_ParentNode_5F743E8B11517DBF34AFC7A5679636C2639995F0" xml:space="preserve">LastChild&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;LastChild()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_RemoveChild_ParentNode_33383DE1D27F72458B0DAEFEA34C1FCD4B030F7F" xml:space="preserve">RemoveChild&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>>&nbsp;RemoveChild(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;child)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#108">108</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ReplaceChild_ParentNode_6712BDBA0A2327C06D0186A46DA8936432DAB3CC" xml:space="preserve">ReplaceChild&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>>&nbsp;ReplaceChild(<a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;newChild, <a href="../../System.Dom/doc/class_Node_0B5FB112FD5F82289E214F8F5CE1E535736B8B51.html">Node</a>*&nbsp;oldChild)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#128">128</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_WalkChildren_ParentNode_1D71CB8AB50AE0F623B250AEF068409619D267E4" xml:space="preserve">WalkChildren&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;WalkChildren(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#169">169</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_WalkDescendant_ParentNode_BE4D56ADEC9DFD98BDCBF9AEF2FBF3A57A3EF97A" xml:space="preserve">WalkDescendant&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;WalkDescendant(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#178">178</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_WalkDescendantOrSelf_ParentNode_9854424379237EF2A56E41B0BEAE007F03346E45" xml:space="preserve">WalkDescendantOrSelf&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;WalkDescendantOrSelf(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#187">187</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_WalkPreceding_ParentNode_E7C90F3ADA85F93E39834CC4D402BC17D74E42F8" xml:space="preserve">WalkPreceding&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;WalkPreceding(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#197">197</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_WalkPrecedingOrSelf_ParentNode_4B1502A3829C2ACB22707FD7D0E38D576B0B014C" xml:space="preserve">WalkPrecedingOrSelf&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;WalkPrecedingOrSelf(<a href="../../System.Dom/doc/class_NodeOperation_2685DE702CEBD285956C199E88B59A7E1039FE6D.html">NodeOperation</a>&amp;&nbsp;operation)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#205">205</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Write_ParentNode_5AB654FD631BBC18FE8B3E1ABF75262AE584D12B" xml:space="preserve">Write&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<a href="../../System.Base/doc/class_CodeFormatter_38898A0914E7D27753F0D42E65A18EC272984F99.html">CodeFormatter</a>&amp;&nbsp;formatter)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html#155">155</a>&nbsp;of&nbsp;<a href="../../System.Dom/file/ParentNode.cm.html">System.Dom/ParentNode.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

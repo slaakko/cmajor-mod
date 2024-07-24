@@ -22,9 +22,12 @@ public:
     void Accept(Visitor& visitor) override;
     void Write(AstWriter& writer) override;
     void Read(AstReader& reader) override;
+    bool HasValue() const { return hasValue; }
+    void SetHasValue() { hasValue = true; }
 private:
     std::u32string name;
     std::u32string value;
+    bool hasValue;
 };
 
 class AttributesNode : public Node
@@ -35,7 +38,7 @@ public:
     AttributesNode& operator=(const AttributesNode&) = delete;
     const std::vector<std::unique_ptr<AttributeNode>>& GetAttributes() const { return attributes; }
     void AddAttribute(const soul::ast::Span& span, const std::u32string& name);
-    void AddAttribute(const soul::ast::Span& span, const std::u32string& name, const std::u32string& value);
+    void AddAttribute(const soul::ast::Span& span, const std::u32string& name, const std::u32string& value, bool hasValue);
     AttributeNode* GetAttribute(const std::u32string& name) const;
     Node* Clone(CloneContext& cloneContext) const override;
     void Accept(Visitor& visitor) override;

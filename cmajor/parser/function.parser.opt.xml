@@ -17,12 +17,18 @@
              <nonterminal first="{LBRACKET}" ruleName="Attributes"/>
             </optional>
            </sequence>
-           <nonterminal first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifiers"/>
+           <action first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}">
+            <nonterminal first="{#, ABSTRACT, CDECL, CONSTEXPR, DEFAULT, EXPLICIT, EXTERN, INLINE, INTERNAL, NEW, NOTHROW, OVERRIDE, PRIVATE, PROTECTED, PUBLIC, STATIC, SUPPRESS, THROW, UNIT_TEST, VIRTUAL, WINAPI}" ruleName="Specifiers"/>
+           </action>
           </sequence>
           <nonterminal first="{#, AMP, AMPAMP, AUTO, BOOL, BYTE, CHAR, CONST, DOT, DOUBLE, FLOAT, ID, INT, LBRACKET, LONG, SBYTE, SHORT, STAR, UCHAR, UINT, ULONG, USHORT, VOID, WCHAR}" ruleName="TypeExpr"/>
          </sequence>
          <action first="{#, ID, OPERATOR}">
-          <nonterminal first="{#, ID, OPERATOR}" ruleName="FunctionGroupId"/>
+          <group first="{#, ID, OPERATOR}">
+           <action first="{#, ID, OPERATOR}">
+            <nonterminal first="{#, ID, OPERATOR}" ruleName="FunctionGroupId"/>
+           </action>
+          </group>
          </action>
         </sequence>
        </group>

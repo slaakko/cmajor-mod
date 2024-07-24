@@ -4,7 +4,9 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <boost/multiprecision/miller_rabin.hpp>
+#pragma warning(default : 4996)
 
 module util.prime;
 
@@ -45,3 +47,4 @@ void NextPrime(boost::multiprecision::uint128_t& x)
 }
 
 } // namespace util
+

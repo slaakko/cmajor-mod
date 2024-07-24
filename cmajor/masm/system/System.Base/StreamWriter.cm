@@ -55,13 +55,13 @@ namespace System.IO
         {
             if (Error())
             {
-                return Result<bool>(false, ErrorId(GetErrorId()));
+                return Result<bool>(ErrorId(GetErrorId()));
             }
             if (stream == null)
             {
                 int errorId = RtmAllocateError("StreamWriter.Write: stream is null");
                 SetErrorId(errorId);
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             void* buf = x;
             auto result = stream->Write(cast<byte*>(buf), length);
@@ -312,7 +312,7 @@ namespace System.IO
             {
                 int errorId = RtmAllocateError("StreamWriter.Flush: stream is null");
                 SetErrorId(errorId);
-                return Result<bool>(false, ErrorId(errorId));
+                return Result<bool>(ErrorId(errorId));
             }
             return stream->Flush();
         }

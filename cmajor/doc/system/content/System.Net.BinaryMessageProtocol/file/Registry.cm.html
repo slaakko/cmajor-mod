@@ -1,0 +1,139 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>System.Net.BinaryMessageProtocol/Registry.cm</title>
+  <link href="../../../style/code.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <span class="code" id="1" xml:space="preserve"><span class="lineNumber">&nbsp;1</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="2" xml:space="preserve"><span class="lineNumber">&nbsp;2</span>&nbsp;<span class="comment">//&nbsp;Copyright&nbsp;(c)&nbsp;2024&nbsp;Seppo&nbsp;Laakko
+</span></span>
+  <br/>
+  <span class="code" id="3" xml:space="preserve"><span class="lineNumber">&nbsp;3</span>&nbsp;<span class="comment">//&nbsp;Distributed&nbsp;under&nbsp;the&nbsp;MIT&nbsp;license
+</span></span>
+  <br/>
+  <span class="code" id="4" xml:space="preserve"><span class="lineNumber">&nbsp;4</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="5" xml:space="preserve"><span class="lineNumber">&nbsp;5</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="6" xml:space="preserve"><span class="lineNumber">&nbsp;6</span>&nbsp;<span class="keyword">using</span>&nbsp;<span class="identifier">System</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="7" xml:space="preserve"><span class="lineNumber">&nbsp;7</span>&nbsp;<span class="keyword">using</span>&nbsp;<span class="identifier">System.Collections</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="8" xml:space="preserve"><span class="lineNumber">&nbsp;8</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="9" xml:space="preserve"><span class="lineNumber">&nbsp;9</span>&nbsp;<span class="keyword">namespace</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">Net</span><span class="other">.</span><span class="identifier">BinaryMessageProtocol</span></span>
+  <br/>
+  <span class="code" id="10" xml:space="preserve"><span class="lineNumber">10</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="11" xml:space="preserve"><span class="lineNumber">11</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">delegate</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><a href="../doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html">BinaryMessage</a><span class="other">*</span><span class="other">></span>&nbsp;<a href="../doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD">FactoryFunction</a><span class="other">(</span><span class="keyword">uint</span>&nbsp;<span class="identifier">messageId</span><span class="other">);</span></span>
+  <br/>
+  <span class="code" id="12" xml:space="preserve"><span class="lineNumber">12</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="13" xml:space="preserve"><span class="lineNumber">13</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">class</span>&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html">MessageRegistry</a></span>
+  <br/>
+  <span class="code" id="14" xml:space="preserve"><span class="lineNumber">14</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="15" xml:space="preserve"><span class="lineNumber">15</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">static</span>&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#static_constructor_MessageRegistry_3916CBD5BC86A7E796E778082879D55C174B330B">MessageRegistry</a><span class="other">()</span><span class="other">&nbsp;:&nbsp;</span><span class="identifier">instance</span><span class="other">(</span><span class="keyword">new</span>&nbsp;<span class="identifier">MessageRegistry</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="16" xml:space="preserve"><span class="lineNumber">16</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="17" xml:space="preserve"><span class="lineNumber">17</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="18" xml:space="preserve"><span class="lineNumber">18</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">static</span>&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html">MessageRegistry</a><span class="other">&amp;</span>&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327">Instance</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="19" xml:space="preserve"><span class="lineNumber">19</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="20" xml:space="preserve"><span class="lineNumber">20</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<span class="other">*</span><a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7">instance</a><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="21" xml:space="preserve"><span class="lineNumber">21</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="22" xml:space="preserve"><span class="lineNumber">22</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">private</span>&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#default_constructor_MessageRegistry_250B8DDBA5C01F264AB9EEF796FEBD6147529345">MessageRegistry</a><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="23" xml:space="preserve"><span class="lineNumber">23</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="24" xml:space="preserve"><span class="lineNumber">24</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="25" xml:space="preserve"><span class="lineNumber">25</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="identifier">nodiscard</span><span class="other">]</span></span>
+  <br/>
+  <span class="code" id="26" xml:space="preserve"><span class="lineNumber">26</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span>&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A">Register</a><span class="other">(</span><span class="keyword">const</span>&nbsp;<a href="../../System.Base/doc/ns_System.html#aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">string</a><span class="other">&amp;</span>&nbsp;<span class="identifier">className</span><span class="other">,&nbsp;</span><a href="../doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD">FactoryFunction</a>&nbsp;<span class="identifier">factoryFunc</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="27" xml:space="preserve"><span class="lineNumber">27</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="28" xml:space="preserve"><span class="lineNumber">28</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">ulong</span>&nbsp;<span class="identifier">hashCode</span><span class="other">&nbsp;=&nbsp;</span><a href="../../System.Base/doc/ns_System.Collections.html#function_GetHashCode_6469E779A8F0FE6BA922852DC35629412E9B82BE">GetHashCode</a><span class="other">(</span><span class="identifier">className</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="29" xml:space="preserve"><span class="lineNumber">29</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">uint</span>&nbsp;<span class="identifier">messageId</span><span class="other">&nbsp;=&nbsp;</span><a href="../doc/ns_System.Net.BinaryMessageProtocol.html#function_MakeMessageId_497E690730AFFA0F73BB42B8673633D494D782A7">MakeMessageId</a><span class="other">(</span><span class="identifier">hashCode</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="30" xml:space="preserve"><span class="lineNumber">30</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">auto</span>&nbsp;<span class="identifier">it</span><span class="other">&nbsp;=&nbsp;</span><a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B">factoryMap</a><span class="other">.</span><a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html#member_function_Find_Map_4BC0FE766ED03B62CD14082A9B87115B1B4C8456">Find</a><span class="other">(</span><span class="identifier">messageId</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="31" xml:space="preserve"><span class="lineNumber">31</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span>&nbsp;<span class="other">(</span><span class="identifier">it</span><span class="other">&nbsp;==&nbsp;</span><a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B">factoryMap</a><span class="other">.</span><a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html#member_function_End_Map_8CB5DA8DE631134FA8447519E18C51FF2C4786E3">End</a><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="32" xml:space="preserve"><span class="lineNumber">32</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="33" xml:space="preserve"><span class="lineNumber">33</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B">factoryMap</a><span class="other">[</span><span class="identifier">messageId</span><span class="other">]</span><span class="other">&nbsp;=&nbsp;</span><span class="identifier">factoryFunc</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="34" xml:space="preserve"><span class="lineNumber">34</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="35" xml:space="preserve"><span class="lineNumber">35</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span></span>
+  <br/>
+  <span class="code" id="36" xml:space="preserve"><span class="lineNumber">36</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="37" xml:space="preserve"><span class="lineNumber">37</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span>&nbsp;<span class="identifier">errorId</span><span class="other">&nbsp;=&nbsp;</span><a href="../../System.Base/doc/ns_System.html#function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456">AllocateError</a><span class="other">(</span><span class="string">"cmajor.binary.message.protocol:&nbsp;error:&nbsp;message&nbsp;id&nbsp;\'"</span><span class="other">&nbsp;+&nbsp;</span></span>
+  <br/>
+  <span class="code" id="38" xml:space="preserve"><span class="lineNumber">38</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../../System.Base/doc/ns_System.html#function_ToString_64AA0F80BC7630826A2CC0714B5171A2AC192BD0">ToString</a><span class="other">(</span><span class="identifier">messageId</span><span class="other">)</span><span class="other">&nbsp;+&nbsp;</span><span class="string">"\'&nbsp;already&nbsp;in&nbsp;use,&nbsp;please&nbsp;change&nbsp;the&nbsp;message&nbsp;name"</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="39" xml:space="preserve"><span class="lineNumber">39</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_180DCE55562CA5F4DA45580226198E172402C1E7">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span><span class="other">(</span><a href="../../System.Base/doc/class_ErrorId_0E4B2140259AADB7DB40D7239F8FEA3526DD7F6B.html#constructor_ErrorId_E63AC83D25F9E66903E5D495F69F8A8AFDFA5523">ErrorId</a><span class="other">(</span><span class="identifier">errorId</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="40" xml:space="preserve"><span class="lineNumber">40</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="41" xml:space="preserve"><span class="lineNumber">41</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="42" xml:space="preserve"><span class="lineNumber">42</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><a href="../doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html">BinaryMessage</a><span class="other">*</span><span class="other">></span>&nbsp;<a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8">Create</a><span class="other">(</span><span class="keyword">uint</span>&nbsp;<span class="identifier">messageId</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="43" xml:space="preserve"><span class="lineNumber">43</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="44" xml:space="preserve"><span class="lineNumber">44</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">auto</span>&nbsp;<span class="identifier">it</span><span class="other">&nbsp;=&nbsp;</span><a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B">factoryMap</a><span class="other">.</span><a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html#member_function_Find_Map_4BC0FE766ED03B62CD14082A9B87115B1B4C8456">Find</a><span class="other">(</span><span class="identifier">messageId</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="45" xml:space="preserve"><span class="lineNumber">45</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span>&nbsp;<span class="other">(</span><span class="identifier">it</span><span class="other">&nbsp;!=&nbsp;</span><a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B">factoryMap</a><span class="other">.</span><a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html#member_function_End_Map_8CB5DA8DE631134FA8447519E18C51FF2C4786E3">End</a><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="46" xml:space="preserve"><span class="lineNumber">46</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="47" xml:space="preserve"><span class="lineNumber">47</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD">FactoryFunction</a>&nbsp;<span class="identifier">factoryFunction</span><span class="other">&nbsp;=&nbsp;</span><span class="identifier">it</span><span class="other">-></span><span class="identifier">second</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="48" xml:space="preserve"><span class="lineNumber">48</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<span class="identifier">factoryFunction</span><span class="other">(</span><span class="identifier">messageId</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="49" xml:space="preserve"><span class="lineNumber">49</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="50" xml:space="preserve"><span class="lineNumber">50</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">else</span></span>
+  <br/>
+  <span class="code" id="51" xml:space="preserve"><span class="lineNumber">51</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="52" xml:space="preserve"><span class="lineNumber">52</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">int</span>&nbsp;<span class="identifier">errorId</span><span class="other">&nbsp;=&nbsp;</span><a href="../../System.Base/doc/ns_System.html#function_AllocateError_27780819118D9E1EC6A4C3BAB4F5B144785CC456">AllocateError</a><span class="other">(</span><span class="string">"cmajor.binary.message.protocol:&nbsp;error:&nbsp;message&nbsp;id&nbsp;\'"</span><span class="other">&nbsp;+&nbsp;</span><a href="../../System.Base/doc/ns_System.html#function_ToString_64AA0F80BC7630826A2CC0714B5171A2AC192BD0">ToString</a><span class="other">(</span><span class="identifier">messageId</span><span class="other">)</span><span class="other">&nbsp;+&nbsp;</span><span class="string">"\'&nbsp;not&nbsp;registered"</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="53" xml:space="preserve"><span class="lineNumber">53</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<span class="identifier">Result</span><span class="other">&lt;</span><a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html#constructor_Result_180DCE55562CA5F4DA45580226198E172402C1E7">BinaryMessage</a><span class="other">*</span><span class="other">></span><span class="other">(</span><a href="../../System.Base/doc/class_ErrorId_0E4B2140259AADB7DB40D7239F8FEA3526DD7F6B.html#constructor_ErrorId_E63AC83D25F9E66903E5D495F69F8A8AFDFA5523">ErrorId</a><span class="other">(</span><span class="identifier">errorId</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="54" xml:space="preserve"><span class="lineNumber">54</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="55" xml:space="preserve"><span class="lineNumber">55</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="56" xml:space="preserve"><span class="lineNumber">56</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">private</span>&nbsp;<span class="keyword">static</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a><span class="other">&lt;</span><a href="../doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html">MessageRegistry</a><span class="other">></span>&nbsp;<span class="identifier">instance</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="57" xml:space="preserve"><span class="lineNumber">57</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a><span class="other">&lt;</span><span class="keyword">uint</span><span class="other">,&nbsp;</span><a href="../doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD">FactoryFunction</a><span class="other">></span>&nbsp;<span class="identifier">factoryMap</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="58" xml:space="preserve"><span class="lineNumber">58</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="59" xml:space="preserve"><span class="lineNumber">59</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="60" xml:space="preserve"><span class="lineNumber">60</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a><span class="other">&lt;</span><span class="keyword">bool</span><span class="other">></span>&nbsp;<a href="../doc/ns_System.Net.BinaryMessageProtocol.html#function_RegisterMessage_08C5E031022CA6E1E3CD49BF45CD9175E0DF2788">RegisterMessage</a><span class="other">&lt;</span><span class="identifier">T</span><span class="other">></span><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="61" xml:space="preserve"><span class="lineNumber">61</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="62" xml:space="preserve"><span class="lineNumber">62</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<span class="identifier">MessageRegistry</span><span class="other">.</span><span class="identifier">Instance</span><span class="other">(</span><span class="other">)</span><span class="other">.</span><span class="identifier">Register</span><span class="other">(</span><span class="identifier">T</span><span class="other">.</span><span class="identifier">ClassName</span><span class="other">(</span><span class="other">)</span><span class="other">,&nbsp;</span><span class="identifier">T</span><span class="other">.</span><span class="identifier">Create</span><span class="other">)</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="63" xml:space="preserve"><span class="lineNumber">63</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+ </body>
+</html>

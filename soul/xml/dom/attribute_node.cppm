@@ -20,6 +20,7 @@ public:
     const std::string& Value() const { return value; }
     void SetValue(const std::string& value_);
     void Write(util::CodeFormatter& formatter) override;
+    Node* Clone(bool deep) const override;
 private:
     std::string value;
 };

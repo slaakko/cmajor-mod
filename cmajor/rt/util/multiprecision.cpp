@@ -3,11 +3,13 @@
 // Distributed under the MIT license
 // =================================
 
+#pragma warning(disable : 4996)
 #include <util/multiprecision.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #include <boost/lexical_cast.hpp>
+#pragma warning(default : 4996)
 
 namespace util {
 
@@ -474,3 +476,4 @@ BigRational BigFloat::ToBigRational()
 }
 
 } // namespace util
+

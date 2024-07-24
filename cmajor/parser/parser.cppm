@@ -30,3 +30,4 @@ export import cmajor.statement.parser;
 export import cmajor.templates.parser;
 export import cmajor.token.value.parser;
 export import cmajor.type.expr.parser;
+export import cmajor.source_token_parser;

@@ -1,2 +1,2 @@
 @echo off
-cmdoc --verbose system.cmdoc.xml
+cmdoc -v system.cmdoc.xml

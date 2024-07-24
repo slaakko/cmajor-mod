@@ -19,6 +19,7 @@ public:
     Text(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, const std::string& name_);
     Text(NodeKind kind_, const soul::ast::SourcePos& sourcePos_, const std::string& name_, const std::string& text_);
     void Accept(Visitor& visitor) override;
+    Node* Clone(bool deep) const override;
 };
 
 Text* MakeText(const std::string& text);

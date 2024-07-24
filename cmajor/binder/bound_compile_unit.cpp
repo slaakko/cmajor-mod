@@ -1051,4 +1051,14 @@ void BoundCompileUnit::SetCanReuse(cmajor::symbols::FunctionSymbol* functionSymb
     canReuse.insert(functionSymbol);
 }
 
+void BoundCompileUnit::AddDeferredFullInstantiationRequest(cmajor::ast::FullInstantiationRequestNode* fullInstantiationRequestNode)
+{
+    deferredFullInstantiationRequests.push_back(std::unique_ptr< cmajor::ast::FullInstantiationRequestNode>(fullInstantiationRequestNode));
+}
+
+std::vector<std::unique_ptr<cmajor::ast::FullInstantiationRequestNode>> BoundCompileUnit::GetDeferredInstantiationRequests()
+{
+    return std::move(deferredFullInstantiationRequests);
+}
+
 } // namespace cmajor::binder

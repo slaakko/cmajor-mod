@@ -168,10 +168,20 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                                     soul::parser::Match* parentMatch19 = &match;
                                                     {
                                                         soul::parser::Match match(false);
-                                                        if (*lexer == LANGLE)
+                                                        soul::parser::Match* parentMatch20 = &match;
                                                         {
-                                                            ++lexer;
-                                                            match.hit = true;
+                                                            int64_t pos = lexer.GetPos();
+                                                            soul::parser::Match match(false);
+                                                            if (*lexer == LANGLE)
+                                                            {
+                                                                ++lexer;
+                                                                match.hit = true;
+                                                            }
+                                                            if (match.hit)
+                                                            {
+                                                                conceptNode->SetBeginBraceSpan(lexer.GetSpan(pos));
+                                                            }
+                                                            *parentMatch20 = match;
                                                         }
                                                         *parentMatch19 = match;
                                                     }
@@ -182,16 +192,16 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                             if (match.hit)
                                             {
                                                 soul::parser::Match match(false);
-                                                soul::parser::Match* parentMatch20 = &match;
+                                                soul::parser::Match* parentMatch21 = &match;
                                                 {
                                                     soul::parser::Match match(false);
-                                                    soul::parser::Match* parentMatch21 = &match;
+                                                    soul::parser::Match* parentMatch22 = &match;
                                                     {
                                                         soul::parser::Match match(false);
-                                                        soul::parser::Match* parentMatch22 = &match;
+                                                        soul::parser::Match* parentMatch23 = &match;
                                                         {
                                                             soul::parser::Match match(false);
-                                                            soul::parser::Match* parentMatch23 = &match;
+                                                            soul::parser::Match* parentMatch24 = &match;
                                                             {
                                                                 int64_t pos = lexer.GetPos();
                                                                 soul::parser::Match match = IdentifierParser<LexerT>::Identifier(lexer, context);
@@ -200,24 +210,24 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                                                 {
                                                                     conceptNode->AddTypeParameter(typeParam.release());
                                                                 }
-                                                                *parentMatch23 = match;
+                                                                *parentMatch24 = match;
                                                             }
-                                                            *parentMatch22 = match;
+                                                            *parentMatch23 = match;
                                                         }
                                                         if (match.hit)
                                                         {
                                                             soul::parser::Match match(false);
-                                                            soul::parser::Match* parentMatch24 = &match;
+                                                            soul::parser::Match* parentMatch25 = &match;
                                                             {
                                                                 soul::parser::Match match(true);
-                                                                soul::parser::Match* parentMatch25 = &match;
+                                                                soul::parser::Match* parentMatch26 = &match;
                                                                 {
                                                                     while (true)
                                                                     {
                                                                         int64_t save = lexer.GetPos();
                                                                         {
                                                                             soul::parser::Match match(false);
-                                                                            soul::parser::Match* parentMatch26 = &match;
+                                                                            soul::parser::Match* parentMatch27 = &match;
                                                                             {
                                                                                 soul::parser::Match match(false);
                                                                                 if (*lexer == COMMA)
@@ -225,15 +235,15 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                                                                     ++lexer;
                                                                                     match.hit = true;
                                                                                 }
-                                                                                *parentMatch26 = match;
+                                                                                *parentMatch27 = match;
                                                                             }
                                                                             if (match.hit)
                                                                             {
                                                                                 soul::parser::Match match(false);
-                                                                                soul::parser::Match* parentMatch27 = &match;
+                                                                                soul::parser::Match* parentMatch28 = &match;
                                                                                 {
                                                                                     soul::parser::Match match(false);
-                                                                                    soul::parser::Match* parentMatch28 = &match;
+                                                                                    soul::parser::Match* parentMatch29 = &match;
                                                                                     {
                                                                                         int64_t pos = lexer.GetPos();
                                                                                         soul::parser::Match match = IdentifierParser<LexerT>::Identifier(lexer, context);
@@ -242,15 +252,15 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                                                                         {
                                                                                             conceptNode->AddTypeParameter(typeParam.release());
                                                                                         }
-                                                                                        *parentMatch28 = match;
+                                                                                        *parentMatch29 = match;
                                                                                     }
-                                                                                    *parentMatch27 = match;
+                                                                                    *parentMatch28 = match;
                                                                                 }
-                                                                                *parentMatch26 = match;
+                                                                                *parentMatch27 = match;
                                                                             }
                                                                             if (match.hit)
                                                                             {
-                                                                                *parentMatch25 = match;
+                                                                                *parentMatch26 = match;
                                                                             }
                                                                             else
                                                                             {
@@ -260,13 +270,13 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                                                         }
                                                                     }
                                                                 }
-                                                                *parentMatch24 = match;
+                                                                *parentMatch25 = match;
                                                             }
-                                                            *parentMatch22 = match;
+                                                            *parentMatch23 = match;
                                                         }
-                                                        *parentMatch21 = match;
+                                                        *parentMatch22 = match;
                                                     }
-                                                    *parentMatch20 = match;
+                                                    *parentMatch21 = match;
                                                 }
                                                 *parentMatch11 = match;
                                             }
@@ -275,15 +285,25 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                         if (match.hit)
                                         {
                                             soul::parser::Match match(false);
-                                            soul::parser::Match* parentMatch29 = &match;
+                                            soul::parser::Match* parentMatch30 = &match;
                                             {
                                                 soul::parser::Match match(false);
-                                                if (*lexer == RANGLE)
+                                                soul::parser::Match* parentMatch31 = &match;
                                                 {
-                                                    ++lexer;
-                                                    match.hit = true;
+                                                    int64_t pos = lexer.GetPos();
+                                                    soul::parser::Match match(false);
+                                                    if (*lexer == RANGLE)
+                                                    {
+                                                        ++lexer;
+                                                        match.hit = true;
+                                                    }
+                                                    if (match.hit)
+                                                    {
+                                                        conceptNode->SetEndBraceSpan(lexer.GetSpan(pos));
+                                                    }
+                                                    *parentMatch31 = match;
                                                 }
-                                                *parentMatch29 = match;
+                                                *parentMatch30 = match;
                                             }
                                             *parentMatch10 = match;
                                         }
@@ -292,17 +312,17 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                     if (match.hit)
                                     {
                                         soul::parser::Match match(false);
-                                        soul::parser::Match* parentMatch30 = &match;
+                                        soul::parser::Match* parentMatch32 = &match;
                                         {
                                             soul::parser::Match match(true);
                                             int64_t save = lexer.GetPos();
-                                            soul::parser::Match* parentMatch31 = &match;
+                                            soul::parser::Match* parentMatch33 = &match;
                                             {
                                                 soul::parser::Match match(false);
-                                                soul::parser::Match* parentMatch32 = &match;
+                                                soul::parser::Match* parentMatch34 = &match;
                                                 {
                                                     soul::parser::Match match(false);
-                                                    soul::parser::Match* parentMatch33 = &match;
+                                                    soul::parser::Match* parentMatch35 = &match;
                                                     {
                                                         int64_t pos = lexer.GetPos();
                                                         soul::parser::Match match = ConceptParser<LexerT>::Refinement(lexer, context);
@@ -311,20 +331,20 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                                         {
                                                             conceptNode->SetRefinement(refinement.release());
                                                         }
-                                                        *parentMatch33 = match;
+                                                        *parentMatch35 = match;
                                                     }
-                                                    *parentMatch32 = match;
+                                                    *parentMatch34 = match;
                                                 }
                                                 if (match.hit)
                                                 {
-                                                    *parentMatch31 = match;
+                                                    *parentMatch33 = match;
                                                 }
                                                 else
                                                 {
                                                     lexer.SetPos(save);
                                                 }
                                             }
-                                            *parentMatch30 = match;
+                                            *parentMatch32 = match;
                                         }
                                         *parentMatch9 = match;
                                     }
@@ -333,17 +353,17 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                 if (match.hit)
                                 {
                                     soul::parser::Match match(false);
-                                    soul::parser::Match* parentMatch34 = &match;
+                                    soul::parser::Match* parentMatch36 = &match;
                                     {
                                         soul::parser::Match match(true);
                                         int64_t save = lexer.GetPos();
-                                        soul::parser::Match* parentMatch35 = &match;
+                                        soul::parser::Match* parentMatch37 = &match;
                                         {
                                             soul::parser::Match match(false);
-                                            soul::parser::Match* parentMatch36 = &match;
+                                            soul::parser::Match* parentMatch38 = &match;
                                             {
                                                 soul::parser::Match match(false);
-                                                soul::parser::Match* parentMatch37 = &match;
+                                                soul::parser::Match* parentMatch39 = &match;
                                                 {
                                                     int64_t pos = lexer.GetPos();
                                                     soul::parser::Match match = ConceptParser<LexerT>::WhereConstraint(lexer, context);
@@ -354,20 +374,20 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                                         constraintNode->SetHeaderConstraint();
                                                         conceptNode->AddConstraint(constraintNode.release());
                                                     }
-                                                    *parentMatch37 = match;
+                                                    *parentMatch39 = match;
                                                 }
-                                                *parentMatch36 = match;
+                                                *parentMatch38 = match;
                                             }
                                             if (match.hit)
                                             {
-                                                *parentMatch35 = match;
+                                                *parentMatch37 = match;
                                             }
                                             else
                                             {
                                                 lexer.SetPos(save);
                                             }
                                         }
-                                        *parentMatch34 = match;
+                                        *parentMatch36 = match;
                                     }
                                     *parentMatch8 = match;
                                 }
@@ -376,7 +396,7 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                             if (match.hit)
                             {
                                 soul::parser::Match match(false);
-                                soul::parser::Match* parentMatch38 = &match;
+                                soul::parser::Match* parentMatch40 = &match;
                                 {
                                     soul::parser::Match match(false);
                                     if (*lexer == LBRACE)
@@ -384,7 +404,7 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                         ++lexer;
                                         match.hit = true;
                                     }
-                                    *parentMatch38 = match;
+                                    *parentMatch40 = match;
                                 }
                                 *parentMatch7 = match;
                             }
@@ -393,10 +413,10 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                         if (match.hit)
                         {
                             soul::parser::Match match(false);
-                            soul::parser::Match* parentMatch39 = &match;
+                            soul::parser::Match* parentMatch41 = &match;
                             {
                                 soul::parser::Match match = ConceptParser<LexerT>::ConceptBody(lexer, context, conceptNode.get());
-                                *parentMatch39 = match;
+                                *parentMatch41 = match;
                             }
                             *parentMatch6 = match;
                         }
@@ -405,7 +425,7 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                     if (match.hit)
                     {
                         soul::parser::Match match(false);
-                        soul::parser::Match* parentMatch40 = &match;
+                        soul::parser::Match* parentMatch42 = &match;
                         {
                             soul::parser::Match match(false);
                             if (*lexer == RBRACE)
@@ -413,7 +433,7 @@ soul::parser::Match ConceptParser<LexerT>::Concept(LexerT& lexer, cmajor::parser
                                 ++lexer;
                                 match.hit = true;
                             }
-                            *parentMatch40 = match;
+                            *parentMatch42 = match;
                         }
                         *parentMatch5 = match;
                     }
@@ -1680,7 +1700,8 @@ soul::parser::Match ConceptParser<LexerT>::EmbeddedConstraint(LexerT& lexer, cma
     }
     #endif
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 2278901632848625675);
-    std::unique_ptr<cmajor::ast::WhereConstraintNode> constraint;
+    std::unique_ptr<cmajor::ast::WhereConstraintNode> constraint = std::unique_ptr<cmajor::ast::WhereConstraintNode>();
+    std::unique_ptr<cmajor::ast::WhereConstraintNode> c;
     soul::parser::Match match(false);
     soul::parser::Match* parentMatch0 = &match;
     {
@@ -1691,14 +1712,24 @@ soul::parser::Match ConceptParser<LexerT>::EmbeddedConstraint(LexerT& lexer, cma
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch2 = &match;
             {
-                soul::parser::Match match = ConceptParser<LexerT>::WhereConstraint(lexer, context);
-                constraint.reset(static_cast<cmajor::ast::WhereConstraintNode*>(match.value));
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch3 = &match;
+                {
+                    int64_t pos = lexer.GetPos();
+                    soul::parser::Match match = ConceptParser<LexerT>::WhereConstraint(lexer, context);
+                    c.reset(static_cast<cmajor::ast::WhereConstraintNode*>(match.value));
+                    if (match.hit)
+                    {
+                        constraint.reset(c.release());
+                    }
+                    *parentMatch3 = match;
+                }
                 *parentMatch2 = match;
             }
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch3 = &match;
+                soul::parser::Match* parentMatch4 = &match;
                 {
                     soul::parser::Match match(false);
                     if (*lexer == SEMICOLON)
@@ -1706,7 +1737,7 @@ soul::parser::Match ConceptParser<LexerT>::EmbeddedConstraint(LexerT& lexer, cma
                         ++lexer;
                         match.hit = true;
                     }
-                    *parentMatch3 = match;
+                    *parentMatch4 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -1714,6 +1745,7 @@ soul::parser::Match ConceptParser<LexerT>::EmbeddedConstraint(LexerT& lexer, cma
         }
         if (match.hit)
         {
+            constraint->SetSemicolon();
             {
                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "EmbeddedConstraint");
@@ -2924,10 +2956,20 @@ soul::parser::Match ConceptParser<LexerT>::Axiom(LexerT& lexer, cmajor::parser::
                         soul::parser::Match* parentMatch15 = &match;
                         {
                             soul::parser::Match match(false);
-                            if (*lexer == LBRACE)
+                            soul::parser::Match* parentMatch16 = &match;
                             {
-                                ++lexer;
-                                match.hit = true;
+                                int64_t pos = lexer.GetPos();
+                                soul::parser::Match match(false);
+                                if (*lexer == LBRACE)
+                                {
+                                    ++lexer;
+                                    match.hit = true;
+                                }
+                                if (match.hit)
+                                {
+                                    axiomNode->SetBeginBraceSpan(lexer.GetSpan(pos));
+                                }
+                                *parentMatch16 = match;
                             }
                             *parentMatch15 = match;
                         }
@@ -2938,10 +2980,10 @@ soul::parser::Match ConceptParser<LexerT>::Axiom(LexerT& lexer, cmajor::parser::
                 if (match.hit)
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch16 = &match;
+                    soul::parser::Match* parentMatch17 = &match;
                     {
                         soul::parser::Match match = ConceptParser<LexerT>::AxiomBody(lexer, context, axiomNode.get());
-                        *parentMatch16 = match;
+                        *parentMatch17 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -2950,15 +2992,25 @@ soul::parser::Match ConceptParser<LexerT>::Axiom(LexerT& lexer, cmajor::parser::
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch17 = &match;
+                soul::parser::Match* parentMatch18 = &match;
                 {
                     soul::parser::Match match(false);
-                    if (*lexer == RBRACE)
+                    soul::parser::Match* parentMatch19 = &match;
                     {
-                        ++lexer;
-                        match.hit = true;
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match(false);
+                        if (*lexer == RBRACE)
+                        {
+                            ++lexer;
+                            match.hit = true;
+                        }
+                        if (match.hit)
+                        {
+                            axiomNode->SetEndBraceSpan(lexer.GetSpan(pos));
+                        }
+                        *parentMatch19 = match;
                     }
-                    *parentMatch17 = match;
+                    *parentMatch18 = match;
                 }
                 *parentMatch2 = match;
             }

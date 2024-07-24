@@ -7,3 +7,5 @@ tokens <cmajor.container.file.token>;
 keywords <cmajor.container.file.keyword>;
 expressions <cmajor.container.file.expr>;
 lexer <cmajor.container.file.lexer>;
+expressions <cmajor.token.expr>;
+lexer <cmajor.token.lexer>;

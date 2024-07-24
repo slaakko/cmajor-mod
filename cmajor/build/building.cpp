@@ -15,6 +15,7 @@ import cmajor.build.archiving;
 import cmajor.build.linking;
 import cmajor.build.resources;
 import cmajor.build.main.unit;
+import cmdoclib;
 import cmajor.cpp.backend.codegen;
 import cmajor.masm.build;
 import cmajor.binder;
@@ -187,6 +188,10 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
             {
                 util::LogMessage(project->LogStreamId(), "===== Building project '" + util::ToUtf8(project->Name()) + "' (" + project->FilePath() + ") using " + config + " configuration.");
             }
+            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+            {
+                cmdoclib::SetEmptyLibraryPrefix(util::ToUtf8(project->Name()));
+            }
             rootModule.reset(new cmajor::symbols::Module(project->Name(), project->ModuleFilePath(), project->GetTarget()));
             rootModule->SetRootModule();
             cmajor::symbols::SetRootModuleForCurrentThread(rootModule.get());
@@ -230,7 +235,12 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 std::vector<std::string> objectFilePaths;
                 std::vector<std::string> asmFilePaths;
                 std::vector<std::string> cppFilePaths;
-                Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+                std::map<int, cmdoclib::File> docFileMap;
+                Compile(project, rootModule.get(), boundCompileUnits, objectFilePaths, asmFilePaths, docFileMap, stop);
+                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+                {
+                    cmdoclib::GenerateSymbolTableXml(rootModule.get(), docFileMap);
+                }
                 for (const auto& warning : rootModule->WarningCollection().Warnings())
                 {
                     cmajor::symbols::LogWarning(rootModule->LogStreamId(), warning);
@@ -357,13 +367,19 @@ void BuildProject(cmajor::ast::Project* project, std::unique_ptr<cmajor::symbols
                 }
                 if (rootModule->Name() == U"System.Install")
                 {
-                    InstallSystemLibraries(rootModule.get());
-                    systemLibraryInstalled = true;
+                    if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+                    {
+                        InstallSystemLibraries(rootModule.get());
+                        systemLibraryInstalled = true;
+                    }
                 }
                 else if (rootModule->Name() == U"System.Windows.Install")
                 {
-                    InstallSystemWindowsLibraries(rootModule.get());
-                    systemLibraryInstalled = true;
+                    if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
+                    {
+                        InstallSystemWindowsLibraries(rootModule.get());
+                        systemLibraryInstalled = true;
+                    }
                 }
             }
             if (resetRootModule)
@@ -501,6 +517,14 @@ struct CurrentSolutionGuard
 
 void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules)
 {
+    std::string solutionName;
+    std::vector<std::string> moduleNames;
+    BuildSolution(solutionFilePath, rootModules, solutionName, moduleNames);
+}
+
+void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_ptr<cmajor::symbols::Module>>& rootModules, 
+    std::string& solutionName, std::vector<std::string>& moduleNames)
+{
     std::set<std::string> builtProjects;
     std::string config = cmajor::symbols::GetConfig();
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::clean))
@@ -512,6 +536,7 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
         util::LogMessage(-1, "Building solution '" + solutionFilePath + " using " + config + " configuration.");
     }
     std::unique_ptr<cmajor::ast::Solution> solution = ParseSolutionFile(solutionFilePath);
+    solutionName = util::ToUtf8(solution->Name());
     CurrentSolutionGuard currentSolutionGuard(solution.get());
     int np = solution->ProjectFilePaths().size();
     for (int i = 0; i < np; ++i)
@@ -550,6 +575,10 @@ void BuildSolution(const std::string& solutionFilePath, std::vector<std::unique_
     }
     if (!projectsToBuild.empty())
     {
+        for (cmajor::ast::Project* project : projectsToBuild)
+        {
+            moduleNames.push_back(util::ToUtf8(project->Name()));
+        }
         int numProjectsToBuild = projectsToBuild.size();
         int numThreads = 1;
         if (!cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile))

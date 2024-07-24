@@ -112,6 +112,7 @@ public:
     GlobalVariable* GetOrInsertGlobal(const std::string& name, Type* type);
     GlobalVariable* CreateGlobalStringPtr(const std::string& stringValue);
     void SetCompileUnitId(const std::string& compileUnitId_);
+    const std::string& CompileUnitId() const;
     MDBool* CreateMDBool(bool value) { return metadata.CreateMDBool(value); }
     MDLong* CreateMDLong(int64_t value) { return metadata.CreateMDLong(value); }
     MDString* CreateMDString(const std::string& value) { return metadata.CreateMDString(value); }

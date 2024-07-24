@@ -7,17 +7,38 @@
  </head>
  <body onload="drawInheritanceDiagram()">
   <h1>DeflateStream Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#44">44</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#25">25</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <h2>Inheritance</h2>
   <div class="diagram">
    <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
   </div>
-  <h2>Constructors &amp; Destructor</h2>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span></td>
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#move_constructor_DeflateStream_A646D80E80D9D8B6D73ED33B75DD31FFEAB7AD83">DeflateStream</a>(<a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html">DeflateStream</a>&amp;&amp;)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_18BE9A6C1CA3E83F479D2050CC8234D34E118C51">DeflateStream</a>(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_6687C084485D4E8ADB4BC72A4BD956D65ABC1176">DeflateStream</a>(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_, <span class="kw">long</span>&nbsp;bufferSize_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_29A3D33EB0057810B30DABE485E608A997B84912">DeflateStream</a>(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_15195176FE2ED5A9CA7ED9D8BA735AB6095117CE">DeflateStream</a>(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_, <span class="kw">long</span>&nbsp;bufferSize_)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span></td>
@@ -25,49 +46,34 @@
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
-    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_9BE99285B5832D1D071C2175AE0820E37721B374">DeflateStream</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_)</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
-    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_643E7286A9FED1A27A3C5B56CAEE5654C8F2890A">DeflateStream</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_, <span class="kw">long</span>&nbsp;bufferSize_)</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
-    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_5A5C00C27827E3FF01B821F09D63B9FFAB8632EC">DeflateStream</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_)</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
-    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#constructor_DeflateStream_DAD01D7AB0170AD8EA41904443053D389419FE68">DeflateStream</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_, <span class="kw">long</span>&nbsp;bufferSize_)</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#destructor_DeflateStream_F6AC254CD72B1F71AA755FF6BFE5CFA0C0E2CF8B">~DeflateStream</a>()</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#member_function_Finish_DeflateStream_F91C5DFD99F83F34FFC5DDBBDF33B1EC6E72DB1C">Finish</a>()</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a></td>
-    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#member_function_Mode_DeflateStream_3A1BFBE37817C23427AE25E0BDE6531C5DD06E57">Mode</a>()&nbsp;<span class="kw">const</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a></td>
+    <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#member_function_Mode_DeflateStream_BE17AFFDAECACE799B31F153C25F6F712F1FEFDE">Mode</a>()&nbsp;<span class="kw">const</span></td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">long</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>></td>
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#member_function_Read_DeflateStream_95333390746083FE61B52470847F9C6DDF7D1212">Read</a>(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">int</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>></td>
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#member_function_ReadByte_DeflateStream_E8027D714F71B7C08E0568E8F392606F7C2DCF0A">ReadByte</a>()</td>
+    <td xml:space="preserve">If at the end of the stream returns a result containing -1, otherwise returns a result that contains the next uncompressed byte.</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#member_function_Write_DeflateStream_97BC2803124F5FF6B0260DA2D74A3ACDE0697BD5">Write</a>(<span class="kw">byte</span>&nbsp;x)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#member_function_Write_DeflateStream_3C000BB8C986F9463DC2A1455C948DDC5267B66D">Write</a>(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</td>
    </tr>
    <tr>
@@ -79,54 +85,54 @@
     <td xml:space="preserve"><a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html#copy_assignment_op_assign_DeflateStream_F1208F92D69CFED082ACA2BDEBF5FE79F5DA399A">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html">DeflateStream</a>&amp;)</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td class="rightAlignedCol" id="member_variable_bufferSize_4C1105A0F489FA920CEFADCB540059083DB3EB10" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
     <td xml:space="preserve">bufferSize</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span></td>
+    <td class="rightAlignedCol" id="member_variable_endOfInput_0D9CE7AA628C1D2DECE43C36B87A53ABD25FBC57" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span></td>
     <td xml:space="preserve">endOfInput</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span></td>
+    <td class="rightAlignedCol" id="member_variable_endOfStream_6D9547E7F4A71AFF03D2B310E18FD69CE2D9DA1D" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">bool</span></td>
     <td xml:space="preserve">endOfStream</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>*</td>
+    <td class="rightAlignedCol" id="member_variable_handle_626428E2805331E3A2531E8AB443A7AE8E29D0CA" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>*</td>
     <td xml:space="preserve">handle</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_IOBuffer_7AC61842AD3FCA40A4176E0D72E981B672D7E222.html">IOBuffer</a></td>
+    <td class="rightAlignedCol" id="member_variable_in_1EBA2651971569FCE9C179B86F337DE206802E8C" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_IOBuffer_7AC61842AD3FCA40A4176E0D72E981B672D7E222.html">IOBuffer</a></td>
     <td xml:space="preserve">in</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
+    <td class="rightAlignedCol" id="member_variable_inAvail_63B9823756DFE71B74ED1178FBD27DD4FA0CA8FF" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
     <td xml:space="preserve">inAvail</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a></td>
+    <td class="rightAlignedCol" id="member_variable_mode_B232145DECC463D5392EC9DAF3630A431C2B2809" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a></td>
     <td xml:space="preserve">mode</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_IOBuffer_7AC61842AD3FCA40A4176E0D72E981B672D7E222.html">IOBuffer</a></td>
+    <td class="rightAlignedCol" id="member_variable_out_D2DD80248885427EFE5DCE53B756E818FE478B57" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_IOBuffer_7AC61842AD3FCA40A4176E0D72E981B672D7E222.html">IOBuffer</a></td>
     <td xml:space="preserve">out</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
+    <td class="rightAlignedCol" id="member_variable_outAvail_C3D29EFE379748EA544E0D241F9B23DC55D79739" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
     <td xml:space="preserve">outAvail</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
+    <td class="rightAlignedCol" id="member_variable_outHave_15C1B154E0E24F1B4F3A043CB7F3985D617E6BD8" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">uint</span></td>
     <td xml:space="preserve">outHave</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
+    <td class="rightAlignedCol" id="member_variable_outPos_DA592D5DC5A0C3D06EB5507C27B34DAA2A070271" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">long</span></td>
     <td xml:space="preserve">outPos</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>></td>
+    <td class="rightAlignedCol" id="member_variable_underlyingStream_DC33C9607E024C425D23C3BE54C6634B279DE471" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*</td>
     <td xml:space="preserve">underlyingStream</td>
    </tr>
   </table>
@@ -134,106 +140,107 @@
   <h3 id="move_constructor_DeflateStream_A646D80E80D9D8B6D73ED33B75DD31FFEAB7AD83" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;DeflateStream(<a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html">DeflateStream</a>&amp;&amp;)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#72">72</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#55">55</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_DeflateStream_18BE9A6C1CA3E83F479D2050CC8234D34E118C51" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_DeflateStream_6687C084485D4E8ADB4BC72A4BD956D65ABC1176" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_, <span class="kw">long</span>&nbsp;bufferSize_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#44">44</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_DeflateStream_29A3D33EB0057810B30DABE485E608A997B84912" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#27">27</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_DeflateStream_15195176FE2ED5A9CA7ED9D8BA735AB6095117CE" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<a href="../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html">Stream</a>*&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_, <span class="kw">long</span>&nbsp;bufferSize_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#33">33</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="copy_constructor_DeflateStream_D441AE2647F629763EAE856E46885751BB8C76D3" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;DeflateStream(<span class="kw">const</span>&nbsp;<a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html">DeflateStream</a>&amp;)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#74">74</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
-  <br/>
-  <br/>
-  <hr/>
-  <h3 id="constructor_DeflateStream_9BE99285B5832D1D071C2175AE0820E37721B374" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_)</h4>
-  <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#59">59</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
-  <br/>
-  <br/>
-  <hr/>
-  <h3 id="constructor_DeflateStream_643E7286A9FED1A27A3C5B56CAEE5654C8F2890A" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;mode_, <span class="kw">long</span>&nbsp;bufferSize_)</h4>
-  <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#62">62</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
-  <br/>
-  <br/>
-  <hr/>
-  <h3 id="constructor_DeflateStream_5A5C00C27827E3FF01B821F09D63B9FFAB8632EC" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_)</h4>
-  <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#46">46</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
-  <br/>
-  <br/>
-  <hr/>
-  <h3 id="constructor_DeflateStream_DAD01D7AB0170AD8EA41904443053D389419FE68" xml:space="preserve">DeflateStream&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;DeflateStream(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_SharedPtr_T_E2198BEF58335A9A782FD48D7E8DFFD1A2D8865F.html">SharedPtr</a>&lt;<a href="../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html">ByteStream</a>>&amp;&nbsp;underlyingStream_, <span class="kw">int</span>&nbsp;compressionLevel_, <span class="kw">long</span>&nbsp;bufferSize_)</h4>
-  <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#49">49</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#57">57</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="destructor_DeflateStream_F6AC254CD72B1F71AA755FF6BFE5CFA0C0E2CF8B" xml:space="preserve">~DeflateStream&nbsp;Destructor</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~DeflateStream()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#80">80</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#63">63</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
   <h3 id="member_function_Finish_DeflateStream_F91C5DFD99F83F34FFC5DDBBDF33B1EC6E72DB1C" xml:space="preserve">Finish&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;Finish()</h4>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Finish()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#192">192</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#195">195</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_Mode_DeflateStream_3A1BFBE37817C23427AE25E0BDE6531C5DD06E57" xml:space="preserve">Mode&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;Mode()</h4>
+  <h3 id="member_function_Mode_DeflateStream_BE17AFFDAECACE799B31F153C25F6F712F1FEFDE" xml:space="preserve">Mode&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.IO.Compression/doc/enumerated_type_CompressionMode_93273020BB6D6744F914D48090A7829DAF3C8669.html">CompressionMode</a>&nbsp;Mode()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#76">76</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#59">59</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_Read_DeflateStream_95333390746083FE61B52470847F9C6DDF7D1212" xml:space="preserve">Read&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">long</span>&nbsp;Read(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">long</span>>&nbsp;Read(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#108">108</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#91">91</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_ReadByte_DeflateStream_E8027D714F71B7C08E0568E8F392606F7C2DCF0A" xml:space="preserve">ReadByte&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">int</span>&nbsp;ReadByte()</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">int</span>>&nbsp;ReadByte()</h4>
+  <p class="description" xml:space="preserve">If at the end of the stream returns a result containing -1, otherwise returns a result that contains the next uncompressed byte.</p>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#98">98</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#75">75</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_Write_DeflateStream_97BC2803124F5FF6B0260DA2D74A3ACDE0697BD5" xml:space="preserve">Write&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Write(<span class="kw">byte</span>&nbsp;x)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<span class="kw">byte</span>&nbsp;x)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#158">158</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#152">152</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_Write_DeflateStream_3C000BB8C986F9463DC2A1455C948DDC5267B66D" xml:space="preserve">Write&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;Write(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Write(<span class="kw">byte</span>*&nbsp;buf, <span class="kw">long</span>&nbsp;count)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#162">162</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#157">157</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="move_assignment_op_assign_DeflateStream_8592D6BC24DF1D46E549D83F458FE7A8221BF92A" xml:space="preserve">operator=&nbsp;Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html">DeflateStream</a>&amp;&amp;)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#73">73</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#56">56</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="copy_assignment_op_assign_DeflateStream_F1208F92D69CFED082ACA2BDEBF5FE79F5DA399A" xml:space="preserve">operator=&nbsp;Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html">DeflateStream</a>&amp;)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#75">75</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html#58">58</a>&nbsp;of&nbsp;<a href="../../System.IO.Compression/file/DeflateStream.cm.html">System.IO.Compression/DeflateStream.cm</a></span>
   <br/>
   <br/>
   <hr/>

@@ -8,6 +8,7 @@ module cmajor.build.compiling;
 import cmajor.binder;
 import cmajor.backend.selector;
 import cmajor.ir;
+import soul.ast.span;
 import util;
 
 namespace cmajor::build {
@@ -27,6 +28,17 @@ void CreateSymbols(cmajor::symbols::SymbolTable& symbolTable, cmajor::ast::Proje
     }
 }
 
+std::unique_ptr<cmajor::binder::BoundCompileUnit> BindTypes(cmajor::symbols::Module* module, cmajor::ast::CompileUnitNode* compileUnitNode, 
+    cmajor::binder::AttributeBinder* attributeBinder)
+{
+    std::unique_ptr<cmajor::binder::BoundCompileUnit> boundCompileUnit(new cmajor::binder::BoundCompileUnit(*module, compileUnitNode, attributeBinder));
+    boundCompileUnit->PushBindingTypes();
+    cmajor::binder::TypeBinder typeBinder(*boundCompileUnit);
+    compileUnitNode->Accept(typeBinder);
+    boundCompileUnit->PopBindingTypes();
+    return boundCompileUnit;
+}
+
 std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> BindTypes(cmajor::symbols::Module* module, cmajor::ast::Project* project,
     cmajor::binder::AttributeBinder* attributeBinder, bool& stop)
 {
@@ -37,11 +49,7 @@ std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>> BindTypes(cmajor:
         {
             return std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>();
         }
-        std::unique_ptr<cmajor::binder::BoundCompileUnit> boundCompileUnit(new cmajor::binder::BoundCompileUnit(*module, compileUnit.get(), attributeBinder));
-        boundCompileUnit->PushBindingTypes();
-        cmajor::binder::TypeBinder typeBinder(*boundCompileUnit);
-        compileUnit->Accept(typeBinder);
-        boundCompileUnit->PopBindingTypes();
+        std::unique_ptr<cmajor::binder::BoundCompileUnit> boundCompileUnit = BindTypes(module, compileUnit.get(), attributeBinder);
         boundCompileUnits.push_back(std::move(boundCompileUnit));
     }
     return boundCompileUnits;
@@ -67,7 +75,7 @@ void GenerateCode(cmajor::binder::BoundCompileUnit& boundCompileUnit, cmajor::ir
 }
 
 void CompileSingleThreaded(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits,
-    std::vector<std::string>& objectFilePaths, std::vector<std::string>& asmFilePaths, bool& stop)
+    std::vector<std::string>& objectFilePaths, std::vector<std::string>& asmFilePaths, std::map<int, cmdoclib::File>& docFileMap, bool& stop)
 {
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
     {
@@ -90,15 +98,22 @@ void CompileSingleThreaded(cmajor::ast::Project* project, cmajor::symbols::Modul
         {
             cmajor::build::AnalyzeControlFlow(*boundCompileUnit);
         }
-        std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
-        GenerateCode(*boundCompileUnit, emittingContext.get());
-        if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
         {
-            asmFilePaths.push_back(boundCompileUnit->AsmFilePath());
+            cmdoclib::GenerateSourceCode(project, boundCompileUnit.get(), docFileMap);
         }
         else
         {
-            objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
+            std::unique_ptr<cmajor::ir::EmittingContext> emittingContext = cmajor::backend::GetCurrentBackEnd()->CreateEmittingContext(cmajor::symbols::GetOptimizationLevel());
+            GenerateCode(*boundCompileUnit, emittingContext.get());
+            if (cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+            {
+                asmFilePaths.push_back(boundCompileUnit->AsmFilePath());
+            }
+            else
+            {
+                objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
+            }
         }
     }
     module->StopBuild();
@@ -319,11 +334,11 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
 }
 
 void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std::vector<std::unique_ptr<cmajor::binder::BoundCompileUnit>>& boundCompileUnits,
-    std::vector<std::string>& objectFilePaths, std::vector<std::string>& asmFilePaths, bool& stop)
+    std::vector<std::string>& objectFilePaths, std::vector<std::string>& asmFilePaths, std::map<int, cmdoclib::File>& docFileMap, bool& stop)
 {
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::singleThreadedCompile))
     {
-        CompileSingleThreaded(project, module, boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+        CompileSingleThreaded(project, module, boundCompileUnits, objectFilePaths, asmFilePaths, docFileMap, stop);
     }
     else
     {

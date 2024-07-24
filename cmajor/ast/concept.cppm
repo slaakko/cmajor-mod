@@ -282,20 +282,16 @@ public:
     IdentifierNode* Id() { return id.get(); }
     const NodeList<ParameterNode>& Parameters() const { return parameters; }
     const NodeList<AxiomStatementNode>& Statements() const { return statements; }
-/*
-    void SetBeginBraceSourcePos(const soul::ast::SourcePos& beginBraceSourcePos_) { beginBraceSourcePos = beginBraceSourcePos_; }
-    const soul::ast::SourcePos& BeginBraceSourcePos() const { return beginBraceSourcePos; }
-    void SetEndBraceSourcePos(const soul::ast::SourcePos& endBraceSourcePos_) { endBraceSourcePos = endBraceSourcePos_; }
-    const soul::ast::SourcePos& EndBraceSourcePos() const { return endBraceSourcePos; }
-*/
+    const soul::ast::Span& BeginBraceSpan() const { return beginBraceSpan; }
+    void SetBeginBraceSpan(const soul::ast::Span& beginBraceSpan_) { beginBraceSpan = beginBraceSpan_; }
+    const soul::ast::Span& EndBraceSpan() const { return endBraceSpan; }
+    void SetEndBraceSpan(const soul::ast::Span& endBraceSpan_) { endBraceSpan = endBraceSpan_; }
 private:
-/*
-    soul::ast::SourcePos beginBraceSourcePos;
-    soul::ast::SourcePos endBraceSourcePos;
-*/
     std::unique_ptr<IdentifierNode> id;
     NodeList<ParameterNode> parameters;
     NodeList<AxiomStatementNode> statements;
+    soul::ast::Span beginBraceSpan;
+    soul::ast::Span endBraceSpan;
 };
 
 class ConceptIdNode : public Node
@@ -343,23 +339,19 @@ public:
     void AddAxiom(AxiomNode* axiom_);
     const NodeList<AxiomNode>& Axioms() const { return axioms; }
     Specifiers GetSpecifiers() const override { return specifiers; }
-/*
-    void SetBeginBraceSourcePos(const soul::ast::SourcePos& beginBraceSourcePos_) { beginBraceSourcePos = beginBraceSourcePos_; }
-    const soul::ast::SourcePos& BeginBraceSourcePos() const { return beginBraceSourcePos; }
-    void SetEndBraceSourcePos(const soul::ast::SourcePos& endBraceSourcePos_) { endBraceSourcePos = endBraceSourcePos_; }
-    const soul::ast::SourcePos& EndBraceSourcePos() const { return endBraceSourcePos; }
-*/
+    const soul::ast::Span& BeginBraceSpan() const { return beginBraceSpan; }
+    void SetBeginBraceSpan(const soul::ast::Span& beginBraceSpan_) { beginBraceSpan = beginBraceSpan_; }
+    const soul::ast::Span& EndBraceSpan() const { return endBraceSpan; }
+    void SetEndBraceSpan(const soul::ast::Span& endBraceSpan_) { endBraceSpan = endBraceSpan_; }
 private:
     Specifiers specifiers;
-/*
-    soul::ast::SourcePos beginBraceSourcePos;
-    soul::ast::SourcePos endBraceSourcePos;
-*/
     std::unique_ptr<IdentifierNode> id;
     NodeList<IdentifierNode> typeParameters;
     std::unique_ptr<ConceptIdNode> refinement;
     NodeList<ConstraintNode> constraints;
     NodeList<AxiomNode> axioms;
+    soul::ast::Span beginBraceSpan;
+    soul::ast::Span endBraceSpan;
 };
 
 class IntrinsicConstraintNode : public ConstraintNode

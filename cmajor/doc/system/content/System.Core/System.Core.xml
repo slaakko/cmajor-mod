@@ -8,179 +8,179 @@
     <namespaces>
      <namespace docPath="../../System.Core/doc/ns_System.Meta.html" extPath="System.Core/doc/ns_System.Meta.html" id="ns_System.Meta" name="Meta">
       <functions>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_ArrayLength_123671BFA0878E74F1DEFC1EC94AB2502E69D91C" extPath="System.Core/doc/ns_System.Meta.html#function_ArrayLength_123671BFA0878E74F1DEFC1EC94AB2502E69D91C" id="function_ArrayLength_123671BFA0878E74F1DEFC1EC94AB2502E69D91C" kind="Function" name="ArrayLength" returnType="d044fffa-911a-4652-aa50-37212628599d">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_ArrayLength_123671BFA0878E74F1DEFC1EC94AB2502E69D91C" extPath="System.Core/doc/ns_System.Meta.html#function_ArrayLength_123671BFA0878E74F1DEFC1EC94AB2502E69D91C" id="function_ArrayLength_123671BFA0878E74F1DEFC1EC94AB2502E69D91C" kind="Function" name="ArrayLength" returnType="0407bfb1-056a-7eea-1043-245e6aae0646">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#76a9bf11-43db-49bc-bf74-0d3872d8d5e6" extPath="System.Core/doc/ns_System.Meta.html#76a9bf11-43db-49bc-bf74-0d3872d8d5e6" id="76a9bf11-43db-49bc-bf74-0d3872d8d5e6" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#59b93f70-44c1-196e-4067-aed39a959721" extPath="System.Core/doc/ns_System.Meta.html#59b93f70-44c1-196e-4067-aed39a959721" id="59b93f70-44c1-196e-4067-aed39a959721" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsArrayType_774A544CB0D063F0ED6EC9796E1B743F793CBF70" extPath="System.Core/doc/ns_System.Meta.html#function_IsArrayType_774A544CB0D063F0ED6EC9796E1B743F793CBF70" id="function_IsArrayType_774A544CB0D063F0ED6EC9796E1B743F793CBF70" kind="Function" name="IsArrayType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsArrayType_774A544CB0D063F0ED6EC9796E1B743F793CBF70" extPath="System.Core/doc/ns_System.Meta.html#function_IsArrayType_774A544CB0D063F0ED6EC9796E1B743F793CBF70" id="function_IsArrayType_774A544CB0D063F0ED6EC9796E1B743F793CBF70" kind="Function" name="IsArrayType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#c87d7f16-d581-4bba-b13a-fa3d0cf31caa" extPath="System.Core/doc/ns_System.Meta.html#c87d7f16-d581-4bba-b13a-fa3d0cf31caa" id="c87d7f16-d581-4bba-b13a-fa3d0cf31caa" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#b64df487-5c94-483e-455f-8e7622d513cc" extPath="System.Core/doc/ns_System.Meta.html#b64df487-5c94-483e-455f-8e7622d513cc" id="b64df487-5c94-483e-455f-8e7622d513cc" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsBasicType_49AE46CD9077E29859B95E5BD0AD9BA2113EB069" extPath="System.Core/doc/ns_System.Meta.html#function_IsBasicType_49AE46CD9077E29859B95E5BD0AD9BA2113EB069" id="function_IsBasicType_49AE46CD9077E29859B95E5BD0AD9BA2113EB069" kind="Function" name="IsBasicType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsBasicType_49AE46CD9077E29859B95E5BD0AD9BA2113EB069" extPath="System.Core/doc/ns_System.Meta.html#function_IsBasicType_49AE46CD9077E29859B95E5BD0AD9BA2113EB069" id="function_IsBasicType_49AE46CD9077E29859B95E5BD0AD9BA2113EB069" kind="Function" name="IsBasicType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#91ea3eb8-b86e-492e-a8d2-cff4a4956f29" extPath="System.Core/doc/ns_System.Meta.html#91ea3eb8-b86e-492e-a8d2-cff4a4956f29" id="91ea3eb8-b86e-492e-a8d2-cff4a4956f29" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#72310d0c-9b5e-3062-65be-5508ae998fde" extPath="System.Core/doc/ns_System.Meta.html#72310d0c-9b5e-3062-65be-5508ae998fde" id="72310d0c-9b5e-3062-65be-5508ae998fde" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsBoolType_3FD9B4101B5D7927722DF4D3F94EC6F77C569241" extPath="System.Core/doc/ns_System.Meta.html#function_IsBoolType_3FD9B4101B5D7927722DF4D3F94EC6F77C569241" id="function_IsBoolType_3FD9B4101B5D7927722DF4D3F94EC6F77C569241" kind="Function" name="IsBoolType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsBoolType_3FD9B4101B5D7927722DF4D3F94EC6F77C569241" extPath="System.Core/doc/ns_System.Meta.html#function_IsBoolType_3FD9B4101B5D7927722DF4D3F94EC6F77C569241" id="function_IsBoolType_3FD9B4101B5D7927722DF4D3F94EC6F77C569241" kind="Function" name="IsBoolType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#b4f5349f-33ad-4f50-9d02-5cbae9e13f1e" extPath="System.Core/doc/ns_System.Meta.html#b4f5349f-33ad-4f50-9d02-5cbae9e13f1e" id="b4f5349f-33ad-4f50-9d02-5cbae9e13f1e" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#f3dc191f-7ac0-ed23-d148-fc0517ac5192" extPath="System.Core/doc/ns_System.Meta.html#f3dc191f-7ac0-ed23-d148-fc0517ac5192" id="f3dc191f-7ac0-ed23-d148-fc0517ac5192" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsByteType_73B0C93D8E2C44691C5115DF08D8D41248FEA4C6" extPath="System.Core/doc/ns_System.Meta.html#function_IsByteType_73B0C93D8E2C44691C5115DF08D8D41248FEA4C6" id="function_IsByteType_73B0C93D8E2C44691C5115DF08D8D41248FEA4C6" kind="Function" name="IsByteType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsByteType_73B0C93D8E2C44691C5115DF08D8D41248FEA4C6" extPath="System.Core/doc/ns_System.Meta.html#function_IsByteType_73B0C93D8E2C44691C5115DF08D8D41248FEA4C6" id="function_IsByteType_73B0C93D8E2C44691C5115DF08D8D41248FEA4C6" kind="Function" name="IsByteType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#f4bbf2e8-5e90-4d95-88ed-debdcb0303cd" extPath="System.Core/doc/ns_System.Meta.html#f4bbf2e8-5e90-4d95-88ed-debdcb0303cd" id="f4bbf2e8-5e90-4d95-88ed-debdcb0303cd" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#9c9f925e-3797-7229-9f57-6de62a8d0266" extPath="System.Core/doc/ns_System.Meta.html#9c9f925e-3797-7229-9f57-6de62a8d0266" id="9c9f925e-3797-7229-9f57-6de62a8d0266" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsCharType_876BBD68F05D1BCA500406CBC5C13B30EE59378B" extPath="System.Core/doc/ns_System.Meta.html#function_IsCharType_876BBD68F05D1BCA500406CBC5C13B30EE59378B" id="function_IsCharType_876BBD68F05D1BCA500406CBC5C13B30EE59378B" kind="Function" name="IsCharType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsCharType_876BBD68F05D1BCA500406CBC5C13B30EE59378B" extPath="System.Core/doc/ns_System.Meta.html#function_IsCharType_876BBD68F05D1BCA500406CBC5C13B30EE59378B" id="function_IsCharType_876BBD68F05D1BCA500406CBC5C13B30EE59378B" kind="Function" name="IsCharType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#041dc717-8c35-45d7-8b98-f806181b76c5" extPath="System.Core/doc/ns_System.Meta.html#041dc717-8c35-45d7-8b98-f806181b76c5" id="041dc717-8c35-45d7-8b98-f806181b76c5" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#aac06ca6-f481-5297-7b19-903d25677f45" extPath="System.Core/doc/ns_System.Meta.html#aac06ca6-f481-5297-7b19-903d25677f45" id="aac06ca6-f481-5297-7b19-903d25677f45" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsClassDelegateType_70E8BD495AE01537C8C5797CD4A7826B8DAB468D" extPath="System.Core/doc/ns_System.Meta.html#function_IsClassDelegateType_70E8BD495AE01537C8C5797CD4A7826B8DAB468D" id="function_IsClassDelegateType_70E8BD495AE01537C8C5797CD4A7826B8DAB468D" kind="Function" name="IsClassDelegateType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsClassDelegateType_70E8BD495AE01537C8C5797CD4A7826B8DAB468D" extPath="System.Core/doc/ns_System.Meta.html#function_IsClassDelegateType_70E8BD495AE01537C8C5797CD4A7826B8DAB468D" id="function_IsClassDelegateType_70E8BD495AE01537C8C5797CD4A7826B8DAB468D" kind="Function" name="IsClassDelegateType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#7b446c5f-b4c6-49ed-9fbc-5b1f725f8858" extPath="System.Core/doc/ns_System.Meta.html#7b446c5f-b4c6-49ed-9fbc-5b1f725f8858" id="7b446c5f-b4c6-49ed-9fbc-5b1f725f8858" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#a8f3d9ec-c312-80cd-4cc0-18cef850075b" extPath="System.Core/doc/ns_System.Meta.html#a8f3d9ec-c312-80cd-4cc0-18cef850075b" id="a8f3d9ec-c312-80cd-4cc0-18cef850075b" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsClassType_C93FE07E73CA46623BAF2C3FF3F6732CC1F0A629" extPath="System.Core/doc/ns_System.Meta.html#function_IsClassType_C93FE07E73CA46623BAF2C3FF3F6732CC1F0A629" id="function_IsClassType_C93FE07E73CA46623BAF2C3FF3F6732CC1F0A629" kind="Function" name="IsClassType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsClassType_C93FE07E73CA46623BAF2C3FF3F6732CC1F0A629" extPath="System.Core/doc/ns_System.Meta.html#function_IsClassType_C93FE07E73CA46623BAF2C3FF3F6732CC1F0A629" id="function_IsClassType_C93FE07E73CA46623BAF2C3FF3F6732CC1F0A629" kind="Function" name="IsClassType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#d35482d9-b721-4aa6-b255-7290ba97e6f4" extPath="System.Core/doc/ns_System.Meta.html#d35482d9-b721-4aa6-b255-7290ba97e6f4" id="d35482d9-b721-4aa6-b255-7290ba97e6f4" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#a5e4538a-d593-3d37-44b2-d192de13a301" extPath="System.Core/doc/ns_System.Meta.html#a5e4538a-d593-3d37-44b2-d192de13a301" id="a5e4538a-d593-3d37-44b2-d192de13a301" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsConstType_37C1AF38CE1EE8B35133086F259FEDC537F4E7E8" extPath="System.Core/doc/ns_System.Meta.html#function_IsConstType_37C1AF38CE1EE8B35133086F259FEDC537F4E7E8" id="function_IsConstType_37C1AF38CE1EE8B35133086F259FEDC537F4E7E8" kind="Function" name="IsConstType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsConstType_37C1AF38CE1EE8B35133086F259FEDC537F4E7E8" extPath="System.Core/doc/ns_System.Meta.html#function_IsConstType_37C1AF38CE1EE8B35133086F259FEDC537F4E7E8" id="function_IsConstType_37C1AF38CE1EE8B35133086F259FEDC537F4E7E8" kind="Function" name="IsConstType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#89e12e90-2ebe-487c-b780-966b3d3a6ceb" extPath="System.Core/doc/ns_System.Meta.html#89e12e90-2ebe-487c-b780-966b3d3a6ceb" id="89e12e90-2ebe-487c-b780-966b3d3a6ceb" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#4dd54114-87ad-d9fe-6314-3dd45f64a95f" extPath="System.Core/doc/ns_System.Meta.html#4dd54114-87ad-d9fe-6314-3dd45f64a95f" id="4dd54114-87ad-d9fe-6314-3dd45f64a95f" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsDelegateType_48E956EA6C389E92F9603CB97B5F8EDCB7BE2995" extPath="System.Core/doc/ns_System.Meta.html#function_IsDelegateType_48E956EA6C389E92F9603CB97B5F8EDCB7BE2995" id="function_IsDelegateType_48E956EA6C389E92F9603CB97B5F8EDCB7BE2995" kind="Function" name="IsDelegateType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsDelegateType_48E956EA6C389E92F9603CB97B5F8EDCB7BE2995" extPath="System.Core/doc/ns_System.Meta.html#function_IsDelegateType_48E956EA6C389E92F9603CB97B5F8EDCB7BE2995" id="function_IsDelegateType_48E956EA6C389E92F9603CB97B5F8EDCB7BE2995" kind="Function" name="IsDelegateType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#67452290-53fb-4daa-b3ff-6dba696b92c4" extPath="System.Core/doc/ns_System.Meta.html#67452290-53fb-4daa-b3ff-6dba696b92c4" id="67452290-53fb-4daa-b3ff-6dba696b92c4" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#c5e279a8-3d9a-b14a-be8e-c92328801fc8" extPath="System.Core/doc/ns_System.Meta.html#c5e279a8-3d9a-b14a-be8e-c92328801fc8" id="c5e279a8-3d9a-b14a-be8e-c92328801fc8" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsDoubleType_C123B143FB621E7EF2EEF50C13CDC85D906609CF" extPath="System.Core/doc/ns_System.Meta.html#function_IsDoubleType_C123B143FB621E7EF2EEF50C13CDC85D906609CF" id="function_IsDoubleType_C123B143FB621E7EF2EEF50C13CDC85D906609CF" kind="Function" name="IsDoubleType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsDoubleType_C123B143FB621E7EF2EEF50C13CDC85D906609CF" extPath="System.Core/doc/ns_System.Meta.html#function_IsDoubleType_C123B143FB621E7EF2EEF50C13CDC85D906609CF" id="function_IsDoubleType_C123B143FB621E7EF2EEF50C13CDC85D906609CF" kind="Function" name="IsDoubleType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#b04cb78d-254f-400e-9e9d-c3b0e9216d88" extPath="System.Core/doc/ns_System.Meta.html#b04cb78d-254f-400e-9e9d-c3b0e9216d88" id="b04cb78d-254f-400e-9e9d-c3b0e9216d88" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#124972b0-2abe-6aba-a97f-2d95840393b3" extPath="System.Core/doc/ns_System.Meta.html#124972b0-2abe-6aba-a97f-2d95840393b3" id="124972b0-2abe-6aba-a97f-2d95840393b3" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsEnumeratedType_31F8CFDACD5875B1343F868FD13EB73DBFC9F4F5" extPath="System.Core/doc/ns_System.Meta.html#function_IsEnumeratedType_31F8CFDACD5875B1343F868FD13EB73DBFC9F4F5" id="function_IsEnumeratedType_31F8CFDACD5875B1343F868FD13EB73DBFC9F4F5" kind="Function" name="IsEnumeratedType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsEnumeratedType_31F8CFDACD5875B1343F868FD13EB73DBFC9F4F5" extPath="System.Core/doc/ns_System.Meta.html#function_IsEnumeratedType_31F8CFDACD5875B1343F868FD13EB73DBFC9F4F5" id="function_IsEnumeratedType_31F8CFDACD5875B1343F868FD13EB73DBFC9F4F5" kind="Function" name="IsEnumeratedType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#db1d63a4-c6da-421d-bc7a-7e27326bdba6" extPath="System.Core/doc/ns_System.Meta.html#db1d63a4-c6da-421d-bc7a-7e27326bdba6" id="db1d63a4-c6da-421d-bc7a-7e27326bdba6" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#7c839df3-efc2-cfdd-3c96-65c35d0335f0" extPath="System.Core/doc/ns_System.Meta.html#7c839df3-efc2-cfdd-3c96-65c35d0335f0" id="7c839df3-efc2-cfdd-3c96-65c35d0335f0" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsFloatType_7AAA48F2BFCBC7D24B5D4406B4A654AE3C297B7B" extPath="System.Core/doc/ns_System.Meta.html#function_IsFloatType_7AAA48F2BFCBC7D24B5D4406B4A654AE3C297B7B" id="function_IsFloatType_7AAA48F2BFCBC7D24B5D4406B4A654AE3C297B7B" kind="Function" name="IsFloatType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsFloatType_7AAA48F2BFCBC7D24B5D4406B4A654AE3C297B7B" extPath="System.Core/doc/ns_System.Meta.html#function_IsFloatType_7AAA48F2BFCBC7D24B5D4406B4A654AE3C297B7B" id="function_IsFloatType_7AAA48F2BFCBC7D24B5D4406B4A654AE3C297B7B" kind="Function" name="IsFloatType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#798997b4-8335-42b8-aea1-ecfe5c8f9a10" extPath="System.Core/doc/ns_System.Meta.html#798997b4-8335-42b8-aea1-ecfe5c8f9a10" id="798997b4-8335-42b8-aea1-ecfe5c8f9a10" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#9235de32-b798-5a4d-d299-3cfa2699ea4c" extPath="System.Core/doc/ns_System.Meta.html#9235de32-b798-5a4d-d299-3cfa2699ea4c" id="9235de32-b798-5a4d-d299-3cfa2699ea4c" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsFloatingPointType_8356784EB64EB3E195AAB124FA3338E5E9158A59" extPath="System.Core/doc/ns_System.Meta.html#function_IsFloatingPointType_8356784EB64EB3E195AAB124FA3338E5E9158A59" id="function_IsFloatingPointType_8356784EB64EB3E195AAB124FA3338E5E9158A59" kind="Function" name="IsFloatingPointType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsFloatingPointType_8356784EB64EB3E195AAB124FA3338E5E9158A59" extPath="System.Core/doc/ns_System.Meta.html#function_IsFloatingPointType_8356784EB64EB3E195AAB124FA3338E5E9158A59" id="function_IsFloatingPointType_8356784EB64EB3E195AAB124FA3338E5E9158A59" kind="Function" name="IsFloatingPointType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#e68093c2-b496-444c-bf0d-270773b0f827" extPath="System.Core/doc/ns_System.Meta.html#e68093c2-b496-444c-bf0d-270773b0f827" id="e68093c2-b496-444c-bf0d-270773b0f827" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#7ab9b3e6-dd3d-131a-4f1e-d057d7c18334" extPath="System.Core/doc/ns_System.Meta.html#7ab9b3e6-dd3d-131a-4f1e-d057d7c18334" id="7ab9b3e6-dd3d-131a-4f1e-d057d7c18334" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsGenericPtrType_1ECE27124D2238AC0F2FD0F07B111E56966A1364" extPath="System.Core/doc/ns_System.Meta.html#function_IsGenericPtrType_1ECE27124D2238AC0F2FD0F07B111E56966A1364" id="function_IsGenericPtrType_1ECE27124D2238AC0F2FD0F07B111E56966A1364" kind="Function" name="IsGenericPtrType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsGenericPtrType_1ECE27124D2238AC0F2FD0F07B111E56966A1364" extPath="System.Core/doc/ns_System.Meta.html#function_IsGenericPtrType_1ECE27124D2238AC0F2FD0F07B111E56966A1364" id="function_IsGenericPtrType_1ECE27124D2238AC0F2FD0F07B111E56966A1364" kind="Function" name="IsGenericPtrType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#d8511a19-abfe-497b-9d12-cdbb74f1d2a0" extPath="System.Core/doc/ns_System.Meta.html#d8511a19-abfe-497b-9d12-cdbb74f1d2a0" id="d8511a19-abfe-497b-9d12-cdbb74f1d2a0" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#95c814c6-9a12-c8b2-7efa-e71364d138d8" extPath="System.Core/doc/ns_System.Meta.html#95c814c6-9a12-c8b2-7efa-e71364d138d8" id="95c814c6-9a12-c8b2-7efa-e71364d138d8" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsIntType_E6B0A5B2164373E2DA4BA0C3E59439886A9552A4" extPath="System.Core/doc/ns_System.Meta.html#function_IsIntType_E6B0A5B2164373E2DA4BA0C3E59439886A9552A4" id="function_IsIntType_E6B0A5B2164373E2DA4BA0C3E59439886A9552A4" kind="Function" name="IsIntType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsIntType_E6B0A5B2164373E2DA4BA0C3E59439886A9552A4" extPath="System.Core/doc/ns_System.Meta.html#function_IsIntType_E6B0A5B2164373E2DA4BA0C3E59439886A9552A4" id="function_IsIntType_E6B0A5B2164373E2DA4BA0C3E59439886A9552A4" kind="Function" name="IsIntType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#159909d1-fda9-4b60-a107-efa081b3bdb9" extPath="System.Core/doc/ns_System.Meta.html#159909d1-fda9-4b60-a107-efa081b3bdb9" id="159909d1-fda9-4b60-a107-efa081b3bdb9" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#a8f40aa4-8c93-573b-6e07-4d7a4972f7f2" extPath="System.Core/doc/ns_System.Meta.html#a8f40aa4-8c93-573b-6e07-4d7a4972f7f2" id="a8f40aa4-8c93-573b-6e07-4d7a4972f7f2" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsIntegralType_6E8707E326EEBC08EFAE8E0DBC7CA191DF2BCFD1" extPath="System.Core/doc/ns_System.Meta.html#function_IsIntegralType_6E8707E326EEBC08EFAE8E0DBC7CA191DF2BCFD1" id="function_IsIntegralType_6E8707E326EEBC08EFAE8E0DBC7CA191DF2BCFD1" kind="Function" name="IsIntegralType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsIntegralType_6E8707E326EEBC08EFAE8E0DBC7CA191DF2BCFD1" extPath="System.Core/doc/ns_System.Meta.html#function_IsIntegralType_6E8707E326EEBC08EFAE8E0DBC7CA191DF2BCFD1" id="function_IsIntegralType_6E8707E326EEBC08EFAE8E0DBC7CA191DF2BCFD1" kind="Function" name="IsIntegralType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#0ade61d7-2cd2-4bb7-982a-2ca57bfcaafc" extPath="System.Core/doc/ns_System.Meta.html#0ade61d7-2cd2-4bb7-982a-2ca57bfcaafc" id="0ade61d7-2cd2-4bb7-982a-2ca57bfcaafc" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#669e74ac-b400-a692-e315-6ecfd89e6b69" extPath="System.Core/doc/ns_System.Meta.html#669e74ac-b400-a692-e315-6ecfd89e6b69" id="669e74ac-b400-a692-e315-6ecfd89e6b69" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsInterfaceType_DC73AEA9C1A23FF45CC45529160A3934F0408AF8" extPath="System.Core/doc/ns_System.Meta.html#function_IsInterfaceType_DC73AEA9C1A23FF45CC45529160A3934F0408AF8" id="function_IsInterfaceType_DC73AEA9C1A23FF45CC45529160A3934F0408AF8" kind="Function" name="IsInterfaceType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsInterfaceType_DC73AEA9C1A23FF45CC45529160A3934F0408AF8" extPath="System.Core/doc/ns_System.Meta.html#function_IsInterfaceType_DC73AEA9C1A23FF45CC45529160A3934F0408AF8" id="function_IsInterfaceType_DC73AEA9C1A23FF45CC45529160A3934F0408AF8" kind="Function" name="IsInterfaceType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#074e5844-271b-4a6b-b593-990320a73578" extPath="System.Core/doc/ns_System.Meta.html#074e5844-271b-4a6b-b593-990320a73578" id="074e5844-271b-4a6b-b593-990320a73578" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#0a25cbef-b892-f9b2-616a-8a04b3009006" extPath="System.Core/doc/ns_System.Meta.html#0a25cbef-b892-f9b2-616a-8a04b3009006" id="0a25cbef-b892-f9b2-616a-8a04b3009006" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsLongType_86BE6E454E42BDE475EB25EB47968B07B0EC9B91" extPath="System.Core/doc/ns_System.Meta.html#function_IsLongType_86BE6E454E42BDE475EB25EB47968B07B0EC9B91" id="function_IsLongType_86BE6E454E42BDE475EB25EB47968B07B0EC9B91" kind="Function" name="IsLongType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsLongType_86BE6E454E42BDE475EB25EB47968B07B0EC9B91" extPath="System.Core/doc/ns_System.Meta.html#function_IsLongType_86BE6E454E42BDE475EB25EB47968B07B0EC9B91" id="function_IsLongType_86BE6E454E42BDE475EB25EB47968B07B0EC9B91" kind="Function" name="IsLongType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#028fd8a2-a3f7-40ac-934a-afb486c72522" extPath="System.Core/doc/ns_System.Meta.html#028fd8a2-a3f7-40ac-934a-afb486c72522" id="028fd8a2-a3f7-40ac-934a-afb486c72522" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#89bb8cfd-1bae-d281-6c16-b43dc8b92cc3" extPath="System.Core/doc/ns_System.Meta.html#89bb8cfd-1bae-d281-6c16-b43dc8b92cc3" id="89bb8cfd-1bae-d281-6c16-b43dc8b92cc3" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsLvalueReferenceType_8BAD27EAD0399DD5E49FE8A7234BBDFCBA4D7731" extPath="System.Core/doc/ns_System.Meta.html#function_IsLvalueReferenceType_8BAD27EAD0399DD5E49FE8A7234BBDFCBA4D7731" id="function_IsLvalueReferenceType_8BAD27EAD0399DD5E49FE8A7234BBDFCBA4D7731" kind="Function" name="IsLvalueReferenceType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsLvalueReferenceType_8BAD27EAD0399DD5E49FE8A7234BBDFCBA4D7731" extPath="System.Core/doc/ns_System.Meta.html#function_IsLvalueReferenceType_8BAD27EAD0399DD5E49FE8A7234BBDFCBA4D7731" id="function_IsLvalueReferenceType_8BAD27EAD0399DD5E49FE8A7234BBDFCBA4D7731" kind="Function" name="IsLvalueReferenceType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#e1c70038-3189-4a60-8864-03c498d60fd4" extPath="System.Core/doc/ns_System.Meta.html#e1c70038-3189-4a60-8864-03c498d60fd4" id="e1c70038-3189-4a60-8864-03c498d60fd4" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#e4ac855c-4401-cf4f-f3be-4fd4c4522943" extPath="System.Core/doc/ns_System.Meta.html#e4ac855c-4401-cf4f-f3be-4fd4c4522943" id="e4ac855c-4401-cf4f-f3be-4fd4c4522943" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsPointerType_910C23DEA0114C3239970D7E394BDD71B5D1C03B" extPath="System.Core/doc/ns_System.Meta.html#function_IsPointerType_910C23DEA0114C3239970D7E394BDD71B5D1C03B" id="function_IsPointerType_910C23DEA0114C3239970D7E394BDD71B5D1C03B" kind="Function" name="IsPointerType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsPointerType_910C23DEA0114C3239970D7E394BDD71B5D1C03B" extPath="System.Core/doc/ns_System.Meta.html#function_IsPointerType_910C23DEA0114C3239970D7E394BDD71B5D1C03B" id="function_IsPointerType_910C23DEA0114C3239970D7E394BDD71B5D1C03B" kind="Function" name="IsPointerType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#5d08a677-6d01-4d99-9d9a-b344fc2159d4" extPath="System.Core/doc/ns_System.Meta.html#5d08a677-6d01-4d99-9d9a-b344fc2159d4" id="5d08a677-6d01-4d99-9d9a-b344fc2159d4" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#742e5b6c-a39f-f2b8-ae3e-6b0b3f1f8553" extPath="System.Core/doc/ns_System.Meta.html#742e5b6c-a39f-f2b8-ae3e-6b0b3f1f8553" id="742e5b6c-a39f-f2b8-ae3e-6b0b3f1f8553" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsPolymorphicType_3AAC9ABAF2FC6877003A4F4F0BB5B8B80E815D65" extPath="System.Core/doc/ns_System.Meta.html#function_IsPolymorphicType_3AAC9ABAF2FC6877003A4F4F0BB5B8B80E815D65" id="function_IsPolymorphicType_3AAC9ABAF2FC6877003A4F4F0BB5B8B80E815D65" kind="Function" name="IsPolymorphicType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsPolymorphicType_3AAC9ABAF2FC6877003A4F4F0BB5B8B80E815D65" extPath="System.Core/doc/ns_System.Meta.html#function_IsPolymorphicType_3AAC9ABAF2FC6877003A4F4F0BB5B8B80E815D65" id="function_IsPolymorphicType_3AAC9ABAF2FC6877003A4F4F0BB5B8B80E815D65" kind="Function" name="IsPolymorphicType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#3e146b05-9e74-490f-b7de-9336c3f6f334" extPath="System.Core/doc/ns_System.Meta.html#3e146b05-9e74-490f-b7de-9336c3f6f334" id="3e146b05-9e74-490f-b7de-9336c3f6f334" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#3d6c5cf8-7b1d-26d9-2ecb-d5e058919a1d" extPath="System.Core/doc/ns_System.Meta.html#3d6c5cf8-7b1d-26d9-2ecb-d5e058919a1d" id="3d6c5cf8-7b1d-26d9-2ecb-d5e058919a1d" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsReferenceType_A1AA9E0DAF7C8AAC7CBCE2A5CAC277D1E89479E2" extPath="System.Core/doc/ns_System.Meta.html#function_IsReferenceType_A1AA9E0DAF7C8AAC7CBCE2A5CAC277D1E89479E2" id="function_IsReferenceType_A1AA9E0DAF7C8AAC7CBCE2A5CAC277D1E89479E2" kind="Function" name="IsReferenceType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsReferenceType_A1AA9E0DAF7C8AAC7CBCE2A5CAC277D1E89479E2" extPath="System.Core/doc/ns_System.Meta.html#function_IsReferenceType_A1AA9E0DAF7C8AAC7CBCE2A5CAC277D1E89479E2" id="function_IsReferenceType_A1AA9E0DAF7C8AAC7CBCE2A5CAC277D1E89479E2" kind="Function" name="IsReferenceType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#74b1f2a6-9984-4ec6-8665-b6bb0a39fd8b" extPath="System.Core/doc/ns_System.Meta.html#74b1f2a6-9984-4ec6-8665-b6bb0a39fd8b" id="74b1f2a6-9984-4ec6-8665-b6bb0a39fd8b" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#d68d153d-3e5a-f204-9448-a1cdc7a5bcfc" extPath="System.Core/doc/ns_System.Meta.html#d68d153d-3e5a-f204-9448-a1cdc7a5bcfc" id="d68d153d-3e5a-f204-9448-a1cdc7a5bcfc" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsRvalueReferenceType_F150AA0D8E743DC80057B45FDA85376D717C2A27" extPath="System.Core/doc/ns_System.Meta.html#function_IsRvalueReferenceType_F150AA0D8E743DC80057B45FDA85376D717C2A27" id="function_IsRvalueReferenceType_F150AA0D8E743DC80057B45FDA85376D717C2A27" kind="Function" name="IsRvalueReferenceType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsRvalueReferenceType_F150AA0D8E743DC80057B45FDA85376D717C2A27" extPath="System.Core/doc/ns_System.Meta.html#function_IsRvalueReferenceType_F150AA0D8E743DC80057B45FDA85376D717C2A27" id="function_IsRvalueReferenceType_F150AA0D8E743DC80057B45FDA85376D717C2A27" kind="Function" name="IsRvalueReferenceType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#7a36cc33-2d6f-4b32-924f-1bb1fcd9c6ff" extPath="System.Core/doc/ns_System.Meta.html#7a36cc33-2d6f-4b32-924f-1bb1fcd9c6ff" id="7a36cc33-2d6f-4b32-924f-1bb1fcd9c6ff" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#743613f4-97c0-fe19-ea15-1d6e6d15e08a" extPath="System.Core/doc/ns_System.Meta.html#743613f4-97c0-fe19-ea15-1d6e6d15e08a" id="743613f4-97c0-fe19-ea15-1d6e6d15e08a" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsSByteType_814BB5AE55A62B1F820F68A3D75C96768467910E" extPath="System.Core/doc/ns_System.Meta.html#function_IsSByteType_814BB5AE55A62B1F820F68A3D75C96768467910E" id="function_IsSByteType_814BB5AE55A62B1F820F68A3D75C96768467910E" kind="Function" name="IsSByteType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsSByteType_814BB5AE55A62B1F820F68A3D75C96768467910E" extPath="System.Core/doc/ns_System.Meta.html#function_IsSByteType_814BB5AE55A62B1F820F68A3D75C96768467910E" id="function_IsSByteType_814BB5AE55A62B1F820F68A3D75C96768467910E" kind="Function" name="IsSByteType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#d38a586f-5b5d-4762-bcb2-a212d145a775" extPath="System.Core/doc/ns_System.Meta.html#d38a586f-5b5d-4762-bcb2-a212d145a775" id="d38a586f-5b5d-4762-bcb2-a212d145a775" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#b94ee7d9-c1aa-0070-75fa-3005c315793a" extPath="System.Core/doc/ns_System.Meta.html#b94ee7d9-c1aa-0070-75fa-3005c315793a" id="b94ee7d9-c1aa-0070-75fa-3005c315793a" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsShortType_F6A3DF1669F207A011AF5F854D16CAC5C8390A29" extPath="System.Core/doc/ns_System.Meta.html#function_IsShortType_F6A3DF1669F207A011AF5F854D16CAC5C8390A29" id="function_IsShortType_F6A3DF1669F207A011AF5F854D16CAC5C8390A29" kind="Function" name="IsShortType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsShortType_F6A3DF1669F207A011AF5F854D16CAC5C8390A29" extPath="System.Core/doc/ns_System.Meta.html#function_IsShortType_F6A3DF1669F207A011AF5F854D16CAC5C8390A29" id="function_IsShortType_F6A3DF1669F207A011AF5F854D16CAC5C8390A29" kind="Function" name="IsShortType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#5d972381-58fc-4ff1-a018-be5c3dbdedee" extPath="System.Core/doc/ns_System.Meta.html#5d972381-58fc-4ff1-a018-be5c3dbdedee" id="5d972381-58fc-4ff1-a018-be5c3dbdedee" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#9df68f50-4752-21b3-da9b-2ab69455898f" extPath="System.Core/doc/ns_System.Meta.html#9df68f50-4752-21b3-da9b-2ab69455898f" id="9df68f50-4752-21b3-da9b-2ab69455898f" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsSignedType_0B9DF1B7D3A2F5009A261A4B11849E60870D1728" extPath="System.Core/doc/ns_System.Meta.html#function_IsSignedType_0B9DF1B7D3A2F5009A261A4B11849E60870D1728" id="function_IsSignedType_0B9DF1B7D3A2F5009A261A4B11849E60870D1728" kind="Function" name="IsSignedType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsSignedType_0B9DF1B7D3A2F5009A261A4B11849E60870D1728" extPath="System.Core/doc/ns_System.Meta.html#function_IsSignedType_0B9DF1B7D3A2F5009A261A4B11849E60870D1728" id="function_IsSignedType_0B9DF1B7D3A2F5009A261A4B11849E60870D1728" kind="Function" name="IsSignedType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#16b84816-75ff-44be-8b3b-a201039c2f69" extPath="System.Core/doc/ns_System.Meta.html#16b84816-75ff-44be-8b3b-a201039c2f69" id="16b84816-75ff-44be-8b3b-a201039c2f69" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#22f59be7-be50-9d4d-cf62-f40747791eb3" extPath="System.Core/doc/ns_System.Meta.html#22f59be7-be50-9d4d-cf62-f40747791eb3" id="22f59be7-be50-9d4d-cf62-f40747791eb3" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUCharType_82841786A18BBA1C032694732C31A1985421841E" extPath="System.Core/doc/ns_System.Meta.html#function_IsUCharType_82841786A18BBA1C032694732C31A1985421841E" id="function_IsUCharType_82841786A18BBA1C032694732C31A1985421841E" kind="Function" name="IsUCharType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUCharType_82841786A18BBA1C032694732C31A1985421841E" extPath="System.Core/doc/ns_System.Meta.html#function_IsUCharType_82841786A18BBA1C032694732C31A1985421841E" id="function_IsUCharType_82841786A18BBA1C032694732C31A1985421841E" kind="Function" name="IsUCharType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#9a8c64f4-dcd6-4441-ac88-397dd5b39250" extPath="System.Core/doc/ns_System.Meta.html#9a8c64f4-dcd6-4441-ac88-397dd5b39250" id="9a8c64f4-dcd6-4441-ac88-397dd5b39250" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#fffbf76f-fca6-6c88-ae69-6c18bc8903a8" extPath="System.Core/doc/ns_System.Meta.html#fffbf76f-fca6-6c88-ae69-6c18bc8903a8" id="fffbf76f-fca6-6c88-ae69-6c18bc8903a8" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUIntType_DDE83DEC562C840B60E0ED457B8517A6D3965550" extPath="System.Core/doc/ns_System.Meta.html#function_IsUIntType_DDE83DEC562C840B60E0ED457B8517A6D3965550" id="function_IsUIntType_DDE83DEC562C840B60E0ED457B8517A6D3965550" kind="Function" name="IsUIntType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUIntType_DDE83DEC562C840B60E0ED457B8517A6D3965550" extPath="System.Core/doc/ns_System.Meta.html#function_IsUIntType_DDE83DEC562C840B60E0ED457B8517A6D3965550" id="function_IsUIntType_DDE83DEC562C840B60E0ED457B8517A6D3965550" kind="Function" name="IsUIntType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#82920f84-0f17-4578-b79a-f7a3f5cafb5b" extPath="System.Core/doc/ns_System.Meta.html#82920f84-0f17-4578-b79a-f7a3f5cafb5b" id="82920f84-0f17-4578-b79a-f7a3f5cafb5b" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#787b0c8f-70af-872f-f915-1e8cd0573961" extPath="System.Core/doc/ns_System.Meta.html#787b0c8f-70af-872f-f915-1e8cd0573961" id="787b0c8f-70af-872f-f915-1e8cd0573961" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsULongType_AD4DDCA3C2914F62259F2BA0356A5829D7DF5AB4" extPath="System.Core/doc/ns_System.Meta.html#function_IsULongType_AD4DDCA3C2914F62259F2BA0356A5829D7DF5AB4" id="function_IsULongType_AD4DDCA3C2914F62259F2BA0356A5829D7DF5AB4" kind="Function" name="IsULongType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsULongType_AD4DDCA3C2914F62259F2BA0356A5829D7DF5AB4" extPath="System.Core/doc/ns_System.Meta.html#function_IsULongType_AD4DDCA3C2914F62259F2BA0356A5829D7DF5AB4" id="function_IsULongType_AD4DDCA3C2914F62259F2BA0356A5829D7DF5AB4" kind="Function" name="IsULongType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#494cd935-d6df-4b8e-900e-a120eb093552" extPath="System.Core/doc/ns_System.Meta.html#494cd935-d6df-4b8e-900e-a120eb093552" id="494cd935-d6df-4b8e-900e-a120eb093552" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#3ec0180a-9fb8-ae16-78d8-a7e09550b312" extPath="System.Core/doc/ns_System.Meta.html#3ec0180a-9fb8-ae16-78d8-a7e09550b312" id="3ec0180a-9fb8-ae16-78d8-a7e09550b312" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUShortType_8090488C3745F77FF0119A8E89ED347B89E49E4B" extPath="System.Core/doc/ns_System.Meta.html#function_IsUShortType_8090488C3745F77FF0119A8E89ED347B89E49E4B" id="function_IsUShortType_8090488C3745F77FF0119A8E89ED347B89E49E4B" kind="Function" name="IsUShortType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUShortType_8090488C3745F77FF0119A8E89ED347B89E49E4B" extPath="System.Core/doc/ns_System.Meta.html#function_IsUShortType_8090488C3745F77FF0119A8E89ED347B89E49E4B" id="function_IsUShortType_8090488C3745F77FF0119A8E89ED347B89E49E4B" kind="Function" name="IsUShortType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#6fa2e61b-db00-4efd-b45b-49f2cc92a77b" extPath="System.Core/doc/ns_System.Meta.html#6fa2e61b-db00-4efd-b45b-49f2cc92a77b" id="6fa2e61b-db00-4efd-b45b-49f2cc92a77b" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#2db5f9b3-523f-2c0b-eb39-7b5e5d030c6b" extPath="System.Core/doc/ns_System.Meta.html#2db5f9b3-523f-2c0b-eb39-7b5e5d030c6b" id="2db5f9b3-523f-2c0b-eb39-7b5e5d030c6b" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUnsignedType_AB269006A70EE531EA94FC1547E3F385C1304C4E" extPath="System.Core/doc/ns_System.Meta.html#function_IsUnsignedType_AB269006A70EE531EA94FC1547E3F385C1304C4E" id="function_IsUnsignedType_AB269006A70EE531EA94FC1547E3F385C1304C4E" kind="Function" name="IsUnsignedType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsUnsignedType_AB269006A70EE531EA94FC1547E3F385C1304C4E" extPath="System.Core/doc/ns_System.Meta.html#function_IsUnsignedType_AB269006A70EE531EA94FC1547E3F385C1304C4E" id="function_IsUnsignedType_AB269006A70EE531EA94FC1547E3F385C1304C4E" kind="Function" name="IsUnsignedType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#e55b8b53-1ae7-4af3-a65e-f8705f0a67f3" extPath="System.Core/doc/ns_System.Meta.html#e55b8b53-1ae7-4af3-a65e-f8705f0a67f3" id="e55b8b53-1ae7-4af3-a65e-f8705f0a67f3" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#ba7b8b9d-2788-caab-632e-74b4ba8d4354" extPath="System.Core/doc/ns_System.Meta.html#ba7b8b9d-2788-caab-632e-74b4ba8d4354" id="ba7b8b9d-2788-caab-632e-74b4ba8d4354" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsVoidType_F8E12CFFE3DFC995049980016030C9C70EE0520D" extPath="System.Core/doc/ns_System.Meta.html#function_IsVoidType_F8E12CFFE3DFC995049980016030C9C70EE0520D" id="function_IsVoidType_F8E12CFFE3DFC995049980016030C9C70EE0520D" kind="Function" name="IsVoidType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsVoidType_F8E12CFFE3DFC995049980016030C9C70EE0520D" extPath="System.Core/doc/ns_System.Meta.html#function_IsVoidType_F8E12CFFE3DFC995049980016030C9C70EE0520D" id="function_IsVoidType_F8E12CFFE3DFC995049980016030C9C70EE0520D" kind="Function" name="IsVoidType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#25708910-f9c9-4fb7-8afb-f53254b2cb5f" extPath="System.Core/doc/ns_System.Meta.html#25708910-f9c9-4fb7-8afb-f53254b2cb5f" id="25708910-f9c9-4fb7-8afb-f53254b2cb5f" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#a4d77789-87ff-689a-4ead-47e4d9d57d4a" extPath="System.Core/doc/ns_System.Meta.html#a4d77789-87ff-689a-4ead-47e4d9d57d4a" id="a4d77789-87ff-689a-4ead-47e4d9d57d4a" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsWCharType_9D156D939B1C8395D75DD4053F5F068542AA78CD" extPath="System.Core/doc/ns_System.Meta.html#function_IsWCharType_9D156D939B1C8395D75DD4053F5F068542AA78CD" id="function_IsWCharType_9D156D939B1C8395D75DD4053F5F068542AA78CD" kind="Function" name="IsWCharType" returnType="9ba16dd7-387c-41f5-ad78-aeca49dea719">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_IsWCharType_9D156D939B1C8395D75DD4053F5F068542AA78CD" extPath="System.Core/doc/ns_System.Meta.html#function_IsWCharType_9D156D939B1C8395D75DD4053F5F068542AA78CD" id="function_IsWCharType_9D156D939B1C8395D75DD4053F5F068542AA78CD" kind="Function" name="IsWCharType" returnType="9a15f1e5-ce23-1266-019d-03f741c75b38">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#2fa9edeb-2179-4da2-be8f-992ee3ec3e2e" extPath="System.Core/doc/ns_System.Meta.html#2fa9edeb-2179-4da2-be8f-992ee3ec3e2e" id="2fa9edeb-2179-4da2-be8f-992ee3ec3e2e" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#69b70fe5-fb55-b304-1af8-2db88fe91534" extPath="System.Core/doc/ns_System.Meta.html#69b70fe5-fb55-b304-1af8-2db88fe91534" id="69b70fe5-fb55-b304-1af8-2db88fe91534" name="T"/>
         </templateParameters>
        </function>
-       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_PointerCount_2B0E2F8EA25D4C9C72238164A56EB5E57F63986E" extPath="System.Core/doc/ns_System.Meta.html#function_PointerCount_2B0E2F8EA25D4C9C72238164A56EB5E57F63986E" id="function_PointerCount_2B0E2F8EA25D4C9C72238164A56EB5E57F63986E" kind="Function" name="PointerCount" returnType="5c75f1bb-b72d-44f8-b521-e26a3b554503">
+       <function docPath="../../System.Core/doc/ns_System.Meta.html#function_PointerCount_2B0E2F8EA25D4C9C72238164A56EB5E57F63986E" extPath="System.Core/doc/ns_System.Meta.html#function_PointerCount_2B0E2F8EA25D4C9C72238164A56EB5E57F63986E" id="function_PointerCount_2B0E2F8EA25D4C9C72238164A56EB5E57F63986E" kind="Function" name="PointerCount" returnType="25052442-928b-b81b-8b4a-b96cc673cc20">
         <templateParameters>
-         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#c4625141-ac0f-4fc6-ab1f-468ccf47e239" extPath="System.Core/doc/ns_System.Meta.html#c4625141-ac0f-4fc6-ab1f-468ccf47e239" id="c4625141-ac0f-4fc6-ab1f-468ccf47e239" name="T"/>
+         <templateParameter docPath="../../System.Core/doc/ns_System.Meta.html#8bbd38b2-f895-49b3-4906-e64293eed8db" extPath="System.Core/doc/ns_System.Meta.html#8bbd38b2-f895-49b3-4906-e64293eed8db" id="8bbd38b2-f895-49b3-4906-e64293eed8db" name="T"/>
         </templateParameters>
        </function>
       </functions>
@@ -191,44 +191,44 @@
   <concepts>
    <concept docPath="../../System.Core/doc/concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6.html" extPath="System.Core/doc/concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6.html" id="concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6" name="Common">
     <typeParameters>
-     <typeParameter docPath="../../System.Core/doc/concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6.html#4841c302-2f18-4355-8191-0fd74612290b" id="4841c302-2f18-4355-8191-0fd74612290b" name="T"/>
-     <typeParameter docPath="../../System.Core/doc/concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6.html#dcfae36e-98f3-45dd-b582-d456361da3c3" id="dcfae36e-98f3-45dd-b582-d456361da3c3" name="U"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6.html#6a6a418c-d1bb-c0bf-fde6-0b9cf762d275" id="6a6a418c-d1bb-c0bf-fde6-0b9cf762d275" name="T"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Common_1761C757BC631D15B26D64D830742878B5E7D7F6.html#e8e326b3-23db-3d6e-e75c-daf7a3981d4f" id="e8e326b3-23db-3d6e-e75c-daf7a3981d4f" name="U"/>
     </typeParameters>
    </concept>
    <concept docPath="../../System.Core/doc/concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81.html" extPath="System.Core/doc/concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81.html" id="concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81" name="Convertible">
     <typeParameters>
-     <typeParameter docPath="../../System.Core/doc/concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81.html#1fb34429-5383-4a21-9a69-6e1645d8b39b" id="1fb34429-5383-4a21-9a69-6e1645d8b39b" name="T"/>
-     <typeParameter docPath="../../System.Core/doc/concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81.html#a900db96-cfa3-48e5-a979-1ac3e639569f" id="a900db96-cfa3-48e5-a979-1ac3e639569f" name="U"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81.html#16d7d064-a70a-3dd9-6258-e5205e7b3510" id="16d7d064-a70a-3dd9-6258-e5205e7b3510" name="T"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Convertible_AAB8D8212C044B986438CA17EF4CDDF789ADEB81.html#14e25250-35eb-8668-5807-a452c13463dd" id="14e25250-35eb-8668-5807-a452c13463dd" name="U"/>
     </typeParameters>
    </concept>
    <concept docPath="../../System.Core/doc/concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552.html" extPath="System.Core/doc/concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552.html" id="concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552" name="Derived">
     <typeParameters>
-     <typeParameter docPath="../../System.Core/doc/concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552.html#fec09849-be8f-46d9-ae06-2311eec0572b" id="fec09849-be8f-46d9-ae06-2311eec0572b" name="T"/>
-     <typeParameter docPath="../../System.Core/doc/concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552.html#2515cb81-26f9-4c3a-bbec-9f90fa8967f1" id="2515cb81-26f9-4c3a-bbec-9f90fa8967f1" name="U"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552.html#8dd2324c-0cac-8bf6-76d1-9a7d73bf3347" id="8dd2324c-0cac-8bf6-76d1-9a7d73bf3347" name="T"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552.html#3bf33c04-1360-c1cf-56a6-a3af412ebc7b" id="3bf33c04-1360-c1cf-56a6-a3af412ebc7b" name="U"/>
     </typeParameters>
    </concept>
    <concept docPath="../../System.Core/doc/concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA.html" extPath="System.Core/doc/concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA.html" id="concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA" name="ExplicitlyConvertible">
     <typeParameters>
-     <typeParameter docPath="../../System.Core/doc/concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA.html#34cdd67b-0d49-47d1-838b-463fe0c0897c" id="34cdd67b-0d49-47d1-838b-463fe0c0897c" name="T"/>
-     <typeParameter docPath="../../System.Core/doc/concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA.html#990b0ade-72a4-479b-b48c-61e77317c232" id="990b0ade-72a4-479b-b48c-61e77317c232" name="U"/>
+     <typeParameter docPath="../../System.Core/doc/concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA.html#26ca2549-bf79-a4a3-8e0d-7bec4a473d58" id="26ca2549-bf79-a4a3-8e0d-7bec4a473d58" name="T"/>
+     <typeParameter docPath="../../System.Core/doc/concept_ExplicitlyConvertible_2C98F7453D3880C7655E44A9545F7CD4CDD591FA.html#665ea5c2-9b7b-3c4c-7556-e3ea55804878" id="665ea5c2-9b7b-3c4c-7556-e3ea55804878" name="U"/>
     </typeParameters>
    </concept>
    <concept docPath="../../System.Core/doc/concept_NonreferenceType_9BD78EA2665D4260E5514999AD8FCEA945606407.html" extPath="System.Core/doc/concept_NonreferenceType_9BD78EA2665D4260E5514999AD8FCEA945606407.html" id="concept_NonreferenceType_9BD78EA2665D4260E5514999AD8FCEA945606407" name="NonreferenceType">
     <typeParameters>
-     <typeParameter docPath="../../System.Core/doc/concept_NonreferenceType_9BD78EA2665D4260E5514999AD8FCEA945606407.html#38cde468-8ce9-466d-8087-3872e674ea0e" id="38cde468-8ce9-466d-8087-3872e674ea0e" name="T"/>
+     <typeParameter docPath="../../System.Core/doc/concept_NonreferenceType_9BD78EA2665D4260E5514999AD8FCEA945606407.html#1a368c5e-f405-d267-39a1-c644a38fdb63" id="1a368c5e-f405-d267-39a1-c644a38fdb63" name="T"/>
     </typeParameters>
    </concept>
    <concept docPath="../../System.Core/doc/concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3.html" extPath="System.Core/doc/concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3.html" id="concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3" name="Same">
     <typeParameters>
-     <typeParameter docPath="../../System.Core/doc/concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3.html#38cf7b8e-f153-47b5-b22b-51211c971c1b" id="38cf7b8e-f153-47b5-b22b-51211c971c1b" name="T"/>
-     <typeParameter docPath="../../System.Core/doc/concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3.html#7b1d7058-3624-4672-8523-edfee5334231" id="7b1d7058-3624-4672-8523-edfee5334231" name="U"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3.html#63a05d57-8247-6c29-4f83-1990eac18a80" id="63a05d57-8247-6c29-4f83-1990eac18a80" name="T"/>
+     <typeParameter docPath="../../System.Core/doc/concept_Same_DBCFA3D7303B9F160493F695D4DCB6973FFF06E3.html#717b41a2-d42a-8815-485c-36487969160e" id="717b41a2-d42a-8815-485c-36487969160e" name="U"/>
     </typeParameters>
    </concept>
   </concepts>
  </namespace>
  <types>
-  <basicType id="d044fffa-911a-4652-aa50-37212628599d" name="long"/>
-  <basicType id="9ba16dd7-387c-41f5-ad78-aeca49dea719" name="bool"/>
-  <basicType id="5c75f1bb-b72d-44f8-b521-e26a3b554503" name="int"/>
+  <basicType id="0407bfb1-056a-7eea-1043-245e6aae0646" name="long"/>
+  <basicType id="9a15f1e5-ce23-1266-019d-03f741c75b38" name="bool"/>
+  <basicType id="25052442-928b-b81b-8b4a-b96cc673cc20" name="int"/>
  </types>
 </symbolTable>

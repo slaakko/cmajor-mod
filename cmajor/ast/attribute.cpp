@@ -13,18 +13,20 @@ import util;
 
 namespace cmajor::ast {
 
-AttributeNode::AttributeNode(const soul::ast::Span& span_) : Node(NodeType::attributeNode, span_), name(), value()
+AttributeNode::AttributeNode(const soul::ast::Span& span_) : Node(NodeType::attributeNode, span_), name(), value(), hasValue(false)
 {
 }
 
 AttributeNode::AttributeNode(const soul::ast::Span& span_, const std::u32string& name_, const std::u32string& value_) :
-    Node(NodeType::attributeNode, span_), name(name_), value(value_)
+    Node(NodeType::attributeNode, span_), name(name_), value(value_), hasValue(false)
 {
 }
 
 Node* AttributeNode::Clone(CloneContext& cloneContext) const
 {
-    return new AttributeNode(GetSpan(), name, value);
+    AttributeNode* clone = new AttributeNode(GetSpan(), name, value);
+    clone->hasValue = hasValue;
+    return clone;
 }
 
 void AttributeNode::Accept(Visitor& visitor)
@@ -37,6 +39,7 @@ void AttributeNode::Write(AstWriter& writer)
     Node::Write(writer);
     writer.GetBinaryStreamWriter().Write(name);
     writer.GetBinaryStreamWriter().Write(value);
+    writer.GetBinaryStreamWriter().Write(hasValue);
 }
 
 void AttributeNode::Read(AstReader& reader)
@@ -44,6 +47,7 @@ void AttributeNode::Read(AstReader& reader)
     Node::Read(reader);
     name = reader.GetBinaryStreamReader().ReadUtf32String();
     value = reader.GetBinaryStreamReader().ReadUtf32String();
+    hasValue = reader.GetBinaryStreamReader().ReadBool();
 }
 
 AttributesNode::AttributesNode(const soul::ast::Span& span_) : Node(NodeType::attributesNode, span_)
@@ -62,10 +66,10 @@ AttributeNode* AttributesNode::GetAttribute(const std::u32string& name) const
 
 void AttributesNode::AddAttribute(const soul::ast::Span& span, const std::u32string& name)
 {
-    AddAttribute(span, name, U"true");
+    AddAttribute(span, name, U"true", false);
 }
 
-void AttributesNode::AddAttribute(const soul::ast::Span& span, const std::u32string& name, const std::u32string& value)
+void AttributesNode::AddAttribute(const soul::ast::Span& span, const std::u32string& name, const std::u32string& value, bool hasValue)
 {
     AttributeNode* prev = GetAttribute(name);
     if (prev != nullptr)
@@ -73,6 +77,10 @@ void AttributesNode::AddAttribute(const soul::ast::Span& span, const std::u32str
         throw AttributeNotUniqueException("attribute '" + util::ToUtf8(name) + "' not unique", span, prev->GetSpan(), prev->ModuleId());
     }
     AttributeNode* attribute = new AttributeNode(span, name, value);
+    if (hasValue)
+    {
+        attribute->SetHasValue();
+    }
     AddAttribute(attribute);
 }
 
@@ -87,7 +95,7 @@ Node* AttributesNode::Clone(CloneContext& cloneContext) const
     std::unique_ptr<AttributesNode> clone(new AttributesNode(GetSpan()));
     for (const std::unique_ptr<AttributeNode>& attribute : attributes)
     {
-        clone->AddAttribute(attribute->GetSpan(), attribute->Name(), attribute->Value());
+        clone->AddAttribute(attribute->GetSpan(), attribute->Name(), attribute->Value(), attribute->HasValue());
     }
     return clone.release();
 }

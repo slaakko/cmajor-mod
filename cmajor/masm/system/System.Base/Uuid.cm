@@ -103,6 +103,13 @@ namespace System
         return true;
     }
 
+    public bool operator<(const Uuid& left, const Uuid& right)
+    {
+        if (left.LeftHalf() < right.LeftHalf()) return true;
+        if (left.LeftHalf() > right.LeftHalf()) return false;
+        return left.RightHalf() < right.RightHalf();
+    }
+
     [nodiscard]
     public Result<string> ToString(const Uuid& uuid)
     {

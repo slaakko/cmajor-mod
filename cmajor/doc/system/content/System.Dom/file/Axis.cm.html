@@ -1,0 +1,81 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>System.Dom/Axis.cm</title>
+  <link href="../../../style/code.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <span class="code" id="1" xml:space="preserve"><span class="lineNumber">&nbsp;1</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="2" xml:space="preserve"><span class="lineNumber">&nbsp;2</span>&nbsp;<span class="comment">//&nbsp;Copyright&nbsp;(c)&nbsp;2024&nbsp;Seppo&nbsp;Laakko
+</span></span>
+  <br/>
+  <span class="code" id="3" xml:space="preserve"><span class="lineNumber">&nbsp;3</span>&nbsp;<span class="comment">//&nbsp;Distributed&nbsp;under&nbsp;the&nbsp;MIT&nbsp;license
+</span></span>
+  <br/>
+  <span class="code" id="4" xml:space="preserve"><span class="lineNumber">&nbsp;4</span>&nbsp;<span class="comment">//&nbsp;=================================
+</span></span>
+  <br/>
+  <span class="code" id="5" xml:space="preserve"><span class="lineNumber">&nbsp;5</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="6" xml:space="preserve"><span class="lineNumber">&nbsp;6</span>&nbsp;<span class="keyword">using</span>&nbsp;<span class="identifier">System</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="7" xml:space="preserve"><span class="lineNumber">&nbsp;7</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="8" xml:space="preserve"><span class="lineNumber">&nbsp;8</span>&nbsp;<span class="keyword">namespace</span>&nbsp;<span class="identifier">System</span><span class="other">.</span><span class="identifier">Xml</span></span>
+  <br/>
+  <span class="code" id="9" xml:space="preserve"><span class="lineNumber">&nbsp;9</span>&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="10" xml:space="preserve"><span class="lineNumber">10</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<span class="keyword">enum</span>&nbsp;<a href="../doc/enumerated_type_Axis_84232A531C188D97D54B26E5A95B1AAC34287EA7.html">Axis</a></span>
+  <br/>
+  <span class="code" id="11" xml:space="preserve"><span class="lineNumber">11</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="12" xml:space="preserve"><span class="lineNumber">12</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="identifier">child</span><span class="other">,&nbsp;</span><span class="identifier">descendant</span><span class="other">,&nbsp;</span><span class="identifier">parent</span><span class="other">,&nbsp;</span><span class="identifier">ancestor</span><span class="other">,&nbsp;</span><span class="identifier">followingSibling</span><span class="other">,&nbsp;</span><span class="identifier">precedingSibling</span><span class="other">,&nbsp;</span><span class="identifier">following</span><span class="other">,&nbsp;</span><span class="identifier">preceding</span><span class="other">,&nbsp;</span><span class="identifier">attribute</span><span class="other">,&nbsp;</span><span class="identifier">ns</span><span class="other">,&nbsp;</span><span class="identifier">self</span><span class="other">,&nbsp;</span><span class="identifier">descendantOrSelf</span><span class="other">,&nbsp;</span><span class="identifier">ancestorOrSelf</span></span>
+  <br/>
+  <span class="code" id="13" xml:space="preserve"><span class="lineNumber">13</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="14" xml:space="preserve"><span class="lineNumber">14</span>&nbsp;</span>
+  <br/>
+  <span class="code" id="15" xml:space="preserve"><span class="lineNumber">15</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">public</span>&nbsp;<a href="../../System.Base/doc/ns_System.html#aliasType_string_B6DB6B2DEFC437FBF697A2E84F7B7771FC1DDEE3">string</a>&nbsp;<a href="../doc/ns_System.Xml.html#function_AxisName_6D0207916A8F80B4C0BC561F42193A41456BA76C">AxisName</a><span class="other">(</span><a href="../doc/enumerated_type_Axis_84232A531C188D97D54B26E5A95B1AAC34287EA7.html">Axis</a>&nbsp;<span class="identifier">axis</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="16" xml:space="preserve"><span class="lineNumber">16</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="17" xml:space="preserve"><span class="lineNumber">17</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">switch</span>&nbsp;<span class="other">(</span><span class="identifier">axis</span><span class="other">)</span></span>
+  <br/>
+  <span class="code" id="18" xml:space="preserve"><span class="lineNumber">18</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+  <br/>
+  <span class="code" id="19" xml:space="preserve"><span class="lineNumber">19</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">child</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"child"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="20" xml:space="preserve"><span class="lineNumber">20</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">descendant</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"descendant"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="21" xml:space="preserve"><span class="lineNumber">21</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">parent</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"parent"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="22" xml:space="preserve"><span class="lineNumber">22</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">ancestor</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"ancestor"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="23" xml:space="preserve"><span class="lineNumber">23</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">followingSibling</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"following-sibling"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="24" xml:space="preserve"><span class="lineNumber">24</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">precedingSibling</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"preceding-sibling"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="25" xml:space="preserve"><span class="lineNumber">25</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">following</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"following"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="26" xml:space="preserve"><span class="lineNumber">26</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">preceding</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"preceding"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="27" xml:space="preserve"><span class="lineNumber">27</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">attribute</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"attribute"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="28" xml:space="preserve"><span class="lineNumber">28</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">ns</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"namespace"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="29" xml:space="preserve"><span class="lineNumber">29</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">self</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"self"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="30" xml:space="preserve"><span class="lineNumber">30</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">descendantOrSelf</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"descendant-or-self"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="31" xml:space="preserve"><span class="lineNumber">31</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">case</span>&nbsp;<span class="identifier">Axis</span><span class="other">.</span><span class="identifier">ancestorOrSelf</span><span class="other">:</span>&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"ancestor-or-self"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="32" xml:space="preserve"><span class="lineNumber">32</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+  <span class="code" id="33" xml:space="preserve"><span class="lineNumber">33</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span>&nbsp;<span class="string">"&lt;unknown-axis>"</span><span class="other">;</span></span>
+  <br/>
+  <span class="code" id="34" xml:space="preserve"><span class="lineNumber">34</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+  <br/>
+ </body>
+</html>

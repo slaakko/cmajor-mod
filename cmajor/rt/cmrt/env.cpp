@@ -4,14 +4,22 @@
 // =================================
 
 #include <cmrt/env.hpp>
+#include <cmrt/strings.hpp>
 #include <cstdlib>
 
-const char* RtmGetEnvironmentVariable(const char* envVarName)
+int RtmGetEnvironmentVariable(const char* envVarName)
 {
-    char* env = std::getenv(envVarName);
-    if (env && *env)
+    char* value = nullptr;
+    size_t numElements = 0;
+    errno_t result = _dupenv_s(&value, &numElements, envVarName);
+    if (result == 0 && value != nullptr)
     {
-        return env;
+        int stringId = RtmAllocateString(value);
+        free(value);
+        return stringId;
     }
-    return "";
+    else
+    {
+        return -1;
+    }
 }

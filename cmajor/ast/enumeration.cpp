@@ -139,7 +139,7 @@ void EnumConstantNode::Read(AstReader& reader)
     value.reset(reader.ReadNode());
     value->SetParent(this);
     hasValue = reader.GetBinaryStreamReader().ReadBool();
-    strValue = reader.GetBinaryStreamReader().ReadUtf32String();
+    strValue = reader.GetBinaryStreamReader().ReadUtf8String();
 }
 
 Node* MakeNextEnumConstantValue(const soul::ast::Span& span, EnumTypeNode* enumType)

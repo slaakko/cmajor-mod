@@ -1,0 +1,207 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Xml;
+using System.Xml.Serialization;
+using System.Text;
+using System.IO;
+
+namespace System.Xml.Serialization
+{
+    internal class ScopedXmlBundleSetter
+    {
+        public ScopedXmlBundleSetter(XmlSerializationContext& ctx_, XmlBundle* bundle) : ctx(ctx_), prevBundle(ctx.GetXmlBundle())
+        {
+            ctx.SetXmlBundle(bundle);
+        }
+        public ~ScopedXmlBundleSetter()
+        {
+            ctx.SetXmlBundle(prevBundle);
+        }
+        private XmlSerializationContext& ctx;
+        private XmlBundle* prevBundle;
+    }
+    
+    public class XmlBundle
+    {
+        public XmlBundle()
+        {
+        }
+        public void Add(XmlSerializable* object)
+        {
+            Add(object, true);
+        }
+        public void Add(XmlSerializable* object, bool own)
+        {
+            objects.Add(object);
+            if (own)
+            {
+                ownedObjects.Add(UniquePtr<XmlSerializable>(object));
+            }
+            objectMap[object->ObjectId()] = object;
+        }
+        public long Count() const
+        {
+            return objects.Count();
+        }
+        public long OwnedCount() const
+        {
+            return ownedObjects.Count();
+        }
+        public Result<UniquePtr<System.Xml.Document>> ToXmlDocument() const
+        {
+            auto result = ToXml();
+            if (result.Error())
+            {
+                return Result<UniquePtr<System.Xml.Document>>(ErrorId(result.GetErrorId()));
+            }
+            UniquePtr<System.Xml.Document> document(new System.Xml.Document());
+            document->AppendChild(result.Value());
+            return Result<UniquePtr<System.Xml.Document>>(Rvalue(document));
+        }
+        public Result<System.Xml.Element*> ToXml() const
+        {
+            UniquePtr<System.Xml.Element> bundleElement(System.Xml.MakeElement("xmlBundle"));
+            for (XmlSerializable* object : objects)
+            {
+                Result<System.Xml.Element*> objectElementResult = object->ToXml("object");
+                if (objectElementResult.Error()) return Result<System.Xml.Element*>(ErrorId(objectElementResult.GetErrorId()));
+                bundleElement->AppendChild(objectElementResult.Value());
+            }
+            return Result<System.Xml.Element*>(bundleElement.Release());
+        }
+        [nodiscard]
+        public Result<bool> FromXml(System.Xml.Document& document)
+        {
+            return FromXml(document.DocumentElement());
+        }
+        [nodiscard]
+        public Result<bool> FromXml(System.Xml.Document& document, XmlSerializationContext& ctx)
+        {
+            return FromXml(document.DocumentElement(), ctx);
+        }
+        [nodiscard]
+        public Result<bool> FromXml(System.Xml.Element* xmlElement)
+        {
+            XmlSerializationContext ctx;
+            return FromXml(xmlElement, ctx);
+        }
+        [nodiscard]
+        public Result<bool> FromXml(System.Xml.Element* xmlElement, XmlSerializationContext& ctx)
+        {
+            ScopedXmlBundleSetter scopedSetter(ctx, this);
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("object", xmlElement);
+            if (nodeSetResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            for (int i = 0; i < n; ++i)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(i);
+                if (node->IsElementNode())
+                {
+                    System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                    string classIdAttr = element->GetAttribute("classId");
+                    if (!classIdAttr.IsEmpty())
+                    {
+                        auto classIdResult = ParseInt(classIdAttr);
+                        if (classIdResult.Error())
+                        {
+                            return Result<bool>(ErrorId(classIdResult.GetErrorId()));
+                        }
+                        int classId = classIdResult.Value();
+                        Result<XmlSerializable*> serializableResult = XmlClassRegistry.Instance().Create(classId);
+                        if (serializableResult.Error())
+                        {
+                            return Result<bool>(ErrorId(serializableResult.GetErrorId()));
+                        }
+                        XmlSerializable* serializable = serializableResult.Value();
+                        auto result = serializable->FromXml(element, ctx);
+                        if (result.Error())
+                        {
+                            return result;
+                        }
+                        Add(serializable);
+                    }
+                    else
+                    {
+                        int errorId = AllocateError("object element has no class id");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                else
+                {
+                    int errorId = AllocateError("XML element expected");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            auto resolveResult = Resolve(ctx);
+            if (resolveResult.Error()) return resolveResult;
+            return Result<bool>(true);
+        }
+        public void AddPtr(XmlPtrBase* ptr)
+        {
+            ptrs.Add(ptr);
+        }
+        [nodiscard]
+        public Result<bool> Resolve(XmlSerializationContext& ctx)
+        {
+            for (XmlPtrBase* ptrBase : ptrs)
+            {
+                XmlSerializable* s = Get(ptrBase->TargetObjectId());
+                if (s == null && ctx.GetFlag(XmlSerializationFlags.failOnNotFoundObjects))
+                {
+                    auto objectIdResult = ToString(ptrBase->TargetObjectId());
+                    string objectIdStr;
+                    if (!objectIdResult.Error())
+                    {
+                        objectIdStr = objectIdResult.Value();
+                    }
+                    int errorId = AllocateError("XmlBundle.Resolve: object with id " + objectIdStr + " not found from xmlBundle");
+                    return Result<bool>(ErrorId(errorId));
+                }
+                ptrBase->SetPtr(s);
+            }
+            return Result<bool>(true);
+        }
+        public void ClearPtrs()
+        {
+            ptrs.Clear();
+        }
+        public XmlSerializable* Get(int index) const
+        {
+            return objects[index];
+        }
+        public XmlSerializable* Release(int index)
+        {
+            return ownedObjects[index].Release();
+        }
+        public XmlSerializable* Get(const Uuid& objectId) const
+        {
+            auto it = objectMap.Find(objectId);
+            if (it != objectMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public const Map<Uuid, XmlSerializable*>& ObjectMap() const
+        {
+            return objectMap;
+        }
+        private List<XmlSerializable*> objects;
+        private List<UniquePtr<XmlSerializable>> ownedObjects;
+        private List<XmlPtrBase*> ptrs;
+        private Map<Uuid, XmlSerializable*> objectMap;
+    }
+}
+

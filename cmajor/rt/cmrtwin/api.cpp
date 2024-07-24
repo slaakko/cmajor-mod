@@ -1135,7 +1135,7 @@ bool WinGetFolder(void* windowHandle, const char16_t* defaultDirectory, char16_t
                         LPWSTR name = nullptr;
                         if (SUCCEEDED(result->GetDisplayName(SIGDN_DESKTOPABSOLUTEPARSING, &name)))
                         {
-                            wcsncpy((wchar_t*)folderNameBuffer, name, folderNameBufferSize);
+                            wcsncpy_s((wchar_t*)folderNameBuffer, folderNameBufferSize, name, wcslen(name));
                             fileDialog->Release();
                             result->Release();
                             CoTaskMemFree(name);

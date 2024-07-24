@@ -268,8 +268,9 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.IO.TextWriter", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/class_TextWriter_95D72C37DDCBB941FE8EC41FF28270B9FFB782C1.html" },
-        { name: "System.IO.StringWriter", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: false, link: "../../System.Base/doc/class_StringWriter_E76E62C541769C753BBFB8D27F20ED06AADC7D2D.html" }];
+        { name: "System.IO.IOBase", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/class_IOBase_325A635E11759F146842FF3D54DFAE621782FC86.html" },
+        { name: "System.IO.TextWriter", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/class_TextWriter_95D72C37DDCBB941FE8EC41FF28270B9FFB782C1.html" },
+        { name: "System.IO.StringWriter", id: "diagram_node_2", level: 2, subject: true, hasDerivedNodes: false, link: "../../System.Base/doc/class_StringWriter_E76E62C541769C753BBFB8D27F20ED06AADC7D2D.html" }];
     drawDiagram(diagramNodes);
 }
 

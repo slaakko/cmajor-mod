@@ -6,6 +6,6 @@
 #ifndef CMRT_ENV_INCLUDED
 #define CMRT_ENV_INCLUDED
 
-extern "C" const char* RtmGetEnvironmentVariable(const char* envVarName);
+extern "C" int RtmGetEnvironmentVariable(const char* envVarName);
 
 #endif // CMRT_ENV_INCLUDED

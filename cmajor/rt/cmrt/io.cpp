@@ -124,7 +124,14 @@ int64_t StdInputFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
         int64_t result = std::fread(buffer, 1, count, stdin);
         if (ferror(stdin))
         {
-            errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
+            char buf[1024];
+            errno_t res = strerror_s(buf, sizeof(buf), errno);
+            std::string s;
+            if (res == 0)
+            {
+                s = buf;
+            }
+            errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(s));
             return -1;
         }
         return result;
@@ -182,7 +189,14 @@ bool StdInputFile::GetError(int32_t& errorId) const
     errorId = 0;
     if (std::ferror(stdin))
     {
-        errorId = AllocateError("STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("STDIN: " + util::PlatformStringToUtf8(s));
         return true;
     }
     return false;
@@ -250,7 +264,14 @@ int64_t StdOutputFile::Write(const uint8_t* buffer, int64_t count, int32_t& erro
         int64_t result = std::fwrite(buffer, 1, count, file);
         if (result != count)
         {
-            errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+            char buf[1024];
+            errno_t res = strerror_s(buf, sizeof(buf), errno);
+            std::string s;
+            if (res == 0)
+            {
+                s = buf;
+            }
+            errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(s));
             return -1;
         }
         return result;
@@ -276,7 +297,14 @@ bool StdOutputFile::WriteByte(uint8_t x, int32_t& errorId)
         int result = std::fputc(x, file);
         if (result == EOF)
         {
-            errorId = AllocateError("could not write to '" + name + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+            char buf[1024];
+            errno_t res = strerror_s(buf, sizeof(buf), errno);
+            std::string s;
+            if (res == 0)
+            {
+                s = buf;
+            }
+            errorId = AllocateError("could not write to '" + name + "': " + util::PlatformStringToUtf8(s));
             return false;
         }
         return true;
@@ -310,7 +338,14 @@ bool StdOutputFile::GetError(int32_t& errorId) const
     errorId = 0;
     if (std::ferror(file))
     {
-        errorId = AllocateError(name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError(name + ": " + util::PlatformStringToUtf8(s));
         return true;
     }
     return false;
@@ -334,7 +369,14 @@ bool StdOutputFile::Flush(int32_t& errorId)
     int result = fflush(file);
     if (result != 0)
     {
-        errorId = AllocateError("could not flush " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not flush " + name + ": " + util::PlatformStringToUtf8(s));
         return false;
     }
     return true;
@@ -431,7 +473,14 @@ int64_t StdUnicodeInputFile::Read(uint8_t* buffer, int64_t count, int32_t& error
         {
             if (ferror(stdin))
             {
-                errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
+                char buf[1024];
+                errno_t res = strerror_s(buf, sizeof(buf), errno);
+                std::string s;
+                if (res == 0)
+                {
+                    s = buf;
+                }
+                errorId = AllocateError("could not read from STDIN: " + util::PlatformStringToUtf8(s));
                 return -1;
             }
         }
@@ -507,7 +556,14 @@ bool StdUnicodeInputFile::GetError(int32_t& errorId) const
     errorId = 0;
     if (std::ferror(stdin))
     {
-        errorId = AllocateError("STDIN: " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("STDIN: " + util::PlatformStringToUtf8(s));
         return true;
     }
     return false;
@@ -589,7 +645,14 @@ int64_t StdUnicodeOutputFile::Write(const uint8_t* buffer, int64_t count, int32_
             int64_t utf16result = std::fwrite(utf16Chars.c_str(), sizeof(char16_t), utf16Chars.length(), file);
             if (utf16result != utf16Chars.length())
             {
-                errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+                char buf[1024];
+                errno_t res = strerror_s(buf, sizeof(buf), errno);
+                std::string s;
+                if (res == 0)
+                {
+                    s = buf;
+                }
+                errorId = AllocateError("could not write to " + name + ": " + util::PlatformStringToUtf8(s));
                 return -1;
             }
         }
@@ -644,7 +707,14 @@ bool StdUnicodeOutputFile::GetError(int32_t& errorId) const
     errorId = 0;
     if (std::ferror(file))
     {
-        errorId = AllocateError(name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError(name + ": " + util::PlatformStringToUtf8(s));
         return true;
     }
     return false;
@@ -668,7 +738,14 @@ bool StdUnicodeOutputFile::Flush(int32_t& errorId)
     int result = fflush(file);
     if (result != 0)
     {
-        errorId = AllocateError("could not flush " + name + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not flush " + name + ": " + util::PlatformStringToUtf8(s));
         return false;
     }
     return true;
@@ -810,7 +887,14 @@ bool RegularFile::Close(int32_t& errorId)
     file = nullptr;
     if (result != 0)
     {
-        errorId = AllocateError("could not close file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not close file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(s));
         return false;
     }
     return true;
@@ -822,7 +906,14 @@ int64_t RegularFile::Write(const uint8_t* buffer, int64_t count, int32_t& errorI
     int64_t result = std::fwrite(buffer, 1, count, file);
     if (result != count)
     {
-        errorId = AllocateError("could not write to file '" + filePath + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not write to file '" + filePath + "': " + util::PlatformStringToUtf8(s));
         return -1;
     }
     return result;
@@ -834,7 +925,14 @@ bool RegularFile::WriteByte(uint8_t x, int32_t& errorId)
     int result = std::fputc(x, file);
     if (result == EOF)
     {
-        errorId = AllocateError("could not write to file '" + filePath + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not write to file '" + filePath + "': " + util::PlatformStringToUtf8(s));
         return false;
     }
     return true;
@@ -846,7 +944,14 @@ int64_t RegularFile::Read(uint8_t* buffer, int64_t count, int32_t& errorId)
     int64_t result = std::fread(buffer, 1, count, file);
     if (ferror(file))
     {
-        errorId = AllocateError("could not read from file '" + filePath + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not read from file '" + filePath + "': " + util::PlatformStringToUtf8(s));
         return -1;
     }
     return result;
@@ -873,7 +978,14 @@ bool RegularFile::GetError(int32_t& errorId) const
     errorId = 0;
     if (std::ferror(file))
     {
-        errorId = AllocateError(filePath + ": " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError(filePath + ": " + util::PlatformStringToUtf8(s));
         return true;
     }
     return false;
@@ -904,7 +1016,14 @@ bool RegularFile::Seek(int64_t pos, Origin origin, int32_t& errorId)
     int result = fseek(file, pos, seekOrigin);
     if (result != 0)
     {
-        errorId = AllocateError("could not seek file '" + filePath + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not seek file '" + filePath + "': " + util::PlatformStringToUtf8(s));
         return false;
     }
     return true;
@@ -916,7 +1035,14 @@ int64_t RegularFile::Tell(int32_t& errorId)
     int64_t result = ftell(file);
     if (result == -1)
     {
-        errorId = AllocateError("could not tell file '" + filePath + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not tell file '" + filePath + "': " + util::PlatformStringToUtf8(s));
         return -1;
     }
     return result;
@@ -928,7 +1054,14 @@ bool RegularFile::Flush(int32_t& errorId)
     int result = fflush(file);
     if (result != 0)
     {
-        errorId = AllocateError("could not flush file '" + filePath + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not flush file '" + filePath + "': " + util::PlatformStringToUtf8(s));
         return false;
     }
     return true;
@@ -967,10 +1100,18 @@ void* OpenFile(const char* filePath, OpenMode openMode, int32_t& errorId)
         mode += "b";
     }
     std::string nativeFilePath = util::Utf8StringToPlatformString(filePath);
-    FILE* file = std::fopen(nativeFilePath.c_str(), mode.c_str());
+    FILE* file = nullptr;
+    errno_t result = fopen_s(&file, nativeFilePath.c_str(), mode.c_str());
     if (!file)
     {
-        errorId = AllocateError("could not open file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(std::strerror(errno)));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        errorId = AllocateError("could not open file '" + std::string(filePath) + "': " + util::PlatformStringToUtf8(s));
         return nullptr;
     }
     return new RegularFile(file, filePath);
@@ -1150,7 +1291,7 @@ void RtmPrintToFile(void* fileHandle, const char* s)
     std::string str(s);
     int64_t bufferSize = str.length() + 1;
     std::unique_ptr<uint8_t> buf(static_cast<uint8_t*>(std::malloc(bufferSize)));
-    std::strcpy((char*)buf.get(), str.c_str());
+    errno_t result = strcpy_s((char*)buf.get(), bufferSize, str.c_str());
     RtmWrite(fileHandle, buf.get(), bufferSize, errorId);
 }
 
@@ -1307,13 +1448,20 @@ int RtmGetCurrentWorkingDirectoryHandle(int32_t& errorId)
 {
     errorId = 0;
     std::unique_ptr<char[]> buffer(new char[8192]);
-    if (getcwd(buffer.get(), 8192))
+    if (_getcwd(buffer.get(), 8192))
     {
         return RtmAllocateString(buffer.get());
     }
     else
     {
-        std::string errorMessage = std::string("could not get current working directory: ") + util::PlatformStringToUtf8(std::strerror(errno));
+        char buf[1024];
+        errno_t res = strerror_s(buf, sizeof(buf), errno);
+        std::string s;
+        if (res == 0)
+        {
+            s = buf;
+        }
+        std::string errorMessage = std::string("could not get current working directory: ") + util::PlatformStringToUtf8(s);
         errorId = RtmAllocateError(errorMessage.c_str());;
         return -1;
     }

@@ -239,6 +239,8 @@
     <ClCompile Include="project.parser.cppm" />
     <ClCompile Include="solution.parser.cpp" />
     <ClCompile Include="solution.parser.cppm" />
+    <ClCompile Include="source_token_parser.cpp" />
+    <ClCompile Include="source_token_parser.cppm" />
     <ClCompile Include="specifier.parser.cpp" />
     <ClCompile Include="specifier.parser.cppm" />
     <ClCompile Include="statement.parser.cpp" />

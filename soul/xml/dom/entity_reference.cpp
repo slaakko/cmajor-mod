@@ -31,6 +31,11 @@ void EntityReference::Write(util::CodeFormatter& formatter)
     formatter.Write(";");
 }
 
+Node* EntityReference::Clone(bool deep) const
+{
+    return new EntityReference(GetSourcePos(), Data());
+}
+
 EntityReference* MakeEntityReference(const std::string& entityRef)
 {
     return new EntityReference(soul::ast::SourcePos(), entityRef);

@@ -116,7 +116,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>5050;4267;4146;4996;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4146;4244</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>.;..;../..;../../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
@@ -138,7 +138,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
-      <DisableSpecificWarnings>5050;4267;4146;4996;4244</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4146;4244</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>.;..;../..;../../..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

@@ -4,10 +4,13 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <llvm/Support/LLVMDriver.h>
-int llvm_rc_main(int argc, const char** argv, const llvm::ToolContext&);
+#pragma warning(default : 4996)
 
 module cmajor.llvm.rc;
+
+int llvm_rc_main(int argc, const char** argv, const llvm::ToolContext&);
 
 namespace cmajor::llvm {
 

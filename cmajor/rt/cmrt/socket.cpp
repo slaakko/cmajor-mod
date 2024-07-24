@@ -95,8 +95,11 @@ void RtmBindSocket(void* socketHandle, int32_t port, int32_t& errorId)
         return;
     }
     struct sockaddr_in addr;
+    struct in_addr inaddr;
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    inet_pton(AF_INET, "127.0.0.1", &inaddr);
+    addr.sin_addr = inaddr;
+    //addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     addr.sin_port = htons(port);
     int result = bind(s, (struct sockaddr*)&addr, sizeof(addr));
     if (result != 0)

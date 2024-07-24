@@ -268,8 +268,9 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.IO.ByteStream", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/class_ByteStream_3B7A2F3379612ADBD7E416487752A1935AA8B96F.html" },
-        { name: "System.IO.Compression.DeflateStream", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: false, link: "../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html" }];
+        { name: "System.IO.IOBase", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/class_IOBase_325A635E11759F146842FF3D54DFAE621782FC86.html" },
+        { name: "System.IO.Stream", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/class_Stream_5B86812CFF4EC38459E63BA53D90E1A7AEE57A5B.html" },
+        { name: "System.IO.Compression.DeflateStream", id: "diagram_node_2", level: 2, subject: true, hasDerivedNodes: false, link: "../../System.IO.Compression/doc/class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306.html" }];
     drawDiagram(diagramNodes);
 }
 

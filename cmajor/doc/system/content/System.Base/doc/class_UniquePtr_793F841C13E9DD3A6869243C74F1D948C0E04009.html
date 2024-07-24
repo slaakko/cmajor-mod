@@ -1,0 +1,258 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>UniquePtr&lt;T> Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>UniquePtr&lt;T> Class</h1>
+  <span class="indent">
+   <a href="#templateParameters">Template Parameters</a>
+    | <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#typeAliases">Type Aliases</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <p class="description" xml:space="preserve">Represents a unique ownership smart pointer. Cannot be copied but can be moved.</p>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#10">10</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <h2 id="templateParameters">Template Parameters</h2>
+  <table>
+   <tr id="10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">
+    <td class="rightAlignedCol" xml:space="preserve">T</td>
+    <td xml:space="preserve"/>
+   </tr>
+  </table>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#default_constructor_UniquePtr_277499280EBCB06504AFD0E92105319099E0DB8D">UniquePtr</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">explicit</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#constructor_UniquePtr_A7B28BB345FA6A0381A68045498CD20B0AFC0ACB">UniquePtr</a>(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;ptr_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#move_constructor_UniquePtr_D0DF164492399734DEAC80B55332DF2AA57B213D">UniquePtr</a>(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#copy_constructor_UniquePtr_9CFDBDA0E4D8295C2741C64B9065D4976094F6F7">UniquePtr</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#destructor_UniquePtr_EFDA71B1621B0A4F5BA4D26C071626B0BDD1EA6A">~UniquePtr</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Get_UniquePtr_D62B14E7D336380ABB92DACBBEB4A0F8EF55CD39">Get</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_GetPtr_UniquePtr_DED576C161C3554AB3346400C835185C0B90AC32">GetPtr</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_IsNull_UniquePtr_93B798AC12C85DBD584D272B1A1854F473112F8C">IsNull</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Release_UniquePtr_1F0875395E772DA5B5C5DEE76AB7A4395AB077BD">Release</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Reset_UniquePtr_DCB19D524FA858C9105A21432FD881B9D917E92C">Reset</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Reset_UniquePtr_84D5F7C2404CC2FB80F6319936DC5FBCF75BA22F">Reset</a>(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;ptr_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_Swap_UniquePtr_A9627391E8041A47B0BA620DEC7D664DB7F9C3EF">Swap</a>(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_star_UniquePtr_5CB59736DDB5A8A450DCA10ECB752693E4715AC3">operator*</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_star_UniquePtr_39CCC0A9F1F19D71F6C14AE5387FA578D3A271C0">operator*</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_arrow_UniquePtr_CD63B505893B1D6F246914AEE4AC364AD489B490">operator-></a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_arrow_UniquePtr_A6F0F7C1D95033595CA43CADE81C96A990B4AF0E">operator-></a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#member_function_op_assign_UniquePtr_6785B7C7607CE313DF24BCF77F6E31F78F81535E">operator=</a>(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;ptr_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#move_assignment_op_assign_UniquePtr_E1D8193156F5B637FC9B3D69BE12E870F518DE3D">operator=</a>(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;&amp;&nbsp;that)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#copy_assignment_op_assign_UniquePtr_DF6C3054D0ABDE976C753B0AFB7B9FE9E8647894">operator=</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;)</td>
+   </tr>
+  </table>
+  <h2 id="typeAliases">Type Aliases</h2>
+  <table>
+   <tr id="aliasType_Self_4D42F9D3D295689ABC4667C2F95DE9DE5C8D890C">
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">typedef</span>&nbsp;Self</td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a></td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_ptr_FD383A9C3FDC1F45FEEE7ED35642946CD6378982" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*</td>
+    <td xml:space="preserve">ptr</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_UniquePtr_277499280EBCB06504AFD0E92105319099E0DB8D" xml:space="preserve">UniquePtr&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;UniquePtr()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#14">14</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="constructor_UniquePtr_A7B28BB345FA6A0381A68045498CD20B0AFC0ACB" xml:space="preserve">UniquePtr&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">explicit</span>&nbsp;UniquePtr(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;ptr_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#17">17</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_constructor_UniquePtr_D0DF164492399734DEAC80B55332DF2AA57B213D" xml:space="preserve">UniquePtr&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;UniquePtr(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#21">21</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_constructor_UniquePtr_9CFDBDA0E4D8295C2741C64B9065D4976094F6F7" xml:space="preserve">UniquePtr&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;UniquePtr(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#20">20</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="destructor_UniquePtr_EFDA71B1621B0A4F5BA4D26C071626B0BDD1EA6A" xml:space="preserve">~UniquePtr&nbsp;Destructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;~UniquePtr()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#41">41</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_Get_UniquePtr_D62B14E7D336380ABB92DACBBEB4A0F8EF55CD39" xml:space="preserve">Get&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;Get()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#74">74</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_GetPtr_UniquePtr_DED576C161C3554AB3346400C835185C0B90AC32" xml:space="preserve">GetPtr&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;GetPtr()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#70">70</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_IsNull_UniquePtr_93B798AC12C85DBD584D272B1A1854F473112F8C" xml:space="preserve">IsNull&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">bool</span>&nbsp;IsNull()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#78">78</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Release_UniquePtr_1F0875395E772DA5B5C5DEE76AB7A4395AB077BD" xml:space="preserve">Release&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;Release()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#64">64</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Reset_UniquePtr_DCB19D524FA858C9105A21432FD881B9D917E92C" xml:space="preserve">Reset&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Reset()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#48">48</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Reset_UniquePtr_84D5F7C2404CC2FB80F6319936DC5FBCF75BA22F" xml:space="preserve">Reset&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Reset(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;ptr_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#56">56</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Swap_UniquePtr_A9627391E8041A47B0BA620DEC7D664DB7F9C3EF" xml:space="preserve">Swap&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Swap(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#102">102</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_op_star_UniquePtr_5CB59736DDB5A8A450DCA10ECB752693E4715AC3" xml:space="preserve">operator*&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>&amp;&nbsp;operator*()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#92">92</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_op_star_UniquePtr_39CCC0A9F1F19D71F6C14AE5387FA578D3A271C0" xml:space="preserve">operator*&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>&amp;&nbsp;operator*()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#97">97</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_op_arrow_UniquePtr_CD63B505893B1D6F246914AEE4AC364AD489B490" xml:space="preserve">operator->&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;operator->()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#82">82</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_op_arrow_UniquePtr_A6F0F7C1D95033595CA43CADE81C96A990B4AF0E" xml:space="preserve">operator->&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;operator->()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#87">87</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_op_assign_UniquePtr_6785B7C7607CE313DF24BCF77F6E31F78F81535E" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html#10099c06-3b0e-7035-1c6c-d2e8ebb4eb22">T</a>*&nbsp;ptr_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="move_assignment_op_assign_UniquePtr_E1D8193156F5B637FC9B3D69BE12E870F518DE3D" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;&amp;&nbsp;that)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#33">33</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="copy_assignment_op_assign_UniquePtr_DF6C3054D0ABDE976C753B0AFB7B9FE9E8647894" xml:space="preserve">operator=&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">suppress</span>&nbsp;<span class="kw">void</span>&nbsp;operator=(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&amp;)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html#32">32</a>&nbsp;of&nbsp;<a href="../../System.Base/file/UniquePtr.cm.html">System.Base/UniquePtr.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

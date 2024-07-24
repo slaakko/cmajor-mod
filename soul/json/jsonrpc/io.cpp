@@ -68,7 +68,7 @@ std::vector<std::string> ReadHeaders(util::Stream& stream)
             throw JsonRpcException(parseError, "header parse error");
         }
     }
-    catch (util::EndOfStreamException& ex)
+    catch (util::EndOfStreamException&)
     {
         return std::vector<std::string>();
     }

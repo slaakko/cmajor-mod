@@ -1,0 +1,98 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>TcpListener Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>TcpListener Class</h1>
+  <p class="description" xml:space="preserve">Represents a server-side socket that can be used to listen and accept client connections.</p>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html#10">10</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html">System.Net.Sockets/TcpListener.cm</a></span>
+  <h2>Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#constructor_TcpListener_BF51D8BEC9E85FDA0AB28B2A4333A9158FDEB96C">TcpListener</a>(<span class="kw">int</span>&nbsp;port_)</td>
+   </tr>
+  </table>
+  <h2>Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF">AcceptSocket</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_ContainedSocket_TcpListener_DA7E025B32BC6BFE02E8082045CC46F24B34EE28">ContainedSocket</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132">Start</a>()</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE">Start</a>(<span class="kw">int</span>&nbsp;backLog)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92">Stop</a>()</td>
+   </tr>
+  </table>
+  <h2>Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve">port</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a></td>
+    <td xml:space="preserve">socket</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="constructor_TcpListener_BF51D8BEC9E85FDA0AB28B2A4333A9158FDEB96C" xml:space="preserve">TcpListener&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;TcpListener(<span class="kw">int</span>&nbsp;port_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html#12">12</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html">System.Net.Sockets/TcpListener.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF" xml:space="preserve">AcceptSocket&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&nbsp;AcceptSocket()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html">System.Net.Sockets/TcpListener.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ContainedSocket_TcpListener_DA7E025B32BC6BFE02E8082045CC46F24B34EE28" xml:space="preserve">ContainedSocket&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>&amp;&nbsp;ContainedSocket()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html#34">34</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html">System.Net.Sockets/TcpListener.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132" xml:space="preserve">Start&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Start()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html#16">16</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html">System.Net.Sockets/TcpListener.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE" xml:space="preserve">Start&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Start(<span class="kw">int</span>&nbsp;backLog)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html#20">20</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html">System.Net.Sockets/TcpListener.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92" xml:space="preserve">Stop&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Stop()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../System.Net.Sockets/file/TcpListener.cm.html">System.Net.Sockets/TcpListener.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

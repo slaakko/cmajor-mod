@@ -6,6 +6,10 @@
  </head>
  <body>
   <h1>System.XPath Module</h1>
+  <span class="indent">
+   <a href="#namespaces">Namespaces</a>
+    | <a href="#files">Files</a>
+  </span>
   <span xml:space="preserve"><p class="description" xml:space="preserve">The System.XPath module contains an implementation of the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/"> XML Path Language</a> version 1.0 query engine.</p><span xml:space="preserve"><h2>Example</h2><p class="description" xml:space="preserve">Consider the following XML document: <br/>
   <br/>
   <span class="string"> &lt;philosophers> <br/>
@@ -19,16 +23,7 @@
   <span class="string"> "/philosophers/philosopher"</span> . <br/>
   <br/>
   <a href="../../../code/xml/cmdoc/content/XPath1/file/xpath1.cm.html"> This</a> example program evaluates the previous query and prints the names of all three philosophers: Plato, Aristotle and Socrates. The query selects all child elements having the name 'philosopher' under the document element having the name 'philosophers' from the given XML document.</p><p class="description" xml:space="preserve">If the query is changed to <span class="string"> "/philosopher/philosopher[@name='Socrates']"</span> , only a single 'philosopher' child element that has an attribute with name 'name' and value 'Socrates' is selected. Thus <a href="../../../code/xml/cmdoc/content/XPath2/file/xpath2.cm.html"> this</a> program prints Socrates.</p></span></span>
-  <h2>Grammars</h2>
-  <table>
-   <tr>
-    <td xml:space="preserve"><a href="doc/xpath-lexical-grammar.html">XPATH Lexical Grammar</a></td>
-   </tr>
-   <tr>
-    <td xml:space="preserve"><a href="doc/xpath-grammar.html">XPATH Grammar</a></td>
-   </tr>
-  </table>
-  <h2>Namespaces</h2>
+  <h2 id="namespaces">Namespaces</h2>
   <table>
    <tr>
     <td>
@@ -42,23 +37,33 @@
     </td>
    </tr>
    <tr>
+    <td/>
+    <td/>
     <td>
-     <a href="doc/ns_XPathKeywords.html">XPathKeywords</a>
+     <a href="doc/ns_System.XPath.Keyword.html">Keyword</a>
     </td>
    </tr>
    <tr>
+    <td/>
+    <td/>
     <td>
-     <a href="doc/ns_XPathTokens.html">XPathTokens</a>
+     <a href="doc/ns_System.XPath.Token.html">Token</a>
     </td>
    </tr>
   </table>
-  <h2>Files</h2>
+  <h2 id="files">Files</h2>
   <table>
    <tr>
-    <td xml:space="preserve"><a href="file/XPathApi.cm.html">System.XPath/XPathApi.cm</a></td>
+    <td xml:space="preserve"><a href="file/System.XPath.XPathLexer.cm.html">System.XPath/System.XPath.XPathLexer.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/XPathClassMap.cm.html">System.XPath/XPathClassMap.cm</a></td>
+    <td xml:space="preserve"><a href="file/XPath.keyword.cm.html">System.XPath/XPath.keyword.cm</a></td>
+   </tr>
+   <tr>
+    <td xml:space="preserve"><a href="file/XPath.parser.cm.html">System.XPath/XPath.parser.cm</a></td>
+   </tr>
+   <tr>
+    <td xml:space="preserve"><a href="file/XPath.token.cm.html">System.XPath/XPath.token.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/XPathContext.cm.html">System.XPath/XPathContext.cm</a></td>
@@ -73,52 +78,22 @@
     <td xml:space="preserve"><a href="file/XPathExpr.cm.html">System.XPath/XPathExpr.cm</a></td>
    </tr>
    <tr>
+    <td xml:space="preserve"><a href="file/XPathExprEvaluate.cm.html">System.XPath/XPathExprEvaluate.cm</a></td>
+   </tr>
+   <tr>
     <td xml:space="preserve"><a href="file/XPathFunction.cm.html">System.XPath/XPathFunction.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/XPathKeywords.cm.html">System.XPath/XPathKeywords.cm</a></td>
+    <td xml:space="preserve"><a href="file/XPathFunctionEvaluate.cm.html">System.XPath/XPathFunctionEvaluate.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/XPathLexer.cm.html">System.XPath/XPathLexer.cm</a></td>
-   </tr>
-   <tr>
-    <td xml:space="preserve"><a href="file/XPathLexer.lexer.html">System.XPath/XPathLexer.lexer</a></td>
+    <td xml:space="preserve"><a href="file/XPathNodeTest.cm.html">System.XPath/XPathNodeTest.cm</a></td>
    </tr>
    <tr>
     <td xml:space="preserve"><a href="file/XPathObject.cm.html">System.XPath/XPathObject.cm</a></td>
    </tr>
    <tr>
-    <td xml:space="preserve"><a href="file/XPathParser.cm.html">System.XPath/XPathParser.cm</a></td>
-   </tr>
-   <tr>
-    <td xml:space="preserve"><a href="file/XPathParser.parser.html">System.XPath/XPathParser.parser</a></td>
-   </tr>
-   <tr>
-    <td xml:space="preserve"><a href="file/XPathTokenValueParsers.cm.html">System.XPath/XPathTokenValueParsers.cm</a></td>
-   </tr>
-   <tr>
-    <td xml:space="preserve"><a href="file/XPathTokens.cm.html">System.XPath/XPathTokens.cm</a></td>
-   </tr>
-  </table>
-  <h2>Classes</h2>
-  <table>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">class</span></td>
-    <td>
-     <a href="doc/class_XPathClassMap_D2ED368E5CAD1BD3C8C2D75AFAEB755828660C84.html">XPathClassMap</a>
-    </td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
-    <td>
-     <a href="doc/class_XPathLexer_B3C80BBDAB2E0881E318CA696E268637960D4669.html">XPathLexer</a>
-    </td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<span class="kw">class</span></td>
-    <td>
-     <a href="doc/class_XPathParser_A6C50442E472B97052595F03C5A16A17DDBA12CA.html">XPathParser</a>
-    </td>
+    <td xml:space="preserve"><a href="file/XPathTokenParser.cm.html">System.XPath/XPathTokenParser.cm</a></td>
    </tr>
   </table>
  </body>

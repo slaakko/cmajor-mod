@@ -264,4 +264,16 @@ void ParentNode::WalkPrecedingOrSelf(NodeOperation& operation)
     }
 }
 
+std::vector<Node*> ParentNode::ChildNodes() const
+{
+    std::vector<Node*> childNodes;
+    Node* node = firstChild;
+    while (node)
+    {
+        childNodes.push_back(node);
+        node = node->Next();
+    }
+    return childNodes;
+}
+
 } // namespace soul::xml

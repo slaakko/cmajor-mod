@@ -192,7 +192,7 @@ namespace System
     }
 
     public const int[] monthDays = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    
+
     public int GetMonthDays(Month month, int year)
     {
         if (month == Month.february && ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0))
@@ -360,7 +360,7 @@ namespace System
         short y;
         sbyte m;
         sbyte d;
-        RtmGetCurrentDate(&y, &m, &d);
+        bool retval = RtmGetCurrentDate(&y, &m, &d);
         return Date(y, cast<Month>(m), d);
     }
 
@@ -467,7 +467,7 @@ namespace System
         sbyte m;
         sbyte d;
         int secs;
-        RtmGetCurrentDateTime(&y, &m, &d, &secs);
+        bool retval = RtmGetCurrentDateTime(&y, &m, &d, &secs);
         return DateTime(Date(y, cast<Month>(m), d), secs);
     }
 

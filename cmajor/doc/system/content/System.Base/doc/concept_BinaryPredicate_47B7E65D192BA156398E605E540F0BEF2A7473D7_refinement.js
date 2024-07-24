@@ -270,8 +270,8 @@ function drawRefinementDiagram() {
     var diagramNodes = [
         { name: "System.Concepts.BinaryFunction&lt;T&gt;", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Base/doc/concept_BinaryFunction_7F3A6EF707F08A997487EC3748D74CC2156DB250.html" },
         { name: "System.Concepts.BinaryPredicate&lt;T&gt;", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: true, link: "../../System.Base/doc/concept_BinaryPredicate_47B7E65D192BA156398E605E540F0BEF2A7473D7.html" },
-        { name: "System.Concepts.Relation&lt;T, U, V&gt;", id: "diagram_node_3", level: 2, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/concept_Relation_34B41129EB756D944983CCCA612EDAA19318537E.html" },
-        { name: "System.Concepts.Relation&lt;T&gt;", id: "diagram_node_2", level: 2, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/concept_Relation_EA6D5281439518EB11DD9152636FEB86745EE746.html" }];
+        { name: "System.Concepts.Relation&lt;T, U, V&gt;", id: "diagram_node_2", level: 2, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/concept_Relation_34B41129EB756D944983CCCA612EDAA19318537E.html" },
+        { name: "System.Concepts.Relation&lt;T&gt;", id: "diagram_node_3", level: 2, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/concept_Relation_EA6D5281439518EB11DD9152636FEB86745EE746.html" }];
     drawDiagram(diagramNodes);
 }
 

@@ -17,6 +17,7 @@ public:
     CDataSection(const soul::ast::SourcePos& sourcePos_, const std::string& text_);
     void Accept(Visitor& visitor) override;
     void Write(util::CodeFormatter& formatter) override;
+    Node* Clone(bool deep) const override;
 };
 
 CDataSection* MakeCDataSection(const std::string& text);

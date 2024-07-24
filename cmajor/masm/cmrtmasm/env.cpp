@@ -5,12 +5,21 @@
 
 module cmajor.masm.rt.env;
 
-const char* RtmGetEnvironmentVariable(const char* envVarName)
+import cmajor.masm.rt.strings;
+
+int RtmGetEnvironmentVariable(const char* envVarName)
 {
-    char* env = std::getenv(envVarName);
-    if (env && *env)
+    char* value = nullptr;
+    size_t numElements = 0;
+    errno_t result = _dupenv_s(&value, &numElements, envVarName);
+    if (result == 0 && value != nullptr)
     {
-        return env;
+        int stringId = RtmAllocateString(value);
+        free(value);
+        return stringId;
     }
-    return "";
+    else
+    {
+        return -1;
+    }
 }

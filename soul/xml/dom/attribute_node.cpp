@@ -81,6 +81,11 @@ void AttributeNode::Write(util::CodeFormatter& formatter)
     formatter.Write(MakeXmlAttrValue(value));
 }
 
+Node* AttributeNode::Clone(bool deep) const
+{
+    return new AttributeNode(GetSourcePos(), Name(), value);
+}
+
 AttributeNode* MakeAttribute(const std::string& name, const std::string& value)
 {
     return new AttributeNode(soul::ast::SourcePos(), name, value);

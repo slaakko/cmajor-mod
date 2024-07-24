@@ -40,8 +40,8 @@ public:
     void* StructureIrObject(cmajor::ir::Emitter& emitter, bool create);
     std::u32string Info() const override { return Name(); }
     const char* ClassName() const override { return "ConstantSymbol"; }
-    void SetStrValue(const std::u32string& strValue_) { strValue = strValue_; }
-    const std::u32string& StrValue() const { return strValue; }
+    void SetStrValue(const std::string& strValue_) { strValue = strValue_; }
+    const std::string& StrValue() const { return strValue; }
     void Check() override;
     std::string GetSymbolCategoryStr() const override { return "CN"; }
     std::string GetSymbolCategoryDescription() const override { return "constant"; }
@@ -53,6 +53,6 @@ private:
     int64_t sizeOfValue;
     int64_t valuePos;
     std::string filePathReadFrom;
-    std::u32string strValue;
+    std::string strValue;
 };
 } // namespace cmajor::symbols

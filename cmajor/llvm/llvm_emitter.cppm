@@ -4,9 +4,11 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <llvm/IR/Module.h>
 #include <llvm/IR/DIBuilder.h>
 #include <llvm/IR/IRBuilder.h>
+#pragma warning(default : 4996)
 
 export module cmajor.llvm.emitter;
 
@@ -352,6 +354,7 @@ public:
     void* GetGlobalUuidConstant(int uuidId) override;
     void* GenerateTrap(const std::vector<void*>& args) override;
     void SetCompileUnitId(const std::string& compileUnitId_) override;
+    const std::string& CompileUnitId() const override;
     void* GetClsIdValue(const std::string& typeId) override;
     void* CreateMDBool(bool value) override;
     void* CreateMDLong(int64_t value) override;

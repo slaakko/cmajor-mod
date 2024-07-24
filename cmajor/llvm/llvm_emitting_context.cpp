@@ -4,6 +4,7 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/Support/TargetSelect.h>
 #include <llvm/PassRegistry.h>
@@ -15,6 +16,7 @@ module;
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Support/CodeGen.h>
 #include <llvm/IR/DebugInfoMetadata.h>
+#pragma warning(default : 4996)
 
 module cmajor.llvm.emitting.context;
 

@@ -26,6 +26,7 @@ public:
     void Write(util::CodeFormatter& formatter) override;
     void WalkAttribute(NodeOperation& operation) override;
     std::string ToString();
+    Node* Clone(bool deep) const override;
 private:
     void WriteAttributes(util::CodeFormatter& formatter);
     bool HasMultilineContent() const;

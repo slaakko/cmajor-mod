@@ -152,7 +152,13 @@ namespace System.Windows
     public string GetDefaultMetricsFilePath()
     {
         string metricsFilePath;
-        string cmajorRootDir = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        string cmajorRootDir;
+        int stringHandle = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (stringHandle != -1)
+        {
+            cmajorRootDir = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+        }
         if (!cmajorRootDir.IsEmpty())
         {
             metricsFilePath = Path.Combine(Path.Combine(cmajorRootDir, "config"), "metrics.xml");

@@ -268,8 +268,9 @@ function drawDiagram(diagramNodes) {
 
 function drawInheritanceDiagram() {
     var diagramNodes = [
-        { name: "System.Windows.Component", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
-        { name: "System.Windows.PathComponent", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: false, link: "../../System.Windows/doc/class_PathComponent_1144817B23983DECBF3527A7B1E1BA05B7096193.html" }];
+        { name: "System.Windows.GraphicsObject", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_GraphicsObject_7C98CD08CF463746DBA93565958E3CB9D87DFDF9.html" },
+        { name: "System.Windows.Component", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: true, link: "../../System.Windows/doc/class_Component_33CC3BCB117A61015FF98DB1F33C83E5961F8D40.html" },
+        { name: "System.Windows.PathComponent", id: "diagram_node_2", level: 2, subject: true, hasDerivedNodes: false, link: "../../System.Windows/doc/class_PathComponent_1144817B23983DECBF3527A7B1E1BA05B7096193.html" }];
     drawDiagram(diagramNodes);
 }
 

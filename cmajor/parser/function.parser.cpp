@@ -48,6 +48,8 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
     soul::lexer::RuleGuard<LexerT> ruleGuard(lexer, 1238071297129316353);
     std::unique_ptr<cmajor::ast::FunctionNode> functionNode = std::unique_ptr<cmajor::ast::FunctionNode>();
     soul::ast::Span s = soul::ast::Span();
+    soul::ast::Span specifierSpan = soul::ast::Span();
+    soul::ast::Span groupIdSpan = soul::ast::Span();
     std::unique_ptr<cmajor::ast::AttributesNode> attributes;
     std::unique_ptr<soul::parser::Value<cmajor::ast::Specifiers>> specifiers;
     std::unique_ptr<cmajor::ast::Node> returnType;
@@ -125,8 +127,18 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                                     soul::parser::Match match(false);
                                     soul::parser::Match* parentMatch12 = &match;
                                     {
-                                        soul::parser::Match match = SpecifierParser<LexerT>::Specifiers(lexer);
-                                        specifiers.reset(static_cast<soul::parser::Value<cmajor::ast::Specifiers>*>(match.value));
+                                        soul::parser::Match match(false);
+                                        soul::parser::Match* parentMatch13 = &match;
+                                        {
+                                            int64_t pos = lexer.GetPos();
+                                            soul::parser::Match match = SpecifierParser<LexerT>::Specifiers(lexer);
+                                            specifiers.reset(static_cast<soul::parser::Value<cmajor::ast::Specifiers>*>(match.value));
+                                            if (match.hit)
+                                            {
+                                                specifierSpan = lexer.GetSpan(pos);
+                                            }
+                                            *parentMatch13 = match;
+                                        }
                                         *parentMatch12 = match;
                                     }
                                     *parentMatch7 = match;
@@ -136,11 +148,11 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                             if (match.hit)
                             {
                                 soul::parser::Match match(false);
-                                soul::parser::Match* parentMatch13 = &match;
+                                soul::parser::Match* parentMatch14 = &match;
                                 {
                                     soul::parser::Match match = TypeExprParser<LexerT>::TypeExpr(lexer, context);
                                     returnType.reset(static_cast<cmajor::ast::Node*>(match.value));
-                                    *parentMatch13 = match;
+                                    *parentMatch14 = match;
                                 }
                                 *parentMatch6 = match;
                             }
@@ -149,21 +161,38 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                         if (match.hit)
                         {
                             soul::parser::Match match(false);
-                            soul::parser::Match* parentMatch14 = &match;
+                            soul::parser::Match* parentMatch15 = &match;
                             {
                                 soul::parser::Match match(false);
-                                soul::parser::Match* parentMatch15 = &match;
+                                soul::parser::Match* parentMatch16 = &match;
                                 {
                                     int64_t pos = lexer.GetPos();
-                                    soul::parser::Match match = FunctionParser<LexerT>::FunctionGroupId(lexer, context);
-                                    functionGroupId.reset(static_cast<soul::parser::Value<std::u32string>*>(match.value));
+                                    soul::parser::Match match(false);
+                                    soul::parser::Match* parentMatch17 = &match;
+                                    {
+                                        soul::parser::Match match(false);
+                                        soul::parser::Match* parentMatch18 = &match;
+                                        {
+                                            int64_t pos = lexer.GetPos();
+                                            soul::parser::Match match = FunctionParser<LexerT>::FunctionGroupId(lexer, context);
+                                            functionGroupId.reset(static_cast<soul::parser::Value<std::u32string>*>(match.value));
+                                            if (match.hit)
+                                            {
+                                                groupIdSpan = lexer.GetSpan(pos);
+                                            }
+                                            *parentMatch18 = match;
+                                        }
+                                        *parentMatch17 = match;
+                                    }
                                     if (match.hit)
                                     {
                                         functionNode.reset(new cmajor::ast::FunctionNode(s, specifiers->value, returnType.release(), functionGroupId->value, attributes.release()));
+                                        functionNode->SetSpecifierSpan(specifierSpan);
+                                        functionNode->SetGroupIdSpan(groupIdSpan);
                                     }
-                                    *parentMatch15 = match;
+                                    *parentMatch16 = match;
                                 }
-                                *parentMatch14 = match;
+                                *parentMatch15 = match;
                             }
                             *parentMatch5 = match;
                         }
@@ -174,23 +203,23 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                 if (match.hit)
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch16 = &match;
+                    soul::parser::Match* parentMatch19 = &match;
                     {
                         soul::parser::Match match(true);
                         int64_t save = lexer.GetPos();
-                        soul::parser::Match* parentMatch17 = &match;
+                        soul::parser::Match* parentMatch20 = &match;
                         {
                             soul::parser::Match match = TemplateParser<LexerT>::TemplateParameterList(lexer, context, functionNode.get());
                             if (match.hit)
                             {
-                                *parentMatch17 = match;
+                                *parentMatch20 = match;
                             }
                             else
                             {
                                 lexer.SetPos(save);
                             }
                         }
-                        *parentMatch16 = match;
+                        *parentMatch19 = match;
                     }
                     *parentMatch3 = match;
                 }
@@ -199,10 +228,10 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
             if (match.hit)
             {
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch18 = &match;
+                soul::parser::Match* parentMatch21 = &match;
                 {
                     soul::parser::Match match = ParameterParser<LexerT>::ParameterList(lexer, context, functionNode.get());
-                    *parentMatch18 = match;
+                    *parentMatch21 = match;
                 }
                 *parentMatch2 = match;
             }
@@ -211,17 +240,17 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
         if (match.hit)
         {
             soul::parser::Match match(false);
-            soul::parser::Match* parentMatch19 = &match;
+            soul::parser::Match* parentMatch22 = &match;
             {
                 soul::parser::Match match(true);
                 int64_t save = lexer.GetPos();
-                soul::parser::Match* parentMatch20 = &match;
+                soul::parser::Match* parentMatch23 = &match;
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch21 = &match;
+                    soul::parser::Match* parentMatch24 = &match;
                     {
                         soul::parser::Match match(false);
-                        soul::parser::Match* parentMatch22 = &match;
+                        soul::parser::Match* parentMatch25 = &match;
                         {
                             int64_t pos = lexer.GetPos();
                             soul::parser::Match match = ConceptParser<LexerT>::WhereConstraint(lexer, context);
@@ -230,20 +259,20 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                             {
                                 functionNode->SetConstraint(constraint.release());
                             }
-                            *parentMatch22 = match;
+                            *parentMatch25 = match;
                         }
-                        *parentMatch21 = match;
+                        *parentMatch24 = match;
                     }
                     if (match.hit)
                     {
-                        *parentMatch20 = match;
+                        *parentMatch23 = match;
                     }
                     else
                     {
                         lexer.SetPos(save);
                     }
                 }
-                *parentMatch19 = match;
+                *parentMatch22 = match;
             }
             *parentMatch1 = match;
         }
@@ -252,23 +281,23 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
     if (match.hit)
     {
         soul::parser::Match match(false);
-        soul::parser::Match* parentMatch23 = &match;
+        soul::parser::Match* parentMatch26 = &match;
         {
             soul::parser::Match match(false);
-            soul::parser::Match* parentMatch24 = &match;
+            soul::parser::Match* parentMatch27 = &match;
             {
                 int64_t pos = lexer.GetPos();
                 soul::parser::Match match(false);
-                soul::parser::Match* parentMatch25 = &match;
+                soul::parser::Match* parentMatch28 = &match;
                 {
                     soul::parser::Match match(false);
-                    soul::parser::Match* parentMatch26 = &match;
+                    soul::parser::Match* parentMatch29 = &match;
                     switch (*lexer)
                     {
                         case LBRACE:
                         {
                             soul::parser::Match match(false);
-                            soul::parser::Match* parentMatch27 = &match;
+                            soul::parser::Match* parentMatch30 = &match;
                             {
                                 int64_t pos = lexer.GetPos();
                                 soul::parser::Match match = StatementParser<LexerT>::CompoundStatement(lexer, context);
@@ -277,11 +306,11 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                                 {
                                     functionNode->SetBody(body.release());
                                 }
-                                *parentMatch27 = match;
+                                *parentMatch30 = match;
                             }
                             if (match.hit)
                             {
-                                *parentMatch26 = match;
+                                *parentMatch29 = match;
                             }
                             break;
                         }
@@ -295,12 +324,12 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                             }
                             if (match.hit)
                             {
-                                *parentMatch26 = match;
+                                *parentMatch29 = match;
                             }
                             break;
                         }
                     }
-                    *parentMatch25 = match;
+                    *parentMatch28 = match;
                 }
                 if (match.hit)
                 {
@@ -311,9 +340,9 @@ soul::parser::Match FunctionParser<LexerT>::Function(LexerT& lexer, cmajor::pars
                         return soul::parser::Match(true, functionNode.release());
                     }
                 }
-                *parentMatch24 = match;
+                *parentMatch27 = match;
             }
-            *parentMatch23 = match;
+            *parentMatch26 = match;
         }
         *parentMatch0 = match;
     }

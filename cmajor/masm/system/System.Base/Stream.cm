@@ -19,29 +19,35 @@ namespace System.IO
         suppress void operator=(const Stream&);
         public default Stream(Stream&&);
         public default void operator=(Stream&&);
+        [nodiscard]
         public abstract Result<int> ReadByte();
+        [nodiscard]
         public abstract Result<long> Read(byte* buf, long count);
+        [nodiscard]
         public abstract Result<bool> Write(byte x);
+        [nodiscard]
         public abstract Result<bool> Write(byte* buf, long count);
         public virtual Result<bool> Flush()
         {
             return Result<bool>(true);
         }
+        [nodiscard]
         public virtual Result<bool> Seek(long pos, Origin origin)
         {
             string streamClassName = typename(*this);
             string errorMessage = streamClassName + " stream does not support seek";
             int errorId = RtmAllocateError(errorMessage.Chars());
             SetErrorId(errorId);
-            return Result<bool>(false, ErrorId(errorId));
+            return Result<bool>(ErrorId(errorId));
         }
+        [nodiscard]
         public virtual Result<long> Tell()
         {
             string streamClassName = typename(*this);
             string errorMessage = streamClassName + " stream does not support tell";
             int errorId = RtmAllocateError(errorMessage.Chars());
             SetErrorId(errorId);
-            return Result<long>(-1, ErrorId(errorId));
+            return Result<long>(ErrorId(errorId));
         }
     }
 }

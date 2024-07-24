@@ -71,6 +71,7 @@ public:
     virtual bool HasAttributes() const { return false; }
     virtual bool ValueContainsNewLine() const { return false; }
     virtual void Write(util::CodeFormatter& formatter) = 0;
+    virtual Node* Clone(bool deep) const = 0;
 private:
     friend class ParentNode;
     void SetParent(ParentNode* parent_) { parent = parent_; }

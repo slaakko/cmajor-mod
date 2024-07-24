@@ -116,7 +116,7 @@
       <AdditionalIncludeDirectories>.;..;$(BOOST_INCLUDE_DIR)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableModules>true</EnableModules>
-      <DisableSpecificWarnings>5050;4267;4244;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>5050;4267;4244</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>

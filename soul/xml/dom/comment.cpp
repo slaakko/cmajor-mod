@@ -29,6 +29,11 @@ void Comment::Write(util::CodeFormatter& formatter)
     formatter.Write(" -->");
 }
 
+Node* Comment::Clone(bool deep) const
+{
+    return new Comment(GetSourcePos(), Data());
+}
+
 Comment* MakeComment(const std::string& comment)
 {
     return new Comment(soul::ast::SourcePos(), comment);

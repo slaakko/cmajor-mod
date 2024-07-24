@@ -269,7 +269,7 @@ function drawDiagram(diagramNodes) {
 function drawInheritanceDiagram() {
     var diagramNodes = [
         { name: "System.Collections.RedBlackTreeNodeBase", id: "diagram_node_0", level: 0, subject: true, hasDerivedNodes: true, link: "../../System.Base/doc/class_RedBlackTreeNodeBase_A9FEDD14E304295EC76EF56880DD6AAFCB6EC948.html" },
-        { name: "System.Collections.RedBlackTreeNode&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/class_RedBlackTreeNode_T_BD43000C158FD97CD38A6569462D590033079629.html" }];
+        { name: "System.Collections.RedBlackTreeNode&lt;T&gt;", id: "diagram_node_1", level: 1, subject: false, hasDerivedNodes: false, link: "../../System.Base/doc/class_RedBlackTreeNode_BD43000C158FD97CD38A6569462D590033079629.html" }];
     drawDiagram(diagramNodes);
 }
 

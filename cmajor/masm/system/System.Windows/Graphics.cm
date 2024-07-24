@@ -1107,7 +1107,7 @@ namespace System.Windows
             if (status != 0)
             {
                 int errorId = WinAllocateGdiPlusError("Font.ToHFont failed", status);
-                return Result<FontHandle>(FontHandle(), ErrorId(errorId));
+                return Result<FontHandle>(ErrorId(errorId));
             }
             else
             {

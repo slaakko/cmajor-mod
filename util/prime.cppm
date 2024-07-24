@@ -4,9 +4,11 @@
 // =================================
 
 module;
+#pragma warning(disable : 4996)
 #include <boost/multiprecision/integer.hpp>
-export module util.prime;
+#pragma warning(default : 4996)
 
+export module util.prime;
 
 export namespace util {
 

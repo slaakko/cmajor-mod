@@ -6,8 +6,17 @@
  </head>
  <body>
   <h1>System.Threading Namespace</h1>
-  <span xml:space="preserve"><p class="description" xml:space="preserve">The System.Threading namespace contains basic threading support: threads, mutexes and condition variables. It also contains support for processes and fibers.</p><span xml:space="preserve"><h2>Examples</h2><p class="description" xml:space="preserve">This <a href="../../../../code/threading/cmdoc/content/ThreadFunction/file/threadFunction.cm.html"> threadFunction</a> example shows how to execute a function in a separate thread. Main function starts a thread that executes the <em> ThreadFunction</em> function, and waits the thread to end by calling the <a href="../../System.Base/doc/class_Thread_805238682CDC09B4D1BB5C11ACA935F47C73BA4F.html#member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750">Join</a> member function of the started thread. A thread function should handle all exceptions. Since all exceptions derive from the <a href="../../System.Base/doc/class_Exception_02AEA5204AD1035A91C2D843597EACBE078C8989.html">Exception</a> class, handling it suffices.</p><p class="description" xml:space="preserve">This <a href="../../../../code/threading/cmdoc/content/threadSynchronization/file/threadSynchronization.cm.html"> threadSynchronization</a> example shows how to use <a href="../../System.Base/doc/class_LockGuard_Mtx_71F3BB945476C1B401D53113AACA649C83322BA2.html">LockGuard</a> , <a href="../../System.Base/doc/class_RecursiveMutex_B9ED5479754BBDDED6A4491348BBD2F20F701D82.html">RecursiveMutex</a> and a <a href="../../System.Base/doc/class_ConditionVariable_019A80625043CF98EC88D8F55238C84CFD4A9C26.html">ConditionVariable</a> to synchronize threads. The main function starts first the <em> Run</em> member function of the <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html"> OutputCollector</a> class in a separate thread. Then it queries the number of cores by calling the <a href="../../System.Base/doc/ns_System.Threading.html#function_HardwareConcurrency_B1B8105140D7AEFC1E753360624D21D1C3947146">HardwareConcurrency</a> function, and starts twice as many output threads. The output threads enqueue message lines by calling the <em> EnqueueLine</em> member function of the <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html"> OutputCollector</a> . Finally main thread <a href="../../System.Base/doc/class_Thread_805238682CDC09B4D1BB5C11ACA935F47C73BA4F.html#member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750">Join</a> s the output threads and the output collector thread.</p><p class="description" xml:space="preserve">This <a href="../../../../code/threading/cmdoc/content/transferringExceptions/file/transferringExceptions.cm.html"> third example</a> shows how to transfer exceptions from a separate thread to the main thread.</p></span></span>
-  <h2>Namespaces</h2>
+  <span class="indent">
+   <a href="#namespaces">Namespaces</a>
+    | <a href="#concepts">Concepts</a>
+    | <a href="#classes">Classes</a>
+    | <a href="#functions">Functions</a>
+    | <a href="#delegates">Delegates</a>
+    | <a href="#classDelegates">Class Delegates</a>
+    | <a href="#enumTypes">Enumerated Types</a>
+  </span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">The System.Threading namespace contains basic threading support: threads, mutexes and condition variables. It also contains support for processes and fibers.</p><span xml:space="preserve"><h2>Examples</h2><p class="description" xml:space="preserve">This <a href="../../../../code/threading/cmdoc/content/ThreadFunction/file/threadFunction.cm.html"> threadFunction</a> example shows how to execute a function in a separate thread. Main function starts a thread that executes the <em> ThreadFunction</em> function, and waits the thread to end by calling the <a href="../../System.Base/doc/class_Thread_805238682CDC09B4D1BB5C11ACA935F47C73BA4F.html#member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750">Join</a> member function of the started thread.</p><p class="description" xml:space="preserve">This <a href="../../../../code/threading/cmdoc/content/threadSynchronization/file/threadSynchronization.cm.html"> threadSynchronization</a> example shows how to use <a href="../../System.Base/doc/class_LockGuard_71F3BB945476C1B401D53113AACA649C83322BA2.html">LockGuard</a> , <a href="../../System.Base/doc/class_RecursiveMutex_B9ED5479754BBDDED6A4491348BBD2F20F701D82.html">RecursiveMutex</a> and a <a href="../../System.Base/doc/class_ConditionVariable_019A80625043CF98EC88D8F55238C84CFD4A9C26.html">ConditionVariable</a> to synchronize threads. The main function starts first the <em> Run</em> member function of the <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html"> OutputCollector</a> class in a separate thread. Then it queries the number of cores by calling the <a href="../../System.Base/doc/ns_System.Threading.html#function_HardwareConcurrency_1205CA22BE5F7C8523C7C99C25B03568E302190F">HardwareConcurrency</a> function, and starts twice as many output threads. The output threads enqueue message lines by calling the <em> EnqueueLine</em> member function of the <a href="../../../../code/threading/cmdoc/content/threadSynchronization/doc/class_OutputCollector_F50BD3675C56D181C6A581CCED8948E4B4700615.html"> OutputCollector</a> . Finally main thread <a href="../../System.Base/doc/class_Thread_805238682CDC09B4D1BB5C11ACA935F47C73BA4F.html#member_function_Join_Thread_735794FDF780970AB8E87F97F2E1C7E74F9CA750">Join</a> s the output threads and the output collector thread.</p></span></span>
+  <h2 id="namespaces">Namespaces</h2>
   <table>
    <tr>
     <td>
@@ -15,7 +24,7 @@
     </td>
    </tr>
   </table>
-  <h2>Concepts</h2>
+  <h2 id="concepts">Concepts</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">concept</span></td>
@@ -24,7 +33,7 @@
     </td>
    </tr>
   </table>
-  <h2>Classes</h2>
+  <h2 id="classes">Classes</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
@@ -35,7 +44,7 @@
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
     <td>
-     <a href="../../System.Base/doc/class_LockGuard_Mtx_71F3BB945476C1B401D53113AACA649C83322BA2.html">LockGuard&lt;Mtx></a>
+     <a href="../../System.Base/doc/class_LockGuard_71F3BB945476C1B401D53113AACA649C83322BA2.html">LockGuard&lt;Mtx></a>
     </td>
    </tr>
    <tr>
@@ -43,13 +52,6 @@
     <td>
      <a href="../../System.Base/doc/class_Mutex_CAF802A5F8A71934B07EA6C23937F60D9AECD650.html">Mutex</a>
     </td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
-    <td>
-     <a href="../../System.Base/doc/class_Process_6FDB48284B5FF1E26D28956730DFB867F0A83291.html">Process</a>
-    </td>
-    <td xml:space="preserve">A class for executing a process and reading and writing its standard output, input and error.</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
@@ -63,21 +65,15 @@
      <a href="../../System.Base/doc/class_Thread_805238682CDC09B4D1BB5C11ACA935F47C73BA4F.html">Thread</a>
     </td>
    </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span></td>
-    <td>
-     <a href="../../System.Base/doc/class_ThreadingException_4952259FBBDB6BDFCF1A52EABE2C1A61BF601670.html">ThreadingException</a>
-    </td>
-   </tr>
   </table>
-  <h2>Functions</h2>
+  <h2 id="functions">Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span></td>
-    <td xml:space="preserve"><a href="../../System.Base/doc/ns_System.Threading.html#function_HardwareConcurrency_B1B8105140D7AEFC1E753360624D21D1C3947146">HardwareConcurrency</a>()</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../System.Base/doc/ns_System.Threading.html#function_HardwareConcurrency_1205CA22BE5F7C8523C7C99C25B03568E302190F">HardwareConcurrency</a>()</td>
    </tr>
   </table>
-  <h2>Delegates</h2>
+  <h2 id="delegates">Delegates</h2>
   <table>
    <tr id="delegate_ParameterizedThreadStartFunction_DD6656F70DA69DAAB71974F21E5A0D93440297D6">
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">delegate</span>&nbsp;<span class="kw">void</span></td>
@@ -97,7 +93,7 @@
      ThreadStartFunction()</td>
    </tr>
   </table>
-  <h2>Class Delegates</h2>
+  <h2 id="classDelegates">Class Delegates</h2>
   <table>
    <tr id="class_delegate_ParameterizedThreadStartMethod_5E0C0A086D78D261BA64121171B8AFD03CDD9752">
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class delegate</span>&nbsp;<span class="kw">void</span></td>
@@ -117,7 +113,7 @@
      ThreadStartMethod()</td>
    </tr>
   </table>
-  <h2>Enumerated Types</h2>
+  <h2 id="enumTypes">Enumerated Types</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span></td>
@@ -125,10 +121,10 @@
    </tr>
   </table>
   <h2>Function Details</h2>
-  <h3 id="function_HardwareConcurrency_B1B8105140D7AEFC1E753360624D21D1C3947146" xml:space="preserve">HardwareConcurrency&nbsp;Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">int</span>&nbsp;HardwareConcurrency()</h4>
+  <h3 id="function_HardwareConcurrency_1205CA22BE5F7C8523C7C99C25B03568E302190F" xml:space="preserve">HardwareConcurrency&nbsp;Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">int</span>&nbsp;HardwareConcurrency()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Thread.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Base/file/Thread.cm.html#23">23</a>&nbsp;of&nbsp;<a href="../../System.Base/file/Thread.cm.html">System.Base/Thread.cm</a></span>
   <br/>
   <br/>
   <hr/>

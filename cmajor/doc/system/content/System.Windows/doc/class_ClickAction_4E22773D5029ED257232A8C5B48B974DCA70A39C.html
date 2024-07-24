@@ -6,64 +6,69 @@
  </head>
  <body>
   <h1>ClickAction Abstract Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1158">1158</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
-  <h2>Constructors &amp; Destructor</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1455">1455</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_ClickAction_4E22773D5029ED257232A8C5B48B974DCA70A39C.html#default_constructor_ClickAction_3FFAD6387BB197E1369C032DDB652E322FDEA3EA">ClickAction</a>()</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_ClickAction_4E22773D5029ED257232A8C5B48B974DCA70A39C.html#default_constructor_ClickAction_1CD998C8128338962FB13FF6746081361A3F6A0B">ClickAction</a>()</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_ClickAction_4E22773D5029ED257232A8C5B48B974DCA70A39C.html#member_function_AddHandlerTo_ClickAction_76E624E7C186FEA9072388E2281C0521C4ABCA3C">AddHandlerTo</a>(<a href="../../System.Windows/doc/class_MenuItem_4DA94BB6D1B0CFA968E2A33ED1F77C58EAECDD67.html">MenuItem</a>&amp;&nbsp;menuItem)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_ClickAction_4E22773D5029ED257232A8C5B48B974DCA70A39C.html#member_function_AddHandlerTo_ClickAction_2DECED19E14C5D82CBFEB8249BBE621930CA6290">AddHandlerTo</a>(<a href="../../System.Windows/doc/class_MenuItem_4DA94BB6D1B0CFA968E2A33ED1F77C58EAECDD67.html">MenuItem</a>&amp;&nbsp;menuItem)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_ClickAction_4E22773D5029ED257232A8C5B48B974DCA70A39C.html#member_function_Click_ClickAction_69759D29494181CC39F445C306A083F902B07B1C">Click</a>()</td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_ClickAction_4E22773D5029ED257232A8C5B48B974DCA70A39C.html#member_function_Click_ClickAction_8537FBCF38FEC5D0E5B52A37033208BBE7514541">Click</a>(<a href="../../System.Windows/doc/class_ClickEventArgs_B3D692E4BE9220A38923A5D808F28583BE4D47AC.html">ClickEventArgs</a>&amp;&nbsp;args)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">protected</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">void</span></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">protected</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_ClickAction_4E22773D5029ED257232A8C5B48B974DCA70A39C.html#member_function_Execute_ClickAction_6C1AE76738B7BB25E876810A1623D5F059836053">Execute</a>()</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Windows/doc/ns_System.Windows.html#class_delegate_ClickEventHandler_FE6C72F8E4E8BA69054106D9154C2797FB433A65">ClickEventHandler</a></td>
+    <td class="rightAlignedCol" id="member_variable_clickEventHandler_E24F946B9BA4AFD1E47E1EF3615A9755CC307278" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Windows/doc/ns_System.Windows.html#class_delegate_ClickEventHandler_FE6C72F8E4E8BA69054106D9154C2797FB433A65">ClickEventHandler</a></td>
     <td xml:space="preserve">clickEventHandler</td>
    </tr>
   </table>
   <h2>Constructor&amp; Destructor Details</h2>
-  <h3 id="default_constructor_ClickAction_3FFAD6387BB197E1369C032DDB652E322FDEA3EA" xml:space="preserve">ClickAction&nbsp;Constructor</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;ClickAction()</h4>
+  <h3 id="default_constructor_ClickAction_1CD998C8128338962FB13FF6746081361A3F6A0B" xml:space="preserve">ClickAction&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;ClickAction()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1160">1160</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1457">1457</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
-  <h3 id="member_function_AddHandlerTo_ClickAction_76E624E7C186FEA9072388E2281C0521C4ABCA3C" xml:space="preserve">AddHandlerTo&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;AddHandlerTo(<a href="../../System.Windows/doc/class_MenuItem_4DA94BB6D1B0CFA968E2A33ED1F77C58EAECDD67.html">MenuItem</a>&amp;&nbsp;menuItem)</h4>
+  <h3 id="member_function_AddHandlerTo_ClickAction_2DECED19E14C5D82CBFEB8249BBE621930CA6290" xml:space="preserve">AddHandlerTo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;AddHandlerTo(<a href="../../System.Windows/doc/class_MenuItem_4DA94BB6D1B0CFA968E2A33ED1F77C58EAECDD67.html">MenuItem</a>&amp;&nbsp;menuItem)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1165">1165</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1462">1462</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_Click_ClickAction_69759D29494181CC39F445C306A083F902B07B1C" xml:space="preserve">Click&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;Click()</h4>
+  <h3 id="member_function_Click_ClickAction_8537FBCF38FEC5D0E5B52A37033208BBE7514541" xml:space="preserve">Click&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;<span class="kw">void</span>&nbsp;Click(<a href="../../System.Windows/doc/class_ClickEventArgs_B3D692E4BE9220A38923A5D808F28583BE4D47AC.html">ClickEventArgs</a>&amp;&nbsp;args)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1169">1169</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1466">1466</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_Execute_ClickAction_6C1AE76738B7BB25E876810A1623D5F059836053" xml:space="preserve">Execute&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">protected</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">void</span>&nbsp;Execute()</h4>
+  <h4 xml:space="preserve"><span class="kw">protected</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Execute()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1173">1173</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/Menu.cm.html#1475">1475</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/Menu.cm.html">System.Windows/Menu.cm</a></span>
   <br/>
   <br/>
   <hr/>

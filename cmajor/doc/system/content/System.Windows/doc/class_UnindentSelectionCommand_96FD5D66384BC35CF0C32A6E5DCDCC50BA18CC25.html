@@ -7,34 +7,39 @@
  </head>
  <body onload="drawInheritanceDiagram()">
   <h1>UnindentSelectionCommand Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#292">292</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#370">370</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <h2>Inheritance</h2>
   <div class="diagram">
    <svg height="0" id="inheritance_svg_diagram" version="2.0" width="0" xmlns="http://www.w3.org/2000/svg"/>
   </div>
-  <h2>Constructors &amp; Destructor</h2>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
     <td xml:space="preserve"><a href="../../System.Windows/doc/class_UnindentSelectionCommand_96FD5D66384BC35CF0C32A6E5DCDCC50BA18CC25.html#constructor_UnindentSelectionCommand_05893A67785342581CC7018846F2A71CD76A1246">UnindentSelectionCommand</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_Selection_0E0D2628433661BF8A88F50511F309DDB679887C.html">Selection</a>&amp;&nbsp;selection_)</td>
    </tr>
   </table>
-  <h2>Member Functions</h2>
+  <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_UnindentSelectionCommand_96FD5D66384BC35CF0C32A6E5DCDCC50BA18CC25.html#member_function_Redo_UnindentSelectionCommand_DE95F2A649EC91681F8200C98FD92F3E8B762B83">Redo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_UnindentSelectionCommand_96FD5D66384BC35CF0C32A6E5DCDCC50BA18CC25.html#member_function_Redo_UnindentSelectionCommand_BDEA768D18DC967F67691C78112CC8D86CB5D012">Redo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Windows/doc/class_UnindentSelectionCommand_96FD5D66384BC35CF0C32A6E5DCDCC50BA18CC25.html#member_function_Undo_UnindentSelectionCommand_FB4B110411B1390653AC6C287AE3D13A77E810EB">Undo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Windows/doc/class_UnindentSelectionCommand_96FD5D66384BC35CF0C32A6E5DCDCC50BA18CC25.html#member_function_Undo_UnindentSelectionCommand_1CFC3EEE17474C096CCBFD3AC3319717B18C4353">Undo</a>(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</td>
    </tr>
   </table>
-  <h2>Member Variables</h2>
+  <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Windows/doc/class_Selection_0E0D2628433661BF8A88F50511F309DDB679887C.html">Selection</a></td>
+    <td class="rightAlignedCol" id="member_variable_selection_BD0C30C21B580E06D2F5A6295A24B629BEC0ADE8" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Windows/doc/class_Selection_0E0D2628433661BF8A88F50511F309DDB679887C.html">Selection</a></td>
     <td xml:space="preserve">selection</td>
    </tr>
   </table>
@@ -42,22 +47,22 @@
   <h3 id="constructor_UnindentSelectionCommand_05893A67785342581CC7018846F2A71CD76A1246" xml:space="preserve">UnindentSelectionCommand&nbsp;Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;UnindentSelectionCommand(<span class="kw">const</span>&nbsp;<a href="../../System.Windows/doc/class_Selection_0E0D2628433661BF8A88F50511F309DDB679887C.html">Selection</a>&amp;&nbsp;selection_)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#294">294</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#372">372</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
-  <h3 id="member_function_Redo_UnindentSelectionCommand_DE95F2A649EC91681F8200C98FD92F3E8B762B83" xml:space="preserve">Redo&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;Redo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
+  <h3 id="member_function_Redo_UnindentSelectionCommand_BDEA768D18DC967F67691C78112CC8D86CB5D012" xml:space="preserve">Redo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Redo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#302">302</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#385">385</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_Undo_UnindentSelectionCommand_FB4B110411B1390653AC6C287AE3D13A77E810EB" xml:space="preserve">Undo&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">nothrow</span>&nbsp;<span class="kw">void</span>&nbsp;Undo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
+  <h3 id="member_function_Undo_UnindentSelectionCommand_1CFC3EEE17474C096CCBFD3AC3319717B18C4353" xml:space="preserve">Undo&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Undo(<a href="../../System.Windows/doc/class_TextView_D415A8B0D975070B98048D29E492D98898E6381A.html">TextView</a>*&nbsp;textView)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#297">297</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html#376">376</a>&nbsp;of&nbsp;<a href="../../System.Windows/file/EditCommand.cm.html">System.Windows/EditCommand.cm</a></span>
   <br/>
   <br/>
   <hr/>

@@ -72,7 +72,7 @@ void ConstantSymbol::Read(SymbolReader& reader)
     {
         value = ReadValue(reader.GetBinaryStreamReader());
     }
-    strValue = reader.GetBinaryStreamReader().ReadUtf32String();
+    strValue = reader.GetBinaryStreamReader().ReadUtf8String();
 }
 
 Value* ConstantSymbol::GetValue()
