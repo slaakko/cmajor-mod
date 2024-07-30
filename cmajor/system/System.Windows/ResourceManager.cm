@@ -17,75 +17,69 @@ namespace System.Windows
     {
         public Resource* GetResource(const string& resourceName)
         {
-            HashMap<string, Resource*>.ConstIterator it = resourceMap.CFind(resourceName);
+            auto it = resourceMap.CFind(resourceName);
             if (it != resourceMap.CEnd())
             {
                 return it->second;
             }
             return null;
         }
-        public Cursor& GetCursor(const string& cursorName)
+        [nodiscard]
+        public Result<Cursor*> GetCursor(const string& cursorName)
         {
             Cursor* cursor = null;
-            try
+            Resource* result = GetResource(cursorName);
+            if (result != null && result is Cursor*)
             {
-                Resource* result = GetResource(cursorName);
-                if (result != null && result is Cursor*)
-                {
-                    return *cast<Cursor*>(result);
-                }
-                UniquePtr<Resource> resource(new Cursor(LoadCursor(cursorName)));
-                cursor = cast<Cursor*>(resource.Get());
-                resources.Add(Rvalue(resource));
-                return *cursor;
-            }        
-            catch (const Exception& ex)
-            {
-                throw Exception("could not load cursor '" + cursorName + "': " + ex.Message());
+                return Result<Cursor*>(cast<Cursor*>(result));
             }
-            return *cursor;
+            auto cursorResult = LoadCursor(cursorName);
+            if (cursorResult.Error())
+            {
+                return Result<Cursor*>(ErrorId(cursorResult.GetErrorId()));
+            }
+            UniquePtr<Resource> resource(new Cursor(Rvalue(cursorResult.Value())));
+            cursor = cast<Cursor*>(resource.Get());
+            resources.Add(Rvalue(resource));
+            return Result<Cursor*>(cursor);
         }
-        public Icon& GetIcon(const string& iconName)
+        [nodiscard]
+        public Result<Icon*> GetIcon(const string& iconName)
         {
             Icon* icon = null;
-            try
+            Resource* result = GetResource(iconName);
+            if (result != null && result is Icon*)
             {
-                Resource* result = GetResource(iconName);
-                if (result != null && result is Icon*)
-                {
-                    return *cast<Icon*>(result);
-                }
-                UniquePtr<Resource> resource(new Icon(LoadIcon(iconName)));
-                icon = cast<Icon*>(resource.Get());
-                resources.Add(Rvalue(resource));
-                return *icon;
-            }        
-            catch (const Exception& ex)
-            {
-                throw Exception("could not load icon '" + iconName + "': " + ex.Message());
+                return Result<Icon*>(cast<Icon*>(result));
             }
-            return *icon;
+            auto iconResult = LoadIcon(iconName);
+            if (iconResult.Error())
+            {
+                return Result<Icon*>(ErrorId(iconResult.GetErrorId()));
+            }
+            UniquePtr<Resource> resource(new Icon(Rvalue(iconResult.Value())));
+            icon = cast<Icon*>(resource.Get());
+            resources.Add(Rvalue(resource));
+            return Result<Icon*>(icon);
         }
-        public WinBitmap& GetBitmap(const string& bitmapName)
+        [nodiscard]
+        public Result<WinBitmap*> GetBitmap(const string& bitmapName)
         {
             WinBitmap* bitmap = null;
-            try
+            Resource* result = GetResource(bitmapName);
+            if (result != null && result is WinBitmap*)
             {
-                Resource* result = GetResource(bitmapName);
-                if (result != null && result is WinBitmap*)
-                {
-                    return *cast<WinBitmap*>(result);
-                }
-                UniquePtr<Resource> resource(new WinBitmap(LoadBitmap(bitmapName)));
-                bitmap = cast<WinBitmap*>(resource.Get());
-                resources.Add(Rvalue(resource));
-                return *bitmap;
-            }        
-            catch (const Exception& ex)
-            {
-                throw Exception("could not load bitmap '" + bitmapName + "': " + ex.Message());
+                return Result<WinBitmap*>(cast<WinBitmap*>(result));
             }
-            return *bitmap;
+            auto bitmapResult = LoadBitmap(bitmapName);
+            if (bitmapResult.Error())
+            {
+                return Result<WinBitmap*>(ErrorId(bitmapResult.GetErrorId()));
+            }
+            UniquePtr<Resource> resource(new WinBitmap(Rvalue(bitmapResult.Value())));
+            bitmap = cast<WinBitmap*>(resource.Get());
+            resources.Add(Rvalue(resource));
+            return Result<WinBitmap*>(bitmap);
         }
         private HashMap<string, Resource*> resourceMap;
         private List<UniquePtr<Resource>> resources;

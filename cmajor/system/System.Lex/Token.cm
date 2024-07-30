@@ -1,38 +1,47 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
 
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/lexer/Token.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/lexer/Token.cpp' using cpp2cm version 1.0.0
-
 namespace System.Lex
 {
-    public const int CONTINUE_TOKEN = -2;
-    public const int INVALID_TOKEN = -1;
-    public const int END_TOKEN = 0;
+    public const long CONTINUE_TOKEN = -2;
+    public const long INVALID_TOKEN = -1;
+    public const long END_TOKEN = 0;
+
     public class Token
     {
-        public Token() :
-            id(INVALID_TOKEN), match(), line(1)
+        public Token() : id(INVALID_TOKEN), match(), line(1)
         {
         }
-        public Token(int id_) :
-            id(id_), match(), line(1)
+        public Token(long id_) : id(id_), match(), line(1)
         {
         }
-        public Token(int id_, const Lexeme& match_, int line_) :
-            id(id_), match(match_), line(line_)
+        public Token(long id_, const Lexeme& match_, int line_) : id(id_), match(match_), line(line_)
         {
         }
-        public int id;
+        public inline ustring ToString() const
+        {
+            return match.ToString();
+        }
+        public inline uchar Chr() const
+        {
+            return *match.begin;
+        }
+        public long id;
         public Lexeme match;
         public int line;
     }
+
     public bool NoWhiteSpaceBetweenTokens(const Token& first, const Token& second)
     {
         if (first.match.end == second.match.begin) return true;
         return false;
     }
+
     public ustring GetEndTokenInfo()
     {
         return u"end of file";
@@ -40,10 +49,10 @@ namespace System.Lex
 
     public class TokenLine
     {
-        public nothrow TokenLine() : tokens(), startState(0), endState(0)
+        public TokenLine() : tokens(), startState(0), endState(0)
         {
         }
-        public nothrow int TokenIndex(short columnNumber)
+        public int TokenIndex(short columnNumber)
         {
             short col = 1;
             int index = 0;

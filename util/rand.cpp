@@ -34,7 +34,7 @@ uint64_t GetSeed(uint64_t seed, std::random_device& rd)
 
 Rng::Rng(uint64_t seed_) : rd(), seed(GetSeed(seed_, rd)), mt(seed), dist(0, 255)
 {
-}
+} 
 
 class Rng32
 {
@@ -46,10 +46,10 @@ private:
     std::random_device rd;
     uint64_t seed;
     std::mt19937_64 mt;
-    std::uniform_int_distribution<> dist;
+    std::uniform_int_distribution<uint32_t> dist;
 };
 
-Rng32::Rng32(uint64_t seed_) : rd(), seed(GetSeed(seed_, rd)), mt(seed), dist(0, std::numeric_limits<int32_t>::max())
+Rng32::Rng32(uint64_t seed_) : rd(), seed(GetSeed(seed_, rd)), mt(seed), dist(0, std::numeric_limits<uint32_t>::max())
 {
 }
 
@@ -63,10 +63,10 @@ private:
     std::random_device rd;
     uint64_t seed;
     std::mt19937_64 mt;
-    std::uniform_int_distribution<> dist;
+    std::uniform_int_distribution<uint64_t> dist;
 };
 
-Rng64::Rng64(uint64_t seed_) : rd(), seed(GetSeed(seed_, rd)), mt(seed), dist(0, std::numeric_limits<int64_t>::max())
+Rng64::Rng64(uint64_t seed_) : rd(), seed(GetSeed(seed_, rd)), mt(seed), dist(0, std::numeric_limits<uint64_t>::max())
 {
 }
 
@@ -86,6 +86,16 @@ void reset_rng()
     {
         delete rng;
         rng = nullptr;
+    }
+    if (rng32)
+    {
+        delete rng32;
+        rng32 = nullptr;
+    }
+    if (rng64)
+    {
+        delete rng64;
+        rng64 = nullptr;
     }
 }
 

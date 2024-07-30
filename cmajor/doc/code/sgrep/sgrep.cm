@@ -10,73 +10,94 @@ void PrintHelp()
 
 int main(int argc, const char** argv)
 {
-    try
+    ustring pattern;
+    List<string> fileNames;
+    for (int i = 1; i < argc; ++i)
     {
-        ustring pattern;
-        List<string> fileNames;
-        for (int i = 1; i < argc; ++i)
+        string arg = argv[i];
+        if (arg.StartsWith("--"))
         {
-            string arg = argv[i];
-            if (arg.StartsWith("--"))
+            if (arg == "--help")
             {
-                if (arg == "--help")
+                PrintHelp();
+                return 1;
+            }
+            else
+            {
+                int errorId = AllocateError("unknown option '" + arg + "'");
+                Console.Error() << GetErrorMessage(errorId) << endl();
+                return 1;
+            }
+        }
+        else if (arg.StartsWith("-"))
+        {
+            for (char o : arg)
+            {
+                if (o == 'h')
                 {
                     PrintHelp();
                     return 1;
                 }
                 else
                 {
-                    throw Exception("unknown option '" + arg + "'");
+                    int errorId = AllocateError("unknown option '-" + string(o) + "'");
+                    Console.Error() << GetErrorMessage(errorId) << endl();
+                    return 1;
                 }
             }
-            else if (arg.StartsWith("-"))
+        }
+        else
+        {
+            if (pattern.IsEmpty())
             {
-                for (char o : arg)
+                auto utfResult = ToUtf32(arg);
+                if (utfResult.Error())
                 {
-                    if (o == 'h')
-                    {
-                        PrintHelp();
-                        return 1;
-                    }
-                    else
-                    {
-                        throw Exception("unknown option '-" + string(o) + "'");
-                    }
+                    Console.Error() << utfResult.GetErrorMessage() << endl();
+                    return 1;
                 }
+                ustring s = Rvalue(utfResult.Value());
+                pattern = u".*" + s + u".*";
             }
             else
             {
-                if (pattern.IsEmpty())
-                {
-                    pattern = u".*" + ToUtf32(arg) + u".*";
-                }
-                else
-                {
-                    fileNames.Add(arg);
-                }
-            }
-        }
-        Context context;
-        Nfa nfa = CompileRegularExpressionPattern(context, pattern);
-        for (const string& fileName : fileNames)
-        {
-            Console.Out() << fileName << ":" << endl();
-            List<string> lines = File.ReadAllLines(fileName);
-            long n = lines.Count();
-            for (long i = 0; i < n; ++i)
-            {
-                ustring line = ToUtf32(lines[i]);
-                if (PatternMatch(line, nfa))
-                {
-                    Console.Out() << ToString(i + 1) << ": " << line << endl();
-                }
+                fileNames.Add(arg);
             }
         }
     }
-    catch (const Exception& ex)
+    Context context;
+    auto nfaResult = CompileRegularExpressionPattern(context, pattern);
+    if (nfaResult.Error())
     {
-        Console.Error() << ex.Message() << endl();
+        Console.Error() << nfaResult.GetErrorMessage() << endl();
         return 1;
+    }
+    Nfa nfa = nfaResult.Value();
+    for (const string& fileName : fileNames)
+    {
+        Console.Out() << fileName << ":" << endl();
+        auto readResult = File.ReadAllLines(fileName);
+        if (readResult.Error())
+        {
+            Console.Error() << readResult.GetErrorMessage() << endl();
+            return 1;
+        }
+        List<string> lines = Rvalue(readResult.Value());
+        long n = lines.Count();
+        for (long i = 0; i < n; ++i)
+        {
+            auto utfResult = ToUtf32(lines[i]);
+            if (utfResult.Error())
+            {
+                Console.Error() << utfResult.GetErrorMessage() << endl();
+                return 1;
+            }
+            ustring line = Rvalue(utfResult.Value());
+            if (PatternMatch(line, nfa))
+            {
+                Console.Out() << ToString(i + 1) << ": " << line << endl();
+            }
+        }
     }
     return 0;
 }

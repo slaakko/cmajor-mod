@@ -1,12 +1,10 @@
 project System.Lex;
 target=library;
 reference <../System.Base/System.Base.cmp>;
-source <ClassMap.cm>;
+source <FileMap.cm>;
 source <Keyword.cm>;
 source <Lexeme.cm>;
 source <Lexer.cm>;
-source <LexerApi.cm>;
-source <ParsingException.cm>;
 source <ParsingLog.cm>;
 source <Span.cm>;
 source <Token.cm>;

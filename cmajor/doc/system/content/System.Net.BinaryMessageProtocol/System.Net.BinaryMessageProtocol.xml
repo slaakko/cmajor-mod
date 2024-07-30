@@ -14,7 +14,7 @@
         <concepts>
          <concept docPath="../../System.Net.BinaryMessageProtocol/doc/concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE.html" extPath="System.Net.BinaryMessageProtocol/doc/concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE.html" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE" line="33" name="EnumType" specifiers="public">
           <typeParameters>
-           <typeParameter docPath="../../System.Net.BinaryMessageProtocol/doc/concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE.html#3e01a0f4-aa9a-a6d4-3ffe-0c2abb8693bd" id="3e01a0f4-aa9a-a6d4-3ffe-0c2abb8693bd" name="T"/>
+           <typeParameter docPath="../../System.Net.BinaryMessageProtocol/doc/concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE.html#63aa9aa8-55a8-20cb-d8d1-21c334de12ff" id="63aa9aa8-55a8-20cb-d8d1-21c334de12ff" name="T"/>
           </typeParameters>
           <constraints>
            <where>
@@ -24,14 +24,14 @@
          </concept>
          <concept docPath="../../System.Net.BinaryMessageProtocol/doc/concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382.html" extPath="System.Net.BinaryMessageProtocol/doc/concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382.html" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382" line="38" name="MessageType" specifiers="public">
           <typeParameters>
-           <typeParameter docPath="../../System.Net.BinaryMessageProtocol/doc/concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382.html#33509663-c396-b1b0-3fe0-d0103f28004c" id="33509663-c396-b1b0-3fe0-d0103f28004c" name="T"/>
+           <typeParameter docPath="../../System.Net.BinaryMessageProtocol/doc/concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382.html#132bcb12-b77f-e75a-725e-f8aebfdaecb1" id="132bcb12-b77f-e75a-725e-f8aebfdaecb1" name="T"/>
           </typeParameters>
           <constraints>
            <where>
             <multi>
              <symbol name="Derived" ref="concept_Derived_1AE2C34004233D6F2058B816173F55CEC6320552"/>
              <types>
-              <symbol name="T" ref="33509663-c396-b1b0-3fe0-d0103f28004c"/>
+              <symbol name="T" ref="132bcb12-b77f-e75a-725e-f8aebfdaecb1"/>
               <dot>
                <dot>
                 <dot>
@@ -49,7 +49,7 @@
          </concept>
          <concept docPath="../../System.Net.BinaryMessageProtocol/doc/concept_ScalarType_094BE620D8AE20AC366DAD5374445F7F468DADFE.html" extPath="System.Net.BinaryMessageProtocol/doc/concept_ScalarType_094BE620D8AE20AC366DAD5374445F7F468DADFE.html" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="concept_ScalarType_094BE620D8AE20AC366DAD5374445F7F468DADFE" line="11" name="ScalarType" specifiers="public">
           <typeParameters>
-           <typeParameter docPath="../../System.Net.BinaryMessageProtocol/doc/concept_ScalarType_094BE620D8AE20AC366DAD5374445F7F468DADFE.html#964da199-59b5-ff7b-65f0-f923a9ce3246" id="964da199-59b5-ff7b-65f0-f923a9ce3246" name="T"/>
+           <typeParameter docPath="../../System.Net.BinaryMessageProtocol/doc/concept_ScalarType_094BE620D8AE20AC366DAD5374445F7F468DADFE.html#1c6e66c3-639d-a036-bd1f-9437f2254a03" id="1c6e66c3-639d-a036-bd1f-9437f2254a03" name="T"/>
           </typeParameters>
           <constraints>
            <where>
@@ -70,76 +70,76 @@
                           <or>
                            <or>
                             <is>
-                             <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                             <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                              <keyword value="bool"/>
                             </is>
                             <is>
-                             <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                             <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                              <keyword value="sbyte"/>
                             </is>
                            </or>
                            <is>
-                            <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                            <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                             <keyword value="byte"/>
                            </is>
                           </or>
                           <is>
-                           <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                           <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                            <keyword value="short"/>
                           </is>
                          </or>
                          <is>
-                          <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                          <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                           <keyword value="ushort"/>
                          </is>
                         </or>
                         <is>
-                         <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                         <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                          <keyword value="int"/>
                         </is>
                        </or>
                        <is>
-                        <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                        <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                         <keyword value="uint"/>
                        </is>
                       </or>
                       <is>
-                       <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                       <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                        <keyword value="long"/>
                       </is>
                      </or>
                      <is>
-                      <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                      <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                       <keyword value="ulong"/>
                      </is>
                     </or>
                     <is>
-                     <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                     <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                      <keyword value="float"/>
                     </is>
                    </or>
                    <is>
-                    <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                    <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                     <keyword value="double"/>
                    </is>
                   </or>
                   <is>
-                   <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                   <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                    <keyword value="char"/>
                   </is>
                  </or>
                  <is>
-                  <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                  <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                   <keyword value="wchar"/>
                  </is>
                 </or>
                 <is>
-                 <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                 <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                  <keyword value="uchar"/>
                 </is>
                </or>
                <is>
-                <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+                <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                 <dot>
                  <symbol name="System" ref="ns_System"/>
                  <symbol name="Uuid"/>
@@ -147,7 +147,7 @@
                </is>
               </or>
               <is>
-               <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+               <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
                <dot>
                 <symbol name="System" ref="ns_System"/>
                 <symbol name="Date"/>
@@ -155,7 +155,7 @@
               </is>
              </or>
              <is>
-              <symbol name="T" ref="964da199-59b5-ff7b-65f0-f923a9ce3246"/>
+              <symbol name="T" ref="1c6e66c3-639d-a036-bd1f-9437f2254a03"/>
               <dot>
                <symbol name="System" ref="ns_System"/>
                <symbol name="DateTime"/>
@@ -171,27 +171,27 @@
           <ctorsDtors>
            <ctorDtor docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#constructor_BinaryMessage_2D1FA2B8A1B300E373D2C4EFBFAAD0BF1228358D" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#constructor_BinaryMessage_2D1FA2B8A1B300E373D2C4EFBFAAD0BF1228358D" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="constructor_BinaryMessage_2D1FA2B8A1B300E373D2C4EFBFAAD0BF1228358D" kind="Constructor" line="14" name="BinaryMessage" specifiers="public">
             <parameters>
-             <parameter id="parameter_id__850BEA59E2E7C9E0BD28853D6C2ACB4591F6B55F" name="id_" type="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+             <parameter id="parameter_id__850BEA59E2E7C9E0BD28853D6C2ACB4591F6B55F" name="id_" type="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
             </parameters>
            </ctorDtor>
            <ctorDtor docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#destructor_BinaryMessage_56B2581061338B7404D58CA9CD52738861478CA7" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#destructor_BinaryMessage_56B2581061338B7404D58CA9CD52738861478CA7" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="destructor_BinaryMessage_56B2581061338B7404D58CA9CD52738861478CA7" kind="Destructor" line="17" name="~BinaryMessage" specifiers="public virtual"/>
           </ctorsDtors>
           <functions>
-           <function const="true" docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A" kind="Member Function" line="25" name="Id" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public"/>
-           <function const="true" docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98" kind="Member Function" line="20" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public abstract"/>
-           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B" kind="Member Function" line="24" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public abstract">
+           <function const="true" docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Id_BinaryMessage_5690ADC085BC8C2F7F04EA4400D42789C7E59F4A" kind="Member Function" line="25" name="Id" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public"/>
+           <function const="true" docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Length_BinaryMessage_1353A524B441576DE78DAEDE7A955569E0B2BB98" kind="Member Function" line="20" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public abstract"/>
+           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Read_BinaryMessage_CD2BD465628DE0167DAC510E5480A5AA1F758F2B" kind="Member Function" line="24" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public abstract">
             <parameters>
-             <parameter id="parameter_reader_10A0DA22DAF6E775477B4E858361E4D4CB22ED33" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
+             <parameter id="parameter_reader_10A0DA22DAF6E775477B4E858361E4D4CB22ED33" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176" kind="Member Function" line="22" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public abstract">
+           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="member_function_Write_BinaryMessage_2015E2A5FCE4C7A51EF780CC54D2F4BD7F78B176" kind="Member Function" line="22" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public abstract">
             <parameters>
-             <parameter id="parameter_writer_E3C4143ED413A4DC56AE3C2E34CA9BC9547F4F26" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
+             <parameter id="parameter_writer_E3C4143ED413A4DC56AE3C2E34CA9BC9547F4F26" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
             </parameters>
            </function>
           </functions>
           <variables>
-           <variable docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_variable_id_A27E167FB607145C158A3ECFE2DBB31F811AB21E" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_variable_id_A27E167FB607145C158A3ECFE2DBB31F811AB21E" id="member_variable_id_A27E167FB607145C158A3ECFE2DBB31F811AB21E" name="id" specifiers="private" type="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+           <variable docPath="../../System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_variable_id_A27E167FB607145C158A3ECFE2DBB31F811AB21E" extPath="System.Net.BinaryMessageProtocol/doc/class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78.html#member_variable_id_A27E167FB607145C158A3ECFE2DBB31F811AB21E" id="member_variable_id_A27E167FB607145C158A3ECFE2DBB31F811AB21E" name="id" specifiers="private" type="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
           </variables>
          </class>
          <class docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564" line="13" name="MessageRegistry" specifiers="public">
@@ -200,486 +200,486 @@
            <ctorDtor docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#default_constructor_MessageRegistry_250B8DDBA5C01F264AB9EEF796FEBD6147529345" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#default_constructor_MessageRegistry_250B8DDBA5C01F264AB9EEF796FEBD6147529345" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="default_constructor_MessageRegistry_250B8DDBA5C01F264AB9EEF796FEBD6147529345" kind="Constructor" line="22" name="MessageRegistry" specifiers="private"/>
           </ctorsDtors>
           <functions>
-           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8" kind="Member Function" line="42" name="Create" returnType="69dda5f1-494e-360e-bcbd-381553c1aa92" specifiers="public">
+           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="member_function_Create_MessageRegistry_CD2923591CD18A58D4174A0BDDEC7A64B0A9DCD8" kind="Member Function" line="42" name="Create" returnType="914d8e05-6826-390b-2d01-91d114311ada" specifiers="public">
             <parameters>
-             <parameter id="parameter_messageId_237FB94A8CE248EA5BB45D9EE57BA98CD7D3EF3D" name="messageId" type="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+             <parameter id="parameter_messageId_237FB94A8CE248EA5BB45D9EE57BA98CD7D3EF3D" name="messageId" type="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327" kind="Static Member Function" line="18" name="Instance" returnType="74ebf875-e6c9-ce0f-4fe9-5d853f46bf1e" specifiers="public static"/>
-           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A" kind="Member Function" line="26" name="Register" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="member_function_Instance_MessageRegistry_A89214D442C64F64BE9400353F6F7BD8D3A2C327" kind="Static Member Function" line="18" name="Instance" returnType="8097d958-427f-e2da-4e0e-b308db1c61b8" specifiers="public static"/>
+           <function docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="member_function_Register_MessageRegistry_D931FE8063C31ABE954FE4CB75C7E734844F2F5A" kind="Member Function" line="26" name="Register" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
             <parameters>
-             <parameter id="parameter_className_550112C79F738690504357268BCFA5BFFEACBBC4" name="className" type="1a3762a4-d3b1-dfd6-b6ea-e8badcd7076b"/>
+             <parameter id="parameter_className_550112C79F738690504357268BCFA5BFFEACBBC4" name="className" type="88c6cb16-1c71-d2c7-d607-9945efed5f4b"/>
              <parameter id="parameter_factoryFunc_8D5DDF739A91EFC40AB0E92272D310653168041B" name="factoryFunc" type="delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD"/>
             </parameters>
            </function>
           </functions>
           <variables>
-           <variable docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B" id="member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B" name="factoryMap" specifiers="private" type="338b23d8-dbfb-f2f1-e7b9-4272e32b122f"/>
-           <variable docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7" id="member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7" name="instance" specifiers="private static" type="bf353c6f-fc3d-e20d-d557-23be964cf4c0"/>
+           <variable docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B" id="member_variable_factoryMap_A2926B7FE025376AFE1BA380A7E8F28DBBD3E23B" name="factoryMap" specifiers="private" type="28576135-8db6-59ce-1521-03521327b629"/>
+           <variable docPath="../../System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7" extPath="System.Net.BinaryMessageProtocol/doc/class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564.html#member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7" id="member_variable_instance_A2462551348341D781890E60251FE92B7B3CFBE7" name="instance" specifiers="private static" type="08953da2-0a58-e7a8-8f32-36b21c5db963"/>
           </variables>
          </class>
         </classes>
         <functions>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_080EC6F0B098FCB76358BACE3C46690B764F7106" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_080EC6F0B098FCB76358BACE3C46690B764F7106" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_080EC6F0B098FCB76358BACE3C46690B764F7106" kind="Function" line="115" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_080EC6F0B098FCB76358BACE3C46690B764F7106" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_080EC6F0B098FCB76358BACE3C46690B764F7106" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_080EC6F0B098FCB76358BACE3C46690B764F7106" kind="Function" line="115" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#58343dbe-aa46-fd75-bd84-c16ae7ca6e37" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#58343dbe-aa46-fd75-bd84-c16ae7ca6e37" id="58343dbe-aa46-fd75-bd84-c16ae7ca6e37" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#23f9cb36-8efb-38f9-370a-a87a3ab64ab1" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#23f9cb36-8efb-38f9-370a-a87a3ab64ab1" id="23f9cb36-8efb-38f9-370a-a87a3ab64ab1" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_x_9565988CBE1B03F85C53E1F05BC7F72C984A5897" name="x" type="58343dbe-aa46-fd75-bd84-c16ae7ca6e37"/>
+           <parameter id="parameter_x_9565988CBE1B03F85C53E1F05BC7F72C984A5897" name="x" type="23f9cb36-8efb-38f9-370a-a87a3ab64ab1"/>
           </parameters>
           <where>
            <is>
-            <symbol name="T" ref="58343dbe-aa46-fd75-bd84-c16ae7ca6e37"/>
+            <symbol name="T" ref="23f9cb36-8efb-38f9-370a-a87a3ab64ab1"/>
             <symbol name="EnumType" ref="concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE"/>
            </is>
           </where>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_3469B2F7570F0B1E7E3FA350EE3CE891AF4D05C3" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_3469B2F7570F0B1E7E3FA350EE3CE891AF4D05C3" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_3469B2F7570F0B1E7E3FA350EE3CE891AF4D05C3" kind="Function" line="43" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_3469B2F7570F0B1E7E3FA350EE3CE891AF4D05C3" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_3469B2F7570F0B1E7E3FA350EE3CE891AF4D05C3" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_3469B2F7570F0B1E7E3FA350EE3CE891AF4D05C3" kind="Function" line="43" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_b_2EF6590AA290CA600299B27694CC79F62067A443" name="b" type="9a15f1e5-ce23-1266-019d-03f741c75b38"/>
+           <parameter id="parameter_b_2EF6590AA290CA600299B27694CC79F62067A443" name="b" type="48777f30-6575-66ac-5d1e-7727dbf6db1d"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_75586B39B35F087043DBFFE5D9F15DBEBEB5AE95" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_75586B39B35F087043DBFFE5D9F15DBEBEB5AE95" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_75586B39B35F087043DBFFE5D9F15DBEBEB5AE95" kind="Function" line="51" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_75586B39B35F087043DBFFE5D9F15DBEBEB5AE95" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_75586B39B35F087043DBFFE5D9F15DBEBEB5AE95" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_75586B39B35F087043DBFFE5D9F15DBEBEB5AE95" kind="Function" line="51" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_7E81F7904D85BFAB223A18C5EB44024F5B24E5C1" name="x" type="6114639a-9769-07ea-5145-e08143e865b3"/>
+           <parameter id="parameter_x_7E81F7904D85BFAB223A18C5EB44024F5B24E5C1" name="x" type="d01d09eb-baaa-f680-f871-b773fcdc04b5"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E60D16FE07CFED5F433520F61BE1FCAC7A114FBC" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E60D16FE07CFED5F433520F61BE1FCAC7A114FBC" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_E60D16FE07CFED5F433520F61BE1FCAC7A114FBC" kind="Function" line="87" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E60D16FE07CFED5F433520F61BE1FCAC7A114FBC" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E60D16FE07CFED5F433520F61BE1FCAC7A114FBC" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_E60D16FE07CFED5F433520F61BE1FCAC7A114FBC" kind="Function" line="87" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_FA39D264FDB182D88FEF4646E65BCFFB17FC525A" name="x" type="c484deb3-c39f-26c2-b1c5-740577abe648"/>
+           <parameter id="parameter_x_FA39D264FDB182D88FEF4646E65BCFFB17FC525A" name="x" type="c3b5b56a-7b2e-9340-0cdf-ccafea2ab373"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_05332DBB3A6F080B3A8604A1E507A923C2ED43BC" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_05332DBB3A6F080B3A8604A1E507A923C2ED43BC" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_05332DBB3A6F080B3A8604A1E507A923C2ED43BC" kind="Function" line="99" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_05332DBB3A6F080B3A8604A1E507A923C2ED43BC" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_05332DBB3A6F080B3A8604A1E507A923C2ED43BC" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_05332DBB3A6F080B3A8604A1E507A923C2ED43BC" kind="Function" line="99" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_A675459FEEE847160205C06F4C2B99467C2CC574" name="x" type="3c7a2ca8-3b27-e9bc-4b4d-96ee3c07b65d"/>
+           <parameter id="parameter_x_A675459FEEE847160205C06F4C2B99467C2CC574" name="x" type="8cc36c6b-650b-975f-6ec0-3df6a2c44f01"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_0E9F73EE788E603D17B41AB38831949BB58AC10E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_0E9F73EE788E603D17B41AB38831949BB58AC10E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_0E9F73EE788E603D17B41AB38831949BB58AC10E" kind="Function" line="103" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_0E9F73EE788E603D17B41AB38831949BB58AC10E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_0E9F73EE788E603D17B41AB38831949BB58AC10E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_0E9F73EE788E603D17B41AB38831949BB58AC10E" kind="Function" line="103" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_E96AF0419FFDA57BDF3542F57ECEC34BA7D55188" name="x" type="b6c845fd-757a-9ce5-5263-3f96ec09f6a0"/>
+           <parameter id="parameter_x_E96AF0419FFDA57BDF3542F57ECEC34BA7D55188" name="x" type="b2fcd36a-49b0-8f84-54c0-a5b84884bd8f"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_AA25521125DF19319BED303E62B5CB4A7F4202A0" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_AA25521125DF19319BED303E62B5CB4A7F4202A0" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_AA25521125DF19319BED303E62B5CB4A7F4202A0" kind="Function" line="127" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_AA25521125DF19319BED303E62B5CB4A7F4202A0" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_AA25521125DF19319BED303E62B5CB4A7F4202A0" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_AA25521125DF19319BED303E62B5CB4A7F4202A0" kind="Function" line="127" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#539c748d-f76e-3af8-202a-1955df553e11" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#539c748d-f76e-3af8-202a-1955df553e11" id="539c748d-f76e-3af8-202a-1955df553e11" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#b409d634-a06b-1096-81c4-20ab979578ae" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#b409d634-a06b-1096-81c4-20ab979578ae" id="b409d634-a06b-1096-81c4-20ab979578ae" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_x_7B8001061E5968C0F8A32EE50C3DD2B9D09FECDE" name="x" type="c76694c5-7199-b895-b487-f3caa2d8bcc5"/>
+           <parameter id="parameter_x_7B8001061E5968C0F8A32EE50C3DD2B9D09FECDE" name="x" type="6f1ae43d-88e4-bc9b-5a3e-35d3ea57de37"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_601024D2EC21220059E65EFD3FA318549586165C" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_601024D2EC21220059E65EFD3FA318549586165C" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_601024D2EC21220059E65EFD3FA318549586165C" kind="Function" line="123" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_601024D2EC21220059E65EFD3FA318549586165C" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_601024D2EC21220059E65EFD3FA318549586165C" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_601024D2EC21220059E65EFD3FA318549586165C" kind="Function" line="123" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#8405c5d5-a427-b83e-7cda-162aae400be4" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#8405c5d5-a427-b83e-7cda-162aae400be4" id="8405c5d5-a427-b83e-7cda-162aae400be4" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#2793cea8-98c7-a7a7-b2c6-2f02995087a2" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#2793cea8-98c7-a7a7-b2c6-2f02995087a2" id="2793cea8-98c7-a7a7-b2c6-2f02995087a2" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_x_7B8001061E5968C0F8A32EE50C3DD2B9D09FECDE" name="x" type="d5b23ce1-adf7-3408-56e3-bf8814b674e2"/>
+           <parameter id="parameter_x_7B8001061E5968C0F8A32EE50C3DD2B9D09FECDE" name="x" type="e0b0b964-1ee0-6fee-3c9c-f6e516b00ac9"/>
           </parameters>
           <where>
            <is>
-            <symbol name="T" ref="8405c5d5-a427-b83e-7cda-162aae400be4"/>
+            <symbol name="T" ref="2793cea8-98c7-a7a7-b2c6-2f02995087a2"/>
             <symbol name="ScalarType" ref="concept_ScalarType_094BE620D8AE20AC366DAD5374445F7F468DADFE"/>
            </is>
           </where>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E9E70774E7D3334B4AB35EE3BF3778C67F220E4E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E9E70774E7D3334B4AB35EE3BF3778C67F220E4E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_E9E70774E7D3334B4AB35EE3BF3778C67F220E4E" kind="Function" line="107" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E9E70774E7D3334B4AB35EE3BF3778C67F220E4E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E9E70774E7D3334B4AB35EE3BF3778C67F220E4E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_E9E70774E7D3334B4AB35EE3BF3778C67F220E4E" kind="Function" line="107" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_67627FD02FCAE0D7A473AEF3604DC6F42212C4B9" name="x" type="1a3762a4-d3b1-dfd6-b6ea-e8badcd7076b"/>
+           <parameter id="parameter_x_67627FD02FCAE0D7A473AEF3604DC6F42212C4B9" name="x" type="88c6cb16-1c71-d2c7-d607-9945efed5f4b"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_860F8E0674F4D0652F9FF7D1AAF209E80D886AA6" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_860F8E0674F4D0652F9FF7D1AAF209E80D886AA6" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_860F8E0674F4D0652F9FF7D1AAF209E80D886AA6" kind="Function" line="119" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_860F8E0674F4D0652F9FF7D1AAF209E80D886AA6" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_860F8E0674F4D0652F9FF7D1AAF209E80D886AA6" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_860F8E0674F4D0652F9FF7D1AAF209E80D886AA6" kind="Function" line="119" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#fde43f2c-6b1d-0271-a099-9110b7276b92" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#fde43f2c-6b1d-0271-a099-9110b7276b92" id="fde43f2c-6b1d-0271-a099-9110b7276b92" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#836e51e8-c10e-0aa2-06f8-c825659d7dbe" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#836e51e8-c10e-0aa2-06f8-c825659d7dbe" id="836e51e8-c10e-0aa2-06f8-c825659d7dbe" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_x_985172A2BEE1F4CC2A1AC0E6364EB5C61C43C90B" name="x" type="bb0e710e-f7e4-27fb-29dd-e2f659e508e2"/>
+           <parameter id="parameter_x_985172A2BEE1F4CC2A1AC0E6364EB5C61C43C90B" name="x" type="bba21b82-ef50-30b7-888a-4c309a582e31"/>
           </parameters>
           <where>
            <is>
-            <symbol name="T" ref="fde43f2c-6b1d-0271-a099-9110b7276b92"/>
+            <symbol name="T" ref="836e51e8-c10e-0aa2-06f8-c825659d7dbe"/>
             <symbol name="MessageType" ref="concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382"/>
            </is>
           </where>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8E1C80465CDCB81DF15F6FE2E93FD5D9163A8262" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8E1C80465CDCB81DF15F6FE2E93FD5D9163A8262" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_8E1C80465CDCB81DF15F6FE2E93FD5D9163A8262" kind="Function" line="111" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8E1C80465CDCB81DF15F6FE2E93FD5D9163A8262" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8E1C80465CDCB81DF15F6FE2E93FD5D9163A8262" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_8E1C80465CDCB81DF15F6FE2E93FD5D9163A8262" kind="Function" line="111" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_6F40C00C24ACC3E10CF3DC1AA36876C20B6C0889" name="x" type="7e915d29-e400-57ea-18b1-11c05302aec6"/>
+           <parameter id="parameter_x_6F40C00C24ACC3E10CF3DC1AA36876C20B6C0889" name="x" type="e58799ca-1fbf-c46b-d094-2ca7698c6a7a"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8CC76132DE296BF84148C85BBA35AA78129DFB1A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8CC76132DE296BF84148C85BBA35AA78129DFB1A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_8CC76132DE296BF84148C85BBA35AA78129DFB1A" kind="Function" line="83" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8CC76132DE296BF84148C85BBA35AA78129DFB1A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_8CC76132DE296BF84148C85BBA35AA78129DFB1A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_8CC76132DE296BF84148C85BBA35AA78129DFB1A" kind="Function" line="83" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_A88EDF21C15FFBFFB58E6C24043BAC43AC54D9B1" name="x" type="a8b5da4b-ea8b-7382-525c-e37c3311e38b"/>
+           <parameter id="parameter_x_A88EDF21C15FFBFFB58E6C24043BAC43AC54D9B1" name="x" type="fbfbf951-9fbe-ef56-1381-810612f5153d"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F2ECD28346256796A993ACF58A7E209C787C0BA9" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F2ECD28346256796A993ACF58A7E209C787C0BA9" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_F2ECD28346256796A993ACF58A7E209C787C0BA9" kind="Function" line="79" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F2ECD28346256796A993ACF58A7E209C787C0BA9" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F2ECD28346256796A993ACF58A7E209C787C0BA9" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_F2ECD28346256796A993ACF58A7E209C787C0BA9" kind="Function" line="79" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_25234B5C048D1422BB6F819B7C3A4047969F2AC7" name="x" type="3c311b8d-5ec0-1e8a-ec79-3ee629e0b855"/>
+           <parameter id="parameter_x_25234B5C048D1422BB6F819B7C3A4047969F2AC7" name="x" type="00d3ee67-651e-0894-e50d-ed33a9041bf1"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_779D7ED8175DC723581F86B9130221FC86ADC6B4" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_779D7ED8175DC723581F86B9130221FC86ADC6B4" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_779D7ED8175DC723581F86B9130221FC86ADC6B4" kind="Function" line="63" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_779D7ED8175DC723581F86B9130221FC86ADC6B4" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_779D7ED8175DC723581F86B9130221FC86ADC6B4" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_779D7ED8175DC723581F86B9130221FC86ADC6B4" kind="Function" line="63" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_114C31C8D6A6FCF2B86C6C3E3727461E9C66C833" name="x" type="25052442-928b-b81b-8b4a-b96cc673cc20"/>
+           <parameter id="parameter_x_114C31C8D6A6FCF2B86C6C3E3727461E9C66C833" name="x" type="84d92967-6211-9391-694f-990661cd38b6"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_327FDB47BE425BF64B249A469990C4D81C0A617D" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_327FDB47BE425BF64B249A469990C4D81C0A617D" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_327FDB47BE425BF64B249A469990C4D81C0A617D" kind="Function" line="71" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_327FDB47BE425BF64B249A469990C4D81C0A617D" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_327FDB47BE425BF64B249A469990C4D81C0A617D" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_327FDB47BE425BF64B249A469990C4D81C0A617D" kind="Function" line="71" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_958F737716F29C4DDE259785D6AE506D43D9E453" name="x" type="0407bfb1-056a-7eea-1043-245e6aae0646"/>
+           <parameter id="parameter_x_958F737716F29C4DDE259785D6AE506D43D9E453" name="x" type="e4f3531b-84ec-d8e6-0dd1-ce0e489c324e"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F22B682220CA894632917595A77CC7A03A425AA3" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F22B682220CA894632917595A77CC7A03A425AA3" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_F22B682220CA894632917595A77CC7A03A425AA3" kind="Function" line="47" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F22B682220CA894632917595A77CC7A03A425AA3" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_F22B682220CA894632917595A77CC7A03A425AA3" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_F22B682220CA894632917595A77CC7A03A425AA3" kind="Function" line="47" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_2F3AF3D6DCCCC4C9387FDF42861BE7E613A2173B" name="x" type="d9eb9242-1797-3f19-9c9d-1f330f6aaedd"/>
+           <parameter id="parameter_x_2F3AF3D6DCCCC4C9387FDF42861BE7E613A2173B" name="x" type="7f1dcade-5d0e-cfbc-24f1-19e51db77c67"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_BB5EB78C5B20307A80E117E197D627DBE3417171" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_BB5EB78C5B20307A80E117E197D627DBE3417171" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_BB5EB78C5B20307A80E117E197D627DBE3417171" kind="Function" line="55" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_BB5EB78C5B20307A80E117E197D627DBE3417171" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_BB5EB78C5B20307A80E117E197D627DBE3417171" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_BB5EB78C5B20307A80E117E197D627DBE3417171" kind="Function" line="55" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_5D6620BA4018E7387207D1715B6B6F0BEFD1A827" name="x" type="fc42c82d-7b9f-50c0-a423-b0c5ed4e8c22"/>
+           <parameter id="parameter_x_5D6620BA4018E7387207D1715B6B6F0BEFD1A827" name="x" type="efc88697-b932-f013-0e1d-44da1aa887f6"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_7F88B0155F61747B1B3F24482829207EB9602EA5" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_7F88B0155F61747B1B3F24482829207EB9602EA5" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_7F88B0155F61747B1B3F24482829207EB9602EA5" kind="Function" line="95" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_7F88B0155F61747B1B3F24482829207EB9602EA5" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_7F88B0155F61747B1B3F24482829207EB9602EA5" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_7F88B0155F61747B1B3F24482829207EB9602EA5" kind="Function" line="95" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_328182692BA8D93EC7AAB6C60956DEE5B9DA2CD7" name="x" type="61d5cba1-d97f-f29b-f840-67fe98546ad6"/>
+           <parameter id="parameter_x_328182692BA8D93EC7AAB6C60956DEE5B9DA2CD7" name="x" type="89b9b09e-13cc-1b40-f4ff-6d5511ccd5c8"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_5A0527F542DC0B0904297CAB11337BB29E0198F9" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_5A0527F542DC0B0904297CAB11337BB29E0198F9" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_5A0527F542DC0B0904297CAB11337BB29E0198F9" kind="Function" line="67" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_5A0527F542DC0B0904297CAB11337BB29E0198F9" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_5A0527F542DC0B0904297CAB11337BB29E0198F9" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_5A0527F542DC0B0904297CAB11337BB29E0198F9" kind="Function" line="67" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_F03DBC1A1CE02A86246ADEA3B2B8E799EA7AE549" name="x" type="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+           <parameter id="parameter_x_F03DBC1A1CE02A86246ADEA3B2B8E799EA7AE549" name="x" type="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E13C3A428002F456F106D467BA2749C3D2B48E4A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E13C3A428002F456F106D467BA2749C3D2B48E4A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_E13C3A428002F456F106D467BA2749C3D2B48E4A" kind="Function" line="75" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E13C3A428002F456F106D467BA2749C3D2B48E4A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_E13C3A428002F456F106D467BA2749C3D2B48E4A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_E13C3A428002F456F106D467BA2749C3D2B48E4A" kind="Function" line="75" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_A48118E985F1DDB675170A4C33AA0572427D134D" name="x" type="f696de27-10ac-7014-72ce-1472a676e146"/>
+           <parameter id="parameter_x_A48118E985F1DDB675170A4C33AA0572427D134D" name="x" type="6d1fe903-6b52-d47d-d986-4c0b78553cde"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_C126E3C72056D2F23A909CB289E0876E290C33FB" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_C126E3C72056D2F23A909CB289E0876E290C33FB" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_C126E3C72056D2F23A909CB289E0876E290C33FB" kind="Function" line="59" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_C126E3C72056D2F23A909CB289E0876E290C33FB" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_C126E3C72056D2F23A909CB289E0876E290C33FB" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_C126E3C72056D2F23A909CB289E0876E290C33FB" kind="Function" line="59" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_6CD26558EA4B6DC8D010E382415CECFAC9A539B9" name="x" type="66cdbe39-6aa2-e9ca-0e49-3db9c395b43e"/>
+           <parameter id="parameter_x_6CD26558EA4B6DC8D010E382415CECFAC9A539B9" name="x" type="d820c284-58a0-e614-9a31-1c5c30c8ba7a"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_B365F0B0F66DD5D0779A4A484DD5B3420CEE3883" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_B365F0B0F66DD5D0779A4A484DD5B3420CEE3883" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_B365F0B0F66DD5D0779A4A484DD5B3420CEE3883" kind="Function" line="91" name="Length" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public inline">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_B365F0B0F66DD5D0779A4A484DD5B3420CEE3883" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Length_B365F0B0F66DD5D0779A4A484DD5B3420CEE3883" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Length_B365F0B0F66DD5D0779A4A484DD5B3420CEE3883" kind="Function" line="91" name="Length" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public inline">
           <parameters>
-           <parameter id="parameter_x_EF7F63251F80F4EB94E97D8354C51817F9A3B82B" name="x" type="a1c142bd-e6e3-4963-89d6-5ad24941be8d"/>
+           <parameter id="parameter_x_EF7F63251F80F4EB94E97D8354C51817F9A3B82B" name="x" type="ea2f4546-5839-8e28-37e5-cd77e43ee59b"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_MakeMessageId_497E690730AFFA0F73BB42B8673633D494D782A7" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_MakeMessageId_497E690730AFFA0F73BB42B8673633D494D782A7" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="function_MakeMessageId_497E690730AFFA0F73BB42B8673633D494D782A7" kind="Function" line="29" name="MakeMessageId" returnType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_MakeMessageId_497E690730AFFA0F73BB42B8673633D494D782A7" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_MakeMessageId_497E690730AFFA0F73BB42B8673633D494D782A7" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="function_MakeMessageId_497E690730AFFA0F73BB42B8673633D494D782A7" kind="Function" line="29" name="MakeMessageId" returnType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" specifiers="public">
           <parameters>
-           <parameter id="parameter_hashCode_ACCFD1666C82F6CFAB24BDD0AD9BE9C97F77AE65" name="hashCode" type="f696de27-10ac-7014-72ce-1472a676e146"/>
+           <parameter id="parameter_hashCode_ACCFD1666C82F6CFAB24BDD0AD9BE9C97F77AE65" name="hashCode" type="6d1fe903-6b52-d47d-d986-4c0b78553cde"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_1A33BDD099C1368E4D690C97E5EB2530320707D1" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_1A33BDD099C1368E4D690C97E5EB2530320707D1" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_1A33BDD099C1368E4D690C97E5EB2530320707D1" kind="Function" line="359" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_1A33BDD099C1368E4D690C97E5EB2530320707D1" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_1A33BDD099C1368E4D690C97E5EB2530320707D1" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_1A33BDD099C1368E4D690C97E5EB2530320707D1" kind="Function" line="359" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_734B502B58D7AE43A41099AE344F2BCA05528E12" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_440A36E1B2244BB469263A7620CDBD322EFDF1D8" name="x" type="a17bce00-3eb4-7c32-7511-1762d1aea556"/>
+           <parameter id="parameter_reader_734B502B58D7AE43A41099AE344F2BCA05528E12" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_440A36E1B2244BB469263A7620CDBD322EFDF1D8" name="x" type="8daa199e-314c-b380-f6af-9825550186b7"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_84CE80773178AF260C7224404585F5494A96A357" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_84CE80773178AF260C7224404585F5494A96A357" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_84CE80773178AF260C7224404585F5494A96A357" kind="Function" line="367" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_84CE80773178AF260C7224404585F5494A96A357" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_84CE80773178AF260C7224404585F5494A96A357" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_84CE80773178AF260C7224404585F5494A96A357" kind="Function" line="367" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_CFDB4489ACEAA86EC6FC9539F7DC74B5CC67D4E5" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_F38DFCF4445A7F86C7037D2FF68183B396961253" name="x" type="2bc9a755-70e9-096b-6c3f-be1a01a0e5ab"/>
+           <parameter id="parameter_reader_CFDB4489ACEAA86EC6FC9539F7DC74B5CC67D4E5" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_F38DFCF4445A7F86C7037D2FF68183B396961253" name="x" type="b395a69f-1df7-ab5b-ccaf-006bbf417439"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EF2E740B7EBE1375A0A9FADD51720C52B54A6FDC" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EF2E740B7EBE1375A0A9FADD51720C52B54A6FDC" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_EF2E740B7EBE1375A0A9FADD51720C52B54A6FDC" kind="Function" line="405" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EF2E740B7EBE1375A0A9FADD51720C52B54A6FDC" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EF2E740B7EBE1375A0A9FADD51720C52B54A6FDC" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_EF2E740B7EBE1375A0A9FADD51720C52B54A6FDC" kind="Function" line="405" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#41d872cb-00ac-d007-9b4a-4507c5a7224a" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#41d872cb-00ac-d007-9b4a-4507c5a7224a" id="41d872cb-00ac-d007-9b4a-4507c5a7224a" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#3afe998d-89ac-35ea-09b8-b6dc7616a01b" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#3afe998d-89ac-35ea-09b8-b6dc7616a01b" id="3afe998d-89ac-35ea-09b8-b6dc7616a01b" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_reader_FEE376864C5497F9ADAEAB863488026CC765212D" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_9208A37EE318B5C0B255512E195E1F709270F927" name="x" type="25e86437-7017-e52a-d3b6-49b9ad293d31"/>
+           <parameter id="parameter_reader_FEE376864C5497F9ADAEAB863488026CC765212D" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_9208A37EE318B5C0B255512E195E1F709270F927" name="x" type="993d993b-aada-5f2f-f4e0-9f043f3938d0"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_47173934894DE527EB4910ED44DCD59EBA1562CA" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_47173934894DE527EB4910ED44DCD59EBA1562CA" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_47173934894DE527EB4910ED44DCD59EBA1562CA" kind="Function" line="375" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_47173934894DE527EB4910ED44DCD59EBA1562CA" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_47173934894DE527EB4910ED44DCD59EBA1562CA" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_47173934894DE527EB4910ED44DCD59EBA1562CA" kind="Function" line="375" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_A4C287346A366A7D761BAE5AB6B421796BC5CA6B" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_728DDA90CDA9A2B8AD8845D9ACB180486ACE191F" name="x" type="8736800c-d622-4a58-88b6-6936317e1460"/>
+           <parameter id="parameter_reader_A4C287346A366A7D761BAE5AB6B421796BC5CA6B" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_728DDA90CDA9A2B8AD8845D9ACB180486ACE191F" name="x" type="89afbee3-4836-f618-4e68-3c96182896fd"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_A6CD66BCCB01192597B040328235F92F34057A24" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_A6CD66BCCB01192597B040328235F92F34057A24" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_A6CD66BCCB01192597B040328235F92F34057A24" includeConstraint="true" kind="Function" line="391" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_A6CD66BCCB01192597B040328235F92F34057A24" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_A6CD66BCCB01192597B040328235F92F34057A24" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_A6CD66BCCB01192597B040328235F92F34057A24" includeConstraint="true" kind="Function" line="391" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#2552cb23-0c82-9d68-feb0-fe195f0bacfa" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#2552cb23-0c82-9d68-feb0-fe195f0bacfa" id="2552cb23-0c82-9d68-feb0-fe195f0bacfa" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#b88a9de6-1f8d-1332-ac89-e046ee5961cd" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#b88a9de6-1f8d-1332-ac89-e046ee5961cd" id="b88a9de6-1f8d-1332-ac89-e046ee5961cd" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_reader_A03E0E7E63CD002BCF4E867943207116A3ED008B" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_0410F47343C5BDE3E4B3E0A6ABC369F2DCF76172" name="x" type="feb967a9-95e8-2d6c-49a8-0c735c60dc81"/>
+           <parameter id="parameter_reader_A03E0E7E63CD002BCF4E867943207116A3ED008B" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_0410F47343C5BDE3E4B3E0A6ABC369F2DCF76172" name="x" type="812fa279-6594-0df8-ba94-c180e659fbf4"/>
           </parameters>
           <where>
            <is>
-            <symbol name="T" ref="2552cb23-0c82-9d68-feb0-fe195f0bacfa"/>
+            <symbol name="T" ref="b88a9de6-1f8d-1332-ac89-e046ee5961cd"/>
             <symbol name="EnumType" ref="concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE"/>
            </is>
           </where>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_FDEF72FB154039726DE06B1C90C265668CF225DD" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_FDEF72FB154039726DE06B1C90C265668CF225DD" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_FDEF72FB154039726DE06B1C90C265668CF225DD" includeConstraint="true" kind="Function" line="399" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_FDEF72FB154039726DE06B1C90C265668CF225DD" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_FDEF72FB154039726DE06B1C90C265668CF225DD" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_FDEF72FB154039726DE06B1C90C265668CF225DD" includeConstraint="true" kind="Function" line="399" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#859df442-7956-ea4e-85e3-5b05ac5fbb5c" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#859df442-7956-ea4e-85e3-5b05ac5fbb5c" id="859df442-7956-ea4e-85e3-5b05ac5fbb5c" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#c53c8a2f-ac77-8e0d-3401-55cac7341529" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#c53c8a2f-ac77-8e0d-3401-55cac7341529" id="c53c8a2f-ac77-8e0d-3401-55cac7341529" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_reader_A03E0E7E63CD002BCF4E867943207116A3ED008B" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_0410F47343C5BDE3E4B3E0A6ABC369F2DCF76172" name="x" type="5e7658c8-e03c-5a4a-32fb-a96faf34cb27"/>
+           <parameter id="parameter_reader_A03E0E7E63CD002BCF4E867943207116A3ED008B" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_0410F47343C5BDE3E4B3E0A6ABC369F2DCF76172" name="x" type="fc99b5b0-d66e-90c7-221c-740ccf348f10"/>
           </parameters>
           <where>
            <is>
-            <symbol name="T" ref="859df442-7956-ea4e-85e3-5b05ac5fbb5c"/>
+            <symbol name="T" ref="c53c8a2f-ac77-8e0d-3401-55cac7341529"/>
             <symbol name="MessageType" ref="concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382"/>
            </is>
           </where>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_08590DE1F20C966BC82A40D9019C68351D72AA53" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_08590DE1F20C966BC82A40D9019C68351D72AA53" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_08590DE1F20C966BC82A40D9019C68351D72AA53" kind="Function" line="383" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_08590DE1F20C966BC82A40D9019C68351D72AA53" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_08590DE1F20C966BC82A40D9019C68351D72AA53" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_08590DE1F20C966BC82A40D9019C68351D72AA53" kind="Function" line="383" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_074F73EA40D5357AAB9433FF44B253951E0132B5" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_A77D637E7E21EEE5F1FE1086D9452D9CFA6707EB" name="x" type="e390bf81-e193-c264-26ed-904cbeabbdcd"/>
+           <parameter id="parameter_reader_074F73EA40D5357AAB9433FF44B253951E0132B5" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_A77D637E7E21EEE5F1FE1086D9452D9CFA6707EB" name="x" type="e4eeec3f-4bf8-e0b4-48fb-89749e49a3cc"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_E09A1742EA72A54C9E28A57CEA46AA1E400A5C6E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_E09A1742EA72A54C9E28A57CEA46AA1E400A5C6E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_E09A1742EA72A54C9E28A57CEA46AA1E400A5C6E" kind="Function" line="247" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_E09A1742EA72A54C9E28A57CEA46AA1E400A5C6E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_E09A1742EA72A54C9E28A57CEA46AA1E400A5C6E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_E09A1742EA72A54C9E28A57CEA46AA1E400A5C6E" kind="Function" line="247" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_8B1F2FCC4DC6AC3450958D9DA15E87F37D2A2819" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_6F8B47BAE9401E42CD50B3BFB59FFA98004A7A89" name="x" type="41fe5d6f-5749-a262-b685-f19d42ac2b43"/>
+           <parameter id="parameter_reader_8B1F2FCC4DC6AC3450958D9DA15E87F37D2A2819" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_6F8B47BAE9401E42CD50B3BFB59FFA98004A7A89" name="x" type="71d240af-1f6c-7866-4b03-56e1d3f64124"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_6DF2C0629D587886775132DDE943D62FBA40D08F" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_6DF2C0629D587886775132DDE943D62FBA40D08F" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_6DF2C0629D587886775132DDE943D62FBA40D08F" kind="Function" line="263" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_6DF2C0629D587886775132DDE943D62FBA40D08F" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_6DF2C0629D587886775132DDE943D62FBA40D08F" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_6DF2C0629D587886775132DDE943D62FBA40D08F" kind="Function" line="263" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_65A8F8364B989F19914508B1EE33A0C6A73D56AE" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_34000BF63DD195371D6F616F3E79AB567EB1F970" name="x" type="baffcf10-0e03-b7ee-e65d-12eb408315c8"/>
+           <parameter id="parameter_reader_65A8F8364B989F19914508B1EE33A0C6A73D56AE" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_34000BF63DD195371D6F616F3E79AB567EB1F970" name="x" type="e9b83674-c0b3-e84a-ee6c-96b5f4dc9e8c"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2EDB758810DF53BB8471B91B89C534F88B8E869F" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2EDB758810DF53BB8471B91B89C534F88B8E869F" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_2EDB758810DF53BB8471B91B89C534F88B8E869F" kind="Function" line="335" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2EDB758810DF53BB8471B91B89C534F88B8E869F" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2EDB758810DF53BB8471B91B89C534F88B8E869F" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_2EDB758810DF53BB8471B91B89C534F88B8E869F" kind="Function" line="335" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_1E02295585884D18DD3E34F6E388453383D44B34" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_6FAB21F07A78E253EE9475BCAF8A9373D0361147" name="x" type="1f6f7239-5af5-96c6-06dd-866f74c09633"/>
+           <parameter id="parameter_reader_1E02295585884D18DD3E34F6E388453383D44B34" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_6FAB21F07A78E253EE9475BCAF8A9373D0361147" name="x" type="fa108af5-0137-8d8a-1ac2-ed69e22a294a"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2F1ED225AEDDFF3F823C313C1D65F2BA1F8BE038" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2F1ED225AEDDFF3F823C313C1D65F2BA1F8BE038" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_2F1ED225AEDDFF3F823C313C1D65F2BA1F8BE038" kind="Function" line="327" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2F1ED225AEDDFF3F823C313C1D65F2BA1F8BE038" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_2F1ED225AEDDFF3F823C313C1D65F2BA1F8BE038" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_2F1ED225AEDDFF3F823C313C1D65F2BA1F8BE038" kind="Function" line="327" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_9B8D4D9526FA2F3A4DEE546A78CF971224A7A457" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_9F8E5CD3ED698A2122C5F717A8E951112E2A1330" name="x" type="735e76c1-73e1-c386-e544-1116307a93f0"/>
+           <parameter id="parameter_reader_9B8D4D9526FA2F3A4DEE546A78CF971224A7A457" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_9F8E5CD3ED698A2122C5F717A8E951112E2A1330" name="x" type="c25ec6ce-e5a7-f19c-059c-a0c01af58f04"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_64BFA5B10B3B83D47DA329647348D4E0A6E57C20" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_64BFA5B10B3B83D47DA329647348D4E0A6E57C20" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_64BFA5B10B3B83D47DA329647348D4E0A6E57C20" kind="Function" line="319" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_64BFA5B10B3B83D47DA329647348D4E0A6E57C20" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_64BFA5B10B3B83D47DA329647348D4E0A6E57C20" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_64BFA5B10B3B83D47DA329647348D4E0A6E57C20" kind="Function" line="319" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_EE4BEA5BAB516D899EFD0FA3A8A7AD863500653B" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_8E88916D5F786B651F155F31751D47B957A8F423" name="x" type="e7dab707-c7aa-ae8e-5b61-cc8c2a8bc82e"/>
+           <parameter id="parameter_reader_EE4BEA5BAB516D899EFD0FA3A8A7AD863500653B" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_8E88916D5F786B651F155F31751D47B957A8F423" name="x" type="3976d1f8-1f07-165e-f310-ccf5a10481c8"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_CED4B0073B458AA853B825E1928835BBDEBE5B3E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_CED4B0073B458AA853B825E1928835BBDEBE5B3E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_CED4B0073B458AA853B825E1928835BBDEBE5B3E" kind="Function" line="287" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_CED4B0073B458AA853B825E1928835BBDEBE5B3E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_CED4B0073B458AA853B825E1928835BBDEBE5B3E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_CED4B0073B458AA853B825E1928835BBDEBE5B3E" kind="Function" line="287" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_4466C644893E8A6F27B315D98AF817564BA78AEB" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_0C1772C0393A09FCF8E9A4F2133210A8551D0566" name="x" type="feee88c8-0be1-081f-3c52-4b06c518bc5b"/>
+           <parameter id="parameter_reader_4466C644893E8A6F27B315D98AF817564BA78AEB" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_0C1772C0393A09FCF8E9A4F2133210A8551D0566" name="x" type="bd7c16f8-1808-8d5b-7f52-b8c069cda28f"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EBA1553EBAE2B9E7A9A04BFCB3DE9455302E6A0A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EBA1553EBAE2B9E7A9A04BFCB3DE9455302E6A0A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_EBA1553EBAE2B9E7A9A04BFCB3DE9455302E6A0A" kind="Function" line="303" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EBA1553EBAE2B9E7A9A04BFCB3DE9455302E6A0A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_EBA1553EBAE2B9E7A9A04BFCB3DE9455302E6A0A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_EBA1553EBAE2B9E7A9A04BFCB3DE9455302E6A0A" kind="Function" line="303" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_17BA9477BB019C573785C0447A789827650D61EE" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_BCD4586EBE12B9F95F67BB15C54E36515DFE4496" name="x" type="dfec133b-9c00-ceee-a75b-d63469c5763d"/>
+           <parameter id="parameter_reader_17BA9477BB019C573785C0447A789827650D61EE" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_BCD4586EBE12B9F95F67BB15C54E36515DFE4496" name="x" type="dd566c84-fef5-c62c-1bcc-efc8409ca877"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_BEB6DAC06F150F6691DE15D18DAAD9C0D2E5F848" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_BEB6DAC06F150F6691DE15D18DAAD9C0D2E5F848" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_BEB6DAC06F150F6691DE15D18DAAD9C0D2E5F848" kind="Function" line="255" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_BEB6DAC06F150F6691DE15D18DAAD9C0D2E5F848" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_BEB6DAC06F150F6691DE15D18DAAD9C0D2E5F848" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_BEB6DAC06F150F6691DE15D18DAAD9C0D2E5F848" kind="Function" line="255" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_80B2CBAE0A9D8D23E4A0AE11F55B0B533AA6BC77" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_55AB8B1B7E40E47BE4307811CE71EF5EE9300F72" name="x" type="02003ec8-8efd-8f1d-2b85-ed590c01dea6"/>
+           <parameter id="parameter_reader_80B2CBAE0A9D8D23E4A0AE11F55B0B533AA6BC77" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_55AB8B1B7E40E47BE4307811CE71EF5EE9300F72" name="x" type="46b8f541-2717-d176-32ec-382315b7e65e"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_0250FCE6F27CDBAC17096237001FEC2585725231" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_0250FCE6F27CDBAC17096237001FEC2585725231" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_0250FCE6F27CDBAC17096237001FEC2585725231" kind="Function" line="271" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_0250FCE6F27CDBAC17096237001FEC2585725231" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_0250FCE6F27CDBAC17096237001FEC2585725231" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_0250FCE6F27CDBAC17096237001FEC2585725231" kind="Function" line="271" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_93940284490C9164561930D7D480CC308569FF56" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_B3ABCF08D4B9B0F707FE3089AC6F3F9E12B42210" name="x" type="27a964a7-e2f5-e0c4-133b-42afee25fc59"/>
+           <parameter id="parameter_reader_93940284490C9164561930D7D480CC308569FF56" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_B3ABCF08D4B9B0F707FE3089AC6F3F9E12B42210" name="x" type="d66db908-c32b-eed9-1800-651c12a81dcf"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_38A307DC017E4423661C3DA2CBAED7A66B73704A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_38A307DC017E4423661C3DA2CBAED7A66B73704A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_38A307DC017E4423661C3DA2CBAED7A66B73704A" kind="Function" line="351" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_38A307DC017E4423661C3DA2CBAED7A66B73704A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_38A307DC017E4423661C3DA2CBAED7A66B73704A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_38A307DC017E4423661C3DA2CBAED7A66B73704A" kind="Function" line="351" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_7E83F12CC8E7D1444E571D55BC965655E2B7A36E" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_93B4EA228975434636A7951173B02AA09B26961B" name="x" type="ba3e672b-4015-429f-4f58-95949b3f1aad"/>
+           <parameter id="parameter_reader_7E83F12CC8E7D1444E571D55BC965655E2B7A36E" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_93B4EA228975434636A7951173B02AA09B26961B" name="x" type="b01c8f01-69d5-058a-e2e2-4c9319cc4ff1"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_13BBAB420F3EC99AFF02072151D686F259E0C8A7" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_13BBAB420F3EC99AFF02072151D686F259E0C8A7" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_13BBAB420F3EC99AFF02072151D686F259E0C8A7" kind="Function" line="295" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_13BBAB420F3EC99AFF02072151D686F259E0C8A7" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_13BBAB420F3EC99AFF02072151D686F259E0C8A7" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_13BBAB420F3EC99AFF02072151D686F259E0C8A7" kind="Function" line="295" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_57E486E4E7ED973ADE964837BFCB531B4A97E648" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_71340B4487607AEEC9CEDC2B74C4632B6A231AD6" name="x" type="9490e436-8e02-ba88-9af6-4d99f5868a0a"/>
+           <parameter id="parameter_reader_57E486E4E7ED973ADE964837BFCB531B4A97E648" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_71340B4487607AEEC9CEDC2B74C4632B6A231AD6" name="x" type="aa70e7e1-fb0f-8294-14f1-0c05659ba5d3"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_52EE145CA962ABED32D6D4D66E9211C2A70BCB9A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_52EE145CA962ABED32D6D4D66E9211C2A70BCB9A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_52EE145CA962ABED32D6D4D66E9211C2A70BCB9A" kind="Function" line="311" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_52EE145CA962ABED32D6D4D66E9211C2A70BCB9A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_52EE145CA962ABED32D6D4D66E9211C2A70BCB9A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_52EE145CA962ABED32D6D4D66E9211C2A70BCB9A" kind="Function" line="311" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_91314BEEEF399CCDB94A8B99A37E6E6D595AA8CC" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_1F9B1A210DD62F294847C7667619D0AFB7DB2690" name="x" type="2d7d72ad-89c6-c010-c5d6-e618a51d913d"/>
+           <parameter id="parameter_reader_91314BEEEF399CCDB94A8B99A37E6E6D595AA8CC" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_1F9B1A210DD62F294847C7667619D0AFB7DB2690" name="x" type="54bad69c-114b-cab7-cf9b-6dcd7055a6e7"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8A0D8EEA7B14F6CE4835B42771607BAAFB828C40" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8A0D8EEA7B14F6CE4835B42771607BAAFB828C40" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_8A0D8EEA7B14F6CE4835B42771607BAAFB828C40" kind="Function" line="279" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8A0D8EEA7B14F6CE4835B42771607BAAFB828C40" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8A0D8EEA7B14F6CE4835B42771607BAAFB828C40" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_8A0D8EEA7B14F6CE4835B42771607BAAFB828C40" kind="Function" line="279" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_843774A75B68BB95FAF8F6F673BD6CA16A4C0CFE" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_7098BA39A5D8CDF574BEBA14ECDABB2A74262CF8" name="x" type="bd2612b3-f3c8-59ce-b951-cfd3c0fec445"/>
+           <parameter id="parameter_reader_843774A75B68BB95FAF8F6F673BD6CA16A4C0CFE" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_7098BA39A5D8CDF574BEBA14ECDABB2A74262CF8" name="x" type="e185fd1b-22b9-f8de-8c2c-3d9a38c82043"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8C2CE8EB119D8477DBDFE5216823C7184129DDF0" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8C2CE8EB119D8477DBDFE5216823C7184129DDF0" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_8C2CE8EB119D8477DBDFE5216823C7184129DDF0" kind="Function" line="343" name="Read" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8C2CE8EB119D8477DBDFE5216823C7184129DDF0" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Read_8C2CE8EB119D8477DBDFE5216823C7184129DDF0" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Read_8C2CE8EB119D8477DBDFE5216823C7184129DDF0" kind="Function" line="343" name="Read" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_reader_61F52111EC144FD55BA609EF6F4A7B8FF7D25AA0" name="reader" type="f95e4205-5274-4860-9e53-b29e740fc304"/>
-           <parameter id="parameter_x_5B42D2D0E7AACF8FB48AB230D6DF99E50B5D91ED" name="x" type="7a2aee37-7f89-f967-3ece-a8b84a2acef6"/>
+           <parameter id="parameter_reader_61F52111EC144FD55BA609EF6F4A7B8FF7D25AA0" name="reader" type="28837866-490c-1d52-f259-8c6c3a07134a"/>
+           <parameter id="parameter_x_5B42D2D0E7AACF8FB48AB230D6DF99E50B5D91ED" name="x" type="d38a7ad9-2220-90e2-21f8-ecb1ec3e7fa2"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144" kind="Function" line="35" name="ReadMessage" returnType="69dda5f1-494e-360e-bcbd-381553c1aa92" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144" kind="Function" line="35" name="ReadMessage" returnType="914d8e05-6826-390b-2d01-91d114311ada" specifiers="public">
           <parameters>
-           <parameter id="parameter_socket_9566431412961BFF25F5EE91728912765EF6C62D" name="socket" type="bfa3c0e3-57d9-9853-ef3f-ab3013c29bf4"/>
+           <parameter id="parameter_socket_9566431412961BFF25F5EE91728912765EF6C62D" name="socket" type="4ba52433-784d-d1db-2a34-6d5cae0f16d7"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_RegisterMessage_08C5E031022CA6E1E3CD49BF45CD9175E0DF2788" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_RegisterMessage_08C5E031022CA6E1E3CD49BF45CD9175E0DF2788" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="function_RegisterMessage_08C5E031022CA6E1E3CD49BF45CD9175E0DF2788" kind="Function" line="60" name="RegisterMessage" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_RegisterMessage_08C5E031022CA6E1E3CD49BF45CD9175E0DF2788" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_RegisterMessage_08C5E031022CA6E1E3CD49BF45CD9175E0DF2788" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="function_RegisterMessage_08C5E031022CA6E1E3CD49BF45CD9175E0DF2788" kind="Function" line="60" name="RegisterMessage" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#b4ac083c-d2b1-4b45-dd40-56e4ad944a93" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#b4ac083c-d2b1-4b45-dd40-56e4ad944a93" id="b4ac083c-d2b1-4b45-dd40-56e4ad944a93" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#343b6dd0-a407-9e24-9d81-5b1959201539" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#343b6dd0-a407-9e24-9d81-5b1959201539" id="343b6dd0-a407-9e24-9d81-5b1959201539" name="T"/>
           </templateParameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_07CA42AA56F589A407D170E800EBA9EBB69550F8" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_07CA42AA56F589A407D170E800EBA9EBB69550F8" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_07CA42AA56F589A407D170E800EBA9EBB69550F8" includeConstraint="true" kind="Function" line="227" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_07CA42AA56F589A407D170E800EBA9EBB69550F8" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_07CA42AA56F589A407D170E800EBA9EBB69550F8" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_07CA42AA56F589A407D170E800EBA9EBB69550F8" includeConstraint="true" kind="Function" line="227" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#03484572-a37b-042f-9e69-f9e694dce857" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#03484572-a37b-042f-9e69-f9e694dce857" id="03484572-a37b-042f-9e69-f9e694dce857" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#1acfd2c6-9216-f878-3c7b-618eaa14e0c9" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#1acfd2c6-9216-f878-3c7b-618eaa14e0c9" id="1acfd2c6-9216-f878-3c7b-618eaa14e0c9" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_writer_CFFDDAF49862181ABCA455C2BE57157FBBAB3AF8" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_52B0598E9F9BFAC972B1E15362671A7513C93780" name="x" type="03484572-a37b-042f-9e69-f9e694dce857"/>
+           <parameter id="parameter_writer_CFFDDAF49862181ABCA455C2BE57157FBBAB3AF8" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_52B0598E9F9BFAC972B1E15362671A7513C93780" name="x" type="1acfd2c6-9216-f878-3c7b-618eaa14e0c9"/>
           </parameters>
           <where>
            <is>
-            <symbol name="T" ref="03484572-a37b-042f-9e69-f9e694dce857"/>
+            <symbol name="T" ref="1acfd2c6-9216-f878-3c7b-618eaa14e0c9"/>
             <symbol name="EnumType" ref="concept_EnumType_B01758D9A9E6118B4BAAE83A106FDF33EE94AEDE"/>
            </is>
           </where>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_85BA944122EB802CEB876B2015B79E49E0BE6ADE" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_85BA944122EB802CEB876B2015B79E49E0BE6ADE" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_85BA944122EB802CEB876B2015B79E49E0BE6ADE" includeConstraint="true" kind="Function" line="232" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_85BA944122EB802CEB876B2015B79E49E0BE6ADE" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_85BA944122EB802CEB876B2015B79E49E0BE6ADE" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_85BA944122EB802CEB876B2015B79E49E0BE6ADE" includeConstraint="true" kind="Function" line="232" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#bcd1a16c-4383-c937-f152-4943cafa7e4a" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#bcd1a16c-4383-c937-f152-4943cafa7e4a" id="bcd1a16c-4383-c937-f152-4943cafa7e4a" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#82f384bc-aafa-5fc0-30ea-e69a9893b0c4" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#82f384bc-aafa-5fc0-30ea-e69a9893b0c4" id="82f384bc-aafa-5fc0-30ea-e69a9893b0c4" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_writer_CFFDDAF49862181ABCA455C2BE57157FBBAB3AF8" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_52B0598E9F9BFAC972B1E15362671A7513C93780" name="x" type="bcd1a16c-4383-c937-f152-4943cafa7e4a"/>
+           <parameter id="parameter_writer_CFFDDAF49862181ABCA455C2BE57157FBBAB3AF8" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_52B0598E9F9BFAC972B1E15362671A7513C93780" name="x" type="82f384bc-aafa-5fc0-30ea-e69a9893b0c4"/>
           </parameters>
           <where>
            <is>
-            <symbol name="T" ref="bcd1a16c-4383-c937-f152-4943cafa7e4a"/>
+            <symbol name="T" ref="82f384bc-aafa-5fc0-30ea-e69a9893b0c4"/>
             <symbol name="MessageType" ref="concept_MessageType_1B0FA0E511B1E00CB28069925B33AA0B00C1C382"/>
            </is>
           </where>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FB7F324A359D3BD795D1092E4DB8DF9BC861148D" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FB7F324A359D3BD795D1092E4DB8DF9BC861148D" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_FB7F324A359D3BD795D1092E4DB8DF9BC861148D" kind="Function" line="137" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FB7F324A359D3BD795D1092E4DB8DF9BC861148D" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FB7F324A359D3BD795D1092E4DB8DF9BC861148D" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_FB7F324A359D3BD795D1092E4DB8DF9BC861148D" kind="Function" line="137" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_493C755B6133A81B8CA3D825DA370179F3F937BC" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_b_FB2C56F376396D7023B9E25C02C6022A66A88BDB" name="b" type="9a15f1e5-ce23-1266-019d-03f741c75b38"/>
+           <parameter id="parameter_writer_493C755B6133A81B8CA3D825DA370179F3F937BC" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_b_FB2C56F376396D7023B9E25C02C6022A66A88BDB" name="b" type="48777f30-6575-66ac-5d1e-7727dbf6db1d"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_CB2E79D42686E7FAE1C31E66FA8C780BB588D2AD" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_CB2E79D42686E7FAE1C31E66FA8C780BB588D2AD" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_CB2E79D42686E7FAE1C31E66FA8C780BB588D2AD" kind="Function" line="147" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_CB2E79D42686E7FAE1C31E66FA8C780BB588D2AD" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_CB2E79D42686E7FAE1C31E66FA8C780BB588D2AD" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_CB2E79D42686E7FAE1C31E66FA8C780BB588D2AD" kind="Function" line="147" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_769CAE81865AC0D117F3EBCD21D93B911F9EE6C6" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_9B5318826914D478CDEE2702E74853FEA62CEAC0" name="x" type="6114639a-9769-07ea-5145-e08143e865b3"/>
+           <parameter id="parameter_writer_769CAE81865AC0D117F3EBCD21D93B911F9EE6C6" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_9B5318826914D478CDEE2702E74853FEA62CEAC0" name="x" type="d01d09eb-baaa-f680-f871-b773fcdc04b5"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_1C4139DA3343240C447B68948CD0B6A5EEC96C8E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_1C4139DA3343240C447B68948CD0B6A5EEC96C8E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_1C4139DA3343240C447B68948CD0B6A5EEC96C8E" kind="Function" line="192" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_1C4139DA3343240C447B68948CD0B6A5EEC96C8E" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_1C4139DA3343240C447B68948CD0B6A5EEC96C8E" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_1C4139DA3343240C447B68948CD0B6A5EEC96C8E" kind="Function" line="192" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_A291589A09747E59B9CD3ED32D8B5B4EC6F113EF" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_95E7878AEFD6A30363CAEE2B09B066E53EE19147" name="x" type="c484deb3-c39f-26c2-b1c5-740577abe648"/>
+           <parameter id="parameter_writer_A291589A09747E59B9CD3ED32D8B5B4EC6F113EF" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_95E7878AEFD6A30363CAEE2B09B066E53EE19147" name="x" type="c3b5b56a-7b2e-9340-0cdf-ccafea2ab373"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_35BE82336FAE5D4C65928C7A20C01F0D1A959DBB" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_35BE82336FAE5D4C65928C7A20C01F0D1A959DBB" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_35BE82336FAE5D4C65928C7A20C01F0D1A959DBB" kind="Function" line="207" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_35BE82336FAE5D4C65928C7A20C01F0D1A959DBB" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_35BE82336FAE5D4C65928C7A20C01F0D1A959DBB" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_35BE82336FAE5D4C65928C7A20C01F0D1A959DBB" kind="Function" line="207" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_69739237A4AB053C821B1C9F8B3E33A766DB3566" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_3B9DB1BFE7490759A900645D7EB02377DAF36E10" name="x" type="3c7a2ca8-3b27-e9bc-4b4d-96ee3c07b65d"/>
+           <parameter id="parameter_writer_69739237A4AB053C821B1C9F8B3E33A766DB3566" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_3B9DB1BFE7490759A900645D7EB02377DAF36E10" name="x" type="8cc36c6b-650b-975f-6ec0-3df6a2c44f01"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_7CBCAA63E2924B267CE30D68232FECE366DFFCE2" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_7CBCAA63E2924B267CE30D68232FECE366DFFCE2" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_7CBCAA63E2924B267CE30D68232FECE366DFFCE2" kind="Function" line="212" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_7CBCAA63E2924B267CE30D68232FECE366DFFCE2" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_7CBCAA63E2924B267CE30D68232FECE366DFFCE2" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_7CBCAA63E2924B267CE30D68232FECE366DFFCE2" kind="Function" line="212" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_3236CBD19ADCFABE2A18937EF97023CF225A58F6" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_FC59BB66C41CF4362801A8FA41E3CEBE44CE8C15" name="x" type="b6c845fd-757a-9ce5-5263-3f96ec09f6a0"/>
+           <parameter id="parameter_writer_3236CBD19ADCFABE2A18937EF97023CF225A58F6" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_FC59BB66C41CF4362801A8FA41E3CEBE44CE8C15" name="x" type="b2fcd36a-49b0-8f84-54c0-a5b84884bd8f"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_E856EC6BB5C796B84BFBE73D50C7B4C93491487A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_E856EC6BB5C796B84BFBE73D50C7B4C93491487A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_E856EC6BB5C796B84BFBE73D50C7B4C93491487A" kind="Function" line="237" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_E856EC6BB5C796B84BFBE73D50C7B4C93491487A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_E856EC6BB5C796B84BFBE73D50C7B4C93491487A" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_E856EC6BB5C796B84BFBE73D50C7B4C93491487A" kind="Function" line="237" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <templateParameters>
-           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#6fb4a037-d115-1e55-a7ea-c92b97c1d5a1" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#6fb4a037-d115-1e55-a7ea-c92b97c1d5a1" id="6fb4a037-d115-1e55-a7ea-c92b97c1d5a1" name="T"/>
+           <templateParameter docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#c04b5217-702b-c973-e7d6-5c62581dd36d" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#c04b5217-702b-c973-e7d6-5c62581dd36d" id="c04b5217-702b-c973-e7d6-5c62581dd36d" name="T"/>
           </templateParameters>
           <parameters>
-           <parameter id="parameter_writer_2D3EDA7EC077362BCDD48DB7A3523514AA846B1A" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_482B5ACC1C350A9AAC18B7461AF8CCAF849A147C" name="x" type="e53a880a-5132-5404-0dd5-3e33baa2e21b"/>
+           <parameter id="parameter_writer_2D3EDA7EC077362BCDD48DB7A3523514AA846B1A" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_482B5ACC1C350A9AAC18B7461AF8CCAF849A147C" name="x" type="2bc185dc-bf44-7f65-52c4-30f0d72354ec"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BCA7A07994833117E29AB2828D7B0B6FB26BEF9D" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BCA7A07994833117E29AB2828D7B0B6FB26BEF9D" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_BCA7A07994833117E29AB2828D7B0B6FB26BEF9D" kind="Function" line="217" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BCA7A07994833117E29AB2828D7B0B6FB26BEF9D" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BCA7A07994833117E29AB2828D7B0B6FB26BEF9D" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_BCA7A07994833117E29AB2828D7B0B6FB26BEF9D" kind="Function" line="217" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_3AB63110FD9803CD2EFAAE12C0815D754DFD8EFD" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_A00E501E774854A6474BA0C3F9E3544C8FD7F917" name="x" type="1a3762a4-d3b1-dfd6-b6ea-e8badcd7076b"/>
+           <parameter id="parameter_writer_3AB63110FD9803CD2EFAAE12C0815D754DFD8EFD" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_A00E501E774854A6474BA0C3F9E3544C8FD7F917" name="x" type="88c6cb16-1c71-d2c7-d607-9945efed5f4b"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2DB95560A4D6DC37211050E9FEA94216426A8C86" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2DB95560A4D6DC37211050E9FEA94216426A8C86" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_2DB95560A4D6DC37211050E9FEA94216426A8C86" kind="Function" line="222" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2DB95560A4D6DC37211050E9FEA94216426A8C86" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2DB95560A4D6DC37211050E9FEA94216426A8C86" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_2DB95560A4D6DC37211050E9FEA94216426A8C86" kind="Function" line="222" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_D8350AC196025BE2B548D615C37FACB86A4F74C3" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_4F1FC22B0619A36BF7A3C5BD0F6E17650A3D75D1" name="x" type="7e915d29-e400-57ea-18b1-11c05302aec6"/>
+           <parameter id="parameter_writer_D8350AC196025BE2B548D615C37FACB86A4F74C3" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_4F1FC22B0619A36BF7A3C5BD0F6E17650A3D75D1" name="x" type="e58799ca-1fbf-c46b-d094-2ca7698c6a7a"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C25F32ADAC384D4ADB296DFAF0F84B8189949D32" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C25F32ADAC384D4ADB296DFAF0F84B8189949D32" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_C25F32ADAC384D4ADB296DFAF0F84B8189949D32" kind="Function" line="187" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C25F32ADAC384D4ADB296DFAF0F84B8189949D32" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C25F32ADAC384D4ADB296DFAF0F84B8189949D32" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_C25F32ADAC384D4ADB296DFAF0F84B8189949D32" kind="Function" line="187" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_6BCEBB23C18B05AADE519FF609457F7895B06ECB" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_BA02525B860816ECB1EFEB4DBB0C06DC3A017F9D" name="x" type="a8b5da4b-ea8b-7382-525c-e37c3311e38b"/>
+           <parameter id="parameter_writer_6BCEBB23C18B05AADE519FF609457F7895B06ECB" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_BA02525B860816ECB1EFEB4DBB0C06DC3A017F9D" name="x" type="fbfbf951-9fbe-ef56-1381-810612f5153d"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6414F61863B8D76DECD8E0CFAF012709630D943" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6414F61863B8D76DECD8E0CFAF012709630D943" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_C6414F61863B8D76DECD8E0CFAF012709630D943" kind="Function" line="182" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6414F61863B8D76DECD8E0CFAF012709630D943" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6414F61863B8D76DECD8E0CFAF012709630D943" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_C6414F61863B8D76DECD8E0CFAF012709630D943" kind="Function" line="182" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_CB83575126C1A52043EBED195BEC28B9750AE9FA" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_04F96A7EB55DF194F764F80BD55111331797F603" name="x" type="3c311b8d-5ec0-1e8a-ec79-3ee629e0b855"/>
+           <parameter id="parameter_writer_CB83575126C1A52043EBED195BEC28B9750AE9FA" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_04F96A7EB55DF194F764F80BD55111331797F603" name="x" type="00d3ee67-651e-0894-e50d-ed33a9041bf1"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_933B083E9C2277D176BA3FA3536107CC31D90A03" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_933B083E9C2277D176BA3FA3536107CC31D90A03" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_933B083E9C2277D176BA3FA3536107CC31D90A03" kind="Function" line="162" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_933B083E9C2277D176BA3FA3536107CC31D90A03" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_933B083E9C2277D176BA3FA3536107CC31D90A03" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_933B083E9C2277D176BA3FA3536107CC31D90A03" kind="Function" line="162" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_0733CB68E98979DF39CD6E89EBE95AF7F9C3C974" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_AAC9AD5BFD5A1A733E13982B4D129B33F450C594" name="x" type="25052442-928b-b81b-8b4a-b96cc673cc20"/>
+           <parameter id="parameter_writer_0733CB68E98979DF39CD6E89EBE95AF7F9C3C974" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_AAC9AD5BFD5A1A733E13982B4D129B33F450C594" name="x" type="84d92967-6211-9391-694f-990661cd38b6"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FE93D975B085485CABB9D33F896FB6E29BD8D359" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FE93D975B085485CABB9D33F896FB6E29BD8D359" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_FE93D975B085485CABB9D33F896FB6E29BD8D359" kind="Function" line="172" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FE93D975B085485CABB9D33F896FB6E29BD8D359" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_FE93D975B085485CABB9D33F896FB6E29BD8D359" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_FE93D975B085485CABB9D33F896FB6E29BD8D359" kind="Function" line="172" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_67A311728D670DD410A5401903B940164A8063DB" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_1CE29017AD7506B58C991628CA5E314153CA1A7C" name="x" type="0407bfb1-056a-7eea-1043-245e6aae0646"/>
+           <parameter id="parameter_writer_67A311728D670DD410A5401903B940164A8063DB" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_1CE29017AD7506B58C991628CA5E314153CA1A7C" name="x" type="e4f3531b-84ec-d8e6-0dd1-ce0e489c324e"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_B97895C516242DB7E4A29E02E6301F42DDFC98A9" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_B97895C516242DB7E4A29E02E6301F42DDFC98A9" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_B97895C516242DB7E4A29E02E6301F42DDFC98A9" kind="Function" line="142" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_B97895C516242DB7E4A29E02E6301F42DDFC98A9" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_B97895C516242DB7E4A29E02E6301F42DDFC98A9" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_B97895C516242DB7E4A29E02E6301F42DDFC98A9" kind="Function" line="142" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_7B515F61C185EAF85049363F763DC82B7314E3AE" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_0F683CDD4D2054D7D92B8F1B4DF86B1E546AB600" name="x" type="d9eb9242-1797-3f19-9c9d-1f330f6aaedd"/>
+           <parameter id="parameter_writer_7B515F61C185EAF85049363F763DC82B7314E3AE" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_0F683CDD4D2054D7D92B8F1B4DF86B1E546AB600" name="x" type="7f1dcade-5d0e-cfbc-24f1-19e51db77c67"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6CCCA83229027914AA2FBC15C81F9381078BC98" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6CCCA83229027914AA2FBC15C81F9381078BC98" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_C6CCCA83229027914AA2FBC15C81F9381078BC98" kind="Function" line="152" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6CCCA83229027914AA2FBC15C81F9381078BC98" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_C6CCCA83229027914AA2FBC15C81F9381078BC98" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_C6CCCA83229027914AA2FBC15C81F9381078BC98" kind="Function" line="152" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_FDB95AE9CA133877F07269E10964E68A6C8F460E" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_EB9639A04E534D3191AE6F5ADA91B70C8095B787" name="x" type="fc42c82d-7b9f-50c0-a423-b0c5ed4e8c22"/>
+           <parameter id="parameter_writer_FDB95AE9CA133877F07269E10964E68A6C8F460E" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_EB9639A04E534D3191AE6F5ADA91B70C8095B787" name="x" type="efc88697-b932-f013-0e1d-44da1aa887f6"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_16BF2B6EFF28C70E145184648F508022065301DF" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_16BF2B6EFF28C70E145184648F508022065301DF" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_16BF2B6EFF28C70E145184648F508022065301DF" kind="Function" line="202" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_16BF2B6EFF28C70E145184648F508022065301DF" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_16BF2B6EFF28C70E145184648F508022065301DF" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_16BF2B6EFF28C70E145184648F508022065301DF" kind="Function" line="202" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_F0A03B026E44606453BBECF0EC953E6C378CC087" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_AD2907C782FBE4A4780D7BAA9E7136CE2FEDBE64" name="x" type="61d5cba1-d97f-f29b-f840-67fe98546ad6"/>
+           <parameter id="parameter_writer_F0A03B026E44606453BBECF0EC953E6C378CC087" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_AD2907C782FBE4A4780D7BAA9E7136CE2FEDBE64" name="x" type="89b9b09e-13cc-1b40-f4ff-6d5511ccd5c8"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_6AFC26AD2E035D2A54283916B715E4979A5CD515" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_6AFC26AD2E035D2A54283916B715E4979A5CD515" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_6AFC26AD2E035D2A54283916B715E4979A5CD515" kind="Function" line="167" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_6AFC26AD2E035D2A54283916B715E4979A5CD515" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_6AFC26AD2E035D2A54283916B715E4979A5CD515" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_6AFC26AD2E035D2A54283916B715E4979A5CD515" kind="Function" line="167" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_55B9FED099A7A10E7E7B880A6FD02C2456F8735D" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_DF3F8CB4A55055FB708E79FAB87191C197D0CEEB" name="x" type="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+           <parameter id="parameter_writer_55B9FED099A7A10E7E7B880A6FD02C2456F8735D" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_DF3F8CB4A55055FB708E79FAB87191C197D0CEEB" name="x" type="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BF19D0D8A233387581AA6E58DC023CC183F2A6B5" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BF19D0D8A233387581AA6E58DC023CC183F2A6B5" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_BF19D0D8A233387581AA6E58DC023CC183F2A6B5" kind="Function" line="177" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BF19D0D8A233387581AA6E58DC023CC183F2A6B5" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_BF19D0D8A233387581AA6E58DC023CC183F2A6B5" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_BF19D0D8A233387581AA6E58DC023CC183F2A6B5" kind="Function" line="177" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_6D57747E9CC6D5DEA95278FB4118B6A16C0540B5" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_B1EF294E2B9E10487EB6D04ED7448F1F0B391EB1" name="x" type="f696de27-10ac-7014-72ce-1472a676e146"/>
+           <parameter id="parameter_writer_6D57747E9CC6D5DEA95278FB4118B6A16C0540B5" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_B1EF294E2B9E10487EB6D04ED7448F1F0B391EB1" name="x" type="6d1fe903-6b52-d47d-d986-4c0b78553cde"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_42E1ED5092CBEC0D8FAAB3111091DB0D1DFB0903" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_42E1ED5092CBEC0D8FAAB3111091DB0D1DFB0903" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_42E1ED5092CBEC0D8FAAB3111091DB0D1DFB0903" kind="Function" line="157" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_42E1ED5092CBEC0D8FAAB3111091DB0D1DFB0903" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_42E1ED5092CBEC0D8FAAB3111091DB0D1DFB0903" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_42E1ED5092CBEC0D8FAAB3111091DB0D1DFB0903" kind="Function" line="157" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_A31444EF8021EAE11A8B45F781DF3C80B8D1EA80" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_A054DD39E2AC6192252BEDBCD4F9299B9A770D2E" name="x" type="66cdbe39-6aa2-e9ca-0e49-3db9c395b43e"/>
+           <parameter id="parameter_writer_A31444EF8021EAE11A8B45F781DF3C80B8D1EA80" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_A054DD39E2AC6192252BEDBCD4F9299B9A770D2E" name="x" type="d820c284-58a0-e614-9a31-1c5c30c8ba7a"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2A0C9D800B63BB8290DC3056140774C104135ADB" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2A0C9D800B63BB8290DC3056140774C104135ADB" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_2A0C9D800B63BB8290DC3056140774C104135ADB" kind="Function" line="197" name="Write" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2A0C9D800B63BB8290DC3056140774C104135ADB" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_Write_2A0C9D800B63BB8290DC3056140774C104135ADB" fileName="System.Net.BinaryMessageProtocol/IO.cm" filePath="../../System.Net.BinaryMessageProtocol/file/IO.cm.html" id="function_Write_2A0C9D800B63BB8290DC3056140774C104135ADB" kind="Function" line="197" name="Write" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_writer_3D0EEF9102CECB677A04094ED002C3CD56C395BE" name="writer" type="7ac55750-1d10-9eae-8193-63721c06aa69"/>
-           <parameter id="parameter_x_F525BF90066C4852F19C5AEB1C9D5B9818C447D5" name="x" type="a1c142bd-e6e3-4963-89d6-5ad24941be8d"/>
+           <parameter id="parameter_writer_3D0EEF9102CECB677A04094ED002C3CD56C395BE" name="writer" type="6eff2ea3-2823-1b78-651d-4802ffdc5dff"/>
+           <parameter id="parameter_x_F525BF90066C4852F19C5AEB1C9D5B9818C447D5" name="x" type="ea2f4546-5839-8e28-37e5-cd77e43ee59b"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A" kind="Function" line="122" name="WriteMessage" returnType="c5f705b4-bd76-4758-c7eb-086999917720" specifiers="public">
+         <function docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A" fileName="System.Net.BinaryMessageProtocol/Protocol.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Protocol.cm.html" id="function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A" kind="Function" line="122" name="WriteMessage" returnType="9580baeb-8a2c-b23f-89b4-a611beb003b5" specifiers="public">
           <parameters>
-           <parameter id="parameter_socket_61278A4FD4F55F83DA88E8C6BEA9358DBC5E92D2" name="socket" type="bfa3c0e3-57d9-9853-ef3f-ab3013c29bf4"/>
-           <parameter id="parameter_message_51CC2D818CA5A2D3C1A358B1ED9173D35235424A" name="message" type="a7787592-1841-9f9c-1003-d717cbb5320f"/>
+           <parameter id="parameter_socket_61278A4FD4F55F83DA88E8C6BEA9358DBC5E92D2" name="socket" type="4ba52433-784d-d1db-2a34-6d5cae0f16d7"/>
+           <parameter id="parameter_message_51CC2D818CA5A2D3C1A358B1ED9173D35235424A" name="message" type="3d12f388-d5ba-d63e-4104-6a5a063338f0"/>
           </parameters>
          </function>
         </functions>
         <delegates>
-         <delegate docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD" line="11" name="FactoryFunction" returnType="69dda5f1-494e-360e-bcbd-381553c1aa92" specifiers="public">
+         <delegate docPath="../../System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD" extPath="System.Net.BinaryMessageProtocol/doc/ns_System.Net.BinaryMessageProtocol.html#delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD" fileName="System.Net.BinaryMessageProtocol/Registry.cm" filePath="../../System.Net.BinaryMessageProtocol/file/Registry.cm.html" id="delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD" line="11" name="FactoryFunction" returnType="914d8e05-6826-390b-2d01-91d114311ada" specifiers="public">
           <parameters>
-           <parameter id="parameter_messageId_9BBF6EA6029DBBABF0A37D02CBEE67B6FAA0D5E1" name="messageId" type="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+           <parameter id="parameter_messageId_9BBF6EA6029DBBABF0A37D02CBEE67B6FAA0D5E1" name="messageId" type="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
           </parameters>
          </delegate>
         </delegates>
@@ -691,214 +691,214 @@
   </namespaces>
  </namespace>
  <types>
-  <basicType id="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71" name="uint"/>
-  <basicType id="9a15f1e5-ce23-1266-019d-03f741c75b38" name="bool"/>
-  <specialization id="c5f705b4-bd76-4758-c7eb-086999917720" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea" name="uint"/>
+  <basicType id="48777f30-6575-66ac-5d1e-7727dbf6db1d" name="bool"/>
+  <specialization id="9580baeb-8a2c-b23f-89b4-a611beb003b5" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
    <templateArgumentTypes>
-    <templateArgumentType ref="9a15f1e5-ce23-1266-019d-03f741c75b38"/>
+    <templateArgumentType ref="48777f30-6575-66ac-5d1e-7727dbf6db1d"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="f95e4205-5274-4860-9e53-b29e740fc304" name="MemoryReader&amp;">
+  <derivedType id="28837866-490c-1d52-f259-8c6c3a07134a" name="MemoryReader&amp;">
    <derivation baseType="class_MemoryReader_7C2B5BA19453DDDA4428C8201D93E07311596E12"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="7ac55750-1d10-9eae-8193-63721c06aa69" name="MemoryWriter&amp;">
+  <derivedType id="6eff2ea3-2823-1b78-651d-4802ffdc5dff" name="MemoryWriter&amp;">
    <derivation baseType="class_MemoryWriter_BC3E557B84654B5DB52F9A019B7E85AF4A0D7C48"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="a7787592-1841-9f9c-1003-d717cbb5320f" name="BinaryMessage*">
+  <derivedType id="3d12f388-d5ba-d63e-4104-6a5a063338f0" name="BinaryMessage*">
    <derivation baseType="class_BinaryMessage_93DF5DFB411B1B39EBB40FC6302053AEB1A58A78"/>
    <derivation name="*"/>
   </derivedType>
-  <specialization id="69dda5f1-494e-360e-bcbd-381553c1aa92" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="914d8e05-6826-390b-2d01-91d114311ada" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
    <templateArgumentTypes>
-    <templateArgumentType ref="a7787592-1841-9f9c-1003-d717cbb5320f"/>
+    <templateArgumentType ref="3d12f388-d5ba-d63e-4104-6a5a063338f0"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="74ebf875-e6c9-ce0f-4fe9-5d853f46bf1e" name="MessageRegistry&amp;">
+  <derivedType id="8097d958-427f-e2da-4e0e-b308db1c61b8" name="MessageRegistry&amp;">
    <derivation baseType="class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="c484deb3-c39f-26c2-b1c5-740577abe648" name="char"/>
-  <specialization id="5cdd2c86-4f48-fa5c-3fae-9b5c3215641b" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+  <basicType id="c3b5b56a-7b2e-9340-0cdf-ccafea2ab373" name="char"/>
+  <specialization id="b00a817c-322f-e8d2-5875-1d5010280cc4" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
    <templateArgumentTypes>
-    <templateArgumentType ref="c484deb3-c39f-26c2-b1c5-740577abe648"/>
+    <templateArgumentType ref="c3b5b56a-7b2e-9340-0cdf-ccafea2ab373"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="1a3762a4-d3b1-dfd6-b6ea-e8badcd7076b" name="const String&lt;char>&amp;">
+  <derivedType id="88c6cb16-1c71-d2c7-d607-9945efed5f4b" name="const String&lt;char>&amp;">
    <derivation name="const"/>
-   <derivation baseType="5cdd2c86-4f48-fa5c-3fae-9b5c3215641b"/>
+   <derivation baseType="b00a817c-322f-e8d2-5875-1d5010280cc4"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="a0757b7b-bd18-a76b-dc5e-273014259488" name="Less" primaryType="class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B">
+  <specialization id="abfaa8ba-6b3c-fb3c-f339-65cb330be565" name="Less" primaryType="class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B">
    <templateArgumentTypes>
-    <templateArgumentType ref="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+    <templateArgumentType ref="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="338b23d8-dbfb-f2f1-e7b9-4272e32b122f" name="Map" primaryType="class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
+  <specialization id="28576135-8db6-59ce-1521-03521327b629" name="Map" primaryType="class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE">
    <templateArgumentTypes>
-    <templateArgumentType ref="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+    <templateArgumentType ref="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
     <templateArgumentType ref="delegate_FactoryFunction_51FC4C0E73AE0EB6C7C9C61F1D1662E068C795BD"/>
-    <templateArgumentType ref="a0757b7b-bd18-a76b-dc5e-273014259488"/>
+    <templateArgumentType ref="abfaa8ba-6b3c-fb3c-f339-65cb330be565"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="bf353c6f-fc3d-e20d-d557-23be964cf4c0" name="UniquePtr" primaryType="class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009">
+  <specialization id="08953da2-0a58-e7a8-8f32-36b21c5db963" name="UniquePtr" primaryType="class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009">
    <templateArgumentTypes>
     <templateArgumentType ref="class_MessageRegistry_331716A2179209CCD1B77BEA342827B51DA10564"/>
    </templateArgumentTypes>
   </specialization>
-  <basicType id="6114639a-9769-07ea-5145-e08143e865b3" name="byte"/>
-  <derivedType id="3c7a2ca8-3b27-e9bc-4b4d-96ee3c07b65d" name="const Date&amp;">
+  <basicType id="d01d09eb-baaa-f680-f871-b773fcdc04b5" name="byte"/>
+  <derivedType id="8cc36c6b-650b-975f-6ec0-3df6a2c44f01" name="const Date&amp;">
    <derivation name="const"/>
    <derivation baseType="class_Date_351EEEABF504E83A9336BC83CE10D3450072F1E8"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="b6c845fd-757a-9ce5-5263-3f96ec09f6a0" name="const DateTime&amp;">
+  <derivedType id="b2fcd36a-49b0-8f84-54c0-a5b84884bd8f" name="const DateTime&amp;">
    <derivation name="const"/>
    <derivation baseType="class_DateTime_1CCCF400289F734AAAB9BC0562E46C77468B398E"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="818cdae7-ed60-9d1f-3dc3-802c4c1adfb5" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
+  <specialization id="57d6ae57-a6ba-868e-d44c-b1c615928db8" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
    <templateArgumentTypes>
-    <templateArgumentType ref="539c748d-f76e-3af8-202a-1955df553e11"/>
+    <templateArgumentType ref="b409d634-a06b-1096-81c4-20ab979578ae"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="c76694c5-7199-b895-b487-f3caa2d8bcc5" name="const List&lt;T>&amp;">
+  <derivedType id="6f1ae43d-88e4-bc9b-5a3e-35d3ea57de37" name="const List&lt;T>&amp;">
    <derivation name="const"/>
-   <derivation baseType="818cdae7-ed60-9d1f-3dc3-802c4c1adfb5"/>
+   <derivation baseType="57d6ae57-a6ba-868e-d44c-b1c615928db8"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="935872c3-310e-1182-dfa7-cc6efa741792" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
+  <specialization id="d87cf30e-30be-55fb-b2ee-72f0e9755946" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
    <templateArgumentTypes>
-    <templateArgumentType ref="8405c5d5-a427-b83e-7cda-162aae400be4"/>
+    <templateArgumentType ref="2793cea8-98c7-a7a7-b2c6-2f02995087a2"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="d5b23ce1-adf7-3408-56e3-bf8814b674e2" name="const List&lt;T>&amp;">
+  <derivedType id="e0b0b964-1ee0-6fee-3c9c-f6e516b00ac9" name="const List&lt;T>&amp;">
    <derivation name="const"/>
-   <derivation baseType="935872c3-310e-1182-dfa7-cc6efa741792"/>
+   <derivation baseType="d87cf30e-30be-55fb-b2ee-72f0e9755946"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="bb0e710e-f7e4-27fb-29dd-e2f659e508e2" name="const T&amp;">
+  <derivedType id="bba21b82-ef50-30b7-888a-4c309a582e31" name="const T&amp;">
    <derivation name="const"/>
-   <derivation baseType="fde43f2c-6b1d-0271-a099-9110b7276b92"/>
+   <derivation baseType="836e51e8-c10e-0aa2-06f8-c825659d7dbe"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="7e915d29-e400-57ea-18b1-11c05302aec6" name="const Uuid&amp;">
+  <derivedType id="e58799ca-1fbf-c46b-d094-2ca7698c6a7a" name="const Uuid&amp;">
    <derivation name="const"/>
    <derivation baseType="class_Uuid_81014B41FA199BCF75CA0E6799422874FC800AB7"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="a8b5da4b-ea8b-7382-525c-e37c3311e38b" name="double"/>
-  <basicType id="3c311b8d-5ec0-1e8a-ec79-3ee629e0b855" name="float"/>
-  <basicType id="25052442-928b-b81b-8b4a-b96cc673cc20" name="int"/>
-  <basicType id="0407bfb1-056a-7eea-1043-245e6aae0646" name="long"/>
-  <basicType id="d9eb9242-1797-3f19-9c9d-1f330f6aaedd" name="sbyte"/>
-  <basicType id="fc42c82d-7b9f-50c0-a423-b0c5ed4e8c22" name="short"/>
-  <basicType id="61d5cba1-d97f-f29b-f840-67fe98546ad6" name="uchar"/>
-  <basicType id="f696de27-10ac-7014-72ce-1472a676e146" name="ulong"/>
-  <basicType id="66cdbe39-6aa2-e9ca-0e49-3db9c395b43e" name="ushort"/>
-  <basicType id="a1c142bd-e6e3-4963-89d6-5ad24941be8d" name="wchar"/>
-  <derivedType id="a17bce00-3eb4-7c32-7511-1762d1aea556" name="Date&amp;">
+  <basicType id="fbfbf951-9fbe-ef56-1381-810612f5153d" name="double"/>
+  <basicType id="00d3ee67-651e-0894-e50d-ed33a9041bf1" name="float"/>
+  <basicType id="84d92967-6211-9391-694f-990661cd38b6" name="int"/>
+  <basicType id="e4f3531b-84ec-d8e6-0dd1-ce0e489c324e" name="long"/>
+  <basicType id="7f1dcade-5d0e-cfbc-24f1-19e51db77c67" name="sbyte"/>
+  <basicType id="efc88697-b932-f013-0e1d-44da1aa887f6" name="short"/>
+  <basicType id="89b9b09e-13cc-1b40-f4ff-6d5511ccd5c8" name="uchar"/>
+  <basicType id="6d1fe903-6b52-d47d-d986-4c0b78553cde" name="ulong"/>
+  <basicType id="d820c284-58a0-e614-9a31-1c5c30c8ba7a" name="ushort"/>
+  <basicType id="ea2f4546-5839-8e28-37e5-cd77e43ee59b" name="wchar"/>
+  <derivedType id="8daa199e-314c-b380-f6af-9825550186b7" name="Date&amp;">
    <derivation baseType="class_Date_351EEEABF504E83A9336BC83CE10D3450072F1E8"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="2bc9a755-70e9-096b-6c3f-be1a01a0e5ab" name="DateTime&amp;">
+  <derivedType id="b395a69f-1df7-ab5b-ccaf-006bbf417439" name="DateTime&amp;">
    <derivation baseType="class_DateTime_1CCCF400289F734AAAB9BC0562E46C77468B398E"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="fe03c8bd-e97d-552e-64ae-bbd3ae424d4a" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
+  <specialization id="a098a6a4-d0c3-41e5-e2fd-bec23739a2e9" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
    <templateArgumentTypes>
-    <templateArgumentType ref="41d872cb-00ac-d007-9b4a-4507c5a7224a"/>
+    <templateArgumentType ref="3afe998d-89ac-35ea-09b8-b6dc7616a01b"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="25e86437-7017-e52a-d3b6-49b9ad293d31" name="List&lt;T>&amp;">
-   <derivation baseType="fe03c8bd-e97d-552e-64ae-bbd3ae424d4a"/>
+  <derivedType id="993d993b-aada-5f2f-f4e0-9f043f3938d0" name="List&lt;T>&amp;">
+   <derivation baseType="a098a6a4-d0c3-41e5-e2fd-bec23739a2e9"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="8736800c-d622-4a58-88b6-6936317e1460" name="String&lt;char>&amp;">
-   <derivation baseType="5cdd2c86-4f48-fa5c-3fae-9b5c3215641b"/>
+  <derivedType id="89afbee3-4836-f618-4e68-3c96182896fd" name="String&lt;char>&amp;">
+   <derivation baseType="b00a817c-322f-e8d2-5875-1d5010280cc4"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="feb967a9-95e8-2d6c-49a8-0c735c60dc81" name="T&amp;">
-   <derivation baseType="2552cb23-0c82-9d68-feb0-fe195f0bacfa"/>
+  <derivedType id="812fa279-6594-0df8-ba94-c180e659fbf4" name="T&amp;">
+   <derivation baseType="b88a9de6-1f8d-1332-ac89-e046ee5961cd"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="5e7658c8-e03c-5a4a-32fb-a96faf34cb27" name="T&amp;">
-   <derivation baseType="859df442-7956-ea4e-85e3-5b05ac5fbb5c"/>
+  <derivedType id="fc99b5b0-d66e-90c7-221c-740ccf348f10" name="T&amp;">
+   <derivation baseType="c53c8a2f-ac77-8e0d-3401-55cac7341529"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="e390bf81-e193-c264-26ed-904cbeabbdcd" name="Uuid&amp;">
+  <derivedType id="e4eeec3f-4bf8-e0b4-48fb-89749e49a3cc" name="Uuid&amp;">
    <derivation baseType="class_Uuid_81014B41FA199BCF75CA0E6799422874FC800AB7"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="41fe5d6f-5749-a262-b685-f19d42ac2b43" name="bool&amp;">
-   <derivation baseType="9a15f1e5-ce23-1266-019d-03f741c75b38"/>
+  <derivedType id="71d240af-1f6c-7866-4b03-56e1d3f64124" name="bool&amp;">
+   <derivation baseType="48777f30-6575-66ac-5d1e-7727dbf6db1d"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="baffcf10-0e03-b7ee-e65d-12eb408315c8" name="byte&amp;">
-   <derivation baseType="6114639a-9769-07ea-5145-e08143e865b3"/>
+  <derivedType id="e9b83674-c0b3-e84a-ee6c-96b5f4dc9e8c" name="byte&amp;">
+   <derivation baseType="d01d09eb-baaa-f680-f871-b773fcdc04b5"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="1f6f7239-5af5-96c6-06dd-866f74c09633" name="char&amp;">
-   <derivation baseType="c484deb3-c39f-26c2-b1c5-740577abe648"/>
+  <derivedType id="fa108af5-0137-8d8a-1ac2-ed69e22a294a" name="char&amp;">
+   <derivation baseType="c3b5b56a-7b2e-9340-0cdf-ccafea2ab373"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="735e76c1-73e1-c386-e544-1116307a93f0" name="double&amp;">
-   <derivation baseType="a8b5da4b-ea8b-7382-525c-e37c3311e38b"/>
+  <derivedType id="c25ec6ce-e5a7-f19c-059c-a0c01af58f04" name="double&amp;">
+   <derivation baseType="fbfbf951-9fbe-ef56-1381-810612f5153d"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="e7dab707-c7aa-ae8e-5b61-cc8c2a8bc82e" name="float&amp;">
-   <derivation baseType="3c311b8d-5ec0-1e8a-ec79-3ee629e0b855"/>
+  <derivedType id="3976d1f8-1f07-165e-f310-ccf5a10481c8" name="float&amp;">
+   <derivation baseType="00d3ee67-651e-0894-e50d-ed33a9041bf1"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="feee88c8-0be1-081f-3c52-4b06c518bc5b" name="int&amp;">
-   <derivation baseType="25052442-928b-b81b-8b4a-b96cc673cc20"/>
+  <derivedType id="bd7c16f8-1808-8d5b-7f52-b8c069cda28f" name="int&amp;">
+   <derivation baseType="84d92967-6211-9391-694f-990661cd38b6"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="dfec133b-9c00-ceee-a75b-d63469c5763d" name="long&amp;">
-   <derivation baseType="0407bfb1-056a-7eea-1043-245e6aae0646"/>
+  <derivedType id="dd566c84-fef5-c62c-1bcc-efc8409ca877" name="long&amp;">
+   <derivation baseType="e4f3531b-84ec-d8e6-0dd1-ce0e489c324e"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="02003ec8-8efd-8f1d-2b85-ed590c01dea6" name="sbyte&amp;">
-   <derivation baseType="d9eb9242-1797-3f19-9c9d-1f330f6aaedd"/>
+  <derivedType id="46b8f541-2717-d176-32ec-382315b7e65e" name="sbyte&amp;">
+   <derivation baseType="7f1dcade-5d0e-cfbc-24f1-19e51db77c67"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="27a964a7-e2f5-e0c4-133b-42afee25fc59" name="short&amp;">
-   <derivation baseType="fc42c82d-7b9f-50c0-a423-b0c5ed4e8c22"/>
+  <derivedType id="d66db908-c32b-eed9-1800-651c12a81dcf" name="short&amp;">
+   <derivation baseType="efc88697-b932-f013-0e1d-44da1aa887f6"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="ba3e672b-4015-429f-4f58-95949b3f1aad" name="uchar&amp;">
-   <derivation baseType="61d5cba1-d97f-f29b-f840-67fe98546ad6"/>
+  <derivedType id="b01c8f01-69d5-058a-e2e2-4c9319cc4ff1" name="uchar&amp;">
+   <derivation baseType="89b9b09e-13cc-1b40-f4ff-6d5511ccd5c8"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="9490e436-8e02-ba88-9af6-4d99f5868a0a" name="uint&amp;">
-   <derivation baseType="4f7b48bc-1768-0a8c-2dee-bff3f6edfa71"/>
+  <derivedType id="aa70e7e1-fb0f-8294-14f1-0c05659ba5d3" name="uint&amp;">
+   <derivation baseType="93d5d87e-8116-9c5e-02ec-2dc36d9b3fea"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="2d7d72ad-89c6-c010-c5d6-e618a51d913d" name="ulong&amp;">
-   <derivation baseType="f696de27-10ac-7014-72ce-1472a676e146"/>
+  <derivedType id="54bad69c-114b-cab7-cf9b-6dcd7055a6e7" name="ulong&amp;">
+   <derivation baseType="6d1fe903-6b52-d47d-d986-4c0b78553cde"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="bd2612b3-f3c8-59ce-b951-cfd3c0fec445" name="ushort&amp;">
-   <derivation baseType="66cdbe39-6aa2-e9ca-0e49-3db9c395b43e"/>
+  <derivedType id="e185fd1b-22b9-f8de-8c2c-3d9a38c82043" name="ushort&amp;">
+   <derivation baseType="d820c284-58a0-e614-9a31-1c5c30c8ba7a"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="7a2aee37-7f89-f967-3ece-a8b84a2acef6" name="wchar&amp;">
-   <derivation baseType="a1c142bd-e6e3-4963-89d6-5ad24941be8d"/>
+  <derivedType id="d38a7ad9-2220-90e2-21f8-ecb1ec3e7fa2" name="wchar&amp;">
+   <derivation baseType="ea2f4546-5839-8e28-37e5-cd77e43ee59b"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <derivedType id="bfa3c0e3-57d9-9853-ef3f-ab3013c29bf4" name="TcpSocket&amp;">
+  <derivedType id="4ba52433-784d-d1db-2a34-6d5cae0f16d7" name="TcpSocket&amp;">
    <derivation baseType="class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <specialization id="a3d0c628-cdcb-718e-8491-4dd55460816b" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
+  <specialization id="130dcfb6-911a-4570-dcb6-b4e528e60763" name="List" primaryType="class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11">
    <templateArgumentTypes>
-    <templateArgumentType ref="6fb4a037-d115-1e55-a7ea-c92b97c1d5a1"/>
+    <templateArgumentType ref="c04b5217-702b-c973-e7d6-5c62581dd36d"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="e53a880a-5132-5404-0dd5-3e33baa2e21b" name="const List&lt;T>&amp;">
+  <derivedType id="2bc185dc-bf44-7f65-52c4-30f0d72354ec" name="const List&lt;T>&amp;">
    <derivation name="const"/>
-   <derivation baseType="a3d0c628-cdcb-718e-8491-4dd55460816b"/>
+   <derivation baseType="130dcfb6-911a-4570-dcb6-b4e528e60763"/>
    <derivation name="&amp;"/>
   </derivedType>
  </types>

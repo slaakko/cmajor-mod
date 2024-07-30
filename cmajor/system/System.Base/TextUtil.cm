@@ -5,7 +5,27 @@
 
 namespace System
 {
-    public nothrow string Trim(const string& s)
+    public string TrimEnd(const string& s)
+    {
+        long i = s.Length();
+        while (i > 0 && IsSpace(s[i - 1]))
+        {
+            --i;
+        }
+        return s.Substring(0, i);
+    }
+
+    public ustring TrimEnd(const ustring& s)
+    {
+        long i = s.Length();
+        while (i > 0 && IsSpace(cast<char>(s[i - 1])))
+        {
+            --i;
+        }
+        return s.Substring(0, i);
+    }
+
+    public string Trim(const string& s)
     {
         long b = 0;
         while (b < s.Length() && IsSpace(s[b]))
@@ -20,24 +40,56 @@ namespace System
         return s.Substring(b, e - b + 1);
     }
 
-    public wstring Trim(const wstring& s)
+    [nodiscard]
+    public Result<wstring> Trim(const wstring& s)
     {
-        return ToUtf16(Trim(ToUtf32(s)));
+        auto result = ToUtf32(s);
+        if (result.Error())
+        {
+            return Result<wstring>(ErrorId(result.GetErrorId()));
+        }
+        auto trimResult = Trim(result.Value());
+        if (trimResult.Error())
+        {
+            return Result<wstring>(ErrorId(trimResult.GetErrorId()));
+        }
+        return ToUtf16(trimResult.Value());
     }
 
-    public ustring Trim(const ustring& s)
+    [nodiscard]
+    public Result<ustring> Trim(const ustring& s)
     {
         long b = 0;
-        while (b < s.Length() && IsWhiteSpace(s[b]))
+        bool stop = false;
+        while (b < s.Length() && !stop)
         {
-            ++b;
+            auto wsResult = IsWhiteSpace(s[b]);
+            if (wsResult.Error())
+            {
+                return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+            }
+            stop = !wsResult.Value();
+            if (!stop)
+            {
+                ++b;
+            }
         }
         long e = s.Length() - 1;
-        while (e >= b && IsWhiteSpace(s[e]))
+        stop = false;
+        while (e >= b && !stop)
         {
-            --e;
+            auto wsResult = IsWhiteSpace(s[e]);
+            if (wsResult.Error())
+            {
+                return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+            }
+            stop = !wsResult.Value();
+            if (!stop)
+            {
+                --e;
+            }
         }
-        return s.Substring(b, e - b + 1);
+        return Result<ustring>(s.Substring(b, e - b + 1));
     }
 
     public string TrimAll(const string& s)
@@ -85,12 +137,24 @@ namespace System
         return result;
     }
 
-    public wstring TrimAll(const wstring& s)
+    [nodiscard]
+    public Result<wstring> TrimAll(const wstring& s)
     {
-        return ToUtf16(TrimAll(ToUtf32(s)));
+        auto result = ToUtf32(s);
+        if (result.Error())
+        {
+            return Result<wstring>(ErrorId(result.GetErrorId()));
+        }
+        auto trimResult = TrimAll(result.Value());
+        if (trimResult.Error())
+        {
+            return Result<wstring>(ErrorId(trimResult.GetErrorId()));
+        }
+        return ToUtf16(trimResult.Value());
     }
 
-    public ustring TrimAll(const ustring& s)
+    [nodiscard]
+    public Result<ustring> TrimAll(const ustring& s)
     {
         ustring result;
         result.Reserve(s.Length());
@@ -101,7 +165,12 @@ namespace System
             {
                 case 0:
                 {
-                    if (!IsWhiteSpace(c))
+                    auto wsResult = IsWhiteSpace(c);
+                    if (wsResult.Error())
+                    {
+                        return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+                    }
+                    if (!wsResult.Value())
                     {
                         result.Append(c);
                         state = 1;
@@ -110,7 +179,12 @@ namespace System
                 }
                 case 1:
                 {
-                    if (IsWhiteSpace(c))
+                    auto wsResult = IsWhiteSpace(c);
+                    if (wsResult.Error())
+                    {
+                        return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+                    }
+                    if (wsResult.Value())
                     {
                         state = 2;
                     }
@@ -122,7 +196,12 @@ namespace System
                 }
                 case 2:
                 {
-                    if (!IsWhiteSpace(c))
+                    auto wsResult = IsWhiteSpace(c);
+                    if (wsResult.Error())
+                    {
+                        return Result<ustring>(ErrorId(wsResult.GetErrorId()));
+                    }
+                    if (!wsResult.Value())
                     {
                         result.Append(u' ');
                         result.Append(c);
@@ -132,44 +211,63 @@ namespace System
                 }
             }
         }
-        return result;
+        return Result<ustring>(result);
     }
 
-    public nothrow string HexEscape(char c)
+    [nodiscard]
+    public Result<string> HexEscape(char c)
     {
-        return "\\x" + ToHexString(cast<byte>(c));
+        auto result = ToHexString(cast<byte>(c));
+        if (result.Error())
+        {
+            return result;
+        }
+        return "\\x" + result.Value();
     }
 
-    public nothrow string HexEscape(wchar c)
+    [nodiscard]
+    public Result<string> HexEscape(wchar c)
     {
-        return "\\x" + ToHexString(cast<ushort>(c));
+        auto result = ToHexString(cast<ushort>(c));
+        if (result.Error())
+        {
+            return result;
+        }
+        return "\\x" + result.Value();
     }
 
-    public nothrow string HexEscape(uchar c)
+    [nodiscard]
+    public Result<string> HexEscape(uchar c)
     {
-        return "\\x" + ToHexString(cast<uint>(c));
+        auto result = ToHexString(cast<uint>(c));
+        if (result.Error())
+        {
+            return result;
+        }
+        return "\\x" + result.Value();
     }
 
-    public nothrow string CharStr(char c)
+    [nodiscard]
+    public Result<string> CharStr(char c)
     {
         switch (c)
         {
-            case '\\': return "\\\\";
-            case '"':  return "\\\"";
-            case '\'': return "\\'";
-            case '\a': return "\\a";
-            case '\b': return "\\b";
-            case '\f': return "\\f";
-            case '\n': return "\\n";
-            case '\r': return "\\r";
-            case '\t': return "\\t";
-            case '\v': return "\\v";
-            case '\0': return "\\0";
+            case '\\': return Result<string>("\\\\");
+            case '"':  return Result<string>("\\\"");
+            case '\'': return Result<string>("\\'");
+            case '\a': return Result<string>("\\a");
+            case '\b': return Result<string>("\\b");
+            case '\f': return Result<string>("\\f");
+            case '\n': return Result<string>("\\n");
+            case '\r': return Result<string>("\\r");
+            case '\t': return Result<string>("\\t");
+            case '\v': return Result<string>("\\v");
+            case '\0': return Result<string>("\\0");
             default:
             {
                 if (IsPrintable(c))
                 {
-                    return string(c);
+                    return Result<string>(string(c));
                 }
                 else
                 {
@@ -177,80 +275,100 @@ namespace System
                 }
             }
         }
-        return string();
+        return Result<string>(string());
     }
 
-    public nothrow string MakeCharLiteral(char c)
+    [nodiscard]
+    public Result<string> MakeCharLiteral(char c)
     {
         if (c == '"')
         {
-            return string("'\"'");
+            return Result<string>(string("'\"'"));
         }
-        return "'" + CharStr(c) + "'";
+        auto charStrResult = CharStr(c);
+        if (charStrResult.Error())
+        {
+            return Result<string>(ErrorId(charStrResult.GetErrorId()));
+        }
+        return Result<string>("'" + charStrResult.Value() + "'");
     }
 
-
-    public wstring CharStr(wchar c)
+    [nodiscard]
+    public Result<wstring> CharStr(wchar c)
     {
+        Result<string> hexEscapeResult;
         switch (c)
         {
-            case w'\\': return w"\\\\";
-            case w'"':  return w"\\\"";
-            case w'\'': return w"\\'";
-            case w'\a': return w"\\a";
-            case w'\b': return w"\\b";
-            case w'\f': return w"\\f";
-            case w'\n': return w"\\n";
-            case w'\r': return w"\\r";
-            case w'\t': return w"\\t";
-            case w'\v': return w"\\v";
-            case w'\0': return w"\\0";
+            case w'\\': return Result<wstring>(w"\\\\");
+            case w'"':  return Result<wstring>(w"\\\"");
+            case w'\'': return Result<wstring>(w"\\'");
+            case w'\a': return Result<wstring>(w"\\a");
+            case w'\b': return Result<wstring>(w"\\b");
+            case w'\f': return Result<wstring>(w"\\f");
+            case w'\n': return Result<wstring>(w"\\n");
+            case w'\r': return Result<wstring>(w"\\r");
+            case w'\t': return Result<wstring>(w"\\t");
+            case w'\v': return Result<wstring>(w"\\v");
+            case w'\0': return Result<wstring>(w"\\0");
             default:
             {
                 if (cast<ushort>(c) < 256u && IsPrintable(cast<char>(c)))
                 {
-                    return wstring(c);
+                    return Result<wstring>(wstring(c));
                 }
                 else
                 {
-                    return ToUtf16(HexEscape(c));
+                    hexEscapeResult = HexEscape(c);
+                    if (hexEscapeResult.Error())
+                    {
+                        return Result<wstring>(ErrorId(hexEscapeResult.GetErrorId()));
+                    }
+                    return ToUtf16(hexEscapeResult.Value());
                 }
             }
         }
-        return wstring();
+        return Result<wstring>(wstring());
     }
 
-    public ustring CharStr(uchar c)
+    [nodiscard]
+    public Result<ustring> CharStr(uchar c)
     {
+        Result<string> hexEscapeResult;
         switch (c)
         {
-            case u'\\': return u"\\\\";
-            case u'"':  return u"\\\"";
-            case u'\'': return u"\\'";
-            case u'\a': return u"\\a";
-            case u'\b': return u"\\b";
-            case u'\f': return u"\\f";
-            case u'\n': return u"\\n";
-            case u'\r': return u"\\r";
-            case u'\t': return u"\\t";
-            case u'\v': return u"\\v";
-            case u'\0': return u"\\0";
+            case u'\\': return Result<ustring>(u"\\\\");
+            case u'"':  return Result<ustring>(u"\\\"");
+            case u'\'': return Result<ustring>(u"\\'");
+            case u'\a': return Result<ustring>(u"\\a");
+            case u'\b': return Result<ustring>(u"\\b");
+            case u'\f': return Result<ustring>(u"\\f");
+            case u'\n': return Result<ustring>(u"\\n");
+            case u'\r': return Result<ustring>(u"\\r");
+            case u'\t': return Result<ustring>(u"\\t");
+            case u'\v': return Result<ustring>(u"\\v");
+            case u'\0': return Result<ustring>(u"\\0");
             default:
             {
                 if (cast<uint>(c) < 256u && IsPrintable(cast<char>(c)))
                 {
-                    return ustring(c);
+                    return Result<ustring>(ustring(c));
                 }
                 else
                 {
-                    return ToUtf32(HexEscape(c));
+                    hexEscapeResult = HexEscape(c);
+                    if (hexEscapeResult.Error())
+                    {
+                        return Result<ustring>(ErrorId(hexEscapeResult.GetErrorId()));
+                    }
+                    return ToUtf32(hexEscapeResult.Value());
                 }
             }
         }
-        return ustring();
+        return Result<ustring>(ustring());
     }
 
-    public nothrow string StringStr(const string& s)
+    [nodiscard]
+    public Result<string> StringStr(const string& s)
     {
         string result;
         for (char c : s)
@@ -261,13 +379,19 @@ namespace System
             }
             else
             {
-                result.Append(CharStr(c));
+                auto charStrResult = CharStr(c);
+                if (charStrResult.Error())
+                {
+                    return Result<string>(ErrorId(charStrResult.GetErrorId()));
+                }
+                result.Append(charStrResult.Value());
             }
         }
-        return result;
+        return Result<string>(result);
     }
 
-    public ustring StringStr(const ustring& s)
+    [nodiscard]
+    public Result<ustring> StringStr(const ustring& s)
     {
         ustring result;
         for (uchar c : s)
@@ -278,29 +402,46 @@ namespace System
             }
             else
             {
-                result.Append(CharStr(c));
+                auto charStrResult = CharStr(c);
+                if (charStrResult.Error())
+                {
+                    return Result<ustring>(ErrorId(charStrResult.GetErrorId()));
+                }
+                result.Append(charStrResult.Value());
             }
         }
-        return result;
+        return Result<ustring>(result);
     }
 
-    public nothrow string MakeStringLiteral(const string& s)
+    [nodiscard]
+    public Result<string> MakeStringLiteral(const string& s)
     {
         string result = "\"";
-        result.Append(StringStr(s));
+        auto stringStrResult = StringStr(s);
+        if (stringStrResult.Error())
+        {
+            return Result<string>(ErrorId(stringStrResult.GetErrorId()));
+        }
+        result.Append(stringStrResult.Value());
         result.Append('"');
-        return result;
+        return Result<string>(result);
     }
 
-    public ustring MakeStringLiteral(const ustring& s)
+    [nodiscard]
+    public Result<ustring> MakeStringLiteral(const ustring& s)
     {
         ustring result = u"\"";
-        result.Append(StringStr(s));
+        auto stringStrResult = StringStr(s);
+        if (stringStrResult.Error())
+        {
+            return Result<ustring>(ErrorId(stringStrResult.GetErrorId()));
+        }
+        result.Append(stringStrResult.Value());
         result.Append(u'"');
-        return result;
+        return Result<ustring>(result);
     }
 
-    public nothrow string Unescape(const string& stringStr)
+    public string Unescape(const string& stringStr)
     {
         string result;
         int state = 0;
@@ -350,7 +491,7 @@ namespace System
         return result;
     }
 
-    public nothrow ustring Unescape(const ustring& stringStr)
+    public ustring Unescape(const ustring& stringStr)
     {
         ustring result;
         int state = 0;
@@ -410,27 +551,27 @@ namespace System
         left, right
     }
 
-    public nothrow string Format(const string& s, int width)
+    public string Format(const string& s, int width)
     {
         return Format(s, width, FormatWidth.exact, FormatJustify.left);
     }
 
-    public nothrow string Format(const string& s, int width, FormatJustify justify)
+    public string Format(const string& s, int width, FormatJustify justify)
     {
         return Format(s, width, FormatWidth.exact, justify);
     }
 
-    public nothrow string Format(const string& s, int width, FormatWidth fw)
+    public string Format(const string& s, int width, FormatWidth fw)
     {
         return Format(s, width, fw, FormatJustify.left);
     }
 
-    public nothrow string Format(const string& s, int width, FormatWidth fw, FormatJustify justify)
+    public string Format(const string& s, int width, FormatWidth fw, FormatJustify justify)
     {
         return Format(s, width, fw, justify, ' ');
     }
 
-    public nothrow string Format(const string& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
+    public string Format(const string& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
     {
         string result;
         int m = cast<int>(s.Length());
@@ -464,22 +605,22 @@ namespace System
         return result;
     }
 
-    public nothrow ustring Format(const ustring& s, int width)
+    public ustring Format(const ustring& s, int width)
     {
         return Format(s, width, FormatWidth.exact, FormatJustify.left);
     }
 
-    public nothrow ustring Format(const ustring& s, int width, FormatJustify justify)
+    public ustring Format(const ustring& s, int width, FormatJustify justify)
     {
         return Format(s, width, FormatWidth.exact, justify);
     }
 
-    public nothrow ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify)
+    public ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify)
     {
         return Format(s, width, fw, justify, ' ');
     }
 
-    public nothrow ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
+    public ustring Format(const ustring& s, int width, FormatWidth fw, FormatJustify justify, char fillChar)
     {
         ustring result;
         int m = cast<int>(s.Length());

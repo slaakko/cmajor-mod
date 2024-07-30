@@ -1,0 +1,15 @@
+<person classId="2029169441" className="Person" objectId="eee6561b-4ab3-e38b-af80-9ba241b5295e">
+ <name value="Joe Coder"/>
+ <vehicles>
+  <item classId="2018315917" className="Bicycle" objectId="8035841f-fcd7-6da7-0182-745376e62d11">
+   <model value="Cooper"/>
+   <color value="3"/>
+   <price value="1000"/>
+  </item>
+  <item classId="737295636" className="Car" objectId="d607dda7-824e-ccda-2137-8afe117f8579">
+   <model value="Porsche"/>
+   <color value="2"/>
+   <registrationNumber value="ABC-123"/>
+  </item>
+ </vehicles>
+</person>

@@ -1,0 +1,67 @@
+// traffic_3
+
+using System;
+using System.Collections;
+using System.Xml;
+using System.Xml.Serialization;
+
+public enum Color
+{
+    white, black, red, blue
+}
+
+public string ColorStr(Color color)
+{
+    switch (color)
+    {
+        case Color.white: return "white";
+        case Color.black: return "black";
+        case Color.red: return "red";
+        case Color.blue: return "blue";
+    }
+    return "<unknown color>";
+}
+
+[xml]
+public abstract class Vehicle
+{
+    public Vehicle()
+    {
+    }
+    public default virtual ~Vehicle();
+    public void SetOwner(Person* owner_)
+    {
+        owner = owner_;
+    }
+    public void SetModel(const string& model_)
+    {
+        model = model_;
+    }
+    public inline const string& Model() const
+    {
+        return model;
+    }
+    public void SetColor(Color color_)
+    {
+        color = color_;
+    }
+    public inline Color GetColor() const
+    {
+        return color;
+    }
+    public virtual void Print()
+    {
+        Console.Out() << ClassName() << "\n";
+        if (!owner.IsNull())
+        {
+            Console.Out() << "owner: " << owner->Name() << "\n";
+        }
+        Console.Out() << "model: " << model << "\n";
+        Console.Out() << "color: " << ColorStr(color) << "\n";
+    }
+    private string model;
+    private Color color;
+    private System.Xml.Serialization.XmlPtr<Person> owner;
+}
+
+// ...

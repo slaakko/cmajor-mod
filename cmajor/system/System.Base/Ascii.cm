@@ -29,15 +29,15 @@ namespace System.Ascii
         static CharClassTable() : instance(new CharClassTable())
         {
         }
-        public static nothrow CharClassTable& Instance()
+        public static CharClassTable& Instance()
         {
             return *instance;
         }
-        public nothrow inline CharClass GetCharacterClass(char c)
+        public inline CharClass GetCharacterClass(char c)
         {
             return table[cast<byte>(c)];
         }
-        private nothrow CharClassTable()
+        private CharClassTable()
         {
             SetCharacterClass(cast<byte>('a'), cast<byte>('z'), CharClass.lower);
             SetCharacterClass(cast<byte>('A'), cast<byte>('Z'), CharClass.upper);
@@ -56,7 +56,7 @@ namespace System.Ascii
             SetCharacterClass(9u, 13u, CharClass.space);
             SetCharacterClass(32u, 32u, CharClass.space);
         }
-        private nothrow void SetCharacterClass(byte first, byte last, CharClass c)
+        private void SetCharacterClass(byte first, byte last, CharClass c)
         {
             for (byte i = first; i <= last; ++i)
             {

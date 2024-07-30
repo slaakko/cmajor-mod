@@ -84,6 +84,34 @@ Input ReadInput(const std::string& cmdocXmlFilePath)
     {
         throw std::runtime_error("single 'target' element expected in '" + cmdocXmlFilePath + "'");
     }
+    std::unique_ptr<soul::xml::xpath::NodeSet> libraryNodeSet = soul::xml::xpath::EvaluateToNodeSet("/cmdoc/libraries/library", cmdocXmlDocument.get());
+    for (int i = 0; i < libraryNodeSet->Count(); ++i)
+    {
+        soul::xml::Node* node = libraryNodeSet->GetNode(i);
+        if (node->IsElementNode())
+        {
+            soul::xml::Element* element = static_cast<soul::xml::Element*>(node);
+            std::string libraryDir = element->GetAttribute("dir");
+            if (!libraryDir.empty())
+            {
+                input.libraryDirs.push_back(libraryDir);
+                std::string libraryPrefix = util::Path::Combine(libraryDir, "content");
+                std::string libDir = util::Path::Combine(input.baseDir, libraryDir);
+                std::unique_ptr<soul::xml::Document> modulesDoc = soul::xml::ParseXmlFile(util::Path::Combine(libDir, "modules.xml"));
+                std::unique_ptr<soul::xml::xpath::NodeSet> moduleNodeSet = soul::xml::xpath::EvaluateToNodeSet("/modules/module", modulesDoc.get());
+                for (int i = 0; i < moduleNodeSet->Count(); ++i)
+                {
+                    soul::xml::Node* node = moduleNodeSet->GetNode(i);
+                    if (node->IsElementNode())
+                    {
+                        soul::xml::Element* element = static_cast<soul::xml::Element*>(node);
+                        std::string moduleName = element->GetAttribute("name");
+                        input.libraryPrefixMap[moduleName] = libraryPrefix;
+                    }
+                }
+            }
+        }
+    }
     return input;
 }
 

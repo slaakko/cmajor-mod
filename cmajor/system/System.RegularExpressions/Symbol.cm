@@ -1,27 +1,27 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Symbol.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Symbol.cpp' using cpp2cm version 1.0.0
 
 namespace System.RegularExpressions
 {
     public const uchar eps = '\0';
+
     public abstract class Symbol
     {
-        public virtual ~Symbol()
-        {
-        }
+        public default virtual ~Symbol();
         public abstract bool Match(uchar c);
     }
+
     public class Char : Symbol
     {
-        public Char(uchar chr_) :
-            chr(chr_)
+        public Char(uchar chr_) : chr(chr_)
         {
         }
-        public uchar Chr() const
+        public inline uchar Chr() const
         {
             return chr;
         }
@@ -31,6 +31,7 @@ namespace System.RegularExpressions
         }
         private uchar chr;
     }
+
     public class Any : Symbol
     {
         public override bool Match(uchar c)
@@ -38,17 +39,17 @@ namespace System.RegularExpressions
             return true;
         }
     }
+
     public class Range : Symbol
     {
-        public Range(uchar start_, uchar end_) :
-            start(start_), end(end_)
+        public Range(uchar start_, uchar end_) : start(start_), end(end_)
         {
         }
-        public uchar Start() const
+        public inline uchar Start() const
         {
             return start;
         }
-        public uchar End() const
+        public inline uchar End() const
         {
             return end;
         }
@@ -59,21 +60,27 @@ namespace System.RegularExpressions
         private uchar start;
         private uchar end;
     }
+
     public inline bool operator==(const Range& left, const Range& right)
     {
         return left.Start() == right.Start() && left.End() == right.End();
     }
+
     public inline bool operator<(const Range& left, const Range& right)
     {
         if (left.Start() < right.Start()) return true;
         if (left.Start() > right.Start()) return false;
         return left.End() < right.End();
     }
+
     public class Class : Symbol
     {
-        public Class() :
-            inverse(false)
+        public Class() : inverse(false)
         {
+        }
+        public inline bool Inverse() const
+        {
+            return inverse;
         }
         public void SetInverse()
         {
@@ -99,4 +106,5 @@ namespace System.RegularExpressions
         private bool inverse;
         private List<Symbol*> symbols;
     }
+
 } // namespace System.RegularExpressions

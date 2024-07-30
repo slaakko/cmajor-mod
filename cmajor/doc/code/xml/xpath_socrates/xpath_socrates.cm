@@ -1,0 +1,39 @@
+using System;
+
+int main()
+{
+    System.Lex.FileMap fileMap;
+    string query = "/philosophers/philosopher[@name='Socrates']";
+    string xml;
+    xml.Append("<philosophers>\n")
+       .Append("    <philosopher name='Plato'/>\n")
+       .Append("    <philosopher name='Aristotle'/>\n")
+       .Append("    <philosopher name='Socrates'/>\n")
+       .Append("</philosophers>\n");
+    Result<UniquePtr<System.Xml.Document>> parseResult = System.Xml.ParseXmlDocumentContent(xml, "xml", fileMap);
+    if (parseResult.Error())
+    {
+        Console.Error() << parseResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    System.Xml.Document* doc = parseResult.Value().Get();
+    Result<System.UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(query, doc);
+    if (nodeSetResult.Error())
+    {
+        Console.Error() << nodeSetResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+    int n = nodeSet->Count();
+    for (int i = 0; i < n; ++i)
+    {
+        System.Xml.Node* node = nodeSet->GetNode(i);
+        if (node->IsElementNode())
+        {
+            System.Xml.Element* element = cast<System.Xml.Element*>(node);
+            Console.Out() << element->GetAttribute("name") << endl();
+        }
+    }
+    return 0;
+}
+

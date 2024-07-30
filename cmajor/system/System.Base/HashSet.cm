@@ -21,51 +21,51 @@ namespace System.Collections
         private typedef HashSet<ValueType, HashFun, Compare> Self;
         private typedef Hashtable<KeyType, ValueType, Identity<ValueType>, HashFun, Compare> TableType;
 
-        public inline nothrow Iterator Begin()
+        public inline Iterator Begin()
         {
             return table.Begin();
         }
-        public inline nothrow ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return table.CBegin();
         }
-        public inline nothrow ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return table.CBegin();
         }
-        public inline nothrow Iterator End()
+        public inline Iterator End()
         {
             return table.End();
         }
-        public inline nothrow ConstIterator End() const
+        public inline ConstIterator End() const
         {
             return table.CEnd();
         }
-        public inline nothrow ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             return table.CEnd();
         }
-        public inline nothrow long Count() const
+        public inline long Count() const
         {
             return table.Count();
         }
-        public inline nothrow bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return table.IsEmpty();
         }
-        public inline nothrow void Clear()
+        public inline void Clear()
         {
             table.Clear();
         }
-        public inline nothrow Iterator Find(const KeyType& key)
+        public inline Iterator Find(const KeyType& key)
         {
             return table.Find(key);
         }
-        public inline nothrow ConstIterator Find(const KeyType& key) const
+        public inline ConstIterator Find(const KeyType& key) const
         {
             return table.CFind(key);
         }
-        public inline nothrow ConstIterator CFind(const KeyType& key) const
+        public inline ConstIterator CFind(const KeyType& key) const
         {
             return table.CFind(key);
         }
@@ -73,18 +73,18 @@ namespace System.Collections
         {
             return table.Insert(value);
         }
-        public inline nothrow void Remove(const KeyType& key)
+        public inline void Remove(const KeyType& key)
         {
             table.Remove(key);
         }
-        public inline nothrow void Remove(Iterator pos)
+        public inline void Remove(Iterator pos)
         {
             table.Remove(pos);
         }
         private TableType table;
     }
 
-    public nothrow bool operator==<T, H, C>(const HashSet<T, H, C>& left, const HashSet<T, H, C>& right) where T is Semiregular and HashFunction<H, T> and C is Relation and C.Domain is T
+    public bool operator==<T, H, C>(const HashSet<T, H, C>& left, const HashSet<T, H, C>& right) where T is Semiregular and HashFunction<H, T> and C is Relation and C.Domain is T
     {
         if (left.Count() != right.Count()) return false;
         for (const T& value : left)
@@ -97,6 +97,7 @@ namespace System.Collections
     [system_default]
     public TextWriter& operator<<<T, H, C>(TextWriter& writer, const HashSet<T, H, C>& hashSet)
     {
+        if (writer.Error()) return writer;
         writer << "{";
         bool first = true;
         for (const T& element : hashSet)

@@ -1,3 +1,0 @@
-project httpClient2;
-target=program;
-source <httpClient2.cm>;

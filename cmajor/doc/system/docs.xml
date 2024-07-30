@@ -8,7 +8,7 @@
   </doc>
   <doc id="System.Windows.Install">
     <desc>
-      The System.Windows.Install module is a special module that takes care of installing the System and System.Windows libraries to cmajor/system/lib/&lt;config> directory.
+      The System.Windows.Install module is a special module that takes care of installing the System and System.Windows libraries to cmajor/system/lib/&lt;backend>/&lt;config> directory.
       It contains no source code entities, but references the <ref>System.Windows</ref> module.
     </desc>
   </doc>
@@ -21,10 +21,6 @@
     <details>
         <p>
         The <a href="../../../langref/langref.html#rule.target-declaration"><strong>target</strong></a> declaration is discussed here.
-        </p>
-        <p>
-        The <a href="../../windows/system.windows.library.html">System Windows Library</a> document presents 
-        the structure and usage of the System.Windows library and discusses the creation of Windows GUI applications using Cmajor.
         </p>
     </details>
   </doc>
@@ -41,24 +37,17 @@
     <desc>
       The System.XPath module contains an implementation of the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/">XML Path Language</a> version 1.0 query engine.
     </desc>
-    <details title="Example">
-      Consider the following XML document:<br/><br/>
-      <span class="string">
-        &lt;philosophers><br/>
-        &lt;philosopher name='Plato'/><br/>
-        &lt;philosopher name='Aristotle'/><br/>
-        &lt;philosopher name='Socrates'/><br/>
-        &lt;/philosophers><br/>
-      </span><br/>
-      and the following XPath query string:<br/><br/><span class="string">"/philosophers/philosopher"</span>.<br/><br/>
-      <a href="../../../code/xml/cmdoc/content/XPath1/file/xpath1.cm.html">This</a> example program evaluates the previous query and prints
-      the names of all three philosophers: Plato, Aristotle and Socrates. The query selects all child elements having the name 'philosopher'
-      under the document element having the name 'philosophers' from the given XML document.
+    <details title="Example 1">
+      This <a href="../../../code/xml/cmdoc/content/xpath_test/file/xpath_test.cm.html">xpath_test.cm</a> program shows how to read an XML document and then 
+      evaluate an XPATH query with respect to the XML document and print the result as XML.
     </details>
-    <details>
-      If the query is changed to <span class="string">"/philosopher/philosopher[@name='Socrates']"</span>, only a single
-      'philosopher' child element that has an attribute with name 'name' and value 'Socrates' is selected.
-      Thus <a href="../../../code/xml/cmdoc/content/XPath2/file/xpath2.cm.html">this</a> program prints Socrates.
+    <details title="Example 2">
+      This <a href="../../../code/xml/cmdoc/content/xpath_philosophers/file/xpath_philosophers.cm.html">xpath_philosophers.cm</a> program shows 
+      how to parse an XML string to an XML document, evaluate an XPATH query and then retrieve data from XML elements.
+    </details>
+    <details title="Example 3">
+      This <a href="../../../code/xml/cmdoc/content/xpath_socrates/file/xpath_socrates.cm.html">xpath_socrates</a> program is the same as above with a 
+      different query expression.
     </details>
   </doc>
   <doc id="function_Evaluate_9BFC4966EFBA2E4968FEB78FE20F2809BB062B6C">
@@ -144,8 +133,6 @@
     
     <details title="Example">
       This <a href="../../../code/cmdoc/content/sgrep/file/sgrep.cm.html">sgrep</a> program searches a regular expression pattern from the given text files.
-      The pattern is represented as an <a href="https://en.wikipedia.org/wiki/Nondeterministic_finite_automaton">NFA</a>.
-      Names of files can contain wildcards * and ?.
     </details>
   </doc>
   <doc id="class_RegEx_FF045A8DB810B11A7E1838764E80BDB32C6C837F">
@@ -188,38 +175,13 @@
     </desc>
   </doc>
 
-  <doc id="System.Net.BinaryMessageProtocol">
-   <desc>
-     The System.Net.BinaryMessageProtocol module provides library support for sending and receiving binary messages over a <ref>class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C</ref>.
-   </desc>
-  </doc>
-  <doc id="function_ReadMessage_0C8EAE68D55C1C4B2D37606612964647F4074144">
-   <desc>
-	 Reads a binary message from a socket and returns it. Returns an error result if reading fails.
-   </desc>
-  </doc>
-  <doc id="function_WriteMessage_7EDBA7DCEFA76E6EBEE8EC1EB6A2C1F51640D46A">
-   <desc>
-    Writes a binary message to a socket and returns a true result if writing succeeds or an error result otherwise.
-   </desc>
-  </doc>
-
   <doc id="System.Net.Sockets">
     <desc>
       The System.Net.Sockets module provides client and server-side synchronous network socket connections.
     </desc>
     <details>
-      A client-side socket has support for HTTPS connections implemented by means of the <a href="http://www.gnutls.org/">GnuTLS</a> library.
-      HTTPS support should be considered experimental.
-    </details>
-    <details>
       There are limitations with the server-side sockets: they do not support HTTPS connections and they do not scale to thousands of connections
       or more because lack of asynchrony. The programming model is thread per client.
-    </details>
-    <details title="Examples">
-      This <a href="../../../code/socket/cmdoc/content/socketClient1/file/socketClient1.cm.html">socketClient1</a> example
-      creates a <ref>class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C</ref>, sends a HTTP/1.1 request using the socket,
-      reads the reply into a string using an <ref>class_IOBuffer_7AC61842AD3FCA40A4176E0D72E981B672D7E222</ref> and prints the reply to console.
     </details>
   </doc>
   <doc id="class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C">
@@ -280,8 +242,8 @@
       The System.IO.Compression module contains data compression/decompression streams.
       It is implemented by means of the <a href="http://www.zlib.net/">zlib</a> library.
     </desc>
-    <details title="Examples">
-      This <a href="../../../code/compression/cmdoc/content/deflate/file/main.cm.html">deflate</a> program compresses a file using
+    <details title="Example">
+      This <a href="../../../code/cmdoc/content/deflate/file/main.cm.html">deflate</a> program compresses a file using
       <ref>class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306</ref> or extracts a file compressed using
       <ref>class_DeflateStream_050C0EA929943E375A089D8EAE56F631A87D3306</ref>.
     </details>
@@ -295,9 +257,13 @@
     <details>
       It does not follow strictly W3C DOM naming conventions.
     </details>
-    <details title="Example">
-      <a href="../../../code/xml/cmdoc/content/Dom1/file/dom1.cm.html">This</a> example program creates an in-memory XML document,
-      writes it to a UTF-8 encoded text file, reads it back from the text file and writes it to console.
+    <details title="Example 1">
+      <a href="../../../code/xml/cmdoc/content/dom/file/dom.cm.html">This</a> example program shows how to parse an XML document
+      and write its contents to console.
+    </details>
+    <details title="Example 2">
+     This <a href="../../../code/xml/cmdoc/content/dom_rw/file/dom_rw.cm.html">dom_rw</a> program shows how to 
+     create an in-memory XML document, write it to a UTF-8 encoded text file, read it back from the text file and write it to console.
     </details>
   </doc>
   <doc id="class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC">
@@ -348,7 +314,7 @@
       <ref>function_ParseXmlDocument_11C5F4532C29497DA2F3ADDE83B9EDB70D857939</ref> function instead.
     </details>
     <details title="Example">
-      This <a href="../../../code/xml/cmdoc/content/XmlStats/file/xmlstats.cm.html">xmlstats</a> example program prints statistics of an XML file.
+      This <a href="../../../code/xml/cmdoc/content/xmlstats/file/xmlstats.cm.html">xmlstats</a> example program prints statistics of an XML file.
     </details>
   </doc>
 
@@ -396,11 +362,10 @@
   
   <doc id="System.Xml.Serialization">
 	<desc>
-	 Library support for XML serialization.
+	 The System.Xml.Serialization module contains library support for XML serialization.
 	</desc>
 	<details>
-	  See <em>cmajor/projects/xmlSerializationTests/xmlSerializationTests.cms</em> solution and 
-	  <a href="../../xml_serialization/xml_serialization.html">XML serialization</a> document for usage examples.
+	  See <a href="../../../xml_serialization/xml_serialization.html">XML serialization</a> document for usage examples.
 	</details>
   </doc>
 

@@ -1,0 +1,90 @@
+// dom_rw
+
+using System;
+
+public UniquePtr<System.Xml.Document> CreateDoc()
+{
+    UniquePtr<System.Xml.Document> doc(System.Xml.MakeDocument());
+    UniquePtr<System.Xml.Element> phs(System.Xml.MakeElement("philosophers"));
+    UniquePtr<System.Xml.Element> ph1(System.Xml.MakeElement("philosopher"));
+    ph1->SetAttribute("name", "Plato");
+    phs->AppendChild(ph1.Release());
+    UniquePtr<System.Xml.Element> ph2(System.Xml.MakeElement("philosopher"));
+    ph2->SetAttribute("name", "Aristotle");
+    phs->AppendChild(ph2.Release());
+    UniquePtr<System.Xml.Element> ph3(System.Xml.MakeElement("philosopher"));
+    ph3->SetAttribute("name", "Socrates");
+    phs->AppendChild(ph3.Release());
+    doc->AppendChild(phs.Release());
+    return doc;
+}
+
+[nodiscard]
+public Result<bool> WriteDocToFile(System.Xml.Document* doc)
+{
+    auto createResult = System.IO.File.CreateText("philosophers.xml");
+    if (createResult.Error())
+    {
+        return Result<bool>(ErrorId(createResult.GetErrorId()));
+    }
+    System.IO.StreamWriter& writer = createResult.Value();
+    System.Text.CodeFormatter formatter(writer);
+    formatter.SetIndentSize(1);
+    auto writeResult = doc->Write(formatter);
+    if (writeResult.Error())
+    {
+        return writeResult;
+    }
+    return Result<bool>(true);
+}
+
+[nodiscard]
+public Result<UniquePtr<System.Xml.Document>> ReadDocFromFile(System.Lex.FileMap& fileMap)
+{
+    auto result = System.Xml.ParseXmlDocument("philosophers.xml", fileMap);
+    if (result.Error())
+    {
+        Result<UniquePtr<System.Xml.Document>>(ErrorId(result.GetErrorId()));
+    }
+    UniquePtr<System.Xml.Document> doc = Rvalue(result.Value());
+    return Result<UniquePtr<System.Xml.Document>>(Rvalue(doc));
+}
+
+[nodiscard]
+public Result<bool> WriteDocToConsole(System.Xml.Document* doc)
+{
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(4);
+    auto result = doc->Write(formatter);
+    if (result.Error())
+    {
+        return result;
+    }
+    return Result<bool>(true);
+}
+
+int main()
+{
+    UniquePtr<System.Xml.Document> doc = CreateDoc();
+    auto result = WriteDocToFile(doc.Get());
+    if (result.Error())
+    {
+        Console.Error() << result.GetErrorMessage() << endl();
+        return 1;
+    }
+    System.Lex.FileMap fileMap;
+    Result<UniquePtr<System.Xml.Document>> readResult = ReadDocFromFile(fileMap);
+    if (readResult.Error())
+    {
+        Console.Error() << readResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    System.Xml.Document* docRead = readResult.Value().Get();
+    result = WriteDocToConsole(docRead);
+    if (result.Error())
+    {
+        Console.Error() << result.GetErrorMessage() << endl();
+        return 1;
+    }
+    return 0;
+}

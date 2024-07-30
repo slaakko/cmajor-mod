@@ -1,0 +1,46 @@
+// ...
+
+[xml]
+public class Person
+{
+    public Person()
+    {
+    }
+    public Person(const string& name_) : name(name_)
+    {
+    }
+    public inline const string& Name() const
+    {
+        return name;
+    }
+    public void AddVehicle(Vehicle* vehicle)
+    {
+        vehicles.Add(UniquePtr<Vehicle>(vehicle));
+    }
+    public void Print()
+    {
+        Console.Out() << "Person" << "\n";
+        Console.Out() << "name: " << name << "\n";
+        Console.Out() << "vehicles:" << "\n";
+        for (const auto& vehicle : vehicles)
+        {
+            vehicle->Print();
+        }
+    }
+    private string name;
+    private List<UniquePtr<Vehicle>> vehicles;
+}
+
+[nodiscard]
+Result<bool> Register()
+{
+    auto result = Person.Register();
+    if (result.Error()) return result;
+    result = Bicycle.Register();
+    if (result.Error()) return result;
+    result = Car.Register();
+    if (result.Error()) return result;
+    return Result<bool>(true);
+}
+
+// ...

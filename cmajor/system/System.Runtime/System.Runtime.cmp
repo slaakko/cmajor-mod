@@ -3,5 +3,4 @@ target=library;
 reference <../System.Core/System.Core.cmp>;
 source <Runtime.cm>;
 source <StaticInitCriticalSection.cm>;
-source <Unwind.cm>;
-source <Win.cm>;
+source <Trace.cm>;

@@ -27,126 +27,138 @@ namespace System.Windows.API
     public const long SE_ERR_PNF = 13;
     public const long SE_ERR_SHARE = 14;
 
-    public string GetWindowsAPIErrorMessage(ulong errorCode)
+    [nodiscard]
+    public Result<string> GetWindowsAPIErrorMessage(ulong errorCode)
     {
         wchar[4096] buffer;
         WinFormatMessage(errorCode, &buffer[0]);
-        return ToUtf8(wstring(&buffer[0]));
+        auto utf8Result = ToUtf8(wstring(&buffer[0]));
+        if (utf8Result.Error())
+        {
+            return Result<string>(ErrorId(utf8Result.GetErrorId()));
+        }
+        return Result<string>(utf8Result.Value());
     }
 
-    public class WindowsAPIException : Exception
-    {
-        public WindowsAPIException(ulong errorCode_) : base(GetWindowsAPIErrorMessage(errorCode_)), errorCode(errorCode_)
-        {
-        }
-        public ulong ErrorCode() const
-        {
-            return errorCode;
-        }
-        private ulong errorCode;
-    }
-
-    public class CommonDialogError : Exception
-    {
-        public CommonDialogError(uint errorCode, const string& errorStr) : base("Common dialog error " + ToString(errorCode) + ": " + errorStr)
-        {
-        }
-        private uint errorCode;
-    }
-
-    public void* FindFirstChangeNotification(const string& directoryPath)
+    [nodiscard]
+    public Result<void*> FindFirstChangeNotification(const string& directoryPath)
     {
         void* notificationHandle = WinFindFirstChangeNotification(directoryPath.Chars());
         if (notificationHandle == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("find first change notification failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return notificationHandle;
+        return Result<void*>(notificationHandle);
     }
 
-    public void FindNextChangeNotification(void* notificationHandle)
+    [nodiscard]
+    public Result<bool> FindNextChangeNotification(void* notificationHandle)
     {
         bool result = WinFindNextChangeNotification(notificationHandle);
         if (!result)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("find next change notification failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void FindCloseChangeNotification(void* notificationHandle)
+    [nodiscard]
+    public Result<bool> FindCloseChangeNotification(void* notificationHandle)
     {
         bool result = WinFindCloseChangeNotification(notificationHandle);
         if (!result)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("find close change notification failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void* CreateEvent()
+    [nodiscard]
+    public Result<void*> CreateEvent()
     {
         void* eventHandle = WinCreateEvent();
         if (eventHandle == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("create event failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return eventHandle;
+        return Result<void*>(eventHandle);
     }
 
-    public void SetEvent(void* eventHandle)
+    [nodiscard]
+    public Result<bool> SetEvent(void* eventHandle)
     {
         bool result = WinSetEvent(eventHandle);
         if (!result)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set event failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void ResetEvent(void* eventHandle)
+    [nodiscard]
+    public Result<bool> ResetEvent(void* eventHandle)
     {
         bool result = WinResetEvent(eventHandle);
         if (!result)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("reset event failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void WaitEvent(void* eventHandle)
+    [nodiscard]
+    public Result<bool> WaitEvent(void* eventHandle)
     {
         bool result = WinWaitEvent(eventHandle);
         if (!result)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("wait event failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void CloseHandle(void* handle)
+    [nodiscard]
+    public Result<bool> CloseHandle(void* handle)
     {
         bool result = WinCloseHandle(handle);
         if (!result)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("close handle failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void CloseEvent(void* eventHandle)
+    [nodiscard]
+    public Result<bool> CloseEvent(void* eventHandle)
     {
-        CloseHandle(eventHandle);
+        return CloseHandle(eventHandle);
     }
 
-    public int WaitForMultipleObjects(const List<void*>& handles)
+    [nodiscard]
+    public Result<int> WaitForMultipleObjects(const List<void*>& handles)
     {
         int result = WinWaitForMultipleObjects(cast<uint>(handles.Count()), handles.Begin().Ptr());
         if (result >= 0 && result <= handles.Count())
         {
-            return result;
+            return Result<int>(result);
         }
         else
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("wait for multiple objects failed", WinGetLastError());
+            return Result<int>(ErrorId(errorId));
         }
     }
 
-    public void ShellExecute(const string& filePath)
+    [nodiscard]
+    public Result<bool> ShellExecute(const string& filePath)
     {
         long errorCode = 0;
         bool succeeded = WinShellExecute(filePath.Chars(), errorCode);
@@ -226,21 +238,26 @@ namespace System.Windows.API
                 }
             }
             errorMessage.Append(error);
-            throw Exception(errorMessage);
+            int errorId = AllocateError(errorMessage);
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public ushort RegisterWindowClass(const char* windowClassName, uint style, int backgroundColor)
+    [nodiscard]
+    public Result<ushort> RegisterWindowClass(const char* windowClassName, uint style, int backgroundColor)
     {
         ushort windowClass = WinRegisterWindowClass(windowClassName, style, backgroundColor);
         if (windowClass == 0u)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("register window class failed", WinGetLastError());
+            return Result<ushort>(ErrorId(errorId));
         }
-        return windowClass;
+        return Result<ushort>(windowClass);
     }
 
-    public void* CreateWindowByClassAtom(ushort windowClass, const char* windowName, long style, long exStyle, Point location, Size size, Control* parent)
+    [nodiscard]
+    public Result<void*> CreateWindowByClassAtom(ushort windowClass, const char* windowName, long style, long exStyle, Point location, Size size, Control* parent)
     {
         void* parentHandle = null;
         if (parent != null)
@@ -250,15 +267,17 @@ namespace System.Windows.API
         void* result = WinCreateWindowByClassAtom(windowClass, windowName, style, exStyle, location.x, location.y, size.w, size.h, parentHandle);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("create window by class atom failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
         else
         {
-            return result;
+            return Result<void*>(result);
         }
     }
 
-    public void* CreateWindowByClassName(const char* windowClass, const char* windowName, long style, long exStyle, Point location, Size size, Control* parent)
+    [nodiscard]
+    public Result<void*> CreateWindowByClassName(const char* windowClass, const char* windowName, long style, long exStyle, Point location, Size size, Control* parent)
     {
         void* parentHandle = null;
         if (parent != null)
@@ -268,82 +287,98 @@ namespace System.Windows.API
         void* result = WinCreateWindowByClassName(windowClass, windowName, style, exStyle, location.x, location.y, size.w, size.h, parentHandle);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("create window by class name failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
         else
         {
-            return result;
+            return Result<void*>(result);
         }
     }
 
-    public void MoveWindow(void* windowHandle, const Point& location, const Size& size, bool repaint)
+    [nodiscard]
+    public Result<bool> MoveWindow(void* windowHandle, const Point& location, const Size& size, bool repaint)
     {
         bool succeeded = WinMoveWindow(windowHandle, location.x, location.y, size.w, size.h, repaint);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("move window failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public WinRect GetClientRect(void* windowHandle)
+    [nodiscard]
+    public Result<WinRect> GetClientRect(void* windowHandle)
     {
         WinRect rect;
         bool succeeded = WinGetClientRect(windowHandle, &rect);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get client rect failed", WinGetLastError());
+            return Result<WinRect>(ErrorId(errorId));
         }
-        return rect;
+        return Result<WinRect>(rect);
     }
 
-    public WinRect GetWindowRect(void* windowHandle)
+    [nodiscard]
+    public Result<WinRect> GetWindowRect(void* windowHandle)
     {
         WinRect rect;
         bool succeeded = WinGetWindowRect(windowHandle, &rect);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get window rect failed", WinGetLastError());
+            return Result<WinRect>(ErrorId(errorId));
         }
-        return rect;
+        return Result<WinRect>(rect);
     }
 
-    public Point ClientToScreen(void* windowHandle, const Point& point)
+    [nodiscard]
+    public Result<Point> ClientToScreen(void* windowHandle, const Point& point)
     {
         Point pt(point);
         bool succeeded = WinClientToScreen(windowHandle, &pt);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("client to screen failed", WinGetLastError());
+            return Result<Point>(ErrorId(errorId));
         }
-        return pt;
+        return Result<Point>(pt);
     }
 
-    public Point ScreenToClient(void* windowHandle, const Point& point)
+    [nodiscard]
+    public Result<Point> ScreenToClient(void* windowHandle, const Point& point)
     {
         Point pt(point);
         bool succeeded = WinScreenToClient(windowHandle, &pt);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("screen to client failed", WinGetLastError());
+            return Result<Point>(ErrorId(errorId));
         }
-        return pt;
+        return Result<Point>(pt);
     }
 
-    public nothrow bool PtInRect(const Point& point, const WinRect& rect)
+    public bool PtInRect(const Point& point, const WinRect& rect)
     {
         return WinPtInRect(&rect, &point);
     }
 
-    public void SetWindowText(void* windowHandle, const string& text)
+    [nodiscard]
+    public Result<bool> SetWindowText(void* windowHandle, const string& text)
     {
         bool succeeded = WinSetWindowText(windowHandle, text.Chars());
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set window text failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public int GetWindowTextLength(void* windowHandle)
+    [nodiscard]
+    public Result<int> GetWindowTextLength(void* windowHandle)
     {
         int result = WinGetWindowTextLength(windowHandle);
         if (result == 0)
@@ -351,15 +386,22 @@ namespace System.Windows.API
             ulong errorCode = WinGetLastError();
             if (errorCode != 0u)
             {
-                throw WindowsAPIException(errorCode);
+                int errorId = WinAllocateWindowsError("get window text length failed", errorCode);
+                return Result<int>(ErrorId(errorId));
             }
         }
-        return result;
+        return Result<int>(result);
     }
 
-    public string GetWindowText(void* windowHandle)
+    [nodiscard]
+    public Result<string> GetWindowText(void* windowHandle)
     {
-        int length = GetWindowTextLength(windowHandle);
+        Result<int> lengthResult = GetWindowTextLength(windowHandle);
+        if (lengthResult.Error())
+        {
+            return Result<string>(ErrorId(lengthResult.GetErrorId()));
+        }
+        int length = lengthResult.Value();
         UniquePtr<wchar> buffer(cast<wchar*>(MemAlloc(sizeof(wchar) * (length + 1))));
         int result = WinGetWindowText(windowHandle, buffer.Get(), length + 1);
         if (result == 0)
@@ -367,29 +409,40 @@ namespace System.Windows.API
             ulong errorCode = WinGetLastError();
             if (errorCode != 0u)
             {
-                throw WindowsAPIException(errorCode);
+                int errorId = WinAllocateWindowsError("get window text failed", errorCode);
+                return Result<string>(ErrorId(errorId));
             }
         }
-        return ToUtf8(buffer.Get());
+        auto utf8Result = ToUtf8(buffer.Get());
+        if (utf8Result.Error())
+        {
+            return Result<string>(ErrorId(utf8Result.GetErrorId()));
+        }
+        return Result<string>(utf8Result.Value());
     }
 
-    public void SetParentWindow(void* childWindowHandle, void* parentWindowHandle)
+    [nodiscard]
+    public Result<bool> SetParentWindow(void* childWindowHandle, void* parentWindowHandle)
     {
         void* result = WinSetParent(childWindowHandle, parentWindowHandle);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set parent window failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void* BeginPaint(void* windowHandle, void*& paintStruct)
+    [nodiscard]
+    public Result<void*> BeginPaint(void* windowHandle, void*& paintStruct)
     {
         void* result = WinBeginPaint(windowHandle, paintStruct);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("begin paint failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return result;
+        return Result<void*>(result);
     }
 
     public void EndPaint(void* windowHandle, void* paintStruct)
@@ -397,27 +450,28 @@ namespace System.Windows.API
         WinEndPaint(windowHandle, paintStruct);
     }
 
-    public void InvalidateRect(void* windowHandle, WinRect* rect, bool eraseBackground)
+    [nodiscard]
+    public Result<bool> InvalidateRect(void* windowHandle, WinRect* rect, bool eraseBackground)
     {
         bool succeeded = WinInvalidateRect(windowHandle, rect, eraseBackground);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("invalidate rect failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public nothrow bool MessageBeep(uint beepType)
-    {
-        return WinMessageBeep(beepType);
-    }
-
-    public void MessageBeepChecked(uint beepType)
+    [nodiscard]
+    public Result<bool> MessageBeep(uint beepType)
     {
         bool succeeded = WinMessageBeep(beepType);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("message beep failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
     public void* GetDC(void* windowHandle)
@@ -425,16 +479,19 @@ namespace System.Windows.API
         return WinGetDC(windowHandle);
     }
 
-    public void PostMessage(void* windowHandle, uint msg, uint wparam, long lparam)
+    [nodiscard]
+    public Result<bool> PostMessage(void* windowHandle, uint msg, ulong wparam, long lparam)
     {
         bool succeeded = WinPostMessage(windowHandle, msg, wparam, lparam);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("post message failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void ThrowCommonDialogError(uint errorCode)
+    public string CommonDialogError(uint errorCode)
     {
         string errorStr;
         switch (errorCode)
@@ -600,8 +657,7 @@ namespace System.Windows.API
                 break;
             }
         }
-        MessageBox.Show(errorStr);
-        //throw CommonDialogError(errorCode, errorStr);
+        return errorStr;
     }
 
     public const uint OFN_READONLY =                0x00000001u;
@@ -627,14 +683,25 @@ namespace System.Windows.API
     public const uint OFN_NODEREFERENCELINKS =      0x00100000u;
     public const uint OFN_LONGNAMES =               0x00200000u;     // force long names for 3.x modules
 
-    public bool GetOpenFileName(void* windowHandle, const List<Pair<string, string>>& descriptionFilterPairs, const string& initialDirectory, const string& defaultFilePath,
-        const string& defaultExtension, uint flags, string& currentDirectory, List<string>& fileNames)
+    [nodiscard]
+    public Result<bool> GetOpenFileName(void* windowHandle, const List<Pair<string, string>>& descriptionFilterPairs, const string& initialDirectory,
+        const string& defaultFilePath, const string& defaultExtension, uint flags, string& currentDirectory, List<string>& fileNames)
     {
         long filterBufferSize = 0;
         for (const Pair<string, string>& descriptionFilterPair : descriptionFilterPairs)
         {
-            wstring description = ToUtf16(descriptionFilterPair.first);
-            wstring filter = ToUtf16(descriptionFilterPair.second);
+            auto descriptionResult = ToUtf16(descriptionFilterPair.first);
+            if (descriptionResult.Error())
+            {
+                return Result<bool>(ErrorId(descriptionResult.GetErrorId()));
+            }
+            wstring description = Rvalue(descriptionResult.Value());
+            auto filterResult = ToUtf16(descriptionFilterPair.second);
+            if (filterResult.Error())
+            {
+                return Result<bool>(ErrorId(filterResult.GetErrorId()));
+            }
+            wstring filter = Rvalue(filterResult.Value());
             filterBufferSize = filterBufferSize + description.Length() + 1 + filter.Length() + 1;
         }
         filterBufferSize = filterBufferSize + 1 + 1;
@@ -642,10 +709,20 @@ namespace System.Windows.API
         wchar* filterBufferPtr = filterBuffer.Get();
         for (const Pair<string, string>& descriptionFilterPair : descriptionFilterPairs)
         {
-            wstring description = ToUtf16(descriptionFilterPair.first);
+            auto descriptionResult = ToUtf16(descriptionFilterPair.first);
+            if (descriptionResult.Error())
+            {
+                return Result<bool>(ErrorId(descriptionResult.GetErrorId()));
+            }
+            wstring description = Rvalue(descriptionResult.Value());
             long descLen = StrCopy(filterBufferPtr, description.Chars(), description.Length());
             filterBufferPtr = filterBufferPtr + descLen + 1;
-            wstring filter = ToUtf16(descriptionFilterPair.second);
+            auto filterResult = ToUtf16(descriptionFilterPair.second);
+            if (filterResult.Error())
+            {
+                return Result<bool>(ErrorId(filterResult.GetErrorId()));
+            }
+            wstring filter = Rvalue(filterResult.Value());
             long filterLen = StrCopy(filterBufferPtr, filter.Chars(), filter.Length());
             filterBufferPtr = filterBufferPtr + filterLen + 1;
         }
@@ -653,7 +730,12 @@ namespace System.Windows.API
         *filterBufferPtr++ = '\0';
         long fileNameBufferSize = 16 * 1024;
         UniquePtr<wchar> fileNameBuffer = cast<wchar*>(MemAlloc(sizeof(wchar) * fileNameBufferSize));
-        wstring defFilePath = ToUtf16(defaultFilePath);
+        auto defaultFilePathResult = ToUtf16(defaultFilePath);
+        if (defaultFilePathResult.Error())
+        {
+            return Result<bool>(ErrorId(defaultFilePathResult.GetErrorId()));
+        }
+        wstring defFilePath = Rvalue(defaultFilePathResult.Value());
         if (defaultFilePath.IsEmpty())
         {
             *fileNameBuffer.Get() = '\0';
@@ -662,13 +744,28 @@ namespace System.Windows.API
         {
             StrCopy(fileNameBuffer.Get(), defFilePath.Chars(), defFilePath.Length());
         }
-        wstring initialDir = ToUtf16(initialDirectory);
-        wstring defExt = ToUtf16(defaultExtension);
+        auto initialDirResult = ToUtf16(initialDirectory);
+        if (initialDirResult.Error())
+        {
+            return Result<bool>(ErrorId(initialDirResult.GetErrorId()));
+        }
+        wstring initialDir = Rvalue(initialDirResult.Value());
+        auto defExtResult = ToUtf16(defaultExtension);
+        if (defExtResult.Error())
+        {
+            return Result<bool>(ErrorId(defExtResult.GetErrorId()));
+        }
+        wstring defExt = Rvalue(defExtResult.Value());
         bool success = WinGetOpenFileName(windowHandle, filterBuffer.Get(), initialDir.Chars(), fileNameBuffer.Get(), cast<uint>(fileNameBufferSize), flags, defExt.Chars());
         if (success)
         {
             long firstPathLength = StrLen(fileNameBuffer.Get());
-            string firstPath = ToUtf8(wstring(fileNameBuffer.Get(), firstPathLength));
+            auto firstPathResult = ToUtf8(wstring(fileNameBuffer.Get(), firstPathLength));
+            if (firstPathResult.Error())
+            {
+                return Result<bool>(ErrorId(firstPathResult.GetErrorId()));
+            }
+            string firstPath = Rvalue(firstPathResult.Value());
             if ((flags & OFN_ALLOWMULTISELECT) == 0)
             {
                 currentDirectory = Path.GetDirectoryName(firstPath);
@@ -682,36 +779,54 @@ namespace System.Windows.API
                 while (*wpath != '\0')
                 {
                     long pathLength = StrLen(wpath);
-                    string path = ToUtf8(wstring(wpath, pathLength));
+                    auto pathResult = ToUtf8(wstring(wpath, pathLength));
+                    if (pathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(pathResult.GetErrorId()));
+                    }
+                    string path = Rvalue(pathResult.Value());
                     fileNames.Add(path);
                     wpath = wpath + pathLength + 1;
                 }
             }
-            return true;
+            return Result<bool>(true);
         }
         else
         {
             uint errorCode = WinCommDlgExtendedError();
             if (errorCode == 0u)
             {
-                return false;
+                return Result<bool>(false);
             }
             else
             {
-                ThrowCommonDialogError(errorCode);
+                string message = CommonDialogError(errorCode);
+                int errorId = AllocateError("get open file name failed: " + message);
+                return Result<bool>(ErrorId(errorId));
             }
         }
-        return false;
+        return Result<bool>(false);
     }
 
-    public bool GetSaveFileName(void* windowHandle, const List<Pair<string, string>>& descriptionFilterPairs, const string& initialDirectory, const string& defaultFilePath,
-        const string& defaultExtension, uint flags, string& currentDirectory, string& filePath)
+    [nodiscard]
+    public Result<bool> GetSaveFileName(void* windowHandle, const List<Pair<string, string>>& descriptionFilterPairs, const string& initialDirectory,
+        const string& defaultFilePath, const string& defaultExtension, uint flags, string& currentDirectory, string& filePath)
     {
         long filterBufferSize = 0;
         for (const Pair<string, string>& descriptionFilterPair : descriptionFilterPairs)
         {
-            wstring description = ToUtf16(descriptionFilterPair.first);
-            wstring filter = ToUtf16(descriptionFilterPair.second);
+            auto descriptionResult = ToUtf16(descriptionFilterPair.first);
+            if (descriptionResult.Error())
+            {
+                return Result<bool>(ErrorId(descriptionResult.GetErrorId()));
+            }
+            wstring description = Rvalue(descriptionResult.Value());
+            auto filterResult = ToUtf16(descriptionFilterPair.second);
+            if (filterResult.Error())
+            {
+                return Result<bool>(ErrorId(filterResult.GetErrorId()));
+            }
+            wstring filter = Rvalue(filterResult.Value());
             filterBufferSize = filterBufferSize + description.Length() + 1 + filter.Length() + 1;
         }
         filterBufferSize = filterBufferSize + 1 + 1;
@@ -719,10 +834,20 @@ namespace System.Windows.API
         wchar* filterBufferPtr = filterBuffer.Get();
         for (const Pair<string, string>& descriptionFilterPair : descriptionFilterPairs)
         {
-            wstring description = ToUtf16(descriptionFilterPair.first);
+            auto descriptionResult = ToUtf16(descriptionFilterPair.first);
+            if (descriptionResult.Error())
+            {
+                return Result<bool>(ErrorId(descriptionResult.GetErrorId()));
+            }
+            wstring description = Rvalue(descriptionResult.Value());
             long descLen = StrCopy(filterBufferPtr, description.Chars(), description.Length());
             filterBufferPtr = filterBufferPtr + descLen + 1;
-            wstring filter = ToUtf16(descriptionFilterPair.second);
+            auto filterResult = ToUtf16(descriptionFilterPair.second);
+            if (filterResult.Error())
+            {
+                return Result<bool>(ErrorId(filterResult.GetErrorId()));
+            }
+            wstring filter = Rvalue(filterResult.Value());
             long filterLen = StrCopy(filterBufferPtr, filter.Chars(), filter.Length());
             filterBufferPtr = filterBufferPtr + filterLen + 1;
         }
@@ -730,7 +855,12 @@ namespace System.Windows.API
         *filterBufferPtr++ = '\0';
         long fileNameBufferSize = 1024;
         UniquePtr<wchar> fileNameBuffer = cast<wchar*>(MemAlloc(sizeof(wchar) * fileNameBufferSize));
-        wstring defFilePath = ToUtf16(defaultFilePath);
+        auto defFilePathResult = ToUtf16(defaultFilePath);
+        if (defFilePathResult.Error())
+        {
+            return Result<bool>(ErrorId(defFilePathResult.GetErrorId()));
+        }
+        wstring defFilePath = Rvalue(defFilePathResult.Value());
         if (defaultFilePath.IsEmpty())
         {
             *fileNameBuffer.Get() = '\0';
@@ -739,78 +869,105 @@ namespace System.Windows.API
         {
             StrCopy(fileNameBuffer.Get(), defFilePath.Chars(), defFilePath.Length());
         }
-        wstring initialDir = ToUtf16(initialDirectory);
-        wstring defExt = ToUtf16(defaultExtension);
+        auto initialDirResult = ToUtf16(initialDirectory);
+        if (initialDirResult.Error())
+        {
+            return Result<bool>(ErrorId(initialDirResult.GetErrorId()));
+        }
+        wstring initialDir = Rvalue(initialDirResult.Value());
+        auto defExtResult = ToUtf16(defaultExtension);
+        if (defExtResult.Error())
+        {
+            return Result<bool>(ErrorId(defExtResult.GetErrorId()));
+        }
+        wstring defExt = Rvalue(defExtResult.Value());
         bool success = WinGetSaveFileName(windowHandle, filterBuffer.Get(), initialDir.Chars(), fileNameBuffer.Get(), cast<uint>(fileNameBufferSize), flags, defExt.Chars());
         if (success)
         {
             long firstPathLength = StrLen(fileNameBuffer.Get());
-            filePath = ToUtf8(wstring(fileNameBuffer.Get(), firstPathLength));
-            return true;
+            auto filePathResult = ToUtf8(wstring(fileNameBuffer.Get(), firstPathLength));
+            if (filePathResult.Error())
+            {
+                return Result<bool>(ErrorId(filePathResult.GetErrorId()));
+            }
+            filePath = Rvalue(filePathResult.Value());
+            return Result<bool>(true);
         }
         else
         {
             uint errorCode = WinCommDlgExtendedError();
             if (errorCode == 0u)
             {
-                return false;
+                return Result<bool>(false);
             }
             else
             {
-                ThrowCommonDialogError(errorCode);
+                string message = CommonDialogError(errorCode);
+                int errorId = AllocateError("get save file name failed: " + message);
+                return Result<bool>(ErrorId(errorId));
             }
         }
-        return false;
+        return Result<bool>(false);
     }
 
-    public void* LoadImage(const char* name, uint type, int cx, int cy)
+    [nodiscard]
+    public Result<void*> LoadImage(const char* name, uint type, int cx, int cy)
     {
         void* result = WinLoadImage(name, type, cx, cy);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("load image failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return result;
+        return Result<void*>(result);
     }
 
-    public void* LoadCursor(const char* name)
+    [nodiscard]
+    public Result<void*> LoadCursor(const char* name)
     {
         void* result = WinLoadCursor(name);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("load cursor failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return result;
+        return Result<void*>(result);
     }
 
-    public void* LoadIcon(const char* name)
+    [nodiscard]
+    public Result<void*> LoadIcon(const char* name)
     {
         void* result = WinLoadIcon(name);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("load icon failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return result;
+        return Result<void*>(result);
     }
 
-    public void* LoadBitmap(const char* name)
+    [nodiscard]
+    public Result<void*> LoadBitmap(const char* name)
     {
         void* result = WinLoadBitmap(name);
         if (result == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("load bitmap failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return result;
+        return Result<void*>(result);
     }
 
-    public int GetSystemMetrics(int index)
+    [nodiscard]
+    public Result<int> GetSystemMetrics(int index)
     {
         int result = WinGetSystemMetrics(index);
         if (result == 0)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get system metrics failed", WinGetLastError());
+            return Result<int>(ErrorId(errorId));
         }
-        return result;
+        return Result<int>(result);
     }
 
     public void* GetTopWindow(void* windowHandle)
@@ -818,13 +975,16 @@ namespace System.Windows.API
         return WinGetTopWindow(windowHandle);
     }
 
-    public void BringWindowToTop(void* windowHandle)
+    [nodiscard]
+    public Result<bool> BringWindowToTop(void* windowHandle)
     {
         bool succeeded = WinBringWindowToTop(windowHandle);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("bring window to top failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
     public enum WindowPos : int
@@ -832,7 +992,7 @@ namespace System.Windows.API
         top = 0, bottom = 1, topmost = -1, noTopmost = -2
     }
 
-    public nothrow void* WindowPosHandle(WindowPos pos)
+    public void* WindowPosHandle(WindowPos pos)
     {
         return cast<void*>(cast<ulong>(cast<int>(pos)));
     }
@@ -856,13 +1016,16 @@ namespace System.Windows.API
         SWP_SHOWWINDOW = 0x40u
     }
 
-    public void SetWindowPos(void* windowHandle, void* insertAfterWindowHandle, int x, int y, int cx, int cy, SetWindowPosFlags flags)
+    [nodiscard]
+    public Result<bool> SetWindowPos(void* windowHandle, void* insertAfterWindowHandle, int x, int y, int cx, int cy, SetWindowPosFlags flags)
     {
         bool succeeded = WinSetWindowPos(windowHandle, insertAfterWindowHandle, x, y, cx, cy, cast<uint>(flags));
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set window pos failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
     public enum ClassLongIndex : int
@@ -879,7 +1042,8 @@ namespace System.Windows.API
         GCL_WNDPROC = -24
     }
 
-    public long GetClassLong(void* windowHandle, ClassLongIndex index)
+    [nodiscard]
+    public Result<long> GetClassLong(void* windowHandle, ClassLongIndex index)
     {
         long value = WinGetClassLong(windowHandle, cast<int>(index));
         if (value == 0)
@@ -887,13 +1051,15 @@ namespace System.Windows.API
             ulong errorCode = WinGetLastError();
             if (errorCode != 0u)
             {
-                throw WindowsAPIException(errorCode);
+                int errorId = WinAllocateWindowsError("get class long failed", errorCode);
+                return Result<long>(ErrorId(errorId));
             }
         }
-        return value;
+        return Result<long>(value);
     }
 
-    public void SetClassLong(void* windowHandle, ClassLongIndex index, long newValue)
+    [nodiscard]
+    public Result<long> SetClassLong(void* windowHandle, ClassLongIndex index, long newValue)
     {
         long value = WinSetClassLong(windowHandle, cast<int>(index), newValue);
         if (value == 0)
@@ -901,9 +1067,11 @@ namespace System.Windows.API
             ulong errorCode = WinGetLastError();
             if (errorCode != 0u)
             {
-                throw WindowsAPIException(errorCode);
+                int errorId = WinAllocateWindowsError("set class long failed", errorCode);
+                return Result<long>(ErrorId(errorId));
             }
         }
+        return Result<long>(value);
     }
 
     public enum WindowLongIndex : int
@@ -916,26 +1084,32 @@ namespace System.Windows.API
         GWLP_WNDPROC = -4
     }
 
-    public long GetWindowLong(void* windowHandle, WindowLongIndex index)
+    [nodiscard]
+    public Result<long> GetWindowLong(void* windowHandle, WindowLongIndex index)
     {
         long value = WinGetWindowLong(windowHandle, cast<int>(index));
         if (value == 0)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get window long failed", WinGetLastError());
+            return Result<long>(ErrorId(errorId));
         }
-        return value;
+        return Result<long>(value);
     }
 
-    public void SetWindowLong(void* windowHandle, WindowLongIndex index, long newValue)
+    [nodiscard]
+    public Result<bool> SetWindowLong(void* windowHandle, WindowLongIndex index, long newValue)
     {
         bool succeeded = WinSetWindowLong(windowHandle, cast<int>(index), newValue);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set window long failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void ScrollWindow(void* windowHandle, int xAmount, int yAmount, const Rect* clientRect, const Rect* clipRect)
+    [nodiscard]
+    public Result<bool> ScrollWindow(void* windowHandle, int xAmount, int yAmount, const Rect* clientRect, const Rect* clipRect)
     {
         int clientLocX = 0;
         int clientLocY = 0;
@@ -962,11 +1136,14 @@ namespace System.Windows.API
         bool succeeded = WinScrollWindow(windowHandle, xAmount, yAmount, clientLocX, clientLocY, clientSizeW, clientSizeH, clipLocX, clipLocY, clipSizeW, clipSizeH);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("scroll window failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void ScrollWindowEx(void* windowHandle, int dx, int dy, const Rect* clientRect, const Rect* clipRect, const Rect& updateRect)
+    [nodiscard]
+    public Result<bool> ScrollWindowEx(void* windowHandle, int dx, int dy, const Rect* clientRect, const Rect* clipRect, const Rect& updateRect)
     {
         int clientLocX = 0;
         int clientLocY = 0;
@@ -997,8 +1174,10 @@ namespace System.Windows.API
         bool succeeded = WinScrollWindowEx(windowHandle, dx, dy, clientLocX, clientLocY, clientSizeW, clientSizeH, clipLocX, clipLocY, clipSizeW, clipSizeH, x1, y1, x2, y2);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("scroll window ex failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
     public enum ScrollBar : int
@@ -1009,13 +1188,16 @@ namespace System.Windows.API
         SB_VERT = 1
     }
 
-    public void GetScrollInfo(void* windowHandle, ScrollBar scrollBar, uint& nPage, int& nPos, int& nMin, int& nMax, int& nTrackPos)
+    [nodiscard]
+    public Result<bool> GetScrollInfo(void* windowHandle, ScrollBar scrollBar, uint& nPage, int& nPos, int& nMin, int& nMax, int& nTrackPos)
     {
         bool succeeded = WinGetScrollInfo(windowHandle, cast<int>(scrollBar), nPage, nPos, nMin, nMax, nTrackPos);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get scroll info failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
     public enum ScrollInfoMask : uint
@@ -1031,100 +1213,129 @@ namespace System.Windows.API
         return WinSetScrollInfo(windowHandle, cast<int>(scrollBar), cast<uint>(mask), redraw, nPage, nPos, nMin, nMax);
     }
 
-    public void ShowScrollBar(void* windowHandle, ScrollBar scrollBar, bool show)
+    [nodiscard]
+    public Result<bool> ShowScrollBar(void* windowHandle, ScrollBar scrollBar, bool show)
     {
         bool succeeded = WinShowScrollBar(windowHandle, cast<int>(scrollBar), show);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("show scroll bar failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void CreateCaret(void* windowHandle, void* bitmapHandle, int width, int height)
+    [nodiscard]
+    public Result<bool> CreateCaret(void* windowHandle, void* bitmapHandle, int width, int height)
     {
         bool succeeded = WinCreateCaret(windowHandle, bitmapHandle, width, height);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("create caret failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void DestroyCaret()
+    [nodiscard]
+    public Result<bool> DestroyCaret()
     {
         bool succeeded = WinDestroyCaret();
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("destroy caret failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void ShowCaret(void* windowHandle)
+    [nodiscard]
+    public Result<bool> ShowCaret(void* windowHandle)
     {
         bool succeeded = WinShowCaret(windowHandle);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("show caret failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void HideCaret(void* windowHandle)
+    [nodiscard]
+    public Result<bool> HideCaret(void* windowHandle)
     {
         bool succeeded = WinHideCaret(windowHandle);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("hide caret failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public Point GetCaretPos()
+    [nodiscard]
+    public Result<Point> GetCaretPos()
     {
         Point caretPos;
         bool succeeded = WinGetCaretPos(caretPos.x, caretPos.y);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get caret pos failed", WinGetLastError());
+            return Result<Point>(ErrorId(errorId));
         }
-        return caretPos;
+        return Result<Point>(caretPos);
     }
 
-    public void SetCaretPos(const Point& caretPos)
+    [nodiscard]
+    public Result<bool> SetCaretPos(const Point& caretPos)
     {
         bool succeeded = WinSetCaretPos(caretPos.x, caretPos.y);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set caret pos failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void SetTimer(void* windowHandle, uint timerId, uint elapseMs)
+    [nodiscard]
+    public Result<bool> SetTimer(void* windowHandle, uint timerId, uint elapseMs)
     {
         bool succeeded = WinSetTimer(windowHandle, timerId, elapseMs);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set timer failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void KillTimer(void* windowHandle, uint timerId)
+    [nodiscard]
+    public Result<bool> KillTimer(void* windowHandle, uint timerId)
     {
         bool succeeded = WinKillTimer(windowHandle, timerId);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("kill timer failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public uint RegisterClipboardFormat(const char* formatName)
+    [nodiscard]
+    public Result<uint> RegisterClipboardFormat(const char* formatName)
     {
         uint format = WinRegisterClipboardFormat(formatName);
         if (format == 0u)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("register clipboard format failed", WinGetLastError());
+            return Result<uint>(ErrorId(errorId));
         }
-        return format;
+        return Result<uint>(format);
     }
 
-    public void OpenClipboard(void* windowHandle)
+    [nodiscard]
+    public Result<bool> OpenClipboard(void* windowHandle)
     {
         int maxWait = 100;
         for (int i = 0; i < 5; ++i)
@@ -1132,7 +1343,7 @@ namespace System.Windows.API
             bool succeeded = WinOpenClipboard(windowHandle);
             if (succeeded)
             {
-                return;
+                return Result<bool>(true);
             }
             else if (i < 4)
             {
@@ -1140,45 +1351,56 @@ namespace System.Windows.API
                 maxWait = maxWait * 2;
             }
         }
-        throw WindowsAPIException(WinGetLastError());
+        int errorId = WinAllocateWindowsError("open clipboard failed", WinGetLastError());
+        return Result<bool>(ErrorId(errorId));
     }
 
-    public void CloseClipboard()
+    [nodiscard]
+    public Result<bool> CloseClipboard()
     {
         bool succeeded = WinCloseClipboard();
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("close clipboard failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void EmptyClipboard()
+    [nodiscard]
+    public Result<bool> EmptyClipboard()
     {
         bool succeeded = WinEmptyClipboard();
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("empty clipboard failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void* SetClipboardData(uint format, void* mem)
+    [nodiscard]
+    public Result<void*> SetClipboardData(uint format, void* mem)
     {
         void* retval = WinSetClipboardData(format, mem);
         if (retval == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("set clipboard data failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return retval;
+        return Result<void*>(retval);
     }
 
-    public void* GetClipboardData(uint format)
+    [nodiscard]
+    public Result<void*> GetClipboardData(uint format)
     {
         void* retval = WinGetClipboardData(format);
         if (retval == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get clipboard data failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return retval;
+        return Result<void*>(retval);
     }
 
     public bool IsClipboardFormatAvailable(uint format)
@@ -1186,22 +1408,28 @@ namespace System.Windows.API
         return WinIsClipboardFormatAvailable(format);
     }
 
-    public void AddClipboardFormatListener(void* windowHandle)
+    [nodiscard]
+    public Result<bool> AddClipboardFormatListener(void* windowHandle)
     {
         bool succeeded = WinAddClipboardFormatListener(windowHandle);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("add clipboard format listener failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public void RemoveClipboardFormatListener(void* windowHandle)
+    [nodiscard]
+    public Result<bool> RemoveClipboardFormatListener(void* windowHandle)
     {
         bool succeeded = WinRemoveClipboardFormatListener(windowHandle);
         if (!succeeded)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("remove clipboard format listener failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
     public enum GlobalAllocFlags : uint
@@ -1213,27 +1441,32 @@ namespace System.Windows.API
         GPTR = 0x0040u
     }
 
-    public void* GlobalAlloc(GlobalAllocFlags flags, ulong size)
+    [nodiscard]
+    public Result<void*> GlobalAlloc(GlobalAllocFlags flags, ulong size)
     {
         void* retval = WinGlobalAlloc(cast<uint>(flags), size);
         if (retval == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("global alloc failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return retval;
+        return Result<void*>(retval);
     }
 
-    public void* GlobalLock(void* memHandle)
+    [nodiscard]
+    public Result<void*> GlobalLock(void* memHandle)
     {
         void* retval = WinGlobalLock(memHandle);
         if (retval == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("global lock failed", WinGetLastError());
+            return Result<void*>(ErrorId(errorId));
         }
-        return retval;
+        return Result<void*>(retval);
     }
 
-    public void GlobalUnlock(void* memHandle)
+    [nodiscard]
+    public Result<bool> GlobalUnlock(void* memHandle)
     {
         bool retval = WinGlobalUnlock(memHandle);
         if (!retval)
@@ -1241,51 +1474,77 @@ namespace System.Windows.API
             ulong error = WinGetLastError();
             if (error != 0u)
             {
-                throw WindowsAPIException(error);
+                int errorId = WinAllocateWindowsError("global unlock failed", error);
+                return Result<bool>(ErrorId(errorId));
             }
         }
+        return Result<bool>(true);
     }
 
-    public void GlobalFree(void* memHandle)
+    [nodiscard]
+    public Result<bool> GlobalFree(void* memHandle)
     {
         void* retval = WinGlobalFree(memHandle);
         if (retval != null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("global free failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public ulong GlobalSize(void* memHandle)
+    [nodiscard]
+    public Result<ulong> GlobalSize(void* memHandle)
     {
         ulong size = WinGlobalSize(memHandle);
         if (size == 0u)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("global size failed", WinGetLastError());
+            return Result<ulong>(ErrorId(errorId));
         }
-        return size;
+        return Result<ulong>(size);
     }
 
-    public void GetCursorPos(int& x, int& y)
+    [nodiscard]
+    public Result<bool> GetCursorPos(int& x, int& y)
     {
         if (!WinGetCursorPos(x, y))
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("get cursor pos failed", WinGetLastError());
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
-    public string GetFolder(void* windowHandle, const string& defaultDirectory)
+
+    [nodiscard]
+    public Result<string> GetFolder(void* windowHandle, const string& defaultDirectory)
     {
-        wstring defaultDir = ToUtf16(defaultDirectory);
+        auto defaultDirResult = ToUtf16(defaultDirectory);
+        if (defaultDirResult.Error())
+        {
+            return Result<string>(ErrorId(defaultDirResult.GetErrorId()));
+        }
+        wstring defaultDir = Rvalue(defaultDirResult.Value());
         long folderNameBufferSize = 1024;
         UniquePtr<wchar> folderNameBuffer = cast<wchar*>(MemAlloc(sizeof(wchar) * folderNameBufferSize));
         bool success = WinGetFolder(windowHandle, defaultDir.Chars(), folderNameBuffer.Get(), cast<uint>(folderNameBufferSize));
         if (success)
         {
             wstring folderName(folderNameBuffer.Get());
-            return ToUtf8(folderName);
+            auto utf8Result = ToUtf8(folderName);
+            if (utf8Result.Error())
+            {
+                return utf8Result;
+            }
+            else
+            {
+                return Result<string>(utf8Result.Value());
+            }
         }
         else
         {
-            return string();
+            int errorId = AllocateError("GetFolder failed");
+            return Result<string>(ErrorId(errorId));
         }
     }
 }

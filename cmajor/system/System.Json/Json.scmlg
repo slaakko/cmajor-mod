@@ -1,0 +1,4 @@
+project JsonLexer;
+tokens <Json.token>;
+expressions <Json.expr>;
+lexer <Json.lexer>;

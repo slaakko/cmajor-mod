@@ -1,0 +1,142 @@
+<html>
+ <head>
+  <meta charset="utf-8"/>
+  <title>XmlSerializable Abstract Class</title>
+  <link href="../../../style/style.css" rel="stylesheet" type="text/css"/>
+ </head>
+ <body>
+  <h1>XmlSerializable Abstract Class</h1>
+  <span class="indent">
+   <a href="#ctorDtors">Constructors &amp; Destructor</a>
+    | <a href="#memberFunctions">Member Functions</a>
+    | <a href="#memberVariables">Member Variables</a>
+  </span>
+  <h2>Definition</h2>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#11">11</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#default_constructor_XmlSerializable_8B0E19E688CEEFDDE743C4E5468F2F366A731F65">XmlSerializable</a>()</td>
+   </tr>
+  </table>
+  <h2 id="memberFunctions">Member Functions</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">int</span></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_ClassId_XmlSerializable_E849BFC2CE9857D0F0211ACC89520D139D575F8A">ClassId</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_ClassName_XmlSerializable_B07E05BD4424B08785717038298DEA2E7BF55871">ClassName</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_FromXml_XmlSerializable_4509578FD860D6DFF1E73E9408E93846F668F7F3">FromXml</a>(<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*&nbsp;element)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_FromXml_XmlSerializable_B2FBF307BB669906588BB4C1391F7812A30DB6BB">FromXml</a>(<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*&nbsp;element, <a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html">XmlSerializationContext</a>&amp;&nbsp;ctx)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Uuid_81014B41FA199BCF75CA0E6799422874FC800AB7.html">Uuid</a>&amp;</td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_ObjectId_XmlSerializable_2E91E530086581D8A4512C489343751611D2EB19">ObjectId</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_SetObjectId_XmlSerializable_985BDC08962D8325C626C8161F2D6FB064ABFFCD">SetObjectId</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Uuid_81014B41FA199BCF75CA0E6799422874FC800AB7.html">Uuid</a>&amp;&nbsp;objectId_)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_SetObjectXmlAttributes_XmlSerializable_692EAF92330E87BBB8C6A311407002EED85E3AD6">SetObjectXmlAttributes</a>(<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*&nbsp;element)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_ToXml_XmlSerializable_216B39DE11146EA18695F3D3B0D1551D03580F82">ToXml</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;elementName)</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html#member_function_ToXml_XmlSerializable_082954B1ACBC4BC2D88B67BA094E27F89DBB91E7">ToXml</a>(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;elementName, <a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html">XmlSerializationContext</a>&amp;&nbsp;ctx)</td>
+   </tr>
+  </table>
+  <h2 id="memberVariables">Member Variables</h2>
+  <table>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_objectId_BC7B7873200DE7B21C9201B687D0351CFFA63F3E" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Uuid_81014B41FA199BCF75CA0E6799422874FC800AB7.html">Uuid</a></td>
+    <td xml:space="preserve">objectId</td>
+   </tr>
+  </table>
+  <h2>Constructor&amp; Destructor Details</h2>
+  <h3 id="default_constructor_XmlSerializable_8B0E19E688CEEFDDE743C4E5468F2F366A731F65" xml:space="preserve">XmlSerializable&nbsp;Constructor</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;XmlSerializable()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#13">13</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h2>Member Function Details</h2>
+  <h3 id="member_function_ClassId_XmlSerializable_E849BFC2CE9857D0F0211ACC89520D139D575F8A" xml:space="preserve">ClassId&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">int</span>&nbsp;ClassId()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#30">30</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ClassName_XmlSerializable_B07E05BD4424B08785717038298DEA2E7BF55871" xml:space="preserve">ClassName&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&nbsp;ClassName()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#25">25</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_FromXml_XmlSerializable_4509578FD860D6DFF1E73E9408E93846F668F7F3" xml:space="preserve">FromXml&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;FromXml(<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*&nbsp;element)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#37">37</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_FromXml_XmlSerializable_B2FBF307BB669906588BB4C1391F7812A30DB6BB" xml:space="preserve">FromXml&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;FromXml(<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*&nbsp;element, <a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html">XmlSerializationContext</a>&amp;&nbsp;ctx)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#42">42</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ObjectId_XmlSerializable_2E91E530086581D8A4512C489343751611D2EB19" xml:space="preserve">ObjectId&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Uuid_81014B41FA199BCF75CA0E6799422874FC800AB7.html">Uuid</a>&amp;&nbsp;ObjectId()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#17">17</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetObjectId_XmlSerializable_985BDC08962D8325C626C8161F2D6FB064ABFFCD" xml:space="preserve">SetObjectId&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetObjectId(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_Uuid_81014B41FA199BCF75CA0E6799422874FC800AB7.html">Uuid</a>&amp;&nbsp;objectId_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#21">21</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetObjectXmlAttributes_XmlSerializable_692EAF92330E87BBB8C6A311407002EED85E3AD6" xml:space="preserve">SetObjectXmlAttributes&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;SetObjectXmlAttributes(<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*&nbsp;element)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#29">29</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ToXml_XmlSerializable_216B39DE11146EA18695F3D3B0D1551D03580F82" xml:space="preserve">ToXml&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*>&nbsp;ToXml(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;elementName)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#31">31</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_ToXml_XmlSerializable_082954B1ACBC4BC2D88B67BA094E27F89DBB91E7" xml:space="preserve">ToXml&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Dom/doc/class_Element_D36CF968ADACF068775D4B2E80ECF1C8A780975E.html">Element</a>*>&nbsp;ToXml(<span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;elementName, <a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html">XmlSerializationContext</a>&amp;&nbsp;ctx)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html#36">36</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializable.cm.html">System.Xml.Serialization/XmlSerializable.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+ </body>
+</html>

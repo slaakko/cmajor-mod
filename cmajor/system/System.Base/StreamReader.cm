@@ -4,34 +4,83 @@
 // =================================
 
 using System;
+using System.Collections;
 
 namespace System.IO
 {
-    public class StreamReader
+    public class StreamReader : IOBase
     {
-        public StreamReader(const SharedPtr<ByteStream>& stream_) : stream(stream_), buffered(false), eos(false)
+        public StreamReader() : base(), stream(null), buffered(false), eos(false)
         {
         }
-        public int Read()
+        public StreamReader(Stream* stream_) : base(), stream(stream_), buffered(false), eos(false)
         {
-            int x = Get(false);
-            eos = x == -1;
-            return x;
+            if (stream != null && stream->Error())
+            {
+                SetErrorId(stream->GetErrorId());
+            }
         }
-        public int Peek()
+        suppress StreamReader(const StreamReader&);
+        suppress void operator=(const StreamReader&);
+        public override ~StreamReader()
         {
-            int x = Get(true);
-            eos = x == -1;
-            return x;
+            long n = streams.Count();
+            for (long i = n - 1; i >= 0; --i)
+            {
+                streams[i].Reset();
+            }
         }
-        public string ReadLine()
+        public Stream* GetStream()
+        {
+            return stream;
+        }
+        public void SetStream(Stream* stream_)
+        {
+            stream = stream_;
+            if (stream != null && stream->Error())
+            {
+                SetErrorId(stream->GetErrorId());
+            }
+        }
+        public void Own(Stream* strm)
+        {
+            streams.Add(UniquePtr<Stream>(strm));
+        }
+        [nodiscard]
+        public Result<int> Read()
+        {
+            auto x = Get(false);
+            if (x.Error())
+            {
+                return Result<int>(ErrorId(x.GetErrorId()));
+            }
+            eos = x.Value() == -1;
+            return Result<int>(x.Value());
+        }
+        [nodiscard]
+        public Result<int> Peek()
+        {
+            auto x = Get(true);
+            if (x.Error())
+            {
+                return Result<int>(ErrorId(x.GetErrorId()));
+            }
+            eos = x.Value() == -1;
+            return Result<int>(x.Value());
+        }
+        [nodiscard]
+        public Result<string> ReadLine()
         {
             string result;
-            int x = Read();
-            bool prevWasCR = false;
-            while (x != -1)
+            auto x = Read();
+            if (x.Error())
             {
-                if (cast<char>(x) == '\r')
+                return Result<string>(ErrorId(x.GetErrorId()));
+            }
+            bool prevWasCR = false;
+            while (x.Value() != -1)
+            {
+                if (cast<char>(x.Value()) == '\r')
                 {
                     if (prevWasCR)
                     {
@@ -39,9 +88,9 @@ namespace System.IO
                     }
                     prevWasCR = true;
                 }
-                else if (cast<char>(x) == '\n')
+                else if (cast<char>(x.Value()) == '\n')
                 {
-                    return result;
+                    return Result<string>(result);
                 }
                 else
                 {
@@ -50,35 +99,49 @@ namespace System.IO
                         result.Append('\r');
                         prevWasCR = false;
                     }
-                    result.Append(cast<char>(x));
+                    result.Append(cast<char>(x.Value()));
                 }
                 x = Read();
+                if (x.Error())
+                {
+                    return Result<string>(ErrorId(x.GetErrorId()));
+                }
             }
             eos = true;
             if (prevWasCR)
             {
                 result.Append('\r');
             }
-            return result;
+            return Result<string>(result);
         }
-        public string ReadToEnd()
+        [nodiscard]
+        public Result<string> ReadToEnd()
         {
             string result;
-            int x = Read();
-            while (x != -1)
+            auto x = Read();
+            if (x.Error())
             {
-                result.Append(cast<char>(x));
+                return Result<string>(ErrorId(x.GetErrorId()));
+            }
+            while (x.Value() != -1)
+            {
+                result.Append(cast<char>(x.Value()));
                 x = Read();
+                if (x.Error())
+                {
+                    return Result<string>(ErrorId(x.GetErrorId()));
+                }
             }
             eos = true;
-            return result;
+            return Result<string>(result);
         }
         public void PutBack(byte b)
         {
             buffered = true;
             buffer = b;
         }
-        private int Get(bool peek)
+        [nodiscard]
+        private Result<int> Get(bool peek)
         {
             if (buffered)
             {
@@ -86,28 +149,36 @@ namespace System.IO
                 {
                     buffered = false;
                 }
-                return buffer;
+                return Result<int>(buffer);
             }
             else
             {
-                int x = stream->ReadByte();
+                if (stream == null)
+                {
+                    int errorId = RtmAllocateError("StreamReader.Get: stream is null");
+                    SetErrorId(errorId);
+                    return Result<int>(ErrorId(errorId));
+                }
+                auto x = stream->ReadByte();
+                if (x.Error())
+                {
+                    SetErrorId(x.GetErrorId());
+                    return Result<int>(ErrorId(x.GetErrorId()));
+                }
                 if (peek)
                 {
-                    buffer = x;
+                    buffer = x.Value();
                     buffered = true;
                 }
-                return x;
+                return Result<int>(x.Value());
             }
         }
-        public nothrow const SharedPtr<ByteStream>& ContainedStream() 
-        {
-            return stream;
-        }
-        public nothrow inline bool EndOfStream() const
+        public inline bool EndOfStream() const
         {
             return eos;
         }
-        private SharedPtr<ByteStream> stream;
+        private Stream* stream;
+        private List<UniquePtr<Stream>> streams;
         private bool buffered;
         private int buffer;
         private bool eos;

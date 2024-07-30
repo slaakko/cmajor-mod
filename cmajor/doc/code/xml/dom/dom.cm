@@ -1,17 +1,21 @@
 using System;
-using System.Text;
-using System.Dom;
 
-void main()
+int main()
 {
-    try
+    System.Lex.FileMap fileMap;
+    Result<UniquePtr<System.Xml.Document>> parseResult = System.Xml.ParseXmlDocument("test.xml", fileMap);
+    if (parseResult.Error())
     {
-        UniquePtr<Document> doc = ReadDocument("test.xml");
-        CodeFormatter formatter(Console.Out());
-        doc->Write(formatter);
+        Console.Error() << parseResult.GetErrorMessage() << endl();
+        return 1;
     }
-    catch (const Exception& ex)
+    System.Xml.Document* doc = parseResult.Value().Get();
+    System.Text.CodeFormatter formatter(Console.Out());
+    auto writeResult = doc->Write(formatter);
+    if (writeResult.Error())
     {
-        Console.Error() << ex.ToString() << endl();
+        Console.Error() << writeResult.GetErrorMessage() << endl();
+        return 1;
     }
+    return 0;
 }

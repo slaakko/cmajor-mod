@@ -1,3 +1,0 @@
-project traffic;
-target=program;
-source <traffic.cm>;

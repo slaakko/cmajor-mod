@@ -1,0 +1,3 @@
+project traffic_1;
+target=program;
+source <traffic_1.cm>;

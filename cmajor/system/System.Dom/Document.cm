@@ -1,183 +1,165 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-using System.Text;
 
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/dom/Document.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/dom/Document.cpp' using cpp2cm version 1.0.0
-
-namespace System.Dom
+namespace System.Xml
 {
     public class Document : ParentNode
     {
-        public suppress Document(const Document& );
-        public suppress Document(Document&& );
-        public Document() :
-            base(NodeType.documentNode, u"document"), documentElement(null), indexValid(false), xmlStandalone(false)
+        public Document() : this(System.Lex.Span(), -1)
         {
         }
-        public suppress Document& operator=(const Document& );
-        public suppress Document& operator=(Document&& );
-        public Element* DocumentElement()
+        public Document(const System.Lex.Span& span_, int fileIndex_) : base(NodeKind.documentNode, span_, fileIndex_, "document")
+        {
+        }
+        public Element* DocumentElement() const
         {
             return documentElement;
-        }
-        public void SetXmlStandalone(bool xmlStandalone_)
-        {
-            xmlStandalone = xmlStandalone_;
         }
         public bool XmlStandalone() const
         {
             return xmlStandalone;
         }
-        public void SetXmlVersion(const ustring& xmlVersion_)
+        public void SetXmlStandalone(bool xmlStandalone_)
         {
-            xmlVersion = xmlVersion_;
+            xmlStandalone = xmlStandalone_;
         }
-        public const ustring& XmlVersion() const
+        public const string& XmlVersion() const
         {
             return xmlVersion;
         }
-        public void SetXmlEncoding(const ustring& xmlEncoding_)
+        public void SetXmlVersion(const string& xmlVersion_)
         {
-            xmlEncoding = xmlEncoding_;
+            xmlVersion = xmlVersion_;
         }
-        public const ustring& XmlEncoding() const
+        public const string& XmlEncoding() const
         {
             return xmlEncoding;
         }
-        public void InternalInvalidateIndex()
+        public void SetXmlEncoding(const string& xmlEncoding_)
         {
-            indexValid = false;
+            xmlEncoding = xmlEncoding_;
         }
-        public Element* GetElementById(const ustring& elementId)
+        public const Map<string, Element*>& Index() const
+        {
+            return index;
+        }
+        public Map<string, Element*>& Index()
+        {
+            return index;
+        }
+        public Element* GetElementById(const string& elementId) const
         {
             if (!indexValid)
             {
-                elementsByIdMap.Clear();
-                BuildIndexVisitor visitor(elementsByIdMap);
-                Accept(visitor);
+                index.Clear();
+                BuildIndex(this);
                 indexValid = true;
             }
-            HashMap<ustring, Element*>.ConstIterator it = elementsByIdMap.CFind(elementId);
-            if (it != elementsByIdMap.CEnd())
+            auto it = index.Find(elementId);
+            if (it != index.End())
             {
-                Element* element = it->second;
-                return element;
+                return it->second;
             }
-            return null;
-        }
-        public void CheckValidInsert(Node* node, Node* refNode)
-        {
-            if (node->GetNodeType() == NodeType.elementNode)
+            else
             {
-                if (refNode != null || documentElement != null)
-                {
-                    throw DomException("attempt to insert a second element to a document");
-                }
+                return null;
             }
         }
-        public override void Write(CodeFormatter& formatter)
+        public override void AppendChild(Node* child)
         {
-            if (!xmlVersion.IsEmpty() && !xmlEncoding.IsEmpty())
+            base->AppendChild(child);
+            if (child->IsElementNode())
             {
-                formatter.WriteLine("<?xml version=\"" + ToUtf8(xmlVersion) + "\" encoding=\"" + ToUtf8(xmlEncoding) + "\"?>");
+                documentElement = cast<Element*>(child);
             }
-            base->Write(formatter);
         }
-        public override UniquePtr<Node> CloneNode(bool deep)
+        public override void InsertBefore(Node* newChild, Node* refChild)
         {
-            UniquePtr<Node> clonedDocument = UniquePtr<Node>(new Document());
-            if (deep)
+            base->InsertBefore(newChild, refChild);
+            if (newChild->IsElementNode())
             {
-                ParentNode* parentNode = cast<ParentNode*>(clonedDocument.Get());
-                CloneChildrenTo(parentNode);
+                documentElement = cast<Element*>(newChild);
             }
-            return clonedDocument;
         }
-        public override Node* InsertBefore(UniquePtr<Node>&& newChild, Node* refChild)
+        public override UniquePtr<Node> RemoveChild(Node* child)
         {
-            CheckValidInsert(newChild.Get(), refChild);
-            if (newChild->GetNodeType() == NodeType.elementNode)
+            UniquePtr<Node> removedChild = base->RemoveChild(child);
+            if (removedChild.Get() == documentElement)
             {
-                documentElement = cast<Element*>(newChild.Get());
+                documentElement = null;
             }
-            return base->InsertBefore(Rvalue(newChild), refChild);
+            return removedChild;
         }
-        public override UniquePtr<Node> ReplaceChild(UniquePtr<Node>&& newChild, Node* oldChild)
+        public override UniquePtr<Node> ReplaceChild(Node* newChild, Node* oldChild)
         {
-            if (!(oldChild != null))
-            {
-                throw DomException("could not replace node: given old child is null");
-            }
-            if (oldChild->Parent() != this)
-            {
-                throw DomException("could not replace node: given old child is not child of this node");
-            }
-            CheckValidInsert(newChild.Get(), null);
-            if (newChild->GetNodeType() == NodeType.elementNode)
+            if (newChild->IsElementNode())
             {
                 UniquePtr<Node> removed = RemoveChild(oldChild);
-                AppendChild(Rvalue(newChild));
+                AppendChild(newChild);
                 return removed;
             }
             else
             {
-                return base->ReplaceChild(Rvalue(newChild), oldChild);
+                return base->ReplaceChild(newChild, oldChild);
             }
-        }
-        public override UniquePtr<Node> RemoveChild(Node* oldChild)
-        {
-            if (!(oldChild != null))
-            {
-                throw DomException("could not remove node: given old child is null");
-            }
-            if (oldChild->Parent() != this)
-            {
-                throw DomException("could not remove node: given old child is not child of this node");
-            }
-            if (oldChild->GetNodeType() == NodeType.elementNode)
-            {
-                documentElement = null;
-            }
-            return base->RemoveChild(oldChild);
-        }
-        public override Node* AppendChild(UniquePtr<Node>&& newChild)
-        {
-            CheckValidInsert(newChild.Get(), null);
-            if (newChild->GetNodeType() == NodeType.elementNode)
-            {
-                documentElement = cast<Element*>(newChild.Get());
-            }
-            return base->AppendChild(Rvalue(newChild));
         }
         public override void Accept(Visitor& visitor)
         {
-            visitor.BeginVisit(this);
+            visitor.BeginVisit(*this);
             base->Accept(visitor);
-            visitor.EndVisit(this);
+            visitor.EndVisit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            if (!xmlVersion.IsEmpty() && !xmlEncoding.IsEmpty())
+            {
+                formatter << "<?xml version=\"" << xmlVersion << "\" encoding=\"" << xmlEncoding << "\"?>" << endl();
+            }
+            auto result = base->Write(formatter);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        public override Node* Clone(bool deep) const
+        {
+            Document* clone = new Document(Span(), FileIndex());
+            if (deep)
+            {
+                clone->AppendChild(documentElement->Clone(deep));
+            }
+            return clone;
+        }
+        public void InvalidateIndex()
+        {
+            indexValid = false;
         }
         private Element* documentElement;
-        private HashMap<ustring, Element*> elementsByIdMap;
         private bool indexValid;
         private bool xmlStandalone;
-        private ustring xmlVersion;
-        private ustring xmlEncoding;
+        private string xmlVersion;
+        private string xmlEncoding;
+        private Map<string, Element*> index;
     }
-    public class BuildIndexVisitor : Visitor
+
+    public UniquePtr<Document> MakeDocument()
     {
-        public BuildIndexVisitor(HashMap<ustring, Element*>& elementsByIdMap_) :
-            elementsByIdMap(elementsByIdMap_)
-        {
-        }
-        public override void BeginVisit(Element* element)
-        {
-            const ustring& id = element->GetAttribute(u"id");
-            if (!id.IsEmpty())
-            {
-                elementsByIdMap[id] = element;
-            }
-        }
-        private HashMap<ustring, Element*>& elementsByIdMap;
+        return UniquePtr<Document>(new Document());
     }
-} // namespace System.Dom
+}
+

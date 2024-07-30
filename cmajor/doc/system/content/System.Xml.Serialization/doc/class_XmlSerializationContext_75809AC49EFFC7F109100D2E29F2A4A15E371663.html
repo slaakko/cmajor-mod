@@ -27,6 +27,10 @@
     <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html#member_function_GetFlag_XmlSerializationContext_BAC2FEDDD5C896804D66CE3692691060E938349B">GetFlag</a>(<a href="../../System.Xml.Serialization/doc/enumerated_type_XmlSerializationFlags_05CEB9BB12F8653502745E6D82C59E7C51AC5325.html">XmlSerializationFlags</a>&nbsp;flag)&nbsp;<span class="kw">const</span></td>
    </tr>
    <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Xml.Serialization/doc/class_XmlBundle_09EF3A12BD430DECAEEE5D0E67BDE0151E1D654A.html">XmlBundle</a>*</td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html#member_function_GetXmlBundle_XmlSerializationContext_1F2A1A59630AA232B807D34382BD3A3019A6637E">GetXmlBundle</a>()&nbsp;<span class="kw">const</span></td>
+   </tr>
+   <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
     <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html#member_function_ResetFlag_XmlSerializationContext_C7CB225980E3894E5CF8128CEFF47FD84C62E05F">ResetFlag</a>(<a href="../../System.Xml.Serialization/doc/enumerated_type_XmlSerializationFlags_05CEB9BB12F8653502745E6D82C59E7C51AC5325.html">XmlSerializationFlags</a>&nbsp;flag)</td>
    </tr>
@@ -34,12 +38,20 @@
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
     <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html#member_function_SetFlag_XmlSerializationContext_1DA7A7C904323E001EF96CFB7BEB6D2F938840A2">SetFlag</a>(<a href="../../System.Xml.Serialization/doc/enumerated_type_XmlSerializationFlags_05CEB9BB12F8653502745E6D82C59E7C51AC5325.html">XmlSerializationFlags</a>&nbsp;flag)</td>
    </tr>
+   <tr>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlSerializationContext_75809AC49EFFC7F109100D2E29F2A4A15E371663.html#member_function_SetXmlBundle_XmlSerializationContext_6D7BF057508B5CCFEAB55E5F74B210410D1982A9">SetXmlBundle</a>(<a href="../../System.Xml.Serialization/doc/class_XmlBundle_09EF3A12BD430DECAEEE5D0E67BDE0151E1D654A.html">XmlBundle</a>*&nbsp;xmlBundle_)</td>
+   </tr>
   </table>
   <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
     <td class="rightAlignedCol" id="member_variable_flags_8574B2B082300541B9E87542AA45516ED2E43501" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Xml.Serialization/doc/enumerated_type_XmlSerializationFlags_05CEB9BB12F8653502745E6D82C59E7C51AC5325.html">XmlSerializationFlags</a></td>
     <td xml:space="preserve">flags</td>
+   </tr>
+   <tr>
+    <td class="rightAlignedCol" id="member_variable_xmlBundle_955E4B71DD10C946966C1DDCBA5DFDF890E63D1F" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Xml.Serialization/doc/class_XmlBundle_09EF3A12BD430DECAEEE5D0E67BDE0151E1D654A.html">XmlBundle</a>*</td>
+    <td xml:space="preserve">xmlBundle</td>
    </tr>
   </table>
   <h2>Constructor&amp; Destructor Details</h2>
@@ -58,6 +70,13 @@
   <br/>
   <br/>
   <hr/>
+  <h3 id="member_function_GetXmlBundle_XmlSerializationContext_1F2A1A59630AA232B807D34382BD3A3019A6637E" xml:space="preserve">GetXmlBundle&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Xml.Serialization/doc/class_XmlBundle_09EF3A12BD430DECAEEE5D0E67BDE0151E1D654A.html">XmlBundle</a>*&nbsp;GetXmlBundle()</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializationContext.cm.html#36">36</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializationContext.cm.html">System.Xml.Serialization/XmlSerializationContext.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
   <h3 id="member_function_ResetFlag_XmlSerializationContext_C7CB225980E3894E5CF8128CEFF47FD84C62E05F" xml:space="preserve">ResetFlag&nbsp;Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;ResetFlag(<a href="../../System.Xml.Serialization/doc/enumerated_type_XmlSerializationFlags_05CEB9BB12F8653502745E6D82C59E7C51AC5325.html">XmlSerializationFlags</a>&nbsp;flag)</h4>
   <h5>Definition</h5>
@@ -69,6 +88,13 @@
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetFlag(<a href="../../System.Xml.Serialization/doc/enumerated_type_XmlSerializationFlags_05CEB9BB12F8653502745E6D82C59E7C51AC5325.html">XmlSerializationFlags</a>&nbsp;flag)</h4>
   <h5>Definition</h5>
   <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializationContext.cm.html#24">24</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializationContext.cm.html">System.Xml.Serialization/XmlSerializationContext.cm</a></span>
+  <br/>
+  <br/>
+  <hr/>
+  <h3 id="member_function_SetXmlBundle_XmlSerializationContext_6D7BF057508B5CCFEAB55E5F74B210410D1982A9" xml:space="preserve">SetXmlBundle&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;SetXmlBundle(<a href="../../System.Xml.Serialization/doc/class_XmlBundle_09EF3A12BD430DECAEEE5D0E67BDE0151E1D654A.html">XmlBundle</a>*&nbsp;xmlBundle_)</h4>
+  <h5>Definition</h5>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializationContext.cm.html#32">32</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlSerializationContext.cm.html">System.Xml.Serialization/XmlSerializationContext.cm</a></span>
   <br/>
   <br/>
   <hr/>

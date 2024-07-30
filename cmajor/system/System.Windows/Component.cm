@@ -7,39 +7,36 @@ using System;
 
 namespace System.Windows
 {
-    public abstract class Component
+    public abstract class Component : GraphicsObject
     {
-        public nothrow Component() : container(null), nextSibling(null), prevSibling(null)
+        public Component() : base(), container(null), nextSibling(null), prevSibling(null)
         {
         }
-        public virtual ~Component()
-        {
-        }
-        public nothrow inline Container* GetContainer() const
+        public inline ComponentContainer* GetContainer() const
         {
             return container;
         }
-        internal nothrow void SetContainer(Container* container_)
+        internal void SetContainer(ComponentContainer* container_)
         {
             container = container_;
         }
-        public nothrow inline Component* NextSibling() const
+        public inline Component* NextSibling() const
         {
             return nextSibling;
         }
-        internal nothrow void SetNextSibling(Component* nextSibling_)
+        internal void SetNextSibling(Component* nextSibling_)
         {
             nextSibling = nextSibling_;
         }
-        public nothrow inline Component* PrevSibling() const
+        public inline Component* PrevSibling() const
         {
             return prevSibling;
         }
-        internal nothrow void SetPrevSibling(Component* prevSibling_)
+        internal void SetPrevSibling(Component* prevSibling_)
         {
             prevSibling = prevSibling_;
         }
-        internal nothrow void LinkBefore(Component* component)
+        internal void LinkBefore(Component* component)
         {
             if (prevSibling != null)
             {
@@ -49,7 +46,7 @@ namespace System.Windows
             component->nextSibling = this;
             prevSibling = component;
         }
-        internal nothrow void LinkAfter(Component* component)
+        internal void LinkAfter(Component* component)
         {
             if (nextSibling != null)
             {
@@ -59,7 +56,7 @@ namespace System.Windows
             component->nextSibling = nextSibling;
             nextSibling = component;
         }
-        internal nothrow void Unlink()
+        internal void Unlink()
         {
             if (prevSibling != null)
             {
@@ -70,7 +67,7 @@ namespace System.Windows
                 nextSibling->prevSibling = prevSibling;
             }
         }
-        private Container* container;
+        private ComponentContainer* container;
         private Component* nextSibling;
         private Component* prevSibling;
     }

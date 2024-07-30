@@ -21,3 +21,4 @@ cminst -v ..\cmajor\projects\tools\soulcm\scmpg\bin\llvm\release\scmpg.exe ..\cm
 cminst -v ..\cmajor\projects\tools\ref2html\bin\llvm\release\ref2html.exe ..\cmajor\bin
 cminst -v ..\cmajor\projects\tools\soulcm\cm2html\bin\llvm\release\cm2html.exe ..\cmajor\bin
 cminst -v ..\cmajor\projects\tools\soulcm\soul2html\bin\llvm\release\soul2html.exe ..\cmajor\bin
+cminst -v ..\cmajor\projects\tools\txt2html\bin\llvm\release\txt2html.exe ..\cmajor\bin

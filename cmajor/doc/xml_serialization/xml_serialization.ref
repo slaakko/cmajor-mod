@@ -1,0 +1,230 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>XML serialization</title>
+    <link href="style/style.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <h1>XML serialization</h1>
+
+    <p>
+        Compiler support for <span class="kw">[xml]</span> attributes and 
+        <span class="kw">System.Xml.Serialization</span> library enable a program to 
+        write the value of a class object as an XML element, and read data back from XML to class object.
+    </p>
+
+    <h2>Single class</h2>
+
+    <p>
+        In the following code the Person class has an <span class="kw">[xml]</span> attribute, so the 
+        compiler generates code to serialize the <span class="kw">name</span> member variable as XML and
+        set the value of the <span class="kw">name</span> member variable from an XML element:
+    </p>
+
+    <ref file="ref/person.div"/>
+
+    <p>
+        The following code creates a Person object and writes its data to an XML element named "person".
+        Then the XML element is appended to an XML document and the document is written to console:
+    </p>
+
+    <ref file="ref/writing_person.div"/>
+
+    <p>
+        The compiler implements a member function named <span class="kw">ToXml</span> that takes care of writing.
+        In this case I don't want any extra bookkeeping data to the XML so I have set the <span class="kw">suppressMetadata</span>
+        flag in the <span class="kw">ToXml</span> call.
+    </p>
+
+    <p>
+        The output of the program will look like this:
+    </p>
+
+    <ref file="ref/person_xml.div"/>
+
+    <p>
+        You can set the name of the root XML element to whatever you like, in this case it's "person".
+        The XML element for each member variable will have the same name as the member variable.
+    </p>
+
+    <p>
+        Reading data back into a Person object is not complicated either:
+    </p>
+
+    <ref file="ref/reading_person.div"/>
+
+    <p>
+        The compiler implements a member function named <span class="kw">FromXml</span> that reads data back from an XML element.
+    </p>
+
+    <p>
+        The code above prints the name of the Person object read, so the output will look like this:
+    </p>
+
+    <ref file="ref/person_name.div"/>
+
+    <p>
+        <a href="../code/xml_serialization/cmdoc/content/traffic_1/file/traffic_1.cm.html">Here</a> is the source of the whole program.
+    </p>
+
+    <h2>Class with children</h2>
+
+    <p>
+        Suppose a class object will have child objects that we want to serialize also.
+        In this case a Person may own vehicles. I have created an abstract <span class="kw">Vehicle</span> class for them:
+    </p>
+
+    <ref file="ref/vehicle.div"/>
+
+    <p>
+        The <span class="kw">Vehicle</span> class has an <span class="kw">[xml]</span> attribute so its data will be serialized.
+        The compiler supports also serializing enumeration values. In this case <span class="kw">Color</span> is an enumerated type.
+        Each XML serializable class will have a compiler implemented <span class="kw">ClassName()</span> member function that returns 
+        the full name of the class. Here it is called in the virtual <span class="kw">Print()</span> member function.
+    </p>
+
+    <p>
+        I have created two concrete XML serializable classes that derive from the abstract <span class="kw">Vechicle</span> class, 
+        a <span class="kw">Bicycle</span> class and a <span class="kw">Car</span> class:
+    </p>
+
+    <ref file="ref/vehicles.div"/>
+
+    <p>
+        An <span class="kw">[xml]</span>-attributed class may derive from another <span class="kw">[xml]</span>-attributed class
+        or have no inheritance at all in which case the compiler will change it to derive from the abstract 
+        <a href="../system/content/System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html">
+        XmlSerializable</a> class.
+        This is because the <span class="kw">XmlSerializable</span> class will be then the ultimate base class of all XML serializable classes 
+        and the Cmajor language does not have multiple inheritance.
+    </p>
+
+    <p>
+        Now I have changed the <span class="kw">Person</span> class 
+        to contain a list of <span class="kw">UniquePtr</span>s to vehicles:
+    </p>
+
+    <ref file="ref/person_2.div"/>
+
+    <p>
+        An XML serializable class may have a <span class="kw">UniquePtr</span> to another XML serializable class or a 
+        <span class="kw">List</span> of <span class="kw">UniquePtr</span>s to XML serializable classes that will be serialized.
+    </p>
+
+    <p>
+        When reading <span class="kw">Person</span> data back from XML, the serialization library must be able to 
+        create concrete vehicle class objects when it sees a <span class="kw">UniquePtr</span> to <span class="kw">Vechicle</span>.
+        Therefore now the serializable classes have been registered with the serialization library by calling the compiler-implemented
+        <span class="kw">Register()</span> member function of each XML serializable class in the <span class="kw">Register()</span> function.
+    </p>
+
+    <p>
+        Here's now the code to serialize a person and vehicles it owns:
+    </p>
+
+    <ref file="ref/writing_2.div"/>
+
+    <p>
+        I have changed the <span class="kw">ToXml</span> call to not to suppress XML metadata, so 
+        the program output will now look like this:
+    </p>
+
+    <ref file="ref/writing_output2.div"/>
+
+    <p>
+        The XML elements for the objects contain a <span class="kw">classId</span>, <span class="kw">className</span> and 
+        <span class="kw">objectId</span> attributes. The <span class="kw">classId</span> attributes enable the serialization library to create instances of corresponding serializable classes when needed.
+        The <span class="kw">objectId</span> attribute is not needed yet, because a <span class="kw">Person</span> instance owns the <span class="kw">Vechicle</span>s.
+        The <span class="kw">className</span> attribute is not needed by the library. It has only informative value for the person looking at the XML.
+        When serializing a list of objects, the XML element name of them will be <span class="kw">item</span>.
+    </p>
+
+    <p>
+        Here's the code to read person data back:
+    </p>
+
+    <ref file="ref/reading_2.div"/>
+
+    <p>
+        The <span class="kw">Person.Print()</span> function will generate the following output:
+    </p>
+
+    <ref file="ref/printing_output2.div"/>
+
+    <p>
+        <a href="../code/xml_serialization/cmdoc/content/traffic_2/file/traffic_2.cm.html">Here's</a> the whole program.
+    </p>
+
+    <h2>Network of objects</h2>
+
+    <p>
+        Suppose we have a network of XML serializable objects and we want to serialize them and their connections as a unit.
+        In this case a <span class="kw">Vehicle</span> keeps track of the <span class="kw">Person</span> associated with it 
+        and <span class="kw">Person</span> keeps track of vehicles associated with it but it does not own them.
+        This is the new <span class="kw">Vechicle</span> class:
+    </p>
+
+    <ref file="ref/vehicle_3.div"/>
+
+    <p>
+        I have added an <span class="kw">XmlPtr</span> to a <span class="kw">Person</span> named <span class="kw">owner</span>. 
+        An <span class="kw">XmlPtr</span> is like an ordinary non-owning pointer, but it has to point 
+        to an <span class="kw">XML serializable</span> object or be null, and it keeps track of the <span class="kw">objectId</span> 
+        of the pointed-to object. 
+    </p>
+
+    <p>
+        The vehicle classes have not changed, but this is the new <span class="kw">Person</span> class:
+    </p>
+
+    <ref file="ref/person_3.div"/>
+
+    <p>
+        Now a person object does not own the vehicle objects, but has a list of <span class="kw">XmlPtr</span>s to them.
+    </p>
+
+    <p>
+        The serialization code have been changed also:
+    </p>
+
+    <ref file="ref/writing_3.div"/>
+
+    <p>
+        Here we have an <span class="kw">XmlBundle</span> to which the serializable objects have been added to.
+        By default an <span class="kw">XmlBundle</span> takes ownership of the objects added to it.
+    </p>
+
+    <p>
+        The <span class="kw">XmlBundle</span> class has a <span class="kw">ToXmlDocument</span> member function, that 
+        creates an XML document, serializes the objects it contains as XML elements, adds them to the document, 
+        and returns the document.
+    </p>
+
+    <p>
+        Here's the XML document created by the bundle:
+    </p>
+
+    <ref file="ref/writing_output3.div"/>
+
+    <p>
+        The object ID's enable the bundle in the reading side to restore object connections.
+    </p>
+
+    <p>
+        Here's the code to read a bundle back from XML:
+    </p>
+
+    <ref file="ref/reading_3.div"/>
+
+    <p>
+        The <span class="kw">Person.Print()</span> function will generate the following output:
+    </p>
+
+    <ref file="ref/printing_output3.div"/>
+
+    <p>
+        <a href="../code/xml_serialization/cmdoc/content/traffic_3/file/traffic_3.cm.html">Here's</a> the whole program.
+    </p>
+
+</body>
+</html>

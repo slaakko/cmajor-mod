@@ -1,3 +1,0 @@
-project ThreadFunction;
-target=program;
-source <threadFunction.cm>;

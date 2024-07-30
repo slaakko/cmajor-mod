@@ -19,7 +19,7 @@ namespace System.Windows
 
     public class delegate void KeyPreviewMethod(Keys key, bool shift, bool control, bool alt, bool keyDown, bool& handled);
 
-    public nothrow Color DefaultWindowBackgroundColor()
+    public Color DefaultWindowBackgroundColor()
     {
         return GetSystemColor(SystemColor.COLOR_WINDOW);
     }
@@ -29,14 +29,14 @@ namespace System.Windows
         return "Microsoft Sans Serif";
     }
 
-    public nothrow float DefaultWindowFontSize()
+    public float DefaultWindowFontSize()
     {
         return 8.25f;
     }
 
     internal class DialogGuard
     {
-        public nothrow DialogGuard(Window* window_) : window(window_)
+        public DialogGuard(Window* window_) : window(window_)
         {
             window->SetShowingDialog();
         }
@@ -47,7 +47,7 @@ namespace System.Windows
         private Window* window;
     }
 
-    public nothrow ControlCreateParams& WindowControlCreateParams(ControlCreateParams& controlCreateParams,
+    public ControlCreateParams& WindowControlCreateParams(ControlCreateParams& controlCreateParams,
         const string& windowClassName, const string& caption, const Point& location, const Size& size)
     {
         return controlCreateParams.SetWindowClassName(windowClassName).
@@ -55,14 +55,14 @@ namespace System.Windows
             SetWindowStyle(WindowStyle.WS_OVERLAPPEDWINDOW).SetText(caption).SetLocation(location).SetSize(size);
     }
 
-    public nothrow ControlCreateParams& WindowControlCreateParams(ControlCreateParams& controlCreateParams, const string& caption)
+    public ControlCreateParams& WindowControlCreateParams(ControlCreateParams& controlCreateParams, const string& caption)
     {
         return WindowControlCreateParams(controlCreateParams, "System.Windows.Window", caption, Point.Default(), Size.Default());
     }
-    
+
     public class WindowCreateParams
     {
-        public nothrow WindowCreateParams(ControlCreateParams& controlCreateParams_) :
+        public WindowCreateParams(ControlCreateParams& controlCreateParams_) :
             controlCreateParams(controlCreateParams_),
             fontFamilyName(DefaultWindowFontFamilyName()),
             fontSize(DefaultWindowFontSize()),
@@ -70,26 +70,26 @@ namespace System.Windows
             state(WindowState.normal)
         {
         }
-        public nothrow WindowCreateParams& Defaults()
+        public WindowCreateParams& Defaults()
         {
             return *this;
         }
-        public nothrow WindowCreateParams& SetFontFamilyName(const string& fontFamilyName_)
+        public WindowCreateParams& SetFontFamilyName(const string& fontFamilyName_)
         {
             fontFamilyName = fontFamilyName_;
             return *this;
         }
-        public nothrow WindowCreateParams& SetFontSize(float fontSize_)
+        public WindowCreateParams& SetFontSize(float fontSize_)
         {
             fontSize = fontSize_;
             return *this;
         }
-        public nothrow WindowCreateParams& SetFontStyle(FontStyle fontStyle_)
+        public WindowCreateParams& SetFontStyle(FontStyle fontStyle_)
         {
             fontStyle = fontStyle_;
             return *this;
         }
-        public nothrow WindowCreateParams& SetWindowState(WindowState state_)
+        public WindowCreateParams& SetWindowState(WindowState state_)
         {
             state = state_;
             return *this;
@@ -114,7 +114,11 @@ namespace System.Windows
             menuBar(null), contextMenu(null), defaultButton(null), cancelButton(null), focusedControl(null), dialogResult(DialogResult.none),
             keyPreviewMethod(), fontFamilyName(fontFamilyName_), fontSize(fontSize_), fontStyle(fontStyle_)
         {
-            Init();
+            auto initResult = Init();
+            if (initResult.Error())
+            {
+                SetErrorId(initResult.GetErrorId());
+            }
         }
         public Window(const string& windowClassName, WindowClassStyle classStyle, WindowStyle style, ExtendedWindowStyle exStyle,
             const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors, WindowState state) :
@@ -150,52 +154,107 @@ namespace System.Windows
             menuBar(null), contextMenu(null), defaultButton(null), cancelButton(null), focusedControl(null), dialogResult(DialogResult.none),
             keyPreviewMethod(), fontFamilyName(createParams.fontFamilyName), fontSize(createParams.fontSize), fontStyle(createParams.fontStyle)
         {
-            Init();
+            auto initResult = Init();
+            if (initResult.Error())
+            {
+                SetErrorId(initResult.GetErrorId());
+            }
         }
-        private void Init()
+        private Result<bool> Init()
         {
             SetKeyPreviewMethod(DefaultKeyPreview);
             if (Handle() != null)
             {
-                OnCreated();
+                auto createResult = OnCreated();
+                if (createResult.Error())
+                {
+                    return Result<bool>(ErrorId(createResult.GetErrorId()));
+                }
             }
             if (!fontFamilyName.IsEmpty())
             {
-                SetFont(Font(FontFamily(fontFamilyName), fontSize, fontStyle, Unit.point));
+                FontFamily fontFamily = FontFamily(fontFamilyName);
+                if (fontFamily.Error())
+                {
+                    return Result<bool>(ErrorId(fontFamily.GetErrorId()));
+                }
+                Font font = Font(Rvalue(fontFamily), fontSize, fontStyle, Unit.point);
+                if (font.Error())
+                {
+                    return Result<bool>(ErrorId(font.GetErrorId()));
+                }
+                SetFont(Rvalue(font));
             }
+            return Result<bool>(true);
         }
-        public DialogResult ShowDialog(Window& parentWindow)
+        [nodiscard]
+        public Result<DialogResult> ShowDialog(Window& parentWindow)
         {
             DialogGuard guard(this);
-            Point parentLoc = parentWindow.Location();
+            auto parentLocResult = parentWindow.Location();
+            if (parentLocResult.Error())
+            {
+                return Result<DialogResult>(ErrorId(parentLocResult.GetErrorId()));
+            }
+            Point parentLoc = parentLocResult.Value();
             Size parentSize = parentWindow.GetSize();
             Size size = GetSize();
-            SetLocation(Point(Max(cast<int>(0), parentLoc.x + (parentSize.w - size.w) / 2), Max(cast<int>(0), parentLoc.y + (parentSize.h - size.h) / 2)));
+            auto boolResult = SetLocation(Point(Max(cast<int>(0), parentLoc.x + (parentSize.w - size.w) / 2),
+                Max(cast<int>(0), parentLoc.y + (parentSize.h - size.h) / 2)));
+            if (boolResult.Error())
+            {
+                return Result<DialogResult>(ErrorId(boolResult.GetErrorId()));
+            }
             SetDialogResult(DialogResult.none);
             GetDialogResultFunction dialogResultFunction = System.Windows.GetDialogResult;
             DialogWindowKeyPreviewFunction keyPreviewFunction = System.Windows.DialogWindowKeyPreview;
             int result = WinDialogWindowMessageLoop(Handle(), parentWindow.Handle(), cast<void*>(dialogResultFunction), cast<void*>(keyPreviewFunction), this);
             return cast<DialogResult>(result);
         }
-        protected override void OnCreated()
+        protected override Result<bool> OnCreated()
         {
             if (!BaseOnCreatedCalled())
             {
                 SetBaseOnCreatedCalled();
-                base->OnCreated();
+                auto result = base->OnCreated();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
             if (!ScreenMetrics.Calculated())
             {
-                Graphics graphics = Graphics.FromWindowHandle(Handle());
+                auto graphicsResult = Graphics.FromWindowHandle(Handle());
+                if (graphicsResult.Error())
+                {
+                    return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+                }
+                Graphics& graphics = graphicsResult.Value();
                 ScreenMetrics.Calculate(graphics);
             }
+            return Result<bool>(true);
         }
-        public override void PrintWindowTree(int level)
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
         {
             LogView* log = Application.GetLogView();
             if (log != null)
             {
-                log->WriteLine(string(' ', level) + "Window." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + " " + ParentText() + "[" + Rect(Point(), GetSize()).ToString() + "]");
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                const string& handleStr = handleResult.Value();
+                auto parentTextResult = ParentText();
+                if (parentTextResult.Error())
+                {
+                    return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                }
+                const string& parentText = parentTextResult.Value();
+                auto result = log->WriteLine(string(' ', level) + "Window." + Text() + ".handle=" + handleStr + " " + parentText +
+                    "[" + Rect(Point(), GetSize()).ToString() + "]");
+                if (result.Error()) return result;
             }
             Component* child = Children().FirstChild();
             while (child != null)
@@ -203,23 +262,29 @@ namespace System.Windows
                 if (child is Control*)
                 {
                     Control* childControl = cast<Control*>(child);
-                    childControl->PrintWindowTree(level + 1);
+                    auto childResult = childControl->PrintWindowTree(level + 1);
+                    if (childResult.Error())
+                    {
+                        return Result<bool>(ErrorId(childResult.GetErrorId()));
+                    }
                 }
                 child = child->NextSibling();
             }
+            return Result<bool>(true);
         }
-        protected override bool ProcessMessage(Message& message)
+        protected override Result<bool> ProcessMessage(Message& message)
         {
             switch (message.msg)
             {
                 case WM_CLOSE:
                 {
                     bool cancelClose = false;
-                    OnWindowClosing(cancelClose);
+                    auto result = OnWindowClosing(cancelClose);
+                    if (result.Error()) return result;
                     if (cancelClose)
                     {
                         message.result = 0;
-                        return true;
+                        return Result<bool>(true);
                     }
                     break;
                 }
@@ -230,7 +295,7 @@ namespace System.Windows
                     if (processed)
                     {
                         message.result = 0;
-                        return true;
+                        return Result<bool>(true);
                     }
                     break;
                 }
@@ -243,15 +308,17 @@ namespace System.Windows
                     return base->ProcessMessage(message);
                 }
             }
-            return false;
+            return Result<bool>(false);
         }
-        public void Close()
+        [nodiscard]
+        public Result<bool> Close()
         {
-            PostMessage(Handle(), WM_CLOSE, 0u, 0);
+            return PostMessage(Handle(), WM_CLOSE, 0u, 0);
         }
-        protected virtual void OnWindowClosing(bool& cancelClose)
+        protected virtual Result<bool> OnWindowClosing(bool& cancelClose)
         {
             windowClosingEvent.Fire(cancelClose);
+            return Result<bool>(true);
         }
         protected virtual void OnWindowClosed(bool& processed)
         {
@@ -269,9 +336,11 @@ namespace System.Windows
                 processed = true;
             }
         }
-        protected override void OnControlAdded(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnControlAdded(ControlEventArgs& args)
         {
-            base->OnControlAdded(args);
+            auto result = base->OnControlAdded(args);
+            if (result.Error()) return result;
             Control* control = args.control;
             if (control is MenuBar*)
             {
@@ -285,10 +354,13 @@ namespace System.Windows
                     SetDefaultButton(button);
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnControlRemoved(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnControlRemoved(ControlEventArgs& args)
         {
-            base->OnControlRemoved(args);
+            auto result = base->OnControlRemoved(args);
+            if (result.Error()) return result;
             Control* control = args.control;
             if (control == menuBar)
             {
@@ -302,6 +374,7 @@ namespace System.Windows
             {
                 cancelButton = null;
             }
+            return Result<bool>(true);
         }
         public void DefaultKeyPreview(Keys key, bool shift, bool control, bool alt, bool keyDown, bool& handled)
         {
@@ -334,7 +407,7 @@ namespace System.Windows
                                     TextBox* textBox = cast<TextBox*>(focusedControl);
                                     if (textBox->IsMultiline())
                                     {
-                                        break;
+                                        return;
                                     }
                                 }
                             }
@@ -343,7 +416,12 @@ namespace System.Windows
                                 if (focusedControl is Button*)
                                 {
                                     Button* button = cast<Button*>(focusedControl);
-                                    button->OnClickInternal();
+                                    auto result = button->OnClickInternal();
+                                    if (result.Error())
+                                    {
+                                        SetErrorId(result.GetErrorId());
+                                        return;
+                                    }
                                     handled = true;
                                 }
                             }
@@ -351,7 +429,12 @@ namespace System.Windows
                             {
                                 if (defaultButton != null && defaultButton->IsEnabled())
                                 {
-                                    defaultButton->OnClickInternal();
+                                    auto result = defaultButton->OnClickInternal();
+                                    if (result.Error())
+                                    {
+                                        SetErrorId(result.GetErrorId());
+                                        return;
+                                    }
                                     handled = true;
                                 }
                             }
@@ -364,7 +447,12 @@ namespace System.Windows
                         {
                             if (cancelButton != null)
                             {
-                                cancelButton->OnClickInternal();
+                                auto result = cancelButton->OnClickInternal();
+                                if (result.Error())
+                                {
+                                    SetErrorId(result.GetErrorId());
+                                    return;
+                                }
                                 handled = true;
                             }
                         }
@@ -372,22 +460,34 @@ namespace System.Windows
                     }
                     case Keys.tab:
                     {
-                        FocusNext();
+                        auto result = FocusNext();
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
                         handled = true;
                         break;
                     }
                     case cast<Keys>(Keys.shiftModifier | Keys.tab):
                     {
-                        FocusPrev();
+                        auto result = FocusPrev();
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
                         handled = true;
                         break;
                     }
                 }
             }
         }
-        protected override void OnKeyDown(KeyEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnKeyDown(KeyEventArgs& args)
         {
-            base->OnKeyDown(args);
+            auto result = base->OnKeyDown(args);
+            if (result.Error()) return result;
             if (!args.handled)
             {
                 switch (args.key)
@@ -401,7 +501,8 @@ namespace System.Windows
                                 if (focusedControl is Button*)
                                 {
                                     Button* button = cast<Button*>(focusedControl);
-                                    button->OnClickInternal();
+                                    result = button->OnClickInternal();
+                                    if (result.Error()) return result;
                                     args.handled = true;
                                 }
                             }
@@ -409,7 +510,8 @@ namespace System.Windows
                             {
                                 if (defaultButton != null && defaultButton->IsEnabled())
                                 {
-                                    defaultButton->OnClickInternal();
+                                    result = defaultButton->OnClickInternal();
+                                    if (result.Error()) return result;
                                     args.handled = true;
                                 }
                             }
@@ -422,7 +524,8 @@ namespace System.Windows
                         {
                             if (cancelButton != null)
                             {
-                                cancelButton->OnClickInternal();
+                                result = cancelButton->OnClickInternal();
+                                if (result.Error()) return result;
                                 args.handled = true;
                             }
                         }
@@ -430,90 +533,113 @@ namespace System.Windows
                     }
                     case Keys.tab:
                     {
-                        FocusNext();
+                        auto result = FocusNext();
+                        if (result.Error()) return result;
                         args.handled = true;
                         break;
                     }
                     case cast<Keys>(Keys.shiftModifier | Keys.tab):
                     {
-                        FocusPrev();
+                        auto result = FocusPrev();
+                        if (result.Error()) return result;
                         args.handled = true;
                         break;
                     }
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnMouseMove(MouseEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseMove(MouseEventArgs& args)
         {
-            base->OnMouseMove(args);
+            auto result = base->OnMouseMove(args);
+            if (result.Error()) return result;
             if (menuBar != null)
             {
-                menuBar->MouseMoveInternal(args);
+                result = menuBar->MouseMoveInternal(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnMouseDown(MouseEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
         {
-            base->OnMouseDown(args);
+            auto result = base->OnMouseDown(args);
+            if (result.Error()) return result;
             if (menuBar != null)
             {
-                menuBar->MouseDownInternal(args);
+                result = menuBar->MouseDownInternal(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnMouseUp(MouseEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseUp(MouseEventArgs& args)
         {
-            base->OnMouseUp(args);
+            auto result = base->OnMouseUp(args);
+            if (result.Error()) return result;
             if (menuBar != null)
             {
-                menuBar->MouseUpInternal(args);
+                result = menuBar->MouseUpInternal(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnPaint(PaintEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
         {
-            try
+            if (Debug.Paint())
             {
-                if (Debug.Paint())
+                Rect r(Point(), GetSize());
+                LogView* log = Application.GetLogView();
+                if (log != null)
                 {
-                    Rect r(Point(), GetSize());
-                    LogView* log = Application.GetLogView();
-                    if (log != null)
-                    {
-                        log->WriteLine("Window.OnPaint: " + r.ToString());
-                    }
+                    auto result = log->WriteLine("Window.OnPaint: " + r.ToString());
+                    if (result.Error()) return result;
                 }
-                args.graphics.Clear(BackgroundColor());
-                base->OnPaint(args);
             }
-            catch (const Exception& ex)
+            auto clearResult = args.graphics.Clear(BackgroundColor());
+            if (clearResult.Error())
             {
-                MessageBox.Show(ex.Message());
+                return Result<bool>(ErrorId(clearResult.GetErrorId()));
             }
+            return base->OnPaint(args);
         }
-        protected override void OnGotFocus()
+        [nodiscard]
+        protected override Result<bool> OnGotFocus()
         {
             LogView* log = Application.GetLogView();
             if (log != null)
             {
-                log->WriteLine("Window.OnGotFocus: " + Text());
+                auto result = log->WriteLine("Window.OnGotFocus: " + Text());
+                if (result.Error()) return result;
             }
-            base->OnGotFocus();
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
             Application.SetActiveWindow(this);
-            FocusNext();
+            result = FocusNext();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnLostFocus()
+        protected override Result<bool> OnLostFocus()
         {
             LogView* log = Application.GetLogView();
             if (log != null)
             {
-                log->WriteLine("Window.OnLostFocus: " + Text());
+                auto result = log->WriteLine("Window.OnLostFocus: " + Text());
+                if (result.Error()) return result;
             }
-            base->OnLostFocus();
+            auto result = base->OnLostFocus();
+            if (result.Error()) return result;
             Application.SetActiveWindow(null);
+            return Result<bool>(true);
         }
         public WindowState GetWindowState() const
         {
             return state;
         }
-        public void SetWindowState(WindowState newState)
+        [nodiscard]
+        public Result<bool> SetWindowState(WindowState newState)
         {
             if (state != newState)
             {
@@ -525,12 +651,14 @@ namespace System.Windows
                         {
                             case WindowState.minimized:
                             {
-                                ShowWindow(ShowCommand.SW_MINIMIZE);
+                                auto result = ShowWindow(ShowCommand.SW_MINIMIZE);
+                                if (result.Error()) return result;
                                 break;
                             }
                             case WindowState.maximized:
                             {
-                                ShowWindow(ShowCommand.SW_MAXIMIZE);
+                                auto result = ShowWindow(ShowCommand.SW_MAXIMIZE);
+                                if (result.Error()) return result;
                                 break;
                             }
                         }
@@ -542,17 +670,20 @@ namespace System.Windows
                         {
                             case WindowState.normal:
                             {
-                                ShowWindow(ShowCommand.SW_RESTORE);
+                                auto result = ShowWindow(ShowCommand.SW_RESTORE);
+                                if (result.Error()) return result;
                                 break;
                             }
                             case WindowState.minimized:
                             {
-                                ShowWindow(ShowCommand.SW_MINIMIZE);
+                                auto result = ShowWindow(ShowCommand.SW_MINIMIZE);
+                                if (result.Error()) return result;
                                 break;
                             }
                             case WindowState.maximized:
                             {
-                                ShowWindow(ShowCommand.SW_MAXIMIZE);
+                                auto result = ShowWindow(ShowCommand.SW_MAXIMIZE);
+                                if (result.Error()) return result;
                                 break;
                             }
                         }
@@ -561,38 +692,64 @@ namespace System.Windows
                 }
                 state = newState;
             }
+            return Result<bool>(true);
         }
-        public nothrow MenuBar* GetMenuBar() const
+        public MenuBar* GetMenuBar() const
         {
             return menuBar;
         }
-        public nothrow ContextMenu* GetContextMenu() const
+        public ContextMenu* GetContextMenu() const
         {
             return contextMenu;
         }
-        public nothrow void SetContextMenu(ContextMenu* contextMenu_)
+        [nodiscard]
+        public Result<bool> SetContextMenu(ContextMenu* contextMenu_)
         {
-            RemoveContextMenu();
+            auto result = RemoveContextMenu();
+            if (result.Error()) return result;
             contextMenu = contextMenu_;
-            AddChild(contextMenu);
+            return AddChild(contextMenu);
         }
-        public nothrow void RemoveContextMenu()
+        [nodiscard]
+        public Result<bool> RemoveContextMenu()
         {
             if (contextMenu != null)
             {
-                HideContextMenu();
-                RemoveChild(contextMenu);
+                auto result = HideContextMenu();
+                if (result.Error()) return result;
+                Result<UniquePtr<Control>> removeResult = RemoveChild(contextMenu);
+                if (removeResult.Error())
+                {
+                    return Result<bool>(ErrorId(removeResult.GetErrorId()));
+                }
                 contextMenu = null;
             }
+            return Result<bool>(true);
         }
-        public nothrow void ShowContextMenu(ContextMenu* contextMenu_, const Point& ptInScreenCoords)
+        [nodiscard]
+        public Result<bool> ShowContextMenu(ContextMenu* contextMenu_, const Point& ptInScreenCoords)
         {
-            SetContextMenu(contextMenu_);
-            Point windowLoc = Location();
+            auto result = SetContextMenu(contextMenu_);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto windowLocResult = Location();
+            if (windowLocResult.Error())
+            {
+                return Result<bool>(ErrorId(windowLocResult.GetErrorId()));
+            }
+            Point windowLoc = windowLocResult.Value();
             Size windowSize = GetSize();
             Point windowEdgeLoc(windowLoc.x + windowSize.w, windowLoc.y + windowSize.h);
-            Point screenWindowEdgeLoc = ClientToScreen(windowEdgeLoc);
-            contextMenu->CalculateSize();
+            auto clientToScreenResult = ClientToScreen(windowEdgeLoc);
+            if (clientToScreenResult.Error())
+            {
+                return Result<bool>(ErrorId(clientToScreenResult.GetErrorId()));
+            }
+            Point screenWindowEdgeLoc = clientToScreenResult.Value();
+            result = contextMenu->CalculateSize();
+            if (result.Error()) return result;
             Size contextMenuSize = contextMenu->GetSize();
             if (ptInScreenCoords.x + contextMenuSize.w >= screenWindowEdgeLoc.x)
             {
@@ -602,47 +759,79 @@ namespace System.Windows
             {
                 ptInScreenCoords.Offset(0, -contextMenuSize.h);
             }
-            Point loc = ScreenToClient(ptInScreenCoords);
-            contextMenu->SetLocation(loc);
-            contextMenu->BringToFront();
-            contextMenu->Show();
-            contextMenu->Invalidate();
+            auto screenToClientResult = ScreenToClient(ptInScreenCoords);
+            if (screenToClientResult.Error())
+            {
+                return Result<bool>(ErrorId(screenToClientResult.GetErrorId()));
+            }
+            Point loc = screenToClientResult.Value();
+            result = contextMenu->SetLocation(loc);
+            if (result.Error()) return result;
+            result = contextMenu->BringToFront();
+            if (result.Error()) return result;
+            result = contextMenu->Show();
+            if (result.Error()) return result;
+            result = contextMenu->Invalidate();
+            if (result.Error()) return result;
             contextMenu->Update();
+            return Result<bool>(true);
         }
-        public nothrow void HideContextMenu()
+        [nodiscard]
+        public Result<bool> HideContextMenu()
         {
             if (contextMenu != null)
             {
-                Rect rect(contextMenu->Location(), contextMenu->GetSize());
-                contextMenu->Hide();
-                Invalidate(rect);
+                auto locationResult = contextMenu->Location();
+                if (locationResult.Error())
+                {
+                    return Result<bool>(ErrorId(locationResult.GetErrorId()));
+                }
+                Rect rect(locationResult.Value(), contextMenu->GetSize());
+                auto result = contextMenu->Hide();
+                if (result.Error()) return result;
+                result = Invalidate(rect);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow Event<WindowClosingEventHandler, bool>& WindowClosingEvent()
+        public Event<WindowClosingEventHandler, bool>& WindowClosingEvent()
         {
             return windowClosingEvent;
         }
-        public nothrow Event<WindowClosedEventHandler>& WindowClosedEvent()
+        public Event<WindowClosedEventHandler>& WindowClosedEvent()
         {
             return windowClosedEvent;
         }
-        public void SetIcon(const Icon& icon)
+        [nodiscard]
+        public Result<bool> SetIcon(const Icon& icon)
         {
-            SetClassLong(Handle(), ClassLongIndex.GCL_HICON, cast<long>(cast<ulong>(icon.Handle())));
+            auto result = SetClassLong(Handle(), ClassLongIndex.GCL_HICON, cast<long>(cast<ulong>(icon.Handle())));
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void SetSmallIcon(const Icon& icon)
+        [nodiscard]
+        public Result<bool> SetSmallIcon(const Icon& icon)
         {
-            SetClassLong(Handle(), ClassLongIndex.GCL_HICONSM, cast<long>(cast<ulong>(icon.Handle())));
+            auto result = SetClassLong(Handle(), ClassLongIndex.GCL_HICONSM, cast<long>(cast<ulong>(icon.Handle())));
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        internal nothrow inline int GetDialogResult() const
+        internal inline int GetDialogResult() const
         {
             return cast<int>(dialogResult);
         }
-        public nothrow inline void SetDialogResult(DialogResult dialogResult_)
+        public inline void SetDialogResult(DialogResult dialogResult_)
         {
             dialogResult = dialogResult_;
         }
-        public void FocusNext()
+        [nodiscard]
+        public Result<bool> FocusNext()
         {
             LogView* logView = Application.GetLogView();
             if (focusedControl == null)
@@ -660,9 +849,10 @@ namespace System.Windows
                             focusedControl = tabStopChild;
                             if (logView != null)
                             {
-                                logView->WriteLine("focused: " + string(typename(*focusedControl)) + ": " + focusedControl->Text());
+                                auto result = logView->WriteLine("focused: " + string(typename(*focusedControl)) + ": " + focusedControl->Text());
+                                if (result.Error()) return result;
                             }
-                            return;
+                            return Result<bool>(true);
                         }
                     }
                     child = child->NextSibling();
@@ -672,7 +862,7 @@ namespace System.Windows
             {
                 Component* parent = null;
                 Component* child = focusedControl;
-                Container* container = child->GetContainer();
+                ComponentContainer* container = child->GetContainer();
                 if (container != null)
                 {
                     parent = container->Parent();
@@ -690,7 +880,7 @@ namespace System.Windows
                             {
                                 tabStopChild->SetFocus();
                                 focusedControl = tabStopChild;
-                                return;
+                                return Result<bool>(true);
                             }
                         }
                         child = child->NextSibling();
@@ -710,10 +900,13 @@ namespace System.Windows
                     }
                 }
                 focusedControl = null;
-                FocusNext();
+                auto result = FocusNext();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public void FocusPrev()
+        [nodiscard]
+        public Result<bool> FocusPrev()
         {
             LogView* logView = Application.GetLogView();
             if (focusedControl == null)
@@ -731,9 +924,10 @@ namespace System.Windows
                             focusedControl = tabStopChild;
                             if (logView != null)
                             {
-                                logView->WriteLine("focused: " + string(typename(*focusedControl)) + ": " + focusedControl->Text());
+                                auto result = logView->WriteLine("focused: " + string(typename(*focusedControl)) + ": " + focusedControl->Text());
+                                if (result.Error()) return result;
                             }
-                            return;
+                            return Result<bool>(true);
                         }
                     }
                     child = child->PrevSibling();
@@ -743,7 +937,7 @@ namespace System.Windows
             {
                 Component* parent = null;
                 Component* child = focusedControl;
-                Container* container = child->GetContainer();
+                ComponentContainer* container = child->GetContainer();
                 if (container != null)
                 {
                     parent = container->Parent();
@@ -761,7 +955,7 @@ namespace System.Windows
                             {
                                 tabStopChild->SetFocus();
                                 focusedControl = tabStopChild;
-                                return;
+                                return Result<bool>(true);
                             }
                         }
                         child = child->PrevSibling();
@@ -781,42 +975,44 @@ namespace System.Windows
                     }
                 }
                 focusedControl = null;
-                FocusPrev();
+                auto result = FocusPrev();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow inline Control* GetFocusedControl() const
+        public inline Control* GetFocusedControl() const
         {
             return focusedControl;
         }
-        public nothrow void ResetFocusedControl()
+        public void ResetFocusedControl()
         {
             focusedControl = null;
         }
-        internal nothrow inline void SetFocusedControl(Control* focusedControl_)
+        internal inline void SetFocusedControl(Control* focusedControl_)
         {
             focusedControl = focusedControl_;
         }
-        public nothrow inline const KeyPreviewMethod& GetKeyPreviewMethod() const
+        public inline const KeyPreviewMethod& GetKeyPreviewMethod() const
         {
             return keyPreviewMethod;
         }
-        public nothrow void SetKeyPreviewMethod(const KeyPreviewMethod& keyPreviewMethod_)
+        public void SetKeyPreviewMethod(const KeyPreviewMethod& keyPreviewMethod_)
         {
             keyPreviewMethod = keyPreviewMethod_;
         }
-        public nothrow inline bool IsMainWindow() const
+        public inline bool IsMainWindow() const
         {
             return (flags & Flags.mainWindow) != Flags.none;
         }
-        public nothrow inline void SetAsMainWindow()
+        public inline void SetAsMainWindow()
         {
             flags = cast<Flags>(flags | Flags.mainWindow);
         }
-        public nothrow inline Button* DefaultButton() const
+        public inline Button* DefaultButton() const
         {
             return defaultButton;
         }
-        public nothrow void SetDefaultButton(Button* defaultButton_)
+        public void SetDefaultButton(Button* defaultButton_)
         {
             if (defaultButton != defaultButton_)
             {
@@ -831,30 +1027,33 @@ namespace System.Windows
                 }
             }
         }
-        public nothrow inline Button* CancelButton() const
+        public inline Button* CancelButton() const
         {
             return cancelButton;
         }
-        public nothrow void SetCancelButton(Button* cancelButton_)
+        public void SetCancelButton(Button* cancelButton_)
         {
             cancelButton = cancelButton_;
         }
-        internal void MouseUpNotificationInternal(MouseEventArgs& args)
+        [nodiscard]
+        internal Result<bool> MouseUpNotificationInternal(MouseEventArgs& args)
         {
-            MouseUpNotification(args);
+            return MouseUpNotification(args);
         }
-        protected virtual void MouseUpNotification(MouseEventArgs& args)
+        [nodiscard]
+        protected virtual Result<bool> MouseUpNotification(MouseEventArgs& args)
         {
+            return Result<bool>(true);
         }
-        private nothrow inline bool ShowingDialog() const
+        private inline bool ShowingDialog() const
         {
             return (flags & Flags.showingDialog) != Flags.none;
         }
-        internal nothrow inline void SetShowingDialog()
+        internal inline void SetShowingDialog()
         {
             flags = cast<Flags>(flags | Flags.showingDialog);
         }
-        internal nothrow inline void ResetShowingDialog()
+        internal inline void ResetShowingDialog()
         {
             flags = cast<Flags>(flags & ~Flags.showingDialog);
         }

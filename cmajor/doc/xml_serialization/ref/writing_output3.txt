@@ -1,0 +1,21 @@
+<xmlBundle>
+ <object classId="2029169441" className="Person" objectId="05c6a76c-b2c1-4cc6-bfc4-f266f8b76bd9">
+  <name value="Joe Coder"/>
+  <vehicles>
+   <item objectId="57cbe1dc-da35-39c5-2e74-799cc718529e"/>
+   <item objectId="438902f2-a4d7-d1a6-d0b0-777a8a7f6511"/>
+  </vehicles>
+ </object>
+ <object classId="2018315917" className="Bicycle" objectId="57cbe1dc-da35-39c5-2e74-799cc718529e">
+  <model value="Cooper"/>
+  <color value="3"/>
+  <owner objectId="05c6a76c-b2c1-4cc6-bfc4-f266f8b76bd9"/>
+  <price value="1000"/>
+ </object>
+ <object classId="737295636" className="Car" objectId="438902f2-a4d7-d1a6-d0b0-777a8a7f6511">
+  <model value="Porsche"/>
+  <color value="2"/>
+  <owner objectId="05c6a76c-b2c1-4cc6-bfc4-f266f8b76bd9"/>
+  <registrationNumber value="ABC-123"/>
+ </object>
+</xmlBundle>

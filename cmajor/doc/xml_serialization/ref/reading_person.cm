@@ -1,0 +1,13 @@
+int main()
+{
+    // ...
+    Person person;
+    Result<bool> fromXmlResult = person.FromXml(document.DocumentElement());
+    if (fromXmlResult.Error())
+    {
+        Console.Error() << fromXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    Console.Out() << person.Name() << "\n";
+    // ...
+}

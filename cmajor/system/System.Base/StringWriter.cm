@@ -9,191 +9,252 @@ namespace System.IO
 {
     public class StringWriter : TextWriter
     {
-        public nothrow StringWriter() : str()
+        public StringWriter() : str()
         {
         }
-        public nothrow string GetString() 
+        public string GetString()
         {
             return Rvalue(str);
         }
-        public nothrow const string& Str() const
+        public const string& Str() const
         {
             return str;
         }
-        public override void Write(const string& x)
+        [nodiscard]
+        public override Result<bool> Write(const string& x)
         {
             str.Append(x);
+            return Result<bool>(true);
         }
-        public override void Write(const wstring& x)
+        [nodiscard]
+        public override Result<bool> Write(const wstring& x)
         {
-            Write(ToUtf8(x));
+            auto c = ToUtf8(x);
+            if (c.Error())
+            {
+                return Result<bool>(ErrorId(c.GetErrorId()));
+            }
+            return Write(c.Value());
         }
-        public override void Write(const ustring& x)
+        [nodiscard]
+        public override Result<bool> Write(const ustring& x)
         {
-            Write(ToUtf8(x));
+            auto c = ToUtf8(x);
+            if (c.Error())
+            {
+                return Result<bool>(ErrorId(c.GetErrorId()));
+            }
+            return Write(c.Value());
         }
-        public override void Write(bool x)
+        [nodiscard]
+        public override Result<bool> Write(bool x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(char x)
+        [nodiscard]
+        public override Result<bool> Write(char x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(wchar x)
+        [nodiscard]
+        public override Result<bool> Write(wchar x)
         {
-            Write(ToString(x));
+            auto r = ToString(x);
+            if (r.Error())
+            {
+                return Result<bool>(ErrorId(r.GetErrorId()));
+            }
+            return Write(r.Value());
         }
-        public override void Write(uchar x)
+        [nodiscard]
+        public override Result<bool> Write(uchar x)
         {
-            Write(ToString(x));
+            auto r = ToString(x);
+            if (r.Error())
+            {
+                return Result<bool>(ErrorId(r.GetErrorId()));
+            }
+            return Write(r.Value());
         }
-        public override void Write(sbyte x)
+        [nodiscard]
+        public override Result<bool> Write(sbyte x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(byte x)
+        [nodiscard]
+        public override Result<bool> Write(byte x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(short x)
+        [nodiscard]
+        public override Result<bool> Write(short x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(ushort x)
+        [nodiscard]
+        public override Result<bool> Write(ushort x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(int x)
+        [nodiscard]
+        public override Result<bool> Write(int x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(uint x)
+        [nodiscard]
+        public override Result<bool> Write(uint x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(long x)
+        [nodiscard]
+        public override Result<bool> Write(long x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(ulong x)
+        [nodiscard]
+        public override Result<bool> Write(ulong x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(float x)
+        [nodiscard]
+        public override Result<bool> Write(float x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(double x)
+        [nodiscard]
+        public override Result<bool> Write(double x)
         {
-            Write(ToString(x));
+            return Write(ToString(x));
         }
-        public override void Write(const Date& date)
+        [nodiscard]
+        public override Result<bool> Write(const Date& date)
         {
-            Write(date.ToString());
+            return Write(date.ToString());
         }
-        public override void Write(const DateTime& dateTime)
-        {            
-            Write(dateTime.ToString());
+        [nodiscard]
+        public override Result<bool> Write(const DateTime& dateTime)
+        {
+            return Write(dateTime.ToString());
         }
-        public override void WriteLine()
+        [nodiscard]
+        public override Result<bool> WriteLine()
         {
             str.Append('\n');
+            return Result<bool>(true);
         }
-        public override void WriteLine(const string& x)
+        [nodiscard]
+        public override Result<bool> WriteLine(const string& x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(const wstring& x)
+        [nodiscard]
+        public override Result<bool> WriteLine(const wstring& x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(const ustring& x)
+        [nodiscard]
+        public override Result<bool> WriteLine(const ustring& x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(bool x)
+        [nodiscard]
+        public override Result<bool> WriteLine(bool x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-		public override void WriteLine(char x)
-		{
-			Write(x);
-			WriteLine();
-		}
-		public override void WriteLine(wchar x)
-		{
-			Write(x);
-			WriteLine();
-		}
-		public override void WriteLine(uchar x)
-		{
-			Write(x);
-			WriteLine();
-		}
-        public override void WriteLine(sbyte x)
+        [nodiscard]
+        public override Result<bool> WriteLine(char x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(byte x)
+        [nodiscard]
+        public override Result<bool> WriteLine(wchar x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(short x)
+        [nodiscard]
+        public override Result<bool> WriteLine(uchar x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(ushort x)
+        [nodiscard]
+        public override Result<bool> WriteLine(sbyte x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(int x)
+        [nodiscard]
+        public override Result<bool> WriteLine(byte x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(uint x)
+        [nodiscard]
+        public override Result<bool> WriteLine(short x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(long x)
+        [nodiscard]
+        public override Result<bool>  WriteLine(ushort x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(ulong x)
+        [nodiscard]
+        public override Result<bool> WriteLine(int x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(float x)
+        [nodiscard]
+        public override Result<bool> WriteLine(uint x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(double x)
+        [nodiscard]
+        public override Result<bool> WriteLine(long x)
         {
-            Write(x);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(const Date& date)
+        [nodiscard]
+        public override Result<bool> WriteLine(ulong x)
         {
-            Write(date);
-            WriteLine();
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
         }
-        public override void WriteLine(const DateTime& dateTime)
-        {            
-            Write(dateTime);
-            WriteLine();
+        [nodiscard]
+        public override Result<bool> WriteLine(float x)
+        {
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
+        }
+        [nodiscard]
+        public override Result<bool> WriteLine(double x)
+        {
+            auto r = Write(x);
+            return r.AndThen(WriteLine());
+        }
+        [nodiscard]
+        public override Result<bool> WriteLine(const Date& date)
+        {
+            auto r = Write(date);
+            return r.AndThen(WriteLine());
+        }
+        [nodiscard]
+        public override Result<bool> WriteLine(const DateTime& dateTime)
+        {
+            auto r = Write(dateTime);
+            return r.AndThen(WriteLine());
         }
         private string str;
     }

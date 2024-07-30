@@ -10,596 +10,603 @@ namespace System.Windows
 {
     public class Color
     {
-        public nothrow Color() : alpha(255u), red(0u), green(0u), blue(0u)
+        public Color() : alpha(255u), red(0u), green(0u), blue(0u)
         {
         }
-        public nothrow Color(byte alpha_, byte red_, byte green_, byte blue_) : alpha(alpha_), red(red_), green(green_), blue(blue_)
+        public Color(byte alpha_, byte red_, byte green_, byte blue_) : alpha(alpha_), red(red_), green(green_), blue(blue_)
         {
         }
-        public nothrow Color(byte red_, byte green_, byte blue_) : alpha(255u), red(red_), green(green_), blue(blue_)
+        public Color(byte red_, byte green_, byte blue_) : alpha(255u), red(red_), green(green_), blue(blue_)
         {
         }
-        public nothrow Color ToGray(const Color& transparentColor) const
+        public Color(uint value) : alpha(cast<byte>(value >> 24u)), red(cast<byte>(value >> 16u)), green(cast<byte>(value >> 8u)), blue(cast<byte>(value))
+        {
+        }
+        public uint ToUInt() const
+        {
+            return (cast<uint>(alpha) << 24u) | (cast<uint>(red) << 16u) | (cast<uint>(green) << 8u) | (cast<uint>(blue));
+        }
+        public Color ToGray(const Color& transparentColor) const
         {
             if (*this == transparentColor) return *this;
             byte g = cast<byte>((cast<int>(red) + cast<int>(green) + cast<int>(blue) + 2 * 255) / 5);
             return Color(alpha, g, g, g);
         }
-        public nothrow Color ToGray() const
+        public Color ToGray() const
         {
             return ToGray(Color(0u, 255u, 255u, 255u));
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             string s = System.ToString(alpha);
             s.Append('.').Append(System.ToString(red)).Append('.').Append(System.ToString(green)).Append('.').Append(System.ToString(blue));
             return s;
         }
-        public static nothrow Color AliceBlue()
+        public static Color AliceBlue()
         {
             return Color(0xF0u, 0xF8u, 0xFFu);
         }
-        public static nothrow Color AntiqueWhite()
+        public static Color AntiqueWhite()
         {
             return Color(0xFAu, 0xEBu, 0xD7u);
         }
-        public static nothrow Color Aqua()
+        public static Color Aqua()
         {
             return Color(0x00u, 0xFFu, 0xFFu);
         }
-        public static nothrow Color Aquamarine()
+        public static Color Aquamarine()
         {
             return Color(0x7Fu, 0xFFu, 0xD4u);
         }
-        public static nothrow Color Azure()
+        public static Color Azure()
         {
             return Color(0xF0u, 0xFFu, 0xFFu);
         }
-        public static nothrow Color Beige()
+        public static Color Beige()
         {
             return Color(0xF5u, 0xF5u, 0xDCu);
         }
-        public static nothrow Color Bisque()
+        public static Color Bisque()
         {
             return Color(0xFFu, 0xE4u, 0xC4u);
         }
-        public static nothrow Color Black()
+        public static Color Black()
         {
             return Color(0x00u, 0x00u, 0x00u);
         }
-        public static nothrow Color BlanchedAlmond()
+        public static Color BlanchedAlmond()
         {
             return Color(0xFFu, 0xEBu, 0xCDu);
         }
-        public static nothrow Color Blue()
+        public static Color Blue()
         {
             return Color(0x00u, 0x00u, 0xFFu);
         }
-        public static nothrow Color BlueViolet()
+        public static Color BlueViolet()
         {
             return Color(0x8Au, 0x2Bu, 0xE2u);
         }
-        public static nothrow Color Brown()
+        public static Color Brown()
         {
             return Color(0xA5u, 0x2Au, 0x2Au);
         }
-        public static nothrow Color BurlyWood()
+        public static Color BurlyWood()
         {
             return Color(0xDEu, 0xB8u, 0x87u);
         }
-        public static nothrow Color CadetBlue()
+        public static Color CadetBlue()
         {
             return Color(0x5Fu, 0x9Eu, 0xA0u);
         }
-        public static nothrow Color Chartreuse()
+        public static Color Chartreuse()
         {
             return Color(0x7Fu, 0xFFu, 0x00u);
         }
-        public static nothrow Color Chocolate()
+        public static Color Chocolate()
         {
             return Color(0xD2u, 0x69u, 0x1Eu);
         }
-        public static nothrow Color Coral()
+        public static Color Coral()
         {
             return Color(0xFFu, 0x7Fu, 0x50u);
         }
-        public static nothrow Color CornflowerBlue()
+        public static Color CornflowerBlue()
         {
             return Color(0x64u, 0x95u, 0xEDu);
         }
-        public static nothrow Color Cornsilk()
+        public static Color Cornsilk()
         {
             return Color(0xFFu, 0xF8u, 0xDCu);
         }
-        public static nothrow Color Crimson()
+        public static Color Crimson()
         {
             return Color(0xDCu, 0x14u, 0x3Cu);
         }
-        public static nothrow Color Cyan()
+        public static Color Cyan()
         {
             return Color(0x00u, 0xFFu, 0xFFu);
         }
-        public static nothrow Color DarkBlue()
+        public static Color DarkBlue()
         {
             return Color(0x00u, 0x00u, 0x8Bu);
         }
-        public static nothrow Color DarkCyan()
+        public static Color DarkCyan()
         {
             return Color(0x00u, 0x8Bu, 0x8Bu);
         }
-        public static nothrow Color DarkGoldenrod()
+        public static Color DarkGoldenrod()
         {
             return Color(0xB8u, 0x86u, 0x0Bu);
         }
-        public static nothrow Color DarkGray()
+        public static Color DarkGray()
         {
             return Color(0xA9u, 0xA9u, 0xA9u);
         }
-        public static nothrow Color DarkGreen()
+        public static Color DarkGreen()
         {
             return Color(0x00u, 0x64u, 0x00u);
         }
-        public static nothrow Color DarkKhaki()
+        public static Color DarkKhaki()
         {
             return Color(0xBDu, 0xB7u, 0x6Bu);
         }
-        public static nothrow Color DarkMagenta()
+        public static Color DarkMagenta()
         {
             return Color(0x8Bu, 0x00u, 0x8Bu);
         }
-        public static nothrow Color DarkOliveGreen()
+        public static Color DarkOliveGreen()
         {
             return Color(0x55u, 0x6Bu, 0x2Fu);
         }
-        public static nothrow Color DarkOrange()
+        public static Color DarkOrange()
         {
             return Color(0xFFu, 0x8Cu, 0x00u);
         }
-        public static nothrow Color DarkOrchid()
+        public static Color DarkOrchid()
         {
             return Color(0x99u, 0x32u, 0xCCu);
         }
-        public static nothrow Color DarkRed()
+        public static Color DarkRed()
         {
             return Color(0x8Bu, 0x00u, 0x00u);
         }
-        public static nothrow Color DarkSalmon()
+        public static Color DarkSalmon()
         {
             return Color(0xE9u, 0x96u, 0x7Au);
         }
-        public static nothrow Color DarkSeaGreen()
+        public static Color DarkSeaGreen()
         {
             return Color(0x8Fu, 0xBCu, 0x8Bu);
         }
-        public static nothrow Color DarkSlateBlue()
+        public static Color DarkSlateBlue()
         {
             return Color(0x48u, 0x3Du, 0x8Bu);
         }
-        public static nothrow Color DarkSlateGray()
+        public static Color DarkSlateGray()
         {
             return Color(0x2Fu, 0x4Fu, 0x4Fu);
         }
-        public static nothrow Color DarkTurquoise()
+        public static Color DarkTurquoise()
         {
             return Color(0x00u, 0xCEu, 0xD1u);
         }
-        public static nothrow Color DarkViolet()
+        public static Color DarkViolet()
         {
             return Color(0x94u, 0x00u, 0xD3u);
         }
-        public static nothrow Color DeepPink()
+        public static Color DeepPink()
         {
             return Color(0xFFu, 0x14u, 0x93u);
         }
-        public static nothrow Color DeepSkyBlue()
+        public static Color DeepSkyBlue()
         {
             return Color(0x00u, 0xBFu, 0xFFu);
         }
-        public static nothrow Color DimGray()
+        public static Color DimGray()
         {
             return Color(0x69u, 0x69u, 0x69u);
         }
-        public static nothrow Color DodgerBlue()
+        public static Color DodgerBlue()
         {
             return Color(0x1Eu, 0x90u, 0xFFu);
         }
-        public static nothrow Color Firebrick()
+        public static Color Firebrick()
         {
             return Color(0xB2u, 0x22u, 0x22u);
         }
-        public static nothrow Color FloralWhite()
+        public static Color FloralWhite()
         {
             return Color(0xFFu, 0xFAu, 0xF0u);
         }
-        public static nothrow Color ForestGreen()
+        public static Color ForestGreen()
         {
             return Color(0x22u, 0x8Bu, 0x22u);
         }
-        public static nothrow Color Fuchsia()
+        public static Color Fuchsia()
         {
             return Color(0xFFu, 0x00u, 0xFFu);
         }
-        public static nothrow Color Gainsboro()
+        public static Color Gainsboro()
         {
             return Color(0xDCu, 0xDCu, 0xDCu);
         }
-        public static nothrow Color GhostWhite()
+        public static Color GhostWhite()
         {
             return Color(0xF8u, 0xF8u, 0xFFu);
         }
-        public static nothrow Color Gold()
+        public static Color Gold()
         {
             return Color(0xFFu, 0xD7u, 0x00u);
         }
-        public static nothrow Color Goldenrod()
+        public static Color Goldenrod()
         {
             return Color(0xDAu, 0xA5u, 0x20u);
         }
-        public static nothrow Color Gray()
+        public static Color Gray()
         {
             return Color(0x80u, 0x80u, 0x80u);
         }
-        public static nothrow Color Green()
+        public static Color Green()
         {
             return Color(0x00u, 0x80u, 0x00u);
         }
-        public static nothrow Color GreenYellow()
+        public static Color GreenYellow()
         {
             return Color(0xADu, 0xFFu, 0x2Fu);
         }
-        public static nothrow Color Honeydew()
+        public static Color Honeydew()
         {
             return Color(0xF0u, 0xFFu, 0xF0u);
         }
-        public static nothrow Color HotPink()
+        public static Color HotPink()
         {
             return Color(0xFFu, 0x69u, 0xB4u);
         }
-        public static nothrow Color IndianRed()
+        public static Color IndianRed()
         {
             return Color(0xCDu, 0x5Cu, 0x5Cu);
         }
-        public static nothrow Color Indigo()
+        public static Color Indigo()
         {
             return Color(0x4Bu, 0x00u, 0x82u);
         }
-        public static nothrow Color Ivory()
+        public static Color Ivory()
         {
             return Color(0xFFu, 0xFFu, 0xF0u);
         }
-        public static nothrow Color Khaki()
+        public static Color Khaki()
         {
             return Color(0xF0u, 0xE6u, 0x8Cu);
         }
-        public static nothrow Color Lavender()
+        public static Color Lavender()
         {
             return Color(0xE6u, 0xE6u, 0xFAu);
         }
-        public static nothrow Color LavenderBlush()
+        public static Color LavenderBlush()
         {
             return Color(0xFFu, 0xF0u, 0xF5u);
         }
-        public static nothrow Color LawnGreen()
+        public static Color LawnGreen()
         {
             return Color(0x7Cu, 0xFCu, 0x00u);
         }
-        public static nothrow Color LemonChiffon()
+        public static Color LemonChiffon()
         {
             return Color(0xFFu, 0xFAu, 0xCDu);
         }
-        public static nothrow Color LightBlue()
+        public static Color LightBlue()
         {
             return Color(0xADu, 0xD8u, 0xE6u);
         }
-        public static nothrow Color LightCoral()
+        public static Color LightCoral()
         {
             return Color(0xF0u, 0x80u, 0x80u);
         }
-        public static nothrow Color LightCyan()
+        public static Color LightCyan()
         {
             return Color(0xE0u, 0xFFu, 0xFFu);
         }
-        public static nothrow Color LightGoldenrodYellow()
+        public static Color LightGoldenrodYellow()
         {
             return Color(0xFAu, 0xFAu, 0xD2u);
         }
-        public static nothrow Color LightGray()
+        public static Color LightGray()
         {
             return Color(0xD3u, 0xD3u, 0xD3u);
         }
-        public static nothrow Color LightGreen()
+        public static Color LightGreen()
         {
             return Color(0x90u, 0xEEu, 0x90u);
         }
-        public static nothrow Color LightPink()
+        public static Color LightPink()
         {
             return Color(0xFFu, 0xB6u, 0xC1u);
         }
-        public static nothrow Color LightSalmon()
+        public static Color LightSalmon()
         {
             return Color(0xFFu, 0xA0u, 0x7Au);
         }
-        public static nothrow Color LightSeaGreen()
+        public static Color LightSeaGreen()
         {
             return Color(0x20u, 0xB2u, 0xAAu);
         }
-        public static nothrow Color LightSkyBlue()
+        public static Color LightSkyBlue()
         {
             return Color(0x87u, 0xCEu, 0xFAu);
         }
-        public static nothrow Color LightSlateGray()
+        public static Color LightSlateGray()
         {
             return Color(0x77u, 0x88u, 0x99u);
         }
-        public static nothrow Color LightSteelBlue()
+        public static Color LightSteelBlue()
         {
             return Color(0xB0u, 0xC4u, 0xDEu);
         }
-        public static nothrow Color LightYellow()
+        public static Color LightYellow()
         {
             return Color(0xFFu, 0xFFu, 0xE0u);
         }
-        public static nothrow Color Lime()
+        public static Color Lime()
         {
             return Color(0x00u, 0xFFu, 0x00u);
         }
-        public static nothrow Color LimeGreen()
+        public static Color LimeGreen()
         {
             return Color(0x32u, 0xCDu, 0x32u);
         }
-        public static nothrow Color Linen()
+        public static Color Linen()
         {
             return Color(0xFAu, 0xF0u, 0xE6u);
         }
-        public static nothrow Color Magenta()
+        public static Color Magenta()
         {
             return Color(0xFFu, 0x00u, 0xFFu);
         }
-        public static nothrow Color Maroon()
+        public static Color Maroon()
         {
             return Color(0x80u, 0x00u, 0x00u);
         }
-        public static nothrow Color MediumAquamarine()
+        public static Color MediumAquamarine()
         {
             return Color(0x66u, 0xCDu, 0xAAu);
         }
-        public static nothrow Color MediumBlue()
+        public static Color MediumBlue()
         {
             return Color(0x00u, 0x00u, 0xCDu);
         }
-        public static nothrow Color MediumOrchid()
+        public static Color MediumOrchid()
         {
             return Color(0xBAu, 0x55u, 0xD3u);
         }
-        public static nothrow Color MediumPurple()
+        public static Color MediumPurple()
         {
             return Color(0x93u, 0x70u, 0xDBu);
         }
-        public static nothrow Color MediumSeaGreen()
+        public static Color MediumSeaGreen()
         {
             return Color(0x3Cu, 0xB3u, 0x71u);
         }
-        public static nothrow Color MediumSlateBlue()
+        public static Color MediumSlateBlue()
         {
             return Color(0x7Bu, 0x68u, 0xEEu);
         }
-        public static nothrow Color MediumSpringGreen()
+        public static Color MediumSpringGreen()
         {
             return Color(0x00u, 0xFAu, 0x9Au);
         }
-        public static nothrow Color MediumTurquoise()
+        public static Color MediumTurquoise()
         {
             return Color(0x48u, 0xD1u, 0xCCu);
         }
-        public static nothrow Color MediumVioletRed()
+        public static Color MediumVioletRed()
         {
             return Color(0xC7u, 0x15u, 0x85u);
         }
-        public static nothrow Color MidnightBlue()
+        public static Color MidnightBlue()
         {
             return Color(0x19u, 0x19u, 0x70u);
         }
-        public static nothrow Color MintCream()
+        public static Color MintCream()
         {
             return Color(0xF5u, 0xFFu, 0xFAu);
         }
-        public static nothrow Color MistyRose()
+        public static Color MistyRose()
         {
             return Color(0xFFu, 0xE4u, 0xE1u);
         }
-        public static nothrow Color Moccasin()
+        public static Color Moccasin()
         {
             return Color(0xFFu, 0xE4u, 0xB5u);
         }
-        public static nothrow Color NavajoWhite()
+        public static Color NavajoWhite()
         {
             return Color(0xFFu, 0xDEu, 0xADu);
         }
-        public static nothrow Color Navy()
+        public static Color Navy()
         {
             return Color(0x00u, 0x00u, 0x80u);
         }
-        public static nothrow Color OldLace()
+        public static Color OldLace()
         {
             return Color(0xFDu, 0xF5u, 0xE6u);
         }
-        public static nothrow Color Olive()
+        public static Color Olive()
         {
             return Color(0x80u, 0x80u, 0x00u);
         }
-        public static nothrow Color OliveDrab()
+        public static Color OliveDrab()
         {
             return Color(0x6Bu, 0x8Eu, 0x23u);
         }
-        public static nothrow Color Orange()
+        public static Color Orange()
         {
             return Color(0xFFu, 0xA5u, 0x00u);
         }
-        public static nothrow Color OrangeRed()
+        public static Color OrangeRed()
         {
             return Color(0xFFu, 0x45u, 0x00u);
         }
-        public static nothrow Color Orchid()
+        public static Color Orchid()
         {
             return Color(0xDAu, 0x70u, 0xD6u);
         }
-        public static nothrow Color PaleGoldenrod()
+        public static Color PaleGoldenrod()
         {
             return Color(0xEEu, 0xE8u, 0xAAu);
         }
-        public static nothrow Color PaleGreen()
+        public static Color PaleGreen()
         {
             return Color(0x98u, 0xFBu, 0x98u);
         }
-        public static nothrow Color PaleTurquoise()
+        public static Color PaleTurquoise()
         {
             return Color(0xAFu, 0xEEu, 0xEEu);
         }
-        public static nothrow Color PaleVioletRed()
+        public static Color PaleVioletRed()
         {
             return Color(0xDBu, 0x70u, 0x93u);
         }
-        public static nothrow Color PapayaWhip()
+        public static Color PapayaWhip()
         {
             return Color(0xFFu, 0xEFu, 0xD5u);
         }
-        public static nothrow Color PeachPuff()
+        public static Color PeachPuff()
         {
             return Color(0xFFu, 0xDAu, 0xB9u);
         }
-        public static nothrow Color Peru()
+        public static Color Peru()
         {
             return Color(0xCDu, 0x85u, 0x3Fu);
         }
-        public static nothrow Color Pink()
+        public static Color Pink()
         {
             return Color(0xFFu, 0xC0u, 0xCBu);
         }
-        public static nothrow Color Plum()
+        public static Color Plum()
         {
             return Color(0xDDu, 0xA0u, 0xDDu);
         }
-        public static nothrow Color PowderBlue()
+        public static Color PowderBlue()
         {
             return Color(0xB0u, 0xE0u, 0xE6u);
         }
-        public static nothrow Color Purple()
+        public static Color Purple()
         {
             return Color(0x80u, 0x00u, 0x80u);
         }
-        public static nothrow Color Red()
+        public static Color Red()
         {
             return Color(0xFFu, 0x00u, 0x00u);
         }
-        public static nothrow Color RosyBrown()
+        public static Color RosyBrown()
         {
             return Color(0xBCu, 0x8Fu, 0x8Fu);
         }
-        public static nothrow Color RoyalBlue()
+        public static Color RoyalBlue()
         {
             return Color(0x41u, 0x69u, 0xE1u);
         }
-        public static nothrow Color SaddleBrown()
+        public static Color SaddleBrown()
         {
             return Color(0x8Bu, 0x45u, 0x13u);
         }
-        public static nothrow Color Salmon()
+        public static Color Salmon()
         {
             return Color(0xFAu, 0x80u, 0x72u);
         }
-        public static nothrow Color SandyBrown()
+        public static Color SandyBrown()
         {
             return Color(0xF4u, 0xA4u, 0x60u);
         }
-        public static nothrow Color SeaGreen()
+        public static Color SeaGreen()
         {
             return Color(0x2Eu, 0x8Bu, 0x57u);
         }
-        public static nothrow Color SeaShell()
+        public static Color SeaShell()
         {
             return Color(0xFFu, 0xF5u, 0xEEu);
         }
-        public static nothrow Color Sienna()
+        public static Color Sienna()
         {
             return Color(0xA0u, 0x52u, 0x2Du);
         }
-        public static nothrow Color Silver()
+        public static Color Silver()
         {
             return Color(0xC0u, 0xC0u, 0xC0u);
         }
-        public static nothrow Color SkyBlue()
+        public static Color SkyBlue()
         {
             return Color(0x87u, 0xCEu, 0xEBu);
         }
-        public static nothrow Color SlateBlue()
+        public static Color SlateBlue()
         {
             return Color(0x6Au, 0x5Au, 0xCDu);
         }
-        public static nothrow Color SlateGray()
+        public static Color SlateGray()
         {
             return Color(0x70u, 0x80u, 0x90u);
         }
-        public static nothrow Color Snow()
+        public static Color Snow()
         {
             return Color(0xFFu, 0xFAu, 0xFAu);
         }
-        public static nothrow Color SpringGreen()
+        public static Color SpringGreen()
         {
             return Color(0x00u, 0xFFu, 0x7Fu);
         }
-        public static nothrow Color SteelBlue()
+        public static Color SteelBlue()
         {
             return Color(0x46u, 0x82u, 0xB4u);
         }
-        public static nothrow Color Tan()
+        public static Color Tan()
         {
             return Color(0xD2u, 0xB4u, 0x8Cu);
         }
-        public static nothrow Color Teal()
+        public static Color Teal()
         {
             return Color(0x00u, 0x80u, 0x80u);
         }
-        public static nothrow Color Thistle()
+        public static Color Thistle()
         {
             return Color(0xD8u, 0xBFu, 0xD8u);
         }
-        public static nothrow Color Tomato()
+        public static Color Tomato()
         {
             return Color(0xFFu, 0x63u, 0x47u);
         }
-        public static nothrow Color Transparent()
+        public static Color Transparent()
         {
             return Color(0x00u, 0xFFu, 0xFFu, 0xFFu);
         }
-        public static nothrow Color Turquoise()
+        public static Color Turquoise()
         {
             return Color(0x40u, 0xE0u, 0xD0u);
         }
-        public static nothrow Color Violet()
+        public static Color Violet()
         {
             return Color(0xEEu, 0x82u, 0xEEu);
         }
-        public static nothrow Color Wheat()
+        public static Color Wheat()
         {
             return Color(0xF5u, 0xDEu, 0xB3u);
         }
-        public static nothrow Color White()
+        public static Color White()
         {
             return Color(0xFFu, 0xFFu, 0xFFu);
         }
-        public static nothrow Color WhiteSmoke()
+        public static Color WhiteSmoke()
         {
             return Color(0xF5u, 0xF5u, 0xF5u);
         }
-        public static nothrow Color Yellow()
+        public static Color Yellow()
         {
             return Color(0xFFu, 0xFFu, 0x00u);
         }
-        public static nothrow Color YellowGreen()
+        public static Color YellowGreen()
         {
             return Color(0x9Au, 0xCDu, 0x32u);
         }
-        public static nothrow Color DefaultBitmapTransparent()
+        public static Color DefaultBitmapTransparent()
         {
             return Color(0u, 128u, 128u);
         }
@@ -609,32 +616,54 @@ namespace System.Windows
         public byte blue;
     }
 
-    public nothrow bool operator==(const Color& left, const Color& right)
+    public bool operator==(const Color& left, const Color& right)
     {
         return left.alpha == right.alpha && left.red == right.red && left.green == right.green && left.blue == right.blue;
     }
 
-    public nothrow ulong GetHashCode(const Color& color)
+    public ulong GetHashCode(const Color& color)
     {
         return (cast<ulong>(color.alpha) << (8u * 3u)) | (cast<ulong>(color.red) << (8u * 2u)) | (cast<ulong>(color.green) << (8u * 1u)) | cast<ulong>(color.blue);
     }
 
-    public Color ParseColor(const string& s)
+    [nodiscard]
+    public Result<Color> ParseColor(const string& s)
     {
         Color color;
         List<string> components = s.Split('.');
         if (components.Count() == 4)
         {
-            color.alpha = cast<byte>(ParseInt(components[0]));
-            color.red = cast<byte>(ParseInt(components[1]));
-            color.green = cast<byte>(ParseInt(components[2]));
-            color.blue = cast<byte>(ParseInt(components[3]));
+            auto alphaResult = ParseInt(components[0]);
+            if (alphaResult.Error())
+            {
+                return Result<Color>(ErrorId(alphaResult.GetErrorId()));
+            }
+            color.alpha = cast<byte>(alphaResult.Value());
+            auto redResult = ParseInt(components[1]);
+            if (redResult.Error())
+            {
+                return Result<Color>(ErrorId(redResult.GetErrorId()));
+            }
+            color.red = cast<byte>(redResult.Value());
+            auto greenResult = ParseInt(components[2]);
+            if (greenResult.Error())
+            {
+                return Result<Color>(ErrorId(greenResult.GetErrorId()));
+            }
+            color.green = cast<byte>(greenResult.Value());
+            auto blueResult = ParseInt(components[3]);
+            if (blueResult.Error())
+            {
+                return Result<Color>(ErrorId(blueResult.GetErrorId()));
+            }
+            color.blue = cast<byte>(blueResult.Value());
         }
         else
         {
-            ThrowConversionException("could not parse color from string '" + s + "'");
+            int errorId = AllocateError("could not parse color from string '" + s + "'");
+            return Result<Color>(ErrorId(errorId));
         }
-        return color;
+        return Result<Color>(color);
     }
 
     public Color GetSystemColor(SystemColor color)
@@ -646,7 +675,7 @@ namespace System.Windows
         return Color(red, green, blue);
     }
 
-    public nothrow System.Windows.Color GetColor(System.Color.Constant consoleColor)
+    public System.Windows.Color GetColor(System.Color.Constant consoleColor)
     {
         switch (consoleColor)
         {

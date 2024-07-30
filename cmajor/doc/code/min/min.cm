@@ -1,4 +1,4 @@
-public constexpr nothrow inline const T& Min<T>(const T& left, const T& right) where T is System.Concepts.LessThanComparable
+public constexpr inline const T& Min<T>(const T& left, const T& right) where T is System.Concepts.LessThanComparable
 {
     if (left <= right) return left;
     return right;

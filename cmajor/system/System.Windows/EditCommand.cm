@@ -11,49 +11,59 @@ namespace System.Windows
     public abstract class EditCommand
     {
         public default virtual ~EditCommand();
-        public abstract nothrow void Undo(TextView* textView);
-        public abstract nothrow void Redo(TextView* textView);
+        [nodiscard]
+        public abstract Result<bool> Undo(TextView* textView);
+        [nodiscard]
+        public abstract Result<bool> Redo(TextView* textView);
     }
 
     public class EditCommandList
     {
-        public nothrow EditCommandList(TextView* textView_) : textView(textView_), currentIndex(0), inGroup(false)
+        public EditCommandList(TextView* textView_) : textView(textView_), currentIndex(0), inGroup(false)
         {
         }
-        public nothrow void SetMenuItems(MenuItem* undoMenuItem_, MenuItem* redoMenuItem_)
+        [nodiscard]
+        public Result<bool> SetMenuItems(MenuItem* undoMenuItem_, MenuItem* redoMenuItem_)
         {
             undoMenuItem = undoMenuItem_;
             redoMenuItem = redoMenuItem_;
-            UpdateMenuItems();
+            return UpdateMenuItems();
         }
-        public nothrow bool CanUndo() const
+        public bool CanUndo() const
         {
             return currentIndex > 0;
         }
-        public nothrow bool CanRedo() const
+        public bool CanRedo() const
         {
             return currentIndex < commands.Count();
         }
-        public nothrow void UpdateMenuItems()
+        [nodiscard]
+        public Result<bool> UpdateMenuItems()
         {
             if (CanUndo())
             {
-                undoMenuItem->Enable();
+                auto result = undoMenuItem->Enable();
+                if (result.Error()) return result;
             }
             else
             {
-                undoMenuItem->Disable();
+                auto result = undoMenuItem->Disable();
+                if (result.Error()) return result;
             }
             if (CanRedo())
             {
-                redoMenuItem->Enable();
+                auto result = redoMenuItem->Enable();
+                if (result.Error()) return result;
             }
             else
             {
-                redoMenuItem->Disable();
+                auto result = redoMenuItem->Disable();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow void AddCommand(EditCommand* command)
+        [nodiscard]
+        public Result<bool> AddCommand(EditCommand* command)
         {
             if (inGroup)
             {
@@ -72,38 +82,49 @@ namespace System.Windows
                     ++currentIndex;
                 }
                 commands.Resize(currentIndex);
-                UpdateMenuItems();
+                auto result = UpdateMenuItems();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow void Undo()
+        [nodiscard]
+        public Result<bool> Undo()
         {
             if (CanUndo())
             {
                 --currentIndex;
                 EditCommand* command = commands[currentIndex].Get();
-                command->Undo(textView);
+                auto result = command->Undo(textView);
+                if (result.Error()) return result;
             }
-            UpdateMenuItems();
+            auto result = UpdateMenuItems();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public nothrow void Redo()
+        [nodiscard]
+        public Result<bool> Redo()
         {
             if (CanRedo())
             {
                 EditCommand* command = commands[currentIndex].Get();
-                command->Redo(textView);
+                auto result = command->Redo(textView);
+                if (result.Error()) return result;
                 ++currentIndex;
             }
-            UpdateMenuItems();
+            auto result = UpdateMenuItems();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public nothrow void BeginGroup()
+        public void BeginGroup()
         {
             groupCommand.Reset(new GroupCommand());
             inGroup = true;
         }
-        public nothrow void EndGroup()
+        [nodiscard]
+        public Result<bool> EndGroup()
         {
             inGroup = false;
-            AddCommand(groupCommand.Release());
+            return AddCommand(groupCommand.Release());
         }
         private TextView* textView;
         private int currentIndex;
@@ -116,16 +137,22 @@ namespace System.Windows
 
     public class InsertCharCommand : EditCommand
     {
-        public nothrow InsertCharCommand(int lineIndex_, int columnIndex_, uchar c_, bool removeIndent_) : lineIndex(lineIndex_), columnIndex(columnIndex_), c(c_), removeIndent(removeIndent_)
+        public InsertCharCommand(int lineIndex_, int columnIndex_, uchar c_, bool removeIndent_) : lineIndex(lineIndex_), columnIndex(columnIndex_), c(c_), removeIndent(removeIndent_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->DeleteChar(lineIndex, columnIndex, 0, 0, removeIndent);
+            auto result = textView->DeleteChar(lineIndex, columnIndex, 0, 0, removeIndent);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->InsertChar(lineIndex, columnIndex, c);
+            auto result = textView->InsertChar(lineIndex, columnIndex, c);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private int lineIndex;
         private int columnIndex;
@@ -135,23 +162,30 @@ namespace System.Windows
 
     public class DeleteCharCommand : EditCommand
     {
-        public nothrow DeleteCharCommand(int lineIndex_, int columnIndex_, uchar c_) : lineIndex(lineIndex_), columnIndex(columnIndex_), c(c_)
+        public DeleteCharCommand(int lineIndex_, int columnIndex_, uchar c_) : lineIndex(lineIndex_), columnIndex(columnIndex_), c(c_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
             if (c != '\0')
             {
-                textView->InsertChar(lineIndex, columnIndex, c);
+                auto result = textView->InsertChar(lineIndex, columnIndex, c);
+                if (result.Error()) return result;
             }
             else
             {
-                textView->NewLine(lineIndex, columnIndex);
+                auto result = textView->NewLine(lineIndex, columnIndex);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->DeleteChar(lineIndex, columnIndex, 0, 0, false);
+            auto result = textView->DeleteChar(lineIndex, columnIndex, 0, 0, false);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private int lineIndex;
         private int columnIndex;
@@ -160,17 +194,23 @@ namespace System.Windows
 
     public class NewLineCommand : EditCommand
     {
-        public nothrow NewLineCommand(int lineIndex_, int columnIndex_, int indent_, int numSpaces_) :
+        public NewLineCommand(int lineIndex_, int columnIndex_, int indent_, int numSpaces_) :
             lineIndex(lineIndex_), columnIndex(columnIndex_), indent(indent_), numSpaces(numSpaces_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->DeleteChar(lineIndex, columnIndex, indent, numSpaces, false);
+            auto result = textView->DeleteChar(lineIndex, columnIndex, indent, numSpaces, false);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->NewLine(lineIndex, columnIndex);
+            auto result = textView->NewLine(lineIndex, columnIndex);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private int lineIndex;
         private int columnIndex;
@@ -180,36 +220,48 @@ namespace System.Windows
 
     public class InsertIntoLineCommand : EditCommand
     {
-        public nothrow InsertIntoLineCommand(int lineIndex_, int columnIndex_, const ustring& text_) :
+        public InsertIntoLineCommand(int lineIndex_, int columnIndex_, const ustring& text_) :
             lineIndex(lineIndex_), columnIndex(columnIndex_), text(text_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->RemoveFromLine(lineIndex, columnIndex, text.Length());
+            auto result = textView->RemoveFromLine(lineIndex, columnIndex, text.Length());
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->InsertIntoLine(lineIndex, columnIndex, text);
+            auto result = textView->InsertIntoLine(lineIndex, columnIndex, text);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private int lineIndex;
         private int columnIndex;
         private ustring text;
     }
-    
+
     public class InsertLinesCommand : EditCommand
     {
-        public nothrow InsertLinesCommand(int lineIndex_, int columnIndex_, const List<ustring>& lines_) :
+        public InsertLinesCommand(int lineIndex_, int columnIndex_, const List<ustring>& lines_) :
             lineIndex(lineIndex_), columnIndex(columnIndex_), lines(lines_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->DeleteLines(lineIndex, columnIndex, lines);
+            auto result = textView->DeleteLines(lineIndex, columnIndex, lines);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->InsertLines(lineIndex, columnIndex, lines);
+            auto result = textView->InsertLines(lineIndex, columnIndex, lines);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private int lineIndex;
         private int columnIndex;
@@ -218,18 +270,25 @@ namespace System.Windows
 
     public class RemoveSelectionCommand : EditCommand
     {
-        public nothrow RemoveSelectionCommand(const Selection& selection_, const SelectionData& selectionData_, bool wholeLine_) :
+        public RemoveSelectionCommand(const Selection& selection_, const SelectionData& selectionData_, bool wholeLine_) :
             selection(selection_), selectionData(selectionData_), wholeLine(wholeLine_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->InsertSelection(selection, selectionData, wholeLine);
+            auto result = textView->InsertSelection(selection, selectionData, wholeLine);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->SetSelection(selection);
-            textView->RemoveSelection();
+            auto result = textView->SetSelection(selection);
+            if (result.Error()) return result;
+            result = textView->RemoveSelection();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private Selection selection;
         private SelectionData selectionData;
@@ -238,16 +297,22 @@ namespace System.Windows
 
     public class TabCommand : EditCommand
     {
-        public nothrow TabCommand(int lineIndex_, int columnIndex_) : lineIndex(lineIndex_), columnIndex(columnIndex_)
+        public TabCommand(int lineIndex_, int columnIndex_) : lineIndex(lineIndex_), columnIndex(columnIndex_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->Backtab(lineIndex, columnIndex + textView->IndentSize());
+            auto result = textView->Backtab(lineIndex, columnIndex + textView->IndentSize());
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->Tab(lineIndex, columnIndex);
+            auto result = textView->Tab(lineIndex, columnIndex);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private int lineIndex;
         private int columnIndex;
@@ -255,16 +320,21 @@ namespace System.Windows
 
     public class BacktabCommand : EditCommand
     {
-        public nothrow BacktabCommand(int lineIndex_, int columnIndex_, int numSpaces_) : lineIndex(lineIndex_), columnIndex(columnIndex_), numSpaces(numSpaces_)
+        public BacktabCommand(int lineIndex_, int columnIndex_, int numSpaces_) : lineIndex(lineIndex_), columnIndex(columnIndex_), numSpaces(numSpaces_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->AddSpaces(lineIndex, columnIndex, numSpaces);
+            auto result = textView->AddSpaces(lineIndex, columnIndex, numSpaces);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->RemoveSpaces(lineIndex, columnIndex, numSpaces);
+            auto result = textView->RemoveSpaces(lineIndex, columnIndex, numSpaces);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private int lineIndex;
         private int columnIndex;
@@ -273,18 +343,26 @@ namespace System.Windows
 
     public class IndentSelectionCommand : EditCommand
     {
-        public nothrow IndentSelectionCommand(const Selection& selection_) : selection(selection_)
+        public IndentSelectionCommand(const Selection& selection_) : selection(selection_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->SetSelection(selection);
-            textView->UnindentSelection();
+            auto result = textView->SetSelection(selection);
+            if (result.Error()) return result;
+            result = textView->UnindentSelection();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->SetSelection(selection);
-            textView->IndentSelection();
+            auto result = textView->SetSelection(selection);
+            if (result.Error()) return result;
+            result = textView->IndentSelection();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private Selection selection;
     }
@@ -294,15 +372,23 @@ namespace System.Windows
         public UnindentSelectionCommand(const Selection& selection_) : selection(selection_)
         {
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
-            textView->SetSelection(selection);
-            textView->IndentSelection();
+            auto result = textView->SetSelection(selection);
+            if (result.Error()) return result;
+            result = textView->IndentSelection();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
-            textView->SetSelection(selection);
-            textView->UnindentSelection();
+            auto result = textView->SetSelection(selection);
+            if (result.Error()) return result;
+            result = textView->UnindentSelection();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private Selection selection;
     }
@@ -312,27 +398,33 @@ namespace System.Windows
         public GroupCommand()
         {
         }
-        public nothrow void AddCommand(EditCommand* command)
+        public void AddCommand(EditCommand* command)
         {
             commands.Add(UniquePtr<EditCommand>(command));
         }
-        public override nothrow void Undo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Undo(TextView* textView)
         {
             long n = commands.Count();
             for (long i = n - 1; i >= 0; --i)
             {
                 EditCommand* command = commands[i].Get();
-                command->Undo(textView);
+                auto result = command->Undo(textView);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public override nothrow void Redo(TextView* textView)
+        [nodiscard]
+        public override Result<bool> Redo(TextView* textView)
         {
             long n = commands.Count();
             for (long i = 0; i < n; ++i)
             {
                 EditCommand* command = commands[i].Get();
-                command->Redo(textView);
+                auto result = command->Redo(textView);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
         private List<UniquePtr<EditCommand>> commands;
     }

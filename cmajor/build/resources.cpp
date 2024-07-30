@@ -51,10 +51,6 @@ std::string CompileResourceFile(const std::string& resourceFilePath, cmajor::ast
         util::ExecuteResult result = util::Execute(command);
         if (result.exitCode == 0)
         {
-            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-            {
-                util::LogMessage(project->LogStreamId(), result.output);
-            }
             return resFilePath;
         }
         else
@@ -70,10 +66,6 @@ std::string CompileResourceFile(const std::string& resourceFilePath, cmajor::ast
         util::ExecuteResult result = util::Execute(command);
         if (result.exitCode == 0)
         {
-            if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-            {
-                util::LogMessage(project->LogStreamId(), result.output);
-            }
             return objectFilePath;
         }
         else

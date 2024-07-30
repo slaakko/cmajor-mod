@@ -12,17 +12,17 @@ namespace System.Windows
         single, style3D
     }
 
-    public nothrow inline int DefaultSingleBorderWidth()
+    public inline int DefaultSingleBorderWidth()
     {
         return 1;
     }
 
-    public nothrow inline int Default3DBorderWidth()
+    public inline int Default3DBorderWidth()
     {
         return 2;
     }
 
-    public nothrow int GetBorderWidth(BorderStyle borderStyle)
+    public int GetBorderWidth(BorderStyle borderStyle)
     {
         switch (borderStyle)
         {
@@ -32,24 +32,24 @@ namespace System.Windows
         return 0;
     }
 
-    public nothrow Color DefaultBorderedControlNormalBorderdColor()
+    public Color DefaultBorderedControlNormalBorderdColor()
     {
         return Color.Black();
     }
 
-    public nothrow Color DefaultBorderedControlFocusedBorderColor()
+    public Color DefaultBorderedControlFocusedBorderColor()
     {
         return Color.Blue();
     }
 
-    public nothrow ControlCreateParams& BorderedControlControlCreateParams(ControlCreateParams& controlCreateParams, Control* child)
+    public ControlCreateParams& BorderedControlControlCreateParams(ControlCreateParams& controlCreateParams, Control* child)
     {
         return controlCreateParams.SetWindowClassName("System.Windows.BorderedControl").SetBackgroundColor(child->BackgroundColor());
     }
 
     public class BorderedControlCreateParams
     {
-        public nothrow BorderedControlCreateParams(ControlCreateParams& controlCreateParams_, Control* child_) :
+        public BorderedControlCreateParams(ControlCreateParams& controlCreateParams_, Control* child_) :
             controlCreateParams(controlCreateParams_),
             child(child_),
             borderStyle(BorderStyle.single),
@@ -58,26 +58,26 @@ namespace System.Windows
             focusedBorderColor(DefaultBorderedControlFocusedBorderColor())
         {
         }
-        public nothrow BorderedControlCreateParams& Defaults()
+        public BorderedControlCreateParams& Defaults()
         {
             return *this;
         }
-        public nothrow BorderedControlCreateParams& SetBordedStyle(BorderStyle borderStyle_)
+        public BorderedControlCreateParams& SetBorderStyle(BorderStyle borderStyle_)
         {
             borderStyle = borderStyle_;
             return *this;
         }
-        public nothrow BorderedControlCreateParams& SetBorderWidth(int borderWidth_)
+        public BorderedControlCreateParams& SetBorderWidth(int borderWidth_)
         {
             borderWidth = borderWidth_;
             return *this;
         }
-        public nothrow BorderedControlCreateParams& SetNormalBorderColor(const Color& normalBorderColor_)
+        public BorderedControlCreateParams& SetNormalBorderColor(const Color& normalBorderColor_)
         {
             normalBorderColor = normalBorderColor_;
             return *this;
         }
-        public nothrow  BorderedControlCreateParams& SetFocusedBorderColor(const Color& focusedBorderColor_)
+        public BorderedControlCreateParams& SetFocusedBorderColor(const Color& focusedBorderColor_)
         {
             focusedBorderColor = focusedBorderColor_;
             return *this;
@@ -103,8 +103,18 @@ namespace System.Windows
             container(this), borderStyle(borderStyle_), normalBorderColor(normalBorderColor_), focusedBorderColor(focusedBorderColor_),
             borderWidth(GetBorderWidth(borderStyle)), child(child_)
         {
-            container.AddChild(child);
-            SetChildPos();
+            auto result = container.AddChild(child);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = SetChildPos();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
         public BorderedControl(Control* child, BorderStyle borderStyle, const Point& location, const Size& size, Dock dock, Anchors anchors) :
             this(child, borderStyle, Color.Black(), Color.Blue(), location, size, dock, anchors)
@@ -127,35 +137,54 @@ namespace System.Windows
             child(createParams.child),
             flags(Flags.none)
         {
-            container.AddChild(child);
-            SetChildPos();
+            auto result = container.AddChild(child);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = SetChildPos();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
-        public nothrow void SetNormalBorderColor(const Color& normalBorderColor_)
+        [nodiscard]
+        public Result<bool> SetNormalBorderColor(const Color& normalBorderColor_)
         {
             if (normalBorderColor != normalBorderColor_)
             {
                 normalBorderColor = normalBorderColor_;
-                Invalidate();
+                auto result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow void SetFocusedBorderColor(const Color& focusedBorderColor_)
+        [nodiscard]
+        public Result<bool> SetFocusedBorderColor(const Color& focusedBorderColor_)
         {
             if (focusedBorderColor != focusedBorderColor_)
             {
                 focusedBorderColor = focusedBorderColor_;
-                Invalidate();
+                auto result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow void SetBorderWidth(int borderWidth_)
+        [nodiscard]
+        public Result<bool> SetBorderWidth(int borderWidth_)
         {
             borderWidth = borderWidth_;
-            Invalidate();
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected nothrow override bool IsDecoratorControl() const
+        protected override bool IsDecoratorControl() const
         {
             return true;
         }
-        public nothrow override ContainerControl* GetContainerControl() const
+        public override ContainerControl* GetContainerControl() const
         {
             if (child is ContainerControl*)
             {
@@ -163,11 +192,11 @@ namespace System.Windows
             }
             return base->GetContainerControl();
         }
-        internal nothrow override Control* GetFirstEnabledTabStopControl() const
+        internal override Control* GetFirstEnabledTabStopControl() const
         {
             return child->GetFirstEnabledTabStopControl();
         }
-        internal nothrow override Control* GetLastEnabledTabStopControl() const
+        internal override Control* GetLastEnabledTabStopControl() const
         {
             return child->GetLastEnabledTabStopControl();
         }
@@ -189,43 +218,75 @@ namespace System.Windows
                 parentControl->OnChildContentChanged(args);
             }
         }
-        protected override void OnChildContentSizeChanged(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildContentSizeChanged(ControlEventArgs& args)
         {
-            base->OnChildContentSizeChanged(args);
+            auto result = base->OnChildContentSizeChanged(args);
+            if (result.Error()) return result;
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->OnChildContentSizeChanged(args);
+                result = parentControl->OnChildContentSizeChanged(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnChildGotFocus(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildGotFocus(ControlEventArgs& args)
         {
-            base->OnChildGotFocus(args);
+            auto result = base->OnChildGotFocus(args);
+            if (result.Error()) return result;
             SetChildFocused();
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->OnChildGotFocus(args);
+                result = parentControl->OnChildGotFocus(args);
+                if (result.Error()) return result;
             }
-            Invalidate();
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnChildLostFocus(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildLostFocus(ControlEventArgs& args)
         {
-            base->OnChildLostFocus(args);
+            auto result = base->OnChildLostFocus(args);
+            if (result.Error()) return result;
             ResetChildFocused();
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->OnChildLostFocus(args);
+                result = parentControl->OnChildLostFocus(args);
+                if (result.Error()) return result;
             }
-            Invalidate();
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public override void PrintWindowTree(int level)
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
         {
             LogView* log = Application.GetLogView();
             if (log != null)
             {
-                log->WriteLine(string(' ', level) + "BorderedControl." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + " " + ParentText() + "[" + Rect(Location(), GetSize()).ToString() + "]");
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                auto parentTextResult = ParentText();
+                if (parentTextResult.Error())
+                {
+                    return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                }
+                auto locationResult = Location();
+                if (locationResult.Error())
+                {
+                    return Result<bool>(ErrorId(locationResult.GetErrorId()));
+                }
+                auto result = log->WriteLine(string(' ', level) + "BorderedControl." + Text() + ".handle=" + handleResult.Value() + " " +
+                    parentTextResult.Value() + "[" + Rect(locationResult.Value(), GetSize()).ToString() + "]");
+                if (result.Error()) return result;
             }
             Component* child = container.FirstChild();
             while (child != null)
@@ -233,31 +294,49 @@ namespace System.Windows
                 if (child is Control*)
                 {
                     Control* childControl = cast<Control*>(child);
-                    childControl->PrintWindowTree(level + 1);
+                    auto result = childControl->PrintWindowTree(level + 1);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
                 }
                 child = child->NextSibling();
             }
+            return Result<bool>(true);
         }
-        protected override void OnLocationChanged()
+        [nodiscard]
+        protected override Result<bool> OnLocationChanged()
         {
-            base->OnLocationChanged();
-            SetChildPos();
+            auto result = base->OnLocationChanged();
+            if (result.Error()) return result;
+            result = SetChildPos();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnSizeChanged(uint windowState)
+        [nodiscard]
+        protected override Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
         {
-            base->OnSizeChanged(windowState);
-            SetChildPos();
+            auto result = base->OnSizeChanged(args);
+            if (result.Error()) return result;
+            result = SetChildPos();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnChildSizeChanged(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildSizeChanged(ControlEventArgs& args)
         {
-            base->OnChildSizeChanged(args);
+            auto result = base->OnChildSizeChanged(args);
+            if (result.Error()) return result;
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->FireChildSizeChanged(args);
+                result = parentControl->FireChildSizeChanged(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnPaint(PaintEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
         {
             if (Debug.Paint())
             {
@@ -265,30 +344,56 @@ namespace System.Windows
                 LogView* log = Application.GetLogView();
                 if (log != null)
                 {
-                    log->WriteLine("BorderedControl.OnPaint: " + r.ToString());
+                    auto result = log->WriteLine("BorderedControl.OnPaint: " + r.ToString());
+                    if (result.Error()) return result;
                 }
             }
-            DrawBorder(args.graphics);
-            base->OnPaint(args);
+            auto result = DrawBorder(args.graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return base->OnPaint(args);
         }
-        private void SetChildPos()
+        [nodiscard]
+        private Result<bool> SetChildPos()
         {
             Point loc;
             Size size = GetSize();
             Rect childRect(loc, size);
             childRect.Inflate(-borderWidth, -borderWidth);
-            child->SetLocation(childRect.location);
-            child->SetSize(childRect.size);
+            auto result = child->SetLocation(childRect.location);
+            if (result.Error()) return result;
+            result = child->SetSize(childRect.size);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        private void DrawBorder(Graphics& graphics)
+        private Result<bool> DrawBorder(Graphics& graphics)
         {
             switch (borderStyle)
             {
-                case BorderStyle.single: DrawSingleBorder(graphics); break;
-                case BorderStyle.style3D: Draw3DBorder(graphics); break;
+                case BorderStyle.single:
+                {
+                    auto result = DrawSingleBorder(graphics);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    break;
+                }
+                case BorderStyle.style3D:
+                {
+                    auto result = Draw3DBorder(graphics);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    break;
+                }
             }
+            return Result<bool>(true);
         }
-        private void DrawSingleBorder(Graphics& graphics)
+        private Result<bool> DrawSingleBorder(Graphics& graphics)
         {
             Rect r(Point(), GetSize());
             r.size.w = r.size.w - 1;
@@ -296,46 +401,112 @@ namespace System.Windows
             if (ChildFocused())
             {
                 Pen pen(focusedBorderColor, 1);
-                graphics.DrawRectangleChecked(pen, r);
+                if (pen.Error())
+                {
+                    return Result<bool>(ErrorId(pen.GetErrorId()));
+                }
+                auto drawResult = graphics.DrawRectangle(pen, r);
+                if (drawResult.Error())
+                {
+                    return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                }
             }
             else
             {
                 Pen pen(normalBorderColor, 1);
-                graphics.DrawRectangleChecked(pen, r);
+                if (pen.Error())
+                {
+                    return Result<bool>(ErrorId(pen.GetErrorId()));
+                }
+                auto drawResult = graphics.DrawRectangle(pen, r);
+                if (drawResult.Error())
+                {
+                    return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                }
             }
+            return Result<bool>(true);
         }
-        private void Draw3DBorder(Graphics& graphics)
+        private Result<bool> Draw3DBorder(Graphics& graphics)
         {
             Rect r(Point(), GetSize());
             r.size.w = r.size.w - 1;
             r.size.h = r.size.h - 1;
             Pen outerLeftTopEdgePen(Color(160u, 160u, 160u), 1);
-            graphics.DrawLineChecked(outerLeftTopEdgePen, r.location, Point(r.location.x + r.size.w - 1, r.location.y));
-            graphics.DrawLineChecked(outerLeftTopEdgePen, r.location, Point(r.location.x, r.location.y + r.size.h - 1));
+            if (outerLeftTopEdgePen.Error())
+            {
+                return Result<bool>(ErrorId(outerLeftTopEdgePen.GetErrorId()));
+            }
+            auto drawResult = graphics.DrawLine(outerLeftTopEdgePen, r.location, Point(r.location.x + r.size.w - 1, r.location.y));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
+            drawResult = graphics.DrawLine(outerLeftTopEdgePen, r.location, Point(r.location.x, r.location.y + r.size.h - 1));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
             Pen outerRightBottomEdgePen(Color.White(), 1);
-            graphics.DrawLineChecked(outerRightBottomEdgePen, Point(r.location.x + r.size.w, r.location.y), Point(r.location.x + r.size.w, r.location.y + r.size.h));
-            graphics.DrawLineChecked(outerRightBottomEdgePen, Point(r.location.x, r.location.y + r.size.h), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+            if (outerRightBottomEdgePen.Error())
+            {
+                return Result<bool>(ErrorId(outerRightBottomEdgePen.GetErrorId()));
+            }
+            drawResult = graphics.DrawLine(outerRightBottomEdgePen, Point(r.location.x + r.size.w, r.location.y), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
+            drawResult = graphics.DrawLine(outerRightBottomEdgePen, Point(r.location.x, r.location.y + r.size.h), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
             r.Inflate(-1, -1);
             Pen innerLeftTopEdgePen(Color(105u, 105u, 105u), 1);
-            graphics.DrawLineChecked(innerLeftTopEdgePen, r.location, Point(r.location.x + r.size.w - 1, r.location.y));
-            graphics.DrawLineChecked(innerLeftTopEdgePen, r.location, Point(r.location.x, r.location.y + r.size.h - 1));
+            if (innerLeftTopEdgePen.Error())
+            {
+                return Result<bool>(ErrorId(innerLeftTopEdgePen.GetErrorId()));
+            }
+            drawResult = graphics.DrawLine(innerLeftTopEdgePen, r.location, Point(r.location.x + r.size.w - 1, r.location.y));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
+            drawResult = graphics.DrawLine(innerLeftTopEdgePen, r.location, Point(r.location.x, r.location.y + r.size.h - 1));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
             Pen innerRightBottomEdgePen(Color(227u, 227u, 227u), 1);
-            graphics.DrawLineChecked(innerRightBottomEdgePen, Point(r.location.x + r.size.w, r.location.y), Point(r.location.x + r.size.w, r.location.y + r.size.h));
-            graphics.DrawLineChecked(innerRightBottomEdgePen, Point(r.location.x, r.location.y + r.size.h), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+            if (innerRightBottomEdgePen.Error())
+            {
+                return Result<bool>(ErrorId(innerRightBottomEdgePen.GetErrorId()));
+            }
+            drawResult = graphics.DrawLine(innerRightBottomEdgePen, Point(r.location.x + r.size.w, r.location.y), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
+            drawResult = graphics.DrawLine(innerRightBottomEdgePen, Point(r.location.x, r.location.y + r.size.h), Point(r.location.x + r.size.w, r.location.y + r.size.h));
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        private nothrow inline bool ChildFocused() const
+        private inline bool ChildFocused() const
         {
             return (flags & Flags.childFocused) != Flags.none;
         }
-        private nothrow inline void SetChildFocused()
+        private inline void SetChildFocused()
         {
             flags = cast<Flags>(flags | Flags.childFocused);
         }
-        private nothrow inline void ResetChildFocused()
+        private inline void ResetChildFocused()
         {
             flags = cast<Flags>(flags & ~Flags.childFocused);
         }
-        private Container container;
+        private ComponentContainer container;
         private BorderStyle borderStyle;
         private int borderWidth;
         private Color normalBorderColor;

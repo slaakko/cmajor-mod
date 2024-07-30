@@ -1,4 +1,0 @@
-project DebugExample;
-source <SimpleLocalVar.cm>;
-source <ContainerLocalVar.cm>;
-source <Main.cm>;

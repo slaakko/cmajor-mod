@@ -14,7 +14,7 @@
      <a href="content/System.Windows.Install/index.html">System.Windows.Install</a>
     </td>
     <td>
-     The System.Windows.Install module is a special module that takes care of installing the System and System.Windows libraries to cmajor/system/lib/&lt;config> directory. It contains no source code entities, but references the <a href="content/System/doc/../../System.Windows/index.html">System.Windows</a>
+     The System.Windows.Install module is a special module that takes care of installing the System and System.Windows libraries to cmajor/system/lib/&lt;backend>/&lt;config> directory. It contains no source code entities, but references the <a href="content/System/doc/../../System.Windows/index.html">System.Windows</a>
       module.</td>
    </tr>
    <tr>
@@ -30,9 +30,19 @@
    </tr>
    <tr>
     <td>
+     <a href="content/System/index.html">System</a>
+    </td>
+    <td>
+     The System module acts as an umbrella module that references all other System Library modules except System.Windows module. It contains no source code entities. The System module is implicitly referenced by all user programs and libraries, so an explicit reference for any system library module is not needed. This library is linked with programs and libraries that have <strong> target=program</strong>
+      or <strong> target=library</strong>
+      in a <em> .cmp</em>
+      file respectively.</td>
+   </tr>
+   <tr>
+    <td>
      <a href="content/System.Xml.Serialization/index.html">System.Xml.Serialization</a>
     </td>
-    <td>Library support for XML serialization.</td>
+    <td>The System.Xml.Serialization module contains library support for XML serialization.</td>
    </tr>
    <tr>
     <td>
@@ -47,14 +57,6 @@
      <a href="content/System.RegularExpressions/index.html">System.RegularExpressions</a>
     </td>
     <td>The System.RegularExpressions contains a minimal implementation of a regular expression matching engine.</td>
-   </tr>
-   <tr>
-    <td>
-     <a href="content/System.Net.BinaryMessageProtocol/index.html">System.Net.BinaryMessageProtocol</a>
-    </td>
-    <td>
-     The System.Net.BinaryMessageProtocol module provides library support for sending and receiving binary messages over a <a href="content/System/doc/../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html">TcpSocket</a>
-      .</td>
    </tr>
    <tr>
     <td>

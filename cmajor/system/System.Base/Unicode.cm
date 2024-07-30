@@ -10,35 +10,37 @@ using System.Threading;
 
 namespace System.Unicode
 {
-    public class UnicodeException : Exception
+    [nodiscard]
+    public Result<string> PathToUnicodeDirectory()
     {
-        public nothrow UnicodeException(const string& message_) : base(message_)
+        string cmajorRoot;
+        int stringHandle = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (stringHandle != -1)
         {
+            cmajorRoot = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
         }
-    }
-    
-    public void ThrowUnicodeException(const string& message)
-    {
-        throw UnicodeException(message);
-    }
-    
-    public string PathToUnicodeDirectory()
-    {
-        string cmajorRoot = RtGetEnvironmentVariable("CMAJOR_ROOT");
         if (cmajorRoot.IsEmpty())
         {
-            ThrowUnicodeException("CMAJOR_ROOT environment variable not set (set it to /path/to/cmajor directory)");
-            return string();
+            int errorId = AllocateError("CMAJOR_ROOT environment variable not set (set it to /path/to/cmajor directory)");
+            return Result<string>(ErrorId(errorId));
         }
-        return Path.Combine(cmajorRoot, "unicode");
+        return Result<string>(Path.Combine(cmajorRoot, "unicode"));
     }
-    
-    public string PathToUcdBinFile()
-    {        
-        return Path.Combine(PathToUnicodeDirectory(), "cmajor_ucd.bin");
+
+    [nodiscard]
+    public Result<string> PathToUcdBinFile()
+    {
+        auto unicodeDir = PathToUnicodeDirectory();
+        if (unicodeDir.Error())
+        {
+            return unicodeDir;
+        }
+        return Result<string>(Path.Combine(unicodeDir.Value(), "cmajor_ucd.bin"));
     }
-    
-    public string MakeCanonicalPropertyName(const string& s)
+
+    [nodiscard]
+    public Result<string> MakeCanonicalPropertyName(const string& s)
     {
         string result;
         for (char c : s)
@@ -50,7 +52,7 @@ namespace System.Unicode
         }
         return ToLower(result);
     }
-    
+
     public enum BinaryPropertyId : byte
     {
         asciiHexDigit,
@@ -114,21 +116,21 @@ namespace System.Unicode
         expandsOnNFKC,
         expandsOnNFKD
     }
-    
+
     public class BinaryProperty
     {
-        public nothrow BinaryProperty(BinaryPropertyId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public BinaryProperty(BinaryPropertyId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
-        public inline nothrow BinaryPropertyId Id()
+        public inline BinaryPropertyId Id()
         {
             return id;
         }
-        public inline nothrow const string& ShortName()
+        public inline const string& ShortName()
         {
             return shortName;
         }
-        public inline nothrow const string& LongName()
+        public inline const string& LongName()
         {
             return longName;
         }
@@ -136,44 +138,70 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
-    public class BinaryPropertyTable
+
+    public class BinaryPropertyTable : IOBase
     {
         static BinaryPropertyTable() : instance(new BinaryPropertyTable())
         {
         }
-        public static nothrow BinaryPropertyTable& Instance()
+        public static BinaryPropertyTable& Instance()
         {
             return *instance;
         }
-        public nothrow const BinaryProperty* GetBinaryProperty(BinaryPropertyId id) const
+        [nodiscard]
+        public Result<const BinaryProperty*> GetBinaryProperty(BinaryPropertyId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = binaryPropertyIdMap.CFind(cast<uint>(cast<byte>(id)));
+            if (Error())
+            {
+                return Result<const BinaryProperty*>(ErrorId(GetErrorId()));
+            }
+            auto it = binaryPropertyIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != binaryPropertyIdMap.CEnd())
             {
-                return cast<BinaryProperty*>(it->second);
+                return Result<const BinaryProperty*>(cast<BinaryProperty*>(it->second));
             }
-            return null;
+            const BinaryProperty* n = null;
+            return Result<const BinaryProperty*>(n);
         }
-        public const BinaryProperty* GetBinaryPropertyByShortName(const string& shortName) const
+        [nodiscard]
+        public Result<const BinaryProperty*> GetBinaryPropertyByShortName(const string& shortName) const
         {
-            HashMap<string, void*>.ConstIterator it = shortNameMap.CFind(MakeCanonicalPropertyName(shortName));
+            if (Error())
+            {
+                return Result<const BinaryProperty*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(shortName);
+            if (result.Error())
+            {
+                return Result<const BinaryProperty*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = shortNameMap.CFind(result.Value());
             if (it != shortNameMap.CEnd())
             {
-                return cast<BinaryProperty*>(it->second);
+                return Result<const BinaryProperty*>(cast<BinaryProperty*>(it->second));
             }
-            return null;
+            return Result<const BinaryProperty*>(null);
         }
-        public const BinaryProperty* GetBinaryPropertyByLongName(const string& longName) const
+        [nodiscard]
+        public Result<const BinaryProperty*> GetBinaryPropertyByLongName(const string& longName) const
         {
-            HashMap<string, void*>.ConstIterator it = longNameMap.CFind(MakeCanonicalPropertyName(longName));
+            if (Error())
+            {
+                return Result<const BinaryProperty*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(longName);
+            if (result.Error())
+            {
+                return Result<const BinaryProperty*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = longNameMap.CFind(result.Value());
             if (it != longNameMap.CEnd())
             {
-                return cast<BinaryProperty*>(it->second);
+                return Result<const BinaryProperty*>(cast<BinaryProperty*>(it->second));
             }
-            return null;
+            return Result<const BinaryProperty*>(null);
         }
-        private BinaryPropertyTable() : binaryProperties(), binaryPropertyIdMap(), shortNameMap(), longNameMap()
+        private BinaryPropertyTable() : base(), binaryProperties(), binaryPropertyIdMap(), shortNameMap(), longNameMap()
         {
             binaryProperties.Add(new BinaryProperty(BinaryPropertyId.asciiHexDigit, "AHex", "Ascii Hex Digit"));
             binaryProperties.Add(new BinaryProperty(BinaryPropertyId.alphabetic, "Alpha", "Alphabetic"));
@@ -238,11 +266,23 @@ namespace System.Unicode
             for (BinaryProperty* binaryProperty : binaryProperties)
             {
                 binaryPropertyIdMap[cast<uint>(cast<byte>(binaryProperty->Id()))] = binaryProperty;
-                shortNameMap[MakeCanonicalPropertyName(binaryProperty->ShortName())] = binaryProperty;
-                longNameMap[MakeCanonicalPropertyName(binaryProperty->LongName())] = binaryProperty;
+                auto result = MakeCanonicalPropertyName(binaryProperty->ShortName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                shortNameMap[result.Value()] = binaryProperty;
+                result = MakeCanonicalPropertyName(binaryProperty->LongName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                longNameMap[result.Value()] = binaryProperty;
             }
         }
-        public ~BinaryPropertyTable()
+        public override ~BinaryPropertyTable()
         {
             for (BinaryProperty* binaryProperty : binaryProperties)
             {
@@ -250,27 +290,30 @@ namespace System.Unicode
             }
         }
         private List<BinaryProperty*> binaryProperties;
-        private HashMap<uint, void*> binaryPropertyIdMap;
-        private HashMap<string, void*> shortNameMap;
-        private HashMap<string, void*> longNameMap;
+        private Map<uint, void*> binaryPropertyIdMap;
+        private Map<string, void*> shortNameMap;
+        private Map<string, void*> longNameMap;
         private static UniquePtr<BinaryPropertyTable> instance;
-    }    
-    
-    public nothrow const BinaryProperty* GetBinaryProperty(BinaryPropertyId id)
+    }
+
+    [nodiscard]
+    public Result<const BinaryProperty*> GetBinaryProperty(BinaryPropertyId id)
     {
         return BinaryPropertyTable.Instance().GetBinaryProperty(id);
     }
 
-    public const BinaryProperty* GetBinaryPropertyByShortName(const string& shortName)
+    [nodiscard]
+    public Result<const BinaryProperty*> GetBinaryPropertyByShortName(const string& shortName)
     {
         return BinaryPropertyTable.Instance().GetBinaryPropertyByShortName(shortName);
     }
 
-    public const BinaryProperty* GetBinaryPropertyByLongName(const string& longName)
+    [nodiscard]
+    public Result<const BinaryProperty*> GetBinaryPropertyByLongName(const string& longName)
     {
         return BinaryPropertyTable.Instance().GetBinaryPropertyByLongName(longName);
     }
-    
+
     public enum BlockId : ushort
     {
         none = 0u,
@@ -305,29 +348,29 @@ namespace System.Unicode
         ucas, ucasExt, ugaritic, vai, vedicExt, verticalForms, vs, vsSup, wancho, warangCiti, yiRadicals, yiSyllables, yijing, zanabazarSquare
     }
 
-    public class Block 
+    public class Block
     {
-        public nothrow Block(BlockId id_, const string& shortName_, const string& longName_, uchar start_, uchar end_) : 
+        public Block(BlockId id_, const string& shortName_, const string& longName_, uchar start_, uchar end_) :
             id(id_), shortName(shortName_), longName(longName_), start(start_), end(end_)
         {
         }
-        public inline nothrow BlockId Id()
+        public inline BlockId Id()
         {
             return id;
         }
-        public inline nothrow const string& ShortName()
+        public inline const string& ShortName()
         {
             return shortName;
         }
-        public inline nothrow const string& LongName()
+        public inline const string& LongName()
         {
             return longName;
         }
-        public inline nothrow uchar Start()
+        public inline uchar Start()
         {
             return start;
         }
-        public inline nothrow uchar End()
+        public inline uchar End()
         {
             return end;
         }
@@ -337,8 +380,8 @@ namespace System.Unicode
         private uchar start;
         private uchar end;
     }
-    
-    public class BlockTable
+
+    public class BlockTable : IOBase
     {
         static BlockTable() : instance(new BlockTable())
         {
@@ -347,34 +390,60 @@ namespace System.Unicode
         {
             return *instance;
         }
-        public inline nothrow const Block* GetBlock(BlockId id) const
+        [nodiscard]
+        public inline Result<const Block*> GetBlock(BlockId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = blockIdMap.CFind(cast<uint>(cast<ushort>(id)));
+            if (Error())
+            {
+                return Result<const Block*>(ErrorId(GetErrorId()));
+            }
+            auto it = blockIdMap.CFind(cast<uint>(cast<ushort>(id)));
             if (it != blockIdMap.CEnd())
             {
-                return cast<Block*>(it->second);
+                return Result<const Block*>(cast<Block*>(it->second));
             }
-            return null;
+            const Block* n = null;
+            return Result<const Block*>(n);
         }
-        public inline const Block* GetBlockByShortName(const string& shortName) const
+        [nodiscard]
+        public inline Result<const Block*> GetBlockByShortName(const string& shortName) const
         {
-            HashMap<string, void*>.ConstIterator it = shortNameMap.CFind(MakeCanonicalPropertyName(shortName));
+            if (Error())
+            {
+                return Result<const Block*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(shortName);
+            if (result.Error())
+            {
+                return Result<const Block*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = shortNameMap.CFind(result.Value());
             if (it != shortNameMap.CEnd())
             {
-                return cast<Block*>(it->second);
+                return Result<const Block*>(cast<Block*>(it->second));
             }
-            return null;
+            return Result<const Block*>(null);
         }
-        public inline const Block* GetBlockByLongName(const string& longName) const
+        [nodiscard]
+        public inline Result<const Block*> GetBlockByLongName(const string& longName) const
         {
-            HashMap<string, void*>.ConstIterator it = longNameMap.CFind(MakeCanonicalPropertyName(longName));
+            if (Error())
+            {
+                return Result<const Block*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(longName);
+            if (result.Error())
+            {
+                return Result<const Block*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = longNameMap.CFind(result.Value());
             if (it != longNameMap.CEnd())
             {
-                return cast<Block*>(it->second);
+                return Result<const Block*>(cast<Block*>(it->second));
             }
-            return null;
+            return Result<const Block*>(null);
         }
-        private BlockTable() : blocks(), blockIdMap(), shortNameMap(), longNameMap()
+        private BlockTable() : base(), blocks(), blockIdMap(), shortNameMap(), longNameMap()
         {
             blocks.Add(new Block(BlockId.ascii, "ASCII", "Basic Latin", cast<uchar>(0x0000u), cast<uchar>(0x007Fu)));
             blocks.Add(new Block(BlockId.latin1Sup, "Latin 1 Sup", "Latin-1 Supplement", cast<uchar>(0x0080u), cast<uchar>(0x00FFu)));
@@ -632,7 +701,7 @@ namespace System.Unicode
             blocks.Add(new Block(BlockId.kanaSup, "Kana Sup", "Kana Supplement", cast<uchar>(0x1B000u), cast<uchar>(0x1B0FFu)));
             blocks.Add(new Block(BlockId.kanaExtA, "Kana Ext A", "Kana Extended-A", cast<uchar>(0x1B100u), cast<uchar>(0x1B12Fu)));
             blocks.Add(new Block(BlockId.smallKanaExt, "Small Kana Ext", "Small Kana Extension", cast<uchar>(0x1B130), cast<uchar>(0x1B16F))); // 12.0
-            blocks.Add(new Block(BlockId.nushu, "Nushu", "Nushu", cast<uchar>(0x1B170u), cast<uchar>(0x1B2FFu))); 
+            blocks.Add(new Block(BlockId.nushu, "Nushu", "Nushu", cast<uchar>(0x1B170u), cast<uchar>(0x1B2FFu)));
             blocks.Add(new Block(BlockId.duployan, "Duployan", "Duployan", cast<uchar>(0x1BC00u), cast<uchar>(0x1BC9Fu)));
             blocks.Add(new Block(BlockId.shorthandFormatControls, "Shorthand Format Controls", "Shorthand Format Controls", cast<uchar>(0x1BCA0u), cast<uchar>(0x1BCAFu)));
             blocks.Add(new Block(BlockId.byzantineMusic, "Byzantine Music", "Byzantine Musical Symbols", cast<uchar>(0x1D000u), cast<uchar>(0x1D0FFu)));
@@ -679,11 +748,23 @@ namespace System.Unicode
             for (Block* block : blocks)
             {
                 blockIdMap[cast<uint>(cast<ushort>(block->Id()))] = block;
-                shortNameMap[MakeCanonicalPropertyName(block->ShortName())] = block;
-                longNameMap[MakeCanonicalPropertyName(block->LongName())] = block;
+                auto result = MakeCanonicalPropertyName(block->ShortName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                shortNameMap[result.Value()] = block;
+                result = MakeCanonicalPropertyName(block->LongName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                longNameMap[result.Value()] = block;
             }
         }
-        public ~BlockTable()
+        public override ~BlockTable()
         {
             for (Block* block : blocks)
             {
@@ -692,30 +773,33 @@ namespace System.Unicode
         }
         private static UniquePtr<BlockTable> instance;
         private List<Block*> blocks;
-        private HashMap<uint, void*> blockIdMap;
-        private HashMap<string, void*> shortNameMap;
-        private HashMap<string, void*> longNameMap;
+        private Map<uint, void*> blockIdMap;
+        private Map<string, void*> shortNameMap;
+        private Map<string, void*> longNameMap;
     }
-    
-    public const Block* GetBlock(BlockId id)
+
+    [nodiscard]
+    public Result<const Block*> GetBlock(BlockId id)
     {
         return BlockTable.Instance().GetBlock(id);
     }
 
-    public const Block* GetBlockByShortName(const string& shortName)
+    [nodiscard]
+    public Result<const Block*> GetBlockByShortName(const string& shortName)
     {
-        return BlockTable.Instance().GetBlockByShortName(shortName); 
+        return BlockTable.Instance().GetBlockByShortName(shortName);
     }
 
-    public const Block* GetBlockByLongName(const string& longName)
+    [nodiscard]
+    public Result<const Block*> GetBlockByLongName(const string& longName)
     {
-        return BlockTable.Instance().GetBlockByLongName(longName); 
+        return BlockTable.Instance().GetBlockByLongName(longName);
     }
 
     public enum GeneralCategoryId : uint
     {
         none = 0u,
-        Lu = 1u << 0u, Ll = 1u << 1u, Lt = 1u << 2u, Lm = 1u << 3u, Lo = 1u << 4u, 
+        Lu = 1u << 0u, Ll = 1u << 1u, Lt = 1u << 2u, Lm = 1u << 3u, Lo = 1u << 4u,
         LC = Lu | Ll | Lt,
         L = Lu | Ll | Lt | Lm | Lo,
         Mn = 1u << 5u, Mc = 1u << 6u, Me = 1u << 7u,
@@ -736,18 +820,18 @@ namespace System.Unicode
 
     public class GeneralCategory
     {
-        public nothrow GeneralCategory(GeneralCategoryId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public GeneralCategory(GeneralCategoryId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
-        public inline nothrow GeneralCategoryId Id()
+        public inline GeneralCategoryId Id()
         {
             return id;
         }
-        public inline nothrow const string& ShortName()
+        public inline const string& ShortName()
         {
             return shortName;
         }
-        public inline nothrow const string& LongName()
+        public inline const string& LongName()
         {
             return longName;
         }
@@ -756,7 +840,7 @@ namespace System.Unicode
         private string longName;
     }
 
-    public class GeneralCategoryTable
+    public class GeneralCategoryTable : IOBase
     {
         static GeneralCategoryTable() : instance(new GeneralCategoryTable())
         {
@@ -765,34 +849,60 @@ namespace System.Unicode
         {
             return *instance;
         }
-        public nothrow const GeneralCategory* GetGeneralCategory(GeneralCategoryId id) const
+        [nodiscard]
+        public Result<const GeneralCategory*> GetGeneralCategory(GeneralCategoryId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = generalCategoryIdMap.CFind(cast<uint>(id));
+            if (Error())
+            {
+                return Result<const GeneralCategory*>(ErrorId(GetErrorId()));
+            }
+            auto it = generalCategoryIdMap.CFind(cast<uint>(id));
             if (it != generalCategoryIdMap.CEnd())
             {
-                return cast<GeneralCategory*>(it->second);
+                return Result<const GeneralCategory*>(cast<GeneralCategory*>(it->second));
             }
-            return null;
+            const GeneralCategory* n = null;
+            return Result<const GeneralCategory*>(n);
         }
-        public const GeneralCategory* GetGeneralCategoryByShortName(const string& shortName) const
+        [nodiscard]
+        public Result<const GeneralCategory*> GetGeneralCategoryByShortName(const string& shortName) const
         {
-            HashMap<string, void*>.ConstIterator it = shortNameMap.CFind(MakeCanonicalPropertyName(shortName));
+            if (Error())
+            {
+                return Result<const GeneralCategory*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(shortName);
+            if (result.Error())
+            {
+                return Result<const GeneralCategory*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = shortNameMap.CFind(result.Value());
             if (it != shortNameMap.CEnd())
             {
-                return cast<GeneralCategory*>(it->second);
+                return Result<const GeneralCategory*>(cast<GeneralCategory*>(it->second));
             }
-            return null;
+            return Result<const GeneralCategory*>(null);
         }
-        public const GeneralCategory* GetGeneralCategoryByLongName(const string& longName) const
+        [nodiscard]
+        public Result<const GeneralCategory*> GetGeneralCategoryByLongName(const string& longName) const
         {
-            HashMap<string, void*>.ConstIterator it = longNameMap.CFind(MakeCanonicalPropertyName(longName));
+            if (Error())
+            {
+                return Result<const GeneralCategory*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(longName);
+            if (result.Error())
+            {
+                return Result<const GeneralCategory*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = longNameMap.CFind(result.Value());
             if (it != longNameMap.CEnd())
             {
-                return cast<GeneralCategory*>(it->second);
+                return Result<const GeneralCategory*>(cast<GeneralCategory*>(it->second));
             }
-            return null;
+            return Result<const GeneralCategory*>(null);
         }
-        private GeneralCategoryTable() : generalCategories(), generalCategoryIdMap(), shortNameMap(), longNameMap()
+        private GeneralCategoryTable() : base(), generalCategories(), generalCategoryIdMap(), shortNameMap(), longNameMap()
         {
             generalCategories.Add(new GeneralCategory(GeneralCategoryId.Lu, "Lu", "Uppercase Letter"));
             generalCategories.Add(new GeneralCategory(GeneralCategoryId.Lu, "Ll", "Lowercase Letter"));
@@ -837,11 +947,23 @@ namespace System.Unicode
             for (GeneralCategory* generalCategory : generalCategories)
             {
                 generalCategoryIdMap[generalCategory->Id()] = generalCategory;
-                shortNameMap[MakeCanonicalPropertyName(generalCategory->ShortName())] = generalCategory;
-                longNameMap[MakeCanonicalPropertyName(generalCategory->LongName())] = generalCategory;
+                auto result = MakeCanonicalPropertyName(generalCategory->ShortName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                shortNameMap[result.Value()] = generalCategory;
+                result = MakeCanonicalPropertyName(generalCategory->LongName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                longNameMap[result.Value()] = generalCategory;
             }
         }
-        public ~GeneralCategoryTable()
+        public override ~GeneralCategoryTable()
         {
             for (GeneralCategory* generalCategory : generalCategories)
             {
@@ -850,30 +972,33 @@ namespace System.Unicode
         }
         private static UniquePtr<GeneralCategoryTable> instance;
         private List<GeneralCategory*> generalCategories;
-        private HashMap<uint, void*> generalCategoryIdMap;
-        private HashMap<string, void*> shortNameMap;
-        private HashMap<string, void*> longNameMap;
+        private Map<uint, void*> generalCategoryIdMap;
+        private Map<string, void*> shortNameMap;
+        private Map<string, void*> longNameMap;
     }
 
-    public const GeneralCategory* GetGeneralCategory(GeneralCategoryId id)
+    [nodiscard]
+    public Result<const GeneralCategory*> GetGeneralCategory(GeneralCategoryId id)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategory(id);
     }
-    
-    public const GeneralCategory* GetGeneralCategoryByShortName(const string& shortName)
+
+    [nodiscard]
+    public Result<const GeneralCategory*> GetGeneralCategoryByShortName(const string& shortName)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategoryByShortName(shortName);
     }
-    
-    public const GeneralCategory* GetGeneralCategoryByLongName(const string& longName)
+
+    [nodiscard]
+    public Result<const GeneralCategory*> GetGeneralCategoryByLongName(const string& longName)
     {
         return GeneralCategoryTable.Instance().GetGeneralCategoryByLongName(longName);
     }
-    
+
     public enum AgeId : byte
     {
         age_unassigned = 0u,
-        age_1_1, 
+        age_1_1,
         age_2_0, age_2_1,
         age_3_0, age_3_1, age_3_2,
         age_4_0, age_4_1,
@@ -889,16 +1014,16 @@ namespace System.Unicode
 
     public class Age
     {
-        public nothrow Age(AgeId id_, const string& version_) : id(id_), version(version_)
+        public Age(AgeId id_, const string& version_) : id(id_), version(version_)
         {
         }
-        public inline nothrow AgeId Id() const
+        public inline AgeId Id() const
         {
             return id;
         }
-        public inline nothrow const string& Version() const
+        public inline const string& Version() const
         {
-            return version; 
+            return version;
         }
         private AgeId id;
         private string version;
@@ -915,7 +1040,7 @@ namespace System.Unicode
         }
         public const Age* GetAge(AgeId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = ageIdMap.CFind(cast<uint>(cast<byte>(id)));
+            auto it = ageIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != ageIdMap.CEnd())
             {
                 return cast<Age*>(it->second);
@@ -924,7 +1049,7 @@ namespace System.Unicode
         }
         public const Age* GetAge(const string& version) const
         {
-            HashMap<string, void*>.ConstIterator it = versionMap.CFind(version);
+            auto it = versionMap.CFind(version);
             if (it != versionMap.CEnd())
             {
                 return cast<Age*>(it->second);
@@ -970,8 +1095,8 @@ namespace System.Unicode
         }
         private static UniquePtr<AgeTable> instance;
         private List<Age*> ages;
-        private HashMap<uint, void*> ageIdMap;
-        private HashMap<string, void*> versionMap;
+        private Map<uint, void*> ageIdMap;
+        private Map<string, void*> versionMap;
     }
 
     public const Age* GetAge(AgeId id)
@@ -994,13 +1119,13 @@ namespace System.Unicode
         elba, elym, egyp, ethi,
         geor, glag, gong, gonm, goth, gran, grek, gujr, guru,
         hang, hani, hano, hatr, hebr, hira, hluw, hmng, hmnp, hrkt, hung,
-        ital, 
+        ital,
         java,
-        kali, kana, khar, khmr, khoj, knda, kthi, 
+        kali, kana, khar, khmr, khoj, knda, kthi,
         lana, laoo, latn, lepc, limb, lina, linb, lisu, lyci, lydi,
         mahj, maka, mand, mani, marc, medf, mend, merc, mero, mlym, modi, mong, mroo, mtei, mult, mymr,
         nand, narb, nbat, newa, nkoo, nshu,
-        ogam, olck, orkh, orya, osge, osma, 
+        ogam, olck, orkh, orya, osge, osma,
         palm, pauc, perm, phag, phli, phlp, phnx, plrd, prti,
         qaai,
         rjng, rohg, runr,
@@ -1014,21 +1139,21 @@ namespace System.Unicode
         yiii, zanb,
         zinh, zyyy, zzzz
     }
-    
+
     public class Script
     {
-        public nothrow Script(ScriptId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public Script(ScriptId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
-        public inline nothrow ScriptId Id() const
+        public inline ScriptId Id() const
         {
             return id;
         }
-        public inline nothrow const string& ShortName() const
+        public inline const string& ShortName() const
         {
             return shortName;
         }
-        public inline nothrow const string& LongName() const
+        public inline const string& LongName() const
         {
             return longName;
         }
@@ -1036,8 +1161,8 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
-    public class ScriptTable
+
+    public class ScriptTable : IOBase
     {
         static ScriptTable() : instance(new ScriptTable())
         {
@@ -1046,34 +1171,60 @@ namespace System.Unicode
         {
             return *instance;
         }
-        public const Script* GetScript(ScriptId id) const
+        [nodiscard]
+        public Result<const Script*> GetScript(ScriptId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = scriptIdMap.CFind(cast<uint>(cast<byte>(id)));
+            if (Error())
+            {
+                return Result<const Script*>(ErrorId(GetErrorId()));
+            }
+            auto it = scriptIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != scriptIdMap.CEnd())
             {
-                return cast<Script*>(it->second);
+                return Result<const Script*>(cast<Script*>(it->second));
             }
-            return null;
+            const Script* n = null;
+            return Result<const Script*>(n);
         }
-        public const Script* GetScriptByShortName(const string& shortName) const
+        [nodiscard]
+        public Result<const Script*> GetScriptByShortName(const string& shortName) const
         {
-            HashMap<string, void*>.ConstIterator it = shortNameMap.CFind(MakeCanonicalPropertyName(shortName));
+            if (Error())
+            {
+                return Result<const Script*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(shortName);
+            if (result.Error())
+            {
+                return Result<const Script*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = shortNameMap.CFind(result.Value());
             if (it != shortNameMap.CEnd())
             {
-                return cast<Script*>(it->second);
+                return Result<const Script*>(cast<Script*>(it->second));
             }
-            return null;
+            return Result<const Script*>(null);
         }
-        public const Script* GetScriptByLongName(const string& longName) const
+        [nodiscard]
+        public Result<const Script*> GetScriptByLongName(const string& longName) const
         {
-            HashMap<string, void*>.ConstIterator it = longNameMap.CFind(MakeCanonicalPropertyName(longName));
+            if (Error())
+            {
+                return Result<const Script*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(longName);
+            if (result.Error())
+            {
+                return Result<const Script*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = longNameMap.CFind(result.Value());
             if (it != longNameMap.CEnd())
             {
-                return cast<Script*>(it->second);
+                return Result<const Script*>(cast<Script*>(it->second));
             }
-            return null;
+            return Result<const Script*>(null);
         }
-        private ScriptTable() : scripts(), scriptIdMap(), shortNameMap(), longNameMap()
+        private ScriptTable() : base(), scripts(), scriptIdMap(), shortNameMap(), longNameMap()
         {
             scripts.Add(new Script(ScriptId.adlm, "Adlm", "Adlam"));
             scripts.Add(new Script(ScriptId.aghb, "Aghb", "Caucasian Albanian"));
@@ -1085,7 +1236,7 @@ namespace System.Unicode
             scripts.Add(new Script(ScriptId.bali, "Bali", "Balinese"));
             scripts.Add(new Script(ScriptId.bamu, "Bamu", "Bamum"));
             scripts.Add(new Script(ScriptId.bass, "Bass", "Bassa Vah"));
-            scripts.Add(new Script(ScriptId.batk, "Batk", "Batak")); 
+            scripts.Add(new Script(ScriptId.batk, "Batk", "Batak"));
             scripts.Add(new Script(ScriptId.beng, "Beng", "Bengali"));
             scripts.Add(new Script(ScriptId.bhks, "Bhks", "Bhaisuki"));
             scripts.Add(new Script(ScriptId.bopo, "Bopo", "Bopomofo"));
@@ -1232,11 +1383,23 @@ namespace System.Unicode
             for (Script* script : scripts)
             {
                 scriptIdMap[cast<uint>(cast<byte>(script->Id()))] = script;
-                shortNameMap[MakeCanonicalPropertyName(script->ShortName())] = script;
-                longNameMap[MakeCanonicalPropertyName(script->LongName())] = script;
+                auto result = MakeCanonicalPropertyName(script->ShortName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                shortNameMap[result.Value()] = script;
+                result = MakeCanonicalPropertyName(script->LongName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                longNameMap[result.Value()] = script;
             }
         }
-        public ~ScriptTable()
+        public override ~ScriptTable()
         {
             for (Script* script : scripts)
             {
@@ -1245,85 +1408,135 @@ namespace System.Unicode
         }
         private static UniquePtr<ScriptTable> instance;
         private List<Script*> scripts;
-        private HashMap<uint, void*> scriptIdMap;
-        private HashMap<string, void*> shortNameMap;
-        private HashMap<string, void*> longNameMap;
-    }            
+        private Map<uint, void*> scriptIdMap;
+        private Map<string, void*> shortNameMap;
+        private Map<string, void*> longNameMap;
+    }
 
-    public const Script* GetScript(ScriptId id)
+    [nodiscard]
+    public Result<const Script*> GetScript(ScriptId id)
     {
         return ScriptTable.Instance().GetScript(id);
     }
 
-    public const Script* GetScriptByShortName(const string& shortName)
+    [nodiscard]
+    public Result<const Script*> GetScriptByShortName(const string& shortName)
     {
         return ScriptTable.Instance().GetScriptByShortName(shortName);
     }
 
-    public const Script* GetScriptByLongName(const string& longName)
+    [nodiscard]
+    public Result<const Script*> GetScriptByLongName(const string& longName)
     {
         return ScriptTable.Instance().GetScriptByLongName(longName);
     }
-    
+
     public class CharacterInfo
     {
-        public nothrow CharacterInfo() : 
-            binaryProperties(0u), generalCategory(GeneralCategoryId.none), upper(cast<uchar>(0u)), lower(cast<uchar>(0u)), title(cast<uchar>(0u)), 
+        public CharacterInfo() :
+            binaryProperties(0u), generalCategory(GeneralCategoryId.none), upper(cast<uchar>(0u)), lower(cast<uchar>(0u)), title(cast<uchar>(0u)),
             folding(cast<uchar>(0u)), block(BlockId.none), age(AgeId.age_unassigned), script(ScriptId.none)
         {
         }
-        public inline nothrow bool GetBinaryProperty(BinaryPropertyId binaryPropertyId) const
+        public inline bool GetBinaryProperty(BinaryPropertyId binaryPropertyId) const
         {
             ulong mask = cast<ulong>(1u) << cast<ulong>(cast<byte>(binaryPropertyId));
             return (binaryProperties & mask) != 0u;
         }
-        public inline nothrow bool HasGeneralCategory(GeneralCategoryId generalCategory_) const
+        public inline bool HasGeneralCategory(GeneralCategoryId generalCategory_) const
         {
             return (generalCategory & generalCategory_) != GeneralCategoryId.none;
         }
-        public inline nothrow GeneralCategoryId GeneralCategoryValue() const
+        public inline GeneralCategoryId GeneralCategoryValue() const
         {
             return generalCategory;
         }
-        public inline nothrow uchar Upper() const
+        public inline uchar Upper() const
         {
             return upper;
         }
-        public inline nothrow uchar Lower() const
+        public inline uchar Lower() const
         {
             return lower;
         }
-        public inline nothrow uchar Title() const
+        public inline uchar Title() const
         {
             return title;
         }
-        public inline nothrow uchar Folding() const
+        public inline uchar Folding() const
         {
             return folding;
         }
-        public inline nothrow BlockId BlockValue() const
+        public inline BlockId BlockValue() const
         {
             return block;
         }
-        public inline nothrow AgeId AgeValue() const
+        public inline AgeId AgeValue() const
         {
             return age;
         }
-        public inline nothrow ScriptId ScriptValue() const
+        public inline ScriptId ScriptValue() const
         {
             return script;
         }
-        public void Read(BinaryReader& reader)
+        [nodiscard]
+        public Result<bool> Read(BinaryReader& reader)
         {
-            binaryProperties = reader.ReadULong();
-            generalCategory = cast<GeneralCategoryId>(reader.ReadUInt());
-            upper = reader.ReadUChar();
-            lower = reader.ReadUChar();
-            title = reader.ReadUChar();
-            folding = reader.ReadUChar();
-            block = cast<BlockId>(reader.ReadUShort());
-            age = cast<AgeId>(reader.ReadByte());
-            script = cast<ScriptId>(reader.ReadByte());
+            auto ulongResult = reader.ReadULong();
+            if (ulongResult.Error())
+            {
+                return Result<bool>(ErrorId(ulongResult.GetErrorId()));
+            }
+            binaryProperties = ulongResult.Value();
+            auto uintResult = reader.ReadUInt();
+            if (uintResult.Error())
+            {
+                return Result<bool>(ErrorId(uintResult.GetErrorId()));
+            }
+            generalCategory = cast<GeneralCategoryId>(uintResult.Value());
+            auto ucharResult = reader.ReadUChar();
+            if (ucharResult.Error())
+            {
+                return Result<bool>(ErrorId(ucharResult.GetErrorId()));
+            }
+            upper = ucharResult.Value();
+            ucharResult = reader.ReadUChar();
+            if (ucharResult.Error())
+            {
+                return Result<bool>(ErrorId(ucharResult.GetErrorId()));
+            }
+            lower = ucharResult.Value();
+            ucharResult = reader.ReadUChar();
+            if (ucharResult.Error())
+            {
+                return Result<bool>(ErrorId(ucharResult.GetErrorId()));
+            }
+            title = ucharResult.Value();
+            ucharResult = reader.ReadUChar();
+            if (ucharResult.Error())
+            {
+                return Result<bool>(ErrorId(ucharResult.GetErrorId()));
+            }
+            folding = ucharResult.Value();
+            auto ushortResult = reader.ReadUShort();
+            if (ushortResult.Error())
+            {
+                return Result<bool>(ErrorId(ushortResult.GetErrorId()));
+            }
+            block = cast<BlockId>(ushortResult.Value());
+            auto byteResult = reader.ReadByte();
+            if (byteResult.Error())
+            {
+                return Result<bool>(ErrorId(byteResult.GetErrorId()));
+            }
+            age = cast<AgeId>(byteResult.Value());
+            byteResult = reader.ReadByte();
+            if (byteResult.Error())
+            {
+                return Result<bool>(ErrorId(byteResult.GetErrorId()));
+            }
+            script = cast<ScriptId>(byteResult.Value());
+            return Result<bool>(true);
         }
         private ulong binaryProperties;
         private GeneralCategoryId generalCategory;
@@ -1348,18 +1561,18 @@ namespace System.Unicode
 
     public class NumericType
     {
-        public nothrow NumericType(NumericTypeId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public NumericType(NumericTypeId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
-        public inline nothrow NumericTypeId Id() const
+        public inline NumericTypeId Id() const
         {
             return id;
         }
-        public inline nothrow const string& ShortName() const
+        public inline const string& ShortName() const
         {
             return shortName;
         }
-        public inline nothrow const string& LongName() const
+        public inline const string& LongName() const
         {
             return longName;
         }
@@ -1367,8 +1580,8 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
-    public class NumericTypeTable
+
+    public class NumericTypeTable : IOBase
     {
         static NumericTypeTable() : instance(new NumericTypeTable())
         {
@@ -1377,34 +1590,60 @@ namespace System.Unicode
         {
             return *instance;
         }
-        public const NumericType* GetNumericType(NumericTypeId id) const
+        [nodiscard]
+        public Result<const NumericType*> GetNumericType(NumericTypeId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = numericTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
+            if (Error())
+            {
+                return Result<const NumericType*>(ErrorId(GetErrorId()));
+            }
+            auto it = numericTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != numericTypeIdMap.CEnd())
             {
-                return cast<NumericType*>(it->second);
+                return Result<const NumericType*>(cast<NumericType*>(it->second));
             }
-            return null;
+            const NumericType* n = null;
+            return Result<const NumericType*>(n);
         }
-        public const NumericType* GetNumericTypeByShortName(const string& shortName) const
+        [nodiscard]
+        public Result<const NumericType*> GetNumericTypeByShortName(const string& shortName) const
         {
-            HashMap<string, void*>.ConstIterator it = shortNameMap.CFind(MakeCanonicalPropertyName(shortName));
+            if (Error())
+            {
+                return Result<const NumericType*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(shortName);
+            if (result.Error())
+            {
+                return Result<const NumericType*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = shortNameMap.CFind(result.Value());
             if (it != shortNameMap.CEnd())
             {
-                return cast<NumericType*>(it->second);
+                return Result<const NumericType*>(cast<NumericType*>(it->second));
             }
-            return null;
+            return Result<const NumericType*>(null);
         }
-        public const NumericType* GetNumericTypeByLongName(const string& longName) const
+        [nodiscard]
+        public Result<const NumericType*> GetNumericTypeByLongName(const string& longName) const
         {
-            HashMap<string, void*>.ConstIterator it = longNameMap.CFind(MakeCanonicalPropertyName(longName));
+            if (Error())
+            {
+                return Result<const NumericType*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(longName);
+            if (result.Error())
+            {
+                return Result<const NumericType*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = longNameMap.CFind(result.Value());
             if (it != longNameMap.CEnd())
             {
-                return cast<NumericType*>(it->second);
+                return Result<const NumericType*>(cast<NumericType*>(it->second));
             }
-            return null;
+            return Result<const NumericType*>(null);
         }
-        private NumericTypeTable() : numericTypes(), numericTypeIdMap(), shortNameMap(), longNameMap()
+        private NumericTypeTable() : base(), numericTypes(), numericTypeIdMap(), shortNameMap(), longNameMap()
         {
             numericTypes.Add(new NumericType(NumericTypeId.none, "None", "None"));
             numericTypes.Add(new NumericType(NumericTypeId.de, "De", "Decimal"));
@@ -1413,11 +1652,23 @@ namespace System.Unicode
             for (NumericType* numericType : numericTypes)
             {
                 numericTypeIdMap[cast<uint>(cast<byte>(numericType->Id()))] = numericType;
-                shortNameMap[MakeCanonicalPropertyName(numericType->ShortName())] = numericType;
-                longNameMap[MakeCanonicalPropertyName(numericType->LongName())] = numericType;
+                auto result = MakeCanonicalPropertyName(numericType->ShortName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                shortNameMap[result.Value()] = numericType;
+                result = MakeCanonicalPropertyName(numericType->LongName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                longNameMap[result.Value()] = numericType;
             }
         }
-        public ~NumericTypeTable()
+        public override ~NumericTypeTable()
         {
             for (NumericType* numericType : numericTypes)
             {
@@ -1425,23 +1676,26 @@ namespace System.Unicode
             }
         }
         private List<NumericType*> numericTypes;
-        private HashMap<uint, void*> numericTypeIdMap;
-        private HashMap<string, void*> shortNameMap;
-        private HashMap<string, void*> longNameMap;
+        private Map<uint, void*> numericTypeIdMap;
+        private Map<string, void*> shortNameMap;
+        private Map<string, void*> longNameMap;
         private static UniquePtr<NumericTypeTable> instance;
     }
 
-    public const NumericType* GetNumericType(NumericTypeId id)
+    [nodiscard]
+    public Result<const NumericType*> GetNumericType(NumericTypeId id)
     {
         return NumericTypeTable.Instance().GetNumericType(id);
     }
 
-    public const NumericType* GetNumericTypeByShortName(const string& shortName)
+    [nodiscard]
+    public Result<const NumericType*> GetNumericTypeByShortName(const string& shortName)
     {
         return NumericTypeTable.Instance().GetNumericTypeByShortName(shortName);
     }
 
-    public const NumericType* GetNumericTypeByLongName(const string& longName)
+    [nodiscard]
+    public Result<const NumericType*> GetNumericTypeByLongName(const string& longName)
     {
         return NumericTypeTable.Instance().GetNumericTypeByLongName(longName);
     }
@@ -1451,21 +1705,21 @@ namespace System.Unicode
         none = 0u,
         al, an, b, bn, cs, en, es, et, fsi, l, lre, lri, lro, nsm, on, pdf, pdi, r, rle, rli, rlo, s, ws
     }
-    
+
     public class BidiClass
     {
-        public nothrow BidiClass(BidiClassId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
+        public BidiClass(BidiClassId id_, const string& shortName_, const string& longName_) : id(id_), shortName(shortName_), longName(longName_)
         {
         }
-        public inline nothrow BidiClassId Id() const
+        public inline BidiClassId Id() const
         {
             return id;
         }
-        public inline nothrow const string& ShortName() const
+        public inline const string& ShortName() const
         {
             return shortName;
         }
-        public inline nothrow const string& LongName() const
+        public inline const string& LongName() const
         {
             return longName;
         }
@@ -1473,44 +1727,70 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
-    public class BidiClassTable
+
+    public class BidiClassTable : IOBase
     {
         static BidiClassTable() : instance(new BidiClassTable())
         {
         }
-        public static BidiClassTable& Instance() 
+        public static BidiClassTable& Instance()
         {
             return *instance;
         }
-        public const BidiClass* GetBidiClass(BidiClassId id) const
+        [nodiscard]
+        public Result<const BidiClass*> GetBidiClass(BidiClassId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = bidiClassIdMap.CFind(cast<uint>(cast<byte>(id)));
+            if (Error())
+            {
+                return Result<const BidiClass*>(ErrorId(GetErrorId()));
+            }
+            auto it = bidiClassIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != bidiClassIdMap.CEnd())
             {
-                return cast<BidiClass*>(it->second);
+                return Result<const BidiClass*>(cast<BidiClass*>(it->second));
             }
-            return null;
+            const BidiClass* n = null;
+            return Result<const BidiClass*>(n);
         }
-        public const BidiClass* GetBidiClassByShortName(const string& shortName) const
+        [nodiscard]
+        public Result<const BidiClass*> GetBidiClassByShortName(const string& shortName) const
         {
-            HashMap<string, void*>.ConstIterator it = shortNameMap.CFind(MakeCanonicalPropertyName(shortName));
+            if (Error())
+            {
+                return Result<const BidiClass*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(shortName);
+            if (result.Error())
+            {
+               return Result<const BidiClass*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = shortNameMap.CFind(result.Value());
             if (it != shortNameMap.CEnd())
             {
-                return cast<BidiClass*>(it->second);
+                return Result<const BidiClass*>(cast<BidiClass*>(it->second));
             }
-            return null;
+            return Result<const BidiClass*>(null);
         }
-        public const BidiClass* GetBidiClassByLongName(const string& longName) const
+        [nodiscard]
+        public Result<const BidiClass*> GetBidiClassByLongName(const string& longName) const
         {
-            HashMap<string, void*>.ConstIterator it = longNameMap.CFind(MakeCanonicalPropertyName(longName));
+            if (Error())
+            {
+                return Result<const BidiClass*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(longName);
+            if (result.Error())
+            {
+               return Result<const BidiClass*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = longNameMap.CFind(result.Value());
             if (it != longNameMap.CEnd())
             {
-                return cast<BidiClass*>(it->second);
+                return Result<const BidiClass*>(cast<BidiClass*>(it->second));
             }
-            return null;
+            return Result<const BidiClass*>(null);
         }
-        private BidiClassTable() : bidiClasses(), bidiClassIdMap(), shortNameMap(), longNameMap()
+        private BidiClassTable() : base(), bidiClasses(), bidiClassIdMap(), shortNameMap(), longNameMap()
         {
             bidiClasses.Add(new BidiClass(BidiClassId.al, "AL", "Arabic Letter"));
             bidiClasses.Add(new BidiClass(BidiClassId.an, "AN", "Arabic Number"));
@@ -1538,11 +1818,23 @@ namespace System.Unicode
             for (BidiClass* bidiClass : bidiClasses)
             {
                 bidiClassIdMap[cast<uint>(cast<byte>(bidiClass->Id()))] = bidiClass;
-                shortNameMap[MakeCanonicalPropertyName(bidiClass->ShortName())] = bidiClass;
-                longNameMap[MakeCanonicalPropertyName(bidiClass->LongName())] = bidiClass;
+                auto result = MakeCanonicalPropertyName(bidiClass->ShortName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                shortNameMap[result.Value()] = bidiClass;
+                result = MakeCanonicalPropertyName(bidiClass->LongName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                longNameMap[result.Value()] = bidiClass;
             }
         }
-        public ~BidiClassTable()
+        public override ~BidiClassTable()
         {
             for (BidiClass* bidiClass : bidiClasses)
             {
@@ -1551,22 +1843,25 @@ namespace System.Unicode
         }
         private static UniquePtr<BidiClassTable> instance;
         private List<BidiClass*> bidiClasses;
-        private HashMap<uint, void*> bidiClassIdMap;
-        private HashMap<string, void*> shortNameMap;
-        private HashMap<string, void*> longNameMap;
+        private Map<uint, void*> bidiClassIdMap;
+        private Map<string, void*> shortNameMap;
+        private Map<string, void*> longNameMap;
     }
-     
-    public const BidiClass* GetBidiClass(BidiClassId id)
+
+    [nodiscard]
+    public Result<const BidiClass*> GetBidiClass(BidiClassId id)
     {
         return BidiClassTable.Instance().GetBidiClass(id);
     }
 
-    public const BidiClass* GetBidiClassByShortName(const string& shortName)
+    [nodiscard]
+    public Result<const BidiClass*> GetBidiClassByShortName(const string& shortName)
     {
         return BidiClassTable.Instance().GetBidiClassByShortName(shortName);
     }
 
-    public const BidiClass* GetBidiClassByLongName(const string& longName)
+    [nodiscard]
+    public Result<const BidiClass*> GetBidiClassByLongName(const string& longName)
     {
         return BidiClassTable.Instance().GetBidiClassByLongName(longName);
     }
@@ -1579,19 +1874,19 @@ namespace System.Unicode
 
     public class BidiPairedBracketType
     {
-        public nothrow BidiPairedBracketType(BidiPairedBracketTypeId id_, const string& shortName_, const string& longName_) : 
+        public BidiPairedBracketType(BidiPairedBracketTypeId id_, const string& shortName_, const string& longName_) :
             id(id_), shortName(shortName_), longName(longName_)
         {
         }
-        public inline nothrow BidiPairedBracketTypeId Id() const 
+        public inline BidiPairedBracketTypeId Id() const
         {
             return id;
         }
-        public inline nothrow const string& ShortName() const
+        public inline const string& ShortName() const
         {
             return shortName;
         }
-        public inline nothrow const string& LongName() const
+        public inline const string& LongName() const
         {
             return longName;
         }
@@ -1599,44 +1894,70 @@ namespace System.Unicode
         private string shortName;
         private string longName;
     }
-    
-    public class BidiPairedBracketTypeTable
+
+    public class BidiPairedBracketTypeTable : IOBase
     {
         static BidiPairedBracketTypeTable() : instance(new BidiPairedBracketTypeTable())
         {
         }
         public static BidiPairedBracketTypeTable& Instance()
         {
-            return *instance; 
+            return *instance;
         }
-        public const BidiPairedBracketType* GetBidiPairedBracketType(BidiPairedBracketTypeId id) const
+        [nodiscard]
+        public Result<const BidiPairedBracketType*> GetBidiPairedBracketType(BidiPairedBracketTypeId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = bidiPairedBracketTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
+            if (Error())
+            {
+                return Result<const BidiPairedBracketType*>(ErrorId(GetErrorId()));
+            }
+            auto it = bidiPairedBracketTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != bidiPairedBracketTypeIdMap.CEnd())
             {
-                return cast<BidiPairedBracketType*>(it->second);
+                return Result<const BidiPairedBracketType*>(cast<BidiPairedBracketType*>(it->second));
             }
-            return null;
+            const BidiPairedBracketType* n = null;
+            return Result<const BidiPairedBracketType*>(n);
         }
-        public const BidiPairedBracketType* GetBidiPairedBracketTypeByShortName(const string& shortName) const
+        [nodiscard]
+        public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByShortName(const string& shortName) const
         {
-            HashMap<string, void*>.ConstIterator it = shortNameMap.CFind(MakeCanonicalPropertyName(shortName));
+            if (Error())
+            {
+                return Result<const BidiPairedBracketType*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(shortName);
+            if (result.Error())
+            {
+                return Result<const BidiPairedBracketType*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = shortNameMap.CFind(result.Value());
             if (it != shortNameMap.CEnd())
             {
-                return cast<BidiPairedBracketType*>(it->second);
+                return Result<const BidiPairedBracketType*>(cast<BidiPairedBracketType*>(it->second));
             }
-            return null;
+            return Result<const BidiPairedBracketType*>(null);
         }
-        public const BidiPairedBracketType* GetBidiPairedBracketTypeByLongName(const string& longName) const
+        [nodiscard]
+        public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByLongName(const string& longName) const
         {
-            HashMap<string, void*>.ConstIterator it = longNameMap.CFind(longName);
+            if (Error())
+            {
+                return Result<const BidiPairedBracketType*>(ErrorId(GetErrorId()));
+            }
+            auto result = MakeCanonicalPropertyName(longName);
+            if (result.Error())
+            {
+                return Result<const BidiPairedBracketType*>(ErrorId(result.GetErrorId()));
+            }
+            auto it = longNameMap.CFind(result.Value());
             if (it != longNameMap.CEnd())
             {
-                return cast<BidiPairedBracketType*>(it->second);
+                return Result<const BidiPairedBracketType*>(cast<BidiPairedBracketType*>(it->second));
             }
-            return null;
+            return Result<const BidiPairedBracketType*>(null);
         }
-        private BidiPairedBracketTypeTable() : bidiPairedBracketTypes(), bidiPairedBracketTypeIdMap(), shortNameMap(), longNameMap()
+        private BidiPairedBracketTypeTable() : base(), bidiPairedBracketTypes(), bidiPairedBracketTypeIdMap(), shortNameMap(), longNameMap()
         {
             bidiPairedBracketTypes.Add(new BidiPairedBracketType(BidiPairedBracketTypeId.o, "O", "Open"));
             bidiPairedBracketTypes.Add(new BidiPairedBracketType(BidiPairedBracketTypeId.c, "C", "Close"));
@@ -1644,11 +1965,23 @@ namespace System.Unicode
             for (BidiPairedBracketType* bidiPairedBracketType : bidiPairedBracketTypes)
             {
                 bidiPairedBracketTypeIdMap[cast<uint>(cast<byte>(bidiPairedBracketType->Id()))] = bidiPairedBracketType;
-                shortNameMap[MakeCanonicalPropertyName(bidiPairedBracketType->ShortName())] = bidiPairedBracketType;
-                longNameMap[MakeCanonicalPropertyName(bidiPairedBracketType->LongName())] = bidiPairedBracketType;
+                auto result = MakeCanonicalPropertyName(bidiPairedBracketType->ShortName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                shortNameMap[result.Value()] = bidiPairedBracketType;
+                result = MakeCanonicalPropertyName(bidiPairedBracketType->LongName());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                longNameMap[result.Value()] = bidiPairedBracketType;
             }
         }
-        public ~BidiPairedBracketTypeTable()
+        public override ~BidiPairedBracketTypeTable()
         {
             for (BidiPairedBracketType* bidiPairedBracketType : bidiPairedBracketTypes)
             {
@@ -1657,22 +1990,25 @@ namespace System.Unicode
         }
         private static UniquePtr<BidiPairedBracketTypeTable> instance;
         private List<BidiPairedBracketType*> bidiPairedBracketTypes;
-        private HashMap<uint, void*> bidiPairedBracketTypeIdMap;
-        private HashMap<string, void*> shortNameMap;
-        private HashMap<string, void*> longNameMap;
+        private Map<uint, void*> bidiPairedBracketTypeIdMap;
+        private Map<string, void*> shortNameMap;
+        private Map<string, void*> longNameMap;
     }
 
-    public const BidiPairedBracketType* GetBidiPairedBracketType(BidiPairedBracketTypeId id)
+    [nodiscard]
+    public Result<const BidiPairedBracketType*> GetBidiPairedBracketType(BidiPairedBracketTypeId id)
     {
         return BidiPairedBracketTypeTable.Instance().GetBidiPairedBracketType(id);
     }
 
-    public const BidiPairedBracketType* GetBidiPairedBracketTypeByShortName(const string& shortName)
+    [nodiscard]
+    public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByShortName(const string& shortName)
     {
         return BidiPairedBracketTypeTable.Instance().GetBidiPairedBracketTypeByShortName(shortName);
     }
 
-    public const BidiPairedBracketType* GetBidiPairedBracketTypeByLongName(const string& longName)
+    [nodiscard]
+    public Result<const BidiPairedBracketType*> GetBidiPairedBracketTypeByLongName(const string& longName)
     {
         return BidiPairedBracketTypeTable.Instance().GetBidiPairedBracketTypeByLongName(longName);
     }
@@ -1685,33 +2021,33 @@ namespace System.Unicode
 
     public class AliasType
     {
-        public nothrow AliasType(AliasTypeId id_, const string& name_) : id(id_), name(name_)
+        public AliasType(AliasTypeId id_, const string& name_) : id(id_), name(name_)
         {
         }
-        public nothrow inline AliasTypeId Id() const
+        public inline AliasTypeId Id() const
         {
             return id;
         }
-        public nothrow inline const string& Name() const
+        public inline const string& Name() const
         {
             return name;
         }
         private AliasTypeId id;
         private string name;
     }
-    
+
     public class AliasTypeTable
     {
         static AliasTypeTable() : instance(new AliasTypeTable())
         {
         }
-        public static AliasTypeTable& Instance() 
+        public static AliasTypeTable& Instance()
         {
             return *instance;
         }
         public const AliasType* GetAliasType(AliasTypeId id) const
         {
-            HashMap<uint, void*>.ConstIterator it = aliasTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
+            auto it = aliasTypeIdMap.CFind(cast<uint>(cast<byte>(id)));
             if (it != aliasTypeIdMap.CEnd())
             {
                 return cast<AliasType*>(it->second);
@@ -1720,7 +2056,7 @@ namespace System.Unicode
         }
         public const AliasType* GetAliasType(const string& name) const
         {
-            HashMap<string, void*>.ConstIterator it = nameMap.CFind(name);
+            auto it = nameMap.CFind(name);
             if (it != nameMap.CEnd())
             {
                 return cast<AliasType*>(it->second);
@@ -1749,8 +2085,8 @@ namespace System.Unicode
         }
         private static UniquePtr<AliasTypeTable> instance;
         private List<AliasType*> aliasTypes;
-        private HashMap<uint, void*> aliasTypeIdMap;
-        private HashMap<string, void*> nameMap;
+        private Map<uint, void*> aliasTypeIdMap;
+        private Map<string, void*> nameMap;
     }
 
     public const AliasType* GetAliasType(AliasTypeId id)
@@ -1765,24 +2101,36 @@ namespace System.Unicode
 
     public class Alias
     {
-        public nothrow Alias() : typeId(AliasTypeId.none), name()
+        public Alias() : typeId(AliasTypeId.none), name()
         {
         }
-        public nothrow Alias(AliasTypeId typeId_, const string& name_) : typeId(typeId_), name(name_)
+        public Alias(AliasTypeId typeId_, const string& name_) : typeId(typeId_), name(name_)
         {
         }
-        public inline nothrow AliasTypeId TypeId() const
+        public inline AliasTypeId TypeId() const
         {
             return typeId;
         }
-        public inline nothrow const string& Name() const
+        public inline const string& Name() const
         {
             return name;
         }
-        public void Read(BinaryReader& reader)
+        [nodiscard]
+        public Result<bool> Read(BinaryReader& reader)
         {
-            typeId = cast<AliasTypeId>(reader.ReadByte());
-            name = reader.ReadString();
+            auto result = reader.ReadByte();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            typeId = cast<AliasTypeId>(result.Value());
+            auto nameResult = reader.ReadString();
+            if (nameResult.Error())
+            {
+                return Result<bool>(ErrorId(nameResult.GetErrorId()));
+            }
+            name = nameResult.Value();
+            return Result<bool>(true);
         }
         private AliasTypeId typeId;
         private string name;
@@ -1790,106 +2138,202 @@ namespace System.Unicode
 
     public class ExtendedCharacterInfo
     {
-        public nothrow ExtendedCharacterInfo() : 
+        public ExtendedCharacterInfo() :
             characterName(), unicode1Name(), canonicalCombiningClass(0u), fullUpper(), fullLower(), fullTitle(), fullFolding(), bidiClass(BidiClassId.none),
-            numericType(NumericTypeId.none), numericValue(), aliases(), bidiMirroringGlyph(cast<uchar>(0u)), bidiPairedBracketType(BidiPairedBracketTypeId.none), 
+            numericType(NumericTypeId.none), numericValue(), aliases(), bidiMirroringGlyph(cast<uchar>(0u)), bidiPairedBracketType(BidiPairedBracketTypeId.none),
             bidiPairedBracket(cast<uchar>(0u))
         {
         }
-        public nothrow inline const string& CharacterName() const
+        public inline const string& CharacterName() const
         {
             return characterName;
         }
-        public nothrow inline const string& Unicode1Name() const
+        public inline const string& Unicode1Name() const
         {
             return unicode1Name;
         }
-        public nothrow inline byte CanonicalCombiningClass() const
+        public inline byte CanonicalCombiningClass() const
         {
             return canonicalCombiningClass;
         }
-        public nothrow inline const ustring& FullUpper() const
+        public inline const ustring& FullUpper() const
         {
             return fullUpper;
         }
-        public nothrow inline const ustring& FullLower() const
+        public inline const ustring& FullLower() const
         {
             return fullLower;
         }
-        public nothrow inline const ustring& FullTitle() const
+        public inline const ustring& FullTitle() const
         {
             return fullTitle;
         }
-        public nothrow inline const ustring& FullFolding() const
+        public inline const ustring& FullFolding() const
         {
             return fullFolding;
         }
-        public nothrow inline BidiClassId BidiClassValue() const
+        public inline BidiClassId BidiClassValue() const
         {
             return bidiClass;
         }
-        public nothrow inline NumericTypeId NumericTypeValue() const
+        public inline NumericTypeId NumericTypeValue() const
         {
             return numericType;
         }
-        public nothrow inline const ustring& NumericValue() const
+        public inline const ustring& NumericValue() const
         {
             return numericValue;
         }
-        public nothrow inline const List<Alias>& Aliases() const
+        public inline const List<Alias>& Aliases() const
         {
             return aliases;
         }
-        public nothrow inline uchar BidiMirroringGlyph() const
+        public inline uchar BidiMirroringGlyph() const
         {
             return bidiMirroringGlyph;
         }
-        public nothrow inline BidiPairedBracketTypeId BidiPairedBracketTypeValue() const
+        public inline BidiPairedBracketTypeId BidiPairedBracketTypeValue() const
         {
             return bidiPairedBracketType;
         }
-        public nothrow inline uchar BidiPairedBracket()
+        public inline uchar BidiPairedBracket()
         {
             return bidiPairedBracket;
         }
-        public void Read(BinaryReader& reader)
+        [nodiscard]
+        public Result<bool> Read(BinaryReader& reader)
         {
-            characterName = reader.ReadString();
-            unicode1Name = reader.ReadString();
-            canonicalCombiningClass = reader.ReadByte();
-            byte nu = reader.ReadByte();
+            auto characterNameResult = reader.ReadString();
+            if (characterNameResult.Error())
+            {
+                return Result<bool>(ErrorId(characterNameResult.GetErrorId()));
+            }
+            characterName = characterNameResult.Value();
+            auto unicode1NameResult = reader.ReadString();
+            if (unicode1NameResult.Error())
+            {
+                return Result<bool>(ErrorId(unicode1NameResult.GetErrorId()));
+            }
+            unicode1Name = unicode1NameResult.Value();
+            auto canonicalCombiningClassResult = reader.ReadByte();
+            if (canonicalCombiningClassResult.Error())
+            {
+                return Result<bool>(ErrorId(canonicalCombiningClassResult.GetErrorId()));
+            }
+            canonicalCombiningClass = canonicalCombiningClassResult.Value();
+            auto nuResult = reader.ReadByte();
+            if (nuResult.Error())
+            {
+                return Result<bool>(ErrorId(nuResult.GetErrorId()));
+            }
+            byte nu = nuResult.Value();
             for (byte i = 0u; i < nu; ++i)
             {
-                fullUpper.Append(reader.ReadUChar());
+                auto result = reader.ReadUChar();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                fullUpper.Append(result.Value());
             }
-            byte nl = reader.ReadByte();
+            auto nlResult = reader.ReadByte();
+            if (nlResult.Error())
+            {
+                return Result<bool>(ErrorId(nlResult.GetErrorId()));
+            }
+            byte nl = nlResult.Value();
             for (byte i = 0u; i < nl; ++i)
             {
-                fullLower.Append(reader.ReadUChar());
+                auto result = reader.ReadUChar();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                fullLower.Append(result.Value());
             }
-            byte nt = reader.ReadByte();
+            auto ntResult = reader.ReadByte();
+            if (ntResult.Error())
+            {
+                return Result<bool>(ErrorId(ntResult.GetErrorId()));
+            }
+            byte nt = ntResult.Value();
             for (byte i = 0u; i < nt; ++i)
             {
-                fullTitle.Append(reader.ReadUChar());
+                auto result = reader.ReadUChar();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                fullTitle.Append(result.Value());
             }
-            byte nf = reader.ReadByte();
+            auto nfResult = reader.ReadByte();
+            if (nfResult.Error())
+            {
+                return Result<bool>(ErrorId(nfResult.GetErrorId()));
+            }
+            byte nf = nfResult.Value();
             for (byte i = 0u; i < nf; ++i)
             {
-                fullFolding.Append(reader.ReadUChar());
+                auto result = reader.ReadUChar();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                fullFolding.Append(result.Value());
             }
-            bidiClass = cast<BidiClassId>(reader.ReadByte());
-            numericType = cast<NumericTypeId>(reader.ReadByte());
-            numericValue = reader.ReadUString();
-            byte na = reader.ReadByte();
+            auto bidiClassResult = reader.ReadByte();
+            if (bidiClassResult.Error())
+            {
+                return Result<bool>(ErrorId(bidiClassResult.GetErrorId()));
+            }
+            bidiClass = cast<BidiClassId>(bidiClassResult.Value());
+            auto numericTypeResult = reader.ReadByte();
+            if (numericTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(numericTypeResult.GetErrorId()));
+            }
+            numericType = cast<NumericTypeId>(numericTypeResult.Value());
+            auto numericValueResult = reader.ReadUString();
+            if (numericValueResult.Error())
+            {
+                return Result<bool>(ErrorId(numericValueResult.GetErrorId()));
+            }
+            numericValue = numericValueResult.Value();
+            auto naResult = reader.ReadByte();
+            if (naResult.Error())
+            {
+                return Result<bool>(ErrorId(naResult.GetErrorId()));
+            }
+            byte na = naResult.Value();
             for (byte i = 0u; i < na; ++i)
             {
                 Alias alias;
-                alias.Read(reader);
+                auto aliasResult = alias.Read(reader);
+                if (aliasResult.Error())
+                {
+                    return Result<bool>(ErrorId(aliasResult.GetErrorId()));
+                }
                 aliases.Add(alias);
             }
-            bidiMirroringGlyph = reader.ReadUChar();
-            bidiPairedBracketType = cast<BidiPairedBracketTypeId>(reader.ReadByte());
-            bidiPairedBracket = reader.ReadUChar();
+            auto bidiMirroringGlyphResult = reader.ReadUChar();
+            if (bidiMirroringGlyphResult.Error())
+            {
+                return Result<bool>(ErrorId(bidiMirroringGlyphResult.GetErrorId()));
+            }
+            bidiMirroringGlyph = bidiMirroringGlyphResult.Value();
+            auto bidiPairedBracketTypeResult = reader.ReadByte();
+            if (bidiPairedBracketTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(bidiPairedBracketTypeResult.GetErrorId()));
+            }
+            bidiPairedBracketType = cast<BidiPairedBracketTypeId>(bidiPairedBracketTypeResult.Value());
+            auto bidiPairedBracketResult = reader.ReadUChar();
+            if (bidiPairedBracketResult.Error())
+            {
+                return Result<bool>(ErrorId(bidiPairedBracketResult.GetErrorId()));
+            }
+            bidiPairedBracket = bidiPairedBracketResult.Value();
+            return Result<bool>(true);
         }
         private string characterName;
         private string unicode1Name;
@@ -1906,7 +2350,7 @@ namespace System.Unicode
         private BidiPairedBracketTypeId bidiPairedBracketType;
         private uchar bidiPairedBracket;
     }
-    
+
     public class CharacterInfoPage
     {
         public CharacterInfoPage() : characterInfos()
@@ -1917,18 +2361,28 @@ namespace System.Unicode
         {
             return *characterInfos[index];
         }
-        public void Read(BinaryReader& reader)
+        public const CharacterInfo* Get(long index) const
+        {
+            return characterInfos[index].Get();
+        }
+        [nodiscard]
+        public Result<bool> Read(BinaryReader& reader)
         {
             for (long i = 0; i < numInfosInPage; ++i)
             {
                 CharacterInfo* characterInfo = new CharacterInfo();
-                characterInfo->Read(reader);
+                auto result = characterInfo->Read(reader);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
                 characterInfos[i].Reset(characterInfo);
             }
+            return Result<bool>(true);
         }
         private List<UniquePtr<CharacterInfo>> characterInfos;
     }
-    
+
     public class ExtendedCharacterInfoPage
     {
         public ExtendedCharacterInfoPage() : extendedCharacterInfos()
@@ -1939,18 +2393,28 @@ namespace System.Unicode
         {
             return *extendedCharacterInfos[index];
         }
-        public void Read(BinaryReader& reader)
+        public const ExtendedCharacterInfo* Get(long index) const
+        {
+            return extendedCharacterInfos[index].Get();
+        }
+        [nodiscard]
+        public Result<bool> Read(BinaryReader& reader)
         {
             for (long i = 0; i < numInfosInPage; ++i)
             {
                 ExtendedCharacterInfo* extendedCharacterInfo = new ExtendedCharacterInfo();
-                extendedCharacterInfo->Read(reader);
+                auto result = extendedCharacterInfo->Read(reader);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
                 extendedCharacterInfos[i].Reset(extendedCharacterInfo);
             }
+            return Result<bool>(true);
         }
         private List<UniquePtr<ExtendedCharacterInfo>> extendedCharacterInfos;
     }
-    
+
     public class ExtendedCharacterInfoHeader
     {
         public ExtendedCharacterInfoHeader() : extendedPageStarts()
@@ -1958,25 +2422,37 @@ namespace System.Unicode
         }
         public uint operator[](long index) const
         {
-            return extendedPageStarts[index]; 
+            return extendedPageStarts[index];
         }
-        public void Read(BinaryReader& reader)
+        [nodiscard]
+        public Result<bool> Read(BinaryReader& reader)
         {
-            uint n = reader.ReadUInt();
+            auto nResult = reader.ReadUInt();
+            if (nResult.Error())
+            {
+                return Result<bool>(ErrorId(nResult.GetErrorId()));
+            }
+            uint n = nResult.Value();
             extendedPageStarts.Resize(n);
             for (uint i = 0u; i < n; ++i)
             {
-                extendedPageStarts[i] = reader.ReadUInt();
+                auto result = reader.ReadUInt();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                extendedPageStarts[i] = result.Value();
             }
+            return Result<bool>(true);
         }
         private List<uint> extendedPageStarts;
     }
-    
+
     public const byte cmajor_ucd_version_1 = cast<byte>('1');
     public const byte cmajor_ucd_version_2 = cast<byte>('2');
     public const byte cmajor_ucd_version_3 = cast<byte>('3');
     public const byte current_cmajor_ucd_version = cmajor_ucd_version_3;
-    
+
     public class CharacterTable
     {
         static CharacterTable() : instance(new CharacterTable())
@@ -1986,11 +2462,19 @@ namespace System.Unicode
         {
             return *instance;
         }
-        public const CharacterInfo& GetCharacterInfo(uchar codePoint)
+        [nodiscard]
+        public Result<const CharacterInfo*> GetCharacterInfo(uchar codePoint)
         {
             if (codePoint > cast<uchar>(0x10FFFF))
             {
-                throw UnicodeException("invalid Unicode code point " + ToHexString(cast<uint>(codePoint)));
+                auto hexStringResult = ToHexString(cast<uint>(codePoint));
+                if (hexStringResult.Error())
+                {
+                    return Result<const CharacterInfo*>(ErrorId(hexStringResult.GetErrorId()));
+                }
+                string errorMessage = "invalid Unicode code point " + hexStringResult.Value();
+                int errorId = AllocateError(errorMessage);
+                return Result<const CharacterInfo*>(ErrorId(errorId));
             }
             long pageIndex = cast<long>(codePoint) / numInfosInPage;
             if (pages.Count() <= pageIndex)
@@ -2007,31 +2491,68 @@ namespace System.Unicode
                 LockGuard<RecursiveMutex> lock(characterTableLock);
                 if (page == null)
                 {
-                    string pathToUcdBinFile = PathToUcdBinFile();
-                    if (!File.Exists(pathToUcdBinFile))
+                    auto pathToUcdBinFileResult = PathToUcdBinFile();
+                    if (pathToUcdBinFileResult.Error())
                     {
-                        throw UnicodeException("Error: Cmajor Unicode database file '" + pathToUcdBinFile + "' does not exist.");
+                        return Result<const CharacterInfo*>(ErrorId(pathToUcdBinFileResult.GetErrorId()));
                     }
-                    BinaryReader reader = File.OpenBinary(pathToUcdBinFile);
+                    Result<bool> ucdBinFileExistResult = File.Exists(pathToUcdBinFileResult.Value());
+                    if (ucdBinFileExistResult.Error())
+                    {
+                        return Result<const CharacterInfo*>(ErrorId(ucdBinFileExistResult.GetErrorId()));
+                    }
+                    if (!ucdBinFileExistResult.Value())
+                    {
+                        string errorMessage = "Cmajor Unicode database file '" + pathToUcdBinFileResult.Value() + "' does not exist.";
+                        int errorId = AllocateError(errorMessage);
+                        return Result<const CharacterInfo*>(ErrorId(errorId));
+                    }
+                    auto binaryReaderResult = File.OpenBinary(pathToUcdBinFileResult.Value());
+                    if (binaryReaderResult.Error())
+                    {
+                        return Result<const CharacterInfo*>(ErrorId(binaryReaderResult.GetErrorId()));
+                    }
+                    BinaryReader& reader = binaryReaderResult.Value();
                     if (!headerRead)
                     {
-                        ReadHeader(reader);
+                        auto headerResult = ReadHeader(reader);
+                        if (headerResult.Error())
+                        {
+                            return Result<const CharacterInfo*>(ErrorId(headerResult.GetErrorId()));
+                        }
                     }
                     uint pageStart = headerSize + characterInfoPageSize * cast<uint>(pageIndex);
-                    reader.Seek(cast<long>(pageStart), Origin.seekSet);
+                    auto seekResult = reader.Seek(cast<long>(pageStart), Origin.seekSet);
+                    if (seekResult.Error())
+                    {
+                        return Result<const CharacterInfo*>(ErrorId(seekResult.GetErrorId()));
+                    }
                     page = new CharacterInfoPage();
-                    page->Read(reader);
+                    auto readResult = page->Read(reader);
+                    if (readResult.Error())
+                    {
+                        return Result<const CharacterInfo*>(ErrorId(readResult.GetErrorId()));
+                    }
                     pages[pageIndex].Reset(page);
                 }
             }
             long infoIndex = cast<long>(codePoint) % numInfosInPage;
-            return (*page)[infoIndex];
+            const CharacterInfo* info = page->Get(infoIndex);
+            return Result<const CharacterInfo*>(info);
         }
-        public const ExtendedCharacterInfo& GetExtendedCharacterInfo(uchar codePoint)
+        [nodiscard]
+        public Result<const ExtendedCharacterInfo*> GetExtendedCharacterInfo(uchar codePoint)
         {
             if (codePoint > cast<uchar>(0x10FFFF))
             {
-                throw UnicodeException("invalid Unicode code point " + ToHexString(cast<uint>(codePoint)));
+                auto hexStringResult = ToHexString(cast<uint>(codePoint));
+                if (hexStringResult.Error())
+                {
+                    return Result<const ExtendedCharacterInfo*>(hexStringResult.GetErrorId());
+                }
+                string errorMessage = "invalid Unicode code point " + hexStringResult.Value();
+                int errorId = AllocateError(errorMessage);
+                return Result<const ExtendedCharacterInfo*>(ErrorId(errorId));
             }
             long pageIndex = cast<long>(codePoint) / numInfosInPage;
             if (extendedPages.Count() <= pageIndex)
@@ -2048,29 +2569,66 @@ namespace System.Unicode
                 LockGuard<RecursiveMutex> lock(characterTableLock);
                 if (extendedPage == null)
                 {
-                    string pathToUcdBinFile = PathToUcdBinFile();
-                    if (!File.Exists(pathToUcdBinFile))
+                    auto pathToUcdBinFileResult = PathToUcdBinFile();
+                    if (pathToUcdBinFileResult.Error())
                     {
-                        throw UnicodeException("Error: Cmajor Unicode database file '" + pathToUcdBinFile + "' does not exist.");
+                        return Result<const ExtendedCharacterInfo*>(ErrorId(pathToUcdBinFileResult.GetErrorId()));
                     }
-                    BinaryReader reader = File.OpenBinary(pathToUcdBinFile);
+                    Result<bool> ucdBinFileExistResult = File.Exists(pathToUcdBinFileResult.Value());
+                    if (ucdBinFileExistResult.Error())
+                    {
+                        return Result<const ExtendedCharacterInfo*>(ErrorId(ucdBinFileExistResult.GetErrorId()));
+                    }
+                    if (!ucdBinFileExistResult.Value())
+                    {
+                        string errorMessage = "Cmajor Unicode database file '" + pathToUcdBinFileResult.Value() + "' does not exist.";
+                        int errorId = AllocateError(errorMessage);
+                        return Result<const ExtendedCharacterInfo*>(ErrorId(errorId));
+                    }
+                    auto readerResult = File.OpenBinary(pathToUcdBinFileResult.Value());
+                    if (readerResult.Error())
+                    {
+                        return Result<const ExtendedCharacterInfo*>(ErrorId(readerResult.GetErrorId()));
+                    }
+                    BinaryReader& reader = readerResult.Value();
                     if (!headerRead)
                     {
-                        ReadHeader(reader);
+                        auto headerResult = ReadHeader(reader);
+                        if (headerResult.Error())
+                        {
+                            return Result<const ExtendedCharacterInfo*>(ErrorId(headerResult.GetErrorId()));
+                        }
                     }
                     if (extendedHeader.IsNull())
                     {
-                        reader.Seek(cast<long>(extendedHeaderStart), Origin.seekSet);
-                        ReadExtendedHeader(reader);
+                        auto seekResult = reader.Seek(cast<long>(extendedHeaderStart), Origin.seekSet);
+                        if (seekResult.Error())
+                        {
+                            return Result<const ExtendedCharacterInfo*>(ErrorId(seekResult.GetErrorId()));
+                        }
+                        auto result = ReadExtendedHeader(reader);
+                        if (result.Error())
+                        {
+                            return Result<const ExtendedCharacterInfo*>(ErrorId(result.GetErrorId()));
+                        }
                     }
-                    reader.Seek(cast<long>((*extendedHeader)[pageIndex]), Origin.seekSet);
+                    auto seekResult = reader.Seek(cast<long>((*extendedHeader)[pageIndex]), Origin.seekSet);
+                    if (seekResult.Error())
+                    {
+                        return Result<const ExtendedCharacterInfo*>(ErrorId(seekResult.GetErrorId()));
+                    }
                     extendedPage = new ExtendedCharacterInfoPage();
-                    extendedPage->Read(reader);
+                    auto readResult = extendedPage->Read(reader);
+                    if (readResult.Error())
+                    {
+                        return Result<const ExtendedCharacterInfo*>(ErrorId(readResult.GetErrorId()));
+                    }
                     extendedPages[pageIndex].Reset(extendedPage);
                 }
             }
             long infoIndex = cast<long>(codePoint) % numInfosInPage;
-            return (*extendedPage)[infoIndex];
+            const ExtendedCharacterInfo* info = extendedPage->Get(infoIndex);
+            return Result<const ExtendedCharacterInfo*>(info);
         }
         private CharacterTable() : headerRead(false), pages(), extendedHeaderStart(0u), extendedHeaderEnd(0u), extendedHeader(), extendedPages(), characterTableLock()
         {
@@ -2088,35 +2646,62 @@ namespace System.Unicode
                 }
             }
         }
-        private void ReadHeader(BinaryReader& reader)
+        [nodiscard]
+        private Result<bool> ReadHeader(BinaryReader& reader)
         {
             headerRead = true;
             List<byte> magic;
             magic.Resize(8);
             for (long i = 0; i < 8; ++i)
             {
-                magic[i] = reader.ReadByte();
+                auto result = reader.ReadByte();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                magic[i] = result.Value();
             }
             for (long i = 0; i < 7; ++i)
             {
                 if (magic[i] != cast<byte>(headerMagic[i]))
                 {
-                    throw UnicodeException("invalid cmajor_ucd.bin header magic: 'CMAJUCD' expected");
+                    string errorMessage = "invalid cmajor_ucd.bin header magic: 'CMAJUCD' expected";
+                    int errorId = AllocateError(errorMessage);
+                    return Result<bool>(ErrorId(errorId));
                 }
             }
             if (magic[7] != headerMagic[7])
             {
-                throw UnicodeException("invalid cmajor_ucd.bin version: version " + 
-                    string(cast<char>(headerMagic[7]), 1) + " expected, version " + 
-                    string(cast<char>(magic[7]), 1) + " read");
+                string errorMessage = "invalid cmajor_ucd.bin version: version " +
+                    string(cast<char>(headerMagic[7]), 1) + " expected, version " +
+                    string(cast<char>(magic[7]), 1) + " read";
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
             }
-            extendedHeaderStart = reader.ReadUInt();
-            extendedHeaderEnd = reader.ReadUInt();
+            auto extendedHeaderStartResult = reader.ReadUInt();
+            if (extendedHeaderStartResult.Error())
+            {
+                return Result<bool>(ErrorId(extendedHeaderStartResult.GetErrorId()));
+            }
+            extendedHeaderStart = extendedHeaderStartResult.Value();
+            auto extendedHeaderEndResult = reader.ReadUInt();
+            if (extendedHeaderEndResult.Error())
+            {
+                return Result<bool>(ErrorId(extendedHeaderEndResult.GetErrorId()));
+            }
+            extendedHeaderEnd = extendedHeaderEndResult.Value();
+            return Result<bool>(true);
         }
-        private void ReadExtendedHeader(BinaryReader& reader)
+        [nodiscard]
+        private Result<bool> ReadExtendedHeader(BinaryReader& reader)
         {
             extendedHeader.Reset(new ExtendedCharacterInfoHeader());
-            extendedHeader->Read(reader);
+            auto result = extendedHeader->Read(reader);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
         public ~CharacterTable()
         {
@@ -2133,23 +2718,39 @@ namespace System.Unicode
         private RecursiveMutex characterTableLock;
     }
 
-    public const CharacterInfo& GetCharacterInfo(uchar codePoint)
+    [nodiscard]
+    public Result<const CharacterInfo*> GetCharacterInfo(uchar codePoint)
     {
         return CharacterTable.Instance().GetCharacterInfo(codePoint);
     }
-    
-    public const ExtendedCharacterInfo& GetExtendedCharacterInfo(uchar codePoint)
+
+    [nodiscard]
+    public Result<const ExtendedCharacterInfo*> GetExtendedCharacterInfo(uchar codePoint)
     {
         return CharacterTable.Instance().GetExtendedCharacterInfo(codePoint);
     }
-    
-    public GeneralCategoryId GetGeneralCategory(uchar c) 
+
+    [nodiscard]
+    public Result<GeneralCategoryId> GetGeneralCategory(uchar c)
     {
-        return GetCharacterInfo(c).GeneralCategoryValue();
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<GeneralCategoryId>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<GeneralCategoryId>(characterInfo->GeneralCategoryValue());
     }
-    
-    public bool HasGeneralCategory(uchar c, GeneralCategoryId generalCategory)
+
+    [nodiscard]
+    public Result<bool> HasGeneralCategory(uchar c, GeneralCategoryId generalCategory)
     {
-        return GetCharacterInfo(c).HasGeneralCategory(generalCategory);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->HasGeneralCategory(generalCategory));
     }
 }

@@ -31,7 +31,7 @@ cmajor::service::DebugServiceStartParams MakeDebugServiceStartParams(const std::
     else if (backend == "masm")
     {
         executableFilePath = util::GetFullPath(util::Path::Combine(util::Path::Combine(util::Path::Combine(util::Path::Combine(
-            util::Path::GetDirectoryName(projectFilePath), "lib"), "masm"), config), executableName));
+            util::Path::GetDirectoryName(projectFilePath), "bin"), "masm"), config), executableName));
     }
     return startParams.Backend(backend).Config(config).ExecutableFilePath(executableFilePath).ProgramArguments(programArguments);
 }

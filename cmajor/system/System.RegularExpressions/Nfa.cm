@@ -1,36 +1,36 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Nfa.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Nfa.cpp' using cpp2cm version 1.0.0
 
 namespace System.RegularExpressions
 {
     public class NfaEdge
     {
-        public NfaEdge(Symbol* symbol_, NfaState* next_) :
-            symbol(symbol_), next(next_)
+        public NfaEdge(Symbol* symbol_, NfaState* next_) : symbol(symbol_), next(next_)
         {
         }
-        public Symbol* GetSymbol() const
+        public inline Symbol* GetSymbol() const
         {
             return symbol;
         }
-        public NfaState* Next() const
+        public inline NfaState* Next() const
         {
             return next;
         }
         private Symbol* symbol;
         private NfaState* next;
     }
+
     public class NfaState
     {
-        public NfaState() :
-            accept(false), edges()
+        public NfaState() : accept(false), edges()
         {
         }
-        public bool Accept() const
+        public inline bool Accept() const
         {
             return accept;
         }
@@ -38,7 +38,7 @@ namespace System.RegularExpressions
         {
             accept = accept_;
         }
-        public const List<NfaEdge>& Edges() const
+        public inline const List<NfaEdge>& Edges() const
         {
             return edges;
         }
@@ -66,17 +66,16 @@ namespace System.RegularExpressions
         private bool accept;
         private List<NfaEdge> edges;
     }
+
     public class Nfa
     {
-        public Nfa() :
-            start(null), end(null)
+        public Nfa() : start(null), end(null)
         {
         }
-        public Nfa(NfaState* start_, NfaState* end_) :
-            start(start_), end(end_)
+        public Nfa(NfaState* start_, NfaState* end_) : start(start_), end(end_)
         {
         }
-        public NfaState* Start() const
+        public inline NfaState* Start() const
         {
             return start;
         }
@@ -84,7 +83,7 @@ namespace System.RegularExpressions
         {
             start = start_;
         }
-        public NfaState* End() const
+        public inline NfaState* End() const
         {
             return end;
         }
@@ -95,6 +94,7 @@ namespace System.RegularExpressions
         private NfaState* start;
         private NfaState* end;
     }
+
     public Nfa MakeNfa(Context& context, Symbol* symbol)
     {
         NfaState* start = context.MakeNfaState();
@@ -103,6 +103,7 @@ namespace System.RegularExpressions
         start->AddEdge(NfaEdge(symbol, end));
         return Nfa(start, end);
     }
+
     public Nfa Cat(const Nfa& left, const Nfa& right)
     {
         Nfa cat(left);
@@ -113,6 +114,7 @@ namespace System.RegularExpressions
         cat.SetEnd(right.End());
         return cat;
     }
+
     public Nfa Alt(Context& context, const Nfa& left, const Nfa& right)
     {
         NfaState* leftStart = left.Start();
@@ -133,6 +135,7 @@ namespace System.RegularExpressions
         alt.SetEnd(end);
         return alt;
     }
+
     public Nfa Kleene(Context& context, const Nfa& nfa)
     {
         Nfa kleene;
@@ -150,6 +153,7 @@ namespace System.RegularExpressions
         kleene.SetEnd(end);
         return kleene;
     }
+
     public Nfa Pos(Context& context, const Nfa& nfa)
     {
         Nfa pos;
@@ -166,10 +170,12 @@ namespace System.RegularExpressions
         pos.SetEnd(end);
         return pos;
     }
+
     public Nfa Opt(Context& context, const Nfa& nfa)
     {
         Nfa opt(nfa);
         opt.Start()->AddEdge(NfaEdge(context.MakeEpsilon(), opt.End()));
         return opt;
     }
+
 } // namespace System.RegularExpressions

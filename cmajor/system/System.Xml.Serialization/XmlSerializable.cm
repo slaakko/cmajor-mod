@@ -8,115 +8,39 @@ using System.Collections;
 
 namespace System.Xml.Serialization
 {
-    public interface XmlSerializable
+    public abstract class XmlSerializable
     {
-        void DestroyObject();
-        Uuid ObjectId();
-        void SetObjectId(const Uuid& objectId);
-        int ClassId();
-        string ClassName();
-        XmlContainer* Container();
-        void SetContainer(XmlContainer* container);
-        bool IsOwned();
-        void SetOwned();
-        void ResetOwned();
-        System.Dom.Element* ToXml(const string& elementName, XmlSerializationContext& ctx);
-        void FromXml(System.Dom.Element* element);
-        List<XmlPtrBase*> GetPtrs();
-    }
-
-    public class XmlSerializableProxy
-    {
-        public nothrow XmlSerializableProxy(XmlSerializable intf_) : intf(intf_)
+        public XmlSerializable() : objectId(Uuid.Random())
         {
-            if (intf.ObjectId() == Uuid())
-            {
-                intf.SetObjectId(Uuid.Random());
-            }
         }
-        public void DestroyObject()
+        public default virtual ~XmlSerializable();
+        public const Uuid& ObjectId() const
         {
-            intf.DestroyObject();
+            return objectId;
         }
-        public nothrow XmlSerializable Interface() const
+        public void SetObjectId(const Uuid& objectId_)
         {
-            return intf;
+            objectId = objectId_;
         }
-        public nothrow XmlContainer* Container() const
+        public virtual string ClassName() const
         {
-            return intf.Container();
+            return typename(*this);
         }
-        public nothrow void SetContainer(XmlContainer* container)
-        {
-            if (Container() == null)
-            {
-                intf.SetContainer(container);
-            }
-        }
-        public nothrow void ResetContainer()
-        {
-            intf.SetContainer(null);
-        }
-        public nothrow bool IsOwned() const
-        {
-            return intf.IsOwned();
-        }
-        public nothrow void SetOwned()
-        {
-            intf.SetOwned();
-        }
-        public nothrow void ResetOwned()
-        {
-            intf.ResetOwned();
-        }
-        public nothrow void* Object() const
-        {
-            return intf.GetObjectPtrFromInterface();
-        }
-        public nothrow Uuid ObjectId() const
-        {
-            return intf.ObjectId();
-        }
-        public nothrow int ClassId() const
-        {
-            return intf.ClassId();
-        }
-        public nothrow string ClassName() const
-        {
-            return intf.ClassName();
-        }
-        public System.Dom.Element* ToXml(const string& elementName)
+        public abstract Result<bool> SetObjectXmlAttributes(System.Xml.Element* element);
+        public abstract int ClassId() const;
+        public Result<System.Xml.Element*> ToXml(const string& elementName)
         {
             XmlSerializationContext ctx;
             return ToXml(elementName, ctx);
         }
-        public System.Dom.Element* ToXml(const string& elementName, XmlSerializationContext& ctx)
+        public abstract Result<System.Xml.Element*> ToXml(const string& elementName, XmlSerializationContext& ctx);
+        public Result<bool> FromXml(System.Xml.Element* element)
         {
-            return intf.ToXml(elementName, ctx);
+            XmlSerializationContext ctx;
+            return FromXml(element, ctx);
         }
-        public void FromXml(System.Dom.Element* element)
-        {
-            intf.FromXml(element);
-        }
-        public List<XmlPtrBase*> GetPtrs() const
-        {
-            return intf.GetPtrs();
-        }
-        private XmlSerializable intf;
-    }
-
-    public nothrow T* XmlCast<T>(XmlSerializableProxy* proxy)
-    {
-        string className = T.StaticClassName();
-        string serializableClassName = proxy->ClassName();
-        if (className == serializableClassName)
-        {
-            return cast<T*>(proxy->Object());
-        }
-        else
-        {
-            return null;
-        }
+        public abstract Result<bool> FromXml(System.Xml.Element* element, XmlSerializationContext& ctx);
+        private Uuid objectId;
     }
 }
 

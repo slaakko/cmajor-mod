@@ -10,26 +10,50 @@ namespace System.Windows
 {
     public class ImageList
     {
-        public nothrow ImageList()
+        public ImageList()
         {
         }
-        public void AddImage(const string& imageName)
+        [nodiscard]
+        public Result<bool> AddImage(const string& imageName)
         {
-            AddImage(imageName, new Bitmap(Bitmap.FromResource(imageName)));
+            auto bitmapResult = Bitmap.FromResource(imageName);
+            if (bitmapResult.Error())
+            {
+                return Result<bool>(ErrorId(bitmapResult.GetErrorId()));
+            }
+            UniquePtr<Bitmap> bm(new Bitmap(Rvalue(bitmapResult.Value())));
+            if (bm->Error())
+            {
+                return Result<bool>(ErrorId(bm->GetErrorId()));
+            }
+            AddImage(imageName, bm.Release());
+            return Result<bool>(true);
         }
-        public void AddDisabledImage(const string& imageName)
+        [nodiscard]
+        public Result<bool> AddDisabledImage(const string& imageName)
         {
             int imageIndex = GetImageIndex(imageName);
             if (imageIndex != -1)
             {
                 Bitmap* bitmap = images[imageIndex].Get();
-                Bitmap* disabledImage = new Bitmap(bitmap->ToGrayBitmap());
-                AddImage(imageName + ".disabled", disabledImage);
+                auto grayBitmapResult = bitmap->ToGrayBitmap();
+                if (grayBitmapResult.Error())
+                {
+                    return Result<bool>(ErrorId(grayBitmapResult.GetErrorId()));
+                }
+                UniquePtr<Bitmap> disabledImage = new Bitmap(Rvalue(grayBitmapResult.Value()));
+                if (disabledImage->Error())
+                {
+                    return Result<bool>(ErrorId(disabledImage->GetErrorId()));
+                }
+                AddImage(imageName + ".disabled", disabledImage.Release());
             }
             else
             {
-                throw Exception("image '" + imageName + "' not found");
+                int errorId = AllocateError("image '" + imageName + "' not found");
+                return Result<bool>(ErrorId(errorId));
             }
+            return Result<bool>(true);
         }
         public void AddImage(const string& imageName, Bitmap* bitmap)
         {
@@ -37,9 +61,9 @@ namespace System.Windows
             images.Add(UniquePtr<Bitmap>(bitmap));
             imageIndexMap[imageName] = imageIndex;
         }
-        public nothrow int GetImageIndex(const string& imageName)
+        public int GetImageIndex(const string& imageName)
         {
-            Map<string, int>.ConstIterator it = imageIndexMap.CFind(imageName);
+            auto it = imageIndexMap.CFind(imageName);
             if (it != imageIndexMap.CEnd())
             {
                 return it->second;
@@ -49,7 +73,7 @@ namespace System.Windows
                 return -1;
             }
         }
-        public nothrow int GetDisabledImageIndex(const string& imageName)
+        public int GetDisabledImageIndex(const string& imageName)
         {
             return GetImageIndex(imageName + ".disabled");
         }

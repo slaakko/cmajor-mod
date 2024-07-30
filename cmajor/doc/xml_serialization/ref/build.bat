@@ -1,0 +1,19 @@
+@echo off
+cm2html -v person.cm
+cm2html -v writing_person.cm
+txt2html -v person_xml.txt
+cm2html -v reading_person.cm
+txt2html -v  person_name.txt
+cm2html -v vehicle.cm
+cm2html -v vehicles.cm
+cm2html -v person_2.cm
+cm2html -v writing_2.cm
+txt2html -v writing_output2.txt
+txt2html -v printing_output2.txt
+cm2html -v reading_2.cm
+cm2html -v vehicle_3.cm
+cm2html -v person_3.cm
+cm2html -v writing_3.cm
+txt2html -v writing_output3.txt
+txt2html -v printing_output3.txt
+cm2html -v reading_3.cm

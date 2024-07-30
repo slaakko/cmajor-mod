@@ -11,17 +11,17 @@ namespace System
     {
         private typedef UniquePtr<T> Self;
 
-        public nothrow UniquePtr() : ptr(null)
+        public UniquePtr() : ptr(null)
         {
         }
-        public explicit nothrow UniquePtr(T* ptr_) : ptr(ptr_)
+        public explicit UniquePtr(T* ptr_) : ptr(ptr_)
         {
         }
         suppress UniquePtr(const Self&);
-        public nothrow UniquePtr(Self&& that) : ptr(that.Release())
+        public UniquePtr(Self&& that) : ptr(that.Release())
         {
         }
-        public nothrow void operator=(T* ptr_)
+        public void operator=(T* ptr_)
         {
             if (ptr != null)
             {
@@ -30,7 +30,7 @@ namespace System
             ptr = ptr_;
         }
         suppress void operator=(const Self&);
-        public nothrow void operator=(Self&& that)
+        public void operator=(Self&& that)
         {
             if (ptr != null)
             {
@@ -45,7 +45,7 @@ namespace System
                 delete ptr;
             }
         }
-        public nothrow void Reset()
+        public void Reset()
         {
             if (ptr != null)
             {
@@ -53,7 +53,7 @@ namespace System
                 ptr = null;
             }
         }
-        public nothrow void Reset(T* ptr_)
+        public void Reset(T* ptr_)
         {
             if (ptr != null)
             {
@@ -61,69 +61,57 @@ namespace System
             }
             ptr = ptr_;
         }
-        public inline nothrow T* Release()
+        public inline T* Release()
         {
             T* ptr_ = ptr;
             ptr = null;
             return ptr_;
         }
-        public inline nothrow T* GetPtr()
+        public inline T* GetPtr()
         {
             return ptr;
         }
-        public inline nothrow T* Get()
+        public inline T* Get()
         {
             return ptr;
         }
-        public inline nothrow bool IsNull() const
+        public inline bool IsNull() const
         {
             return ptr == null;
         }
         public T* operator->()
         {
-            if (ptr == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(ptr != null);
             return ptr;
         }
         public inline const T* operator->() const
         {
-            if (ptr == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(ptr != null);
             return ptr;
         }
         public inline T& operator*()
         {
-            if (ptr == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(ptr != null);
             return *ptr;
         }
         public inline const T& operator*() const
         {
-            if (ptr == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(ptr != null);
             return *ptr;
         }
-        public nothrow void Swap(Self& that)
+        public void Swap(Self& that)
         {
             Swap(ptr, that.ptr);
         }
         private T* ptr;
     }
 
-    public nothrow inline bool operator==<T>(const UniquePtr<T>& left, const UniquePtr<T>& right)
+    public inline bool operator==<T>(const UniquePtr<T>& left, const UniquePtr<T>& right)
     {
         return left.Get() == right.Get();
     }
 
-    public nothrow inline bool operator<<T>(const UniquePtr<T>& left, const UniquePtr<T>& right)
+    public inline bool operator<<T>(const UniquePtr<T>& left, const UniquePtr<T>& right)
     {
         return left.Get() < right.Get();
     }
@@ -131,6 +119,7 @@ namespace System
     [system_default]
     public TextWriter& operator<<<T>(TextWriter& writer, const UniquePtr<T>& ptr)
     {
+        if (writer.Error()) return writer;
         if (ptr.IsNull())
         {
             writer << "null";

@@ -3,21 +3,19 @@
 // Distributed under the MIT license
 // =================================
 
-using System;
-
 namespace System
 {
-    public nothrow double Pow(double x, int exponent)
+    public double Pow(double x, int exponent)
     {
-        return RtPow(x, exponent);
+        return RtmPow(x, exponent);
     }
 
-    public nothrow double Sqrt(double x)
+    public double Sqrt(double x)
     {
-        return RtSqrt(x);
+        return RtmSqrt(x);
     }
 
-    public nothrow int Log10(int n)
+    public int Log10(int n)
     {
         int log10 = 1;
         int m = n / 10;
@@ -29,48 +27,48 @@ namespace System
         return log10;
     }
 
-    public nothrow double PI()
+    public double PI()
     {
-        return RtPi();
+        return RtmPi();
     }
 
-    public nothrow double DegToRad(double angleDeg)
+    public double DegToRad(double angleDeg)
     {
         return PI() * angleDeg / 180.0;
     }
 
-    public nothrow double RadToDeg(double angleRad)
+    public double RadToDeg(double angleRad)
     {
         return angleRad * 180.0 / PI();
     }
 
-    public nothrow double Cos(double angleRad)
+    public double Cos(double angleRad)
     {
-        return RtCos(angleRad);
+        return RtmCos(angleRad);
     }
 
-    public nothrow double Sin(double angleRad)
+    public double Sin(double angleRad)
     {
-        return RtSin(angleRad);
+        return RtmSin(angleRad);
     }
 
-    public nothrow double ArcCos(double x)
+    public double ArcCos(double x)
     {
-        return RtArcCos(x);
+        return RtmArcCos(x);
     }
 
-    public nothrow double ArcSin(double x)
+    public double ArcSin(double x)
     {
-        return RtArcSin(x);
-    }
-    
-    public nothrow double Atan2(double y, double x)
-    {
-        return RtAtan2(y, x);
+        return RtmArcSin(x);
     }
 
-    public nothrow double Epsilon()
+    public double Atan2(double y, double x)
     {
-        return RtEpsilon();
+        return RtmAtan2(y, x);
+    }
+
+    public double Epsilon()
+    {
+        return RtmEpsilon();
     }
 }

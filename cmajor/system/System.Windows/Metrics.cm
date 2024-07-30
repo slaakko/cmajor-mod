@@ -5,8 +5,6 @@
 
 using System;
 using System.IO;
-using System.Text;
-using System.XPath;
 
 namespace System.Windows
 {
@@ -116,37 +114,37 @@ namespace System.Windows
     public const float inchMM = 25.4f;
     public const float pointMM = 0.351450f;
 
-    public nothrow inline float InchToMM(float inches)
+    public inline float InchToMM(float inches)
     {
         return inches * inchMM;
     }
 
-    public nothrow inline float MMToInch(float mm)
+    public inline float MMToInch(float mm)
     {
         return mm / inchMM;
     }
 
-    public nothrow inline float PointToMM(float points)
+    public inline float PointToMM(float points)
     {
         return points * pointMM;
     }
 
-    public nothrow inline float MMToPoint(float mm)
+    public inline float MMToPoint(float mm)
     {
         return mm / pointMM;
     }
 
-    public nothrow inline int MMToPixels(float mm, float dpi)
+    public inline int MMToPixels(float mm, float dpi)
     {
         return cast<int>(mm * dpi / inchMM);
     }
 
-    public nothrow inline float PixelsToMM(int pixels, float dpi)
+    public inline float PixelsToMM(int pixels, float dpi)
     {
         return pixels * inchMM / dpi;
     }
 
-    public nothrow inline double GoldenRatio()
+    public inline double GoldenRatio()
     {
         return 1 + Sqrt(5) / 2;
     }
@@ -154,7 +152,13 @@ namespace System.Windows
     public string GetDefaultMetricsFilePath()
     {
         string metricsFilePath;
-        string cmajorRootDir = RtGetEnvironmentVariable("CMAJOR_ROOT");
+        string cmajorRootDir;
+        int stringHandle = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (stringHandle != -1)
+        {
+            cmajorRootDir = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+        }
         if (!cmajorRootDir.IsEmpty())
         {
             metricsFilePath = Path.Combine(Path.Combine(cmajorRootDir, "config"), "metrics.xml");
@@ -167,43 +171,56 @@ namespace System.Windows
         public SizeElement(const string& name_) : name(name_)
         {
         }
-        public nothrow inline const SizeF& Get() const
+        public inline const SizeF& Get() const
         {
             return size;
         }
-        public nothrow void Set(const SizeF& size_)
+        public void Set(const SizeF& size_)
         {
             size = size_;
         }
-        public void Read(System.Dom.Element* parentElement)
+        [nodiscard]
+        public Result<bool> Read(System.Xml.Element* parentElement)
         {
-            UniquePtr<XPathObject> result = Evaluate(ToUtf32(name), parentElement);
-            if (!result.IsNull())
+            Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet(name, parentElement);
+            if (nodeSetResult.Error())
             {
-                if (result->Type() == XPathObjectType.nodeSet)
+                return Result<bool>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+            int n = nodeSet->Count();
+            if (n == 1)
+            {
+                System.Xml.Node* node = nodeSet->GetNode(0);
+                if (node->IsElementNode())
                 {
-                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(result.Get());
-                    int n = nodeSet->Length();
-                    if (n == 1)
+                    System.Xml.Element* sizeElement = cast<System.Xml.Element*>(node);
+                    auto wresult = ParseFloat(sizeElement->GetAttribute("width"));
+                    if (wresult.Error())
                     {
-                        System.Dom.Node* node = (*nodeSet)[0];
-                        if (node->GetNodeType() == System.Dom.NodeType.elementNode)
-                        {
-                            System.Dom.Element* sizeElement = cast<System.Dom.Element*>(node);
-                            size.w = ParseFloat(ToUtf8(sizeElement->GetAttribute(u"width")));
-                            size.h = ParseFloat(ToUtf8(sizeElement->GetAttribute(u"height")));
-                        }
+                        return Result<bool>(ErrorId(wresult.GetErrorId()));
                     }
+                    size.w = wresult.Value();
+                    auto hresult = ParseFloat(sizeElement->GetAttribute("height"));
+                    if (hresult.Error())
+                    {
+                        return Result<bool>(ErrorId(hresult.GetErrorId()));
+                    }
+                    size.h = hresult.Value();
                 }
             }
+            else
+            {
+                return Result<bool>(false);
+            }
+            return Result<bool>(true);
         }
-        public void Write(System.Dom.Element* parentElement)
+        public void Write(System.Xml.Element* parentElement)
         {
-            ustring en = ToUtf32(name);
-            UniquePtr<System.Dom.Element> sizeElement(new System.Dom.Element(en));
-            sizeElement->SetAttribute(u"width", ToUtf32(ToString(size.w)));
-            sizeElement->SetAttribute(u"height", ToUtf32(ToString(size.h)));
-            parentElement->AppendChild(UniquePtr<System.Dom.Node>(sizeElement.Release()));
+            System.Xml.Element* sizeElement(System.Xml.MakeElement(name));
+            sizeElement->SetAttribute("width", ToString(size.w));
+            sizeElement->SetAttribute("height", ToString(size.h));
+            parentElement->AppendChild(sizeElement);
         }
         private string name;
         private SizeF size;
@@ -211,7 +228,7 @@ namespace System.Windows
 
     public class Metrics
     {
-        public nothrow Metrics() :
+        public Metrics() :
             useDefaults(false), dpiX(96), dpiY(96),
             defaultButtonSize(86, 25), defaultButtonSizeElement("button"),
             defaultLabelSize(71, 19), defaultLabelSizeElement("label"),
@@ -222,26 +239,45 @@ namespace System.Windows
         {
             SetElementValues();
         }
-        public nothrow inline bool UseDefaults() const
+        public inline bool UseDefaults() const
         {
             return useDefaults;
         }
-        public nothrow void SetUseDefaults(bool useDefaults_)
+        public void SetUseDefaults(bool useDefaults_)
         {
             useDefaults = useDefaults_;
         }
-        public void LoadFromFile(const string& fileName)
+        [nodiscard]
+        public Result<bool> LoadFromFile(const string& fileName, System.Lex.FileMap& fileMap)
         {
-            if (File.Exists(fileName))
+            auto existsResult = File.Exists(fileName);
+            if (existsResult.Error())
             {
-                UniquePtr<System.Dom.Document> metricsDoc = System.Dom.ReadDocument(fileName);
-                Read(metricsDoc->DocumentElement());
+                return Result<bool>(ErrorId(existsResult.GetErrorId()));
+            }
+            bool exists = existsResult.Value();
+            if (exists)
+            {
+                Result<UniquePtr<System.Xml.Document>> metricsDocResult =  System.Xml.ParseXmlDocument(fileName, fileMap);
+                if (metricsDocResult.Error())
+                {
+                    return Result<bool>(ErrorId(metricsDocResult.GetErrorId()));
+                }
+                System.Xml.Document* metricsDoc = metricsDocResult.Value().Get();
+                auto result = Read(metricsDoc->DocumentElement());
+                if (result.Error()) return result;
                 LogView* logView = Application.GetLogView();
                 if (logView != null)
                 {
-                    logView->WriteLine("metrics loaded from '" + fileName + "'");
+                    auto result = logView->WriteLine("metrics loaded from '" + fileName + "'");
+                    if (result.Error()) return result;
                 }
             }
+            else
+            {
+                return Result<bool>(false);
+            }
+            return Result<bool>(true);
         }
         public void SetElementValues() // Sets element values from the corresponding pixel-valued sizes. Call this if you have changed the pixel-valued sizes and you want to save the changed metrics.
         {
@@ -252,37 +288,57 @@ namespace System.Windows
             defaultCheckBoxSizeElement.Set(SizeF(HorizontalPixelsToMM(defaultCheckBoxSize.w), VerticalPixelsToMM(defaultCheckBoxSize.h)));
             defaultControlSpacingElement.Set(SizeF(HorizontalPixelsToMM(defaultControlSpacing.w), VerticalPixelsToMM(defaultControlSpacing.h)));
         }
-        public void SaveTofile(const string& fileName, bool setElementValues)
+        [nodiscard]
+        public Result<bool> SaveTofile(const string& fileName, bool setElementValues)
         {
             if (setElementValues)
             {
                 SetElementValues();
             }
-            System.Dom.Document metricsDoc;
-            metricsDoc.AppendChild(UniquePtr<System.Dom.Node>(new System.Dom.Element(u"metrics")));
-            metricsDoc.DocumentElement()->AppendChild(UniquePtr<System.Dom.Node>(new System.Dom.Comment(u"metrics are in millimeters")));
-            metricsDoc.DocumentElement()->AppendChild(UniquePtr<System.Dom.Node>(new System.Dom.Text(u"\n ")));
+            System.Xml.Document metricsDoc;
+            metricsDoc.AppendChild(System.Xml.MakeElement("metrics"));
+            metricsDoc.DocumentElement()->AppendChild(System.Xml.MakeComment("metrics are in millimeters"));
+            metricsDoc.DocumentElement()->AppendChild(System.Xml.MakeText("\n "));
             Write(metricsDoc.DocumentElement());
-            StreamWriter writer = File.CreateText(fileName);
-            CodeFormatter formatter(writer);
+            auto fileResult = File.CreateText(fileName);
+            if (fileResult.Error())
+            {
+                return Result<bool>(ErrorId(fileResult.GetErrorId()));
+            }
+            StreamWriter& writer = fileResult.Value();
+            System.Text.CodeFormatter formatter(writer);
             formatter.SetIndentSize(1);
-            metricsDoc.Write(formatter);
+            auto writeResult = metricsDoc.Write(formatter);
+            if (writeResult.Error())
+            {
+                return Result<bool>(ErrorId(writeResult.GetErrorId()));
+            }
             LogView* logView = Application.GetLogView();
             if (logView != null)
             {
-                logView->WriteLine("metrics saved to '" + fileName + "'");
+                auto result = logView->WriteLine("metrics saved to '" + fileName + "'");
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public void Read(System.Dom.Element* parentElement)
+        [nodiscard]
+        public Result<bool> Read(System.Xml.Element* parentElement)
         {
-            defaultButtonSizeElement.Read(parentElement);
-            defaultLabelSizeElement.Read(parentElement);
-            defaultTextBoxSizeElement.Read(parentElement);
-            defaultListBoxSizeElement.Read(parentElement);
-            defaultCheckBoxSizeElement.Read(parentElement);
-            defaultControlSpacingElement.Read(parentElement);
+            auto result = defaultButtonSizeElement.Read(parentElement);
+            if (result.Error()) return result;
+            result = defaultLabelSizeElement.Read(parentElement);
+            if (result.Error()) return result;
+            result = defaultTextBoxSizeElement.Read(parentElement);
+            if (result.Error()) return result;
+            result = defaultListBoxSizeElement.Read(parentElement);
+            if (result.Error()) return result;
+            result = defaultCheckBoxSizeElement.Read(parentElement);
+            if (result.Error()) return result;
+            result = defaultControlSpacingElement.Read(parentElement);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public void Write(System.Dom.Element* parentElement)
+        public void Write(System.Xml.Element* parentElement)
         {
             defaultButtonSizeElement.Write(parentElement);
             defaultLabelSizeElement.Write(parentElement);
@@ -291,7 +347,7 @@ namespace System.Windows
             defaultCheckBoxSizeElement.Write(parentElement);
             defaultControlSpacingElement.Write(parentElement);
         }
-        public nothrow inline bool Calculated() const
+        public inline bool Calculated() const
         {
             return calculated;
         }
@@ -314,105 +370,120 @@ namespace System.Windows
             defaultControlSpacing.w = MMToHorizontalPixels(defaultControlSpacingElement.Get().w);
             defaultControlSpacing.h = MMToVerticalPixels(defaultControlSpacingElement.Get().h);
         }
-        public void PrintToLog()
+        [nodiscard]
+        public Result<bool> PrintToLog()
         {
             LogView* logView = Application.GetLogView();
             if (logView != null)
             {
-                logView->WriteLine("DPIX=" + ToString(dpiX) + ", DPIY=" + ToString(dpiY));
-                logView->WriteLine("Button: " + defaultButtonSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultButtonSize.w)) + "mm, " + ToString(VerticalPixelsToMM(defaultButtonSize.h)) + "mm)");
-                logView->WriteLine("Label: " + defaultLabelSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultLabelSize.w)) + "mm, " + ToString(VerticalPixelsToMM(defaultLabelSize.h)) + "mm)");
-                logView->WriteLine("TextBox: " + defaultTextBoxSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultTextBoxSize.w)) + "mm, " + ToString(VerticalPixelsToMM(defaultTextBoxSize.h)) + "mm)");
-                logView->WriteLine("ListBox: " + defaultListBoxSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultListBoxSize.w)) + "mm, " + ToString(VerticalPixelsToMM(defaultListBoxSize.h)) + "mm)");
-                logView->WriteLine("CheckBox: " + defaultCheckBoxSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultCheckBoxSize.w)) + "mm, " + ToString(VerticalPixelsToMM(defaultCheckBoxSize.h)) + "mm)");
-                logView->WriteLine("Spacing: " + defaultControlSpacing.ToString()  + " - (" + ToString(HorizontalPixelsToMM(defaultControlSpacing.w)) + "mm, " + ToString(VerticalPixelsToMM(defaultControlSpacing.h)) + "mm)");
+                auto result = logView->WriteLine("DPIX=" + ToString(dpiX) + ", DPIY=" + ToString(dpiY));
+                if (result.Error()) return result;
+                result = logView->WriteLine("Button: " + defaultButtonSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultButtonSize.w)) + "mm, " +
+                    ToString(VerticalPixelsToMM(defaultButtonSize.h)) + "mm)");
+                if (result.Error()) return result;
+                result = logView->WriteLine("Label: " + defaultLabelSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultLabelSize.w)) + "mm, " +
+                    ToString(VerticalPixelsToMM(defaultLabelSize.h)) + "mm)");
+                if (result.Error()) return result;
+                result = logView->WriteLine("TextBox: " + defaultTextBoxSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultTextBoxSize.w)) + "mm, " +
+                    ToString(VerticalPixelsToMM(defaultTextBoxSize.h)) + "mm)");
+                if (result.Error()) return result;
+                result = logView->WriteLine("ListBox: " + defaultListBoxSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultListBoxSize.w)) + "mm, " +
+                    ToString(VerticalPixelsToMM(defaultListBoxSize.h)) + "mm)");
+                if (result.Error()) return result;
+                result = logView->WriteLine("CheckBox: " + defaultCheckBoxSize.ToString() + " - (" + ToString(HorizontalPixelsToMM(defaultCheckBoxSize.w)) + "mm, " +
+                    ToString(VerticalPixelsToMM(defaultCheckBoxSize.h)) + "mm)");
+                if (result.Error()) return result;
+                result = logView->WriteLine("Spacing: " + defaultControlSpacing.ToString()  + " - (" + ToString(HorizontalPixelsToMM(defaultControlSpacing.w)) + "mm, " +
+                    ToString(VerticalPixelsToMM(defaultControlSpacing.h)) + "mm)");
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow inline float DpiX() const
+        public inline float DpiX() const
         {
             return dpiX;
         }
-        public nothrow inline float DpiY() const
+        public inline float DpiY() const
         {
             return dpiY;
         }
-        public nothrow inline int MMToHorizontalPixels(float mm) const
+        public inline int MMToHorizontalPixels(float mm) const
         {
             return MMToPixels(mm, dpiX);
         }
-        public nothrow inline float HorizontalPixelsToMM(int pixels) const
+        public inline float HorizontalPixelsToMM(int pixels) const
         {
             return PixelsToMM(pixels, dpiX);
         }
-        public nothrow inline int MMToVerticalPixels(float mm) const
+        public inline int MMToVerticalPixels(float mm) const
         {
             return MMToPixels(mm, dpiY);
         }
-        public nothrow inline float VerticalPixelsToMM(int pixels) const
+        public inline float VerticalPixelsToMM(int pixels) const
         {
             return PixelsToMM(pixels, dpiY);
         }
-        public nothrow inline const Size& DefaultButtonSize()  const
+        public inline const Size& DefaultButtonSize()  const
         {
             return defaultButtonSize;
         }
-        public nothrow void SetDefaultButtonSize(const Size& defaultButtonSize_)
+        public void SetDefaultButtonSize(const Size& defaultButtonSize_)
         {
             defaultButtonSize = defaultButtonSize_;
         }
-        public nothrow inline const Size& DefaultLabelSize() const
+        public inline const Size& DefaultLabelSize() const
         {
             return defaultLabelSize;
         }
-        public nothrow void SetDefaultLabelSize(const Size& defaultLabelSize_)
+        public void SetDefaultLabelSize(const Size& defaultLabelSize_)
         {
             defaultLabelSize = defaultLabelSize_;
         }
-        public nothrow inline const Size& DefaultTextBoxSize() const
+        public inline const Size& DefaultTextBoxSize() const
         {
             return defaultTextBoxSize;
         }
-        public nothrow void SetDefaultTextBoxSize(const Size& defaultTextBoxSize_)
+        public void SetDefaultTextBoxSize(const Size& defaultTextBoxSize_)
         {
             defaultTextBoxSize = defaultTextBoxSize_;
         }
-        public nothrow inline const Size& DefaultListBoxSize() const
+        public inline const Size& DefaultListBoxSize() const
         {
             return defaultListBoxSize;
         }
-        public nothrow void SetDefaultListBoxSize(const Size& defaultListBoxSize_)
+        public void SetDefaultListBoxSize(const Size& defaultListBoxSize_)
         {
             defaultListBoxSize = defaultListBoxSize_;
         }
-        public nothrow inline const Size& DefaultCheckBoxSize() const
+        public inline const Size& DefaultCheckBoxSize() const
         {
             return defaultCheckBoxSize;
         }
-        public nothrow void SetDefaultCheckBoxSize(const Size& defaultCheckBoxSize_)
+        public void SetDefaultCheckBoxSize(const Size& defaultCheckBoxSize_)
         {
             defaultCheckBoxSize = defaultCheckBoxSize_;
         }
-        public nothrow inline const Size& DefaultControlSpacing() const
+        public inline const Size& DefaultControlSpacing() const
         {
             return defaultControlSpacing;
         }
-        public nothrow void SetDefaultControlSpacing(const Size& defaultControlSpacing_)
+        public void SetDefaultControlSpacing(const Size& defaultControlSpacing_)
         {
             defaultControlSpacing = defaultControlSpacing_;
         }
-        public nothrow SizeElement& DefaultButtonSizeElement()
+        public SizeElement& DefaultButtonSizeElement()
         {
             return defaultButtonSizeElement;
         }
-        public nothrow SizeElement& DefaultLabelSizeElement()
+        public SizeElement& DefaultLabelSizeElement()
         {
             return defaultLabelSizeElement;
         }
-        public nothrow SizeElement& DefaultTextBoxSizeElement()
+        public SizeElement& DefaultTextBoxSizeElement()
         {
             return defaultTextBoxSizeElement;
         }
-        public nothrow SizeElement& DefaultControlSpacingElement()
+        public SizeElement& DefaultControlSpacingElement()
         {
             return defaultControlSpacingElement;
         }
@@ -439,36 +510,61 @@ namespace System.Windows
         public static ScreenMetrics() : metrics()
         {
         }
-        public static nothrow void SetUseDefaults(bool useDefaults)
+        public static void SetUseDefaults(bool useDefaults)
         {
             metrics.SetUseDefaults(useDefaults);
         }
-        public static void Save(bool setElementValues)
+        public static Result<bool> Save(bool setElementValues)
         {
             string metricsFilePath = GetDefaultMetricsFilePath();
-            metrics.SaveTofile(metricsFilePath, setElementValues);
-        }
-        public static void Load()
-        {
-            string metricsFilePath = GetDefaultMetricsFilePath();
-            if (File.Exists(metricsFilePath))
+            auto saveResult = metrics.SaveTofile(metricsFilePath, setElementValues);
+            if (saveResult.Error())
             {
-                metrics.LoadFromFile(metricsFilePath);
+                return Result<bool>(ErrorId(saveResult.GetErrorId()));
             }
+            return Result<bool>(true);
+        }
+        public static Result<bool> Load(System.Lex.FileMap& fileMap)
+        {
+            string metricsFilePath = GetDefaultMetricsFilePath();
+            auto existsResult = File.Exists(metricsFilePath);
+            if (existsResult.Error())
+            {
+                return Result<bool>(ErrorId(existsResult.GetErrorId()));
+            }
+            bool exists = existsResult.Value();
+            if (exists)
+            {
+                auto result = metrics.LoadFromFile(metricsFilePath, fileMap);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            else
+            {
+                return Result<bool>(false);
+            }
+            return Result<bool>(true);
         }
         public static bool Calculated()
         {
             return metrics.Calculated();
         }
-        public static void Calculate(Graphics& graphics)
+        public static Result<bool> Calculate(Graphics& graphics)
         {
             if (!metrics.UseDefaults())
             {
-                Load();
+                auto result = Load(defaultFileMap);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
             metrics.Calculate(graphics);
+            return Result<bool>(true);
         }
-        public static nothrow const Metrics& Get()
+        public static const Metrics& Get()
         {
             return metrics;
         }
@@ -477,5 +573,6 @@ namespace System.Windows
             metrics = metrics_;
         }
         public static Metrics metrics;
+        private static System.Lex.FileMap defaultFileMap;
     }
 }

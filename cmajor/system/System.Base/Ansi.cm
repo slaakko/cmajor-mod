@@ -2,12 +2,13 @@
 // Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
- 
+
 namespace System
 {
     public class delegate void ColorCharOutputMethod(Color.Constant textColor, Color.Constant backColor, int handle, uchar c);
 
-    public void AnsiProcess(int handle, const string& text, const ColorCharOutputMethod& writeOutputChar)
+    [nodiscard]
+    public Result<bool> AnsiProcess(int handle, const string& text, const ColorCharOutputMethod& writeOutputChar)
     {
         if (handle == 1)
         {
@@ -19,11 +20,14 @@ namespace System
         }
         else
         {
-            throw Exception("AnsiEngine: invalid handle value " + ToString(handle) + " (not 1 or 2)");
+            string errorMessage = "AnsiEngine: invalid handle value " + ToString(handle) + " (not 1 or 2)";
+            int errorId = AllocateError(errorMessage);
+            return Result<bool>(ErrorId(errorId));
         }
+        return Result<bool>(true);
     }
 
-    public class AnsiEngine
+    public class AnsiEngine : IOBase
     {
         static AnsiEngine() :
             out(new AnsiEngine(1)),
@@ -45,23 +49,23 @@ namespace System
                 Put(c, writeOutputChar);
             }
         }
-        public nothrow inline Color.Constant DefaultTextColor() const
+        public inline Color.Constant DefaultTextColor() const
         {
             return defaultTextColor;
         }
-        public nothrow inline Color.Constant DefautBackColor() const
+        public inline Color.Constant DefaultBackColor() const
         {
             return defaultBackColor;
         }
-        public nothrow void SetDefaultTextColor(Color.Constant color)
+        public void SetDefaultTextColor(Color.Constant color)
         {
             defaultTextColor = color;
         }
-        public nothrow void SetDefaultBackColor(Color.Constant color)
+        public void SetDefaultBackColor(Color.Constant color)
         {
             defaultBackColor = color;
         }
-        private nothrow AnsiEngine(int handle_) : handle(handle_), state(0), unicodeEngine(),
+        private AnsiEngine(int handle_) : handle(handle_), state(0), unicodeEngine(),
             defaultTextColor(Color.Constant.gray), defaultBackColor(Color.Constant.black),
             currentTextColor(defaultTextColor), currentBackColor(defaultBackColor),
             textColor(defaultTextColor), backColor(defaultBackColor)
@@ -769,18 +773,23 @@ namespace System
         }
         private void Emit(char c, const ColorCharOutputMethod& writeOutputChar)
         {
-            unicodeEngine.Put(cast<byte>(c));
+            auto result = unicodeEngine.Put(cast<byte>(c));
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
             if (unicodeEngine.ResultReady())
             {
                 writeOutputChar(textColor, backColor, handle, unicodeEngine.Get());
             }
         }
-        private nothrow void SetAttributes()
+        private void SetAttributes()
         {
             textColor = currentTextColor;
             backColor = currentBackColor;
         }
-        private nothrow void ResetAttributes()
+        private void ResetAttributes()
         {
             textColor = defaultTextColor;
             backColor = defaultBackColor;

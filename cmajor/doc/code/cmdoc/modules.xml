@@ -1,20 +1,16 @@
 <modules>
  <module name="Align"/>
  <module name="ClassDelegate"/>
+ <module name="deflate"/>
  <module name="Delegate"/>
- <module name="Interface"/>
+ <module name="FiberTest"/>
+ <module name="globalvar"/>
  <module name="Min"/>
  <module name="phonebook"/>
  <module name="Point"/>
- <module name="QuickSort"/>
  <module name="RangeFor"/>
- <module name="rfc"/>
  <module name="sgrep"/>
  <module name="StrLen"/>
- <module name="globalvar"/>
- <module name="UniquePtr"/>
+ <module name="threading"/>
  <module name="Vehicles"/>
- <module name="FiberTest"/>
- <module name="testprog"/>
- <module name="ProcessTest"/>
 </modules>

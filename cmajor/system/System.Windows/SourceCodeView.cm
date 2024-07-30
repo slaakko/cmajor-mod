@@ -11,13 +11,13 @@ namespace System.Windows
 {
     public class SourceSpan
     {
-        public nothrow SourceSpan() : line(0), scol(0), ecol(0)
+        public SourceSpan() : line(0), scol(0), ecol(0)
         {
         }
-        public nothrow SourceSpan(int line_, short scol_, short ecol_) : line(line_), scol(scol_), ecol(ecol_)
+        public SourceSpan(int line_, short scol_, short ecol_) : line(line_), scol(scol_), ecol(ecol_)
         {
         }
-        public nothrow inline bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return line == 0 && scol == 0 && ecol == 0;
         }
@@ -26,7 +26,7 @@ namespace System.Windows
         public short ecol;
     }
 
-    public nothrow inline bool operator==(const SourceSpan& left, const SourceSpan& right)
+    public inline bool operator==(const SourceSpan& left, const SourceSpan& right)
     {
         return left.line == right.line && left.scol == right.scol && left.ecol == right.ecol;
     }
@@ -36,72 +36,72 @@ namespace System.Windows
         plain, space, keyword, identifier, string, character, number, comment, lineNumber, beginBlock, endBlock
     }
 
-    public nothrow ulong GetHashCode(SourceCodeTokenKind tokenKind)
+    public ulong GetHashCode(SourceCodeTokenKind tokenKind)
     {
         return cast<ulong>(cast<int>(tokenKind));
     }
 
     public class SourceCodeTextStyle
     {
-        public nothrow SourceCodeTextStyle(Font* font_, Brush* brush_) : font(font_), brush(brush_)
+        public SourceCodeTextStyle(Font* font_, Brush* brush_) : font(font_), brush(brush_)
         {
         }
         public Font* font;
         public Brush* brush;
     }
 
-    public nothrow inline bool operator==(const SourceCodeTextStyle& left, const SourceCodeTextStyle& right)
+    public inline bool operator==(const SourceCodeTextStyle& left, const SourceCodeTextStyle& right)
     {
         return left.font == right.font && left.brush == right.brush;
     }
 
     public class SourceCodeTokenStyle
     {
-        public nothrow SourceCodeTokenStyle(const Color& color_, FontStyle fontStyle_) : color(color_), fontStyle(fontStyle_)
+        public SourceCodeTokenStyle(const Color& color_, FontStyle fontStyle_) : color(color_), fontStyle(fontStyle_)
         {
         }
         public Color color;
         public FontStyle fontStyle;
     }
 
-    public nothrow inline bool operator==(const SourceCodeTokenStyle& left, const SourceCodeTokenStyle& right)
+    public inline bool operator==(const SourceCodeTokenStyle& left, const SourceCodeTokenStyle& right)
     {
         return left.color == right.color && left.fontStyle == right.fontStyle;
     }
 
-    public nothrow ulong GetHashCode(const SourceCodeTokenStyle& tokenStyle)
+    public ulong GetHashCode(const SourceCodeTokenStyle& tokenStyle)
     {
         ulong code = GetHashCode(tokenStyle.color);
         code = code + 14695981039346656037u * cast<ulong>(cast<int>(tokenStyle.fontStyle));
         return code;
     }
 
-    public nothrow ulong GetHashCode(const SourceCodeTextStyle& textStyle)
+    public ulong GetHashCode(const SourceCodeTextStyle& textStyle)
     {
         ulong code = GetHashCode(textStyle.font);
         code = code + 14695981039346656037u * GetHashCode(textStyle.brush);
         return code;
     }
 
-    public nothrow ControlCreateParams& SourceCodeViewControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& SourceCodeViewControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return controlCreateParams.SetWindowClassName("System.Windows.SourceCodeView").SetWindowClassStyle(DoubleClickWindowClassStyle()).
             SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP)).
             SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.White());
     }
-    
+
     public class SourceCodeViewCreateParams
     {
-        public nothrow SourceCodeViewCreateParams(TextViewCreateParams& textViewCreateParams_) : textViewCreateParams(textViewCreateParams_)
+        public SourceCodeViewCreateParams(TextViewCreateParams& textViewCreateParams_) : textViewCreateParams(textViewCreateParams_)
         {
         }
-        public nothrow SourceCodeViewCreateParams& Defaults()
+        public SourceCodeViewCreateParams& Defaults()
         {
             return *this;
         }
         public TextViewCreateParams& textViewCreateParams;
     }
-    
+
     public class SourceCodeView : TextView
     {
         public SourceCodeView(const FontFamily& fontFamily, float fontSize, const Color& backgroundColor, const Color& textColor, const Point& location,
@@ -118,7 +118,8 @@ namespace System.Windows
         {
             BuildDefaultStyles();
         }
-        protected override void OnFontChanged()
+        [nodiscard]
+        protected override Result<bool> OnFontChanged()
         {
             fontStyleFontMap.Clear();
             textStyleMap.Clear();
@@ -130,17 +131,18 @@ namespace System.Windows
                 SourceCodeTextStyle* textStyle = GetOrInsertTextStyle(brush, font);
                 tokenStyleTextStyleMap[tokenStyle.Get()] = textStyle;
             }
+            return Result<bool>(true);
         }
         public void SetSourceCodeTokenStyle(SourceCodeTokenKind kind, SourceCodeTokenStyle style)
         {
             SourceCodeTokenStyle* tokenStyle = GetOrInsertTokenStyle(style.color, style.fontStyle);
             tokenKindMap[kind] = tokenStyle;
         }
-        protected override nothrow int LineNumberFieldLength() const
+        protected override int LineNumberFieldLength() const
         {
             return numLineNumberDigits + 1;
         }
-        protected override nothrow void SetLineNumberFieldLength(int lineCount)
+        protected override void SetLineNumberFieldLength(int lineCount)
         {
             numLineNumberDigits = Log10(lineCount + 1);
         }
@@ -159,9 +161,11 @@ namespace System.Windows
                 tokenLines.Add(Rvalue(tokenLine));
             }
         }
-        protected override void OnLineChanged(LineEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnLineChanged(LineEventArgs& args)
         {
-            base->OnLineChanged(args);
+            auto result = base->OnLineChanged(args);
+            if (result.Error()) return result;
             int lineIndex = args.lineIndex;
             const ustring& line = Lines()[lineIndex];
             int state = 0;
@@ -174,14 +178,18 @@ namespace System.Windows
                 tokenLines.Add(TokenLine());
             }
             tokenLines[lineIndex] = TokenizeLine(line, lineIndex + 1, state);
+            return Result<bool>(true);
         }
-        protected override void OnLineDeleted(LineEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnLineDeleted(LineEventArgs& args)
         {
-            base->OnLineDeleted(args);
+            auto result = base->OnLineDeleted(args);
+            if (result.Error()) return result;
             int lineIndex = args.lineIndex;
             tokenLines.Remove(tokenLines.Begin() + lineIndex);
+            return Result<bool>(true);
         }
-        private nothrow bool IsBeginBlockLine(int lineIndex) const
+        private bool IsBeginBlockLine(int lineIndex) const
         {
             if (lineIndex >= 0 && lineIndex < tokenLines.Count())
             {
@@ -196,7 +204,7 @@ namespace System.Windows
             }
             return false;
         }
-        private nothrow bool IsEndBlockLine(int lineIndex) const
+        private bool IsEndBlockLine(int lineIndex) const
         {
             if (lineIndex >= 0 && lineIndex < tokenLines.Count())
             {
@@ -211,7 +219,7 @@ namespace System.Windows
             }
             return false;
         }
-        protected override nothrow int RemoveIndent(int lineIndex) const
+        protected override int RemoveIndent(int lineIndex) const
         {
             if (IsEndBlockLine(lineIndex))
             {
@@ -222,7 +230,7 @@ namespace System.Windows
                 return 0;
             }
         }
-        protected override nothrow int GetIndent(const ustring& line, int lineIndex)
+        protected override int GetIndent(const ustring& line, int lineIndex)
         {
             for (int i = 0; i < line.Length(); ++i)
             {
@@ -240,9 +248,11 @@ namespace System.Windows
             }
             return 0;
         }
-        protected override void OnLineInserted(LineEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnLineInserted(LineEventArgs& args)
         {
-            base->OnLineInserted(args);
+            auto result = base->OnLineInserted(args);
+            if (result.Error()) return result;
             int lineIndex = args.lineIndex;
             ustring& line = Lines()[lineIndex];
             int state = 0;
@@ -255,9 +265,9 @@ namespace System.Windows
                 state = tokenLines[lineIndex - 1].endState;
             }
             tokenLines.Insert(tokenLines.Begin() + lineIndex, TokenizeLine(line, lineIndex + 1, state));
-            Invalidate();
+            return Invalidate();
         }
-        public nothrow ustring GetText(const SourceSpan& span) const
+        public ustring GetText(const SourceSpan& span) const
         {
             if (span.line >= 1 && span.line <= Lines().Count())
             {
@@ -273,7 +283,7 @@ namespace System.Windows
             }
             return ustring();
         }
-        public nothrow ustring GetTokenText(int lineNumber, short columnNumber) const
+        public ustring GetTokenText(int lineNumber, short columnNumber) const
         {
             if (lineNumber >= 1 && lineNumber <= tokenLines.Count())
             {
@@ -294,61 +304,92 @@ namespace System.Windows
         {
             return System.Windows.DefaultTokenizeLine(line, lineNumber, startState);
         }
-        protected virtual nothrow SourceCodeTokenKind GetTokenKind(const Token& token) const
+        protected virtual SourceCodeTokenKind GetTokenKind(const Token& token) const
         {
             return SourceCodeTokenKind.plain;
         }
-        protected override void DrawLine(Graphics& graphics, int lineIndex, const PointF& origin)
+        protected override Result<bool> DrawLine(Graphics& graphics, int lineIndex, const PointF& origin)
         {
             int lineNumber = lineIndex + 1;
             string lineNumberStr = System.ToString(lineNumber);
             string lineNumberText = Format(lineNumberStr, numLineNumberDigits, FormatJustify.right);
             PointF pt(origin);
-            SourceCodeTextStyle* lineNumberTextStyle = GetTextStyle(SourceCodeTokenKind.lineNumber);
-            graphics.DrawStringChecked(lineNumberText, *lineNumberTextStyle->font, pt, *lineNumberTextStyle->brush);
+            Result<SourceCodeTextStyle*> lineNumberTextStyleResult = GetTextStyle(SourceCodeTokenKind.lineNumber);
+            if (lineNumberTextStyleResult.Error())
+            {
+                return Result<bool>(ErrorId(lineNumberTextStyleResult.GetErrorId()));
+            }
+            SourceCodeTextStyle* lineNumberTextStyle = lineNumberTextStyleResult.Value();
+            auto result = graphics.DrawString(lineNumberText, *lineNumberTextStyle->font, pt, *lineNumberTextStyle->brush);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             pt.x = pt.x + CharWidth() * (numLineNumberDigits + 1);
             const TokenLine& tokenLine = tokenLines[lineIndex];
             int startState = tokenLine.startState;
             for (const Token& token : tokenLine.tokens)
             {
                 SourceCodeTokenKind tokenKind = GetTokenKind(token);
-                SourceCodeTextStyle* tokenTextStyle = GetTextStyle(tokenKind);
+                Result<SourceCodeTextStyle*> tokenTextStyleResult = GetTextStyle(tokenKind);
+                if (tokenTextStyleResult.Error())
+                {
+                    return Result<bool>(ErrorId(tokenTextStyleResult.GetErrorId()));
+                }
+                SourceCodeTextStyle* tokenTextStyle = tokenTextStyleResult.Value();
                 ustring tokenStr = token.match.ToString();
-                string s(ToUtf8(tokenStr));
-                graphics.DrawStringChecked(s, *tokenTextStyle->font, pt, *tokenTextStyle->brush);
+                auto utf8Result = ToUtf8(tokenStr);
+                if (utf8Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                }
+                string s(Rvalue(utf8Result.Value()));
+                auto result = graphics.DrawString(s, *tokenTextStyle->font, pt, *tokenTextStyle->brush);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
                 pt.x = pt.x + CharWidth() * tokenStr.Length();
                 startState = -1;
             }
             PointF hiliteOrigin(origin);
             hiliteOrigin.x = hiliteOrigin.x + CharWidth() * LineNumberFieldLength();
-            DrawHilites(graphics, lineIndex, hiliteOrigin);
+            result = DrawHilites(graphics, lineIndex, hiliteOrigin);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        protected virtual void DrawHilites(Graphics& graphics, int lineIndex, const PointF& origin)
+        protected virtual Result<bool> DrawHilites(Graphics& graphics, int lineIndex, const PointF& origin)
         {
+            return Result<bool>(true);
         }
-        private SourceCodeTextStyle* GetTextStyle(SourceCodeTokenKind tokenKind)
+        private Result<SourceCodeTextStyle*> GetTextStyle(SourceCodeTokenKind tokenKind)
         {
             SourceCodeTextStyle* textStyle = null;
             SourceCodeTokenStyle* tokenStyle = null;
-            HashMap<SourceCodeTokenKind, SourceCodeTokenStyle*>.ConstIterator it = tokenKindMap.CFind(tokenKind);
-            if (it != tokenKindMap.CEnd())
+            auto it = tokenKindMap.Find(tokenKind);
+            if (it != tokenKindMap.End())
             {
                 tokenStyle = it->second;
             }
             else
             {
-                throw Exception("source code token style not found");
+                int errorId = AllocateError("source code token style not found");
+                return Result<SourceCodeTextStyle*>(ErrorId(errorId));
             }
-            HashMap<SourceCodeTokenStyle*, SourceCodeTextStyle*>.ConstIterator it2 = tokenStyleTextStyleMap.CFind(tokenStyle);
-            if (it2 != tokenStyleTextStyleMap.CEnd())
+            auto  it2 = tokenStyleTextStyleMap.Find(tokenStyle);
+            if (it2 != tokenStyleTextStyleMap.End())
             {
                 textStyle = it2->second;
             }
             else
             {
-                throw Exception("source code text style not found");
+                int errorId = AllocateError("source code text style not found");
+                return Result<SourceCodeTextStyle*>(ErrorId(errorId));
             }
-            return textStyle;
+            return Result<SourceCodeTextStyle*>(textStyle);
         }
         private void BuildDefaultStyles()
         {

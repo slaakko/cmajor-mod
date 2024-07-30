@@ -4,14 +4,24 @@
  </files>
  <namespace docPath="../../sgrep/doc/ns_.html" extPath="sgrep/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../sgrep/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" extPath="sgrep/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" fileName="sgrep/sgrep.cm" filePath="../../sgrep/file/sgrep.cm.html" id="function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" kind="Function" line="6" name="PrintHelp" returnType="887cd79c-0abf-4798-8d04-7656ba95d795" specifiers=""/>
-   <function docPath="../../sgrep/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="sgrep/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="sgrep/sgrep.cm" filePath="../../sgrep/file/sgrep.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="11" name="main" returnType="6d96cd6a-f875-45c9-9486-06d303b6803c" specifiers="">
+   <function docPath="../../sgrep/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" extPath="sgrep/doc/../index.html#function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" fileName="sgrep/sgrep.cm" filePath="../../sgrep/file/sgrep.cm.html" id="function_PrintHelp_F3AFA512C96C0735F4AD8289F9D07605175DC520" kind="Function" line="6" name="PrintHelp" returnType="70d3e7e0-6b55-8aac-3977-5a026d7512c9" specifiers=""/>
+   <function docPath="../../sgrep/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" extPath="sgrep/doc/../index.html#function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" fileName="sgrep/sgrep.cm" filePath="../../sgrep/file/sgrep.cm.html" id="function_main_E5E0B7B0E865B79CC09FA4CBA1B819D77DE7CAFC" kind="Function" line="11" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers="">
     <parameters>
-     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="6d96cd6a-f875-45c9-9486-06d303b6803c"/>
-     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="02eebf00-84b5-4920-82a9-defcd98ab1b3"/>
+     <parameter id="parameter_argc_AA11952084E5FEBCC47757F6863509258BF262FF" name="argc" type="668cd106-4aa8-ddbe-3479-d3d42161344f"/>
+     <parameter id="parameter_argv_A77642CC652C3A88362DD414B9B6D479ADFED46E" name="argv" type="e3853aed-a39a-a82a-40b9-90f85023e490"/>
     </parameters>
    </function>
   </functions>
  </namespace>
- <types/>
+ <types>
+  <basicType id="70d3e7e0-6b55-8aac-3977-5a026d7512c9" name="void"/>
+  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
+  <basicType id="e5a0727d-47ad-59b9-abb6-584b4a4b7614" name="char"/>
+  <derivedType id="e3853aed-a39a-a82a-40b9-90f85023e490" name="const char**">
+   <derivation name="const"/>
+   <derivation baseType="e5a0727d-47ad-59b9-abb6-584b4a4b7614"/>
+   <derivation name="*"/>
+   <derivation name="*"/>
+  </derivedType>
+ </types>
 </symbolTable>

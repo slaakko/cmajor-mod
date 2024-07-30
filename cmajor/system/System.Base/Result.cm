@@ -1,0 +1,65 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+namespace System
+{
+    public class ErrorId
+    {
+        public ErrorId(int value_) : value(value_) {}
+        public int value;
+    }
+
+//  The Result<T> class template will hold either a value T or an error identifier.
+//  An error identifier is a integer that represents an error instance contained by the runtime.
+//  Error identifier 0 indicates success and positive integer indicates an error.
+
+    public class Result<T>
+    {
+        public Result() : value(), errorId(0) {}
+        public Result(const T& value_) : value(value_), errorId(0) {}
+        public Result(T&& value_) : value(Rvalue(value_)), errorId(0) {}
+        public Result(ErrorId errorId_) : value(), errorId(errorId_.value) {}
+        public Result<T> AndThen(const Result<T>& second) { if (Error()) return *this; else return second; }
+        public inline const T& Value() const { return value; }
+        public inline T& Value() { return value; }
+        public inline bool Error() const { return errorId != 0; }
+        public inline int GetErrorId() const { return errorId; }
+        public void SetErrorId(int errorId_) { errorId = errorId_; }
+        public string GetErrorMessage() const { return RtmGetErrorMessage(errorId); }
+        private T value;
+        private int errorId;
+    }
+
+    public bool operator==<T>(const Result<T>& left, const Result<T>& right)
+    {
+        return left.Value() == right.Value() && left.GetErrorId() == right.GetErrorId();
+    }
+
+    public bool operator<<T>(const Result<T>& left, const Result<T>& right)
+    {
+        if (left.Value() < right.Value()) return true;
+        if (left.Value() > right.Value()) return false;
+        return left.GetErrorId() < right.GetErrorId();
+    }
+
+//  AllocateError creates and returns an error identifier for an error message.
+
+    public int AllocateError(const string& errorMessage)
+    {
+        return RtmAllocateError(errorMessage.Chars());
+    }
+
+//  GetErrorMessage returns an error message for an error identifier. In debug mode the error message will contain a stack trace.
+
+    public string GetErrorMessage(int errorId)
+    {
+        return RtmGetErrorMessage(errorId);
+    }
+
+    public int GetErrno()
+    {
+        return RtmGetErrno();
+    }
+}

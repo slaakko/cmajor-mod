@@ -5,13 +5,13 @@
 
 using System;
 
-public extern cdecl nothrow int RtGetHardwareConcurrency();
-public extern cdecl int RtStartThreadFunction(System.Threading.ThreadStartFunction function);
-public extern cdecl int RtStartThreadFunctionWithParam(System.Threading.ParameterizedThreadStartFunction function, void* param);
-public extern cdecl int RtStartThreadMethod(System.Threading.ThreadStartMethod method);
-public extern cdecl int RtStartThreadMethodWithParam(System.Threading.ParameterizedThreadStartMethod method, void* param);
-public extern cdecl bool RtJoinThread(int threadId);
-public extern cdecl nothrow int RtThisThreadId();
+public extern cdecl int RtmGetHardwareConcurrency();
+public extern cdecl int RtmStartThreadFunction(System.Threading.ThreadStartFunction function);
+public extern cdecl int RtmStartThreadFunctionWithParam(System.Threading.ParameterizedThreadStartFunction function, void* param);
+public extern cdecl int RtmStartThreadMethod(System.Threading.ThreadStartMethod method);
+public extern cdecl int RtmStartThreadMethodWithParam(System.Threading.ParameterizedThreadStartMethod method, void* param);
+public extern cdecl bool RtmJoinThread(int threadId);
+public extern cdecl int RtmThisThreadId();
 
 namespace System.Threading
 {
@@ -20,78 +20,68 @@ namespace System.Threading
     public class delegate void ThreadStartMethod();        
     public class delegate void ParameterizedThreadStartMethod(void* param);
     
-    public class ThreadingException : Exception
+    public int HardwareConcurrency()
     {
-        public ThreadingException(const string& message_) : base(message_)
-        {
-        }
-    }
-                
-    public nothrow int HardwareConcurrency()
-    {
-        return RtGetHardwareConcurrency();
+        return RtmGetHardwareConcurrency();
     }
     
     public class Thread
     {
         public static Thread StartFunction(ThreadStartFunction function)
         {
-            Thread thread(RtStartThreadFunction(function));
+            Thread thread(RtmStartThreadFunction(function));
             return thread;
         }
         public static Thread StartFunction(ParameterizedThreadStartFunction function, void* param)
         {
-            Thread thread(RtStartThreadFunctionWithParam(function, param));
+            Thread thread(RtmStartThreadFunctionWithParam(function, param));
             return thread;
         }
         public static Thread StartMethod(ThreadStartMethod method)
         {
-            Thread thread(RtStartThreadMethod(method));
+            Thread thread(RtmStartThreadMethod(method));
             return thread;
         }
         public static Thread StartMethod(ParameterizedThreadStartMethod method, void* param)
         {
-            Thread thread(RtStartThreadMethodWithParam(method, param));
+            Thread thread(RtmStartThreadMethodWithParam(method, param));
             return thread;
         }
-        public nothrow Thread() : id(0)
+        public Thread() : id(0)
         {
         }
-        private nothrow Thread(int id_) : id(id_)
+        private Thread(int id_) : id(id_)
         {
         }
         public ~Thread()
         {
-            try
+            if (id != 0)
             {
-                if (id != 0)
-                {
-                    Join();
-                }
-            }
-            catch (const Exception&)
-            {
+                Join();
             }
         }
         suppress Thread(const Thread&);
         suppress void operator=(const Thread&);
-        public nothrow Thread(Thread&& that) : id(that.id)
+        public Thread(Thread&& that) : id(that.id)
         {
             that.id = 0;
         }
-        public default nothrow void operator=(Thread&&);
-        public nothrow inline int Id() const
+        public default void operator=(Thread&&);
+        public inline int Id() const
         {
             return id;
         }
-        public void Join()
+        public Result<bool> Join()
         {
             int jid = id;
             id = 0;
-            if (!RtJoinThread(jid))
+            if (!RtmJoinThread(jid))
             {
-                throw ThreadingException("thread " + ToString(id) + " not joinable");
+                string errorMessage = "thread " + ToString(id) + " not joinable";
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
             }
+            return Result<bool>(true);
         }
         private int id;
     }

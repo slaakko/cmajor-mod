@@ -10,19 +10,7 @@
    <a href="#namespaces">Namespaces</a>
     | <a href="#files">Files</a>
   </span>
-  <span xml:space="preserve"><p class="description" xml:space="preserve">The System.XPath module contains an implementation of the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/"> XML Path Language</a> version 1.0 query engine.</p><span xml:space="preserve"><h2>Example</h2><p class="description" xml:space="preserve">Consider the following XML document: <br/>
-  <br/>
-  <span class="string"> &lt;philosophers> <br/>
-   &lt;philosopher name='Plato'/> <br/>
-   &lt;philosopher name='Aristotle'/> <br/>
-   &lt;philosopher name='Socrates'/> <br/>
-   &lt;/philosophers> <br/>
-  </span><br/>
-   and the following XPath query string: <br/>
-  <br/>
-  <span class="string"> "/philosophers/philosopher"</span> . <br/>
-  <br/>
-  <a href="../../../code/xml/cmdoc/content/XPath1/file/xpath1.cm.html"> This</a> example program evaluates the previous query and prints the names of all three philosophers: Plato, Aristotle and Socrates. The query selects all child elements having the name 'philosopher' under the document element having the name 'philosophers' from the given XML document.</p><p class="description" xml:space="preserve">If the query is changed to <span class="string"> "/philosopher/philosopher[@name='Socrates']"</span> , only a single 'philosopher' child element that has an attribute with name 'name' and value 'Socrates' is selected. Thus <a href="../../../code/xml/cmdoc/content/XPath2/file/xpath2.cm.html"> this</a> program prints Socrates.</p></span></span>
+  <span xml:space="preserve"><p class="description" xml:space="preserve">The System.XPath module contains an implementation of the <a href="https://www.w3.org/TR/1999/REC-xpath-19991116/"> XML Path Language</a> version 1.0 query engine.</p><span xml:space="preserve"><h2>Example 1</h2><p class="description" xml:space="preserve">This <a href="../../../code/xml/cmdoc/content/xpath_test/file/xpath_test.cm.html"> xpath_test.cm</a> program shows how to read an XML document and then evaluate an XPATH query with respect to the XML document and print the result as XML.</p><h2>Example 2</h2><p class="description" xml:space="preserve">This <a href="../../../code/xml/cmdoc/content/xpath_philosophers/file/xpath_philosophers.cm.html"> xpath_philosophers.cm</a> program shows how to parse an XML string to an XML document, evaluate an XPATH query and then retrieve data from XML elements.</p><h2>Example 3</h2><p class="description" xml:space="preserve">This <a href="../../../code/xml/cmdoc/content/xpath_socrates/file/xpath_socrates.cm.html"> xpath_socrates</a> program is the same as above with a different query expression.</p></span></span>
   <h2 id="namespaces">Namespaces</h2>
   <table>
    <tr>

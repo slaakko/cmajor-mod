@@ -9,89 +9,25 @@ using System.Windows.API;
 
 namespace System.Windows
 {
-    public enum GraphicsStatus : int
-    {
-        ok = 0,
-        genericError = 1,
-        invalidParameter = 2,
-        outOfMemory = 3,
-        objectBusy = 4,
-        insufficientBuffer = 5,
-        notImplemented = 6,
-        win32Error = 7,
-        wrongState = 8,
-        aborted = 9,
-        fileNotFound = 10,
-        valueOverflow = 11,
-        accessDenied = 12,
-        unknownImageFormat = 13,
-        fontFamilyNotFound = 14,
-        fontStyleNotFound = 15,
-        notTrueTypeFont = 16,
-        unsupportedGdiplusVersion = 17,
-        gdiplusNotInitialized = 18,
-        propertyNotFound = 19,
-        propertyNotSupported = 20,
-        profileNotFound = 21
-    }
-
-    public string GraphicsStatusStr(GraphicsStatus status)
-    {
-        switch (status)
-        {
-            case GraphicsStatus.ok: return "ok";
-            case GraphicsStatus.genericError: return "generic error";
-            case GraphicsStatus.invalidParameter: return "invalid parameter";
-            case GraphicsStatus.outOfMemory: return "out of memory";
-            case GraphicsStatus.objectBusy: return "object busy";
-            case GraphicsStatus.insufficientBuffer: return "insufficient buffer";
-            case GraphicsStatus.notImplemented: return "not implemented";
-            case GraphicsStatus.win32Error: return "WIN32 error";
-            case GraphicsStatus.wrongState: return "wrong state";
-            case GraphicsStatus.aborted: return "aborted";
-            case GraphicsStatus.fileNotFound: return "file not found";
-            case GraphicsStatus.valueOverflow: return "value overflow";
-            case GraphicsStatus.accessDenied: return "access denied";
-            case GraphicsStatus.unknownImageFormat: return "unknown image format";
-            case GraphicsStatus.fontFamilyNotFound: return "font family not found";
-            case GraphicsStatus.fontStyleNotFound: return "font style not found";
-            case GraphicsStatus.notTrueTypeFont: return "not True Type font";
-            case GraphicsStatus.unsupportedGdiplusVersion: return "unsupported GDI+ version";
-            case GraphicsStatus.gdiplusNotInitialized: return "GDI+ not initialized";
-            case GraphicsStatus.propertyNotFound: return "property not found";
-            case GraphicsStatus.propertyNotSupported: return "property not supported";
-            case GraphicsStatus.profileNotFound: return "profile not found";
-        }
-        return "graphics error";
-    }
-
-    public void CheckGraphicsStatus(GraphicsStatus status)
-    {
-        if (status != GraphicsStatus.ok)
-        {
-            throw Exception("GDI+ error: " + GraphicsStatusStr(status));
-        }
-    }
-
     public class Point
     {
-        public nothrow Point() : x(0), y(0)
+        public Point() : x(0), y(0)
         {
         }
-        public nothrow Point(int x_, int y_) : x(x_), y(y_)
+        public Point(int x_, int y_) : x(x_), y(y_)
         {
         }
-        public default nothrow Point(const Point&);
-        public default nothrow void operator=(const Point&);
-        public static nothrow Point Default()
+        public default Point(const Point&);
+        public default void operator=(const Point&);
+        public static Point Default()
         {
             return Point(CW_USEDEFAULT, CW_USEDEFAULT);
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(x) + ", " + ToString(y) + ")";
         }
-        public nothrow inline void Offset(int dx, int dy)
+        public inline void Offset(int dx, int dy)
         {
             x = x + dx;
             y = y + dy;
@@ -100,26 +36,26 @@ namespace System.Windows
         public int y;
     }
 
-    public nothrow inline bool operator==(const Point& left, const Point& right)
+    public inline bool operator==(const Point& left, const Point& right)
     {
         return left.x == right.x && left.y == right.y;
     }
 
     public class Size
     {
-        public nothrow Size() : h(0), w(0)
+        public Size() : h(0), w(0)
         {
         }
-        public nothrow Size(int w_, int h_) : w(w_), h(h_)
+        public Size(int w_, int h_) : w(w_), h(h_)
         {
         }
-        public default nothrow Size(const Size&);
-        public default nothrow void operator=(const Size&);
-        public static nothrow Size Default()
+        public default Size(const Size&);
+        public default void operator=(const Size&);
+        public static Size Default()
         {
             return Size(CW_USEDEFAULT, CW_USEDEFAULT);
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(w) + ", " + ToString(h) + ")";
         }
@@ -127,24 +63,24 @@ namespace System.Windows
         public int h;
     }
 
-    public nothrow inline bool operator==(const Size& left, const Size& right)
+    public inline bool operator==(const Size& left, const Size& right)
     {
         return left.w == right.w && left.h == right.h;
     }
 
     public class PointF
     {
-        public nothrow PointF() : x(0.0f), y(0.0f)
+        public PointF() : x(0.0f), y(0.0f)
         {
         }
-        public nothrow PointF(float x_, float y_) : x(x_), y(y_)
+        public PointF(float x_, float y_) : x(x_), y(y_)
         {
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(x) + ", " + ToString(y) + ")";
         }
-        public nothrow inline void Offset(float dx, float dy)
+        public inline void Offset(float dx, float dy)
         {
             x = x + dx;
             y = y + dy;
@@ -153,12 +89,12 @@ namespace System.Windows
         public float y;
     }
 
-    public nothrow inline bool operator==(const PointF& left, const PointF& right)
+    public inline bool operator==(const PointF& left, const PointF& right)
     {
         return left.x == right.x && left.y == right.y;
     }
 
-    public nothrow float Distance(const PointF& start, const PointF& end)
+    public float Distance(const PointF& start, const PointF& end)
     {
         float dx = Abs(start.x - end.x);
         float dy = Abs(start.y - end.y);
@@ -168,20 +104,20 @@ namespace System.Windows
 
     public class Vector
     {
-        public nothrow Vector() : x(0), y(0)
+        public Vector() : x(0), y(0)
         {
         }
-        public nothrow Vector(float x_, float y_) : x(x_), y(y_)
+        public Vector(float x_, float y_) : x(x_), y(y_)
         {
         }
-        public nothrow explicit Vector(const PointF& point) : x(point.x), y(point.y)
+        public explicit Vector(const PointF& point) : x(point.x), y(point.y)
         {
         }
-        public nothrow float Length() const
+        public float Length() const
         {
             return cast<float>(Sqrt(x * x + y * y));
         }
-        public nothrow PointF ToPoint() const
+        public PointF ToPoint() const
         {
             return PointF(x, y);
         }
@@ -189,32 +125,32 @@ namespace System.Windows
         public float y;
     }
 
-    public nothrow inline bool operator==(const Vector& v, const Vector& u)
+    public inline bool operator==(const Vector& v, const Vector& u)
     {
         return v.x == u.x && v.y == u.y;
     }
 
-    public nothrow Vector operator*(const Vector& v, float a)
+    public Vector operator*(const Vector& v, float a)
     {
         return Vector(v.x * a, v.y * a);
     }
 
-    public nothrow Vector operator*(float a, const Vector& v)
+    public Vector operator*(float a, const Vector& v)
     {
         return Vector(v.x * a, v.y * a);
     }
 
-    public nothrow Vector operator+(const Vector& left, const Vector& right)
+    public Vector operator+(const Vector& left, const Vector& right)
     {
         return Vector(left.x + right.x, left.y + right.y);
     }
 
-    public nothrow Vector operator-(const Vector& left, const Vector& right)
+    public Vector operator-(const Vector& left, const Vector& right)
     {
         return Vector(left.x - right.x, left.y - right.y);
     }
 
-    public nothrow Vector UnitVector(const Vector& v)
+    public Vector UnitVector(const Vector& v)
     {
         float length = v.Length();
         return v * (1 / length);
@@ -222,19 +158,19 @@ namespace System.Windows
 
     // Dot product of vectors u and v:
 
-    public nothrow float Dot(const Vector& u, const Vector& v)
+    public float Dot(const Vector& u, const Vector& v)
     {
         return u.x * v.x + u.y * v.y;
     }
 
-    public nothrow float ProjectionFactor(const Vector& a, const Vector& b)
+    public float ProjectionFactor(const Vector& a, const Vector& b)
     {
         return Dot(a, b * (1 / b.Length()));
     }
 
     // Projection of vector a onto b:
 
-    public nothrow Vector Projection(const Vector& a, const Vector& b)
+    public Vector Projection(const Vector& a, const Vector& b)
     {
         return UnitVector(b) * ProjectionFactor(a, b);
     }
@@ -246,7 +182,7 @@ namespace System.Windows
     //      270, if angle between vector v and positive x axis is between 225 and 315 degrees clockwise
     //      In this coordinate system x axis points to the right and y axis points downwards.
 
-    public nothrow int MainDirection(const Vector& v)
+    public int MainDirection(const Vector& v)
     {
         if (v.x >= 0)
         {
@@ -304,30 +240,30 @@ namespace System.Windows
         }
     }
 
-    public nothrow Vector Rotate(const Vector& v, double angleRad)
+    public Vector Rotate(const Vector& v, double angleRad)
     {
-        double cosTheta = Cos(angleRad);
-        double sinTheta = Sin(angleRad);
-        Vector r(cast<float>(v.x * cosTheta - v.y * sinTheta), cast<float>(v.x * sinTheta + v.y * cosTheta));
+        float cosTheta = cast<float>(Cos(angleRad));
+        float sinTheta = cast<float>(Sin(angleRad));
+        Vector r(v.x * cosTheta - v.y * sinTheta, v.x * sinTheta + v.y * cosTheta);
         return r;
     }
 
     public class Line
     {
-        public nothrow Line() : start(), end()
+        public Line() : start(), end()
         {
         }
-        public nothrow Line(const PointF& start_, const PointF& end_) : start(start_), end(end_)
+        public Line(const PointF& start_, const PointF& end_) : start(start_), end(end_)
         {
         }
-        public nothrow Line(const PointF& start_, const Vector& v) : start(start_), end(Vector(Vector(start) + v).ToPoint())
+        public Line(const PointF& start_, const Vector& v) : start(start_), end(Vector(Vector(start) + v).ToPoint())
         {
         }
-        public nothrow float Length() const
+        public float Length() const
         {
             return Distance(start, end);
         }
-        public nothrow Vector ToVector() const
+        public Vector ToVector() const
         {
             return Vector(end.x - start.x, end.y - start.y);
         }
@@ -335,12 +271,12 @@ namespace System.Windows
         public PointF end;
     }
 
-    public inline nothrow bool operator==(const Line& left, const Line& right)
+    public inline bool operator==(const Line& left, const Line& right)
     {
         return left.start == right.start && left.end == right.end;
     }
 
-    public nothrow Line Rotate(const Line& line, float angleDeg)
+    public Line Rotate(const Line& line, double angleDeg)
     {
         double angleRad = PI() / 180.0 * angleDeg;
         Vector v = line.ToVector();
@@ -351,13 +287,13 @@ namespace System.Windows
 
     public class SizeF
     {
-        public nothrow SizeF() : w(0.0f), h(0.0f)
+        public SizeF() : w(0.0f), h(0.0f)
         {
         }
-        public nothrow SizeF(float w_, float h_) : w(w_), h(h_)
+        public SizeF(float w_, float h_) : w(w_), h(h_)
         {
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(w) + ", " + ToString(h) + ")";
         }
@@ -365,66 +301,66 @@ namespace System.Windows
         public float h;
     }
 
-    public nothrow inline bool operator==(const SizeF& left, const SizeF& right)
+    public inline bool operator==(const SizeF& left, const SizeF& right)
     {
         return left.w == right.w && left.h == right.h;
     }
 
     public class Rect
     {
-        public nothrow Rect() : location(), size()
+        public Rect() : location(), size()
         {
         }
-        public nothrow Rect(const Point& location_, const Size& size_) : location(location_), size(size_)
+        public Rect(const Point& location_, const Size& size_) : location(location_), size(size_)
         {
         }
-        public nothrow Rect(const WinRect& winRect) : location(winRect.left, winRect.top), size(winRect.right - winRect.left, winRect.bottom - winRect.top)
+        public Rect(const WinRect& winRect) : location(winRect.left, winRect.top), size(winRect.right - winRect.left, winRect.bottom - winRect.top)
         {
         }
-        public nothrow WinRect ToWinRect() const
+        public WinRect ToWinRect() const
         {
             return WinRect(location.x, location.y, location.x + size.w, location.y + size.h);
         }
-        public nothrow inline bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return size.w == 0 && size.h == 0;
         }
-        public nothrow inline int Left() const
+        public inline int Left() const
         {
             return location.x;
         }
-        public nothrow inline int Right() const
+        public inline int Right() const
         {
             return location.x + size.w;
         }
-        public nothrow inline int Top() const
+        public inline int Top() const
         {
             return location.y;
         }
-        public nothrow inline int Bottom() const
+        public inline int Bottom() const
         {
             return location.y + size.h;
         }
-        public nothrow inline bool Contains(const Point& p)
+        public inline bool Contains(const Point& p)
         {
             return p.x >= location.x && p.x < location.x + size.w && p.y >= location.y && p.y < location.y + size.h;
         }
-        public nothrow inline void Inflate(int dx, int dy)
+        public inline void Inflate(int dx, int dy)
         {
             location.x = location.x - dx;
             location.y = location.y - dy;
             size.w = size.w + 2 * dx;
             size.h = size.h + 2 * dy;
         }
-        public nothrow inline void Offset(int dx, int dy)
+        public inline void Offset(int dx, int dy)
         {
             location.Offset(dx, dy);
         }
-        public nothrow bool IntersectsWith(const Rect& that) const
+        public bool IntersectsWith(const Rect& that) const
         {
             return Left() < that.Right() && Top() < that.Bottom() && Right() > that.Left() && Bottom() > that.Top();
         }
-        public static nothrow Rect Union(const Rect& a, const Rect& b)
+        public static Rect Union(const Rect& a, const Rect& b)
         {
             int right = Max(a.Right(), b.Right());
             int bottom = Max(a.Bottom(), b.Bottom());
@@ -432,7 +368,7 @@ namespace System.Windows
             int top = Min(a.Top(), b.Top());
             return Rect(Point(left, top), Size(right - left, bottom - top));
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(location.x) + ", " + ToString(location.y) + ", " + ToString(size.w) + ", " + ToString(size.h) + ")";
         }
@@ -440,63 +376,63 @@ namespace System.Windows
         public Size size;
     }
 
-    public nothrow inline bool operator==(const Rect& left, const Rect& right)
+    public inline bool operator==(const Rect& left, const Rect& right)
     {
         return left.location == right.location && left.size == right.size;
     }
 
     public class RectF
     {
-        public nothrow RectF() : location(), size()
+        public RectF() : location(), size()
         {
         }
-        public nothrow RectF(const PointF& location_, const SizeF& size_) : location(location_), size(size_)
+        public RectF(const PointF& location_, const SizeF& size_) : location(location_), size(size_)
         {
         }
-        public nothrow inline float Left() const
+        public inline float Left() const
         {
             return location.x;
         }
-        public nothrow inline float Right() const
+        public inline float Right() const
         {
             return location.x + size.w;
         }
-        public nothrow inline float Top() const
+        public inline float Top() const
         {
             return location.y;
         }
-        public nothrow inline float Bottom() const
+        public inline float Bottom() const
         {
             return location.y + size.h;
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return "(" + ToString(location.x) + ", " + ToString(location.y) + ", " + ToString(size.w) + ", " + ToString(size.h) + ")";
         }
-        public nothrow inline bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return size.w == 0 && size.h == 0;
         }
-        public nothrow inline bool Contains(const PointF& p)
+        public inline bool Contains(const PointF& p)
         {
             return p.x >= location.x && p.x < location.x + size.w && p.y >= location.y && p.y < location.y + size.h;
         }
-        public nothrow inline void Inflate(float dx, float dy)
+        public inline void Inflate(float dx, float dy)
         {
             location.x = location.x - dx;
             location.y = location.y - dy;
             size.w = size.w + 2 * dx;
             size.h = size.h + 2 * dy;
         }
-        public nothrow inline void Offset(float dx, float dy)
+        public inline void Offset(float dx, float dy)
         {
             location.Offset(dx, dy);
         }
-        public nothrow bool IntersectsWith(const RectF& that) const
+        public bool IntersectsWith(const RectF& that) const
         {
             return Left() < that.Right() && Top() < that.Bottom() && Right() > that.Left() && Bottom() > that.Top();
         }
-        public static nothrow RectF Union(const RectF& a, const RectF& b)
+        public static RectF Union(const RectF& a, const RectF& b)
         {
             float right = Max(a.Right(), b.Right());
             float bottom = Max(a.Bottom(), b.Bottom());
@@ -548,7 +484,7 @@ namespace System.Windows
         custom = 5
     }
 
-    public nothrow string ToString(DashStyle dashStyle)
+    public string ToString(DashStyle dashStyle)
     {
         switch (dashStyle)
         {
@@ -562,24 +498,34 @@ namespace System.Windows
         return string();
     }
 
-    public class Pen
+    public class Pen : GraphicsObject
     {
         public enum Alignment : int
         {
             center = 0, inset = 1
         }
-        public Pen(const Color& color, float width) : nativePen(WinGraphicsCreatePen(color.alpha, color.red, color.green, color.blue, width))
+        public Pen(const Color& color, float width) : base(), nativePen(WinGraphicsCreatePen(color.alpha, color.red, color.green, color.blue, width))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsPenGetLastStatus(nativePen)));
+            int status = WinGraphicsPenGetLastStatus(nativePen);
+            if (status != 0)
+            {
+                SetErrorId(WinAllocateGdiPlusError("Pen constructor failed", status));
+                return;
+            }
         }
         public Pen(const Color& color) : this(color, 1.0f)
         {
         }
         public Pen(const Pen& that) : nativePen(WinGraphicsClonePen(that.nativePen))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsPenGetLastStatus(nativePen)));
+            int status = WinGraphicsPenGetLastStatus(nativePen);
+            if (status != 0)
+            {
+                SetErrorId(WinAllocateGdiPlusError("Pen copy constructor failed", status));
+                return;
+            }
         }
-        public nothrow Pen(Pen&& that) : nativePen(that.nativePen)
+        public Pen(Pen&& that) : nativePen(that.nativePen)
         {
             that.nativePen = null;
         }
@@ -592,10 +538,15 @@ namespace System.Windows
                     WinGraphicsDeletePen(nativePen);
                 }
                 nativePen = WinGraphicsClonePen(that.nativePen);
-                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsPenGetLastStatus(nativePen)));
+                int status = WinGraphicsPenGetLastStatus(nativePen);
+                if (status != 0)
+                {
+                    SetErrorId(WinAllocateGdiPlusError("Pen copy assignment failed", status));
+                    return;
+                }
             }
         }
-        public default nothrow void operator=(Pen&& that);
+        public default void operator=(Pen&& that);
         public ~Pen()
         {
             if (nativePen != null)
@@ -603,119 +554,146 @@ namespace System.Windows
                 WinGraphicsDeletePen(nativePen);
             }
         }
-        public nothrow Alignment GetAlignment() const
+        public Alignment GetAlignment() const
         {
             return cast<Alignment>(WinGraphicsPenGetAlignment(nativePen));
         }
-        public nothrow GraphicsStatus SetAlignment(Alignment alignment)
+        [nodiscard]
+        public Result<bool> SetAlignment(Alignment alignment)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetAlignment(nativePen, cast<int>(alignment)));
+            int status = WinGraphicsPenSetAlignment(nativePen, cast<int>(alignment));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetAlignment failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetAlignmentChecked(Alignment alignment)
-        {
-            CheckGraphicsStatus(SetAlignment(alignment));
-        }
-        public nothrow Brush GetBrush() const
+        public Brush GetBrush() const
         {
             Brush brush;
             brush.SetNativeBrush(WinGraphicsPenGetBrush(nativePen));
             return brush;
         }
-        public nothrow GraphicsStatus SetBrush(const Brush& brush)
+        [nodiscard]
+        public Result<bool> SetBrush(const Brush& brush)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetBrush(nativePen, brush.NativeBrush()));
+            int status = WinGraphicsPenSetBrush(nativePen, brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetBrush failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetBrushChecked(const Brush& brush)
-        {
-            CheckGraphicsStatus(SetBrush(brush));
-        }
-        public nothrow GraphicsStatus GetColor(Color& color) const
-        {
-            return cast<GraphicsStatus>(WinGraphicsPenGetColor(nativePen, color.alpha, color.red, color.green, color.blue));
-        }
-        public Color GetColorChecked() const
+        [nodiscard]
+        public Result<Color> GetColor() const
         {
             Color color;
-            CheckGraphicsStatus(GetColor(color));
-            return color;
+            int status = WinGraphicsPenGetColor(nativePen, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.GetColor failed", status);
+                return Result<Color>(ErrorId(errorId));
+            }
+            return Result<Color>(color);
         }
-        public nothrow GraphicsStatus SetColor(const Color& color)
+        [nodiscard]
+        public Result<bool> SetColor(const Color& color)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetColor(nativePen, color.alpha, color.red, color.green, color.blue));
+            return WinGraphicsPenSetColor(nativePen, color.alpha, color.red, color.green, color.blue);
         }
         public LineCap GetStartCap() const
         {
             return cast<LineCap>(WinGraphicsPenGetStartCap(nativePen));
         }
-        public nothrow GraphicsStatus SetStartCap(LineCap startCap)
+        [nodiscard]
+        public Result<bool> SetStartCap(LineCap startCap)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetStartCap(nativePen, cast<int>(startCap)));
-        }
-        public void SetStartCapChecked(LineCap startCap)
-        {
-            CheckGraphicsStatus(SetStartCap(startCap));
+            int status = WinGraphicsPenSetStartCap(nativePen, cast<int>(startCap));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetStartCap failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
         public LineCap GetEndCap() const
         {
             return cast<LineCap>(WinGraphicsPenGetEndCap(nativePen));
         }
-        public nothrow GraphicsStatus SetEndCap(LineCap endCap)
+        [nodiscard]
+        public Result<bool> SetEndCap(LineCap endCap)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetEndCap(nativePen, cast<int>(endCap)));
-        }
-        public void SetEndCapChecked(LineCap endCap)
-        {
-            CheckGraphicsStatus(SetEndCap(endCap));
+            int status = WinGraphicsPenSetEndCap(nativePen, cast<int>(endCap));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetEndCap failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
         public DashCap GetDashCap() const
         {
             return cast<DashCap>(WinGraphicsPenGetDashCap(nativePen));
         }
-        public nothrow GraphicsStatus SetDashCap(DashCap dashCap)
+        [nodiscard]
+        public Result<bool> SetDashCap(DashCap dashCap)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetDashCap(nativePen, cast<int>(dashCap)));
+            int status = WinGraphicsPenSetDashCap(nativePen, cast<int>(dashCap));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetDashCap failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetDashCapChecked(DashCap dashCap)
-        {
-            CheckGraphicsStatus(SetDashCap(dashCap));
-        }
-        public nothrow float GetDashOffset() const
+        public float GetDashOffset() const
         {
             return WinGraphicsPenGetDashOffset(nativePen);
         }
-        public nothrow GraphicsStatus SetDashOffset(float dashOffset)
+        [nodiscard]
+        public Result<bool> SetDashOffset(float dashOffset)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetDashOffset(nativePen, dashOffset));
+            int status = WinGraphicsPenSetDashOffset(nativePen, dashOffset);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetDashOffset failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetDashOffsetChecked(float dashOffset)
-        {
-            CheckGraphicsStatus(SetDashOffset(dashOffset));
-        }
-        public nothrow DashStyle GetDashStyle() const
+        public DashStyle GetDashStyle() const
         {
             return cast<DashStyle>(WinGraphicsPenGetDashStyle(nativePen));
         }
-        public nothrow GraphicsStatus SetDashStyle(DashStyle dashStyle)
+        [nodiscard]
+        public Result<bool> SetDashStyle(DashStyle dashStyle)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetDashStyle(nativePen, cast<int>(dashStyle)));
-        }
-        public void SetDashStyleChecked(DashStyle dashStyle)
-        {
-            CheckGraphicsStatus(SetDashStyle(dashStyle));
+            int status = WinGraphicsPenSetDashStyle(nativePen, cast<int>(dashStyle));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetDashStyle failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
         public LineJoin GetLineJoin() const
         {
             return cast<LineJoin>(WinGraphicsPenGetLineJoin(nativePen));
         }
-        public nothrow GraphicsStatus SetLineJoin(LineJoin lineJoin)
+        [nodiscard]
+        public Result<bool> SetLineJoin(LineJoin lineJoin)
         {
-            return cast<GraphicsStatus>(WinGraphicsPenSetLineJoin(nativePen, cast<int>(lineJoin)));
+            int status = WinGraphicsPenSetLineJoin(nativePen, cast<int>(lineJoin));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Pen.SetLineJoin failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetLineJoinChecked(LineJoin lineJoin)
-        {
-            CheckGraphicsStatus(SetLineJoin(lineJoin));
-        }
-        public nothrow inline void* NativePen() const
+        public inline void* NativePen() const
         {
             return nativePen;
         }
@@ -724,10 +702,10 @@ namespace System.Windows
 
     public class PenKey
     {
-        public nothrow PenKey(const Color& color_, float width_, DashStyle dashStyle_) : color(color_), width(width_), dashStyle(dashStyle_)
+        public PenKey(const Color& color_, float width_, DashStyle dashStyle_) : color(color_), width(width_), dashStyle(dashStyle_)
         {
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             return color.ToString() + ":" + System.ToString(width) + ":" + ToString(dashStyle);
         }
@@ -736,29 +714,29 @@ namespace System.Windows
         public DashStyle dashStyle;
     }
 
-    public nothrow bool operator==(const PenKey& left, const PenKey& right)
+    public bool operator==(const PenKey& left, const PenKey& right)
     {
         return left.color == right.color && left.width == right.width && left.dashStyle == right.dashStyle;
     }
 
-    public nothrow ulong GetHashCode(const PenKey& penKey)
+    public ulong GetHashCode(const PenKey& penKey)
     {
         return GetHashCode(penKey.ToString());
     }
 
-    public abstract class Brush
+    public abstract class Brush : GraphicsObject
     {
-        public nothrow Brush() : nativeBrush(null)
+        public Brush() : base(), nativeBrush(null)
         {
         }
-        public nothrow void SetNativeBrush(const void* nativeBrush_)
+        public void SetNativeBrush(const void* nativeBrush_)
         {
             nativeBrush = nativeBrush_;
         }
         public virtual ~Brush()
         {
         }
-        public virtual nothrow const void* NativeBrush() const
+        public virtual const void* NativeBrush() const
         {
             return nativeBrush;
         }
@@ -769,15 +747,27 @@ namespace System.Windows
     {
         public SolidBrush(const Color& color) : nativeSolidBrush(WinGraphicsCreateSolidBrush(color.alpha, color.red, color.green, color.blue))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsBrushGetLastStatus(nativeSolidBrush)));
+            int status = WinGraphicsBrushGetLastStatus(nativeSolidBrush);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("SolidBrush constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
             SetNativeBrush(nativeSolidBrush);
         }
         public SolidBrush(const SolidBrush& that) : nativeSolidBrush(WinGraphicsCloneSolidBrush(that.nativeSolidBrush))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsBrushGetLastStatus(nativeSolidBrush)));
+            int status = WinGraphicsBrushGetLastStatus(nativeSolidBrush);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("SolidBrush copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
             SetNativeBrush(nativeSolidBrush);
         }
-        public nothrow SolidBrush(SolidBrush&& that) : nativeSolidBrush(that.nativeSolidBrush)
+        public SolidBrush(SolidBrush&& that) : nativeSolidBrush(that.nativeSolidBrush)
         {
             that.SetNativeBrush(null);
             that.nativeSolidBrush = null;
@@ -791,11 +781,17 @@ namespace System.Windows
                     WinGraphicsDeleteSolidBrush(nativeSolidBrush);
                 }
                 nativeSolidBrush = WinGraphicsCloneSolidBrush(that.nativeSolidBrush);
-                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsBrushGetLastStatus(nativeSolidBrush)));
+                int status = WinGraphicsBrushGetLastStatus(nativeSolidBrush);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("SolidBrush copy assignment failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
                 SetNativeBrush(nativeSolidBrush);
             }
         }
-        public nothrow void operator=(SolidBrush&& that)
+        public void operator=(SolidBrush&& that)
         {
             const void* thatNativeBrush = that.NativeBrush();
             const void* nativeBrush = NativeBrush();
@@ -811,7 +807,7 @@ namespace System.Windows
                 WinGraphicsDeleteSolidBrush(nativeSolidBrush);
             }
         }
-        public override nothrow const void* NativeBrush() const
+        public override const void* NativeBrush() const
         {
             return nativeSolidBrush;
         }
@@ -820,23 +816,35 @@ namespace System.Windows
 
     public class NativeHandle
     {
-        public explicit nothrow NativeHandle(const void* handle_) : handle(handle_)
+        public explicit NativeHandle(const void* handle_) : handle(handle_)
         {
         }
         public void* handle;
     }
 
-    public class FontFamily
+    public class FontFamily : GraphicsObject
     {
-        public FontFamily() : nativeFontFamily(WinGraphicsCreateEmptyFontFamily()), owned(true)
+        public FontFamily() : base(), nativeFontFamily(WinGraphicsCreateEmptyFontFamily()), owned(true)
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
+            int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("FontFamily constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public FontFamily(const string& familyName) : nativeFontFamily(WinGraphicsCreateFontFamily(familyName.Chars())), owned(true)
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
+            int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("FontFamily string constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public explicit nothrow FontFamily(const NativeHandle& nativeHandle_) : nativeFontFamily(nativeHandle_.handle), owned(false) // stock font family not owned
+        public explicit FontFamily(const NativeHandle& nativeHandle_) : nativeFontFamily(nativeHandle_.handle), owned(false) // stock font family not owned
         {
         }
         public FontFamily(const FontFamily& that) : nativeFontFamily(null), owned(that.owned)
@@ -844,14 +852,20 @@ namespace System.Windows
             if (owned)
             {
                 nativeFontFamily = WinGraphicsCloneFontFamily(that.nativeFontFamily);
-                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
+                int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("FontFamily copy constructor failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
             }
             else
             {
                 nativeFontFamily = that.nativeFontFamily; // stock font family not cloned
             }
         }
-        public nothrow FontFamily(FontFamily&& that) : nativeFontFamily(that.nativeFontFamily), owned(that.owned)
+        public FontFamily(FontFamily&& that) : nativeFontFamily(that.nativeFontFamily), owned(that.owned)
         {
             that.nativeFontFamily = null;
             that.owned = false;
@@ -867,8 +881,17 @@ namespace System.Windows
                 if (that.owned)
                 {
                     nativeFontFamily = WinGraphicsCloneFontFamily(that.nativeFontFamily);
-                    CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontFamilyGetLastStatus(nativeFontFamily)));
-                    owned = true;
+                    int status = WinGraphicsFontFamilyGetLastStatus(nativeFontFamily);
+                    if (status != 0)
+                    {
+                        int errorId = WinAllocateGdiPlusError("FontFamily copy assignment failed", status);
+                        SetErrorId(errorId);
+                        return;
+                    }
+                    else
+                    {
+                        owned = true;
+                    }
                 }
                 else
                 {
@@ -877,7 +900,7 @@ namespace System.Windows
                 }
             }
         }
-        public default nothrow void operator=(FontFamily&&);
+        public default void operator=(FontFamily&&);
         public ~FontFamily()
         {
             if (nativeFontFamily != null && owned)
@@ -885,38 +908,39 @@ namespace System.Windows
                 WinGraphicsDeleteFontFamily(nativeFontFamily);
             }
         }
-        public nothrow GraphicsStatus GetFamilyName(string& familyName) const
+        [nodiscard]
+        public Result<string> GetFamilyName() const
         {
-            wchar* str = null;
-            GraphicsStatus status = cast<GraphicsStatus>(WinGraphicsGetFontFamilyName(nativeFontFamily, str));
-            if (status == GraphicsStatus.ok)
+            void* str = null;
+            int status = WinGraphicsGetFontFamilyName(nativeFontFamily, str);
+            if (status != 0)
             {
-                familyName = ToUtf8(str);
+                int errorId = WinAllocateGdiPlusError("FontFamily.GetFamilyName failed", status);
+                return Result<string>(ErrorId(errorId));
             }
-            return status;
+            auto familyNameResult = ToUtf8(cast<wchar*>(str));
+            if (familyNameResult.Error())
+            {
+                return Result<string>(ErrorId(familyNameResult.GetErrorId()));
+            }
+            return Result<string>(familyNameResult.Value());
         }
-        public string GetFamilyNameChecked() const
-        {
-            string familyName;
-            CheckGraphicsStatus(GetFamilyName(familyName));
-            return familyName;
-        }
-        public static nothrow FontFamily GenericMonospace()
+        public static FontFamily GenericMonospace()
         {
             NativeHandle nativeHandle(WinGraphicsGetGenericMonospaceFontFamily());
             return FontFamily(nativeHandle);
         }
-        public static nothrow FontFamily GenericSansSerif()
+        public static FontFamily GenericSansSerif()
         {
             NativeHandle nativeHandle(WinGraphicsGetGenericSansSerifFontFamily());
             return FontFamily(nativeHandle);
         }
-        public static nothrow FontFamily GenericSerif()
+        public static FontFamily GenericSerif()
         {
             NativeHandle nativeHandle(WinGraphicsGetGenericSerifFontFamily());
             return FontFamily(nativeHandle);
         }
-        public nothrow inline void* NativeFontFamily() const
+        public inline void* NativeFontFamily() const
         {
             return nativeFontFamily;
         }
@@ -934,7 +958,7 @@ namespace System.Windows
         strikeOut = 1 << 3
     }
 
-    public nothrow ulong GetHashCode(FontStyle fontStyle)
+    public ulong GetHashCode(FontStyle fontStyle)
     {
         return cast<ulong>(cast<int>(fontStyle));
     }
@@ -952,16 +976,16 @@ namespace System.Windows
 
     public class FontHandle
     {
-        public nothrow FontHandle(void* hfont_) : hfont(hfont_)
+        public FontHandle(void* hfont_) : hfont(hfont_)
         {
         }
         suppress FontHandle(const FontHandle&);
         suppress void operator=(const FontHandle&);
-        public nothrow FontHandle(FontHandle&& that) : hfont(that.hfont)
+        public FontHandle(FontHandle&& that) : hfont(that.hfont)
         {
             that.hfont = null;
         }
-        public default nothrow void operator=(FontHandle&&);
+        public default void operator=(FontHandle&&);
         public ~FontHandle()
         {
             if (hfont != null)
@@ -969,37 +993,50 @@ namespace System.Windows
                 WinDeleteObject(hfont);
             }
         }
-        public nothrow inline bool IsNull() const
+        public inline bool IsNull() const
         {
             return hfont == null;
         }
-        public nothrow inline void* HFont() const
+        public inline void* HFont() const
         {
             return hfont;
         }
         private void* hfont;
     }
 
-    public class Font
+    public class Font : GraphicsObject
     {
-        public Font(const FontFamily& family, float emSize, FontStyle style, Unit unit) : nativeFont(WinGraphicsCreateFont(family.NativeFontFamily(), emSize, style, unit))
+        public Font(const FontFamily& family, float emSize, FontStyle style, Unit unit) :
+            base(), nativeFont(WinGraphicsCreateFont(family.NativeFontFamily(), emSize, style, unit))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontGetLastStatus(nativeFont)));
+            int status = WinGraphicsFontGetLastStatus(nativeFont);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Font(const FontFamily& family, float emSize) : this(family, emSize, FontStyle.regular, Unit.point)
         {
         }
-        public nothrow Font(void* nativeFont_) : nativeFont(nativeFont_)
+        public Font(void* nativeFont_) : nativeFont(nativeFont_)
         {
         }
-        public nothrow Font() : this(null)
+        public Font() : this(null)
         {
         }
         public Font(const Font& that) : nativeFont(WinGraphicsCloneFont(that.nativeFont))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontGetLastStatus(nativeFont)));
+            int status = WinGraphicsFontGetLastStatus(nativeFont);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow Font(Font&& that) : nativeFont(that.nativeFont)
+        public Font(Font&& that) : nativeFont(that.nativeFont)
         {
             that.nativeFont = null;
         }
@@ -1014,7 +1051,7 @@ namespace System.Windows
                 nativeFont = WinGraphicsCloneFont(that.nativeFont);
             }
         }
-        public default nothrow void operator=(Font&&);
+        public default void operator=(Font&&);
         public ~Font()
         {
             if (nativeFont != null)
@@ -1022,62 +1059,70 @@ namespace System.Windows
                 WinGraphicsDeleteFont(nativeFont);
             }
         }
-        public nothrow bool IsNull() const
+        public bool IsNull() const
         {
             return nativeFont == null;
         }
-        public nothrow float GetSize() const
+        public float GetSize() const
         {
             return WinGraphicsGetFontSize(nativeFont);
         }
-        public nothrow float GetHeight(const Graphics& graphics) const
+        public float GetHeight(const Graphics& graphics) const
         {
             return WinGraphicsGetFontHeight(nativeFont, graphics.NativeGraphics());
         }
-        public nothrow FontStyle GetStyle() const
+        public FontStyle GetStyle() const
         {
             return cast<FontStyle>(WinGraphicsGetFontStyle(nativeFont));
         }
-        public nothrow GraphicsStatus GetFamily(FontFamily& fontFamily)
-        {
-            return cast<GraphicsStatus>(WinGraphicsGetFontFamily(nativeFont, fontFamily.NativeFontFamily()));
-        }
-        public FontFamily GetFamilyChecked()
+        [nodiscard]
+        public Result<FontFamily> GetFamily()
         {
             FontFamily fontFamily;
-            CheckGraphicsStatus(GetFamily(fontFamily));
-            return fontFamily;
+            int status = WinGraphicsGetFontFamily(nativeFont, fontFamily.NativeFontFamily());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font.GetFamily failed", status);
+                return Result<FontFamily>(ErrorId(errorId));
+            }
+            return Result<FontFamily>(fontFamily);
         }
-        public static Font FromHFont(void* hdc, void* hfont)
+        [nodiscard]
+        public static Result<Font> FromHFont(void* hdc, void* hfont)
         {
             Font font(WinGraphicsCreateFontFromHFont(hdc, hfont));
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsFontGetLastStatus(font.NativeFont())));
-            return font;
+            int status = WinGraphicsFontGetLastStatus(font.NativeFont());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Font.FromHFont failed", status);
+                return Result<Font>(ErrorId(errorId));
+            }
+            return Result<Font>(font);
         }
-        public nothrow GraphicsStatus ToHFont(const Graphics& graphics, FontHandle& fontHandle)
+        [nodiscard]
+        public Result<FontHandle> ToHFont(const Graphics& graphics)
         {
             void* hfont = null;
-            GraphicsStatus status = cast<GraphicsStatus>(WinGraphicsFontToHFont(nativeFont, graphics.NativeGraphics(), hfont));
-            if (status == GraphicsStatus.ok)
+            int status = WinGraphicsFontToHFont(nativeFont, graphics.NativeGraphics(), hfont);
+            if (status != 0)
             {
-                fontHandle = FontHandle(hfont);
+                int errorId = WinAllocateGdiPlusError("Font.ToHFont failed", status);
+                return Result<FontHandle>(ErrorId(errorId));
             }
-            return status;
+            else
+            {
+                FontHandle fontHandle = FontHandle(hfont);
+                return Result<FontHandle>(Rvalue(fontHandle));
+            }
         }
-        public FontHandle ToHFontChecked(const Graphics& graphics)
-        {
-            FontHandle fontHandle(null);
-            CheckGraphicsStatus(ToHFont(graphics, fontHandle));
-            return fontHandle;
-        }
-        public nothrow inline void* NativeFont() const
+        public inline void* NativeFont() const
         {
             return nativeFont;
         }
         private void* nativeFont;
     }
 
-    public nothrow string ToString(FontStyle style)
+    public string ToString(FontStyle style)
     {
         string s;
         if (style == FontStyle.regular)
@@ -1150,12 +1195,18 @@ namespace System.Windows
 
     public class FontKey
     {
-        public nothrow FontKey(const string& family_, float size_, FontStyle style_) : family(family_), size(size_), style(style_)
+        public FontKey(const string& family_, float size_, FontStyle style_) : family(family_), size(size_), style(style_)
         {
         }
-        public nothrow string ToString()
+        [nodiscard]
+        public Result<string> ToString()
         {
-            string s = ToLower(family);
+            auto toLowerResult = ToLower(family);
+            if (toLowerResult.Error())
+            {
+                return Result<string>(ErrorId(toLowerResult.GetErrorId()));
+            }
+            string s = Rvalue(toLowerResult.Value());
             s.Append('.').Append(System.ToString(size)).Append('.').Append(ToString(style));
             return s;
         }
@@ -1164,14 +1215,20 @@ namespace System.Windows
         public FontStyle style;
     }
 
-    public nothrow bool operator==(const FontKey& left, const FontKey& right)
+    public bool operator==(const FontKey& left, const FontKey& right)
     {
         return ToLower(left.family) == ToLower(right.family) && left.size == right.size && left.style == right.style;
     }
 
-    public nothrow ulong GetHashCode(const FontKey& fontKey)
+    [nodiscard]
+    public Result<ulong> GetHashCode(const FontKey& fontKey)
     {
-        return GetHashCode(fontKey.ToString());
+        auto fontKeyResult = fontKey.ToString();
+        if (fontKeyResult.Error())
+        {
+            return Result<ulong>(ErrorId(fontKeyResult.GetErrorId()));
+        }
+        return Result<ulong>(GetHashCode(fontKeyResult.Value()));
     }
 
     public enum StringAlignment : int
@@ -1184,11 +1241,17 @@ namespace System.Windows
         none, show, hide
     }
 
-    public class StringFormat
+    public class StringFormat : GraphicsObject
     {
         public StringFormat() : nativeFormat(WinGraphicsCreateDefaultStringFormat()), owned(true)
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsStringFormatGetLastStatus(nativeFormat)));
+            int status = WinGraphicsStringFormatGetLastStatus(nativeFormat);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public StringFormat(const NativeHandle& nativeHandle_) : nativeFormat(nativeHandle_.handle), owned(false) // generic stock string formats are not owned
         {
@@ -1198,7 +1261,13 @@ namespace System.Windows
             if (owned)
             {
                 nativeFormat = WinGraphicsCloneStringFormat(that.nativeFormat);
-                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsStringFormatGetLastStatus(nativeFormat)));
+                int status = WinGraphicsStringFormatGetLastStatus(nativeFormat);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("StringFormat copy constructor failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
             }
             else
             {
@@ -1207,14 +1276,29 @@ namespace System.Windows
         }
         public StringFormat(StringAlignment horizontalAlignment, StringAlignment verticalAlignment, HotKeyPrefix hotKeyPrefix) : this()
         {
-            SetAlignmentChecked(horizontalAlignment);
-            SetLineAlignmentChecked(verticalAlignment);
-            SetHotKeyPrefixChecked(hotKeyPrefix);
+            auto setAlignmentResult = SetAlignment(horizontalAlignment);
+            if (setAlignmentResult.Error())
+            {
+                SetErrorId(setAlignmentResult.GetErrorId());
+                return;
+            }
+            auto setLineAlignmentResult = SetLineAlignment(verticalAlignment);
+            if (setLineAlignmentResult.Error())
+            {
+                SetErrorId(setLineAlignmentResult.GetErrorId());
+                return;
+            }
+            auto setHotKeyPrefixResult = SetHotKeyPrefix(hotKeyPrefix);
+            if (setHotKeyPrefixResult.Error())
+            {
+                SetErrorId(setHotKeyPrefixResult.GetErrorId());
+                return;
+            }
         }
         public StringFormat(StringAlignment horizontalAlignment, StringAlignment verticalAlignment) : this(horizontalAlignment, verticalAlignment, HotKeyPrefix.none)
         {
         }
-        public nothrow StringFormat(StringFormat&& that) : nativeFormat(that.nativeFormat), owned(that.owned)
+        public StringFormat(StringFormat&& that) : nativeFormat(that.nativeFormat), owned(that.owned)
         {
             that.nativeFormat = null;
             that.owned = false;
@@ -1230,7 +1314,13 @@ namespace System.Windows
                 if (that.owned)
                 {
                     nativeFormat = WinGraphicsCloneStringFormat(that.nativeFormat);
-                    CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsStringFormatGetLastStatus(nativeFormat)));
+                    int status = WinGraphicsStringFormatGetLastStatus(nativeFormat);
+                    if (status != 0)
+                    {
+                        int errorId = WinAllocateGdiPlusError("StringFormat copy assignment failed", status);
+                        SetErrorId(errorId);
+                        return;
+                    }
                     owned = true;
                 }
                 else
@@ -1240,7 +1330,7 @@ namespace System.Windows
                 }
             }
         }
-        public default nothrow void operator=(StringFormat&&);
+        public default void operator=(StringFormat&&);
         public ~StringFormat()
         {
             if (nativeFormat != null && owned)
@@ -1248,40 +1338,49 @@ namespace System.Windows
                 WinGraphicsDeleteStringFormat(nativeFormat);
             }
         }
-        public nothrow GraphicsStatus SetAlignment(StringAlignment alignment)
+        [nodiscard]
+        public Result<bool> SetAlignment(StringAlignment alignment)
         {
-            return cast<GraphicsStatus>(WinGraphicsStringFormatSetAlignment(nativeFormat, alignment));
+            int status = WinGraphicsStringFormatSetAlignment(nativeFormat, alignment);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat.SetAlignment failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetAlignmentChecked(StringAlignment alignment)
+        [nodiscard]
+        public Result<bool> SetLineAlignment(StringAlignment alignment)
         {
-            CheckGraphicsStatus(SetAlignment(alignment));
+            int status = WinGraphicsStringFormatSetLineAlignment(nativeFormat, alignment);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat.SetLineAlignment failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus SetLineAlignment(StringAlignment alignment)
+        [nodiscard]
+        public Result<bool> SetHotKeyPrefix(HotKeyPrefix hotKeyPrefix)
         {
-            return cast<GraphicsStatus>(WinGraphicsStringFormatSetLineAlignment(nativeFormat, alignment));
+            int status = WinGraphicsStringFormatSetHotKeyPrefix(nativeFormat, hotKeyPrefix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("StringFormat.SetHotKeyPrefix failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetLineAlignmentChecked(StringAlignment alignment)
-        {
-            CheckGraphicsStatus(SetLineAlignment(alignment));
-        }
-        public nothrow GraphicsStatus SetHotKeyPrefix(HotKeyPrefix hotKeyPrefix)
-        {
-            return cast<GraphicsStatus>(WinGraphicsStringFormatSetHotKeyPrefix(nativeFormat, hotKeyPrefix));
-        }
-        public void SetHotKeyPrefixChecked(HotKeyPrefix hotKeyPrefix)
-        {
-            CheckGraphicsStatus(SetHotKeyPrefix(hotKeyPrefix));
-        }
-        public nothrow inline void* NativeFormat() const
+        public inline void* NativeFormat() const
         {
             return nativeFormat;
         }
-        public static nothrow StringFormat GenericDefault()
+        public static StringFormat GenericDefault()
         {
             NativeHandle nativeHandle(WinGraphicsGetGenericDefaultStringFormat());
             return StringFormat(nativeHandle);
         }
-        public static nothrow StringFormat GenericTypographic()
+        public static StringFormat GenericTypographic()
         {
             NativeHandle nativeHandle(WinGraphicsGetGenericTypographicStringFormat());
             return StringFormat(nativeHandle);
@@ -1302,7 +1401,7 @@ namespace System.Windows
 
     internal class PaintGuard
     {
-        public nothrow PaintGuard(void* hdc_, void* paintStruct_) : hdc(hdc_), paintStruct(paintStruct_)
+        public PaintGuard(void* hdc_, void* paintStruct_) : hdc(hdc_), paintStruct(paintStruct_)
         {
         }
         public ~PaintGuard()
@@ -1321,17 +1420,29 @@ namespace System.Windows
         replace, intersect, union, xor, exclude, complement
     }
 
-    public class Region
+    public class Region : GraphicsObject
     {
         public Region() : nativeRegion(WinGraphicsCreateRegion())
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsRegionGetLastStatus(nativeRegion)));
+            int status = WinGraphicsRegionGetLastStatus(nativeRegion);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Region constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Region(const Region& that) : nativeRegion(WinGraphicsCloneRegion(that.nativeRegion))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsRegionGetLastStatus(nativeRegion)));
+            int status = WinGraphicsRegionGetLastStatus(nativeRegion);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Region copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow Region(Region&& that) : nativeRegion(that.nativeRegion)
+        public Region(Region&& that) : nativeRegion(that.nativeRegion)
         {
             that.nativeRegion = null;
         }
@@ -1342,9 +1453,15 @@ namespace System.Windows
                 WinGraphicsDeleteRegion(nativeRegion);
             }
             nativeRegion = WinGraphicsCloneRegion(that.nativeRegion);
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsRegionGetLastStatus(nativeRegion)));
+            int status = WinGraphicsRegionGetLastStatus(nativeRegion);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Region copy assignment failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow default void operator=(Region&&);
+        public default void operator=(Region&&);
         public ~Region()
         {
             if (nativeRegion != null)
@@ -1352,7 +1469,7 @@ namespace System.Windows
                 WinGraphicsDeleteRegion(nativeRegion);
             }
         }
-        public nothrow inline void* NativeRegion() const
+        public inline void* NativeRegion() const
         {
             return nativeRegion;
         }
@@ -1366,7 +1483,7 @@ namespace System.Windows
         bmp, jpeg, gif, tiff, png
     }
 
-    public nothrow const char* GetImageFormat(ImageFormat format)
+    public const char* GetImageFormat(ImageFormat format)
     {
         switch (format)
         {
@@ -1379,35 +1496,48 @@ namespace System.Windows
         return "";
     }
 
-    public nothrow GraphicsStatus GetEncoderClsId(const char* imageFormat, Uuid& clsid)
-    {
-        return cast<GraphicsStatus>(WinGraphicsGetEncoderClsId(imageFormat, &clsid));
-    }
-
-    public Uuid GetEncoderClsIdChecked(const char* imageFormat)
+    [nodiscard]
+    public Result<Uuid> GetEncoderClsId(const char* imageFormat)
     {
         Uuid clsid;
-        CheckGraphicsStatus(GetEncoderClsId(imageFormat, clsid));
-        return clsid;
+        int status = WinGraphicsGetEncoderClsId(imageFormat, &clsid);
+        if (status != 0)
+        {
+            int errorId = WinAllocateGdiPlusError("get encoder clsid failed", status);
+            return Result<Uuid>(ErrorId(errorId));
+        }
+        return Result<Uuid>(clsid);
     }
 
-    public class Image
+    public class Image : GraphicsObject
     {
-        public nothrow Image() : nativeImage(null)
+        public Image() : base(), nativeImage(null)
         {
         }
-        public nothrow Image(void* nativeImage_) : nativeImage(nativeImage_)
+        public Image(void* nativeImage_) : base(), nativeImage(nativeImage_)
         {
         }
-        public Image(const string& fileName, bool useEmbeddedColorManagement) : nativeImage(WinGraphicsCreateImage(fileName.Chars(), useEmbeddedColorManagement))
+        public Image(const string& fileName, bool useEmbeddedColorManagement) : base(), nativeImage(WinGraphicsCreateImage(fileName.Chars(), useEmbeddedColorManagement))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(nativeImage)));
+            int status = WinGraphicsImageGetLastStatus(nativeImage);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Image(const Image& that) : nativeImage(WinGraphicsCloneImage(that.nativeImage))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(nativeImage)));
+            int status = WinGraphicsImageGetLastStatus(nativeImage);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow Image(Image&& that) : nativeImage(that.nativeImage)
+        public Image(Image&& that) : nativeImage(that.nativeImage)
         {
             that.nativeImage = null;
         }
@@ -1418,9 +1548,15 @@ namespace System.Windows
                 WinGraphicsDeleteImage(nativeImage);
             }
             nativeImage = WinGraphicsCloneImage(that.nativeImage);
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(nativeImage)));
+            int status = WinGraphicsImageGetLastStatus(nativeImage);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image copy assignment failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow default void operator=(Image&&);
+        public default void operator=(Image&&);
         public virtual ~Image()
         {
             if (nativeImage != null)
@@ -1428,23 +1564,26 @@ namespace System.Windows
                 WinGraphicsDeleteImage(nativeImage);
             }
         }
-        public nothrow uint GetHeight() const
+        public uint GetHeight() const
         {
             return WinGraphicsImageGetHeight(nativeImage);
         }
-        public nothrow uint GetWidth() const
+        public uint GetWidth() const
         {
             return WinGraphicsImageGetWidth(nativeImage);
         }
-        public GraphicsStatus Save(const char* fileName, const Uuid& encoderClsId)
+        [nodiscard]
+        public Result<bool> Save(const char* fileName, const Uuid& encoderClsId)
         {
-            return cast<GraphicsStatus>(WinGraphicsImageSave(nativeImage, fileName, &encoderClsId));
+            int status = WinGraphicsImageSave(nativeImage, fileName, &encoderClsId);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Image.Save failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SaveChecked(const char* fileName, const Uuid& encoderClsId)
-        {
-            CheckGraphicsStatus(Save(fileName, encoderClsId));
-        }
-        public nothrow void* NativeImage() const
+        public void* NativeImage() const
         {
             return nativeImage;
         }
@@ -1480,69 +1619,123 @@ namespace System.Windows
 
     public class Bitmap : Image
     {
-        public nothrow Bitmap() : base()
+        public Bitmap() : base()
         {
         }
-        public nothrow Bitmap(void* nativeHandle_) : base(nativeHandle_)
+        public Bitmap(void* nativeHandle_) : base(nativeHandle_)
         {
         }
         public Bitmap(const string& fileName, bool useEmbeddedColorManagement) : base(WinGraphicsCreateBitmap(fileName.Chars(), useEmbeddedColorManagement))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(string, bool) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Bitmap(int width, int height, const Graphics& graphics) : base(WinGraphicsCreateBitmapWidthHeight(width, height, graphics.NativeGraphics()))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(int, int) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Bitmap(const WinBitmap& winBitmap, void* palette) : base(WinGraphicsCreateBitmapWinBitmap(winBitmap.Handle(), palette))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(WinBitmap, void*) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Bitmap(const Icon& icon) : base(WinGraphicsCreateBitmapIcon(icon.Handle()))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(NativeImage())));
+            int status = WinGraphicsImageGetLastStatus(NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap(Icon) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public static Bitmap FromResource(const string& resourceName)
+        [nodiscard]
+        public static Result<Bitmap> FromResource(const string& resourceName)
         {
             Bitmap bitmap(WinGraphicsCreateBitmapResource(resourceName.Chars()));
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageGetLastStatus(bitmap.NativeImage())));
-            return bitmap;
+            if (bitmap.Error())
+            {
+                return Result<Bitmap>(ErrorId(bitmap.GetErrorId()));
+            }
+            int status = WinGraphicsImageGetLastStatus(bitmap.NativeImage());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap.FromResource failed", status);
+                return Result<Bitmap>(ErrorId(errorId));
+            }
+            return Result<Bitmap>(Rvalue(bitmap));
         }
-        public nothrow GraphicsStatus GetPixel(int x, int y, Color& color) const
-        {
-            return cast<GraphicsStatus>(WinGraphicsBitmapGetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue));
-        }
-        public Color GetPixelChecked(int x, int y) const
+        [nodiscard]
+        public Result<Color> GetPixel(int x, int y) const
         {
             Color color;
-            CheckGraphicsStatus(GetPixel(x, y, color));
-            return color;
+            int status = WinGraphicsBitmapGetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap.GetPixel failed", status);
+                return Result<Color>(ErrorId(errorId));
+            }
+            return Result<Color>(color);
         }
-        public nothrow GraphicsStatus SetPixel(int x, int y, const Color& color)
+        [nodiscard]
+        public Result<bool> SetPixel(int x, int y, const Color& color)
         {
-            return cast<GraphicsStatus>(WinGraphicsBitmapSetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue));
+            int status = WinGraphicsBitmapSetPixel(NativeImage(), x, y, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Bitmap.SetPixel failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetPixelChecked(int x, int y, const Color& color)
-        {
-            CheckGraphicsStatus(SetPixel(x, y, color));
-        }
-        public Bitmap ToGrayBitmap(PixelFormat pixelFormat, const Color& bitmapTransparentColor)
+        [nodiscard]
+        public Result<Bitmap> ToGrayBitmap(PixelFormat pixelFormat, const Color& bitmapTransparentColor)
         {
             int w = cast<int>(GetWidth());
             int h = cast<int>(GetHeight());
             Bitmap grayBitmap(WinGraphicsCloneBitmap(NativeImage(), 0, 0, w, h, pixelFormat));
+            if (grayBitmap.Error())
+            {
+                return Result<Bitmap>(ErrorId(grayBitmap.GetErrorId()));
+            }
             for (int y = 0; y < h; ++y)
             {
                 for(int x = 0; x < w; ++x)
                 {
-                    Color color = grayBitmap.GetPixelChecked(x, y);
+                    Result<Color> colorResult = grayBitmap.GetPixel(x, y);
+                    if (colorResult.Error())
+                    {
+                        return Result<Bitmap>(ErrorId(colorResult.GetErrorId()));
+                    }
+                    Color color = colorResult.Value();
                     Color gray = color.ToGray(bitmapTransparentColor);
-                    grayBitmap.SetPixelChecked(x, y, gray);
+                    auto setPixelResult = grayBitmap.SetPixel(x, y, gray);
+                    if (setPixelResult.Error())
+                    {
+                        return Result<Bitmap>(ErrorId(setPixelResult.GetErrorId()));
+                    }
                 }
             }
-            return grayBitmap;
+            return Result<Bitmap>(grayBitmap);
         }
-        public Bitmap ToGrayBitmap()
+        [nodiscard]
+        public Result<Bitmap> ToGrayBitmap()
         {
             return ToGrayBitmap(PixelFormat.pixelFormat24bppRGB, Color.DefaultBitmapTransparent());
         }
@@ -1556,25 +1749,49 @@ namespace System.Windows
         prepend, append
     }
 
-    public class Matrix
+    public class Matrix : GraphicsObject
     {
         public Matrix() : nativeMatrix(WinGraphicsCreateMatrix())
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Matrix(const Rect& rect, const Point& pt) : nativeMatrix(WinGraphicsCreateMatrixRectPoint(rect.location.x, rect.location.y, rect.size.w, rect.size.h, pt.x, pt.y))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix(Rect, Point) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Matrix(const RectF& rect, const PointF& pt) : nativeMatrix(WinGraphicsCreateMatrixRectFPointF(rect.location.x, rect.location.y, rect.size.w, rect.size.h, pt.x, pt.y))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix(RectF, PointF) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Matrix(const Matrix& that) : nativeMatrix(WinGraphicsCloneMatrix(that.nativeMatrix))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow Matrix(Matrix&& that) : nativeMatrix(that.nativeMatrix)
+        public Matrix(Matrix&& that) : nativeMatrix(that.nativeMatrix)
         {
             that.nativeMatrix = null;
         }
@@ -1585,9 +1802,15 @@ namespace System.Windows
                 WinGraphicsDeleteMatrix(nativeMatrix);
             }
             nativeMatrix = WinGraphicsCloneMatrix(that.nativeMatrix);
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsMatrixGetLastStatus(nativeMatrix)));
+            int status = WinGraphicsMatrixGetLastStatus(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix copy assignment failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow default void operator=(Matrix&&);
+        public default void operator=(Matrix&&);
         public ~Matrix()
         {
             if (nativeMatrix != null)
@@ -1595,204 +1818,294 @@ namespace System.Windows
                 WinGraphicsDeleteMatrix(nativeMatrix);
             }
         }
-        public GraphicsStatus Multiply(const Matrix& that, MatrixOrder order)
+        [nodiscard]
+        public Result<bool> Multiply(const Matrix& that, MatrixOrder order)
         {
-            return cast<GraphicsStatus>(WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(order)));
+            int status = WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Multiply(Matrix, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public GraphicsStatus Multiply(const Matrix& that)
+        [nodiscard]
+        public Result<bool> Multiply(const Matrix& that)
         {
-            return cast<GraphicsStatus>(WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(MatrixOrder.prepend)));
+            int status = WinGraphicsMultiplyMatrix(nativeMatrix, that.nativeMatrix, cast<int>(MatrixOrder.prepend));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Multiply(Matrix) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void MultiplyChecked(const Matrix& that, MatrixOrder order)
+        [nodiscard]
+        public Result<bool> Reset()
         {
-            CheckGraphicsStatus(Multiply(that, order));
+            int status = WinGraphicsResetMatrix(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Reset failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void MultiplyChecked(const Matrix& that)
+        [nodiscard]
+        public Result<bool> Invert()
         {
-            CheckGraphicsStatus(Multiply(that, MatrixOrder.prepend));
+            int status = WinGraphicsInvertMatrix(nativeMatrix);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Invert failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus Reset()
-        {
-            return cast<GraphicsStatus>(WinGraphicsResetMatrix(nativeMatrix));
-        }
-        public void ResetChecked()
-        {
-            CheckGraphicsStatus(Reset());
-        }
-        public nothrow GraphicsStatus Invert()
-        {
-            return cast<GraphicsStatus>(WinGraphicsInvertMatrix(nativeMatrix));
-        }
-        public void InvertChecked()
-        {
-            CheckGraphicsStatus(Invert());
-        }
-        public nothrow float OffsetX() const
+        public float OffsetX() const
         {
             return WinGraphicsMatrixOffsetX(nativeMatrix);
         }
-        public nothrow float OffsetY() const
+        public float OffsetY() const
         {
             return WinGraphicsMatrixOffsetY(nativeMatrix);
         }
-        public nothrow GraphicsStatus Rotate(float angle, MatrixOrder order)
+        [nodiscard]
+        public Result<bool> Rotate(float angle, MatrixOrder order)
         {
-            return cast<GraphicsStatus>(WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(order)));
+            int status = WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Rotate(float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus Rotate(float angle)
+        [nodiscard]
+        public Result<bool> Rotate(float angle)
         {
-            return cast<GraphicsStatus>(WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(MatrixOrder.prepend)));
+            int status = WinGraphicsMatrixRotate(nativeMatrix, angle, cast<int>(MatrixOrder.prepend));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Rotate(float) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void RotateChecked(float angle, MatrixOrder order)
+        [nodiscard]
+        public Result<bool> RotateAt(float angle, const PointF& center, MatrixOrder order)
         {
-            CheckGraphicsStatus(Rotate(angle));
+            int status = WinGraphicsMatrixRotateAt(nativeMatrix, angle, center.x, center.y, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.RotateAt(float, PointF, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void RotateChecked(float angle)
-        {
-            CheckGraphicsStatus(Rotate(angle, MatrixOrder.prepend));
-        }
-        public nothrow GraphicsStatus RotateAt(float angle, const PointF& center, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMatrixRotateAt(nativeMatrix, angle, center.x, center.y, cast<int>(order)));
-        }
-        public void RotateAtChecked(float angle, const PointF& center, MatrixOrder order)
-        {
-            CheckGraphicsStatus(RotateAt(angle, center, order));
-        }
-        public nothrow GraphicsStatus RotateAt(float angle, const PointF& center)
+        [nodiscard]
+        public Result<bool> RotateAt(float angle, const PointF& center)
         {
             return RotateAt(angle, center, MatrixOrder.prepend);
         }
-        public void RotateAtChecked(float angle, const PointF& center)
+        [nodiscard]
+        public Result<bool> Scale(float scaleX, float scaleY, MatrixOrder order)
         {
-            CheckGraphicsStatus(RotateAt(angle, center, MatrixOrder.prepend));
+            int status = WinGraphicsMatrixScale(nativeMatrix, scaleX, scaleY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Scale failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus Scale(float scaleX, float scaleY, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMatrixScale(nativeMatrix, scaleX, scaleY, cast<int>(order)));
-        }
-        public void ScaleChecked(float scaleX, float scaleY, MatrixOrder order)
-        {
-            CheckGraphicsStatus(Scale(scaleX, scaleY, order));
-        }
-        public nothrow GraphicsStatus Scale(float scaleX, float scaleY)
+        [nodiscard]
+        public Result<bool> Scale(float scaleX, float scaleY)
         {
             return Scale(scaleX, scaleY, MatrixOrder.prepend);
         }
-        public void ScaleChecked(float scaleX, float scaleY)
+        [nodiscard]
+        public Result<bool> Shear(float shearX, float shearY, MatrixOrder order)
         {
-            CheckGraphicsStatus(Scale(scaleX, scaleY, MatrixOrder.prepend));
+            int status = WinGraphicsMatrixShear(nativeMatrix, shearX, shearY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Shear failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus Shear(float shearX, float shearY, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMatrixShear(nativeMatrix, shearX, shearY, cast<int>(order)));
-        }
-        public void ShearChecked(float shearX, float shearY, MatrixOrder order)
-        {
-            CheckGraphicsStatus(Shear(shearX, shearY, order));
-        }
-        public nothrow GraphicsStatus Shear(float shearX, float shearY)
+        [nodiscard]
+        public Result<bool> Shear(float shearX, float shearY)
         {
             return Shear(shearX, shearY, MatrixOrder.prepend);
         }
-        public void ShearChecked(float shearX, float shearY)
+        [nodiscard]
+        public Result<bool> Translate(float offsetX, float offsetY, MatrixOrder order)
         {
-            ShearChecked(shearX, shearY, MatrixOrder.prepend);
+            int status = WinGraphicsMatrixTranslate(nativeMatrix, offsetX, offsetY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.Translate failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus Translate(float offsetX, float offsetY, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMatrixTranslate(nativeMatrix, offsetX, offsetY, cast<int>(order)));
-        }
-        public void TranslateChecked(float offsetX, float offsetY, MatrixOrder order)
-        {
-            CheckGraphicsStatus(Translate(offsetX, offsetY, order));
-        }
-        public nothrow GraphicsStatus Translate(float offsetX, float offsetY)
+        [nodiscard]
+        public Result<bool> Translate(float offsetX, float offsetY)
         {
             return Translate(offsetX, offsetY, MatrixOrder.prepend);
         }
-        public void TranslateChecked(float offsetX, float offsetY)
+        [nodiscard]
+        public Result<bool> SetElements(float m11, float m12, float m21, float m22, float dx, float dy)
         {
-            TranslateChecked(offsetX, offsetY, MatrixOrder.prepend);
+            int status = WinGraphicsMatrixSetElements(nativeMatrix, m11, m12, m21, m22, dx, dy);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.SetElements failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus SetElements(float m11, float m12, float m21, float m22, float dx, float dy)
+        [nodiscard]
+        public Result<bool> TransformPoints(List<Point>& points)
         {
-            return cast<GraphicsStatus>(WinGraphicsMatrixSetElements(nativeMatrix, m11, m12, m21, m22, dx, dy));
+            int status = WinGraphicsMatrixTransformPoints(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count()));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.TransformPoints(List<Point>) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetElementsChecked(float m11, float m12, float m21, float m22, float dx, float dy)
+        [nodiscard]
+        public Result<bool> TransformPoints(List<PointF>& points)
         {
-            CheckGraphicsStatus(SetElements(m11, m12, m21, m22, dx, dy));
+            int status = WinGraphicsMatrixTransformPointsF(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count()));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Matrix.TransformPoints(List<PointF>) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus TransformPoints(List<Point>& points)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMatrixTransformPoints(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count())));
-        }
-        public void TransformPointsChecked(List<Point>& points)
-        {
-            CheckGraphicsStatus(TransformPoints(points));
-        }
-        public nothrow GraphicsStatus TransformPoints(List<PointF>& points)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMatrixTransformPointsF(nativeMatrix, points.Begin().Ptr(), cast<int>(points.Count())));
-        }
-        public void TransformPointsChecked(List<PointF>& points)
-        {
-            CheckGraphicsStatus(TransformPoints(points));
-        }
-        public nothrow inline void* NativeMatrix() const
+        public inline void* NativeMatrix() const
         {
             return nativeMatrix;
         }
         private void* nativeMatrix;
     }
 
-    public Matrix operator*(const Matrix& left, const Matrix& right) // multiply matrix 'right' from left by matrix 'left' and return result
+    [nodiscard]
+    public Result<Matrix> operator*(const Matrix& left, const Matrix& right) // multiply matrix 'right' from left by matrix 'left' and return result
     {
         Matrix product(right);
-        product.MultiplyChecked(left);
-        return product;
+        if (product.Error())
+        {
+            return Result<Matrix>(ErrorId(product.GetErrorId()));
+        }
+        auto result = product.Multiply(left);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(product));
     }
 
-    public Matrix Rotate(const Matrix& m, float angle) // create clockwise rotation matrix from given matrix and angle in degrees and return it
+    [nodiscard]
+    public Result<Matrix> Rotate(const Matrix& m, float angle) // create clockwise rotation matrix from given matrix and angle in degrees and return it
     {
         Matrix rm(m);
-        rm.RotateChecked(angle);
-        return rm;
+        if (rm.Error())
+        {
+            return Result<Matrix>(ErrorId(rm.GetErrorId()));
+        }
+        auto result = rm.Rotate(angle);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(rm));
     }
 
-    public Matrix RotateAt(const Matrix& m, float angle, const PointF& center) // create clockwise rotation matrix of rotation about point 'center' and return it
+    [nodiscard]
+    public Result<Matrix> RotateAt(const Matrix& m, float angle, const PointF& center) // create clockwise rotation matrix of rotation about point 'center' and return it
     {
         Matrix rm(m);
-        rm.RotateAtChecked(angle, center);
-        return rm;
+        if (rm.Error())
+        {
+            return Result<Matrix>(ErrorId(rm.GetErrorId()));
+        }
+        auto result = rm.RotateAt(angle, center);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(rm));
     }
 
-    public Matrix Scale(const Matrix& m, float scaleX, float scaleY) // create scaling matrix from given matrix and scale factors in X and Y direction and return it
+    [nodiscard]
+    public Result<Matrix> Scale(const Matrix& m, float scaleX, float scaleY) // create scaling matrix from given matrix and scale factors in X and Y direction and return it
     {
         Matrix sm(m);
-        sm.ScaleChecked(scaleX, scaleY);
-        return sm;
+        if (sm.Error())
+        {
+            return Result<Matrix>(ErrorId(sm.GetErrorId()));
+        }
+        auto result = sm.Scale(scaleX, scaleY);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(sm));
     }
 
-    public Matrix Shear(const Matrix& m, float shearX, float shearY) // create shearing matrix from given matrix and horizontal and vertical shearing factors and return it
+    [nodiscard]
+    public Result<Matrix> Shear(const Matrix& m, float shearX, float shearY) // create shearing matrix from given matrix and horizontal and vertical shearing factors and return it
     {
         Matrix sm(m);
-        sm.ShearChecked(shearX, shearY);
-        return sm;
+        if (sm.Error())
+        {
+            return Result<Matrix>(ErrorId(sm.GetErrorId()));
+        }
+        auto result = sm.Shear(shearX, shearY);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(sm));
     }
 
-    public Matrix Translate(const Matrix& m, float offsetX, float offsetY) // create translation matrix from given matrix and horizontal and vertical offsets and return it
+    [nodiscard]
+    public Result<Matrix> Translate(const Matrix& m, float offsetX, float offsetY) // create translation matrix from given matrix and horizontal and vertical offsets and return it
     {
         Matrix tm(m);
-        tm.TranslateChecked(offsetX, offsetY);
-        return tm;
+        if (tm.Error())
+        {
+            return Result<Matrix>(ErrorId(tm.GetErrorId()));
+        }
+        auto result = tm.Translate(offsetX, offsetY);
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(tm));
     }
 
-    public Matrix Invert(const Matrix& m)
+    [nodiscard]
+    public Result<Matrix> Invert(const Matrix& m)
     {
         Matrix im(m);
-        im.InvertChecked();
-        return im;
+        if (im.Error())
+        {
+            return Result<Matrix>(ErrorId(im.GetErrorId()));
+        }
+        auto result = im.Invert();
+        if (result.Error())
+        {
+            return Result<Matrix>(ErrorId(result.GetErrorId()));
+        }
+        return Result<Matrix>(Rvalue(im));
     }
 
     public enum GraphicsState : uint
@@ -1821,17 +2134,29 @@ namespace System.Windows
         any = 6
     }
 
-    public class ImageAttributes
+    public class ImageAttributes : GraphicsObject
     {
         public ImageAttributes() : nativeImageAttributes(WinGraphicsCreateDefaultImageAttributes())
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes)));
+            int status = WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("ImageAttributes constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public ImageAttributes(const ImageAttributes& that) : nativeImageAttributes(WinGraphicsCloneImageAttributes(that.nativeImageAttributes))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes)));
+            int status = WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("ImageAttributes copy constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public nothrow ImageAttributes(ImageAttributes&& that) : nativeImageAttributes(that.nativeImageAttributes)
+        public ImageAttributes(ImageAttributes&& that) : nativeImageAttributes(that.nativeImageAttributes)
         {
             that.nativeImageAttributes = null;
         }
@@ -1844,10 +2169,16 @@ namespace System.Windows
                     WinGraphicsDeleteImageAttributes(that.nativeImageAttributes);
                 }
                 nativeImageAttributes = WinGraphicsCloneImageAttributes(that.nativeImageAttributes);
-                CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes)));
+                int status = WinGraphicsImageAttributesGetLastStatus(nativeImageAttributes);
+                if (status != 0)
+                {
+                    int errorId = WinAllocateGdiPlusError("ImageAttributes copy assignment failed", status);
+                    SetErrorId(errorId);
+                    return;
+                }
             }
         }
-        public default nothrow void operator=(ImageAttributes&&);
+        public default void operator=(ImageAttributes&&);
         public ~ImageAttributes()
         {
             if (nativeImageAttributes != null)
@@ -1855,52 +2186,79 @@ namespace System.Windows
                 WinGraphicsDeleteImageAttributes(nativeImageAttributes);
             }
         }
-        public nothrow GraphicsStatus SetColorKey(const Color& colorLow, const Color& colorHigh, ColorAdjustType type)
+        [nodiscard]
+        public Result<bool> SetColorKey(const Color& colorLow, const Color& colorHigh, ColorAdjustType type)
         {
-            return cast<GraphicsStatus>(WinGraphicsImageAttributesSetColorKey(nativeImageAttributes, colorLow.alpha, colorLow.red, colorLow.green, colorLow.blue,
-                colorHigh.alpha, colorHigh.red, colorHigh.green, colorHigh.blue, cast<int>(type)));
+            int status = WinGraphicsImageAttributesSetColorKey(nativeImageAttributes, colorLow.alpha, colorLow.red, colorLow.green, colorLow.blue,
+                colorHigh.alpha, colorHigh.red, colorHigh.green, colorHigh.blue, cast<int>(type));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("ImageAttributes.SetColorKey failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetColorKeyChecked(const Color& colorLow, const Color& colorHigh, ColorAdjustType type)
-        {
-            CheckGraphicsStatus(cast<GraphicsStatus>(SetColorKey(colorLow, colorHigh, type)));
-        }
-        public nothrow void* NativeImageAttributes() const
+        public void* NativeImageAttributes() const
         {
             return nativeImageAttributes;
         }
         private void* nativeImageAttributes;
     }
 
-    public class Graphics
+    public class Graphics : GraphicsObject
     {
-        public nothrow Graphics() : nativeGraphics(null)
+        public Graphics() : nativeGraphics(null)
         {
         }
         public Graphics(void* hdc) : nativeGraphics(WinCreateGraphics(hdc))
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
         public Graphics(const NativeHandle& nativeHandle) : nativeGraphics(nativeHandle.handle)
         {
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics(NativeHandle) constructor failed", status);
+                SetErrorId(errorId);
+                return;
+            }
         }
-        public static Graphics FromWindowHandle(void* windowHandle)
+        [nodiscard]
+        public static Result<Graphics> FromWindowHandle(void* windowHandle)
         {
             NativeHandle nativeHandle = WinCreateGraphicsFromWindowHandle(windowHandle);
-            return Graphics(nativeHandle);
+            Graphics graphics(nativeHandle);
+            if (graphics.Error())
+            {
+                return Result<Graphics>(ErrorId(graphics.GetErrorId()));
+            }
+            return Result<Graphics>(Rvalue(graphics));
         }
-        public static Graphics FromImage(const Image& image)
+        [nodiscard]
+        public static Result<Graphics> FromImage(const Image& image)
         {
             NativeHandle nativeHandle = WinCreateGraphicsFromImage(image.NativeImage());
-            return Graphics(nativeHandle);
+            Graphics graphics(nativeHandle);
+            if (graphics.Error())
+            {
+                return Result<Graphics>(ErrorId(graphics.GetErrorId()));
+            }
+            return Result<Graphics>(Rvalue(graphics));
         }
         suppress Graphics(const Graphics&);
-        public nothrow Graphics(Graphics&& that) : nativeGraphics(that.nativeGraphics)
+        public Graphics(Graphics&& that) : nativeGraphics(that.nativeGraphics)
         {
             that.nativeGraphics = null;
         }
         suppress void operator=(const Graphics&);
-        public default nothrow void operator=(Graphics&&);
+        public default void operator=(Graphics&&);
         public ~Graphics()
         {
             if (nativeGraphics != null)
@@ -1908,461 +2266,576 @@ namespace System.Windows
                 WinDeleteGraphics(nativeGraphics);
             }
         }
-        public nothrow void* GetHDC() const
+        public void* GetHDC() const
         {
             return WinGraphicsGetHDC(nativeGraphics);
         }
-        public nothrow GraphicsStatus DrawLine(const Pen& pen, const Point& start, const Point& end)
+        [nodiscard]
+        public Result<bool> DrawLine(const Pen& pen, const Point& start, const Point& end)
         {
-            return cast<GraphicsStatus>(WinGraphicsDrawLine(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y));
+            int status = WinGraphicsDrawLine(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLine(Pen, Point, Point) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void DrawLineChecked(const Pen& pen, const Point& start, const Point& end)
+        [nodiscard]
+        public Result<bool> DrawLine(const Pen& pen, const PointF& start, const PointF& end)
         {
-            CheckGraphicsStatus(DrawLine(pen, start, end));
+            int status = WinGraphicsDrawLineF(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLine(Pen, PointF, PointF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus DrawLine(const Pen& pen, const PointF& start, const PointF& end)
+        [nodiscard]
+        public Result<bool> DrawLines(const Pen& pen, int numPoints, const Point* points)
         {
-            return cast<GraphicsStatus>(WinGraphicsDrawLineF(nativeGraphics, pen.NativePen(), start.x, start.y, end.x, end.y));
+            int status = WinGraphicsDrawLines(nativeGraphics, pen.NativePen(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLines(Pen, int, Point*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void DrawLineChecked(const Pen& pen, const PointF& start, const PointF& end)
+        [nodiscard]
+        public Result<bool> DrawLines(const Pen& pen, int numPoints, const PointF* points)
         {
-            CheckGraphicsStatus(DrawLine(pen, start, end));
+            int status = WinGraphicsDrawLinesF(nativeGraphics, pen.NativePen(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawLines(Pen, int, PointF*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus DrawLines(const Pen& pen, int numPoints, const Point* points)
+        [nodiscard]
+        public Result<bool> DrawString(const string& str, const Font& font, const PointF& origin, const Brush& brush)
         {
-            return cast<GraphicsStatus>(WinGraphicsDrawLines(nativeGraphics, pen.NativePen(), numPoints, points));
+            int status = WinGraphicsDrawString(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawString(string, Font, PointF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void DrawLinesChecked(const Pen& pen, int numPoints, const Point* points)
+        [nodiscard]
+        public Result<bool> DrawString(const string& str, const Font& font, const PointF& origin, const StringFormat& format, const Brush& brush)
         {
-            CheckGraphicsStatus(DrawLines(pen, numPoints, points));
+            int status = WinGraphicsDrawStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(),
+                origin.x, origin.y, format.NativeFormat(), brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawString(string, Font, PointF, StringFormat, Brush) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus DrawLines(const Pen& pen, int numPoints, const PointF* points)
+        [nodiscard]
+        public Result<bool> DrawString(const string& str, const Font& font, const RectF& rect, const StringFormat& format, const Brush& brush)
         {
-            return cast<GraphicsStatus>(WinGraphicsDrawLinesF(nativeGraphics, pen.NativePen(), numPoints, points));
-        }
-        public void DrawLinesChecked(const Pen& pen, int numPoints, const PointF* points)
-        {
-            CheckGraphicsStatus(DrawLines(pen, numPoints, points));
-        }
-        public nothrow GraphicsStatus DrawString(const string& str, const Font& font, const PointF& origin, const Brush& brush)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawString(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, brush.NativeBrush()));
-        }
-        public void DrawStringChecked(const string& str, const Font& font, const PointF& origin, const Brush& brush)
-        {
-            CheckGraphicsStatus(DrawString(str, font, origin, brush));
-        }
-        public nothrow GraphicsStatus DrawString(const string& str, const Font& font, const PointF& origin, const StringFormat& format, const Brush& brush)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(),
-                origin.x, origin.y, format.NativeFormat(), brush.NativeBrush()));
-        }
-        public void DrawStringChecked(const string& str, const Font& font, const PointF& origin, const StringFormat& format, const Brush& brush)
-        {
-            CheckGraphicsStatus(DrawString(str, font, origin, format, brush));
-        }
-        public nothrow GraphicsStatus DrawString(const string& str, const Font& font, const RectF& rect, const StringFormat& format, const Brush& brush)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+            int status = WinGraphicsDrawStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
                 rect.location.x, rect.location.y, rect.size.w, rect.size.h,
-                format.NativeFormat(), brush.NativeBrush()));
+                format.NativeFormat(), brush.NativeBrush());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawString(string, Font, RectF, StringFormat, Brush) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void DrawStringChecked(const string& str, const Font& font, const RectF& rect, const StringFormat& format, const Brush& brush)
-        {
-            CheckGraphicsStatus(DrawString(str, font, rect, format, brush));
-        }
-        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format,
-            SizeF& size, int* codePointsFitted, int* linesFilled)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
-                layoutRectSize.w, layoutRectSize.h, format.NativeFormat(),
-                size.w, size.h, codePointsFitted, linesFilled));
-        }
-        public SizeF MeasureStringChecked(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format, int* codePointsFitted, int* linesFilled)
+        [nodiscard]
+        public Result<SizeF> MeasureStringSizeF(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format,
+            int* codePointsFitted, int* linesFilled)
         {
             SizeF size;
-            CheckGraphicsStatus(MeasureString(str, font, layoutRectSize, format, size, codePointsFitted, linesFilled));
-            return size;
-        }
-        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format, SizeF& size)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
+            int status = WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
                 layoutRectSize.w, layoutRectSize.h, format.NativeFormat(),
-                size.w, size.h, null, null));
+                size.w, size.h, codePointsFitted, linesFilled);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureString(string, Font, SizeF, StringFormat, int*, int*) failed", status);
+                return Result<SizeF>(ErrorId(errorId));
+            }
+            return Result<SizeF>(Rvalue(size));
         }
-        public SizeF MeasureStringChecked(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format)
+        [nodiscard]
+        public Result<SizeF> MeasureStringSizeF(const string& str, const Font& font, const SizeF& layoutRectSize, const StringFormat& format)
         {
             SizeF size;
-            CheckGraphicsStatus(MeasureString(str, font, layoutRectSize, format, size));
-            return size;
+            int status = WinGraphicsMeasureStringFormatSize(nativeGraphics, str.Chars(), font.NativeFont(),
+                layoutRectSize.w, layoutRectSize.h, format.NativeFormat(), size.w, size.h, null, null);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringSizeF(string, Font, SizeF, StringFormat) failed", status);
+                return Result<SizeF>(ErrorId(errorId));
+            }
+            return Result<SizeF>(Rvalue(size));
         }
-        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format,
-            RectF& boundingBox, int* codePointsFitted, int* linesFilled)
+        [nodiscard]
+        public Result<RectF> MeasureStringRectF(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format,
+            int* codePointsFitted, int* linesFilled)
         {
-            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+            RectF boundingBox;
+            int status = WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
                 layoutRect.location.x, layoutRect.location.y, layoutRect.size.w, layoutRect.size.h, format.NativeFormat(),
                 boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h,
-                codePointsFitted, linesFilled));
+                codePointsFitted, linesFilled);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringRectF(string, Font, RectF, StringFormat, int* int*) failed", status);
+                return Result<RectF>(ErrorId(errorId));
+            }
+            return Result<RectF>(Rvalue(boundingBox));
         }
-        public RectF MeasureStringChecked(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format, int* codePointsFitted, int* linesFilled)
+        [nodiscard]
+        public Result<RectF> MeasureStringRectF(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format)
         {
             RectF boundingBox;
-            CheckGraphicsStatus(MeasureString(str, font, layoutRect, format, boundingBox, codePointsFitted, linesFilled));
-            return boundingBox;
-        }
-        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format, RectF& boundingBox)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
+            int status = WinGraphicsMeasureStringFormatRect(nativeGraphics, str.Chars(), font.NativeFont(),
                 layoutRect.location.x, layoutRect.location.y, layoutRect.size.w, layoutRect.size.h, format.NativeFormat(),
                 boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h,
-                null, null));
+                null, null);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringRectF(string, Font, RectF, StringFormat) failed", status);
+                return Result<RectF>(ErrorId(errorId));
+            }
+            return Result<RectF>(Rvalue(boundingBox));
         }
-        public RectF MeasureStringChecked(const string& str, const Font& font, const RectF& layoutRect, const StringFormat& format)
+        [nodiscard]
+        public Result<RectF> MeasureStringRectF(const string& str, const Font& font, const PointF& origin, const StringFormat& format)
         {
             RectF boundingBox;
-            CheckGraphicsStatus(MeasureString(str, font, layoutRect, format, boundingBox));
-            return boundingBox;
+            int status = WinGraphicsMeasureStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, format.NativeFormat(),
+                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MeasureStringRectF(string, Font, PointF, StringFormat) failed", status);
+                return Result<RectF>(ErrorId(errorId));
+            }
+            return Result<RectF>(Rvalue(boundingBox));
         }
-        public nothrow GraphicsStatus MeasureString(const string& str, const Font& font, const PointF& origin, const StringFormat& format, RectF& boundingBox)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMeasureStringFormatPoint(nativeGraphics, str.Chars(), font.NativeFont(), origin.x, origin.y, format.NativeFormat(),
-                boundingBox.location.x, boundingBox.location.y, boundingBox.size.w, boundingBox.size.h));
-        }
-        public RectF MeasureStringChecked(const string& str, const Font& font, const PointF& origin, const StringFormat& format)
-        {
-            RectF boundingBox;
-            CheckGraphicsStatus(MeasureString(str, font, origin, format, boundingBox));
-            return boundingBox;
-        }
-        public nothrow TextRenderingHint GetTextRenderingHint()
+        public TextRenderingHint GetTextRenderingHint()
         {
             return cast<TextRenderingHint>(WinGraphicsGetTextRenderingHint(nativeGraphics));
         }
-        public nothrow GraphicsStatus SetTextRenderingHint(TextRenderingHint textRenderingHint)
+        [nodiscard]
+        public Result<bool> SetTextRenderingHint(TextRenderingHint textRenderingHint)
         {
-            return cast<GraphicsStatus>(WinGraphicsSetTextRenderingHint(nativeGraphics, cast<int>(textRenderingHint)));
+            int status = WinGraphicsSetTextRenderingHint(nativeGraphics, cast<int>(textRenderingHint));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetTextRenderingHint failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetTextRenderingHintChecked(TextRenderingHint textRenderingHint)
+        [nodiscard]
+        public Result<bool> Clear(const Color& color)
         {
-            CheckGraphicsStatus(SetTextRenderingHint(textRenderingHint));
+            int status = WinGraphicsClear(nativeGraphics, color.alpha, color.red, color.green, color.blue);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.Clear failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus Clear(const Color& color)
+        [nodiscard]
+        public Result<bool> DrawRectangle(const Pen& pen, const Rect& rect)
         {
-            return cast<GraphicsStatus>(WinGraphicsClear(nativeGraphics, color.alpha, color.red, color.green, color.blue));
+            int status = WinGraphicsDrawRectangle(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawRectangle(Pen, Rect) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void ClearChecked(const Color& color)
+        [nodiscard]
+        public Result<bool> DrawRectangle(const Pen& pen, const RectF& rect)
         {
-            CheckGraphicsStatus(Clear(color));
+            int status = WinGraphicsDrawRectangleF(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawRectangle(Pen, RectF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus DrawRectangle(const Pen& pen, const Rect& rect)
+        [nodiscard]
+        public Result<bool> FillRectangle(const Brush& brush, const Rect& rect)
         {
-            return cast<GraphicsStatus>(WinGraphicsDrawRectangle(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+            int status = WinGraphicsFillRectangle(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillRectangle(Brush, Rect) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void DrawRectangleChecked(const Pen& pen, const Rect& rect)
+        [nodiscard]
+        public Result<bool> FillRectangle(const Brush& brush, const RectF& rect)
         {
-            CheckGraphicsStatus(DrawRectangle(pen, rect));
+            int status = WinGraphicsFillRectangleF(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillRectangle(Brush, RectF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus DrawRectangle(const Pen& pen, const RectF& rect)
+        [nodiscard]
+        public Result<bool> FillPolygon(const Brush& brush, int numPoints, const Point* points)
         {
-            return cast<GraphicsStatus>(WinGraphicsDrawRectangleF(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+            int status = WinGraphicsFillPolygon(nativeGraphics, brush.NativeBrush(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillPolygon(Brush, int, Point*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void DrawRectangleChecked(const Pen& pen, const RectF& rect)
+        [nodiscard]
+        public Result<bool> FillPolygon(const Brush& brush, int numPoints, const PointF* points)
         {
-            CheckGraphicsStatus(DrawRectangle(pen, rect));
+            int status = WinGraphicsFillPolygonF(nativeGraphics, brush.NativeBrush(), numPoints, points);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillPolygon(Brush, int, PointF*) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus FillRectangle(const Brush& brush, const Rect& rect)
+        [nodiscard]
+        public Result<bool> DrawArc(const Pen& pen, const RectF& rect, float startAngle, float sweepAngle)
         {
-            return cast<GraphicsStatus>(WinGraphicsFillRectangle(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+            int status = WinGraphicsDrawArc(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h, startAngle, sweepAngle);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawArc failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void FillRectangleChecked(const Brush& brush, const Rect& rect)
+        [nodiscard]
+        public Result<bool> DrawEllipse(const Pen& pen, const RectF& rect)
         {
-            CheckGraphicsStatus(FillRectangle(brush, rect));
+            int status = WinGraphicsDrawEllipse(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawEllipse failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus FillRectangle(const Brush& brush, const RectF& rect)
+        [nodiscard]
+        public Result<bool> FillEllipse(const Brush& brush, const RectF& rect)
         {
-            return cast<GraphicsStatus>(WinGraphicsFillRectangleF(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
+            int status = WinGraphicsFillEllipse(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.FillEllipse failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void FillRectangleChecked(const Brush& brush, const RectF& rect)
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const PointF& point)
         {
-            CheckGraphicsStatus(FillRectangle(brush, rect));
+            int status = WinGraphicsDrawImagePoint(nativeGraphics, image.NativeImage(), point.x, point.y);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, PointF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus FillPolygon(const Brush& brush, int numPoints, const Point* points)
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const RectF& rect)
         {
-            return cast<GraphicsStatus>(WinGraphicsFillPolygon(nativeGraphics, brush.NativeBrush(), numPoints, points));
+            int status = WinGraphicsDrawImageRect(nativeGraphics, image.NativeImage(), rect.location.x, rect.location.y, rect.size.w, rect.size.h);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, RectF) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void FillPolygonChecked(const Brush& brush, int numPoints, const Point* points)
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const Rect& destRect, int srcX, int srcY, int srcW, int srcH, Unit srcUnit, const ImageAttributes& attributes)
         {
-            CheckGraphicsStatus(FillPolygon(brush, numPoints, points));
+            int status = WinGraphicsDrawImageWithAttributes(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
+                srcX, srcY, srcW, srcH, srcUnit, attributes.NativeImageAttributes());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, Rect, int, int, int, int, Unit, ImageAttributes) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus FillPolygon(const Brush& brush, int numPoints, const PointF* points)
+        [nodiscard]
+        public Result<bool> DrawImage(const Image& image, const RectF& destRect, const RectF& sourceRect, Unit srcUnit, const ImageAttributes& attributes)
         {
-            return cast<GraphicsStatus>(WinGraphicsFillPolygonF(nativeGraphics, brush.NativeBrush(), numPoints, points));
+            int status = WinGraphicsDrawImageWithAttributesF(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
+                sourceRect.location.x, sourceRect.location.y, sourceRect.size.w, sourceRect.size.h, srcUnit, attributes.NativeImageAttributes());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.DrawImage(Image, RectF, RectF, Unit, ImageAttributes) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void FillPolygonChecked(const Brush& brush, int numPoints, const PointF* points)
-        {
-            CheckGraphicsStatus(FillPolygon(brush, numPoints, points));
-        }
-        public nothrow GraphicsStatus DrawArc(const Pen& pen, const RectF& rect, float startAngle, float sweepAngle)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawArc(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h, startAngle, sweepAngle));
-        }
-        public void DrawArcChecked(const Pen& pen, const RectF& rect, float startAngle, float sweepAngle)
-        {
-            CheckGraphicsStatus(DrawArc(pen, rect, startAngle, sweepAngle));
-        }
-        public nothrow GraphicsStatus DrawEllipse(const Pen& pen, const RectF& rect)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawEllipse(nativeGraphics, pen.NativePen(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
-        }
-        public void DrawEllipseChecked(const Pen& pen, const RectF& rect)
-        {
-            CheckGraphicsStatus(DrawEllipse(pen, rect));
-        }
-        public nothrow GraphicsStatus FillEllipse(const Brush& brush, const RectF& rect)
-        {
-            return cast<GraphicsStatus>(WinGraphicsFillEllipse(nativeGraphics, brush.NativeBrush(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
-        }
-        public void FillEllipseChecked(const Brush& brush, const RectF& rect)
-        {
-            CheckGraphicsStatus(FillEllipse(brush, rect));
-        }
-        public nothrow GraphicsStatus DrawImage(const Image& image, const PointF& point)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawImagePoint(nativeGraphics, image.NativeImage(), point.x, point.y));
-        }
-        public void DrawImageChecked(const Image& image, const PointF& point)
-        {
-            CheckGraphicsStatus(DrawImage(image, point));
-        }
-        public nothrow GraphicsStatus DrawImage(const Image& image, const RectF& rect)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawImageRect(nativeGraphics, image.NativeImage(), rect.location.x, rect.location.y, rect.size.w, rect.size.h));
-        }
-        public void DrawImageChecked(const Image& image, const RectF& rect)
-        {
-            CheckGraphicsStatus(DrawImage(image, rect));
-        }
-        public nothrow GraphicsStatus DrawImage(const Image& image, const Rect& destRect, int srcX, int srcY, int srcW, int srcH, Unit srcUnit, const ImageAttributes& attributes)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawImageWithAttributes(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
-                srcX, srcY, srcW, srcH, srcUnit, attributes.NativeImageAttributes()));
-        }
-        public void DrawImageChecked(const Image& image, const Rect& destRect, int srcX, int srcY, int srcW, int srcH, Unit srcUnit, const ImageAttributes& attributes)
-        {
-            CheckGraphicsStatus(DrawImage(image, destRect, srcX, srcY, srcW, srcH, srcUnit, attributes));
-        }
-        public nothrow GraphicsStatus DrawImage(const Image& image, const RectF& destRect, const RectF& sourceRect, Unit srcUnit, const ImageAttributes& attributes)
-        {
-            return cast<GraphicsStatus>(WinGraphicsDrawImageWithAttributesF(nativeGraphics, image.NativeImage(), destRect.location.x, destRect.location.y, destRect.size.w, destRect.size.h,
-                sourceRect.location.x, sourceRect.location.y, sourceRect.size.w, sourceRect.size.h, srcUnit, attributes.NativeImageAttributes()));
-        }
-        public void DrawImageChecked(const Image& image, const RectF& destRect, const RectF& sourceRect, Unit srcUnit, const ImageAttributes& attributes)
-        {
-            CheckGraphicsStatus(DrawImage(image, destRect, sourceRect, srcUnit, attributes));
-        }
-        public nothrow GraphicsStatus GetClip(Region& region)
-        {
-            return cast<GraphicsStatus>(WinGraphicsGetClip(nativeGraphics, region.NativeRegion()));
-        }
-        public Region GetClipChecked()
+        [nodiscard]
+        public Result<Region> GetClip()
         {
             Region region;
-            CheckGraphicsStatus(GetClip(region));
-            return region;
+            int status = WinGraphicsGetClip(nativeGraphics, region.NativeRegion());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetClip failed", status);
+                return Result<Region>(ErrorId(errorId));
+            }
+            return Result<Region>(Rvalue(region));
         }
-        public nothrow GraphicsStatus SetClip(const Rect& rect, CombineMode combineMode)
+        [nodiscard]
+        public Result<bool> SetClip(const Rect& rect, CombineMode combineMode)
         {
-            return cast<GraphicsStatus>(WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, combineMode));
+            int status = WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, combineMode);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetClip(Rect, CombineMode) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus SetClip(const Rect& rect)
+        [nodiscard]
+        public Result<bool> SetClip(const Rect& rect)
         {
-            return cast<GraphicsStatus>(WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, CombineMode.replace));
+            int status = WinGraphicsSetClipRect(nativeGraphics, rect.location.x, rect.location.y, rect.size.w, rect.size.h, CombineMode.replace);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetClip(Rect) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetClipChecked(const Rect& rect, CombineMode combineMode)
+        [nodiscard]
+        public Result<bool> SetClip(const Region& region)
         {
-            CheckGraphicsStatus(SetClip(rect, combineMode));
+            int status = WinGraphicsSetClipRegion(nativeGraphics, region.NativeRegion());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetClip(Region) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetClipChecked(const Rect& rect)
+        [nodiscard]
+        public Result<GraphicsState> Save()
         {
-            CheckGraphicsStatus(SetClip(rect, CombineMode.replace));
+            GraphicsState state = cast<GraphicsState>(WinGraphicsSave(nativeGraphics));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.Save failed", status);
+                return Result<GraphicsState>(ErrorId(errorId));
+            }
+            return Result<GraphicsState>(state);
         }
-        public nothrow GraphicsStatus SetClip(const Region& region)
+        [nodiscard]
+        public Result<bool> Restore(GraphicsState graphicsState)
         {
-            return cast<GraphicsStatus>(WinGraphicsSetClipRegion(nativeGraphics, region.NativeRegion()));
+            int status = WinGraphicsRestore(nativeGraphics, cast<uint>(graphicsState));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.Restore failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetClipChecked(const Region& region)
+        [nodiscard]
+        public Result<bool> GetTransform(Matrix& m)
         {
-            CheckGraphicsStatus(SetClip(region));
+            int status = WinGraphicsGetTransform(nativeGraphics, m.NativeMatrix());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetTransform failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsState Save()
+        [nodiscard]
+        public Result<bool> SetTransform(Matrix& m)
         {
-            return cast<GraphicsState>(WinGraphicsSave(nativeGraphics));
+            int status = WinGraphicsSetTransform(nativeGraphics, m.NativeMatrix());
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetTransform failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public GraphicsState SaveChecked()
+        [nodiscard]
+        public Result<bool> MultiplyTransform(const Matrix& matrix, MatrixOrder order)
         {
-            GraphicsState state = Save();
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
-            return state;
+            int status = WinGraphicsMultiplyTransform(nativeGraphics, matrix.NativeMatrix(), cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.MultiplyTransform(Matrix, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus Restore(GraphicsState graphicsState)
-        {
-            return cast<GraphicsStatus>(WinGraphicsRestore(nativeGraphics, cast<uint>(graphicsState)));
-        }
-        public void RestoreChecked(GraphicsState graphicsState)
-        {
-            CheckGraphicsStatus(Restore(graphicsState));
-        }
-        public nothrow GraphicsStatus GetTransform(Matrix& m)
-        {
-            return cast<GraphicsStatus>(WinGraphicsGetTransform(nativeGraphics, m.NativeMatrix()));
-        }
-        public void GetTransformChecked(Matrix& m)
-        {
-            CheckGraphicsStatus(GetTransform(m));
-        }
-        public nothrow GraphicsStatus SetTransform(Matrix& m)
-        {
-            return cast<GraphicsStatus>(WinGraphicsSetTransform(nativeGraphics, m.NativeMatrix()));
-        }
-        public void SetTransformChecked(Matrix& m)
-        {
-            CheckGraphicsStatus(SetTransform(m));
-        }
-        public nothrow GraphicsStatus MultiplyTransform(const Matrix& matrix, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsMultiplyTransform(nativeGraphics, matrix.NativeMatrix(), cast<int>(order)));
-        }
-        public void MultiplyTransformChecked(const Matrix& matrix, MatrixOrder order)
-        {
-            CheckGraphicsStatus(MultiplyTransform(matrix, order));
-        }
-        public nothrow GraphicsStatus MultiplyTransform(const Matrix& matrix)
+        [nodiscard]
+        public Result<bool> MultiplyTransform(const Matrix& matrix)
         {
             return MultiplyTransform(matrix, MatrixOrder.prepend);
         }
-        public void MultiplyTransformChecked(const Matrix& matrix)
+        [nodiscard]
+        public Result<bool> ResetTransform()
         {
-            CheckGraphicsStatus(MultiplyTransform(matrix));
+            int status = WinGraphicsResetTransform(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.ResetTransform failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus ResetTransform()
+        [nodiscard]
+        public Result<bool> RotateTransform(float angle, MatrixOrder order)
         {
-            return cast<GraphicsStatus>(WinGraphicsResetTransform(nativeGraphics));
+            int status = WinGraphicsRotateTransform(nativeGraphics, angle, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.RotateTransform(float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void ResetTransformChecked()
-        {
-            CheckGraphicsStatus(ResetTransform());
-        }
-        public nothrow GraphicsStatus RotateTransform(float angle, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsRotateTransform(nativeGraphics, angle, cast<int>(order)));
-        }
-        public void RotateTransformChecked(float angle, MatrixOrder order)
-        {
-            CheckGraphicsStatus(RotateTransform(angle, order));
-        }
-        public nothrow GraphicsStatus RotateTransform(float angle)
+        [nodiscard]
+        public Result<bool> RotateTransform(float angle)
         {
             return RotateTransform(angle, MatrixOrder.prepend);
         }
-        public void RotateTransformChecked(float angle)
+        [nodiscard]
+        public Result<bool> ScaleTransform(float scaleX, float scaleY, MatrixOrder order)
         {
-            RotateTransformChecked(angle, MatrixOrder.prepend);
+            int status = WinGraphicsScaleTransform(nativeGraphics, scaleX, scaleY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.ScaleTransform(float, float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus ScaleTransform(float scaleX, float scaleY, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsScaleTransform(nativeGraphics, scaleX, scaleY, cast<int>(order)));
-        }
-        public void ScaleTransformChecked(float scaleX, float scaleY, MatrixOrder order)
-        {
-            CheckGraphicsStatus(ScaleTransform(scaleX, scaleY, order));
-        }
-        public nothrow GraphicsStatus ScaleTransform(float scaleX, float scaleY)
+        [nodiscard]
+        public Result<bool> ScaleTransform(float scaleX, float scaleY)
         {
             return ScaleTransform(scaleX, scaleY, MatrixOrder.prepend);
         }
-        public void ScaleTransformChecked(float scaleX, float scaleY)
+        [nodiscard]
+        public Result<bool> TranslateTransform(float offsetX, float offsetY, MatrixOrder order)
         {
-            ScaleTransformChecked(scaleX, scaleY, MatrixOrder.prepend);
+            int status = WinGraphicsTranslateTransform(nativeGraphics, offsetX, offsetY, cast<int>(order));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.TranslateTransform(float, float, MatrixOrder) failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus TranslateTransform(float offsetX, float offsetY, MatrixOrder order)
-        {
-            return cast<GraphicsStatus>(WinGraphicsTranslateTransform(nativeGraphics, offsetX, offsetY, cast<int>(order)));
-        }
-        public void TranslateTransformChecked(float offsetX, float offsetY, MatrixOrder order)
-        {
-            CheckGraphicsStatus(TranslateTransform(offsetX, offsetY, order));
-        }
-        public nothrow GraphicsStatus TranslateTransform(float offsetX, float offsetY)
+        [nodiscard]
+        public Result<bool> TranslateTransform(float offsetX, float offsetY)
         {
             return TranslateTransform(offsetX, offsetY, MatrixOrder.prepend);
         }
-        public void TranslateTransformChecked(float offsetX, float offsetY)
+        [nodiscard]
+        public Result<Unit> GetPageUnit()
         {
-            TranslateTransformChecked(offsetX, offsetY, MatrixOrder.prepend);
+            Unit unit = cast<Unit>(WinGraphicsGetPageUnit(nativeGraphics));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetPageUnit failed", status);
+                return Result<Unit>(ErrorId(errorId));
+            }
+            return Result<Unit>(unit);
         }
-        public nothrow Unit GetPageUnit()
+        [nodiscard]
+        public Result<bool> SetPageUnit(Unit unit)
         {
-            return cast<Unit>(WinGraphicsGetPageUnit(nativeGraphics));
+            int status = WinGraphicsSetPageUnit(nativeGraphics, cast<int>(unit));
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetPageUnit failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public Unit GetPageUnitChecked()
+        [nodiscard]
+        public Result<float> GetPageScale()
         {
-            Unit unit = GetPageUnit();
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
-            return unit;
+            float pageScale = WinGraphicsGetPageScale(nativeGraphics);
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetPageScale failed", status);
+                return Result<float>(ErrorId(errorId));
+            }
+            return Result<float>(pageScale);
         }
-        public nothrow GraphicsStatus SetPageUnit(Unit unit)
+        [nodiscard]
+        public Result<bool> SetPageScale(float scale)
         {
-            return cast<GraphicsStatus>(WinGraphicsSetPageUnit(nativeGraphics, cast<int>(unit)));
+            int status = WinGraphicsSetPageScale(nativeGraphics, scale);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetPageScale failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public void SetPageUnitChecked(Unit unit)
-        {
-            CheckGraphicsStatus(SetPageUnit(unit));
-        }
-        public nothrow float GetPageScale()
-        {
-            return WinGraphicsGetPageScale(nativeGraphics);
-        }
-        public float GetPageScaleChecked()
-        {
-            float scale = GetPageScale();
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
-            return scale;
-        }
-        public nothrow GraphicsStatus SetPageScale(float scale)
-        {
-            return cast<GraphicsStatus>(WinGraphicsSetPageScale(nativeGraphics, scale));
-        }
-        public void SetPageScaleChecked(float scale)
-        {
-            CheckGraphicsStatus(SetPageScale(scale));
-        }
-        public nothrow float GetDpiX()
+        public float GetDpiX()
         {
             return WinGraphicsGetDpiX(nativeGraphics);
         }
-        public nothrow float GetDpiY()
+        public float GetDpiY()
         {
             return WinGraphicsGetDpiY(nativeGraphics);
         }
-        public nothrow SmoothingMode GetSmoothingMode()
+        [nodiscard]
+        public Result<SmoothingMode> GetSmoothingMode()
         {
-            return cast<SmoothingMode>(WinGraphicsGetSmoothingMode(nativeGraphics));
+            SmoothingMode smoothingMode = cast<SmoothingMode>(WinGraphicsGetSmoothingMode(nativeGraphics));
+            int status = WinGraphicsGetLastStatus(nativeGraphics);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.GetSmoothingMode failed", status);
+                return Result<SmoothingMode>(ErrorId(errorId));
+            }
+            return Result<SmoothingMode>(smoothingMode);
         }
-        public SmoothingMode GetSmoothingModeChecked()
+        [nodiscard]
+        public Result<bool> SetSmoothingMode(SmoothingMode smoothingMode)
         {
-            SmoothingMode smoothingMode = GetSmoothingMode();
-            CheckGraphicsStatus(cast<GraphicsStatus>(WinGraphicsGetLastStatus(nativeGraphics)));
-            return smoothingMode;
+            int status = WinGraphicsSetSmoothingMode(nativeGraphics, smoothingMode);
+            if (status != 0)
+            {
+                int errorId = WinAllocateGdiPlusError("Graphics.SetSmoothingMode failed", status);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow GraphicsStatus SetSmoothingMode(SmoothingMode smoothingMode)
-        {
-            return cast<GraphicsStatus>(WinGraphicsSetSmoothingMode(nativeGraphics, smoothingMode));
-        }
-        public void SetSmoothingModeChecked(SmoothingMode smoothingMode)
-        {
-            CheckGraphicsStatus(SetSmoothingMode(smoothingMode));
-        }
-        public nothrow inline const void* NativeGraphics() const
+        public inline const void* NativeGraphics() const
         {
             return nativeGraphics;
         }

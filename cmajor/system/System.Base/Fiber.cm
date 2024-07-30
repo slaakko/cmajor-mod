@@ -12,14 +12,14 @@ namespace System.Threading.Fibers
 
     internal class FiberData
     {
-        public nothrow FiberData(const FiberFunction& function_, void* param_) : function(function_), param(param_)
+        public FiberData(const FiberFunction& function_, void* param_) : function(function_), param(param_)
         {
         }
-        public nothrow inline FiberFunction Function() const
+        public inline FiberFunction Function() const
         {
             return function;
         }
-        public nothrow inline void* Param() const
+        public inline void* Param() const
         {
             return param;
         }
@@ -29,59 +29,63 @@ namespace System.Threading.Fibers
 
     public class Fiber
     {
-        public nothrow Fiber() : handle(null), main(true)
+        public Fiber() : handle(null), main(true)
         {
-            handle = RtConvertThreadToFiber(null);
+            handle = RtmConvertThreadToFiber(null);
         }
-        public nothrow Fiber(const FiberFunction& function) : this(cast<ulong>(1024u) * 1024u, function, null)
-        {
-        }
-        public nothrow Fiber(const FiberFunction& function, void* param) : this(cast<ulong>(1024u) * 1024u, function, param)
+        public Fiber(const FiberFunction& function) : this(cast<ulong>(1024u) * 1024u, function, null)
         {
         }
-        public nothrow Fiber(ulong stackSize, const FiberFunction& function) : this(stackSize, function, null)
+        public Fiber(const FiberFunction& function, void* param) : this(cast<ulong>(1024u) * 1024u, function, param)
         {
         }
-        public nothrow Fiber(ulong stackSize, const FiberFunction& function, void* param) : handle(null), main(false)
+        public Fiber(ulong stackSize, const FiberFunction& function) : this(stackSize, function, null)
+        {
+        }
+        public Fiber(ulong stackSize, const FiberFunction& function, void* param) : handle(null), main(false)
         {
             FiberRunFunction runFiber = RunFiber;
             void* startAddress = cast<void*>(runFiber);
-            handle = RtCreateFiber(stackSize, startAddress, new FiberData(function, param));
+            handle = RtmCreateFiber(stackSize, startAddress, new FiberData(function, param));
         }
-        public void SwitchTo()
+        [nodiscard]
+        public Result<bool> SwitchTo()
         {
             if (handle != null)
             {
-                RtSwitchToFiber(handle);
+                RtmSwitchToFiber(handle);
             }
             else
             {
-                throw ThreadingException("could not switch to this fiber: handle is null");
+                string errorMessage = "could not switch to this fiber: handle is null";
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
             }
+            return Result<bool>(true);
         }
-        public nothrow suppress Fiber(const Fiber&);
-        public nothrow suppress void operator=(const Fiber&);
-        public nothrow Fiber(Fiber&& that) : handle(that.handle), main(that.main)
+        public suppress Fiber(const Fiber&);
+        public suppress void operator=(const Fiber&);
+        public Fiber(Fiber&& that) : handle(that.handle), main(that.main)
         {
             that.handle = null;
             that.main = false;
         }
-        public default nothrow void operator=(Fiber&& that);
+        public default void operator=(Fiber&& that);
         public ~Fiber()
         {
             if (handle != null)
             {
                 if (!main)
                 {
-                    RtDeleteFiber(handle);
+                    RtmDeleteFiber(handle);
                 }
             }
         }
-        public nothrow inline void* Handle() const
+        public inline void* Handle() const
         {
             return handle;
         }
-        public static nothrow Fiber FromCurrentThread()
+        public static Fiber FromCurrentThread()
         {
             return Fiber();
         }
@@ -89,16 +93,17 @@ namespace System.Threading.Fibers
         private bool main;
     }
 
-    public void SwitchToFiber(const Fiber& fiber)
+    [nodiscard]
+    public Result<bool> SwitchToFiber(const Fiber& fiber)
     {
-        fiber.SwitchTo();
+        return fiber.SwitchTo();
     }
 
     internal delegate void FiberRunFunction();
 
     internal void RunFiber()
     {
-        void* data = RtGetFiberData();
+        void* data = RtmGetFiberData();
         UniquePtr<FiberData> fiberData(cast<FiberData*>(data));
         FiberFunction function = fiberData->Function();
         void* param = fiberData->Param();

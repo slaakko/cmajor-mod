@@ -2,17 +2,17 @@ using System;
 
 public class Point
 {
-    public constexpr nothrow inline Point() : x(0), y(0)
+    public constexpr inline Point() : x(0), y(0)
     {
     }
-    public constexpr nothrow inline Point(int x_, int y_) : x(x_), y(y_)
+    public constexpr inline Point(int x_, int y_) : x(x_), y(y_)
     {
     }
-    public constexpr nothrow inline int X() const
+    public constexpr inline int X() const
     {
         return x;
     }
-    public constexpr nothrow inline int Y() const
+    public constexpr inline int Y() const
     {
         return y;
     }

@@ -1,0 +1,15 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions JsonExpressions
+{
+    ws = "[\n\r\t ]+";
+    hexdigit = "[0-9a-fA-F]";
+    hex4 = "{hexdigit}{hexdigit}{hexdigit}{hexdigit}";
+    escape = "\\([\"\\/bfnrt]|u{hex4})";
+    string = "\"([^\"\\]|{escape})*\"";
+    digit = "[0-9]";
+    number = "-?{digit}+(\.{digit}+)?([eE][+-]?{digit}+)?";
+}

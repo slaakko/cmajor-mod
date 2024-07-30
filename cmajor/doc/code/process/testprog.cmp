@@ -1,3 +1,0 @@
-project testprog;
-target=program;
-source <testprog.cm>;

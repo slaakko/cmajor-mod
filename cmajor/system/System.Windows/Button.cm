@@ -46,17 +46,33 @@ namespace System.Windows
         public ButtonBase(ControlCreateParams& controlCreateParams) : base(controlCreateParams)
         {
         }
-        internal void OnClickInternal()
+        [nodiscard]
+        internal Result<bool> OnClickInternal()
         {
-            OnClick();
+            ClickEventArgs args;
+            auto result = OnClick(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public void DoClick()
+        [nodiscard]
+        public Result<bool> DoClick()
         {
-            OnClick();
+            ClickEventArgs args;
+            auto result = OnClick(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
     }
 
-    public nothrow ControlCreateParams& ButtonControlCreateParams(ControlCreateParams& controlCreateParams, ButtonStyle buttonStyle)
+    public ControlCreateParams& ButtonControlCreateParams(ControlCreateParams& controlCreateParams, ButtonStyle buttonStyle)
     {
         controlCreateParams.SetWindowClassName("BUTTON");
         controlCreateParams.SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP | buttonStyle));
@@ -65,7 +81,7 @@ namespace System.Windows
         return controlCreateParams;
     }
 
-    public nothrow ControlCreateParams& ButtonControlCreateParams(ControlCreateParams& controlCreateParams, bool setDefault)
+    public ControlCreateParams& ButtonControlCreateParams(ControlCreateParams& controlCreateParams, bool setDefault)
     {
         ButtonStyle buttonStyle = ButtonStyle();
         if (setDefault)
@@ -79,7 +95,7 @@ namespace System.Windows
         return ButtonControlCreateParams(controlCreateParams, buttonStyle);
     }
 
-    public nothrow ControlCreateParams& ButtonControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& ButtonControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return ButtonControlCreateParams(controlCreateParams, false);
     }
@@ -89,7 +105,7 @@ namespace System.Windows
         public ButtonCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
         {
         }
-        public nothrow ButtonCreateParams& Defaults()
+        public ButtonCreateParams& Defaults()
         {
             return *this;
         }
@@ -127,19 +143,42 @@ namespace System.Windows
         {
             SetFlagsFromButtonStyle(cast<ButtonStyle>(cast<long>(createParams.controlCreateParams.windowStyle)));
         }
-        protected override void OnCreated()
+        protected override Result<bool> OnCreated()
         {
-            base->OnCreated();
-            Graphics graphics = Graphics.FromWindowHandle(Handle());
-            const FontHandle& fontHandle = GetFontHandle(graphics);
-            if (!fontHandle.IsNull())
+            auto result = base->OnCreated();
+            if (result.Error())
             {
-                SendSetFontMessage(fontHandle);
+                return Result<bool>(ErrorId(result.GetErrorId()));
             }
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            else
+            {
+                Graphics& graphics = graphicsResult.Value();
+                Result<FontHandle*> fontHandleResult = GetFontHandle(graphics);
+                if (fontHandleResult.Error())
+                {
+                    return Result<bool>(ErrorId(fontHandleResult.GetErrorId()));
+                }
+                else
+                {
+                    FontHandle* fontHandle = fontHandleResult.Value();
+                    if (!fontHandle->IsNull())
+                    {
+                        SendSetFontMessage(*fontHandle);
+                    }
+                }
+            }
+            return Result<bool>(true);
         }
-        protected override void OnGotFocus()
+        [nodiscard]
+        protected override Result<bool> OnGotFocus()
         {
-            base->OnGotFocus();
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
             if (!IsDefault())
             {
                 Window* window = GetWindow();
@@ -153,10 +192,13 @@ namespace System.Windows
                 }
                 SetDefaultButtonStyle();
             }
+            return Result<bool>(true);
         }
-        protected override void OnLostFocus()
+        [nodiscard]
+        protected override Result<bool> OnLostFocus()
         {
-            base->OnLostFocus();
+            auto result = base->OnLostFocus();
+            if (result.Error()) return result;
             if (!IsDefault())
             {
                 ResetDefaultButtonStyle();
@@ -170,10 +212,13 @@ namespace System.Windows
                     }
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnClick()
+        [nodiscard]
+        protected override Result<bool> OnClick(ClickEventArgs& args)
         {
-            base->OnClick();
+            auto result = base->OnClick(args);
+            if (result.Error()) return result;
             if (dialogResult != DialogResult.none)
             {
                 Window* window = GetWindow();
@@ -182,46 +227,72 @@ namespace System.Windows
                     window->SetDialogResult(dialogResult);
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnKeyDown(KeyEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnKeyDown(KeyEventArgs& args)
         {
-            base->OnKeyDown(args);
+            auto result = base->OnKeyDown(args);
+            if (result.Error()) return result;
             if (!args.handled)
             {
                 switch (args.key)
                 {
                     case Keys.enter:
                     {
-                        OnClick();
+                        ClickEventArgs clickEventArgs;
+                        result = OnClick(clickEventArgs);
+                        if (result.Error()) return result;
+                        if (clickEventArgs.errorId != 0)
+                        {
+                            return Result<bool>(ErrorId(clickEventArgs.errorId));
+                        }
                         break;
                     }
                 }
             }
+            return Result<bool>(true);
         }
-        public override void PrintWindowTree(int level)
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
         {
             LogView* log = Application.GetLogView();
             if (log != null)
             {
-                log->WriteLine(string(' ', level) + "Button." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + " " + ParentText() + "[" + Rect(Point(), GetSize()).ToString() + "]");
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                const string& handleStr = handleResult.Value();
+                auto parentTextResult = ParentText();
+                if (parentTextResult.Error())
+                {
+                    return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                }
+                const string& parentText = parentTextResult.Value();
+                auto result = log->WriteLine(string(' ', level) + "Button." + Text() + ".handle=" + handleStr + " " + parentText +
+                    "[" + Rect(Point(), GetSize()).ToString() + "]");
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow inline DialogResult GetDialogResult() const
+        public inline DialogResult GetDialogResult() const
         {
             return dialogResult;
         }
-        public nothrow inline void SetDialogResult(DialogResult dialogResult_)
+        public inline void SetDialogResult(DialogResult dialogResult_)
         {
             dialogResult = dialogResult_;
         }
-        private nothrow void SetFlagsFromButtonStyle(ButtonStyle buttonStyle)
+        private void SetFlagsFromButtonStyle(ButtonStyle buttonStyle)
         {
             if ((buttonStyle & ButtonStyle.BS_DEFPUSHBUTTON) != 0)
             {
                 flags = cast<Flags>(flags | Flags.defaultButton);
             }
         }
-        public nothrow inline bool IsDefault() const
+        public inline bool IsDefault() const
         {
             return (flags & Flags.defaultButton) != Flags.none;
         }

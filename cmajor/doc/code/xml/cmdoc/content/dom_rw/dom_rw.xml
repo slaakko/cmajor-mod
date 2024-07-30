@@ -1,0 +1,53 @@
+<symbolTable id="dom_rw" module="dom_rw">
+ <files>
+  <file name="dom_rw/dom_rw.cm" path="file/dom_rw.cm.html"/>
+ </files>
+ <namespace docPath="../../dom_rw/doc/ns_.html" extPath="dom_rw/doc/ns_.html" id="ns_" name="">
+  <functions>
+   <function docPath="../../dom_rw/doc/../index.html#function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" extPath="dom_rw/doc/../index.html#function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_CreateDoc_4805948C05D0B50689AA11F217E0E8303975B72C" kind="Function" line="5" name="CreateDoc" returnType="8c2ceabf-4db2-fd53-105d-cab7a5940af3" specifiers="public"/>
+   <function docPath="../../dom_rw/doc/../index.html#function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" extPath="dom_rw/doc/../index.html#function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_ReadDocFromFile_7EFCEB898A25AF73C69A105CA48843F6D82E0FDA" kind="Function" line="41" name="ReadDocFromFile" returnType="f47caa83-92af-4ed2-f642-ce3b13bac4ec" specifiers="public">
+    <parameters>
+     <parameter id="parameter_fileMap_EA242DBB4A45E4B065B1F076043EAD2FDD88C834" name="fileMap" type="775746ce-efd1-3e2c-52c7-d940918df6c9"/>
+    </parameters>
+   </function>
+   <function docPath="../../dom_rw/doc/../index.html#function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" extPath="dom_rw/doc/../index.html#function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_WriteDocToConsole_7C22B5E416403A3A14A76C4C0C7BB585F1E07D60" kind="Function" line="53" name="WriteDocToConsole" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public">
+    <parameters>
+     <parameter id="parameter_doc_C3AFA20C6264DA9CCEE0574A7BE0165F33547A9F" name="doc" type="3d6ca474-5458-2ef0-ae2d-ed5076e422c2"/>
+    </parameters>
+   </function>
+   <function docPath="../../dom_rw/doc/../index.html#function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" extPath="dom_rw/doc/../index.html#function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_WriteDocToFile_17015225C747057A020F819B87ADA4FAD11B185D" kind="Function" line="22" name="WriteDocToFile" returnType="4668fcba-a39a-f3fb-f385-70870f44d7f6" specifiers="public">
+    <parameters>
+     <parameter id="parameter_doc_D0AE00B138D0A08820838071F34959FBF30178E9" name="doc" type="3d6ca474-5458-2ef0-ae2d-ed5076e422c2"/>
+    </parameters>
+   </function>
+   <function docPath="../../dom_rw/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="dom_rw/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="dom_rw/dom_rw.cm" filePath="../../dom_rw/file/dom_rw.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="66" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers=""/>
+  </functions>
+ </namespace>
+ <types>
+  <specialization id="8c2ceabf-4db2-fd53-105d-cab7a5940af3" name="UniquePtr" primaryType="class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009">
+   <templateArgumentTypes>
+    <templateArgumentType ref="class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC"/>
+   </templateArgumentTypes>
+  </specialization>
+  <specialization id="f47caa83-92af-4ed2-f642-ce3b13bac4ec" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+   <templateArgumentTypes>
+    <templateArgumentType ref="8c2ceabf-4db2-fd53-105d-cab7a5940af3"/>
+   </templateArgumentTypes>
+  </specialization>
+  <derivedType id="775746ce-efd1-3e2c-52c7-d940918df6c9" name="FileMap&amp;">
+   <derivation baseType="class_FileMap_00D83B1C90CC59AC4180663F35CB02A6FD057151"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <basicType id="f55c3601-d0f6-1af1-ad65-52526a905bd2" name="bool"/>
+  <specialization id="4668fcba-a39a-f3fb-f385-70870f44d7f6" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+   <templateArgumentTypes>
+    <templateArgumentType ref="f55c3601-d0f6-1af1-ad65-52526a905bd2"/>
+   </templateArgumentTypes>
+  </specialization>
+  <derivedType id="3d6ca474-5458-2ef0-ae2d-ed5076e422c2" name="Document*">
+   <derivation baseType="class_Document_8C627AEE0730B4B7B6AA76D126B58C9FF0BD5EDC"/>
+   <derivation name="*"/>
+  </derivedType>
+  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
+ </types>
+</symbolTable>

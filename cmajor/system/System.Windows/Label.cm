@@ -42,26 +42,26 @@ namespace System.Windows
         SS_WORDELLIPSIS = 0xC000
     }
 
-    public nothrow ControlCreateParams& LabelControlCreateParams(ControlCreateParams& controlCreateParams, LabelStyle labelStyle)
+    public ControlCreateParams& LabelControlCreateParams(ControlCreateParams& controlCreateParams, LabelStyle labelStyle)
     {
         return controlCreateParams.SetWindowClassName("STATIC").SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | labelStyle));
     }
 
-    public nothrow ControlCreateParams& LabelControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& LabelControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return LabelControlCreateParams(controlCreateParams, LabelStyle.SS_LEFT);
     }
 
     public class LabelCreateParams
     {
-        public nothrow LabelCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_), autoSize(true)
+        public LabelCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_), autoSize(true)
         {
         }
-        public nothrow LabelCreateParams& Defaults()
+        public LabelCreateParams& Defaults()
         {
             return *this;
         }
-        public nothrow LabelCreateParams& SetAutoSize(bool autoSize_)
+        public LabelCreateParams& SetAutoSize(bool autoSize_)
         {
             autoSize = autoSize_;
             return *this;
@@ -97,37 +97,72 @@ namespace System.Windows
             if (createParams.autoSize)
             {
                 SetAutoSizeFlag();
-                DoAutoSize();
+                auto result = DoAutoSize();
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
             }
         }
-        protected override void OnCreated()
+        protected override Result<bool> OnCreated()
         {
-            base->OnCreated();
-            Graphics graphics = Graphics.FromWindowHandle(Handle());
-            const FontHandle& fontHandle = GetFontHandle(graphics);
-            if (!fontHandle.IsNull())
+            auto result = base->OnCreated();
+            if (result.Error())
             {
-                SendSetFontMessage(fontHandle);
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = graphicsResult.Value();
+            auto fontHandleResult = GetFontHandle(graphics);
+            if (fontHandleResult.Error())
+            {
+                return Result<bool>(ErrorId(fontHandleResult.GetErrorId()));
+            }
+            FontHandle* fontHandle = fontHandleResult.Value();
+            if (!fontHandle->IsNull())
+            {
+                SendSetFontMessage(*fontHandle);
             }
             if (AutoSize())
             {
-                DoAutoSize();
+                auto result = DoAutoSize();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
+            return Result<bool>(true);
         }
-        protected override void OnTextChanged()
+        [nodiscard]
+        protected override Result<bool> OnTextChanged()
         {
-            base->OnTextChanged();
+            auto baseResult = base->OnTextChanged();
+            if (baseResult.Error())
+            {
+                return Result<bool>(ErrorId(baseResult.GetErrorId()));
+            }
             if (AutoSize())
             {
                 ResetAutoSized();
-                DoAutoSize();
+                auto result = DoAutoSize();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
+            return Result<bool>(true);
         }
-        public nothrow inline bool AutoSize() const
+        public inline bool AutoSize() const
         {
             return (flags & Flags.autoSize) != Flags.none;
         }
-        public void SetAutoSize(bool autoSize)
+        [nodiscard]
+        public Result<bool> SetAutoSize(bool autoSize)
         {
             if (autoSize)
             {
@@ -136,7 +171,11 @@ namespace System.Windows
                     SetAutoSizeFlag();
                     if (!AutoSized())
                     {
-                        DoAutoSize();
+                        auto result = DoAutoSize();
+                        if (result.Error())
+                        {
+                            return Result<bool>(ErrorId(result.GetErrorId()));
+                        }
                     }
                 }
             }
@@ -145,35 +184,52 @@ namespace System.Windows
                 ResetAutoSizeFlag();
                 ResetAutoSized();
             }
+            return Result<bool>(true);
         }
-        private void DoAutoSize()
+        private Result<bool> DoAutoSize()
         {
-            if (AutoSized()) return;
-            if (Handle() == null) return;
-            Graphics graphics = Graphics.FromWindowHandle(Handle());
+            if (AutoSized()) return Result<bool>(true);
+            if (Handle() == null) Result<bool>(false);
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = graphicsResult.Value();
             const Font& font = GetFont();
             StringFormat stringFormat;
-            RectF r = graphics.MeasureStringChecked(Text(), font, PointF(0, 0), stringFormat);
-            SetSize(Size(cast<int>(r.size.w), cast<int>(r.size.h)));
+            if (stringFormat.Error())
+            {
+                return Result<bool>(ErrorId(stringFormat.GetErrorId()));
+            }
+            auto measureResult = graphics.MeasureStringRectF(Text(), font, PointF(0, 0), stringFormat);
+            if (measureResult.Error())
+            {
+                return Result<bool>(ErrorId(measureResult.GetErrorId()));
+            }
+            RectF r = measureResult.Value();
+            auto result = SetSize(Size(cast<int>(r.size.w), cast<int>(r.size.h)));
+            if (result.Error()) return result;
             SetAutoSized();
+            return Result<bool>(true);
         }
-        private nothrow inline void SetAutoSizeFlag()
+        private inline void SetAutoSizeFlag()
         {
             flags = cast<Flags>(flags | Flags.autoSize);
         }
-        private nothrow inline void ResetAutoSizeFlag()
+        private inline void ResetAutoSizeFlag()
         {
             flags = cast<Flags>(flags & ~Flags.autoSize);
         }
-        private nothrow inline bool AutoSized() const
+        private inline bool AutoSized() const
         {
             return (flags & Flags.autoSized) != Flags.none;
         }
-        private nothrow inline void SetAutoSized()
+        private inline void SetAutoSized()
         {
             flags = cast<Flags>(flags | Flags.autoSized);
         }
-        private nothrow inline void ResetAutoSized()
+        private inline void ResetAutoSized()
         {
             flags = cast<Flags>(flags & ~Flags.autoSized);
         }

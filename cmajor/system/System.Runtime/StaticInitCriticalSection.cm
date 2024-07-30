@@ -7,14 +7,13 @@ namespace System.Runtime
 {
     public class StaticInitCriticalSection
     {
-        public explicit nothrow StaticInitCriticalSection(void* staticClassId_) : staticClassId(staticClassId_)
+        public StaticInitCriticalSection() 
         {
-            RtBeginStaticInitCriticalSection(staticClassId);
+            RtmBeginStaticInitCriticalSection();
         }
         public ~StaticInitCriticalSection()
         {
-            RtEndStaticInitCriticalSection(staticClassId);
+            RtmEndtaticInitCriticalSection();
         }
-        private void* staticClassId;
     }
 }

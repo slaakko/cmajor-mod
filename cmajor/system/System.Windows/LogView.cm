@@ -9,24 +9,24 @@ using System.Windows.API;
 
 namespace System.Windows
 {
-    public nothrow ControlCreateParams& LogViewControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& LogViewControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return controlCreateParams.SetWindowClassName("System.Windows.LogView").SetWindowClassStyle(DoubleClickWindowClassStyle()).
             SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP)).
             SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.White());
     }
 
-    public nothrow TextViewCreateParams& LogViewTextViewCreateParams(TextViewCreateParams& textViewCreateParams)
+    public TextViewCreateParams& LogViewTextViewCreateParams(TextViewCreateParams& textViewCreateParams)
     {
         return textViewCreateParams.SetFontSize(9.0f);
     }
 
     public class LogViewCreateParams
     {
-        public nothrow LogViewCreateParams(TextViewCreateParams& textViewCreateParams_) : textViewCreateParams(textViewCreateParams_)
+        public LogViewCreateParams(TextViewCreateParams& textViewCreateParams_) : textViewCreateParams(textViewCreateParams_)
         {
         }
-        public nothrow LogViewCreateParams& Defaults()
+        public LogViewCreateParams& Defaults()
         {
             return *this;
         }
@@ -52,35 +52,52 @@ namespace System.Windows
         {
             SetReadOnly();
         }
-        public virtual void WriteLine(const string& text)
+        [nodiscard]
+        public virtual Result<bool> WriteLine(const string& text)
         {
             int startLineNumber = cast<int>(Lines().Count() - 1);
-            List<ustring> lines = SplitTextIntoLines(ToUtf32(text));
+            auto utf32Result = ToUtf32(text);
+            if (utf32Result.Error())
+            {
+                return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+            }
+            List<ustring> lines = SplitTextIntoLines(utf32Result.Value());
             for (const ustring& line : lines)
             {
                 AddLine(line);
             }
-            SetCaretLineCol(cast<int>(Lines().Count()), 1);
-            SetTextExtent();
-            ScrollToCaret();
+            auto result = SetCaretLineCol(cast<int>(Lines().Count()), 1);
+            if (result.Error()) return result;
+            result = SetTextExtent();
+            if (result.Error()) return result;
+            result = ScrollToCaret();
+            if (result.Error()) return result;
             SetChanged();
-            InvalidateLines(startLineNumber, cast<int>(startLineNumber + lines.Count()));
+            result = InvalidateLines(startLineNumber, cast<int>(startLineNumber + lines.Count()));
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnPaint(PaintEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
         {
-            base->OnPaint(args);
+            return base->OnPaint(args);
         }
-        protected override void OnMouseDown(MouseEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
         {
-            base->OnMouseDown(args);
+            return base->OnMouseDown(args);
         }
-        protected override void OnKeyDown(KeyEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnKeyDown(KeyEventArgs& args)
         {
-            base->OnKeyDown(args);
+            auto result = base->OnKeyDown(args);
+            if (result.Error()) return result;
             if (CaretLine() == Lines().Count())
             {
-                Invalidate();
+                result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
     }
 }

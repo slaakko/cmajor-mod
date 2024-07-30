@@ -1,0 +1,32 @@
+// ...
+
+int main()
+{
+    // ...
+
+    System.Xml.Serialization.XmlBundle readBundle;
+    System.Xml.Serialization.XmlSerializationContext ctx;
+    ctx.SetFlag(System.Xml.Serialization.XmlSerializationFlags.failOnNotFoundObjects);
+    Result<bool> fromXmlResult = readBundle.FromXml(*document, ctx);
+    if (fromXmlResult.Error())
+    {
+        Console.Error() << fromXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    if (readBundle.Count() != 3)
+    {
+        Console.Error() << "three objects expected" << "\n";
+        return 1;
+    }
+    System.Xml.Serialization.XmlSerializable* first = readBundle.Get(0);
+    if (first is Person*)
+    {
+        Person* person = cast<Person*>(first);
+        person->Print();
+    }
+    else
+    {
+        Console.Error() << "Person object expected" << "\n";
+    }
+    return 0;
+}

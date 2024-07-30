@@ -8,62 +8,63 @@ using System.Collections;
 
 namespace System.Windows
 {
-    public nothrow Color DefaultPathViewTextColor()
+    public Color DefaultPathViewTextColor()
     {
         return Color.Black();
     }
 
-    public nothrow Color DefaultPathViewTickColor()
+    public Color DefaultPathViewTickColor()
     {
         return Color.Black();
     }
 
-    public nothrow Color DefaultPathViewMouseOverColor()
+    public Color DefaultPathViewMouseOverColor()
     {
         return Color(230u, 243u, 255u);
     }
 
-    public nothrow Color DefaultPathViewMouseClickColor()
+    public Color DefaultPathViewMouseClickColor()
     {
         return Color(204u, 232u, 255u);
     }
 
-    public nothrow Padding DefaultPathViewPathComponentPadding()
+    public Padding DefaultPathViewPathComponentPadding()
     {
         return Padding(2, 6, 2, 6);
     }
 
-    public nothrow Padding DefaultPathViewTickPadding()
+    public Padding DefaultPathViewTickPadding()
     {
         return Padding(4, 6, 4, 6);
     }
 
-    public nothrow string DefaultPathViewFontFamilyName()
+    public string DefaultPathViewFontFamilyName()
     {
         return "Segoe UI";
     }
 
-    public nothrow float DefaultPathViewFontSize()
+    public float DefaultPathViewFontSize()
     {
         return 9.0f;
     }
 
-    public nothrow float DefaultPathViewTickSizePercent()
+    public float DefaultPathViewTickSizePercent()
     {
         return 40.0f;
     }
 
     public class PathComponentEventArgs
     {
-        public nothrow PathComponentEventArgs(PathComponent* pathComponent_) : pathComponent(pathComponent_)
+        public PathComponentEventArgs(PathComponent* pathComponent_) : pathComponent(pathComponent_), errorId(0)
         {
         }
         public PathComponent* pathComponent;
+        public int errorId;
     }
 
     public class delegate void PathComponentSelectedEventHandler(PathComponentEventArgs& args);
 
-    public nothrow ControlCreateParams& PathViewControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& PathViewControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return controlCreateParams.SetWindowClassName("System.Windows.PathView").
             SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).
@@ -72,7 +73,7 @@ namespace System.Windows
 
     public class PathViewCreateParams
     {
-        public nothrow PathViewCreateParams(ControlCreateParams& controlCreateParams_) :
+        public PathViewCreateParams(ControlCreateParams& controlCreateParams_) :
             controlCreateParams(controlCreateParams_),
             fontFamilyName(DefaultPathViewFontFamilyName()),
             fontSize(DefaultPathViewFontSize()),
@@ -85,51 +86,51 @@ namespace System.Windows
             mouseClickColor(DefaultPathViewMouseClickColor())
         {
         }
-        public nothrow PathViewCreateParams& Defaults()
+        public PathViewCreateParams& Defaults()
         {
             return *this;
         }
-        public nothrow PathViewCreateParams& SetFontFamilyName(const string& fontFamilyName_)
+        public PathViewCreateParams& SetFontFamilyName(const string& fontFamilyName_)
         {
             fontFamilyName = fontFamilyName_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetFontSize(float fontSize_)
+        public PathViewCreateParams& SetFontSize(float fontSize_)
         {
             fontSize = fontSize_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetTextColor(const Color& textColor_)
+        public PathViewCreateParams& SetTextColor(const Color& textColor_)
         {
             textColor = textColor_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetTickSizePercent(float tickSizePercent_)
+        public PathViewCreateParams& SetTickSizePercent(float tickSizePercent_)
         {
             tickSizePercent = tickSizePercent_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetTickColor(const Color& tickColor_)
+        public PathViewCreateParams& SetTickColor(const Color& tickColor_)
         {
             tickColor = tickColor_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetPathComponentPadding(const Padding& pathComponentPadding_)
+        public PathViewCreateParams& SetPathComponentPadding(const Padding& pathComponentPadding_)
         {
             pathComponentPadding = pathComponentPadding_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetTickPadding(const Padding& tickPadding_)
+        public PathViewCreateParams& SetTickPadding(const Padding& tickPadding_)
         {
             tickPadding = tickPadding_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetMouseOverColor(const Color& mouseOverColor_)
+        public PathViewCreateParams& SetMouseOverColor(const Color& mouseOverColor_)
         {
             mouseOverColor = mouseOverColor_;
             return *this;
         }
-        public nothrow PathViewCreateParams& SetMouseClickColor(const Color& mouseClickColor_)
+        public PathViewCreateParams& SetMouseClickColor(const Color& mouseClickColor_)
         {
             mouseClickColor = mouseClickColor_;
             return *this;
@@ -148,7 +149,7 @@ namespace System.Windows
 
     public class PathView : Control
     {
-        public nothrow PathView(PathViewCreateParams& createParams) :
+        public PathView(PathViewCreateParams& createParams) :
             base(createParams.controlCreateParams),
             pathComponents(this),
             tickSizePercent(createParams.tickSizePercent),
@@ -168,10 +169,21 @@ namespace System.Windows
         {
             SetFont(Font(FontFamily(createParams.fontFamilyName), createParams.fontSize));
             sqrt3per2 = cast<float>(Sqrt(3.0) / 2);
-            SetSize(Size(10, 10));
-            Invalidate();
+            auto result = SetSize(Size(10, 10));
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = Invalidate();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
         }
-        public nothrow void Clear()
+        [nodiscard]
+        public Result<bool> Clear()
         {
             mouseDownComponent = null;
             mouseOverComponent = null;
@@ -181,66 +193,86 @@ namespace System.Windows
                 {
                     pathComponents.RemoveChild(pathComponents.FirstChild());
                 }
-                Invalidate();
+                auto result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow void SetMaxWidth(int maxWidth_)
+        [nodiscard]
+        public Result<bool> SetMaxWidth(int maxWidth_)
         {
             if (maxWidth != maxWidth_)
             {
                 maxWidth = maxWidth_;
                 Size sz = GetSize();
                 sz.w = maxWidth;
-                SetSize(sz);
-                Invalidate();
+                auto result = SetSize(sz);
+                if (result.Error()) return result;
+                result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow void AddPathComponent(const string& pathComponentName, void* data)
+        [nodiscard]
+        public Result<bool> AddPathComponent(const string& pathComponentName, void* data)
         {
             PathComponent* pathComponent = new PathComponent(this, pathComponentName, data);
-            pathComponents.AddChild(pathComponent);
-            Invalidate();
+            auto result = pathComponents.AddChild(pathComponent);
+            if (result.Error()) return result;
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public nothrow void PushPathComponent(const string& pathComponentName, void* data)
+        [nodiscard]
+        public Result<bool> PushPathComponent(const string& pathComponentName, void* data)
         {
             PathComponent* pathComponent = new PathComponent(this, pathComponentName, data);
             if (!pathComponents.IsEmpty())
             {
-                pathComponents.InsertBefore(pathComponent, pathComponents.FirstChild());
+                auto result = pathComponents.InsertBefore(pathComponent, pathComponents.FirstChild());
+                if (result.Error()) return result;
             }
             else
             {
-                pathComponents.AddChild(pathComponent);
+                auto result = pathComponents.AddChild(pathComponent);
+                if (result.Error()) return result;
             }
-            Invalidate();
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public nothrow inline const Padding& GetPathComponentPadding() const
+        public inline const Padding& GetPathComponentPadding() const
         {
             return pathComponentPadding;
         }
-        public nothrow inline const Brush& GetTextBrush() const
+        public inline const Brush& GetTextBrush() const
         {
             return textBrush;
         }
-        public nothrow inline const Brush& MouseOverBrush() const
+        public inline const Brush& MouseOverBrush() const
         {
             return mouseOverBrush;
         }
-        public nothrow inline const Brush& MouseClickBrush() const
+        public inline const Brush& MouseClickBrush() const
         {
             return mouseClickBrush;
         }
-        public nothrow void SetTextHeight(float textHeight_)
+        public void SetTextHeight(float textHeight_)
         {
             textHeight = Max(textHeight, textHeight_);
         }
-        public nothrow Event<PathComponentSelectedEventHandler, PathComponentEventArgs>& PathComponentSelectedEvent()
+        public Event<PathComponentSelectedEventHandler, PathComponentEventArgs>& PathComponentSelectedEvent()
         {
             return pathComponentSelectedEvent;
         }
-        protected override void OnPaint(PaintEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
         {
-            Measure(args.graphics);
+            auto result = Measure(args.graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             Component* startChild = null;
             if (maxWidth > 0)
             {
@@ -276,7 +308,11 @@ namespace System.Windows
             {
                 startChild = pathComponents.FirstChild();
             }
-            args.graphics.Clear(BackgroundColor());
+            result = args.graphics.Clear(BackgroundColor());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             startChild = pathComponents.FirstChild();
             PointF origin(0, 0);
             Component* child = startChild;
@@ -295,32 +331,51 @@ namespace System.Windows
                     }
                     PathComponent* pathComponent = cast<PathComponent*>(child);
                     pathComponent->SetLocation(Point(cast<int>(origin.x + 0.5f), cast<int>(origin.y + 0.5f)));
-                    pathComponent->Draw(args.graphics);
+                    auto result = pathComponent->Draw(args.graphics);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
                     Size sz = pathComponent->GetSize();
                     origin.x = origin.x + sz.w;
                 }
                 child = child->NextSibling();
             }
+            return Result<bool>(true);
         }
-        protected override void OnMouseDown(MouseEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
         {
-            PathComponent* pathComponent = PathComponentAt(args.location);
-            if (pathComponent != null)
+            Result<PathComponent*> pathComponent = PathComponentAt(args.location);
+            if (pathComponent.Error())
             {
-                mouseDownComponent = pathComponent;
-                mouseDownComponent->SetState(PathComponent.State.mouseClick);
+                return Result<bool>(pathComponent.GetErrorId());
+            }
+            if (pathComponent.Value() != null)
+            {
+                mouseDownComponent = pathComponent.Value();
+                auto result = mouseDownComponent->SetState(PathComponent.State.mouseClick);
+                if (result.Error()) return result;
             }
             else
             {
                 mouseDownComponent = null;
             }
+            return Result<bool>(true);
         }
-        protected override void OnMouseUp(MouseEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseUp(MouseEventArgs& args)
         {
-            PathComponent* pathComponent = PathComponentAt(args.location);
+            Result<PathComponent*> pathComponentResult = PathComponentAt(args.location);
+            if (pathComponentResult.Error())
+            {
+                return Result<bool>(pathComponentResult.GetErrorId());
+            }
+            PathComponent* pathComponent = pathComponentResult.Value();
             if (pathComponent != null)
             {
-                pathComponent->SetState(PathComponent.State.idle);
+                auto result = pathComponent->SetState(PathComponent.State.idle);
+                if (result.Error()) return result;
                 if (pathComponent == mouseDownComponent)
                 {
                     PathComponentEventArgs args(pathComponent);
@@ -328,44 +383,60 @@ namespace System.Windows
                 }
             }
             mouseDownComponent = null;
+            return Result<bool>(true);
         }
-        protected override void OnMouseMove(MouseEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseMove(MouseEventArgs& args)
         {
             if (mouseOverComponent != null)
             {
-                mouseOverComponent->SetState(PathComponent.State.idle);
+                auto result = mouseOverComponent->SetState(PathComponent.State.idle);
+                if (result.Error()) return result;
                 mouseOverComponent = null;
             }
-            PathComponent* pathComponent = PathComponentAt(args.location);
+            Result<PathComponent*> pathComponentResult = PathComponentAt(args.location);
+            if (pathComponentResult.Error())
+            {
+                return Result<bool>(ErrorId(pathComponentResult.GetErrorId()));
+            }
+            PathComponent* pathComponent = pathComponentResult.Value();
             if (pathComponent != null)
             {
-                pathComponent->SetState(PathComponent.State.mouseOver);
+                auto result = pathComponent->SetState(PathComponent.State.mouseOver);
+                if (result.Error()) return result;
                 mouseOverComponent = pathComponent;
             }
+            return Result<bool>(true);
         }
-        protected override void OnMouseEnter()
+        [nodiscard]
+        protected override Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
         {
             mouseDownComponent = null;
             mouseOverComponent = null;
+            return Result<bool>(true);
         }
-        protected override void OnMouseLeave()
+        [nodiscard]
+        protected override Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
         {
             if (mouseDownComponent != null)
             {
-                mouseDownComponent->SetState(PathComponent.State.idle);
+                auto result = mouseDownComponent->SetState(PathComponent.State.idle);
+                if (result.Error()) return result;
                 mouseDownComponent = null;
             }
             if (mouseOverComponent != null)
             {
-                mouseOverComponent->SetState(PathComponent.State.idle);
+                auto result = mouseOverComponent->SetState(PathComponent.State.idle);
+                if (result.Error()) return result;
                 mouseOverComponent = null;
             }
+            return Result<bool>(true);
         }
         protected virtual void OnPathComponentSelected(PathComponentEventArgs& args)
         {
             pathComponentSelectedEvent.Fire(args);
         }
-        private nothrow PathComponent* PathComponentAt(const Point& location)
+        private Result<PathComponent*> PathComponentAt(const Point& location)
         {
             Component* child = pathComponents.FirstChild();
             while (child != null)
@@ -376,14 +447,14 @@ namespace System.Windows
                     Rect r(pathComponent->Location(), pathComponent->GetSize());
                     if (r.Contains(location))
                     {
-                        return pathComponent;
+                        return Result<PathComponent*>(pathComponent);
                     }
                 }
                 child = child->NextSibling();
             }
-            return null;
+            return Result<PathComponent*>(null);
         }
-        private void Measure(Graphics& graphics)
+        private Result<bool> Measure(Graphics& graphics)
         {
             Component* child = pathComponents.FirstChild();
             while (child != null)
@@ -391,7 +462,11 @@ namespace System.Windows
                 if (child is PathComponent*)
                 {
                     PathComponent* pathComponent = cast<PathComponent*>(child);
-                    pathComponent->Measure(graphics);
+                    auto result = pathComponent->Measure(graphics);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
                 }
                 child = child->NextSibling();
             }
@@ -400,11 +475,21 @@ namespace System.Windows
                 tickHeight = (tickSizePercent / 100.0f) * textHeight;
                 tickWidth = sqrt3per2 * tickHeight;
             }
+            return Result<bool>(true);
         }
-        private void DrawTick(Graphics& graphics, PointF& origin)
+        private Result<bool> DrawTick(Graphics& graphics, PointF& origin)
         {
-            SmoothingMode prevSmoothingMode = graphics.GetSmoothingModeChecked();
-            graphics.SetSmoothingModeChecked(SmoothingMode.highQuality);
+            Result<SmoothingMode> prevSmoothingModeResult = graphics.GetSmoothingMode();
+            if (prevSmoothingModeResult.Error())
+            {
+                return Result<bool>(ErrorId(prevSmoothingModeResult.GetErrorId()));
+            }
+            SmoothingMode prevSmoothingMode = prevSmoothingModeResult.Value();
+            auto result = graphics.SetSmoothingMode(SmoothingMode.highQuality);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             PointF p0(tickPadding.left + origin.x, tickPadding.top + origin.y + (textHeight - tickHeight) / 2.0f);
             PointF p1(p0.x, p0.y + tickHeight);
             PointF p2(p0.x + tickWidth, p0.y + tickHeight / 2.0f);
@@ -412,11 +497,20 @@ namespace System.Windows
             points.Add(p0);
             points.Add(p1);
             points.Add(p2);
-            graphics.FillPolygonChecked(tickBrush, 3, points.CBegin().Ptr());
+            result = graphics.FillPolygon(tickBrush, 3, points.CBegin().Ptr());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             origin.x = origin.x + tickWidth + tickPadding.Horizontal();
-            graphics.SetSmoothingModeChecked(prevSmoothingMode);
+            result = graphics.SetSmoothingMode(prevSmoothingMode);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        private Container pathComponents;
+        private ComponentContainer pathComponents;
         private float tickSizePercent;
         private SolidBrush textBrush;
         private SolidBrush tickBrush;
@@ -440,62 +534,86 @@ namespace System.Windows
         {
             idle, mouseOver, mouseClick
         }
-        public nothrow PathComponent(PathView* pathView_, const string& name_, void* data_) :
+        public PathComponent(PathView* pathView_, const string& name_, void* data_) :
             pathView(pathView_), name(name_), data(data_), state(State.idle), location(), size()
         {
         }
-        public inline nothrow State GetState() const
+        public inline State GetState() const
         {
             return state;
         }
-        public nothrow void SetState(State state_)
+        [nodiscard]
+        public Result<bool> SetState(State state_)
         {
             if (state != state_)
             {
                 state = state_;
-                pathView->Invalidate();
+                auto result = pathView->Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public inline nothrow void* Data() const
+        public inline void* Data() const
         {
             return data;
-        }   
-        public void Draw(Graphics& graphics)
+        }
+        [nodiscard]
+        public Result<bool> Draw(Graphics& graphics)
         {
             if (state == State.mouseOver)
             {
                 Rect rect(location, size);
-                graphics.FillRectangleChecked(pathView->MouseOverBrush(), rect);
+                auto result = graphics.FillRectangle(pathView->MouseOverBrush(), rect);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
             else if (state == State.mouseClick)
             {
                 Rect rect(location, size);
-                graphics.FillRectangleChecked(pathView->MouseClickBrush(), rect);
+                auto result = graphics.FillRectangle(pathView->MouseClickBrush(), rect);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
             Padding componentPadding = pathView->GetPathComponentPadding();
             PointF origin(location.x, location.y);
             origin.x = origin.x + componentPadding.left;
             origin.y = origin.y + componentPadding.top;
-            graphics.DrawStringChecked(name, pathView->GetFont(), origin, pathView->GetTextBrush());
+            auto result = graphics.DrawString(name, pathView->GetFont(), origin, pathView->GetTextBrush());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void Measure(Graphics& graphics)
+        [nodiscard]
+        public Result<bool> Measure(Graphics& graphics)
         {
             Padding componentPadding = pathView->GetPathComponentPadding();
             PointF origin(0, 0);
             StringFormat stringFormat;
-            RectF r = graphics.MeasureStringChecked(name, pathView->GetFont(), origin, stringFormat);
+            auto result = graphics.MeasureStringRectF(name, pathView->GetFont(), origin, stringFormat);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            RectF r = result.Value();
             pathView->SetTextHeight(r.size.h);
             size = Size(cast<int>(componentPadding.Horizontal() + r.size.w + 0.5f), cast<int>(componentPadding.Vertical() + r.size.h + 0.5f));
+            return Result<bool>(true);
         }
-        public nothrow inline const Point& Location() const
+        public inline const Point& Location() const
         {
             return location;
         }
-        public nothrow void SetLocation(const Point& location_)
+        public void SetLocation(const Point& location_)
         {
             location = location_;
         }
-        public nothrow inline const Size& GetSize() const
+        public inline const Size& GetSize() const
         {
             return size;
         }

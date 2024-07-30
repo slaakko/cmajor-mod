@@ -1,3 +1,0 @@
-project UnitTest;
-target=unitTest;
-source <string.cm>;

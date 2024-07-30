@@ -1,0 +1,219 @@
+// traffic_3
+
+using System;
+using System.Collections;
+using System.Xml;
+using System.Xml.Serialization;
+
+public enum Color
+{
+    white, black, red, blue
+}
+
+public string ColorStr(Color color)
+{
+    switch (color)
+    {
+        case Color.white: return "white";
+        case Color.black: return "black";
+        case Color.red: return "red";
+        case Color.blue: return "blue";
+    }
+    return "<unknown color>";
+}
+
+[xml]
+public abstract class Vehicle
+{
+    public Vehicle()
+    {
+    }
+    public default virtual ~Vehicle();
+    public void SetOwner(Person* owner_)
+    {
+        owner = owner_;
+    }
+    public void SetModel(const string& model_)
+    {
+        model = model_;
+    }
+    public inline const string& Model() const
+    {
+        return model;
+    }
+    public void SetColor(Color color_)
+    {
+        color = color_;
+    }
+    public inline Color GetColor() const
+    {
+        return color;
+    }
+    public virtual void Print()
+    {
+        Console.Out() << ClassName() << "\n";
+        if (!owner.IsNull())
+        {
+            Console.Out() << "owner: " << owner->Name() << "\n";
+        }
+        Console.Out() << "model: " << model << "\n";
+        Console.Out() << "color: " << ColorStr(color) << "\n";
+    }
+    private string model;
+    private Color color;
+    private System.Xml.Serialization.XmlPtr<Person> owner;
+}
+
+[xml]
+public class Bicycle : Vehicle
+{
+    public Bicycle()
+    {
+    }
+    public inline int Price()
+    {
+        return price;
+    }
+    public void SetPrice(int price_)
+    {
+        price = price_;
+    }
+    public override void Print()
+    {
+        base->Print();
+        Console.Out() << "price: " << price << "\n";
+    }
+    private int price;
+}
+
+[xml]
+public class Car : Vehicle
+{
+    public Car()
+    {
+    }
+    public void SetRegistrationNumber(const string& registrationNumber_)
+    {
+        registrationNumber = registrationNumber_;
+    }
+    public inline const string& RegistrationNumber() const
+    {
+        return registrationNumber;
+    }
+    public override void Print()
+    {
+        base->Print();
+        Console.Out() << "registrationNumber: " << registrationNumber << "\n";
+    }
+    private string registrationNumber;
+}
+
+[xml]
+public class Person
+{
+    public Person()
+    {
+    }
+    public Person(const string& name_) : name(name_)
+    {
+    }
+    public inline const string& Name() const
+    {
+        return name;
+    }
+    public void AddVehicle(Vehicle* vehicle)
+    {
+        vehicle->SetOwner(this);
+        vehicles.Add(System.Xml.Serialization.XmlPtr<Vehicle>(vehicle));
+    }
+    public void Print()
+    {
+        Console.Out() << "Person" << "\n";
+        Console.Out() << "name: " << name << "\n";
+        Console.Out() << "vehicles:" << "\n";
+        for (const auto& vehicle : vehicles)
+        {
+            vehicle->Print();
+        }
+    }
+    private string name;
+    private List<System.Xml.Serialization.XmlPtr<Vehicle>> vehicles;
+}
+
+[nodiscard]
+Result<bool> Register()
+{
+    auto result = Person.Register();
+    if (result.Error()) return result;
+    result = Bicycle.Register();
+    if (result.Error()) return result;
+    result = Car.Register();
+    if (result.Error()) return result;
+    return Result<bool>(true);
+}
+
+int main()
+{
+    auto registerResult = Register();
+    if (registerResult.Error())
+    {
+        Console.Error() << registerResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Serialization.XmlBundle bundle;
+    Person* joe = new Person("Joe Coder");
+    bundle.Add(joe);
+    Bicycle* cooper = new Bicycle();
+    cooper->SetModel("Cooper");
+    cooper->SetColor(Color.blue);
+    cooper->SetPrice(1000);
+    joe->AddVehicle(cooper);
+    bundle.Add(cooper);
+    Car* porsche = new Car();
+    porsche->SetModel("Porsche");
+    porsche->SetColor(Color.red);
+    porsche->SetRegistrationNumber("ABC-123");
+    joe->AddVehicle(porsche);
+    bundle.Add(porsche);
+    Result<UniquePtr<System.Xml.Document>> xmlDocumentResult = bundle.ToXmlDocument();
+    if (xmlDocumentResult.Error())
+    {
+        Console.Error() << xmlDocumentResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Document* document = xmlDocumentResult.Value().Get();
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(1);
+    Result<bool> writeResult = document->Write(formatter);
+    if (writeResult.Error())
+    {
+        Console.Error() << writeResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Serialization.XmlBundle readBundle;
+    System.Xml.Serialization.XmlSerializationContext ctx;
+    ctx.SetFlag(System.Xml.Serialization.XmlSerializationFlags.failOnNotFoundObjects);
+    Result<bool> fromXmlResult = readBundle.FromXml(*document, ctx);
+    if (fromXmlResult.Error())
+    {
+        Console.Error() << fromXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    if (readBundle.Count() != 3)
+    {
+        Console.Error() << "three objects expected" << "\n";
+        return 1;
+    }
+    System.Xml.Serialization.XmlSerializable* first = readBundle.Get(0);
+    if (first is Person*)
+    {
+        Person* person = cast<Person*>(first);
+        person->Print();
+    }
+    else
+    {
+        Console.Error() << "Person object expected" << "\n";
+    }
+    return 0;
+}
+

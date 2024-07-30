@@ -1,3 +1,3 @@
 @echo off
-scmlg -v JsonLexer.lexer
-scmpg -v JsonParser.spg
+scmlg -v Json.scmlg
+scmpg -vox Json.scmpg

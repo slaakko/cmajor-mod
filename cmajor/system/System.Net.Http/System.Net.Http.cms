@@ -1,3 +1,0 @@
-solution System.Net.Http;
-project <System.Net.Http.cmp>;
-activeProject System.Net.Http;

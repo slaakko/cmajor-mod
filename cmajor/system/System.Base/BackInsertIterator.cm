@@ -12,10 +12,10 @@ namespace System
         private typedef BackInsertProxy<C> Self;
         private typedef C.ValueType ValueType;
 
-        public inline nothrow BackInsertProxy(): c(null)
+        public inline BackInsertProxy(): c(null)
         {
         }
-        public inline nothrow explicit BackInsertProxy(C* c_): c(c_)
+        public inline explicit BackInsertProxy(C* c_): c(c_)
         {
         }
         public inline void operator=(const ValueType& value)
@@ -33,28 +33,28 @@ namespace System
         public typedef Proxy& ReferenceType;
         public typedef Proxy* PointerType;
 
-        public inline nothrow BackInsertIterator() : proxy()
+        public inline BackInsertIterator() : proxy()
         {
         }
-        public inline nothrow BackInsertIterator(C& c) : proxy(&c)
+        public inline BackInsertIterator(C& c) : proxy(&c)
         {
         }
-        public inline nothrow Proxy& operator*() 
+        public inline Proxy& operator*() 
         {
             return proxy;
         }
-        public inline nothrow Proxy* operator->()
+        public inline Proxy* operator->()
         {
             return &proxy;
         }
-        public inline nothrow Self& operator++()
+        public inline Self& operator++()
         {
             return *this;
         }
         private Proxy proxy;
     }
 
-    public nothrow BackInsertIterator<C> BackInserter<C>(C& c) where C is BackInsertionSequence
+    public BackInsertIterator<C> BackInserter<C>(C& c) where C is BackInsertionSequence
     {
         return BackInsertIterator<C>(c);
     }

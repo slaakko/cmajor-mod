@@ -1,0 +1,33 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Xml
+{
+    public class BuildIndexVisitor : Visitor
+    {
+        public BuildIndexVisitor(Map<string, Element*>& index_) : index(index_)
+        {
+        }
+        public override void BeginVisit(Element& element)
+        {
+            string id = element.GetAttribute("id");
+            if (!id.IsEmpty())
+            {
+                index[id] = &element;
+            }
+        }
+        private Map<string, Element*>& index;
+    }
+    
+    public void BuildIndex(Document* document)
+    {
+        BuildIndexVisitor visitor(document->Index());
+        document->Accept(visitor);
+    }
+}
+

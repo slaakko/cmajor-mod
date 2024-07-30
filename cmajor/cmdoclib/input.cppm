@@ -18,6 +18,7 @@ struct Input
     std::string docFilePath;
     std::string relativeSolutionFilePath;
     std::string targetDirPath;
+    std::vector<std::string> libraryDirs;
     std::map<std::string, std::string> libraryPrefixMap;
     std::vector<std::unique_ptr<soul::xml::Document>> externalModuleDocs;
     std::unique_ptr<soul::xml::Document> docs;

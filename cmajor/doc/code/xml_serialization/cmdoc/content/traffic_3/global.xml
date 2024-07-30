@@ -1,0 +1,8 @@
+<global>
+    <derivedClassMap>
+        <baseClass classId="class_Vehicle_07B59C482E2837C322A0DE4EACA860408CA01C76">
+            <derivedClass classId="class_Bicycle_E60783DEE611200A2113E21FA61DB443AB4CCDA5"/>
+            <derivedClass classId="class_Car_DDD8D9758B227E2732538E5E09731A87692CF3B8"/>
+        </baseClass>
+    </derivedClassMap>
+</global>

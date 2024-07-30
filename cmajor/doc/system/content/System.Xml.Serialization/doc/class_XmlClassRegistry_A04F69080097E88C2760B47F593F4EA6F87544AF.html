@@ -12,7 +12,7 @@
     | <a href="#memberVariables">Member Variables</a>
   </span>
   <h2>Definition</h2>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#42">42</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#13">13</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
   <h2 id="ctorDtors">Constructors &amp; Destructor</h2>
   <table>
    <tr>
@@ -27,31 +27,23 @@
   <h2 id="memberFunctions">Member Functions</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">void</span>*></td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html">XmlSerializable</a>*></td>
     <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlClassRegistry_A04F69080097E88C2760B47F593F4EA6F87544AF.html#member_function_Create_XmlClassRegistry_0349F163503BF3BF9C60667042CB38B77061BC8C">Create</a>(<span class="kw">int</span>&nbsp;classId)</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Xml.Serialization/doc/190ae6d2-9c11-5711-e831-e079c0413054.html">XmlSerializable</a>></td>
-    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlClassRegistry_A04F69080097E88C2760B47F593F4EA6F87544AF.html#member_function_CreateXmlSerializable_XmlClassRegistry_4CED86B5E4C7FAA2C39EF30992634399B13608BA">CreateXmlSerializable</a>(<span class="kw">int</span>&nbsp;classId)</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Xml.Serialization/doc/class_XmlClassRegistry_A04F69080097E88C2760B47F593F4EA6F87544AF.html">XmlClassRegistry</a>&amp;</td>
     <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlClassRegistry_A04F69080097E88C2760B47F593F4EA6F87544AF.html#member_function_Instance_XmlClassRegistry_72F40F219DCB3B5F9FCF49FB7884DC2E78023388">Instance</a>()</td>
    </tr>
    <tr>
-    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span></td>
-    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlClassRegistry_A04F69080097E88C2760B47F593F4EA6F87544AF.html#member_function_Register_XmlClassRegistry_8063339A8A9E955FB8FF50B172F2293633391C10">Register</a>(<span class="kw">int</span>&nbsp;classId, <a href="../../System.Xml.Serialization/doc/ns_System.Xml.Serialization.html#delegate_FactoryFunction_703C1FC077423D5D039BEFD2B5CED836AED557CC">FactoryFunction</a>&nbsp;factoryFunction, <a href="../../System.Xml.Serialization/doc/class_XmlSerializableExtractor_A17EDF0AC3527D65988CA8382F1F051791DA9256.html">XmlSerializableExtractor</a>*&nbsp;extractor)</td>
+    <td class="rightAlignedCol" xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>></td>
+    <td xml:space="preserve"><a href="../../System.Xml.Serialization/doc/class_XmlClassRegistry_A04F69080097E88C2760B47F593F4EA6F87544AF.html#member_function_Register_XmlClassRegistry_00499764D4052374AF34854A40C16C48378E7466">Register</a>(<span class="kw">int</span>&nbsp;classId, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;className, <a href="../../System.Xml.Serialization/doc/ns_System.Xml.Serialization.html#delegate_FactoryFunction_703C1FC077423D5D039BEFD2B5CED836AED557CC">FactoryFunction</a>&nbsp;factoryFunction)</td>
    </tr>
   </table>
   <h2 id="memberVariables">Member Variables</h2>
   <table>
    <tr>
-    <td class="rightAlignedCol" id="member_variable_extractorMap_8D5FDC5202ABA6FAFA84DDA64CC11F2D2A656B8E" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<span class="kw">int</span>, <a href="../../System.Xml.Serialization/doc/class_XmlSerializableExtractor_A17EDF0AC3527D65988CA8382F1F051791DA9256.html">XmlSerializableExtractor</a>*, <a href="../../System.Base/doc/class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<span class="kw">int</span>>></td>
-    <td xml:space="preserve">extractorMap</td>
-   </tr>
-   <tr>
-    <td class="rightAlignedCol" id="member_variable_extractors_FD1C16EC1A6C544DD0D0BD1A07CE8CEF86F72DAE" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_List_4E42CF5913BEB21F5260DEFEC239180C94460B11.html">List</a>&lt;<a href="../../System.Base/doc/class_UniquePtr_793F841C13E9DD3A6869243C74F1D948C0E04009.html">UniquePtr</a>&lt;<a href="../../System.Xml.Serialization/doc/class_XmlSerializableExtractor_A17EDF0AC3527D65988CA8382F1F051791DA9256.html">XmlSerializableExtractor</a>>></td>
-    <td xml:space="preserve">extractors</td>
+    <td class="rightAlignedCol" id="member_variable_classIdNameMap_30494CE23B681E0601071F781418FCF83B56E6C2" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<span class="kw">int</span>, <a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>, <a href="../../System.Base/doc/class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<span class="kw">int</span>>></td>
+    <td xml:space="preserve">classIdNameMap</td>
    </tr>
    <tr>
     <td class="rightAlignedCol" id="member_variable_factoryMap_AC925B3DA1E72D8DFE1E653CE97BC4204FEACB68" xml:space="preserve"><span class="kw">private</span>&nbsp;<a href="../../System.Base/doc/class_Map_734D5EBC9BF418F0903F1E19A7338E2D82C029AE.html">Map</a>&lt;<span class="kw">int</span>, <a href="../../System.Xml.Serialization/doc/ns_System.Xml.Serialization.html#delegate_FactoryFunction_703C1FC077423D5D039BEFD2B5CED836AED557CC">FactoryFunction</a>, <a href="../../System.Base/doc/class_Less_8CD4E14D3B6BEACE17051A75B9F36A9125F2842B.html">Less</a>&lt;<span class="kw">int</span>>></td>
@@ -66,43 +58,36 @@
   <h3 id="static_constructor_XmlClassRegistry_1BC4C6BE2DFBDB4014A61E58537CE64C6AA865C3" xml:space="preserve">XmlClassRegistry&nbsp;Static Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">static</span>&nbsp;XmlClassRegistry()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#44">44</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#15">15</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="default_constructor_XmlClassRegistry_551AEC710EFF4595AEB7E970D1E22741DC038502" xml:space="preserve">XmlClassRegistry&nbsp;Constructor</h3>
   <h4 xml:space="preserve"><span class="kw">private</span>&nbsp;XmlClassRegistry()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#51">51</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#22">22</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h2>Member Function Details</h2>
   <h3 id="member_function_Create_XmlClassRegistry_0349F163503BF3BF9C60667042CB38B77061BC8C" xml:space="preserve">Create&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">void</span>*>&nbsp;Create(<span class="kw">int</span>&nbsp;classId)</h4>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html">XmlSerializable</a>*>&nbsp;Create(<span class="kw">int</span>&nbsp;classId)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#80">80</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
-  <br/>
-  <br/>
-  <hr/>
-  <h3 id="member_function_CreateXmlSerializable_XmlClassRegistry_4CED86B5E4C7FAA2C39EF30992634399B13608BA" xml:space="preserve">CreateXmlSerializable&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<a href="../../System.Xml.Serialization/doc/190ae6d2-9c11-5711-e831-e079c0413054.html">XmlSerializable</a>>&nbsp;CreateXmlSerializable(<span class="kw">int</span>&nbsp;classId)</h4>
-  <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#63">63</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#39">39</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
   <br/>
   <br/>
   <hr/>
   <h3 id="member_function_Instance_XmlClassRegistry_72F40F219DCB3B5F9FCF49FB7884DC2E78023388" xml:space="preserve">Instance&nbsp;Static Member Function</h3>
   <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">static</span>&nbsp;<a href="../../System.Xml.Serialization/doc/class_XmlClassRegistry_A04F69080097E88C2760B47F593F4EA6F87544AF.html">XmlClassRegistry</a>&amp;&nbsp;Instance()</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#47">47</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#18">18</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
   <br/>
   <br/>
   <hr/>
-  <h3 id="member_function_Register_XmlClassRegistry_8063339A8A9E955FB8FF50B172F2293633391C10" xml:space="preserve">Register&nbsp;Member Function</h3>
-  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;Register(<span class="kw">int</span>&nbsp;classId, <a href="../../System.Xml.Serialization/doc/ns_System.Xml.Serialization.html#delegate_FactoryFunction_703C1FC077423D5D039BEFD2B5CED836AED557CC">FactoryFunction</a>&nbsp;factoryFunction, <a href="../../System.Xml.Serialization/doc/class_XmlSerializableExtractor_A17EDF0AC3527D65988CA8382F1F051791DA9256.html">XmlSerializableExtractor</a>*&nbsp;extractor)</h4>
+  <h3 id="member_function_Register_XmlClassRegistry_00499764D4052374AF34854A40C16C48378E7466" xml:space="preserve">Register&nbsp;Member Function</h3>
+  <h4 xml:space="preserve"><span class="kw">public</span>&nbsp;<a href="../../System.Base/doc/class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A.html">Result</a>&lt;<span class="kw">bool</span>>&nbsp;Register(<span class="kw">int</span>&nbsp;classId, <span class="kw">const</span>&nbsp;<a href="../../System.Base/doc/class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC.html">String</a>&lt;<span class="kw">char</span>>&amp;&nbsp;className, <a href="../../System.Xml.Serialization/doc/ns_System.Xml.Serialization.html#delegate_FactoryFunction_703C1FC077423D5D039BEFD2B5CED836AED557CC">FactoryFunction</a>&nbsp;factoryFunction)</h4>
   <h5>Definition</h5>
-  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#54">54</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
+  <span class="indent" xml:space="preserve">Line&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html#25">25</a>&nbsp;of&nbsp;<a href="../../System.Xml.Serialization/file/XmlClassRegistry.cm.html">System.Xml.Serialization/XmlClassRegistry.cm</a></span>
   <br/>
   <br/>
   <hr/>

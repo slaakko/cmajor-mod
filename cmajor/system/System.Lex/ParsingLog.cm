@@ -1,36 +1,34 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/lexer/ParsingLog.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/lexer/ParsingLog.cpp' using cpp2cm version 1.0.0
 
 namespace System.Lex
 {
     public abstract class ParsingLog
     {
-        public ParsingLog() :
-            maxLineLength(80)
+        public ParsingLog() : maxLineLength(80)
         {
         }
-        public ParsingLog(int maxLineLength_) :
-            maxLineLength(maxLineLength_)
+        public ParsingLog(int maxLineLength_) : maxLineLength(maxLineLength_)
         {
         }
-        public virtual ~ParsingLog()
-        {
-        }
+        public default virtual ~ParsingLog();
         public abstract void IncIndent();
         public abstract void DecIndent();
-        public abstract void WriteBeginRule(const ustring& ruleName);
-        public abstract void WriteEndRule(const ustring& ruleName);
-        public abstract void WriteTry(const ustring& s);
-        public abstract void WriteSuccess(const ustring& match);
-        public abstract void WriteFail();
+        public abstract Result<bool> WriteBeginRule(const ustring& ruleName);
+        public abstract Result<bool> WriteEndRule(const ustring& ruleName);
+        public abstract Result<bool> WriteTry(const ustring& s);
+        public abstract Result<bool> WriteSuccess(const ustring& match);
+        public abstract Result<bool> WriteFail();
         public virtual int MaxLineLength() const
         {
             return maxLineLength;
         }
         private int maxLineLength;
     }
+
 } // namespace System.Lex

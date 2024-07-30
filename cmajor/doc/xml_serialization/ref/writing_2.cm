@@ -1,0 +1,40 @@
+// ...
+
+int main()
+{
+    Result<bool> registerResult = Register();
+    if (registerResult.Error())
+    {
+        Console.Error() << registerResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    Person joe("Joe Coder");
+    Bicycle* cooper = new Bicycle();
+    cooper->SetModel("Cooper");
+    cooper->SetColor(Color.blue);
+    cooper->SetPrice(1000);
+    joe.AddVehicle(cooper);
+    Car* porsche = new Car();
+    porsche->SetModel("Porsche");
+    porsche->SetColor(Color.red);
+    porsche->SetRegistrationNumber("ABC-123");
+    joe.AddVehicle(porsche);
+    Result<System.Xml.Element*> toXmlResult = joe.ToXml("person");
+    if (toXmlResult.Error())
+    {
+        Console.Error() << toXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Element* element = toXmlResult.Value();
+    System.Xml.Document document;
+    document.AppendChild(element);
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(1);
+    Result<bool> writeResult = document.Write(formatter);
+    if (writeResult.Error())
+    {
+        Console.Error() << writeResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    // ...
+}

@@ -1,0 +1,190 @@
+// traffic_2
+
+using System;
+using System.Collections;
+using System.Xml;
+using System.Xml.Serialization;
+
+public enum Color
+{
+    white, black, red, blue
+}
+
+public string ColorStr(Color color)
+{
+    switch (color)
+    {
+        case Color.white: return "white";
+        case Color.black: return "black";
+        case Color.red: return "red";
+        case Color.blue: return "blue";
+    }
+    return "<unknown color>";
+}
+
+[xml]
+public abstract class Vehicle
+{
+    public Vehicle()
+    {
+    }
+    public default virtual ~Vehicle();
+    public void SetModel(const string& model_)
+    {
+        model = model_;
+    }
+    public inline const string& Model() const
+    {
+        return model;
+    }
+    public void SetColor(Color color_)
+    {
+        color = color_;
+    }
+    public inline Color GetColor() const
+    {
+        return color;
+    }
+    public virtual void Print()
+    {
+        Console.Out() << ClassName() << "\n";
+        Console.Out() << "model: " << model << "\n";
+        Console.Out() << "color: " << ColorStr(color) << "\n";
+    }
+    private string model;
+    private Color color;
+}
+
+[xml]
+public class Bicycle : Vehicle
+{
+    public Bicycle()
+    {
+    }
+    public inline int Price()
+    {
+        return price;
+    }
+    public void SetPrice(int price_)
+    {
+        price = price_;
+    }
+    public override void Print()
+    {
+        base->Print();
+        Console.Out() << "price: " << price << "\n";
+    }
+    private int price;
+}
+
+[xml]
+public class Car : Vehicle
+{
+    public Car()
+    {
+    }
+    public void SetRegistrationNumber(const string& registrationNumber_)
+    {
+        registrationNumber = registrationNumber_;
+    }
+    public inline const string& RegistrationNumber() const
+    {
+        return registrationNumber;
+    }
+    public override void Print()
+    {
+        base->Print();
+        Console.Out() << "registrationNumber: " << registrationNumber << "\n";
+    }
+    private string registrationNumber;
+}
+
+[xml]
+public class Person
+{
+    public Person()
+    {
+    }
+    public Person(const string& name_) : name(name_)
+    {
+    }
+    public inline const string& Name() const
+    {
+        return name;
+    }
+    public void AddVehicle(Vehicle* vehicle)
+    {
+        vehicles.Add(UniquePtr<Vehicle>(vehicle));
+    }
+    public void Print()
+    {
+        Console.Out() << "Person" << "\n";
+        Console.Out() << "name: " << name << "\n";
+        Console.Out() << "vehicles:" << "\n";
+        for (const auto& vehicle : vehicles)
+        {
+            vehicle->Print();
+        }
+    }
+    private string name;
+    private List<UniquePtr<Vehicle>> vehicles;
+}
+
+[nodiscard]
+Result<bool> Register()
+{
+    auto result = Person.Register();
+    if (result.Error()) return result;
+    result = Bicycle.Register();
+    if (result.Error()) return result;
+    result = Car.Register();
+    if (result.Error()) return result;
+    return Result<bool>(true);
+}
+
+int main()
+{
+    Result<bool> registerResult = Register();
+    if (registerResult.Error())
+    {
+        Console.Error() << registerResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    Person joe("Joe Coder");
+    Bicycle* cooper = new Bicycle();
+    cooper->SetModel("Cooper");
+    cooper->SetColor(Color.blue);
+    cooper->SetPrice(1000);
+    joe.AddVehicle(cooper);
+    Car* porsche = new Car();
+    porsche->SetModel("Porsche");
+    porsche->SetColor(Color.red);
+    porsche->SetRegistrationNumber("ABC-123");
+    joe.AddVehicle(porsche);
+    Result<System.Xml.Element*> toXmlResult = joe.ToXml("person");
+    if (toXmlResult.Error())
+    {
+        Console.Error() << toXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Element* element = toXmlResult.Value();
+    System.Xml.Document document;
+    document.AppendChild(element);
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(1);
+    Result<bool> writeResult = document.Write(formatter);
+    if (writeResult.Error())
+    {
+        Console.Error() << writeResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    Person person;
+    Result<bool> fromXmlResult = person.FromXml(document.DocumentElement());
+    if (fromXmlResult.Error())
+    {
+        Console.Error() << fromXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    person.Print();
+    return 0;
+}

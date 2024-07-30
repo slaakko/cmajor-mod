@@ -22,10 +22,10 @@ namespace System.Windows
 
     public class GroupBoxCreateParams
     {
-        public nothrow GroupBoxCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
+        public GroupBoxCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
         {
         }
-        public nothrow GroupBoxCreateParams& Defaults()
+        public GroupBoxCreateParams& Defaults()
         {
             return *this;
         }
@@ -46,36 +46,66 @@ namespace System.Windows
         public GroupBox(GroupBoxCreateParams& createParams) : base(createParams.controlCreateParams), children(this), checkedRadioButton(null)
         {
         }
-        public void AddChild(Control* child)
+        [nodiscard]
+        public Result<bool> AddChild(Control* child)
         {
-            children.AddChild(child);
+            auto result = children.AddChild(child);
+            if (result.Error()) return result;
             ControlEventArgs args(child);
-            OnControlAdded(args);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public UniquePtr<Control> RemoveChild(Control* child)
+        [nodiscard]
+        public Result<UniquePtr<Control>> RemoveChild(Control* child)
         {
             UniquePtr<Component> childComponent = children.RemoveChild(child);
             ControlEventArgs args(child);
-            OnControlRemoved(args);
+            auto result = OnControlRemoved(args);
+            if (result.Error()) return Result<UniquePtr<Control>>(ErrorId(result.GetErrorId()));
+            if (args.errorId != 0)
+            {
+                return Result<UniquePtr<Control>>(ErrorId(args.errorId));
+            }
             return UniquePtr<Control>(childComponent.Release() as Control*);
         }
-        public void InsertChildBefore(Control* child, Control* before)
+        [nodiscard]
+        public Result<bool> InsertChildBefore(Control* child, Control* before)
         {
-            children.InsertBefore(child, before);
+            auto result = children.InsertBefore(child, before);
+            if (result.Error()) return result;
             ControlEventArgs args(child);
-            OnControlAdded(args);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public void InsertChildAfter(Control* child, Control* after)
+        [nodiscard]
+        public Result<bool> InsertChildAfter(Control* child, Control* after)
         {
-            children.InsertAfter(child, after);
+            auto result = children.InsertAfter(child, after);
+            if (result.Error()) return result;
             ControlEventArgs args(child);
-            OnControlAdded(args);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow const Container& Children() const
+        public const ComponentContainer& Children() const
         {
             return children;
         }
-        public nothrow inline RadioButton* CheckedRadioButton() const
+        public inline RadioButton* CheckedRadioButton() const
         {
             return checkedRadioButton;
         }
@@ -94,24 +124,41 @@ namespace System.Windows
                 }
             }
         }
-        internal nothrow inline void ResetCheckedRadioButton()
+        internal inline void ResetCheckedRadioButton()
         {
             checkedRadioButton = null;
         }
-        protected override void OnCreated()
+        protected override Result<bool> OnCreated()
         {
-            base->OnCreated();
-            Graphics graphics = Graphics.FromWindowHandle(Handle());
-            const FontHandle& fontHandle = GetFontHandle(graphics);
-            if (!fontHandle.IsNull())
+            auto result = base->OnCreated();
+            if (result.Error())
             {
-                SendSetFontMessage(fontHandle);
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = graphicsResult.Value();
+            auto fontHandleResult = GetFontHandle(graphics);
+            if (fontHandleResult.Error())
+            {
+                return Result<bool>(ErrorId(fontHandleResult.GetErrorId()));
+            }
+            FontHandle* fontHandle = fontHandleResult.Value();
+            if (!fontHandle->IsNull())
+            {
+                SendSetFontMessage(*fontHandle);
             }
             SubClassCommandWndProc();
+            return Result<bool>(true);
         }
-        protected override void OnControlAdded(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnControlAdded(ControlEventArgs& args)
         {
-            base->OnControlAdded(args);
+            auto result = base->OnControlAdded(args);
+            if (result.Error()) return result;
             if (args.control is RadioButton*)
             {
                 if (checkedRadioButton == null)
@@ -119,10 +166,13 @@ namespace System.Windows
                     SetCheckedRadioButton(cast<RadioButton*>(args.control));
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnControlRemoved(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnControlRemoved(ControlEventArgs& args)
         {
-            base->OnControlRemoved(args);
+            auto result = base->OnControlRemoved(args);
+            if (result.Error()) return result;
             if (args.control is RadioButton*)
             {
                 if (checkedRadioButton == cast<RadioButton*>(args.control))
@@ -130,26 +180,35 @@ namespace System.Windows
                     ResetCheckedRadioButton();
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnChildGotFocus(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildGotFocus(ControlEventArgs& args)
         {
-            base->OnChildGotFocus(args);
+            auto result = base->OnChildGotFocus(args);
+            if (result.Error()) return result;
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->OnChildGotFocus(args);
+                result = parentControl->OnChildGotFocus(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnChildLostFocus(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildLostFocus(ControlEventArgs& args)
         {
-            base->OnChildLostFocus(args);
+            auto result = base->OnChildLostFocus(args);
+            if (result.Error()) return result;
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->OnChildLostFocus(args);
+                result = parentControl->OnChildLostFocus(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        internal nothrow override Control* GetFirstEnabledTabStopControl() const
+        internal override Control* GetFirstEnabledTabStopControl() const
         {
             Component* child = children.FirstChild();
             while (child != null)
@@ -167,7 +226,7 @@ namespace System.Windows
             }
             return null;
         }
-        internal nothrow override Control* GetLastEnabledTabStopControl() const
+        internal override Control* GetLastEnabledTabStopControl() const
         {
             Component* child = children.LastChild();
             while (child != null)
@@ -185,7 +244,7 @@ namespace System.Windows
             }
             return null;
         }
-        private Container children;
+        private ComponentContainer children;
         private RadioButton* checkedRadioButton;
     }
 }

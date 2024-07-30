@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8"/>
+    <title>XML serialization</title>
+    <link href="style/style.css" rel="stylesheet" type="text/css"/>
+  </head>
+  <body>
+    <h1>XML serialization</h1>
+    <p>
+      Compiler support for <span class="kw">[xml]</span>
+      attributes and <span class="kw">System.Xml.Serialization</span>
+      library enable a program to write the value of a class object as an XML element, and read data back from XML to class object.</p>
+    <h2>Single class</h2>
+    <p>
+      In the following code the Person class has an <span class="kw">[xml]</span>
+      attribute, so the compiler generates code to serialize the <span class="kw">name</span>
+      member variable as XML and set the value of the <span class="kw">name</span>
+      member variable from an XML element:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Person</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Person</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Person</span><span class="other">(</span><span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">name_</span><span class="other">)</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">name</span><span class="other">(</span><span class="id">name_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">Name</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">name</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">name</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">0</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+    <p>The following code creates a Person object and writes its data to an XML element named "person". Then the XML element is appended to an XML document and the document is written to console:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Person</span>&nbsp;<span class="id">joe</span><span class="other">(</span><span class="string">"Joe Coder"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">XmlSerializationContext</span>&nbsp;<span class="id">ctx</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">ctx</span><span class="other">.</span><span class="id">SetFlag</span><span class="other">(</span><span class="id">XmlSerializationFlags</span><span class="other">.</span><span class="id">suppressMetadata</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Element</span><span class="other">*</span><span class="other">></span>&nbsp;<span class="id">toXmlResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">joe</span><span class="other">.</span><span class="id">ToXml</span><span class="other">(</span><span class="string">"person"</span><span class="other">,</span>&nbsp;<span class="id">ctx</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">toXmlResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">toXmlResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Element</span><span class="other">*</span>&nbsp;<span class="id">element</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">toXmlResult</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Document</span>&nbsp;<span class="id">document</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">document</span><span class="other">.</span><span class="id">AppendChild</span><span class="other">(</span><span class="id">element</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Text</span><span class="other">.</span><span class="id">CodeFormatter</span>&nbsp;<span class="id">formatter</span><span class="other">(</span><span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">formatter</span><span class="other">.</span><span class="id">SetIndentSize</span><span class="other">(</span><span class="number">1</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">writeResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">document</span><span class="other">.</span><span class="id">Write</span><span class="other">(</span><span class="id">formatter</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">writeResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">writeResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+    <p>
+      The compiler implements a member function named <span class="kw">ToXml</span>
+      that takes care of writing. In this case I don't want any extra bookkeeping data to the XML so I have set the <span class="kw">suppressMetadata</span>
+      flag in the <span class="kw">ToXml</span>
+      call.</p>
+    <p>The output of the program will look like this:</p>
+    <div class="txt">
+      <span xml:space="preserve">&lt;person></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;name&nbsp;value="Joe&nbsp;Coder"/></span>
+      <br/>
+      <span xml:space="preserve">&lt;/person></span>
+      <br/>
+    </div>
+    <p>You can set the name of the root XML element to whatever you like, in this case it's "person". The XML element for each member variable will have the same name as the member variable.</p>
+    <p>Reading data back into a Person object is not complicated either:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Person</span>&nbsp;<span class="id">person</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">fromXmlResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">person</span><span class="other">.</span><span class="id">FromXml</span><span class="other">(</span><span class="id">document</span><span class="other">.</span><span class="id">DocumentElement</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">fromXmlResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">fromXmlResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">person</span><span class="other">.</span><span class="id">Name</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+    <p>
+      The compiler implements a member function named <span class="kw">FromXml</span>
+      that reads data back from an XML element.</p>
+    <p>The code above prints the name of the Person object read, so the output will look like this:</p>
+    <div class="txt">
+      <span xml:space="preserve">Joe&nbsp;Coder</span>
+      <br/>
+    </div>
+    <p>
+      <a href="../code/xml_serialization/cmdoc/content/traffic_1/file/traffic_1.cm.html">Here</a>
+      is the source of the whole program.</p>
+    <h2>Class with children</h2>
+    <p>
+      Suppose a class object will have child objects that we want to serialize also. In this case a Person may own vehicles. I have created an abstract <span class="kw">Vehicle</span>
+      class for them:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Collections</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span>&nbsp;<span class="id">Color</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">white</span><span class="other">,</span>&nbsp;<span class="id">black</span><span class="other">,</span>&nbsp;<span class="id">red</span><span class="other">,</span>&nbsp;<span class="id">blue</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">ColorStr</span><span class="other">(</span><span class="id">Color</span>&nbsp;<span class="id">color</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">switch</span>&nbsp;<span class="other">(</span><span class="id">color</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">white</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"white"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">black</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"black"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">red</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"red"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">blue</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"blue"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"&lt;unknown color>"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Vehicle</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Vehicle</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">default</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="other">~</span><span class="id">Vehicle</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">SetModel</span><span class="other">(</span><span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">model_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">model</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">model_</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">Model</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">model</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">SetColor</span><span class="other">(</span><span class="id">Color</span>&nbsp;<span class="id">color_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">color</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">color_</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="id">Color</span>&nbsp;<span class="id">GetColor</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">color</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Print</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">ClassName</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"model: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">model</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"color: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">ColorStr</span><span class="other">(</span><span class="id">color</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">model</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">Color</span>&nbsp;<span class="id">color</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+    </div>
+    <p>
+      The <span class="kw">Vehicle</span>
+      class has an <span class="kw">[xml]</span>
+      attribute so its data will be serialized. The compiler supports also serializing enumeration values. In this case <span class="kw">Color</span>
+      is an enumerated type. Each XML serializable class will have a compiler implemented <span class="kw">ClassName()</span>
+      member function that returns the full name of the class. Here it is called in the virtual <span class="kw">Print()</span>
+      member function.</p>
+    <p>
+      I have created two concrete XML serializable classes that derive from the abstract <span class="kw">Vechicle</span>
+      class, a <span class="kw">Bicycle</span>
+      class and a <span class="kw">Car</span>
+      class:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Bicycle</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">Vehicle</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Bicycle</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">int</span>&nbsp;<span class="id">Price</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">price</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">SetPrice</span><span class="other">(</span><span class="kw">int</span>&nbsp;<span class="id">price_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">price</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">price_</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Print</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">base</span><span class="other">-></span><span class="id">Print</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"price: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">price</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="kw">int</span>&nbsp;<span class="id">price</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Car</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">Vehicle</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Car</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">SetRegistrationNumber</span><span class="other">(</span><span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">registrationNumber_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">registrationNumber</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">registrationNumber_</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">RegistrationNumber</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">registrationNumber</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">override</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Print</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">base</span><span class="other">-></span><span class="id">Print</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"registrationNumber: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">registrationNumber</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">registrationNumber</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+    </div>
+    <p>
+      An <span class="kw">[xml]</span>
+      -attributed class may derive from another <span class="kw">[xml]</span>
+      -attributed class or have no inheritance at all in which case the compiler will change it to derive from the abstract <a href="../system/content/System.Xml.Serialization/doc/class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87.html">XmlSerializable</a>
+      class. This is because the <span class="kw">XmlSerializable</span>
+      class will be then the ultimate base class of all XML serializable classes and the Cmajor language does not have multiple inheritance.</p>
+    <p>
+      Now I have changed the <span class="kw">Person</span>
+      class to contain a list of <span class="kw">UniquePtr</span>
+      s to vehicles:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Person</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Person</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Person</span><span class="other">(</span><span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">name_</span><span class="other">)</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">name</span><span class="other">(</span><span class="id">name_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">Name</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">name</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">AddVehicle</span><span class="other">(</span><span class="id">Vehicle</span><span class="other">*</span>&nbsp;<span class="id">vehicle</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">vehicles</span><span class="other">.</span><span class="id">Add</span><span class="other">(</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Vehicle</span><span class="other">></span><span class="other">(</span><span class="id">vehicle</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Print</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"Person"</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"name: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">name</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"vehicles:"</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span>&nbsp;<span class="other">(</span><span class="kw">const</span>&nbsp;<span class="kw">auto</span><span class="other">&amp;</span>&nbsp;<span class="id">vehicle</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">vehicles</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">vehicle</span><span class="other">-></span><span class="id">Print</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">name</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">List</span><span class="other">&lt;</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">Vehicle</span><span class="other">>></span>&nbsp;<span class="id">vehicles</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">nodiscard</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">Register</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">auto</span>&nbsp;<span class="id">result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Person</span><span class="other">.</span><span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">result</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Bicycle</span><span class="other">.</span><span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">result</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Car</span><span class="other">.</span><span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">result</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span><span class="other">(</span><span class="kw">true</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+    </div>
+    <p>
+      An XML serializable class may have a <span class="kw">UniquePtr</span>
+      to another XML serializable class or a <span class="kw">List</span>
+      of <span class="kw">UniquePtr</span>
+      s to XML serializable classes that will be serialized.</p>
+    <p>
+      When reading <span class="kw">Person</span>
+      data back from XML, the serialization library must be able to create concrete vehicle class objects when it sees a <span class="kw">UniquePtr</span>
+      to <span class="kw">Vechicle</span>
+      . Therefore now the serializable classes have been registered with the serialization library by calling the compiler-implemented <span class="kw">Register()</span>
+      member function of each XML serializable class in the <span class="kw">Register()</span>
+      function.</p>
+    <p>Here's now the code to serialize a person and vehicles it owns:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">registerResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">registerResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">registerResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Person</span>&nbsp;<span class="id">joe</span><span class="other">(</span><span class="string">"Joe Coder"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Bicycle</span><span class="other">*</span>&nbsp;<span class="id">cooper</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">new</span>&nbsp;<span class="id">Bicycle</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">cooper</span><span class="other">-></span><span class="id">SetModel</span><span class="other">(</span><span class="string">"Cooper"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">cooper</span><span class="other">-></span><span class="id">SetColor</span><span class="other">(</span><span class="id">Color</span><span class="other">.</span><span class="id">blue</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">cooper</span><span class="other">-></span><span class="id">SetPrice</span><span class="other">(</span><span class="number">1000</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">joe</span><span class="other">.</span><span class="id">AddVehicle</span><span class="other">(</span><span class="id">cooper</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Car</span><span class="other">*</span>&nbsp;<span class="id">porsche</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">new</span>&nbsp;<span class="id">Car</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">porsche</span><span class="other">-></span><span class="id">SetModel</span><span class="other">(</span><span class="string">"Porsche"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">porsche</span><span class="other">-></span><span class="id">SetColor</span><span class="other">(</span><span class="id">Color</span><span class="other">.</span><span class="id">red</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">porsche</span><span class="other">-></span><span class="id">SetRegistrationNumber</span><span class="other">(</span><span class="string">"ABC-123"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">joe</span><span class="other">.</span><span class="id">AddVehicle</span><span class="other">(</span><span class="id">porsche</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Element</span><span class="other">*</span><span class="other">></span>&nbsp;<span class="id">toXmlResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">joe</span><span class="other">.</span><span class="id">ToXml</span><span class="other">(</span><span class="string">"person"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">toXmlResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">toXmlResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Element</span><span class="other">*</span>&nbsp;<span class="id">element</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">toXmlResult</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Document</span>&nbsp;<span class="id">document</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">document</span><span class="other">.</span><span class="id">AppendChild</span><span class="other">(</span><span class="id">element</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Text</span><span class="other">.</span><span class="id">CodeFormatter</span>&nbsp;<span class="id">formatter</span><span class="other">(</span><span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">formatter</span><span class="other">.</span><span class="id">SetIndentSize</span><span class="other">(</span><span class="number">1</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">writeResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">document</span><span class="other">.</span><span class="id">Write</span><span class="other">(</span><span class="id">formatter</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">writeResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">writeResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+    <p>
+      I have changed the <span class="kw">ToXml</span>
+      call to not to suppress XML metadata, so the program output will now look like this:</p>
+    <div class="txt">
+      <span xml:space="preserve">&lt;person&nbsp;classId="2029169441"&nbsp;className="Person"&nbsp;objectId="eee6561b-4ab3-e38b-af80-9ba241b5295e"></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;name&nbsp;value="Joe&nbsp;Coder"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;vehicles></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;item&nbsp;classId="2018315917"&nbsp;className="Bicycle"&nbsp;objectId="8035841f-fcd7-6da7-0182-745376e62d11"></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;model&nbsp;value="Cooper"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;color&nbsp;value="3"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;price&nbsp;value="1000"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;/item></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;item&nbsp;classId="737295636"&nbsp;className="Car"&nbsp;objectId="d607dda7-824e-ccda-2137-8afe117f8579"></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;model&nbsp;value="Porsche"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;color&nbsp;value="2"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;registrationNumber&nbsp;value="ABC-123"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;/item></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;/vehicles></span>
+      <br/>
+      <span xml:space="preserve">&lt;/person></span>
+      <br/>
+    </div>
+    <p>
+      The XML elements for the objects contain a <span class="kw">classId</span>
+      , <span class="kw">className</span>
+      and <span class="kw">objectId</span>
+      attributes. The <span class="kw">classId</span>
+      attributes enable the serialization library to create instances of corresponding serializable classes when needed. The <span class="kw">objectId</span>
+      attribute is not needed yet, because a <span class="kw">Person</span>
+      instance owns the <span class="kw">Vechicle</span>
+      s. The <span class="kw">className</span>
+      attribute is not needed by the library. It has only informative value for the person looking at the XML. When serializing a list of objects, the XML element name of them will be <span class="kw">item</span>
+      .</p>
+    <p>Here's the code to read person data back:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Person</span>&nbsp;<span class="id">person</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">fromXmlResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">person</span><span class="other">.</span><span class="id">FromXml</span><span class="other">(</span><span class="id">document</span><span class="other">.</span><span class="id">DocumentElement</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">fromXmlResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">fromXmlResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">person</span><span class="other">.</span><span class="id">Print</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">0</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+    <p>
+      The <span class="kw">Person.Print()</span>
+      function will generate the following output:</p>
+    <div class="txt">
+      <span xml:space="preserve">Person</span>
+      <br/>
+      <span xml:space="preserve">name:&nbsp;Joe&nbsp;Coder</span>
+      <br/>
+      <span xml:space="preserve">vehicles:</span>
+      <br/>
+      <span xml:space="preserve">Bicycle</span>
+      <br/>
+      <span xml:space="preserve">model:&nbsp;Cooper</span>
+      <br/>
+      <span xml:space="preserve">color:&nbsp;blue</span>
+      <br/>
+      <span xml:space="preserve">price:&nbsp;1000</span>
+      <br/>
+      <span xml:space="preserve">Car</span>
+      <br/>
+      <span xml:space="preserve">model:&nbsp;Porsche</span>
+      <br/>
+      <span xml:space="preserve">color:&nbsp;red</span>
+      <br/>
+      <span xml:space="preserve">registrationNumber:&nbsp;ABC-123</span>
+      <br/>
+    </div>
+    <p>
+      <a href="../code/xml_serialization/cmdoc/content/traffic_2/file/traffic_2.cm.html">Here's</a>
+      the whole program.</p>
+    <h2>Network of objects</h2>
+    <p>
+      Suppose we have a network of XML serializable objects and we want to serialize them and their connections as a unit. In this case a <span class="kw">Vehicle</span>
+      keeps track of the <span class="kw">Person</span>
+      associated with it and <span class="kw">Person</span>
+      keeps track of vehicles associated with it but it does not own them. This is the new <span class="kw">Vechicle</span>
+      class:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// traffic_3</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Collections</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">enum</span>&nbsp;<span class="id">Color</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">white</span><span class="other">,</span>&nbsp;<span class="id">black</span><span class="other">,</span>&nbsp;<span class="id">red</span><span class="other">,</span>&nbsp;<span class="id">blue</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">ColorStr</span><span class="other">(</span><span class="id">Color</span>&nbsp;<span class="id">color</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">switch</span>&nbsp;<span class="other">(</span><span class="id">color</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">white</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"white"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">black</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"black"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">red</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"red"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">case</span>&nbsp;<span class="id">Color</span><span class="other">.</span><span class="id">blue</span><span class="other">:</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"blue"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="string">"&lt;unknown color>"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">abstract</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Vehicle</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Vehicle</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">default</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="other">~</span><span class="id">Vehicle</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">SetOwner</span><span class="other">(</span><span class="id">Person</span><span class="other">*</span>&nbsp;<span class="id">owner_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">owner</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">owner_</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">SetModel</span><span class="other">(</span><span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">model_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">model</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">model_</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">Model</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">model</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">SetColor</span><span class="other">(</span><span class="id">Color</span>&nbsp;<span class="id">color_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">color</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">color_</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="id">Color</span>&nbsp;<span class="id">GetColor</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">color</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">virtual</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Print</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">ClassName</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="other">!</span><span class="id">owner</span><span class="other">.</span><span class="id">IsNull</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"owner: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">owner</span><span class="other">-></span><span class="id">Name</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"model: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">model</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"color: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">ColorStr</span><span class="other">(</span><span class="id">color</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">model</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">Color</span>&nbsp;<span class="id">color</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlPtr</span><span class="other">&lt;</span><span class="id">Person</span><span class="other">></span>&nbsp;<span class="id">owner</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+    </div>
+    <p>
+      I have added an <span class="kw">XmlPtr</span>
+      to a <span class="kw">Person</span>
+      named <span class="kw">owner</span>
+      . An <span class="kw">XmlPtr</span>
+      is like an ordinary non-owning pointer, but it has to point to an <span class="kw">XML serializable</span>
+      object or be null, and it keeps track of the <span class="kw">objectId</span>
+      of the pointed-to object.</p>
+    <p>
+      The vehicle classes have not changed, but this is the new <span class="kw">Person</span>
+      class:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Person</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Person</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="id">Person</span><span class="other">(</span><span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">name_</span><span class="other">)</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">name</span><span class="other">(</span><span class="id">name_</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">inline</span>&nbsp;<span class="kw">const</span>&nbsp;<span class="id">string</span><span class="other">&amp;</span>&nbsp;<span class="id">Name</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="kw">const</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">name</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">AddVehicle</span><span class="other">(</span><span class="id">Vehicle</span><span class="other">*</span>&nbsp;<span class="id">vehicle</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">vehicle</span><span class="other">-></span><span class="id">SetOwner</span><span class="other">(</span><span class="kw">this</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">vehicles</span><span class="other">.</span><span class="id">Add</span><span class="other">(</span><span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlPtr</span><span class="other">&lt;</span><span class="id">Vehicle</span><span class="other">></span><span class="other">(</span><span class="id">vehicle</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">public</span>&nbsp;<span class="kw">void</span>&nbsp;<span class="id">Print</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"Person"</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"name: "</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">name</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"vehicles:"</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">for</span>&nbsp;<span class="other">(</span><span class="kw">const</span>&nbsp;<span class="kw">auto</span><span class="other">&amp;</span>&nbsp;<span class="id">vehicle</span>&nbsp;<span class="other">:</span>&nbsp;<span class="id">vehicles</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">vehicle</span><span class="other">-></span><span class="id">Print</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">string</span>&nbsp;<span class="id">name</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">List</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlPtr</span><span class="other">&lt;</span><span class="id">Vehicle</span><span class="other">>></span>&nbsp;<span class="id">vehicles</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">nodiscard</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">Register</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">auto</span>&nbsp;<span class="id">result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Person</span><span class="other">.</span><span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">result</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Bicycle</span><span class="other">.</span><span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">result</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">result</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Car</span><span class="other">.</span><span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">result</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span>&nbsp;<span class="kw">return</span>&nbsp;<span class="id">result</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span><span class="other">(</span><span class="kw">true</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+    </div>
+    <p>
+      Now a person object does not own the vehicle objects, but has a list of <span class="kw">XmlPtr</span>
+      s to them.</p>
+    <p>The serialization code have been changed also:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">auto</span>&nbsp;<span class="id">registerResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">Register</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">registerResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">registerResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlBundle</span>&nbsp;<span class="id">bundle</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Person</span><span class="other">*</span>&nbsp;<span class="id">joe</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">new</span>&nbsp;<span class="id">Person</span><span class="other">(</span><span class="string">"Joe Coder"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">bundle</span><span class="other">.</span><span class="id">Add</span><span class="other">(</span><span class="id">joe</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Bicycle</span><span class="other">*</span>&nbsp;<span class="id">cooper</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">new</span>&nbsp;<span class="id">Bicycle</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">cooper</span><span class="other">-></span><span class="id">SetModel</span><span class="other">(</span><span class="string">"Cooper"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">cooper</span><span class="other">-></span><span class="id">SetColor</span><span class="other">(</span><span class="id">Color</span><span class="other">.</span><span class="id">blue</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">cooper</span><span class="other">-></span><span class="id">SetPrice</span><span class="other">(</span><span class="number">1000</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">joe</span><span class="other">-></span><span class="id">AddVehicle</span><span class="other">(</span><span class="id">cooper</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">bundle</span><span class="other">.</span><span class="id">Add</span><span class="other">(</span><span class="id">cooper</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Car</span><span class="other">*</span>&nbsp;<span class="id">porsche</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">new</span>&nbsp;<span class="id">Car</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">porsche</span><span class="other">-></span><span class="id">SetModel</span><span class="other">(</span><span class="string">"Porsche"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">porsche</span><span class="other">-></span><span class="id">SetColor</span><span class="other">(</span><span class="id">Color</span><span class="other">.</span><span class="id">red</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">porsche</span><span class="other">-></span><span class="id">SetRegistrationNumber</span><span class="other">(</span><span class="string">"ABC-123"</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">joe</span><span class="other">-></span><span class="id">AddVehicle</span><span class="other">(</span><span class="id">porsche</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">bundle</span><span class="other">.</span><span class="id">Add</span><span class="other">(</span><span class="id">porsche</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="id">UniquePtr</span><span class="other">&lt;</span><span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Document</span><span class="other">>></span>&nbsp;<span class="id">xmlDocumentResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">bundle</span><span class="other">.</span><span class="id">ToXmlDocument</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">xmlDocumentResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">xmlDocumentResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Document</span><span class="other">*</span>&nbsp;<span class="id">document</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">xmlDocumentResult</span><span class="other">.</span><span class="id">Value</span><span class="other">(</span><span class="other">)</span><span class="other">.</span><span class="id">Get</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Text</span><span class="other">.</span><span class="id">CodeFormatter</span>&nbsp;<span class="id">formatter</span><span class="other">(</span><span class="id">Console</span><span class="other">.</span><span class="id">Out</span><span class="other">(</span><span class="other">)</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">formatter</span><span class="other">.</span><span class="id">SetIndentSize</span><span class="other">(</span><span class="number">1</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">writeResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">document</span><span class="other">-></span><span class="id">Write</span><span class="other">(</span><span class="id">formatter</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">writeResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">writeResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+    <p>
+      Here we have an <span class="kw">XmlBundle</span>
+      to which the serializable objects have been added to. By default an <span class="kw">XmlBundle</span>
+      takes ownership of the objects added to it.</p>
+    <p>
+      The <span class="kw">XmlBundle</span>
+      class has a <span class="kw">ToXmlDocument</span>
+      member function, that creates an XML document, serializes the objects it contains as XML elements, adds them to the document, and returns the document.</p>
+    <p>Here's the XML document created by the bundle:</p>
+    <div class="txt">
+      <span xml:space="preserve">&lt;xmlBundle></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;object&nbsp;classId="2029169441"&nbsp;className="Person"&nbsp;objectId="05c6a76c-b2c1-4cc6-bfc4-f266f8b76bd9"></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;name&nbsp;value="Joe&nbsp;Coder"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;vehicles></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;item&nbsp;objectId="57cbe1dc-da35-39c5-2e74-799cc718529e"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&lt;item&nbsp;objectId="438902f2-a4d7-d1a6-d0b0-777a8a7f6511"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;/vehicles></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;/object></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;object&nbsp;classId="2018315917"&nbsp;className="Bicycle"&nbsp;objectId="57cbe1dc-da35-39c5-2e74-799cc718529e"></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;model&nbsp;value="Cooper"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;color&nbsp;value="3"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;owner&nbsp;objectId="05c6a76c-b2c1-4cc6-bfc4-f266f8b76bd9"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;price&nbsp;value="1000"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;/object></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;object&nbsp;classId="737295636"&nbsp;className="Car"&nbsp;objectId="438902f2-a4d7-d1a6-d0b0-777a8a7f6511"></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;model&nbsp;value="Porsche"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;color&nbsp;value="2"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;owner&nbsp;objectId="05c6a76c-b2c1-4cc6-bfc4-f266f8b76bd9"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&lt;registrationNumber&nbsp;value="ABC-123"/></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&lt;/object></span>
+      <br/>
+      <span xml:space="preserve">&lt;/xmlBundle></span>
+      <br/>
+    </div>
+    <p>The object ID's enable the bundle in the reading side to restore object connections.</p>
+    <p>Here's the code to read a bundle back from XML:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">int</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">// ...</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlBundle</span>&nbsp;<span class="id">readBundle</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlSerializationContext</span>&nbsp;<span class="id">ctx</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">ctx</span><span class="other">.</span><span class="id">SetFlag</span><span class="other">(</span><span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlSerializationFlags</span><span class="other">.</span><span class="id">failOnNotFoundObjects</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Result</span><span class="other">&lt;</span><span class="kw">bool</span><span class="other">></span>&nbsp;<span class="id">fromXmlResult</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">readBundle</span><span class="other">.</span><span class="id">FromXml</span><span class="other">(</span><span class="other">*</span><span class="id">document</span><span class="other">,</span>&nbsp;<span class="id">ctx</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">fromXmlResult</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="id">fromXmlResult</span><span class="other">.</span><span class="id">GetErrorMessage</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">readBundle</span><span class="other">.</span><span class="id">Count</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">!=</span>&nbsp;<span class="number">3</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"three objects expected"</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">1</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">.</span><span class="id">XmlSerializable</span><span class="other">*</span>&nbsp;<span class="id">first</span>&nbsp;<span class="other">=</span>&nbsp;<span class="id">readBundle</span><span class="other">.</span><span class="id">Get</span><span class="other">(</span><span class="number">0</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">if</span>&nbsp;<span class="other">(</span><span class="id">first</span>&nbsp;<span class="kw">is</span>&nbsp;<span class="id">Person</span><span class="other">*</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Person</span><span class="other">*</span>&nbsp;<span class="id">person</span>&nbsp;<span class="other">=</span>&nbsp;<span class="kw">cast</span><span class="other">&lt;</span><span class="id">Person</span><span class="other">*</span><span class="other">></span><span class="other">(</span><span class="id">first</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">person</span><span class="other">-></span><span class="id">Print</span><span class="other">(</span><span class="other">)</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">else</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="id">Console</span><span class="other">.</span><span class="id">Error</span><span class="other">(</span><span class="other">)</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"Person object expected"</span>&nbsp;<span class="other">&lt;&lt;</span>&nbsp;<span class="string">"\n"</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">return</span>&nbsp;<span class="number">0</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
+    <p>
+      The <span class="kw">Person.Print()</span>
+      function will generate the following output:</p>
+    <div class="txt">
+      <span xml:space="preserve">Person</span>
+      <br/>
+      <span xml:space="preserve">name:&nbsp;Joe&nbsp;Coder</span>
+      <br/>
+      <span xml:space="preserve">vehicles:</span>
+      <br/>
+      <span xml:space="preserve">Bicycle</span>
+      <br/>
+      <span xml:space="preserve">owner:&nbsp;Joe&nbsp;Coder</span>
+      <br/>
+      <span xml:space="preserve">model:&nbsp;Cooper</span>
+      <br/>
+      <span xml:space="preserve">color:&nbsp;blue</span>
+      <br/>
+      <span xml:space="preserve">price:&nbsp;1000</span>
+      <br/>
+      <span xml:space="preserve">Car</span>
+      <br/>
+      <span xml:space="preserve">owner:&nbsp;Joe&nbsp;Coder</span>
+      <br/>
+      <span xml:space="preserve">model:&nbsp;Porsche</span>
+      <br/>
+      <span xml:space="preserve">color:&nbsp;red</span>
+      <br/>
+      <span xml:space="preserve">registrationNumber:&nbsp;ABC-123</span>
+      <br/>
+    </div>
+    <p>
+      <a href="../code/xml_serialization/cmdoc/content/traffic_3/file/traffic_3.cm.html">Here's</a>
+      the whole program.</p>
+  </body>
+</html>

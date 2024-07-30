@@ -35,17 +35,8 @@ void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols:
     {
         throw std::runtime_error("getting clang++ version failed with error code " + std::to_string(versionExecuteResult.exitCode) + ": " + std::move(versionExecuteResult.output));
     }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), versionExecuteResult.output);
-        }
-    }
-
     std::string command = clangxxPath;
     command.append(" -g");
-    command.append(" -v");
     std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
     cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
@@ -186,13 +177,6 @@ void GenerateMainUnitLLvmConsole(cmajor::ast::Project* project, cmajor::symbols:
     {
         throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
     }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), executeResult.output);
-        }
-    }
 }
 
 void GenerateMainUnitSystemX(cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
@@ -311,16 +295,8 @@ void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::
     {
         throw std::runtime_error("getting g++ version failed with error code " + std::to_string(versionExecuteResult.exitCode) + ": " + std::move(versionExecuteResult.output));
     }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), versionExecuteResult.output);
-        }
-    }
     std::string command = gxxPath;
     command.append(" -g");
-    command.append(" -v");
     command.append(" -std=c++20");
     std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
     cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
@@ -462,13 +438,6 @@ void GenerateMainUnitCppConsole(cmajor::ast::Project* project, cmajor::symbols::
     {
         throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
     }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), executeResult.output);
-        }
-    }
 }
 
 void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
@@ -490,17 +459,9 @@ void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbo
     {
         throw std::runtime_error("getting clang++ version failed with error code " + std::to_string(versionExecuteResult.exitCode) + ": " + std::move(versionExecuteResult.output));
     }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), versionExecuteResult.output);
-        }
-    }
 
     std::string command = clangxxPath;
     command.append(" -g");
-    command.append(" -v");
     std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
     cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
     if (!userMainFunctionSymbol)
@@ -661,13 +622,6 @@ void GenerateMainUnitLLvmWindowsGUI(cmajor::ast::Project* project, cmajor::symbo
     {
         throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
     }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), executeResult.output);
-        }
-    }
 }
 
 void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths)
@@ -690,17 +644,8 @@ void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbol
     {
         throw std::runtime_error("getting g++ version failed with error code " + std::to_string(versionExecuteResult.exitCode) + ": " + std::move(versionExecuteResult.output));
     }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), versionExecuteResult.output);
-        }
-    }
-
     std::string command = gxxPath;
     command.append(" -g");
-    command.append(" -v");
     command.append(" -std=c++20");
     std::string mainFilePath = std::filesystem::path(rootModule->OriginalFilePath()).parent_path().append("__main__.cpp").generic_string();
     cmajor::symbols::FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable().MainFunctionSymbol();
@@ -865,13 +810,6 @@ void GenerateMainUnitCppWindowsGUI(cmajor::ast::Project* project, cmajor::symbol
     if (executeResult.exitCode != 0)
     {
         throw std::runtime_error("compilation failed with error code " + std::to_string(executeResult.exitCode) + ": " + std::move(executeResult.output));
-    }
-    else
-    {
-        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
-        {
-            util::LogMessage(rootModule->LogStreamId(), executeResult.output);
-        }
     }
 }
 

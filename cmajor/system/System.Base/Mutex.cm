@@ -10,56 +10,56 @@ namespace System.Threading
 {
     public class Mutex
     {
-        public nothrow Mutex() : nativeHandle(RtAllocateMutex())
+        public Mutex() : nativeHandle(RtmAllocateMutex())
         {
         }
         public ~Mutex()
         {
             if (nativeHandle != null)
             {
-                RtFreeMutex(nativeHandle);
+                RtmFreeMutex(nativeHandle);
             }
         }
         suppress Mutex(const Mutex&);
         suppress void operator=(Mutex&);
         suppress Mutex(Mutex&&);
         suppress void operator=(Mutex&&);
-        public nothrow void Lock()
+        public void Lock()
         {
-            RtLockMutex(nativeHandle);
+            RtmLockMutex(nativeHandle);
         }
-        public nothrow void Unlock()
+        public void Unlock()
         {
-            RtUnlockMutex(nativeHandle);
+            RtmUnlockMutex(nativeHandle);
         }
         private void* nativeHandle;
     }
     
     public class RecursiveMutex
     {
-        public nothrow RecursiveMutex() : nativeHandle(RtAllocateRecursiveMutex())
+        public RecursiveMutex() : nativeHandle(RtmAllocateRecursiveMutex())
         {
         }
         public ~RecursiveMutex()
         {
             if (nativeHandle != null)
             {
-                RtFreeRecursiveMutex(nativeHandle);
+                RtmFreeRecursiveMutex(nativeHandle);
             }
         }
         suppress RecursiveMutex(const RecursiveMutex&);
         suppress void operator=(RecursiveMutex&);
         suppress RecursiveMutex(RecursiveMutex&&);
         suppress void operator=(RecursiveMutex&&);
-        public nothrow void Lock()
+        public void Lock()
         {
-            RtLockRecursiveMutex(nativeHandle);
+            RtmLockRecursiveMutex(nativeHandle);
         }
-        public nothrow void Unlock()
+        public void Unlock()
         {
-            RtUnlockRecursiveMutex(nativeHandle);
+            RtmUnlockRecursiveMutex(nativeHandle);
         }
-        public nothrow void* NativeHandle() const
+        public void* NativeHandle() const
         {
             return nativeHandle;
         }
@@ -75,7 +75,7 @@ namespace System.Threading
     public class LockGuard<Mtx> where Mtx is Lockable
     {
         private typedef LockGuard<Mtx> Self;
-        public nothrow LockGuard(Mtx& mtx_) : mtx(mtx_)
+        public LockGuard(Mtx& mtx_) : mtx(mtx_)
         {
             mtx.Lock();
         }

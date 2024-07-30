@@ -13,10 +13,10 @@ namespace System
         private typedef C.Iterator Iterator;
         private typedef C.ValueType ValueType;
 
-        public inline nothrow InsertProxy() : c(null), i()
+        public inline InsertProxy() : c(null), i()
         {
         }
-        public inline nothrow InsertProxy(C* c_, Iterator i_) : c(c_), i(i_)
+        public inline InsertProxy(C* c_, Iterator i_) : c(c_), i(i_)
         {
         }
         public inline void operator=(const ValueType& value)
@@ -36,28 +36,28 @@ namespace System
         public typedef Proxy& ReferenceType;
         public typedef Proxy* PointerType;
 
-        public inline nothrow InsertIterator() : proxy()
+        public inline InsertIterator() : proxy()
         {
         }
-        public inline nothrow InsertIterator(C& c, C.Iterator i) : proxy(&c, i)
+        public inline InsertIterator(C& c, C.Iterator i) : proxy(&c, i)
         {
         }
-        public inline nothrow ReferenceType operator*() 
+        public inline ReferenceType operator*() 
         {
             return proxy;
         }
-        public inline nothrow PointerType operator->()
+        public inline PointerType operator->()
         {
             return &proxy;
         }
-        public inline nothrow Self& operator++()
+        public inline Self& operator++()
         {
             return *this;
         }
         private Proxy proxy;
     }
 
-    public nothrow InsertIterator<C> Inserter<C, I>(C& c, I i) where C is InsertionSequence and I is C.Iterator
+    public InsertIterator<C> Inserter<C, I>(C& c, I i) where C is InsertionSequence and I is C.Iterator
     {
         return InsertIterator<C>(c, i);
     }

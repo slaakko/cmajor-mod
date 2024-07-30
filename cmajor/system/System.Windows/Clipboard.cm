@@ -8,20 +8,25 @@ using System.Windows.API;
 
 namespace System.Windows
 {
-    public class ClipboardFormat
+    public class ClipboardFormat : GraphicsObject
     {
         public enum Format : uint
         {
             text = 1u, unicodeText = 13u
         }
-        public nothrow ClipboardFormat(Format format) : formatName(), formatNumber(format)
+        public ClipboardFormat(Format format) : formatName(), formatNumber(format)
         {
         }
         public ClipboardFormat(const string& formatName_) : formatName(formatName_), formatNumber(0u)
         {
-            formatNumber = RegisterClipboardFormat(formatName.Chars());
+            auto registerResult = RegisterClipboardFormat(formatName.Chars());
+            if (registerResult.Error())
+            {
+                SetErrorId(registerResult.GetErrorId());
+            }
+            formatNumber = registerResult.Value();
         }
-        public nothrow inline uint Number() const
+        public inline uint Number() const
         {
             return formatNumber;
         }
@@ -29,13 +34,19 @@ namespace System.Windows
         private uint formatNumber;
     }
 
-    public class MemoryHandle
+    public class MemoryHandle : GraphicsObject
     {
-        public nothrow MemoryHandle() : handle(null)
+        public MemoryHandle() : base(), handle(null)
         {
         }
-        public MemoryHandle(void* handle_) : handle(handle_), memory(GlobalLock(handle))
+        public MemoryHandle(void* handle_) : base(), handle(handle_), memory(null)
         {
+            auto result = GlobalLock(handle);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
+            memory = result.Value();
         }
         suppress MemoryHandle(const MemoryHandle&);
         suppress void operator=(const MemoryHandle&);
@@ -43,27 +54,38 @@ namespace System.Windows
         {
             that.handle = null;
         }
-        public default nothrow void operator=(MemoryHandle&&);
+        public default void operator=(MemoryHandle&&);
         public ~MemoryHandle()
         {
             if (handle != null)
             {
-                GlobalUnlock(handle);
+                auto result = GlobalUnlock(handle);
             }
         }
-        public static MemoryHandle AllocateMemory(ulong size)
+        public static Result<MemoryHandle> AllocateMemory(ulong size)
         {
-            return MemoryHandle(GlobalAlloc(GlobalAllocFlags.GHND, size));
+            auto result = GlobalAlloc(GlobalAllocFlags.GHND, size);
+            if (result.Error())
+            {
+                return Result<MemoryHandle>(ErrorId(result.GetErrorId()));
+            }
+            MemoryHandle memoryHandle(result.Value());
+            if (memoryHandle.Error())
+            {
+                return Result<MemoryHandle>(ErrorId(memoryHandle.GetErrorId()));
+            }
+            return Result<MemoryHandle>(Rvalue(memoryHandle));
         }
-        public nothrow void* Memory() const
+        public void* Memory() const
         {
             return memory;
         }
-        public ulong Size() const
+        [nodiscard]
+        public Result<ulong> Size() const
         {
             return GlobalSize(handle);
         }
-        public nothrow void* Handle() const
+        public void* Handle() const
         {
             return handle;
         }
@@ -71,99 +93,168 @@ namespace System.Windows
         private void* memory;
     }
 
-    public class ClipboardListener
+    public class ClipboardListener : GraphicsObject
     {
         public ClipboardListener(void* windowHandle_) : windowHandle(windowHandle_)
         {
-            AddClipboardFormatListener(windowHandle);
+            auto result = AddClipboardFormatListener(windowHandle);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
         }
         public ~ClipboardListener()
         {
-            try
-            {
-                RemoveClipboardFormatListener(windowHandle);
-            }
-            catch (const Exception&)
-            {
-            }
+            auto result = RemoveClipboardFormatListener(windowHandle);
         }
         private void* windowHandle;
     }
 
-    public class Clipboard
+    public class Clipboard : GraphicsObject
     {
         public Clipboard(void* windowHandle_) : windowHandle(windowHandle_)
         {
-            OpenClipboard(windowHandle);
+            auto result = OpenClipboard(windowHandle);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
         }
         public ~Clipboard()
         {
-            CloseClipboard();
+            auto result = CloseClipboard();
         }
         public bool IsClipboardFormatAvailable(const ClipboardFormat& clipboardFormat) const
         {
             return IsClipboardFormatAvailable(clipboardFormat.Number());
         }
-        public void SetEmpty()
+        [nodiscard]
+        public Result<bool> SetEmpty()
         {
-            EmptyClipboard();
+            return EmptyClipboard();
         }
-        public MemoryHandle GetData(const ClipboardFormat& clipboardFormat)
+        [nodiscard]
+        public Result<MemoryHandle> GetData(const ClipboardFormat& clipboardFormat)
         {
-            return MemoryHandle(GetClipboardData(clipboardFormat.Number()));
+            auto result = GetClipboardData(clipboardFormat.Number());
+            if (result.Error())
+            {
+                return Result<MemoryHandle>(ErrorId(result.GetErrorId()));
+            }
+            return Result<MemoryHandle>(MemoryHandle(result.Value()));
         }
-        public void SetData(const ClipboardFormat& clipboardFormat, const MemoryHandle& memoryHandle)
+        [nodiscard]
+        public Result<bool> SetData(const ClipboardFormat& clipboardFormat, const MemoryHandle& memoryHandle)
         {
-            SetEmpty();
-            SetClipboardData(clipboardFormat.Number(), memoryHandle.Handle());
+            auto result = SetEmpty();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto setResult = SetClipboardData(clipboardFormat.Number(), memoryHandle.Handle());
+            if (setResult.Error())
+            {
+                return Result<bool>(ErrorId(setResult.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public ustring GetStringData(const ClipboardFormat& clipboardFormat)
+        [nodiscard]
+        public Result<ustring> GetStringData(const ClipboardFormat& clipboardFormat)
         {
-            MemoryHandle memoryHandle = GetData(clipboardFormat);
-            ulong size = memoryHandle.Size();
+            Result<MemoryHandle> memoryHandleResult = GetData(clipboardFormat);
+            if (memoryHandleResult.Error())
+            {
+                return Result<ustring>(ErrorId(memoryHandleResult.GetErrorId()));
+            }
+            MemoryHandle& memoryHandle = memoryHandleResult.Value();
+            Result<ulong> sizeResult = memoryHandle.Size();
+            if (sizeResult.Error())
+            {
+                return Result<ustring>(ErrorId(sizeResult.GetErrorId()));
+            }
+            ulong size = sizeResult.Value();
             if (clipboardFormat.Number() == ClipboardFormat.Format.text)
             {
                 UniquePtr<char> ptr(cast<char*>(MemAlloc(cast<long>(size))));
                 StrCopy(ptr.Get(), cast<char*>(memoryHandle.Memory()));
                 string str(ptr.Get());
-                return ToUtf32(str);
+                auto utf32Result = ToUtf32(str);
+                if (utf32Result.Error())
+                {
+                    return Result<ustring>(ErrorId(utf32Result.GetErrorId()));
+                }
+                return Result<ustring>(Rvalue(utf32Result.Value()));
             }
             else if (clipboardFormat.Number() == ClipboardFormat.Format.unicodeText)
             {
                 UniquePtr<wchar> ptr(cast<wchar*>(MemAlloc(cast<long>(size))));
                 StrCopy(ptr.Get(), cast<wchar*>(memoryHandle.Memory()));
                 wstring str(ptr.Get());
-                return ToUtf32(str);
+                auto utf32Result = ToUtf32(str);
+                if (utf32Result.Error())
+                {
+                    return Result<ustring>(ErrorId(utf32Result.GetErrorId()));
+                }
+                return Result<ustring>(Rvalue(utf32Result.Value()));
             }
             else
             {
                 UniquePtr<uchar> ptr(cast<uchar*>(MemAlloc(cast<long>(size))));
                 StrCopy(ptr.Get(), cast<uchar*>(memoryHandle.Memory()));
                 ustring str(ptr.Get());
-                return str;
+                return Result<ustring>(Rvalue(str));;
             }
         }
-        public void SetStringData(const ClipboardFormat& clipboardFormat, const ustring& str)
+        [nodiscard]
+        public Result<bool> SetStringData(const ClipboardFormat& clipboardFormat, const ustring& str)
         {
             if (clipboardFormat.Number() == ClipboardFormat.Format.text)
             {
-                string s = ToUtf8(str);
-                MemoryHandle memoryHandle = MemoryHandle.AllocateMemory(cast<ulong>((s.Length() + 1) * sizeof(char)));
+                auto utf8Result = ToUtf8(str);
+                if (utf8Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                }
+                string s = Rvalue(utf8Result.Value());
+                Result<MemoryHandle> memoryHandleResult = MemoryHandle.AllocateMemory(cast<ulong>((s.Length() + 1) * sizeof(char)));
+                if (memoryHandleResult.Error())
+                {
+                    return Result<bool>(ErrorId(memoryHandleResult.GetErrorId()));
+                }
+                MemoryHandle& memoryHandle = memoryHandleResult.Value();
                 StrCopy(cast<char*>(memoryHandle.Memory()), s.Chars());
-                SetData(clipboardFormat, memoryHandle);
+                auto result = SetData(clipboardFormat, memoryHandle);
+                return result;
             }
             else if (clipboardFormat.Number() == ClipboardFormat.Format.unicodeText)
             {
-                wstring s = ToUtf16(str);
-                MemoryHandle memoryHandle = MemoryHandle.AllocateMemory(cast<ulong>((s.Length() + 1) * sizeof(wchar)));
+                auto utf16Result = ToUtf16(str);
+                if (utf16Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf16Result.GetErrorId()));
+                }
+                wstring s = Rvalue(utf16Result.Value());
+                Result<MemoryHandle> memoryHandleResult = MemoryHandle.AllocateMemory(cast<ulong>((s.Length() + 1) * sizeof(wchar)));
+                if (memoryHandleResult.Error())
+                {
+                    return Result<bool>(ErrorId(memoryHandleResult.GetErrorId()));
+                }
+                MemoryHandle& memoryHandle = memoryHandleResult.Value();
                 StrCopy(cast<wchar*>(memoryHandle.Memory()), s.Chars());
-                SetData(clipboardFormat, memoryHandle);
+                auto result = SetData(clipboardFormat, memoryHandle);
+                return result;
             }
             else
             {
-                MemoryHandle memoryHandle = MemoryHandle.AllocateMemory(cast<ulong>((str.Length() + 1) * sizeof(uchar)));
+                Result<MemoryHandle> memoryHandleResult = MemoryHandle.AllocateMemory(cast<ulong>((str.Length() + 1) * sizeof(uchar)));
+                if (memoryHandleResult.Error())
+                {
+                    return Result<bool>(ErrorId(memoryHandleResult.GetErrorId()));
+                }
+                MemoryHandle& memoryHandle = memoryHandleResult.Value();
                 StrCopy(cast<uchar*>(memoryHandle.Memory()), str.Chars());
-                SetData(clipboardFormat, memoryHandle);
+                auto result = SetData(clipboardFormat, memoryHandle);
+                return result;
             }
         }
         private void* windowHandle;

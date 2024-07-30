@@ -1,345 +1,328 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
 
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/xpath/XPathFunction.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/xpath/XPathFunction.cpp' using cpp2cm version 1.0.0
-
 namespace System.XPath
 {
-    public abstract class XPathFunction
+    public enum FunctionKind
     {
-        public XPathFunction(const ustring& name_, int minArity_, int maxArity_) :
-            name(name_), minArity(minArity_), maxArity(maxArity_)
+        boolean, number, string, last, position, count, max
+    }
+
+    public string FunctionName(FunctionKind kind)
+    {
+        switch (kind)
+        {
+            case FunctionKind.boolean: return "boolean";
+            case FunctionKind.number: return "number";
+            case FunctionKind.string: return "string";
+            case FunctionKind.last: return "last";
+            case FunctionKind.position: return "position";
+            case FunctionKind.count: return "count";
+        }
+        return "<unknown function kind>";
+    }
+
+    public abstract class Function
+    {
+        public Function(FunctionKind kind_) : kind(kind_), name(FunctionName(kind)), minArity(1), maxArity(1)
         {
         }
-        public virtual ~XPathFunction()
+        public Function(FunctionKind kind_, int minArity_, int maxArity_) : kind(kind_), name(FunctionName(kind)), minArity(minArity_), maxArity(maxArity_)
         {
         }
-        public const ustring& Name() const
+        public default virtual ~Function();
+        public inline FunctionKind Kind() const
+        {
+            return kind;
+        }
+        public inline const string& Name() const
         {
             return name;
         }
-        public int MinArity() const
+        public inline int MinArity() const
         {
             return minArity;
         }
-        public int MaxArity() const
+        public inline int MaxArity() const
         {
             return maxArity;
         }
-        public abstract UniquePtr<XPathObject> Evaluate(XPathContext& context, List<XPathObject*>& arguments);
-        private ustring name;
+        public string ArityStr() const
+        {
+            if (minArity == maxArity)
+            {
+                return ToString(minArity);
+            }
+            else if (minArity == 0)
+            {
+                return "at most " + ToString(maxArity);
+            }
+            else
+            {
+                return "at least " + ToString(minArity) + " and at most " + ToString(maxArity);
+            }
+        }
+        [nodiscard]
+        public Result<UniquePtr<Object>> Evaluate(Context& context, const List<Object*>& arguments)
+        {
+            int n = cast<int>(arguments.Count());
+            if (n < minArity || n > maxArity)
+            {
+                int errorId = AllocateError("wrong number of arguments for '" + name + "()' function: " + ArityStr() + " arguments expected, " + ToString(n) +
+                    " arguments provided");
+                return Result<UniquePtr<Object>>(ErrorId(errorId));
+            }
+            return DoEvaluate(context, arguments);
+        }
+        protected abstract Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments);
+        private FunctionKind kind;
+        private string name;
         private int minArity;
         private int maxArity;
     }
-    public class ElementAndDocumentStringValueComputer : System.Dom.Visitor
+
+    public class BooleanFunction : Function
     {
-        public ustring stringValue;
-        public override void Visit(System.Dom.Text* text)
+        public BooleanFunction() : base(FunctionKind.boolean)
         {
-            stringValue.Append(text->Data());
+        }
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
+        {
+            Object* arg = arguments.Front();
+            switch (arg->Kind())
+            {
+                case ObjectKind.nodeSet:
+                {
+                    NodeSet* nodeSet = cast<NodeSet*>(arg);
+                    return EvaluateToBoolean(nodeSet);
+                }
+                case ObjectKind.boolean:
+                {
+                    Boolean* boolean = cast<Boolean*>(arg);
+                    return EvaluateToBoolean(boolean);
+                }
+                case ObjectKind.number:
+                {
+                    Number* number = cast<Number*>(arg);
+                    return EvaluateToBoolean(number);
+                }
+                case ObjectKind.string:
+                {
+                    Str* string = cast<Str*>(arg);
+                    return EvaluateToBoolean(string);
+                }
+            }
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
         }
     }
-    public ustring StringValue(System.Dom.Node* node)
+
+    public class NumberFunction : Function
     {
-        switch (node->GetNodeType())
-        {
-            case NodeType.documentNode: case NodeType.elementNode: 
-            {
-                ElementAndDocumentStringValueComputer stringValueComputer;
-                node->Accept(stringValueComputer);
-                return stringValueComputer.stringValue;
-            }
-            case NodeType.attributeNode: 
-            {
-                System.Dom.Attr* attr = cast<System.Dom.Attr*>(node);
-                return attr->Value();
-            }
-            case NodeType.processingInstructionNode: 
-            {
-                System.Dom.ProcessingInstruction* pi = cast<System.Dom.ProcessingInstruction*>(node);
-                return pi->Data();
-            }
-            case NodeType.commentNode: 
-            {
-                System.Dom.Comment* comment = cast<System.Dom.Comment*>(node);
-                return comment->Data();
-            }
-            case NodeType.textNode: 
-            {
-                System.Dom.Text* text = cast<System.Dom.Text*>(node);
-                return text->Data();
-            }
-            case NodeType.cdataSectionNode: 
-            {
-                System.Dom.CDataSection* cdataSection = cast<System.Dom.CDataSection*>(node);
-                return cdataSection->Data();
-            }
-        }
-        return ustring();
-    }
-    public class XPathBooleanFunction : XPathFunction
-    {
-        public XPathBooleanFunction() :
-            base(u"boolean", 1, 1)
+        public NumberFunction() : base(FunctionKind.number, 0, 1)
         {
         }
-        public override UniquePtr<XPathObject> Evaluate(XPathContext& context, List<XPathObject*>& arguments)
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
         {
-            if (arguments.Count() != 1)
-            {
-                throw Exception("sngxml::xpath::boolean() function requires one argument");
-            }
-            XPathObject* argument = arguments[0];
-            switch (argument->Type())
-            {
-                case XPathObjectType.boolean: 
-                {
-                    XPathBoolean* arg = cast<XPathBoolean*>(argument);
-                    return UniquePtr<XPathObject>(new XPathBoolean(arg->Value()));
-                }
-                case XPathObjectType.number: 
-                {
-                    XPathNumber* arg = cast<XPathNumber*>(argument);
-                    return UniquePtr<XPathObject>(new XPathBoolean(arg->Value() != 0));
-                }
-                case XPathObjectType.nodeSet: 
-                {
-                    XPathNodeSet* arg = cast<XPathNodeSet*>(argument);
-                    return UniquePtr<XPathObject>(new XPathBoolean(arg->Length() != 0));
-                }
-                case XPathObjectType.string: 
-                {
-                    XPathString* arg = cast<XPathString*>(argument);
-                    return UniquePtr<XPathObject>(new XPathBoolean(!arg->Value().IsEmpty()));
-                }
-            }
-            return UniquePtr<XPathObject>(new XPathBoolean(false));
-        }
-    }
-    public class XPathNumberFunction : XPathFunction
-    {
-        public XPathNumberFunction() :
-            base(u"number", 0, 1)
-        {
-        }
-        public override UniquePtr<XPathObject> Evaluate(XPathContext& context, List<XPathObject*>& arguments)
-        {
-            XPathObject* argument = null;
-            XPathNodeSet nodeSet;
+            Object* arg = null;
+            NodeSet nodeSet;
             if (arguments.IsEmpty())
             {
                 nodeSet.Add(context.Node());
-                argument = &nodeSet;
+                arg = &nodeSet;
             }
             else
             {
-                if (arguments.Count() != 1)
-                {
-                    throw Exception("sngxml::xpath::number() function requires zero or one arguments");
-                }
-                argument = arguments[0];
+                arg = arguments.Front();
             }
-            switch (argument->Type())
+            switch (arg->Kind())
             {
-                case XPathObjectType.number: 
+                case ObjectKind.nodeSet:
                 {
-                    XPathNumber* number = cast<XPathNumber*>(argument);
-                    return UniquePtr<XPathObject>(new XPathNumber(number->Value()));
+                    NodeSet* nodeSet = cast<NodeSet*>(arg);
+                    return EvaluateToNumber(nodeSet);
                 }
-                case XPathObjectType.string: 
+                case ObjectKind.boolean:
                 {
-                    XPathString* string = cast<XPathString*>(argument);
-                    double result = ParseDouble(ToUtf8(Trim(string->Value())));
-                    return UniquePtr<XPathObject>(new XPathNumber(result));
+                    Boolean* boolean = cast<Boolean*>(arg);
+                    return EvaluateToNumber(boolean);
                 }
-                case XPathObjectType.boolean: 
+                case ObjectKind.number:
                 {
-                    XPathBoolean* boolean = cast<XPathBoolean*>(argument);
-                    double result = 0;
-                    if (boolean->Value())
-                    {
-                        result = 1;
-                    }
-                    return UniquePtr<XPathObject>(new XPathNumber(result));
+                    Number* number = cast<Number*>(arg);
+                    return EvaluateToNumber(number);
                 }
-                case XPathObjectType.nodeSet: 
+                case ObjectKind.string:
                 {
-                    XPathFunction* stringFunction = GetXPathLibraryFunction(u"string");
-                    List<XPathObject*> stringArgs;
-                    stringArgs.Add(argument);
-                    UniquePtr<XPathObject> asString = stringFunction->Evaluate(context, stringArgs);
-                    if (asString->Type() != XPathObjectType.string)
-                    {
-                        throw Exception("string result expected");
-                    }
-                    XPathString* string = cast<XPathString*>(asString.Get());
-                    double result = ParseDouble(ToUtf8(Trim(string->Value())));
-                    return UniquePtr<XPathObject>(new XPathNumber(result));
+                    Str* string = cast<Str*>(arg);
+                    return EvaluateToNumber(string);
                 }
             }
-            throw Exception("invalid argument to System.XPath.number()() function");
-            return UniquePtr<XPathObject>();
+            int errorId = AllocateError("invalid argument to '" + Name() + "()' function");
+            return Result<UniquePtr<Object>>(ErrorId(errorId));
         }
     }
-    public class XPathStringFunction : XPathFunction
+
+    public class StringFunction : Function
     {
-        public XPathStringFunction() :
-            base(u"string", 0, 1)
+        public StringFunction() : base(FunctionKind.string, 0, 1)
         {
         }
-        public override UniquePtr<XPathObject> Evaluate(XPathContext& context, List<XPathObject*>& arguments)
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
         {
-            XPathObject* argument = null;
-            XPathNodeSet nodeSet;
+            Object* arg = null;
+            NodeSet nodeSet;
             if (arguments.IsEmpty())
             {
                 nodeSet.Add(context.Node());
-                argument = &nodeSet;
+                arg = &nodeSet;
             }
             else
             {
-                if (arguments.Count() != 1)
-                {
-                    throw Exception("System.XPath.string() function requires zero or one arguments");
-                }
-                argument = arguments[0];
+                arg = arguments.Front();
             }
-            switch (argument->Type())
+            switch (arg->Kind())
             {
-                case XPathObjectType.nodeSet: 
+                case ObjectKind.nodeSet:
                 {
-                    XPathNodeSet* nodeSet = cast<XPathNodeSet*>(argument);
-                    if (nodeSet->Length() == 0)
-                    {
-                        return UniquePtr<XPathObject>(new XPathString(ustring()));
-                    }
-                    else
-                    {
-                        System.Dom.Node* node = (*nodeSet)[0];
-                        return UniquePtr<XPathObject>(new XPathString(StringValue(node)));
-                    }
+                    NodeSet* nodeSet = cast<NodeSet*>(arg);
+                    return EvaluateToString(nodeSet);
                 }
-                case XPathObjectType.number: 
+                case ObjectKind.boolean:
                 {
-                    XPathNumber* number = cast<XPathNumber*>(argument);
-                    return UniquePtr<XPathObject>(new XPathString(ToUtf32(ToString(number->Value()))));
+                    Boolean* boolean = cast<Boolean*>(arg);
+                    return EvaluateToString(boolean);
                 }
-                case XPathObjectType.boolean: 
+                case ObjectKind.number:
                 {
-                    XPathBoolean* boolean = cast<XPathBoolean*>(argument);
-                    ustring val = u"true";
-                    if (!boolean->Value())
-                    {
-                        val = u"false";
-                    }
-                    return UniquePtr<XPathObject>(new XPathString(val));
+                    Number* number = cast<Number*>(arg);
+                    return EvaluateToString(number);
                 }
-                case XPathObjectType.string: 
+                case ObjectKind.string:
                 {
-                    XPathString* string = cast<XPathString*>(argument);
-                    return UniquePtr<XPathObject>(new XPathString(string->Value()));
+                    Str* string = cast<Str*>(arg);
+                    return EvaluateToString(string);
                 }
             }
-            throw Exception("invalid argument to System.XPath.string() function");
-            return UniquePtr<XPathObject>();
+            int errorId = AllocateError("invalid argument to '" + Name() + "()' function");
+            return Result<UniquePtr<Object>>(ErrorId(errorId));
         }
     }
-    public class XPathLastFunction : XPathFunction
+
+    public class LastFunction : Function
     {
-        public XPathLastFunction() :
-            base(u"last", 0, 0)
+        public LastFunction() : base(FunctionKind.last, 0, 0)
         {
         }
-        public override UniquePtr<XPathObject> Evaluate(XPathContext& context, List<XPathObject*>& arguments)
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
         {
-            if (!arguments.IsEmpty())
-            {
-                throw Exception("sngxml::xpath::last() function requires no arguments");
-            }
-            return UniquePtr<XPathObject>(new XPathNumber(context.Size()));
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(context.Size())));
         }
     }
-    public class XPathPositionFunction : XPathFunction
+
+    public class PositionFunction : Function
     {
-        public XPathPositionFunction() :
-            base(u"position", 0, 0)
+        public PositionFunction() : base(FunctionKind.position, 0, 0)
         {
         }
-        public override UniquePtr<XPathObject> Evaluate(XPathContext& context, List<XPathObject*>& arguments)
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
         {
-            if (!arguments.IsEmpty())
-            {
-                throw Exception("System.XPath.position() function requires no arguments");
-            }
-            return UniquePtr<XPathObject>(new XPathNumber(context.Position()));
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(context.Pos())));
         }
     }
-    public class XPathCountFunction : XPathFunction
+
+    public class CountFunction : Function
     {
-        public XPathCountFunction() :
-            base(u"count", 1, 1)
+        public CountFunction() : base(FunctionKind.count)
         {
         }
-        public override UniquePtr<XPathObject> Evaluate(XPathContext& context, List<XPathObject*>& arguments)
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
         {
-            if (arguments.Count() != 1)
+            Result<NodeSet*> nodeSetResult = NodeSetCast(arguments.Front(), this);
+            if (nodeSetResult.Error())
             {
-                throw Exception("System.XPath.count() function requires one node-set argument");
+                return Result<UniquePtr<Object>>(ErrorId(nodeSetResult.GetErrorId()));
             }
-            else if (arguments.Count() == 1)
-            {
-                XPathObject* arg = arguments[0];
-                if (arg->Type() != XPathObjectType.nodeSet)
-                {
-                    throw Exception("sngxml::xpath::count() function requires one node-set argument");
-                }
-            }
-            XPathNodeSet* nodeSet = cast<XPathNodeSet*>(arguments[0]);
-            return UniquePtr<XPathObject>(new XPathNumber(nodeSet->Length()));
+            NodeSet* nodeSet = nodeSetResult.Value();
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(nodeSet->Count())));
         }
     }
-    public class XPathFunctionLibrary
+
+    public class FunctionLibrary
     {
-        static XPathFunctionLibrary() : instance(new XPathFunctionLibrary())
+        static FunctionLibrary() : instance(new FunctionLibrary())
         {
         }
-        private XPathFunctionLibrary()
-        {
-            functions.Add(UniquePtr<XPathFunction>(new XPathBooleanFunction()));
-            functions.Add(UniquePtr<XPathFunction>(new XPathNumberFunction()));
-            functions.Add(UniquePtr<XPathFunction>(new XPathStringFunction()));
-            functions.Add(UniquePtr<XPathFunction>(new XPathLastFunction()));
-            functions.Add(UniquePtr<XPathFunction>(new XPathPositionFunction()));
-            functions.Add(UniquePtr<XPathFunction>(new XPathCountFunction()));
-            for (const UniquePtr<XPathFunction>& function : functions)
-            {
-                functionMap[function->Name()] = function.Get();
-            }
-        }
-        public static XPathFunctionLibrary& Instance()
+        public static FunctionLibrary& Instance()
         {
             return *instance;
         }
-        public static UniquePtr<XPathFunctionLibrary> instance;
-        public XPathFunction* GetFunction(const ustring& functionName)
+        private FunctionLibrary()
         {
-            HashMap<ustring, XPathFunction*>.ConstIterator it = functionMap.CFind(functionName);
-            if (it != functionMap.CEnd())
+            functions.Resize(cast<int>(FunctionKind.max));
+            Install(new BooleanFunction());
+            Install(new NumberFunction());
+            Install(new StringFunction());
+            Install(new LastFunction());
+            Install(new PositionFunction());
+            Install(new CountFunction());
+        }
+        [nodiscard]
+        public Result<Function*> GetFunction(FunctionKind kind) const
+        {
+            int index = cast<int>(kind);
+            #assert(index >= 0 && index < functions.Count());
+            Function* function = functions[index].Get();
+            if (function == null)
             {
-                return it->second;
+                int errorId = AllocateError("System.XPath.FunctionLibrary: function '" + FunctionName(kind) + "()' not installed");
+                return Result<Function*>(ErrorId(errorId));
+            }
+            return Result<Function*>(function);
+        }
+        [nodiscard]
+        public Result<Function*> GetFunction(const string& name) const
+        {
+            auto it = functionMap.Find(name);
+            if (it != functionMap.End())
+            {
+                return Result<Function*>(it->second);
             }
             else
             {
-                throw Exception("sngxml::xpath function \'" + ToUtf8(functionName) + "\' not found");
+                int errorId = AllocateError("System.XPath.FunctionLibrary: function '" + name + "()' not found");
+                return Result<Function*>(ErrorId(errorId));
             }
         }
-        private HashMap<ustring, XPathFunction*> functionMap;
-        private List<UniquePtr<XPathFunction>> functions;
+        public void Install(Function* function)
+        {
+            functions[cast<int>(function->Kind())].Reset(function);
+            functionMap[function->Name()] = function;
+        }
+        private static UniquePtr<FunctionLibrary> instance;
+        private List<UniquePtr<Function>> functions;
+        private Map<string, Function*> functionMap;
     }
-    public XPathFunction* GetXPathLibraryFunction(const ustring& functionName)
+
+    [nodiscard]
+    public Result<Function*> GetFunction(FunctionKind kind)
     {
-        return XPathFunctionLibrary.Instance().GetFunction(functionName);
+        return FunctionLibrary.Instance().GetFunction(kind);
     }
-} // namespace System.XPath
+
+    [nodiscard]
+    public Result<Function*> GetFunction(const string& name)
+    {
+        return FunctionLibrary.Instance().GetFunction(name);
+    }
+}

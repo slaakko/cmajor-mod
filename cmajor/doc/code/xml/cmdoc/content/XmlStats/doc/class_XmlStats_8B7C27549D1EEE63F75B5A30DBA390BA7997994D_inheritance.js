@@ -269,7 +269,7 @@ function drawDiagram(diagramNodes) {
 function drawInheritanceDiagram() {
     var diagramNodes = [
         { name: "System.Xml.XmlContentHandler", id: "diagram_node_0", level: 0, subject: false, hasDerivedNodes: true, link: "../../../../../../system/content/System.Xml/doc/class_XmlContentHandler_7429223FCBE3A541F14FD9475F2099B20E248715.html" },
-        { name: "XmlStats", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: false, link: "../../XmlStats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html" }];
+        { name: "XmlStats", id: "diagram_node_1", level: 1, subject: true, hasDerivedNodes: false, link: "../../xmlstats/doc/class_XmlStats_8B7C27549D1EEE63F75B5A30DBA390BA7997994D.html" }];
     drawDiagram(diagramNodes);
 }
 

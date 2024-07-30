@@ -6,26 +6,32 @@ class XmlStats : XmlContentHandler
     public XmlStats(const string& xmlFileName_) : xmlFileName(xmlFileName_)
     {
     }
-    public override void StartElement(const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName, const Attributes& attributes)
+    public override Result<bool> StartElement(const System.Lex.Span& span, int fileIndex,
+        const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName, const Attributes& attributes)
     {
         ++numElements;
         numAttributes = numAttributes + attributes.Count();
+        return Result<bool>(true);
     }
-    public override void HandlePI(const ustring& target, const ustring& data)
+    public override Result<bool> HandlePI(const System.Lex.Span& span, int fileIndex, const ustring& target, const ustring& data)
     {
         ++numProcessingInstructions;
+        return Result<bool>(true);
     }
-    public override void HandleComment(const ustring& comment)
+    public override Result<bool> HandleComment(const System.Lex.Span& span, int fileIndex, const ustring& comment)
     {
         ++numComments;
+        return Result<bool>(true);
     }
-    public override void HandleCDataSection(const ustring& cdata)
+    public override Result<bool> HandleCDataSection(const System.Lex.Span& span, int fileIndex, const ustring& cdata)
     {
         numCharacters = numCharacters + cdata.Length();
+        return Result<bool>(true);
     }
-    public override void HandleText(const ustring& text)
+    public override Result<bool> HandleText(const System.Lex.Span& span, int fileIndex, const ustring& text)
     {
         numCharacters = numCharacters + text.Length();
+        return Result<bool>(true);
     }
     public void Print()
     {
@@ -46,20 +52,18 @@ class XmlStats : XmlContentHandler
 
 int main(int argc, const char** argv)
 {
-    try
+    System.Lex.FileMap fileMap;
+    for (int i = 1; i < argc; ++i)
     {
-        for (int i = 1; i < argc; ++i)
+        string xmlFileName = argv[i];
+        XmlStats stats(xmlFileName);
+        auto result = ParseXmlFile(xmlFileName, &stats, fileMap);
+        if (result.Error())
         {
-            string xmlFileName = argv[i];
-            XmlStats stats(xmlFileName);
-            ParseXmlFile(xmlFileName, &stats);
-            stats.Print();
+            Console.Error() << result.GetErrorMessage() << endl();
+            return 1;
         }
-    }
-    catch (const Exception& ex)
-    {
-        Console.Error() << ex.Message() << endl();
-        return 1;
+        stats.Print();
     }
     return 0;
 }

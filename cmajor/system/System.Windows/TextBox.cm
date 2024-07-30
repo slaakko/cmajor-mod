@@ -25,23 +25,23 @@ namespace System.Windows
         ES_WANTRETURN = 0x1000
     }
 
-    public nothrow ControlCreateParams& TextBoxControlCreateParams(ControlCreateParams& controlCreateParams, TextBoxStyle textBoxStyle)
+    public ControlCreateParams& TextBoxControlCreateParams(ControlCreateParams& controlCreateParams, TextBoxStyle textBoxStyle)
     {
         return controlCreateParams.SetWindowClassName("EDIT").SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.White()).
             SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP | textBoxStyle));
     }
 
-    public nothrow ControlCreateParams& TextBoxControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& TextBoxControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return TextBoxControlCreateParams(controlCreateParams, cast<TextBoxStyle>(TextBoxStyle.ES_LEFT | TextBoxStyle.ES_AUTOHSCROLL));
     }
 
     public class TextBoxCreateParams
     {
-        public nothrow TextBoxCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
+        public TextBoxCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
         {
         }
-        public nothrow TextBoxCreateParams& Defaults()
+        public TextBoxCreateParams& Defaults()
         {
             return *this;
         }
@@ -79,15 +79,15 @@ namespace System.Windows
                 SetMultiline();
             }
         }
-        public nothrow inline bool IsMultiline() const
+        public inline bool IsMultiline() const
         {
             return (flags & Flags.multiline) != Flags.none;
         }
-        private nothrow inline void SetMultiline()
+        private inline void SetMultiline()
         {
             flags = cast<Flags>(flags | Flags.multiline);
         }
-        private nothrow inline void ResetMultiline()
+        private inline void ResetMultiline()
         {
             flags = cast<Flags>(flags & ~Flags.multiline);
         }
@@ -102,39 +102,61 @@ namespace System.Windows
                 SetSelectAllFlag();
             }
         }
-        public void Clear()
+        [nodiscard]
+        public Result<bool> Clear()
         {
-            SetText(string());
+            return SetText(string());
         }
-        protected override void OnCreated()
+        protected override Result<bool> OnCreated()
         {
-            base->OnCreated();
-            Graphics graphics = Graphics.FromWindowHandle(Handle());
-            const FontHandle& fontHandle = GetFontHandle(graphics);
-            if (!fontHandle.IsNull())
+            auto result = base->OnCreated();
+            if (result.Error())
             {
-                SendSetFontMessage(fontHandle);
+                return Result<bool>(ErrorId(result.GetErrorId()));
             }
-            if (SelectAllFlagSet())
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
             {
-                ResetSelectAllFlag();
-                SelectAll();
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
             }
+            Graphics& graphics = graphicsResult.Value();
+            Result<FontHandle*> fontHandleResult = GetFontHandle(graphics);
+            if (fontHandleResult.Error())
+            {
+                return Result<bool>(ErrorId(fontHandleResult.GetErrorId()));
+            }
+            else
+            {
+                FontHandle* fontHandle = fontHandleResult.Value();
+                if (!fontHandle->IsNull())
+                {
+                    SendSetFontMessage(*fontHandle);
+                }
+                if (SelectAllFlagSet())
+                {
+                    ResetSelectAllFlag();
+                    SelectAll();
+                }
+            }
+            return Result<bool>(true);
         }
-        protected override void OnGotFocus()
+        [nodiscard]
+        protected override Result<bool> OnGotFocus()
         {
-            base->OnGotFocus();
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
             SelectAll();
+            return Result<bool>(true);
         }
-        private nothrow inline bool SelectAllFlagSet() const
+        private inline bool SelectAllFlagSet() const
         {
             return (flags & Flags.selectAll) != Flags.none;
         }
-        private nothrow inline void SetSelectAllFlag()
+        private inline void SetSelectAllFlag()
         {
             flags = cast<Flags>(flags | Flags.selectAll);
         }
-        private nothrow inline void ResetSelectAllFlag()
+        private inline void ResetSelectAllFlag()
         {
             flags = cast<Flags>(flags & ~Flags.selectAll);
         }

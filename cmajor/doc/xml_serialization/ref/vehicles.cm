@@ -1,0 +1,47 @@
+// ...
+
+[xml]
+public class Bicycle : Vehicle
+{
+    public Bicycle()
+    {
+    }
+    public inline int Price()
+    {
+        return price;
+    }
+    public void SetPrice(int price_)
+    {
+        price = price_;
+    }
+    public override void Print()
+    {
+        base->Print();
+        Console.Out() << "price: " << price << "\n";
+    }
+    private int price;
+}
+
+[xml]
+public class Car : Vehicle
+{
+    public Car()
+    {
+    }
+    public void SetRegistrationNumber(const string& registrationNumber_)
+    {
+        registrationNumber = registrationNumber_;
+    }
+    public inline const string& RegistrationNumber() const
+    {
+        return registrationNumber;
+    }
+    public override void Print()
+    {
+        base->Print();
+        Console.Out() << "registrationNumber: " << registrationNumber << "\n";
+    }
+    private string registrationNumber;
+}
+
+// ...

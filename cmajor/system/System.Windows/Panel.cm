@@ -8,23 +8,23 @@ using System.Collections;
 
 namespace System.Windows
 {
-    public nothrow ControlCreateParams& PanelControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& PanelControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return controlCreateParams.SetWindowClassName("System.Windows.Panel");
     }
-    
+
     public class PanelCreateParams
     {
-        public nothrow PanelCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
+        public PanelCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
         {
         }
-        public nothrow PanelCreateParams& Defaults()
+        public PanelCreateParams& Defaults()
         {
             return *this;
         }
         public ControlCreateParams& controlCreateParams;
     }
-    
+
     public class Panel : ContainerControl
     {
         private enum Flags : sbyte
@@ -44,12 +44,25 @@ namespace System.Windows
         public Panel(PanelCreateParams& createParams) : base(createParams.controlCreateParams)
         {
         }
-        public override void PrintWindowTree(int level)
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
         {
             LogView* log = Application.GetLogView();
             if (log != null)
             {
-                log->WriteLine(string(' ', level) + "Panel." + Text() + ".handle=" + ToHexString(cast<ulong>(Handle())) + " " + ParentText() + "[" + Rect(Point(), GetSize()).ToString() + "]");
+                auto hexStringResult = ToHexString(cast<ulong>(Handle()));
+                if (hexStringResult.Error())
+                {
+                    return Result<bool>(ErrorId(hexStringResult.GetErrorId()));
+                }
+                auto parentTextResult = ParentText();
+                if (parentTextResult.Error())
+                {
+                    return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                }
+                auto result = log->WriteLine(string(' ', level) + "Panel." + Text() + ".handle=" + hexStringResult.Value() + " " + parentTextResult.Value() +
+                    "[" + Rect(Point(), GetSize()).ToString() + "]");
+                if (result.Error()) return result;
             }
             Component* child = Children().FirstChild();
             while (child != null)
@@ -57,42 +70,49 @@ namespace System.Windows
                 if (child is Control*)
                 {
                     Control* childControl = cast<Control*>(child);
-                    childControl->PrintWindowTree(level + 1);
+                    auto result = childControl->PrintWindowTree(level + 1);
+                    if (result.Error()) return result;
                 }
                 child = child->NextSibling();
             }
+            return Result<bool>(true);
         }
-        protected override void OnPaint(PaintEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
         {
-            try
+            if (DontPaint()) return Result<bool>(false);
+            if (Debug.Paint())
             {
-                if (DontPaint()) return;
-                if (Debug.Paint())
+                auto locationResult = Location();
+                if (locationResult.Error())
                 {
-                    Rect r(Location(), GetSize());
-                    LogView* log = Application.GetLogView();
-                    if (log != null)
-                    {
-                        log->WriteLine("Panel.OnPaint: " + r.ToString());
-                    }
+                    return Result<bool>(ErrorId(locationResult.GetErrorId()));
                 }
-                args.graphics.Clear(BackgroundColor());
-                base->OnPaint(args);
+                Point location = locationResult.Value();
+                Rect r(location, GetSize());
+                LogView* log = Application.GetLogView();
+                if (log != null)
+                {
+                    auto result = log->WriteLine("Panel.OnPaint: " + r.ToString());
+                    if (result.Error()) return result;
+                }
             }
-            catch (const Exception& ex)
+            auto clearResult = args.graphics.Clear(BackgroundColor());
+            if (clearResult.Error())
             {
-                MessageBox.Show(ex.Message());
+                return Result<bool>(ErrorId(clearResult.GetErrorId()));
             }
+            return base->OnPaint(args);
         }
-        public nothrow inline bool DontPaint() const
+        public inline bool DontPaint() const
         {
             return (flags & Flags.dontPaint) != Flags.none;
         }
-        public nothrow void SetDontPaint()
+        public void SetDontPaint()
         {
             flags = cast<Flags>(flags | Flags.dontPaint);
         }
-        public nothrow void ResetDontPaint()
+        public void ResetDontPaint()
         {
             flags = cast<Flags>(flags & ~Flags.dontPaint);
         }

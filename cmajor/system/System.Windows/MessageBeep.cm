@@ -21,20 +21,14 @@ namespace System.Windows
         MB_OK = 0x00000000u,
         MB_SIMPLE = 0xFFFFFFFFu
     }
-    public nothrow bool MessageBeep()
+    [nodiscard]
+    public Result<bool> MessageBeep()
     {
         return MessageBeep(MessageBeepType.MB_OK);
     }
-    public nothrow bool MessageBeep(MessageBeepType beepType)
+    [nodiscard]
+    public Result<bool> MessageBeep(MessageBeepType beepType)
     {
         return System.Windows.API.MessageBeep(beepType);
-    }
-    public void MessageBeepChecked()
-    {
-        System.Windows.API.MessageBeepChecked(MessageBeepType.MB_OK);
-    }
-    public void MessageBeepChecked(MessageBeepType beepType)
-    {
-        System.Windows.API.MessageBeepChecked(beepType);
     }
 }

@@ -1,4 +1,0 @@
-solution traffic;
-project <traffic.cmp>;
-activeProject traffic;
-activeBackEnd=llvm;

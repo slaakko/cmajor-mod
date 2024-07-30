@@ -1,16 +1,16 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Context.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Context.cpp' using cpp2cm version 1.0.0
 
 namespace System.RegularExpressions
 {
     public class Context
     {
-        public Context() :
-            any(), epsilon(eps)
+        public Context() : any(), epsilon(eps), count(0)
         {
         }
         public ~Context()
@@ -40,8 +40,8 @@ namespace System.RegularExpressions
         }
         public Symbol* MakeChar(uchar c)
         {
-            Map<uchar, Symbol*>.ConstIterator it = charSymbols.CFind(c);
-            if (it != charSymbols.CEnd())
+            auto it = charSymbols.Find(c);
+            if (it != charSymbols.End())
             {
                 return it->second;
             }
@@ -56,8 +56,8 @@ namespace System.RegularExpressions
         public Symbol* MakeRange(uchar start, uchar end)
         {
             Range range(start, end);
-            Map<Range, Symbol*>.ConstIterator it = rangeSymbols.CFind(range);
-            if (it != rangeSymbols.CEnd())
+            auto it = rangeSymbols.Find(range);
+            if (it != rangeSymbols.End())
             {
                 return it->second;
             }
@@ -75,11 +75,17 @@ namespace System.RegularExpressions
             symbols.Add(cls);
             return cls;
         }
+        public int GetNextRegExCount() 
+        {
+            return count++;
+        }
         private List<NfaState*> nfaStates;
         private List<Symbol*> symbols;
         private Any any;
         private Char epsilon;
         private Map<uchar, Symbol*> charSymbols;
         private Map<Range, Symbol*> rangeSymbols;
+        private int count;
     }
+
 } // namespace System.RegularExpressions

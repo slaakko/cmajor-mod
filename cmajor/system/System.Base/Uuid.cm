@@ -14,35 +14,35 @@ namespace System
         public typedef byte[size].Iterator Iterator;
         public typedef byte[size].ConstIterator ConstIterator;
 
-        public nothrow inline Iterator Begin()
+        public inline Iterator Begin()
         {
             return data.Begin();
         }
-        public nothrow inline ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return data.CBegin();
         }
-        public nothrow inline ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return data.CBegin();
         }
-        public nothrow inline Iterator End()
+        public inline Iterator End()
         {
             return data.End();
         }
-        public nothrow inline ConstIterator End() const
+        public inline ConstIterator End() const
         {
             return data.CEnd();
         }
-        public nothrow inline ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             return data.CEnd();
         }
 
-        public nothrow Uuid() : data()
+        public Uuid() : data()
         {
         }
-        public nothrow Uuid(ulong leftHalf, ulong rightHalf) : data()
+        public Uuid(ulong leftHalf, ulong rightHalf) : data()
         {
             data[0] = cast<byte>(leftHalf >> 56u);
             data[1] = cast<byte>(leftHalf >> 48u);
@@ -61,7 +61,7 @@ namespace System
             data[14] = cast<byte>(rightHalf >> 8u);
             data[15] = cast<byte>(rightHalf);
         }
-        public nothrow ulong LeftHalf() const
+        public ulong LeftHalf() const
         {
             ulong leftHalf;
             leftHalf = data[0];
@@ -74,7 +74,7 @@ namespace System
             leftHalf = (leftHalf << 8u) | data[7];
             return leftHalf;
         }
-        public nothrow ulong RightHalf() const
+        public ulong RightHalf() const
         {
             ulong rightHalf;
             rightHalf = data[8];
@@ -87,14 +87,14 @@ namespace System
             rightHalf = (rightHalf << 8u) | data[15];
             return rightHalf;
         }
-        public static nothrow Uuid Random()
+        public static Uuid Random()
         {
             return Uuid(Random64(), Random64());
         }
         public byte[size] data;
     }
 
-    public nothrow inline bool operator==(const Uuid& left, const Uuid& right)
+    public inline bool operator==(const Uuid& left, const Uuid& right)
     {
         for (long i = 0; i < Uuid.size; ++i)
         {
@@ -103,35 +103,60 @@ namespace System
         return true;
     }
 
-    public nothrow string ToString(const Uuid& uuid)
+    public bool operator<(const Uuid& left, const Uuid& right)
+    {
+        if (left.LeftHalf() < right.LeftHalf()) return true;
+        if (left.LeftHalf() > right.LeftHalf()) return false;
+        return left.RightHalf() < right.RightHalf();
+    }
+
+    [nodiscard]
+    public Result<string> ToString(const Uuid& uuid)
     {
         string s;
         int index = 0;
         for (byte x : uuid)
         {
-            s.Append(ToLower(ToHexString(x)));
+            auto hexStringResult = ToHexString(x);
+            if (hexStringResult.Error())
+            {
+                return Result<string>(ErrorId(hexStringResult.GetErrorId()));
+            }
+            auto toLowerResult = ToLower(hexStringResult.Value());
+            if (toLowerResult.Error())
+            {
+                return Result<string>(ErrorId(toLowerResult.GetErrorId()));
+            }
+            s.Append(toLowerResult.Value());
             if (index == 3 || index == 5 || index == 7 || index == 9)
             {
                 s.Append('-');
             }
             ++index;
         }
-        return s;
+        return Result<string>(s);
     }
 
-    public Uuid ParseUuid(const string& uuidHexString)
+    [nodiscard]
+    public Result<Uuid> ParseUuid(const string& uuidHexString)
     {
         if (uuidHexString.Length() != 2 * Uuid.size + 4)
         {
-            ThrowConversionException("wrong number of hex bytes in uuid string '" + uuidHexString + "'." + ToString(Uuid.size) + " hex bytes + 4 hyphens expected.");
+            string errorMessage = "wrong number of hex bytes in uuid string '" + uuidHexString + "'." + ToString(Uuid.size) + " hex bytes + 4 hyphens expected.";
+            int errorId = RtmAllocateError(errorMessage.Chars());
+            return Result<Uuid>(ErrorId(errorId));
         }
         Uuid uuid;
         int index = 0;
         for (long i = 0; i < Uuid.size; ++i)
         {
             string hexByteStr = uuidHexString.Substring(index, 2);
-            byte hexByte = ParseHexByte(hexByteStr);
-            uuid.data[i] = hexByte;
+            auto hexByte = ParseHexByte(hexByteStr);
+            if (hexByte.Error())
+            {
+                return Result<Uuid>(ErrorId(hexByte.GetErrorId()));
+            }
+            uuid.data[i] = hexByte.Value();
             ++index;
             ++index;
             if (i == 3 || i == 5 || i == 7 || i == 9)
@@ -139,11 +164,18 @@ namespace System
                 ++index;
             }
         }
-        return uuid;
+        return Result<Uuid>(uuid);
     }
-	
-	public TextWriter& operator<<(TextWriter& writer, const Uuid& uuid)
+
+    public TextWriter& operator<<(TextWriter& writer, const Uuid& uuid)
     {
-        return writer << ToString(uuid);
+        auto result = ToString(uuid);
+        if (result.Error())
+        {
+            writer.SetErrorId(result.GetErrorId());
+            return writer;
+        }
+        return writer << result.Value();
     }
+
 }

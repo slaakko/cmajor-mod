@@ -3,12 +3,14 @@
 // Distributed under the MIT license
 // =================================
 
+using System.IO;
 using System.Collections;
 using System.Unicode;
 
 namespace System
 {
-    public ustring ToUtf32(const string& utf8Str)
+    [nodiscard]
+    public Result<ustring> ToUtf32(const string& utf8Str)
     {
         ustring result;
         const char* p = utf8Str.Chars();
@@ -27,13 +29,15 @@ namespace System
             {
                 if (bytesRemaining < 2)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 uchar u = cast<uchar>(cast<uint>(0u));
                 byte b1 = cast<byte>(p[1]);
                 if ((b1 & 0xC0u) != 0x80u)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 byte shift = 0u;
                 for (byte i = 0u; i < 6u; ++i)
@@ -59,13 +63,15 @@ namespace System
             {
                 if (bytesRemaining < 3)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 uchar u = cast<uchar>(cast<uint>(0u));
                 byte b2 = cast<byte>(p[2]);
                 if ((b2 & 0xC0u) != 0x80u)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 byte shift = 0u;
                 for (byte i = 0u; i < 6u; ++i)
@@ -78,7 +84,8 @@ namespace System
                 byte b1 = cast<byte>(p[1]);
                 if ((b1 & 0xC0u) != 0x80u)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 for (byte i = 0u; i < 6u; ++i)
                 {
@@ -103,13 +110,15 @@ namespace System
             {
                 if (bytesRemaining < 4)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 uchar u = cast<uchar>(cast<uint>(0u));
                 byte b3 = cast<byte>(p[3]);
                 if ((b3 & 0xC0u) != 0x80u)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 byte shift = 0u;
                 for (byte i = 0u; i < 6u; ++i)
@@ -122,7 +131,8 @@ namespace System
                 byte b2 = cast<byte>(p[2]);
                 if ((b2 & 0xC0u) != 0x80u)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 for (byte i = 0u; i < 6u; ++i)
                 {
@@ -134,7 +144,8 @@ namespace System
                 byte b1 = cast<byte>(p[1]);
                 if ((b1 & 0xC0u) != 0x80u)
                 {
-                    ThrowConversionException("invalid UTF-8 sequence");
+                    int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 for (byte i = 0u; i < 6u; ++i)
                 {
@@ -157,13 +168,15 @@ namespace System
             }
             else
             {
-                ThrowConversionException("invalid UTF-8 sequence");
+                int errorId = AllocateError("invalid UTF-8 sequence: index=" + ToString(p - utf8Str.Chars()));
+                return Result<ustring>(ErrorId(errorId));
             }
         }
-        return result;
+        return Result<ustring>(result);
     }
-    
-    public ustring ToUtf32(const wstring& utf16Str)
+
+    [nodiscard]
+    public Result<ustring> ToUtf32(const wstring& utf16Str)
     {
         ustring result;
         const wchar* w = utf16Str.Chars();
@@ -180,7 +193,8 @@ namespace System
             {
                 if (cast<ushort>(w1) < 0xD800u || cast<ushort>(w1) > 0xDBFFu)
                 {
-                    ThrowConversionException("invalid UTF-16 sequence");
+                    int errorId = AllocateError("invalid UTF-16 sequence: index=" + ToString(w - utf16Str.Chars()));
+                    return Result<ustring>(ErrorId(errorId));
                 }
                 if (remaining > 0)
                 {
@@ -188,7 +202,8 @@ namespace System
                     --remaining;
                     if (cast<ushort>(w2) < 0xDC00u || cast<ushort>(w2) > 0xDFFFu)
                     {
-                        ThrowConversionException("invalid UTF-16 sequence");
+                        int errorId = AllocateError("invalid UTF-16 sequence: index=" + ToString(w - utf16Str.Chars()));
+                        return Result<ustring>(ErrorId(errorId));
                     }
                     else
                     {
@@ -199,27 +214,32 @@ namespace System
                 }
                 else
                 {
-                    ThrowConversionException("invalid UTF-16 sequence");
+                    int errorId = RtmAllocateError("invalid UTF-16 sequence");
+                    return Result<ustring>(ErrorId(errorId));
                 }
-            } 
+            }
         }
-        return result;
+        return Result<ustring>(result);
     }
 
-    public wstring ToUtf16(const ustring& utf32Str)
+    [nodiscard]
+    public Result<wstring> ToUtf16(const ustring& utf32Str)
     {
         wstring result;
+        int index = 0;
         for (uchar u : utf32Str)
         {
             if (cast<uint>(u) > 0x10FFFFu)
             {
-                ThrowConversionException("invalid UTF-32 code point");
+                int errorId = AllocateError("invalid UTF-32 code point: index=" + ToString(index));
+                return Result<wstring>(ErrorId(errorId));
             }
             if (cast<uint>(u) < 0x10000u)
             {
                 if (cast<uint>(u) >= 0xD800 && cast<uint>(u) <= 0xDFFF)
                 {
-                    ThrowConversionException("invalid UTF-32 code point (reserved for UTF-16)");
+                    int errorId = AllocateError("invalid UTF-32 code point (reserved for UTF-16): index=" + ToString(index));
+                    return Result<wstring>(ErrorId(errorId));
                 }
                 wchar x = cast<wchar>(u);
                 result.Append(x);
@@ -242,18 +262,27 @@ namespace System
                 result.Append(w1);
                 result.Append(w2);
             }
+            ++index;
         }
-        return result;
+        return Result<wstring>(result);
     }
 
-    public wstring ToUtf16(const string& utf8Str)
+    [nodiscard]
+    public Result<wstring> ToUtf16(const string& utf8Str)
     {
-        return ToUtf16(ToUtf32(utf8Str));
+        auto result = ToUtf32(utf8Str);
+        if (result.Error())
+        {
+            return Result<wstring>(ErrorId(result.GetErrorId()));
+        }
+        return ToUtf16(result.Value());
     }
 
-    public string ToUtf8(const ustring& utf32Str)
+    [nodiscard]
+    public Result<string> ToUtf8(const ustring& utf32Str)
     {
         string result;
+        int index = 0;
         for (uchar c : utf32Str)
         {
             uint x = cast<uint>(c);
@@ -335,369 +364,772 @@ namespace System
             }
             else
             {
-                ThrowConversionException("invalid UTF-32 code point");
+                int errorId = AllocateError("invalid UTF-32 code point: index=" + ToString(index));
+                return Result<string>(ErrorId(errorId));
             }
+            ++index;
         }
-        return result;
+        return Result<string>(result);
     }
 
-    public string ToUtf8(const wstring& utf16Str)
+    [nodiscard]
+    public Result<string> ToUtf8(const wstring& utf16Str)
     {
-        return ToUtf8(ToUtf32(utf16Str));
-    }
-    
-    public bool IsUpperLetter(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.Lu;
-    }
-
-    public bool IsLowerLetter(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.Ll;
-    }
-    
-    public bool IsTitleLetter(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.Lt;
-    }
-    
-    public bool IsModifierLetter(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.Lm;
+        auto result = ToUtf32(utf16Str);
+        if (result.Error())
+        {
+            return Result<string>(ErrorId(result.GetErrorId()));
+        }
+        return ToUtf8(result.Value());
     }
 
-    public bool IsOtherLetter(uchar c)
+    [nodiscard]
+    public Result<bool> IsUpperLetter(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Lo;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Lu);
     }
-    
-    public bool IsCasedLetter(uchar c)
+
+    [nodiscard]
+    public Result<bool> IsLowerLetter(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Ll);
+    }
+
+    [nodiscard]
+    public Result<bool> IsTitleLetter(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Lt);
+    }
+
+    [nodiscard]
+    public Result<bool> IsModifierLetter(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Lm);
+    }
+
+    [nodiscard]
+    public Result<bool> IsOtherLetter(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Lo);
+    }
+
+    [nodiscard]
+    public Result<bool> IsCasedLetter(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.LC);
     }
 
-    public bool IsLetter(uchar c)
+    [nodiscard]
+    public Result<bool> IsLetter(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.L);
     }
-                                                
-    public bool IsNonspacingMark(uchar c)
+
+    [nodiscard]
+    public Result<bool> IsNonspacingMark(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Mn;
-    }
-    
-    public bool IsSpacingMark(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.Mc;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Mn);
     }
 
-    public bool IsEnclosingMark(uchar c)
+    [nodiscard]
+    public Result<bool> IsSpacingMark(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Me;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Mc);
     }
-        
-    public bool IsMark(uchar c)
+
+    [nodiscard]
+    public Result<bool> IsEnclosingMark(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Me);
+    }
+
+    [nodiscard]
+    public Result<bool> IsMark(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.M);
     }
 
-    public bool IsDecimalNumber(uchar c)
+    [nodiscard]
+    public Result<bool> IsDecimalNumber(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Nd;
-    }
-    
-    public bool IsLetterNumber(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.Nl;
-    }
-
-    public bool IsOtherNumber(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.No;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Nd);
     }
 
-    public bool IsNumber(uchar c)
+    [nodiscard]
+    public Result<bool> IsLetterNumber(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Nl);
+    }
+
+    [nodiscard]
+    public Result<bool> IsOtherNumber(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.No);
+    }
+
+    [nodiscard]
+    public Result<bool> IsNumber(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.N);
     }
 
-    public bool IsConnectorPunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsConnectorPunctuation(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Pc;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Pc);
     }
 
-    public bool IsDashPunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsDashPunctuation(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Pd;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Pd);
     }
 
-    public bool IsOpenPunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsOpenPunctuation(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Ps;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Ps);
     }
 
-    public bool IsClosePunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsClosePunctuation(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Pe;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Pe);
     }
 
-    public bool IsInitialPunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsInitialPunctuation(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Pi;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Pi);
     }
 
-    public bool IsFinalPunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsFinalPunctuation(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Pf;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Pf);
     }
 
-    public bool IsOtherPunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsOtherPunctuation(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Po;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Po);
     }
 
-    public bool IsPunctuation(uchar c)
+    [nodiscard]
+    public Result<bool> IsPunctuation(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.P);
     }
 
-    public bool IsMathSymbol(uchar c)
+    [nodiscard]
+    public Result<bool> IsMathSymbol(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Sm;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Sm);
     }
 
-    public bool IsCurrencySymbol(uchar c)
+    [nodiscard]
+    public Result<bool> IsCurrencySymbol(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Sc;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Sc);
     }
 
-    public bool IsModifierSymbol(uchar c)
+    [nodiscard]
+    public Result<bool> IsModifierSymbol(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Sk;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Sk);
     }
 
-    public bool IsOtherSymbol(uchar c)
+    [nodiscard]
+    public Result<bool> IsOtherSymbol(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.So;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.So);
     }
 
-    public bool IsSymbol(uchar c)
+    [nodiscard]
+    public Result<bool> IsSymbol(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.S);
     }
 
-    public bool IsSpaceSeparator(uchar c)
+    [nodiscard]
+    public Result<bool> IsSpaceSeparator(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Zs;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Zs);
     }
 
-    public bool IsLineSeparator(uchar c)
+    [nodiscard]
+    public Result<bool> IsLineSeparator(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Zl;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Zl);
     }
 
-    public bool IsParagraphSeparator(uchar c)
+    [nodiscard]
+    public Result<bool> IsParagraphSeparator(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Zp;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Zp);
     }
-    
-    public bool IsSeparator(uchar c)
+
+    [nodiscard]
+    public Result<bool> IsSeparator(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.Z);
     }
-    
-    public bool IsControl(uchar c)
+
+    [nodiscard]
+    public Result<bool> IsControl(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Cc;
-    }
-    
-    public bool IsFormat(uchar c)
-    {
-        return GetGeneralCategory(c) == GeneralCategoryId.Cf;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Cc);
     }
 
-    public bool IsSurrogate(uchar c)
+    [nodiscard]
+    public Result<bool> IsFormat(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Cs;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Cf);
     }
 
-    public bool IsPrivateUse(uchar c)
+    [nodiscard]
+    public Result<bool> IsSurrogate(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Co;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Cs);
     }
 
-    public bool IsUnassigned(uchar c)
+    [nodiscard]
+    public Result<bool> IsPrivateUse(uchar c)
     {
-        return GetGeneralCategory(c) == GeneralCategoryId.Cn;
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Co);
     }
 
-    public bool IsOther(uchar c)
+    [nodiscard]
+    public Result<bool> IsUnassigned(uchar c)
+    {
+        auto result = GetGeneralCategory(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return Result<bool>(result.Value() == GeneralCategoryId.Cn);
+    }
+
+    [nodiscard]
+    public Result<bool> IsOther(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.C);
     }
 
-    public bool IsGraphic(uchar c)
+    [nodiscard]
+    public Result<bool> IsGraphic(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.G);
     }
 
-    public bool IsBaseChar(uchar c)
+    [nodiscard]
+    public Result<bool> IsBaseChar(uchar c)
     {
         return HasGeneralCategory(c, GeneralCategoryId.B);
     }
 
-    public bool IsCombining(uchar c)
+    [nodiscard]
+    public Result<bool> IsCombining(uchar c)
     {
         return IsMark(c);
     }
 
-    public uchar ToUpper(uchar c)
+    [nodiscard]
+    public Result<uchar> ToUpper(uchar c)
     {
-        return GetCharacterInfo(c).Upper();
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<uchar>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<uchar>(characterInfo->Upper());
     }
 
-    public uchar ToLower(uchar c)
+    [nodiscard]
+    public Result<uchar> ToLower(uchar c)
     {
-        return GetCharacterInfo(c).Lower();
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<uchar>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<uchar>(characterInfo->Lower());
     }
 
-    public uchar ToTitle(uchar c)
+    [nodiscard]
+    public Result<uchar> ToTitle(uchar c)
     {
-        return GetCharacterInfo(c).Title();
-    }
-    
-    public uchar ToFolding(uchar c)
-    {
-        return GetCharacterInfo(c).Folding();
-    }
-    
-    public ustring FullUpper(uchar c)
-    {
-        return GetExtendedCharacterInfo(c).FullUpper();
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<uchar>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<uchar>(characterInfo->Title());
     }
 
-    public ustring FullLower(uchar c)
+    [nodiscard]
+    public Result<uchar> ToFolding(uchar c)
     {
-        return GetExtendedCharacterInfo(c).FullLower();
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<uchar>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<uchar>(characterInfo->Folding());
     }
 
-    public ustring FullTitle(uchar c)
+    [nodiscard]
+    public Result<ustring> FullUpper(uchar c)
     {
-        return GetExtendedCharacterInfo(c).FullTitle();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<ustring>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<ustring>(extendedCharacterInfo->FullUpper());
     }
 
-    public ustring FullFolding(uchar c)
+    [nodiscard]
+    public Result<ustring> FullLower(uchar c)
     {
-        return GetExtendedCharacterInfo(c).FullFolding();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<ustring>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<ustring>(extendedCharacterInfo->FullLower());
     }
 
-    public bool IsWhiteSpace(uchar c)
+    [nodiscard]
+    public Result<ustring> FullTitle(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.whiteSpace);
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<ustring>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<ustring>(extendedCharacterInfo->FullTitle());
     }
 
-    public bool IsAlphabetic(uchar c)
+    [nodiscard]
+    public Result<ustring> FullFolding(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.alphabetic);
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<ustring>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<ustring>(extendedCharacterInfo->FullFolding());
     }
 
-    public bool IsAsciiHexDigit(uchar c)
+    [nodiscard]
+    public Result<bool> IsWhiteSpace(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.asciiHexDigit);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.whiteSpace));
     }
 
+    [nodiscard]
+    public Result<bool> IsAlphabetic(uchar c)
+    {
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.alphabetic));
+    }
+
+    [nodiscard]
+    public Result<bool> IsAsciiHexDigit(uchar c)
+    {
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.asciiHexDigit));
+    }
+
+    [nodiscard]
     public bool IsAsciiDigit(uchar c)
     {
         return cast<uint>(c) < 256u && IsDigit(cast<char>(c));
     }
 
-    public bool IsUppercase(uchar c)
+    [nodiscard]
+    public Result<bool> IsUppercase(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.uppercase);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.uppercase));
     }
 
-    public bool IsLowercase(uchar c)
+    [nodiscard]
+    public Result<bool> IsLowercase(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.lowercase);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.lowercase));
     }
 
-    public bool IsIdStart(uchar c)
+    [nodiscard]
+    public Result<bool> IsIdStart(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.idStart);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.idStart));
     }
 
-    public bool IsIdCont(uchar c)
+    [nodiscard]
+    public Result<bool> IsIdCont(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.idContinue);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.idContinue));
     }
 
-    public bool IsGraphemeBase(uchar c)
+    [nodiscard]
+    public Result<bool> IsGraphemeBase(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.graphemeBase);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.graphemeBase));
     }
 
-    public bool IsGraphemeExtender(uchar c)
+    [nodiscard]
+    public Result<bool> IsGraphemeExtender(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.graphemeExtend);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.graphemeExtend));
     }
 
-    public bool IsOtherLower(uchar c)
+    [nodiscard]
+    public Result<bool> IsOtherLower(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.otherLowercase);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.otherLowercase));
     }
 
-    public bool IsOtherUpper(uchar c)
+    [nodiscard]
+    public Result<bool> IsOtherUpper(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.otherUppercase);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.otherUppercase));
     }
 
-    public string GetCharacterName(uchar c)
+    [nodiscard]
+    public Result<string> GetCharacterName(uchar c)
     {
-        return GetExtendedCharacterInfo(c).CharacterName();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<string>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<string>(extendedCharacterInfo->CharacterName());
     }
 
-    public string GetUnicode1Name(uchar c)
+    [nodiscard]
+    public Result<string> GetUnicode1Name(uchar c)
     {
-        return GetExtendedCharacterInfo(c).Unicode1Name();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<string>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<string>(extendedCharacterInfo->Unicode1Name());
     }
 
-    public NumericTypeId GetNumericType(uchar c)
+    [nodiscard]
+    public Result<NumericTypeId> GetNumericType(uchar c)
     {
-        return GetExtendedCharacterInfo(c).NumericTypeValue();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<NumericTypeId>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<NumericTypeId>(extendedCharacterInfo->NumericTypeValue());
     }
 
-    public ustring GetNumericValue(uchar c)
+    [nodiscard]
+    public Result<ustring> GetNumericValue(uchar c)
     {
-        return GetExtendedCharacterInfo(c).NumericValue();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<ustring>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<ustring>(extendedCharacterInfo->NumericValue());
     }
 
-    public bool IsBidiMirrored(uchar c)
+    [nodiscard]
+    public Result<bool> IsBidiMirrored(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.bidiMirrored);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.bidiMirrored));
     }
 
-    public bool IsBidiControl(uchar c)
+    [nodiscard]
+    public Result<bool> IsBidiControl(uchar c)
     {
-        return GetCharacterInfo(c).GetBinaryProperty(BinaryPropertyId.bidiControl);
+        auto result = GetCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        const CharacterInfo* characterInfo = result.Value();
+        return Result<bool>(characterInfo->GetBinaryProperty(BinaryPropertyId.bidiControl));
     }
 
-    public uchar GetBidiMirroringGlyph(uchar c)
+    [nodiscard]
+    public Result<uchar> GetBidiMirroringGlyph(uchar c)
     {
-        return GetExtendedCharacterInfo(c).BidiMirroringGlyph();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<uchar>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<uchar>(extendedCharacterInfo->BidiMirroringGlyph());
     }
 
-    public BidiPairedBracketTypeId GetBidiPairedBracketType(uchar c)
+    [nodiscard]
+    public Result<BidiPairedBracketTypeId> GetBidiPairedBracketType(uchar c)
     {
-        return GetExtendedCharacterInfo(c).BidiPairedBracketTypeValue();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<BidiPairedBracketTypeId>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<BidiPairedBracketTypeId>(extendedCharacterInfo->BidiPairedBracketTypeValue());
     }
 
-    public uchar GetBidiPairedBracket(uchar c)
+    [nodiscard]
+    public Result<uchar> GetBidiPairedBracket(uchar c)
     {
-        return GetExtendedCharacterInfo(c).BidiPairedBracket();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<uchar>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<uchar>(extendedCharacterInfo->BidiPairedBracket());
     }
 
-    public const List<Alias>& Aliases(uchar c)
+    [nodiscard]
+    public Result<List<Alias>> Aliases(uchar c)
     {
-        return GetExtendedCharacterInfo(c).Aliases();
+        auto result = GetExtendedCharacterInfo(c);
+        if (result.Error())
+        {
+            return Result<List<Alias>>(ErrorId(result.GetErrorId()));
+        }
+        const ExtendedCharacterInfo* extendedCharacterInfo = result.Value();
+        return Result<List<Alias>>(extendedCharacterInfo->Aliases());
     }
 }

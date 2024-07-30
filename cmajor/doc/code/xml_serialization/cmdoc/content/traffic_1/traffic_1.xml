@@ -1,0 +1,42 @@
+<symbolTable id="traffic_1" module="traffic_1">
+ <files>
+  <file name="traffic_1/traffic_1.cm" path="file/traffic_1.cm.html"/>
+ </files>
+ <namespace docPath="../../traffic_1/doc/ns_.html" extPath="traffic_1/doc/ns_.html" id="ns_" name="">
+  <classes>
+   <class baseClass="class_XmlSerializable_2F380F4A54974C72B6F2B0C44395618C7444BA87" docPath="../../traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html" extPath="traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html" fileName="traffic_1/traffic_1.cm" filePath="../../traffic_1/file/traffic_1.cm.html" id="class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81" line="8" name="Person" specifiers="public">
+    <ctorsDtors>
+     <ctorDtor docPath="../../traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#default_constructor_Person_264073066CAC39ABD154352E3FC24F87F3167124" extPath="traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#default_constructor_Person_264073066CAC39ABD154352E3FC24F87F3167124" fileName="traffic_1/traffic_1.cm" filePath="../../traffic_1/file/traffic_1.cm.html" id="default_constructor_Person_264073066CAC39ABD154352E3FC24F87F3167124" kind="Constructor" line="10" name="Person" specifiers="public"/>
+     <ctorDtor docPath="../../traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#constructor_Person_B079D8F5453E01A1644E33DF93B66437B9DF33FD" extPath="traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#constructor_Person_B079D8F5453E01A1644E33DF93B66437B9DF33FD" fileName="traffic_1/traffic_1.cm" filePath="../../traffic_1/file/traffic_1.cm.html" id="constructor_Person_B079D8F5453E01A1644E33DF93B66437B9DF33FD" kind="Constructor" line="13" name="Person" specifiers="public">
+      <parameters>
+       <parameter id="parameter_name__EFF79F08DE44DDC159912CAF78AE2351767FB56D" name="name_" type="31c9ab72-f988-9b73-f807-03ecb09a4c84"/>
+      </parameters>
+     </ctorDtor>
+    </ctorsDtors>
+    <functions>
+     <function const="true" docPath="../../traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#member_function_Name_Person_3ABC353299A9239AB5CEB7350B74C4F18AFE8CC7" extPath="traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#member_function_Name_Person_3ABC353299A9239AB5CEB7350B74C4F18AFE8CC7" fileName="traffic_1/traffic_1.cm" filePath="../../traffic_1/file/traffic_1.cm.html" id="member_function_Name_Person_3ABC353299A9239AB5CEB7350B74C4F18AFE8CC7" kind="Member Function" line="16" name="Name" returnType="31c9ab72-f988-9b73-f807-03ecb09a4c84" specifiers="public inline"/>
+    </functions>
+    <variables>
+     <variable docPath="../../traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#member_variable_name_EA2777387A843556DE3B21FC1CBF36B769B24045" extPath="traffic_1/doc/class_Person_17212F8E1E3CD74217560E58050BD2106CD46E81.html#member_variable_name_EA2777387A843556DE3B21FC1CBF36B769B24045" id="member_variable_name_EA2777387A843556DE3B21FC1CBF36B769B24045" name="name" specifiers="private" type="69a8af4e-9c1f-ad80-ca48-afa56dd1720d"/>
+    </variables>
+   </class>
+  </classes>
+  <functions>
+   <function docPath="../../traffic_1/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="traffic_1/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="traffic_1/traffic_1.cm" filePath="../../traffic_1/file/traffic_1.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="23" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers=""/>
+  </functions>
+ </namespace>
+ <types>
+  <basicType id="e5a0727d-47ad-59b9-abb6-584b4a4b7614" name="char"/>
+  <specialization id="69a8af4e-9c1f-ad80-ca48-afa56dd1720d" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+   <templateArgumentTypes>
+    <templateArgumentType ref="e5a0727d-47ad-59b9-abb6-584b4a4b7614"/>
+   </templateArgumentTypes>
+  </specialization>
+  <derivedType id="31c9ab72-f988-9b73-f807-03ecb09a4c84" name="const String&lt;char>&amp;">
+   <derivation name="const"/>
+   <derivation baseType="69a8af4e-9c1f-ad80-ca48-afa56dd1720d"/>
+   <derivation name="&amp;"/>
+  </derivedType>
+  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
+ </types>
+</symbolTable>

@@ -1,0 +1,3 @@
+project xpath_test;
+target=program;
+source <xpath_test.cm>;

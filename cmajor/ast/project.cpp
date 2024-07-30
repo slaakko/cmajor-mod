@@ -99,7 +99,6 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
     if (backend == BackEnd::llvm)
     {
         std::filesystem::path sld(CmajorRootDir());
-        sld /= "masm";
         sld /= "system";
         sld /= "lib";
         sld /= "llvm";
@@ -118,7 +117,6 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
     else if (backend == BackEnd::cpp)
     {
         std::filesystem::path sld(CmajorRootDir());
-        sld /= "masm";
         sld /= "system";
         sld /= "lib";
         sld /= "cpp";
@@ -128,9 +126,9 @@ std::string CmajorSystemLibDir(const std::string& config, BackEnd backend)
     else if (backend == BackEnd::masm)
     {
         std::filesystem::path sld(CmajorRootDir());
-        sld /= "masm";
         sld /= "system";
         sld /= "lib";
+        sld /= "masm";
         sld /= config;
         return util::GetFullPath(sld.generic_string());
     }

@@ -7,23 +7,24 @@ using System.Lex;
 
 namespace System.Json
 {
-    public void ParseHexChar(uchar& value, const uchar*& p, const uchar* e, const System.Lex.Token& token)
+    [nodiscard]
+    public Result<bool> ParseHexChar(uchar& value, const uchar*& p, const uchar* e, const System.Lex.Token& token)
     {
         if (p != e)
         {
             switch (cast<uchar>(*p))
             {
-                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': 
+                case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
                 {
                     value = cast<uchar>(16 * cast<int>(value) + cast<int>(*p) - cast<int>('0'));
                     break;
                 }
-                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': 
+                case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
                 {
                     value = cast<uchar>(16 * cast<int>(value) + 10 + cast<int>(*p) - cast<int>('A'));
                     break;
                 }
-                case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': 
+                case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
                 {
                     value = cast<uchar>(16 * cast<int>(value) + 10 + cast<int>(*p) - cast<int>('a'));
                     break;
@@ -33,10 +34,14 @@ namespace System.Json
         }
         else
         {
-            throw Exception("hex character expected at line " + ToString(token.line) + ": " + ToUtf8(token.match.ToString()));
+            auto matchResult = ToUtf8(token.match.ToString());
+            string matchStr;
+            if (!matchResult.Error()) matchStr = matchResult.Value();
+            int errorId = AllocateError("hex character expected at line " + ToString(token.line) + ": " + matchStr);
+            return Result<bool>(ErrorId(errorId));
         }
     }
-    public uchar ParseEscape(const uchar*& p, const uchar* e, const System.Lex.Token& token)
+    public Result<uchar> ParseEscape(const uchar*& p, const uchar* e, const System.Lex.Token& token)
     {
         uchar value = '\0';
         if (p != e && (*p == 'x' || *p == 'X'))
@@ -44,7 +49,8 @@ namespace System.Json
             ++p;
             while (p != e && ((*p >= '0' && *p <= '9') || (*p >= 'a' && *p <= 'f') || (*p >= 'A' && *p <= 'F')))
             {
-                ParseHexChar(value, p, e, token);
+                auto hexResult = ParseHexChar(value, p, e, token);
+                if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
             }
         }
         else if (p != e && (*p == 'd' || *p == 'D'))
@@ -67,22 +73,34 @@ namespace System.Json
         else if (p != e && *p == 'u')
         {
             ++p;
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
+            auto hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
         }
         else if (p != e && *p == 'U')
         {
             ++p;
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
-            ParseHexChar(value, p, e, token);
+            auto hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
+            hexResult = ParseHexChar(value, p, e, token);
+            if (hexResult.Error()) return Result<uchar>(ErrorId(hexResult.GetErrorId()));
         }
         else if (p != e)
         {
@@ -107,9 +125,9 @@ namespace System.Json
             }
             ++p;
         }
-        return value;
+        return Result<uchar>(value);
     }
-    public ustring ParseStringLiteral(const Token& token)
+    public Result<ustring> ParseStringLiteral(const Token& token)
     {
         ustring value;
         uchar* p = token.match.begin;
@@ -123,7 +141,9 @@ namespace System.Json
             if (*p == '\\')
             {
                 ++p;
-                value.Append(ParseEscape(p, e, token));
+                auto escapeResult = ParseEscape(p, e, token);
+                if (escapeResult.Error()) return Result<ustring>(ErrorId(escapeResult.GetErrorId()));
+                value.Append(escapeResult.Value());
             }
             else
             {
@@ -137,13 +157,19 @@ namespace System.Json
         }
         if (p != e)
         {
-            throw Exception("invalid string literal at line " + ToString(token.line) + ": " + ToUtf8(token.match.ToString()));
+            string matchValue;
+            auto matchResult = ToUtf8(token.match.ToString());
+            if (!matchResult.Error()) matchValue = matchResult.Value();
+            int errorId = AllocateError("invalid string literal at line " + ToString(token.line) + ": " + matchValue);
+            return Result<ustring>(ErrorId(errorId));
         }
-        return value;
+        return Result<ustring>(value);
     }
-    
-    public double ParseNumber(const Token& token)
+
+    public Result<double> ParseNumber(const Token& token)
     {
-        return ParseDouble(ToUtf8(token.match.ToString()));
+        auto utf8result = ToUtf8(token.match.ToString());
+        if (utf8result.Error()) return Result<double>(ErrorId(utf8result.GetErrorId()));
+        return ParseDouble(utf8result.Value());
     }
 }

@@ -1,0 +1,13 @@
+<symbolTable id="xpath_socrates" module="xpath_socrates">
+ <files>
+  <file name="xpath_socrates/xpath_socrates.cm" path="file/xpath_socrates.cm.html"/>
+ </files>
+ <namespace docPath="../../xpath_socrates/doc/ns_.html" extPath="xpath_socrates/doc/ns_.html" id="ns_" name="">
+  <functions>
+   <function docPath="../../xpath_socrates/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="xpath_socrates/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="xpath_socrates/xpath_socrates.cm" filePath="../../xpath_socrates/file/xpath_socrates.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="3" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers=""/>
+  </functions>
+ </namespace>
+ <types>
+  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
+ </types>
+</symbolTable>

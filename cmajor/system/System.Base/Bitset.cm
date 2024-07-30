@@ -9,16 +9,9 @@ namespace System.Collections
 {
     public class Bitset
     {
-        public nothrow Bitset() : numBits(0), bits()
+        public Bitset() : numBits(0), bits()
         {
-            try
-            {
-                bits.Add(0u);
-            }
-            catch (const Exception& ex)
-            {
-                RtExit(1);
-            }
+            bits.Add(0u);
         }
         public Bitset(long numBits_) : numBits(0), bits()
         {
@@ -37,25 +30,22 @@ namespace System.Collections
         }
         public default Bitset(const Bitset&);
         public default void operator=(const Bitset&);
-        public default nothrow Bitset(Bitset&&);
-        public default nothrow void operator=(Bitset&&);
+        public default Bitset(Bitset&&);
+        public default void operator=(Bitset&&);
         public default ~Bitset();
-        public nothrow void Clear()
+        public void Clear()
         {
             numBits = 0;
             bits.Clear();
         }
-        public nothrow inline long Count() const
+        public inline long Count() const
         {
             return numBits;
         }
         public void Resize(long numBits_)
         {
             numBits = numBits_;
-            if (numBits < 0)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(numBits >= 0);
             if (numBits > 0)
             {
                 bits.Resize(1 + NumFullBlocks());
@@ -65,7 +55,7 @@ namespace System.Collections
                 bits.Resize(1);
             }
         }
-        public nothrow void Set()
+        public void Set()
         {
             long n = bits.Count();
             for (long i = 0; i < n; ++i)
@@ -73,7 +63,7 @@ namespace System.Collections
                 bits[i] = allOne;
             }
         }
-        public nothrow void Reset()
+        public void Reset()
         {
             long n = bits.Count();
             for (long i = 0; i < n; ++i)
@@ -83,10 +73,7 @@ namespace System.Collections
         }
         public void CheckPos(long pos)
         {
-            if (pos < 0 || pos >= numBits)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
+            #assert(pos >= 0 && pos < numBits);
         }
         public inline void Set(long pos)
         {
@@ -100,7 +87,7 @@ namespace System.Collections
             ulong& b = bits[pos / blockSize];
             b = b & ~(1u << (cast<ulong>(pos) & blockMask));
         }
-        public nothrow void Set(long pos, bool bit)
+        public void Set(long pos, bool bit)
         {
             if (bit)
             {
@@ -111,7 +98,7 @@ namespace System.Collections
                 Reset(pos);
             }
         }
-        public nothrow void Flip()
+        public void Flip()
         {
             long n = bits.Count();
             for (long i = 0; i < n; ++i)
@@ -119,23 +106,23 @@ namespace System.Collections
                 bits[i] = ~(bits[i]);
             }
         }
-        public inline nothrow void Flip(long pos)
+        public inline void Flip(long pos)
         {
             CheckPos(pos);
             ulong& b = bits[pos / blockSize];
             b = b ^ (1u << (cast<ulong>(pos) & blockMask));
         }
-        public inline nothrow bool operator[](long index) const
+        public inline bool operator[](long index) const
         {
             return Test(index);
         }
-        public inline nothrow bool Test(long pos) const
+        public inline bool Test(long pos) const
         {
             CheckPos(pos);
             ulong b = bits[pos / blockSize];
             return (b & (1u << (cast<ulong>(pos) & blockMask))) != 0u;
         }
-        public nothrow bool All() const
+        public bool All() const
         {
             long n = NumFullBlocks();
             for (long i = 0; i < n; ++i)
@@ -154,7 +141,7 @@ namespace System.Collections
             }
             return true;
         }
-        public nothrow bool Any() const
+        public bool Any() const
         {
             long n = NumFullBlocks();
             for (long i = 0; i < n; ++i)
@@ -173,7 +160,7 @@ namespace System.Collections
             }
             return false;
         }
-        public nothrow bool None() const
+        public bool None() const
         {
             long n = NumFullBlocks();
             for (long i = 0; i < n; ++i)
@@ -192,7 +179,7 @@ namespace System.Collections
             }
             return true;
         }
-        public nothrow string ToString() const
+        public string ToString() const
         {
             string s;
             s.Reserve(numBits);
@@ -209,15 +196,15 @@ namespace System.Collections
             }
             return s;
         }
-        public inline nothrow long NumBits() const
+        public inline long NumBits() const
         {
             return numBits;
         }
-        public inline nothrow List<ulong>& Bits() const
+        public inline List<ulong>& Bits() const
         {
             return bits;
         }
-        public inline nothrow long NumFullBlocks() const
+        public inline long NumFullBlocks() const
         {
             if (numBits == 0)
             {
@@ -225,7 +212,7 @@ namespace System.Collections
             }
             return (numBits - 1) / blockSize;
         }
-        public inline nothrow long LastBlockStartIndex() const
+        public inline long LastBlockStartIndex() const
         {
             return NumFullBlocks() * blockSize;
         }

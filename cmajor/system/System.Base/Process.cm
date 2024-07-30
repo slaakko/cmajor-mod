@@ -4,10 +4,11 @@
 // =================================
 
 using System;
+using System.IO;
 
 namespace System.Threading
 {
-    public class Process
+    public class Process : IOBase
     {
         public enum Redirections : int
         {
@@ -22,128 +23,155 @@ namespace System.Threading
         }
         public Process(const string& command, Redirections redirections_) : redirections(redirections_)
         {
-            int errorStringHandle = -1;
-            nativeProcess = RtCreateProcess(command.Chars(), cast<int>(redirections), errorStringHandle);
-            if (nativeProcess == null)
+            int errorId = 0;
+            nativeProcess = RtmCreateProcess(command.Chars(), cast<int>(redirections), errorId);
+            if (errorId > 0)
             {
-                string errorString = RtGetString(errorStringHandle);
-                RtDisposeString(errorStringHandle);
-                throw ThreadingException("Could not run " + command + ": " + errorString);
+                SetErrorId(errorId);
             }
         }
         public ~Process()
         {
             if (nativeProcess != null)
             {
-                RtDeleteProcess(nativeProcess);
+                RtmDeleteProcess(nativeProcess);
             }
         }
-        public bool Running()
+        public Result<bool> Running()
         {
-            int errorStringHandle = -1;
-            if (RtProcessRunning(nativeProcess, errorStringHandle))
+            if (Error())
             {
-                return true;
+                return Result<bool>(ErrorId(GetErrorId()));
             }
-            if (errorStringHandle != -1)
+            int errorId = 0;
+            if (RtmProcessRunning(nativeProcess, errorId))
             {
-                string errorString = RtGetString(errorStringHandle);
-                RtDisposeString(errorStringHandle);
-                throw ThreadingException(errorString);
+                return Result<bool>(true);
             }
-            return false;
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(false);
         }
-        public void WaitForExit()
+        public Result<bool> WaitForExit()
         {
-            int errorStringHandle = -1;
-            bool result = RtProcessWaitForExit(nativeProcess, errorStringHandle);
-            if (!result)
+            if (Error())
             {
-                string errorString = RtGetString(errorStringHandle);
-                RtDisposeString(errorStringHandle);
-                throw ThreadingException(errorString);
+                return Result<bool>(ErrorId(GetErrorId()));
             }
-        }
-        public int ExitCode()
-        {
-            int errorStringHandle = -1;
-            int exitCode = RtProcessExitCode(nativeProcess, errorStringHandle);
-            if (errorStringHandle != -1)
+            int errorId = 0;
+            bool result = RtmProcessWaitForExit(nativeProcess, errorId);
+            if (errorId > 0)
             {
-                string errorString = RtGetString(errorStringHandle);
-                RtDisposeString(errorStringHandle);
-                throw ThreadingException(errorString);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
-            return exitCode;
+            return Result<bool>(true);
         }
-        public void Terminate()
+        public Result<int> ExitCode()
         {
-            int errorStringHandle = -1;
-            if (!RtProcessTerminate(nativeProcess, errorStringHandle))
+            if (Error())
             {
-                if (errorStringHandle != -1)
+                return Result<int>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            int exitCode = RtmProcessExitCode(nativeProcess, errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<int>(ErrorId(errorId));
+            }
+            return Result<int>(exitCode);
+        }
+        public Result<bool> Terminate()
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            if (!RtmProcessTerminate(nativeProcess, errorId))
+            {
+                if (errorId > 0)
                 {
-                    string errorString = RtGetString(errorStringHandle);
-                    RtDisposeString(errorStringHandle);
-                    throw ThreadingException(errorString);
+                    SetErrorId(errorId);
+                    return Result<bool>(ErrorId(errorId));
                 }
             }
+            return Result<bool>(true);
         }
-        public bool Eof(StdHandle handle)
+        public Result<bool> Eof(StdHandle handle)
         {
-            int errorStringHandle = -1;
-            bool eof = RtProcessEof(nativeProcess, cast<int>(handle), errorStringHandle);
-            if (errorStringHandle != -1)
+            if (Error())
             {
-                string errorString = RtGetString(errorStringHandle);
-                RtDisposeString(errorStringHandle);
-                throw ThreadingException(errorString);
+                return Result<bool>(ErrorId(GetErrorId()));
             }
-            return eof;
-        }
-        public string ReadLine(StdHandle handle)
-        {
-            int errorStringHandle = -1;
-            int stringHandle = RtProcessReadLine(nativeProcess, cast<int>(handle), errorStringHandle);
-            if (errorStringHandle != -1)
+            int errorId = 0;
+            bool eof = RtmProcessEof(nativeProcess, cast<int>(handle), errorId);
+            if (errorId > 0)
             {
-                string errorString = RtGetString(errorStringHandle);
-                RtDisposeString(errorStringHandle);
-                throw ThreadingException(errorString);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
-            string line = RtGetString(stringHandle);
-            RtDisposeString(stringHandle);
-            return line;
+            return Result<bool>(eof);
         }
-        public string ReadToEnd(StdHandle handle)
+        public Result<string> ReadLine(StdHandle handle)
         {
-            int errorStringHandle = -1;
-            int stringHandle = RtProcessReadToEnd(nativeProcess, cast<int>(handle), errorStringHandle);
-            if (errorStringHandle != -1)
+            if (Error())
             {
-                string errorString = RtGetString(errorStringHandle);
-                RtDisposeString(errorStringHandle);
-                throw ThreadingException(errorString);
+                return Result<string>(ErrorId(GetErrorId()));
             }
-            string content = RtGetString(stringHandle);
-            RtDisposeString(stringHandle);
-            return content;
+            int errorId = 0;
+            int stringHandle = RtmProcessReadLine(nativeProcess, cast<int>(handle), errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<string>(ErrorId(errorId));
+            }
+            string line = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+            return Result<string>(line);
         }
-        public void WriteLine(const string& line)
+        public Result<string> ReadToEnd(StdHandle handle)
         {
+            if (Error())
+            {
+                return Result<string>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            int stringHandle = RtmProcessReadToEnd(nativeProcess, cast<int>(handle), errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<string>(ErrorId(errorId));
+            }
+            string content = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+            return Result<string>(content);
+        }
+        public Result<bool> WriteLine(const string& line)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             if ((redirections & Redirections.processStdIn) != Redirections.none)
             {
-                int errorStringHandle = -1;
-                if (!RtProcessWriteLine(nativeProcess, line.Chars(), errorStringHandle))
+                int errorId = 0;
+                if (!RtmProcessWriteLine(nativeProcess, line.Chars(), errorId))
                 {
-                    string error = RtGetString(errorStringHandle);
-                    RtDisposeString(errorStringHandle);
-                    throw ThreadingException(error);
+                    SetErrorId(errorId);
+                    return Result<bool>(ErrorId(errorId));
                 }
             }
             else
             {
-                throw Exception("process stdin not redirected");
+                string errorMessage = "process stdin not redirected";
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
         }
         private void* nativeProcess;

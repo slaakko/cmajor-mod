@@ -1,0 +1,4 @@
+solution xml_serialization;
+project <traffic_1/traffic_1.cmp>;
+project <traffic_2/traffic_2.cmp>;
+project <traffic_3/traffic_3.cmp>;

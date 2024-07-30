@@ -15,27 +15,30 @@ namespace System.Collections
         public LinkedListNode(const ValueType& value_, LinkedListNode<T>* prev_, LinkedListNode<T>* next_) : value(value_), prev(prev_), next(next_)
         {
         }
-        public inline nothrow const ValueType& Value() const
+        public LinkedListNode(ValueType&& value_, LinkedListNode<T>* prev_, LinkedListNode<T>* next_) : value(value_), prev(prev_), next(next_)
+        {
+        }
+        public inline const ValueType& Value() const
         {
             return value;
         }
-        public inline nothrow ValueType& Value()
+        public inline ValueType& Value()
         {
             return value;
         }
-        public inline nothrow LinkedListNode<T>* Prev() const
+        public inline LinkedListNode<T>* Prev() const
         {
             return prev;
         }
-        public inline nothrow void SetPrev(LinkedListNode<T>* prev_)
+        public inline void SetPrev(LinkedListNode<T>* prev_)
         {
             prev = prev_;
         }
-        public inline nothrow LinkedListNode<T>* Next() const
+        public inline LinkedListNode<T>* Next() const
         {
             return next;
         }
-        public inline nothrow void SetNext(LinkedListNode<T>* next_)
+        public inline void SetNext(LinkedListNode<T>* next_)
         {
             next = next_;
         }
@@ -51,34 +54,25 @@ namespace System.Collections
         public typedef P PointerType;
         private typedef LinkedListNodeIterator<ValueType, ReferenceType, PointerType> Self;
 
-        public nothrow LinkedListNodeIterator() : list(null), node(null)
+        public LinkedListNodeIterator() : list(null), node(null)
         {
         }
-        public nothrow LinkedListNodeIterator(LinkedList<ValueType>* list_, LinkedListNode<ValueType>* node_) : list(list_), node(node_)
+        public LinkedListNodeIterator(LinkedList<ValueType>* list_, LinkedListNode<ValueType>* node_) : list(list_), node(node_)
         {
         }
         public inline ReferenceType operator*()
         {
-            if (node == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(node != null);
             return node->Value();
         }
         public inline PointerType operator->()
         {
-            if (node == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(node != null);
             return &(node->Value());
         }
         public inline Self& operator++()
         {
-            if (node == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(node != null);
             node = node->Next();
             return *this;
         }
@@ -86,10 +80,7 @@ namespace System.Collections
         {
             if (node == null)
             {
-                if (list == null)
-                {
-                    ThrowNullPointerException();
-                }
+                #assert(list != null);
                 node = list->Tail();
             }
             else
@@ -98,7 +89,7 @@ namespace System.Collections
             }
             return *this;
         }
-        public inline nothrow LinkedListNode<ValueType>* Node() const
+        public inline LinkedListNode<ValueType>* Node() const
         {
             return node;
         }
@@ -106,7 +97,7 @@ namespace System.Collections
         private LinkedListNode<ValueType>* node;
     }
 
-    public inline nothrow bool operator==<T, R, P>(const LinkedListNodeIterator<T, R, P>& left, const LinkedListNodeIterator<T, R, P>& right)
+    public inline bool operator==<T, R, P>(const LinkedListNodeIterator<T, R, P>& left, const LinkedListNodeIterator<T, R, P>& right)
     {
         return left.Node() == right.Node();
     }
@@ -117,14 +108,14 @@ namespace System.Collections
         public typedef LinkedListNodeIterator<ValueType, ValueType&, ValueType*> Iterator;
         public typedef LinkedListNodeIterator<ValueType, const ValueType&, const ValueType*> ConstIterator;
 
-        public nothrow LinkedList() : head(null), tail(null), count(0)
+        public LinkedList() : head(null), tail(null), count(0)
         {
         }
         public LinkedList(const LinkedList<ValueType>& that) : head(null), tail(null), count(0)
         {
             CopyFrom(that);
         }
-        public nothrow LinkedList(LinkedList<ValueType>&& that) : head(that.head), tail(that.tail), count(that.count)
+        public LinkedList(LinkedList<ValueType>&& that) : head(that.head), tail(that.tail), count(that.count)
         {
             that.head = null;
             that.tail = null;
@@ -145,39 +136,39 @@ namespace System.Collections
         {
             Clear();
         }
-        public inline nothrow Iterator Begin()
+        public inline Iterator Begin()
         {
             return Iterator(this, head);
         }
-        public inline nothrow ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return ConstIterator(this, head);
         }
-        public inline nothrow ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return ConstIterator(this, head);
         }
-        public inline nothrow Iterator End()
+        public inline Iterator End()
         {
             return Iterator(this, null);
         }
-        public inline nothrow ConstIterator End() const
+        public inline ConstIterator End() const
         {
             return ConstIterator(this, null);
         }
-        public inline nothrow ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             return ConstIterator(this, null);
         }
-        public inline nothrow long Count() const
+        public inline long Count() const
         {
             return count;
         }
-        public inline nothrow bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return count == 0;
         }
-        public nothrow void Clear()
+        public void Clear()
         {
             LinkedListNode<ValueType>* n = head;
             while (n != null)
@@ -244,12 +235,23 @@ namespace System.Collections
             }
             ++count;
         }
+        public void Add(ValueType&& value)
+        {
+            if (tail == null)
+            {
+                tail = new LinkedListNode<ValueType>(value, null, null);
+                head = tail;
+            }
+            else
+            {
+                tail = new LinkedListNode<ValueType>(value, tail, null);
+                tail->Prev()->SetNext(tail);
+            }
+            ++count;
+        }
         public void RemoveFirst()
         {
-            if (head == null)
-            {
-                ThrowPreconditionViolationException();
-            }
+            #assert(head != null);
             LinkedListNode<ValueType>* n = head;
             head = head->Next();
             if (head != null)
@@ -265,10 +267,7 @@ namespace System.Collections
         }
         public void RemoveLast()
         {
-            if (tail == null)
-            {
-                ThrowPreconditionViolationException();
-            }
+            #assert(tail != null);
             LinkedListNode<ValueType>* n = tail;
             tail = tail->Prev();
             if (tail != null)
@@ -285,10 +284,7 @@ namespace System.Collections
         public Iterator Remove(Iterator pos)
         {
             LinkedListNode<ValueType>* n = pos.Node();
-            if (n == null)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(n != null);
             LinkedListNode<ValueType>* prev = n->Prev();
             LinkedListNode<ValueType>* next = n->Next();
             Iterator nxt(this, next);
@@ -312,7 +308,7 @@ namespace System.Collections
             --count;
             return nxt;
         }
-        public nothrow void Remove(const ValueType& value)
+        public void Remove(const ValueType& value)
         {
             Iterator i = Begin();
             Iterator e = End();
@@ -332,21 +328,15 @@ namespace System.Collections
         }
         public inline const ValueType& Front() const
         {
-            if (head == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(head != null);
             return head->Value();
         }
         public inline const ValueType& Back() const
         {
-            if (tail == null)
-            {
-                ThrowNullPointerException();
-            }
+            #assert(tail != null);
             return tail->Value();
         }
-        public inline nothrow LinkedListNode<ValueType>* Tail()
+        public inline LinkedListNode<ValueType>* Tail()
         {
             return tail;
         }
@@ -363,7 +353,7 @@ namespace System.Collections
         private long count;
     }
 
-    public nothrow bool operator==<T>(const LinkedList<T>& left, const LinkedList<T>& right) where T is Regular
+    public bool operator==<T>(const LinkedList<T>& left, const LinkedList<T>& right) where T is Regular
     {
         if (left.Count() != right.Count())
         {
@@ -372,7 +362,7 @@ namespace System.Collections
         return Equal(left.CBegin(), left.CEnd(), right.CBegin(), right.CEnd());
     }
 
-    public nothrow bool operator<<T>(const LinkedList<T>& left, const LinkedList<T>& right) where T is TotallyOrdered
+    public bool operator<<T>(const LinkedList<T>& left, const LinkedList<T>& right) where T is TotallyOrdered
     {
         return LexicographicalCompare(left.CBegin(), left.CEnd(), right.CBegin(), right.CEnd());
     }

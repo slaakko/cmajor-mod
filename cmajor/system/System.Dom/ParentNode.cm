@@ -1,0 +1,219 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public abstract class ParentNode : Node
+    {
+        public ParentNode(NodeKind kind_, const System.Lex.Span& span_, int fileIndex_, const string& name_) :
+            base(kind_, span_, fileIndex_, name_), firstChild(null), lastChild(null)
+        {
+        }
+        public override ~ParentNode()
+        {
+            Node* child = firstChild;
+            while (child != null)
+            {
+                Node* toDel = child;
+                child = child->Next();
+                delete toDel;
+            }
+        }
+        public Node* FirstChild() const
+        {
+            return firstChild;
+        }
+        public Node* LastChild() const
+        {
+            return lastChild;
+        }
+        public virtual void AppendChild(Node* child)
+        {
+            if (OwnerDocument() != null)
+            {
+                OwnerDocument()->InvalidateIndex();
+            }
+            if (child->Parent() != null)
+            {
+                child = child->Parent()->RemoveChild(child).Release();
+            }
+            if (child->IsDocumentFragmentNode())
+            {
+                DocumentFragment* documentFragment = cast<DocumentFragment*>(child);
+                Node* docFragChild = documentFragment->FirstChild();
+                Node* nodeInserted = null;
+                while (docFragChild!= null)
+                {
+                    UniquePtr<Node> docFragChildRemoved = documentFragment->RemoveChild(docFragChild);
+                    AppendChild(docFragChildRemoved.Release());
+                    docFragChild = documentFragment->FirstChild();
+                }
+            }
+            else
+            {
+                if (lastChild != null)
+                {
+                    lastChild->LinkAfter(child);
+                }
+                if (firstChild == null)
+                {
+                    firstChild = child;
+                }
+                child->SetOwnerDocument(OwnerDocument());
+                child->SetParent(this);
+                lastChild = child;
+            }
+        }
+        public virtual void InsertBefore(Node* newChild, Node* refChild)
+        {
+            if (refChild == null)
+            {
+                AppendChild(newChild);
+            }
+            if (OwnerDocument() != null)
+            {
+                OwnerDocument()->InvalidateIndex();
+            }
+            if (newChild->IsDocumentFragmentNode())
+            {
+                DocumentFragment* documentFragment = cast<DocumentFragment*>(newChild);
+                Node* docFragChild = documentFragment->FirstChild();
+                Node* nodeInserted = null;
+                while (docFragChild != null)
+                {
+                    UniquePtr<Node> docFragChildRemoved = documentFragment->RemoveChild(docFragChild);
+                    InsertBefore(docFragChildRemoved.Release(), refChild);
+                    docFragChild = documentFragment->FirstChild();
+                }
+            }
+            else
+            {
+                if (newChild->Parent() != null)
+                {
+                    newChild = newChild->Parent()->RemoveChild(newChild).Release();
+                }
+                if (firstChild == refChild)
+                {
+                    firstChild = newChild;
+                }
+                newChild->SetParent(this);
+                newChild->SetOwnerDocument(OwnerDocument());
+                refChild->LinkBefore(newChild);
+            }
+        }
+        public virtual UniquePtr<Node> RemoveChild(Node* child)
+        {
+            if (OwnerDocument() != null)
+            {
+                OwnerDocument()->InvalidateIndex();
+            }
+            child->Unlink();
+            if (child == firstChild)
+            {
+                firstChild = child->Next();
+            }
+            if (child == lastChild)
+            {
+                lastChild = child->Prev();
+            }
+            UniquePtr<Node> removedNode = UniquePtr<Node>(child);
+            removedNode->SetOwnerDocument(null);
+            removedNode->SetParent(null);
+            return removedNode;
+        }
+        public virtual UniquePtr<Node> ReplaceChild(Node* newChild, Node* oldChild)
+        {
+            if (OwnerDocument() != null)
+            {
+                OwnerDocument()->InvalidateIndex();
+            }
+            if (newChild->Parent() != null)
+            {
+                newChild = newChild->Parent()->RemoveChild(newChild).Release();
+            }
+            InsertBefore(newChild, oldChild);
+            return RemoveChild(oldChild);
+        }
+        public override bool HasChildNodes() const
+        {
+            return firstChild != null;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            Node* child = firstChild;
+            while (child != null)
+            {
+                child->Accept(visitor);
+                child = child->Next();
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            Node* child = firstChild;
+            while (child != null)
+            {
+                child->Write(formatter);
+                child = child->Next();
+            }
+            return Result<bool>(true);
+        }
+        public override void WalkChildren(NodeOperation& operation)
+        {
+            Node* child = firstChild;
+            while (child != null)
+            {
+                operation.Apply(child);
+                child = child->Next();
+            }
+        }
+        public override void WalkDescendant(NodeOperation& operation)
+        {
+            Node* child = firstChild;
+            while (child != null)
+            {
+                child->WalkDescendantOrSelf(operation);
+                child = child->Next();
+            }
+        }
+        public override void WalkDescendantOrSelf(NodeOperation& operation)
+        {
+            base->WalkDescendantOrSelf(operation);
+            Node* child = firstChild;
+            while (child != null)
+            {
+                child->WalkDescendantOrSelf(operation);
+                child = child->Next();
+            }
+        }
+        public override void WalkPreceding(NodeOperation& operation)
+        {
+            Node* preceding = Prev();
+            if (preceding != null)
+            {
+                preceding->WalkPrecedingOrSelf(operation);
+            }
+        }
+        public override void WalkPrecedingOrSelf(NodeOperation& operation)
+        {
+            base->WalkPrecedingOrSelf(operation);
+            Node* child = lastChild;
+            while (child != null)
+            {
+                child->WalkPrecedingOrSelf(operation);
+                child = child->Prev();
+            }
+        }
+        private Node* firstChild;
+        private Node* lastChild;
+    }
+}
+

@@ -1,0 +1,3 @@
+project xpath_philosophers;
+target=program;
+source <xpath_philosophers.cm>;

@@ -1,9 +1,7 @@
-solution Xml;
+solution xml;
 project <dom/dom.cmp>;
-project <dom1/dom1.cmp>;
+project <dom_rw/dom_rw.cmp>;
 project <xmlstats/xmlstats.cmp>;
-project <xpath/xpath.cmp>;
-project <xpath1/xpath1.cmp>;
-project <xpath2/xpath2.cmp>;
-project <xpq/xpq.cmp>;
-activeProject Dom;
+project <xpath_test/xpath_test.cmp>;
+project <xpath_philosophers/xpath_philosophers.cmp>;
+project <xpath_socrates/xpath_socrates.cmp>;

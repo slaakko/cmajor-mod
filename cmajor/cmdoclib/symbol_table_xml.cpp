@@ -935,7 +935,8 @@ void SymbolTableXmlBuilder::AddVariable(cmajor::symbols::VariableSymbol& variabl
     }
     else
     {
-        throw std::runtime_error("variable node expected");
+        //throw std::runtime_error("variable node expected"); TODO
+        return;
     }
     soul::xml::Element* prevElement = currentElement;
     currentElement = variableElement;

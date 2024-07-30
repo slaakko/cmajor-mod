@@ -98,14 +98,23 @@ namespace System.Windows
 
     public class PaintEventArgs
     {
-        public nothrow PaintEventArgs(Graphics& graphics_, const Rect& clipRect_) : graphics(graphics_), clipRect(clipRect_)
+        public PaintEventArgs(Graphics& graphics_, const Rect& clipRect_) : graphics(graphics_), clipRect(clipRect_), errorId(0)
         {
         }
         public Graphics& graphics;
         public Rect clipRect;
+        public int errorId;
     }
 
-    public enum MouseButtons : uint
+    public class EnterLeaveEventArgs
+    {
+        public EnterLeaveEventArgs() : errorId(0)
+        {
+        }
+        public int errorId;
+    }
+    
+    public enum MouseButtons : ulong
     {
         none = 0x0u,
         lbutton = 0x1u,
@@ -119,17 +128,18 @@ namespace System.Windows
 
     public class MouseEventArgs
     {
-        public nothrow MouseEventArgs(const Point& location_, MouseButtons buttons_, int clicks_) : location(location_), buttons(buttons_), clicks(clicks_)
+        public MouseEventArgs(const Point& location_, MouseButtons buttons_, int clicks_) : location(location_), buttons(buttons_), clicks(clicks_), errorId(0)
         {
         }
         public Point location;
         public MouseButtons buttons;
         public int clicks;
+        public int errorId;
     }
 
     public class MouseWheelEventArgs : MouseEventArgs
     {
-        public nothrow MouseWheelEventArgs(const Point& location_, MouseButtons buttons_, short distance_) : base(location_, buttons_, 0), distance(distance_)
+        public MouseWheelEventArgs(const Point& location_, MouseButtons buttons_, short distance_) : base(location_, buttons_, 0), distance(distance_)
         {
         }
         public short distance;
@@ -138,124 +148,152 @@ namespace System.Windows
 
     public class KeyPressEventArgs
     {
-        public nothrow KeyPressEventArgs(wchar keyChar_) : keyChar(keyChar_), handled(false)
+        public KeyPressEventArgs(wchar keyChar_) : keyChar(keyChar_), handled(false), errorId(0)
         {
         }
         public wchar keyChar;
         public bool handled;
+        public int errorId;
     }
 
     public class KeyEventArgs
     {
-        public nothrow KeyEventArgs(Keys key_) : key(key_)
+        public KeyEventArgs(Keys key_) : key(key_), handled(false), suppressKeyPress(false), errorId(0)
         {
         }
         public Keys key;
         public bool handled;
         public bool suppressKeyPress;
+        public int errorId;
     }
 
     public class TreeViewNodeMouseClickEventArgs
     {
-        public nothrow TreeViewNodeMouseClickEventArgs(const Point& location_, MouseButtons buttons_, int clicks_, TreeViewNode* node_) :
-            location(location_), buttons(buttons_), clicks(clicks_), node(node_)
+        public TreeViewNodeMouseClickEventArgs(const Point& location_, MouseButtons buttons_, int clicks_, TreeViewNode* node_) :
+            location(location_), buttons(buttons_), clicks(clicks_), node(node_), errorId(0)
         {
         }
         public Point location;
         public MouseButtons buttons;
         public int clicks;
         public TreeViewNode* node;
+        public int errorId;
     }
 
     public class TreeViewNodeEventArgs
     {
-        public nothrow TreeViewNodeEventArgs(TreeViewNode* node_) : node(node_)
+        public TreeViewNodeEventArgs(TreeViewNode* node_) : node(node_), errorId(0)
         {
         }
         public TreeViewNode* node;
+        public int errorId;
     }
 
     public class ControlEventArgs
     {
-        public nothrow ControlEventArgs(Control* control_) : control(control_)
+        public ControlEventArgs(Control* control_) : control(control_), errorId(0)
         {
         }
         public Control* control;
+        public int errorId;
+    }
+
+    public class SizeChangedEventArgs
+    {
+        public SizeChangedEventArgs(uint windowState_) : windowState(windowState_), errorId(0)
+        {
+        }
+        public uint windowState;
+        public int errorId;
     }
 
     public class SizeChangingEventArgs
     {
-        public nothrow SizeChangingEventArgs(const Size& oldSize_, const Size& newSize_) : oldSize(oldSize_), newSize(newSize_) {}
+        public SizeChangingEventArgs(const Size& oldSize_, const Size& newSize_) : oldSize(oldSize_), newSize(newSize_), errorId(0)
+        {
+        }
         public Size oldSize;
         public Size newSize;
+        public int errorId;
+    }
+
+    public class ClickEventArgs
+    {
+        public ClickEventArgs() : errorId(0)
+        {
+        }
+        public int errorId;
     }
 
     public class RightClickEventArgs
     {
-        public nothrow RightClickEventArgs(Control* control_, const Point& location_) : control(control_), location(location_)
+        public RightClickEventArgs(Control* control_, const Point& location_) : control(control_), location(location_), errorId(0)
         {
         }
         public Control* control;
         public Point location;
+        public int errorId;
     }
 
     public class ScrollEventArgs
     {
-        public nothrow ScrollEventArgs(ushort request_) : request(request_)
+        public ScrollEventArgs(ushort request_) : request(request_), errorId(0)
         {
         }
         public ushort request;
+        public int errorId;
     }
 
     public class TimerEventArgs
     {
-        public nothrow TimerEventArgs(uint timerId_) : timerId(timerId_)
+        public TimerEventArgs(ulong timerId_) : timerId(timerId_), errorId(0)
         {
         }
-        public uint timerId;
+        public ulong timerId;
+        public int errorId;
     }
 
     public class Message
     {
-        public nothrow Message(void* windowHandle_, uint msg_, uint wparam_, long lparam_, long result_) : windowHandle(windowHandle_), msg(msg_), wparam(wparam_), lparam(lparam_), result(result_)
+        public Message(void* windowHandle_, uint msg_, ulong wparam_, long lparam_, long result_) : windowHandle(windowHandle_), msg(msg_), wparam(wparam_), lparam(lparam_), result(result_)
         {
         }
-        public nothrow inline ushort WParamLoWord() const
+        public inline ushort WParamLoWord() const
         {
             return cast<ushort>(wparam & 0xFFFFu);
         }
-        public nothrow inline ushort WParamHiWord() const
+        public inline ushort WParamHiWord() const
         {
             return cast<ushort>((wparam >> 16u) & 0xFFFFu);
         }
-        public nothrow inline void* LParamHandle() const
+        public inline void* LParamHandle() const
         {
             return cast<void*>(cast<ulong>(lparam));
         }
-        public nothrow inline uint LParamLoDWord() const
+        public inline uint LParamLoDWord() const
         {
             return cast<uint>(lparam);
         }
-        public nothrow inline uint LParamHiDWord() const
+        public inline uint LParamHiDWord() const
         {
             return cast<uint>((lparam >> 32u) & 0xFFFFFFFFu);
         }
-        public nothrow inline int LParamX() const
+        public inline int LParamX() const
         {
             return cast<int>(cast<short>(LParamLoDWord()));
         }
-        public nothrow inline int LParamY() const
+        public inline int LParamY() const
         {
             return cast<int>(cast<short>(LParamLoDWord() >> 16u));
         }
-        public nothrow inline Size LParamSize() const
+        public inline Size LParamSize() const
         {
             uint s = LParamLoDWord();
             ushort sw = cast<ushort>(s);
             ushort sh = cast<ushort>(s >> 16u);
             return Size(cast<int>(sw), cast<int>(sh));
         }
-        public nothrow inline Point LParamLocation() const
+        public inline Point LParamLocation() const
         {
             uint s = LParamLoDWord();
             ushort sx = cast<ushort>(s);
@@ -264,7 +302,7 @@ namespace System.Windows
         }
         public void* windowHandle;
         public uint msg;
-        public uint wparam;
+        public ulong wparam;
         public long lparam;
         public long result;
         public void* originalWndProc;
@@ -275,11 +313,12 @@ namespace System.Windows
         static MessageNameMap() : instance(new MessageNameMap())
         {
         }
-        public static nothrow MessageNameMap& Instance()
+        public static MessageNameMap& Instance()
         {
             return *instance;
         }
-        public string GetMessageName(uint message) const
+        [nodiscard]
+        public Result<string> GetMessageName(uint message) const
         {
             HashMap<uint, string>.ConstIterator it = map.CFind(message);
             if (it != map.CEnd())
@@ -288,7 +327,12 @@ namespace System.Windows
             }
             else
             {
-                return "WM_" + ToHexString(message);
+                auto hexStringResult = ToHexString(message);
+                if (hexStringResult.Error())
+                {
+                    return Result<string>(ErrorId(hexStringResult.GetErrorId()));
+                }
+                return "WM_" + hexStringResult.Value();
             }
         }
         private MessageNameMap()

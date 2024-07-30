@@ -1,0 +1,42 @@
+// ...
+
+int main()
+{
+    auto registerResult = Register();
+    if (registerResult.Error())
+    {
+        Console.Error() << registerResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Serialization.XmlBundle bundle;
+    Person* joe = new Person("Joe Coder");
+    bundle.Add(joe);
+    Bicycle* cooper = new Bicycle();
+    cooper->SetModel("Cooper");
+    cooper->SetColor(Color.blue);
+    cooper->SetPrice(1000);
+    joe->AddVehicle(cooper);
+    bundle.Add(cooper);
+    Car* porsche = new Car();
+    porsche->SetModel("Porsche");
+    porsche->SetColor(Color.red);
+    porsche->SetRegistrationNumber("ABC-123");
+    joe->AddVehicle(porsche);
+    bundle.Add(porsche);
+    Result<UniquePtr<System.Xml.Document>> xmlDocumentResult = bundle.ToXmlDocument();
+    if (xmlDocumentResult.Error())
+    {
+        Console.Error() << xmlDocumentResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Document* document = xmlDocumentResult.Value().Get();
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(1);
+    Result<bool> writeResult = document->Write(formatter);
+    if (writeResult.Error())
+    {
+        Console.Error() << writeResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    // ...
+}

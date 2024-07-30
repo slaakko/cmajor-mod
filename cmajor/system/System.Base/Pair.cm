@@ -10,7 +10,7 @@ namespace System
 {
     public class Pair<T, U> where T is Semiregular and U is Semiregular
     {
-        public nothrow Pair() : first(), second() {}
+        public Pair() : first(), second() {}
         public Pair(const T& first_, const U& second_) : first(first_), second(second_) {}
         public Pair(T&& first_, U&& second_) : first(Rvalue(first_)), second(Rvalue(second_)) {}
         public Pair(const Pair& that) : first(that.first), second(that.second) {}
@@ -21,14 +21,14 @@ namespace System
         public U second;
     }
 
-    public nothrow inline bool operator<<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is TotallyOrdered and U is TotallyOrdered
+    public inline bool operator<<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is TotallyOrdered and U is TotallyOrdered
     {
         if (left.first < right.first) return true;
         else if (left.first > right.first) return false;
         else return left.second < right.second;
     }
 
-    public nothrow inline bool operator==<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is Regular and U is Regular
+    public inline bool operator==<T, U>(const Pair<T, U>& left, const Pair<T, U>& right) where T is Regular and U is Regular
     {
         return left.first == right.first && left.second == right.second;
     }
@@ -45,7 +45,7 @@ namespace System
 
     public class SelectFirst<T, U> : UnaryFun<Pair<T, U>, T> where T is Semiregular and U is Semiregular
     {
-        public nothrow inline const T& operator()(const Pair<T, U>& p) const
+        public inline const T& operator()(const Pair<T, U>& p) const
         {
             return p.first;
         }
@@ -53,7 +53,7 @@ namespace System
 
     public class SelectSecond<T, U> : UnaryFun<Pair<T, U>, U> where T is Semiregular and U is Semiregular
     {   
-        public nothrow inline const U& operator()(const Pair<T, U>& p) const
+        public inline const U& operator()(const Pair<T, U>& p) const
         {
             return p.second;
         }
@@ -62,6 +62,8 @@ namespace System
     [system_default]
     public TextWriter& operator<<<T, U>(TextWriter& writer, const Pair<T, U>& pair)
     {
+        if (writer.Error()) return writer;
         return writer << "(" << pair.first << ", " << pair.second << ")";
     }
+
 }

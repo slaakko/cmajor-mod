@@ -22,20 +22,20 @@ namespace System
 
     public class Plus<T> : BinaryFun<T, T, T> where T is AdditiveSemigroup
     {
-        public nothrow inline T operator()(const T& a, const T& b) const
+        public inline T operator()(const T& a, const T& b) const
         {
             return a + b;
         }
     }
 
-    public nothrow inline T IdentityElement<T>(Plus<T>) where T is AdditiveMonoid
+    public inline T IdentityElement<T>(Plus<T>) where T is AdditiveMonoid
     {
         return T(0);
     }
 
     public class Negate<T> : UnaryFun<T, T> where T is AdditiveGroup
     {
-        public nothrow inline T operator()(const T& a) const
+        public inline T operator()(const T& a) const
         {
             return -a;
         }
@@ -43,7 +43,7 @@ namespace System
 
     public class Minus<T> : BinaryFun<T, T, T> where T is AdditiveGroup
     {
-        public nothrow inline T operator()(const T& a, const T& b) const
+        public inline T operator()(const T& a, const T& b) const
         {
             return a - b;
         }
@@ -51,20 +51,20 @@ namespace System
 
     public class Multiplies<T> : BinaryFun<T, T, T> where T is MultiplicativeSemigroup
     {
-        public nothrow inline T operator()(const T& a, const T& b) const
+        public inline T operator()(const T& a, const T& b) const
         {
             return a * b;
         }
     }
 
-    public nothrow inline T IdentityElement<T>(Multiplies<T>) where T is MultiplicativeMonoid
+    public inline T IdentityElement<T>(Multiplies<T>) where T is MultiplicativeMonoid
     {
         return T(1);
     }
 
     public class Divides<T> : BinaryFun<T, T, T> where T is MultiplicativeGroup
     {
-        public nothrow inline T operator()(const T& a, const T& b) const
+        public inline T operator()(const T& a, const T& b) const
         {
             return a / b;
         }
@@ -72,7 +72,7 @@ namespace System
 
     public class Remainder<T> : BinaryFun<T, T, T> where T is EuclideanSemiring
     {
-        public nothrow inline T operator()(const T& a, const T& b) const
+        public inline T operator()(const T& a, const T& b) const
         {
             return a % b;
         }
@@ -93,7 +93,7 @@ namespace System
 
     public class Identity<T> : UnaryFun<T, T> where T is Semiregular
     {
-        public nothrow inline const T& operator()(const T& x) const
+        public inline const T& operator()(const T& x) const
         {
             return x;
         }
@@ -101,7 +101,7 @@ namespace System
 
     public class EqualTo<T> : Rel<T> where T is Regular
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left == right;
         }
@@ -109,7 +109,7 @@ namespace System
 
     public class EqualTo<T, U> : BinaryPred<T, U> where EqualityComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left == right;
         }
@@ -117,7 +117,7 @@ namespace System
 
     public class NotEqualTo<T> : Rel<T> where T is Regular
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left != right;
         }
@@ -125,7 +125,7 @@ namespace System
 
     public class NotEqualTo<T, U> : BinaryPred<T, U> where EqualityComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left != right;
         }
@@ -133,7 +133,7 @@ namespace System
 
     public class Less<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left < right; 
         }
@@ -141,7 +141,7 @@ namespace System
 
     public class Less<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left < right; 
         }
@@ -149,7 +149,7 @@ namespace System
 
     public class Greater<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left > right;
         }
@@ -157,7 +157,7 @@ namespace System
 
     public class Greater<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left > right;
         }
@@ -165,7 +165,7 @@ namespace System
 
     public class LessOrEqualTo<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left <= right;
         }
@@ -173,7 +173,7 @@ namespace System
 
     public class LessOrEqualTo<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left <= right;
         }
@@ -181,7 +181,7 @@ namespace System
 
     public class GreaterOrEqualTo<T> : Rel<T> where T is LessThanComparable
     {
-        public nothrow inline bool operator()(const T& left, const T& right) const
+        public inline bool operator()(const T& left, const T& right) const
         {
             return left >= right;
         }
@@ -189,7 +189,7 @@ namespace System
 
     public class GreaterOrEqualTo<T, U> : BinaryPred<T, U> where LessThanComparable<T, U>
     {
-        public nothrow inline bool operator()(const T& left, const U& right) const
+        public inline bool operator()(const T& left, const U& right) const
         {
             return left >= right;
         }
@@ -197,7 +197,7 @@ namespace System
 
     public class LogicalAnd<T = bool> : BinaryPred<bool, bool>
     {
-        public nothrow inline bool operator()(bool left, bool right) const
+        public inline bool operator()(bool left, bool right) const
         {
             return left && right;
         }
@@ -205,7 +205,7 @@ namespace System
 
     public class LogicalOr<T = bool> : BinaryPred<bool, bool>
     {
-        public nothrow inline bool operator()(bool left, bool right) const
+        public inline bool operator()(bool left, bool right) const
         {
             return left || right;
         }
@@ -213,7 +213,7 @@ namespace System
 
     public class LogicalNot<T = bool> : UnaryPred<bool>
     {
-        public nothrow inline bool operator()(bool operand) const
+        public inline bool operator()(bool operand) const
         {
             return !operand;
         }
@@ -221,7 +221,7 @@ namespace System
 
     public class BitAnd<T> : BinaryFun<T, T, T> where T is Semiregular
     {
-        public nothrow inline T operator()(const T& left, const T& right) const
+        public inline T operator()(const T& left, const T& right) const
         {
             return left & right;
         }
@@ -229,7 +229,7 @@ namespace System
 
     public class BitOr<T> : BinaryFun<T, T, T> where T is Semiregular
     {
-        public nothrow inline T operator()(const T& left, const T& right) const
+        public inline T operator()(const T& left, const T& right) const
         {
             return left | right;
         }
@@ -237,7 +237,7 @@ namespace System
 
     public class BitXor<T> : BinaryFun<T, T, T> where T is Semiregular
     {
-        public nothrow inline T operator()(const T& left, const T& right) const
+        public inline T operator()(const T& left, const T& right) const
         {
             return left ^ right;
         }
@@ -245,7 +245,7 @@ namespace System
 
     public class BitNot<T> : UnaryFun<T, T> where T is Semiregular
     {
-        public nothrow inline T operator()(const T& operand) const
+        public inline T operator()(const T& operand) const
         {
             return ~operand;
         }
@@ -253,7 +253,7 @@ namespace System
 
     public class ShiftLeft<T> : BinaryFun<T, T, T> where T is Semiregular
     {
-        public nothrow inline T operator()(const T& left, const T& right) const
+        public inline T operator()(const T& left, const T& right) const
         {
             return left << right;
         }
@@ -261,7 +261,7 @@ namespace System
 
     public class ShiftRight<T> : BinaryFun<T, T, T> where T is Semiregular
     {
-        public nothrow inline T operator()(const T& left, const T& right) const
+        public inline T operator()(const T& left, const T& right) const
         {
             return left >> right;
         }

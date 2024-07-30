@@ -3,57 +3,118 @@
 // Distributed under the MIT license
 // =================================
 
-namespace System
+using System;
+
+namespace System.IO
 {
-    public class MemoryWriter
+    public class MemoryWriter : IOBase
     {
-        public nothrow MemoryWriter(byte* ptr_, long count_) : ptr(ptr_), pos(ptr), count(count_)
+        public MemoryWriter(byte* ptr_, long count_) : base(), ptr(ptr_), pos(ptr), count(count_)
         {
         }
-        public void Write(bool x)
+        [nodiscard]
+        public Result<bool> Write(bool x)
         {
-            Write(cast<byte>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<byte>(x));
         }
-        public void Write(byte x)
+        [nodiscard]
+        public Result<bool> Write(byte x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             if (pos - ptr >= count)
             {
-                throw Exception("memory writer: end of space");
+                int errorId = AllocateError("memory writer: end of space");
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
             *pos++ = x;
+            return Result<bool>(true);
         }
-        public void Write(sbyte x)
+        [nodiscard]
+        public Result<bool> Write(sbyte x)
         {
-            Write(cast<byte>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<byte>(x));
         }
-        public void Write(ushort x)
+        [nodiscard]
+        public Result<bool> Write(ushort x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             byte b0 = cast<byte>(x >> 8u);
             byte b1 = cast<byte>(x);
-            Write(b0);
-            Write(b1);
+            auto result = Write(b0);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(b1);
         }
-        public void Write(short x)
+        [nodiscard]
+        public Result<bool> Write(short x)
         {
-            Write(cast<ushort>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<ushort>(x));
         }
-        public void Write(uint x)
+        [nodiscard]
+        public Result<bool> Write(uint x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             byte b0 = cast<byte>(x >> 24u);
             byte b1 = cast<byte>(x >> 16u);
             byte b2 = cast<byte>(x >> 8u);
             byte b3 = cast<byte>(x);
-            Write(b0);
-            Write(b1);
-            Write(b2);
-            Write(b3);
+            auto result = Write(b0);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b1);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b2);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(b3);
         }
-        public void Write(int x)
+        [nodiscard]
+        public Result<bool> Write(int x)
         {
-            Write(cast<uint>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<uint>(x));
         }
-        public void Write(ulong x)
+        [nodiscard]
+        public Result<bool> Write(ulong x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             byte b0 = cast<byte>(x >> 56u);
             byte b1 = cast<byte>(x >> 48u);
             byte b2 = cast<byte>(x >> 40u);
@@ -62,80 +123,166 @@ namespace System
             byte b5 = cast<byte>(x >> 16u);
             byte b6 = cast<byte>(x >> 8u);
             byte b7 = cast<byte>(x);
-            Write(b0);
-            Write(b1);
-            Write(b2);
-            Write(b3);
-            Write(b4);
-            Write(b5);
-            Write(b6);
-            Write(b7);
+            auto result = Write(b0);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b1);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b2);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b3);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b4);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b5);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b6);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(b7);
         }
-        public void Write(long x)
+        [nodiscard]
+        public Result<bool> Write(long x)
         {
-            Write(cast<ulong>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<ulong>(x));
         }
-        public void Write(float x)
+        [nodiscard]
+        public Result<bool> Write(float x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             uint* u = cast<uint*>(cast<void*>(&x));
-            Write(*u);
+            return Write(*u);
         }
-        public void Write(double x)
+        [nodiscard]
+        public Result<bool> Write(double x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             ulong* u = cast<ulong*>(cast<void*>(&x));
-            Write(*u);
+            return Write(*u);
         }
-        public void Write(char x)
+        [nodiscard]
+        public Result<bool> Write(char x)
         {
-            Write(cast<byte>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<byte>(x));
         }
-        public void Write(wchar x)
+        [nodiscard]
+        public Result<bool> Write(wchar x)
         {
-            Write(cast<ushort>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<ushort>(x));
         }
-        public void Write(uchar x)
+        [nodiscard]
+        public Result<bool> Write(uchar x)
         {
-            Write(cast<uint>(x));
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<uint>(x));
         }
-        public void Write(const Date& date)
+        [nodiscard]
+        public Result<bool> Write(const Date& date)
         {
-            Write(date.Year());
-            Write(cast<sbyte>(date.GetMonth()));
-            Write(date.Day());
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = Write(date.Year());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(cast<sbyte>(date.GetMonth()));
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(date.Day());
         }
-        public void Write(const DateTime& dt)
+        [nodiscard]
+        public Result<bool> Write(const DateTime& dt)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             Date date = dt.GetDate();
-            Write(date);
-            Write(dt.Seconds());
+            auto result = Write(date);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(dt.Seconds());
         }
-        public void Write(const string& s)
+        [nodiscard]
+        public Result<bool> Write(const string& s)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             for (char c : s)
             {
-                Write(cast<byte>(c));
+                auto result = Write(cast<byte>(c));
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
-            Write(cast<byte>(0u));
+            return Write(cast<byte>(0u));
         }
-        public void Write(const Uuid& x)
+        [nodiscard]
+        public Result<bool> Write(const Uuid& x)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             for (byte b : x)
             {
-                Write(b);
-            }
-        }
-        public void WriteULEB128UInt(uint x)
-        {
-            do
-            {
-                byte b = cast<byte>(x & 0x7Fu);
-                x = x >> 7u;
-                if (x != 0u)
+                auto result = Write(b);
+                if (result.Error())
                 {
-                    b = b | 0x80u;
+                    return Result<bool>(ErrorId(result.GetErrorId()));
                 }
-                Write(b);
-            } while (x != 0u);
+            }
+            return Result<bool>(true);
         }
         private byte* ptr;
         private byte* pos;

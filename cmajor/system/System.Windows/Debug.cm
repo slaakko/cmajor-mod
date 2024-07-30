@@ -9,51 +9,51 @@ namespace System.Windows
 {
     public class Debug
     {
-        public static nothrow bool Docking()
+        public static bool Docking()
         {
             return (flags & Flags.docking) != Flags.none;
         }
-        public static nothrow void SetDocking()
+        public static void SetDocking()
         {
             flags = cast<Flags>(flags | Flags.docking);
         }
-        public static nothrow bool WindowTree() 
+        public static bool WindowTree()
         {
             return (flags & Flags.windowTree) != Flags.none;
         }
-        public static nothrow void SetWindowTree()
+        public static void SetWindowTree()
         {
             flags = cast<Flags>(flags | Flags.windowTree);
         }
-        public static nothrow bool Log()
+        public static bool Log()
         {
             return (flags & Flags.log) != Flags.none;
         }
-        public static nothrow void SetLog()
+        public static void SetLog()
         {
             flags = cast<Flags>(flags | Flags.log);
         }
-        public static nothrow bool Paint() 
+        public static bool Paint()
         {
             return (flags & Flags.paint) != Flags.none;
         }
-        public static nothrow void SetPaint()
+        public static void SetPaint()
         {
             flags = cast<Flags>(flags | Flags.paint);
         }
-        public static nothrow bool Messages() 
+        public static bool Messages()
         {
             return (flags & Flags.messages) != Flags.none;
         }
-        public static nothrow void SetMessages()
+        public static void SetMessages()
         {
             flags = cast<Flags>(flags | Flags.messages);
         }
-        public static nothrow bool TreeView()
+        public static bool TreeView()
         {
             return (flags & Flags.treeView) != Flags.none;
         }
-        public static nothrow void SetTreeView()
+        public static void SetTreeView()
         {
             flags = cast<Flags>(flags | Flags.treeView);
         }

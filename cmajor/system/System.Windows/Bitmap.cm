@@ -40,16 +40,16 @@ namespace System.Windows
 
     public class WinBitmap : Resource
     {
-        public nothrow WinBitmap() : bitmapHandle(null), standard(false)
+        public WinBitmap() : bitmapHandle(null), standard(false)
         {
         }
-        public nothrow WinBitmap(void* bitmapHandle_) : bitmapHandle(bitmapHandle_), standard(false)
+        public WinBitmap(void* bitmapHandle_) : bitmapHandle(bitmapHandle_), standard(false)
         {
         }
-        public nothrow WinBitmap(void* bitmapHandle_, bool standard_) : bitmapHandle(bitmapHandle_), standard(standard_)
+        public WinBitmap(void* bitmapHandle_, bool standard_) : bitmapHandle(bitmapHandle_), standard(standard_)
         {
         }
-        public nothrow WinBitmap(WinBitmap&& that) : bitmapHandle(that.bitmapHandle), standard(that.standard)
+        public WinBitmap(WinBitmap&& that) : bitmapHandle(that.bitmapHandle), standard(that.standard)
         {
             that.bitmapHandle = null;
             that.standard = false;
@@ -61,18 +61,18 @@ namespace System.Windows
                 WinDestroyBitmap(bitmapHandle);
             }
         }
-        public default nothrow void operator=(WinBitmap&&);
+        public default void operator=(WinBitmap&&);
         suppress WinBitmap(const WinBitmap&);
         suppress void operator=(const WinBitmap&);
-        public nothrow void* Handle() const
+        public void* Handle() const
         {
             return bitmapHandle;
         }
-        public nothrow bool IsStandard() const
+        public bool IsStandard() const
         {
             return standard;
         }
-        public nothrow void SetStandard()
+        public void SetStandard()
         {
             standard = true;
         }
@@ -80,18 +80,26 @@ namespace System.Windows
         private bool standard;
     }
 
-    public WinBitmap LoadStandardBitmap(StandardBitmapId bitmapId)
+    [nodiscard]
+    public Result<WinBitmap> LoadStandardBitmap(StandardBitmapId bitmapId)
     {
         void* bitmapHandle = WinLoadStandardBitmap(cast<int>(bitmapId));
         if (bitmapHandle == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("could not load standard bitmap", WinGetLastError());
+            return Result<WinBitmap>(ErrorId(errorId));
         }
         return WinBitmap(bitmapHandle, true);
     }
 
-    public WinBitmap LoadBitmap(const string& bitmapName)
+    [nodiscard]
+    public Result<WinBitmap> LoadBitmap(const string& bitmapName)
     {
-        return WinBitmap(LoadBitmap(bitmapName.Chars()));
+        auto result = LoadBitmap(bitmapName.Chars());
+        if (result.Error())
+        {
+            return Result<WinBitmap>(ErrorId(result.GetErrorId()));
+        }
+        return Result<WinBitmap>(WinBitmap(result.Value()));
     }
 }

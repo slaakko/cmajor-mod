@@ -1,0 +1,8 @@
+<div class="txt">
+  <span xml:space="preserve">&lt;person></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&lt;name&nbsp;value="Joe&nbsp;Coder"/></span>
+  <br/>
+  <span xml:space="preserve">&lt;/person></span>
+  <br/>
+</div>

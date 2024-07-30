@@ -7,7 +7,15 @@ using System;
 
 namespace System.Windows
 {
-    public class delegate void SelectedIndexChangedEventHandler();
+    public class SelectedIndexChangedEventArgs
+    {
+        public SelectedIndexChangedEventArgs() : errorId(0)
+        {
+        }
+        public int errorId;
+    }
+    
+    public class delegate void SelectedIndexChangedEventHandler(SelectedIndexChangedEventArgs& args);
 
     public enum ListBoxStyle : long
     {
@@ -30,24 +38,24 @@ namespace System.Windows
         LBS_WANTKEYBOARDINPUT = 0x0400
     }
 
-    public nothrow ControlCreateParams& ListBoxControlCreateParams(ControlCreateParams& controlCreateParams, ListBoxStyle listBoxStyle)
+    public ControlCreateParams& ListBoxControlCreateParams(ControlCreateParams& controlCreateParams, ListBoxStyle listBoxStyle)
     {
         return controlCreateParams.SetWindowClassName("LISTBOX").
             SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.White()).
             SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP | WindowStyle.WS_VSCROLL | listBoxStyle));
     }
 
-    public nothrow ControlCreateParams& ListBoxControlCreateParams(ControlCreateParams& controlCreateParams)
+    public ControlCreateParams& ListBoxControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return ListBoxControlCreateParams(controlCreateParams, cast<ListBoxStyle>(ListBoxStyle.LBS_NOTIFY | ListBoxStyle.LBS_HASSTRINGS));
     }
 
     public class ListBoxCreateParams
     {
-        public nothrow ListBoxCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
+        public ListBoxCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
         {
         }
-        public nothrow ListBoxCreateParams& Defaults()
+        public ListBoxCreateParams& Defaults()
         {
             return *this;
         }
@@ -70,13 +78,20 @@ namespace System.Windows
         public ListBox(ListBoxCreateParams& createParams) : base(createParams.controlCreateParams)
         {
         }
-        public void AddItem(const string& item)
+        [nodiscard]
+        public Result<bool> AddItem(const string& item)
         {
             if (Handle() != null)
             {
-                wstring wstr(ToUtf16(item));
+                auto utf16Result = ToUtf16(item);
+                if (utf16Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf16Result.GetErrorId()));
+                }
+                wstring wstr(Rvalue(utf16Result.Value()));
                 WinSendMessage(Handle(), LB_ADDSTRING, 0u, cast<long>(cast<ulong>(cast<void*>(wstr.Chars()))));
             }
+            return Result<bool>(true);
         }
         public void DeleteItem(int itemIndex)
         {
@@ -85,29 +100,48 @@ namespace System.Windows
                 WinSendMessage(Handle(), LB_DELETESTRING, cast<uint>(itemIndex), 0);
             }
         }
-        public void InsertItem(int index, const string& item)
+        [nodiscard]
+        public Result<bool> InsertItem(int index, const string& item)
         {
             if (Handle() != null)
             {
-                wstring wstr(ToUtf16(item));
+                auto utf16Result = ToUtf16(item);
+                if (utf16Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf16Result.GetErrorId()));
+                }
+                wstring wstr(Rvalue(utf16Result.Value()));
                 WinSendMessage(Handle(), LB_INSERTSTRING, cast<uint>(index), cast<long>(cast<ulong>(cast<void*>(wstr.Chars()))));
             }
+            return Result<bool>(true);
         }
-        public string GetItem(int index)
+        [nodiscard]
+        public Result<string> GetItem(int index)
         {
             if (Handle() != null)
             {
                 int size = cast<int>(WinSendMessage(Handle(), LB_GETTEXTLEN, cast<uint>(index), 0));
                 UniquePtr<wchar> buf(cast<wchar*>(MemAlloc(size * sizeof(wchar))));
                 WinSendMessage(Handle(), LB_GETTEXT, cast<uint>(index), cast<long>(cast<ulong>(cast<void*>(buf.Get()))));
-                return ToUtf8(buf.Get());
+                auto utf8Result = ToUtf8(buf.Get());
+                if (utf8Result.Error())
+                {
+                    return Result<string>(ErrorId(utf8Result.GetErrorId()));
+                }
+                return Result<string>(utf8Result.Value());
             }
-            return string();
+            return Result<string>(string());
         }
-        public void SetItem(int index, const string& item)
+        [nodiscard]
+        public Result<bool> SetItem(int index, const string& item)
         {
             DeleteItem(index);
-            InsertItem(index, item);
+            auto insertResult = InsertItem(index, item);
+            if (insertResult.Error())
+            {
+                return Result<bool>(ErrorId(insertResult.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
         public int GetItemCount() const
         {
@@ -156,28 +190,56 @@ namespace System.Windows
                 WinSendMessage(Handle(), LB_SETCURSEL, cast<uint>(selectedIndex), 0);
             }
         }
-        protected override void OnCreated()
+        protected override Result<bool> OnCreated()
         {
-            base->OnCreated();
-            Graphics graphics = Graphics.FromWindowHandle(Handle());
-            const FontHandle& fontHandle = GetFontHandle(graphics);
-            if (!fontHandle.IsNull())
+            auto result = base->OnCreated();
+            if (result.Error())
             {
-                SendSetFontMessage(fontHandle);
+                return Result<bool>(ErrorId(result.GetErrorId()));
             }
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            else
+            {
+                Graphics graphics = Rvalue(graphicsResult.Value());
+                Result<FontHandle*> fontHandleResult = GetFontHandle(graphics);
+                if (fontHandleResult.Error())
+                {
+                    return Result<bool>(ErrorId(fontHandleResult.GetErrorId()));
+                }
+                else
+                {
+                    FontHandle* fontHandle = fontHandleResult.Value();
+                    if (!fontHandle->IsNull())
+                    {
+                        SendSetFontMessage(*fontHandle);
+                    }
+                }
+            }
+            return Result<bool>(true);
         }
-        internal void SelectedIndexChangedInternal()
+        [nodiscard]
+        internal Result<bool> SelectedIndexChangedInternal()
         {
-            OnSelectedIndexChanged();
+            SelectedIndexChangedEventArgs args;
+            return OnSelectedIndexChanged(args);
         }
-        protected virtual void OnSelectedIndexChanged()
+        protected virtual Result<bool> OnSelectedIndexChanged(SelectedIndexChangedEventArgs& args)
         {
-            selectedIndexChangedEvent.Fire();
+            selectedIndexChangedEvent.Fire(args);
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
         }
-        public nothrow Event<SelectedIndexChangedEventHandler>& SelectedIndexChangedEvent() const
+        public Event<SelectedIndexChangedEventHandler, SelectedIndexChangedEventArgs>& SelectedIndexChangedEvent() const
         {
             return selectedIndexChangedEvent;
         }
-        private Event<SelectedIndexChangedEventHandler> selectedIndexChangedEvent;
+        private Event<SelectedIndexChangedEventHandler, SelectedIndexChangedEventArgs> selectedIndexChangedEvent;
     }
 }

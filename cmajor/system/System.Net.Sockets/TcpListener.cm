@@ -4,34 +4,81 @@
 // =================================
 
 using System;
+using System.IO;
 
 namespace System.Net.Sockets
 {
-    public class TcpListener
+    public class TcpListener : IOBase
     {
         public TcpListener(int port_) : socket(), port(port_)
         {
-            socket.Bind(port);
+            auto result = socket.Bind(port);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
         }
-        public void Start()
+        [nodiscard]
+        public Result<bool> Start()
         {
-            Start(256);
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Start(256);
         }
-        public void Start(int backLog)
+        [nodiscard]
+        public Result<bool> Start(int backlog)
         {
-            socket.Listen(backLog);
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto listenResult = socket.Listen(backlog);
+            if (listenResult.Error())
+            {
+                SetErrorId(listenResult.GetErrorId());
+            }
+            return listenResult;
         }
-        public void Stop()
+        [nodiscard]
+        public Result<bool> Stop()
         {
-            socket.Close();
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = socket.Close();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             socket = TcpSocket();
-            socket.Bind(port);
+            result = socket.Bind(port);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return result;
         }
-        public TcpSocket AcceptSocket()
+        [nodiscard]
+        public Result<TcpSocket> AcceptSocket()
         {
-            return socket.Accept();
+            if (Error())
+            {
+                return Result<TcpSocket>(ErrorId(GetErrorId()));
+            }
+            auto result = socket.Accept();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<TcpSocket>(ErrorId(result.GetErrorId()));
+            }
+            return result;
         }
-        public TcpSocket& ContainedSocket()
+        public TcpSocket& Socket()
         {
             return socket;
         }

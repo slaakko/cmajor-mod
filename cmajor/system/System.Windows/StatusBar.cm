@@ -33,6 +33,46 @@ namespace System.Windows
             raisedBorderInnerRightBottomColor(160u, 160u,160u), raisedBorderInnerRightBottomPen(raisedBorderInnerRightBottomColor, 1.0f)
         {
             SetChanged();
+            if (topLinePen.Error())
+            {
+                SetErrorId(topLinePen.GetErrorId());
+                return;
+            }
+            if (sunkenBorderOuterTopLeftPen.Error())
+            {
+                SetErrorId(sunkenBorderOuterTopLeftPen.GetErrorId());
+                return;
+            }
+            if (sunkenBorderOuterRightBottomPen.Error())
+            {
+                SetErrorId(sunkenBorderOuterRightBottomPen.GetErrorId());
+                return;
+            }
+            if (sunkenBorderInnerRightBottomPen.Error())
+            {
+                SetErrorId(sunkenBorderInnerRightBottomPen.GetErrorId());
+                return;
+            }
+            if (raisedBorderOuterTopLeftPen.Error())
+            {
+                SetErrorId(raisedBorderOuterTopLeftPen.GetErrorId());
+                return;
+            }
+            if (raisedBorderOuterRightBottomPen.Error())
+            {
+                SetErrorId(raisedBorderOuterRightBottomPen.GetErrorId());
+                return;
+            }
+            if (raisedBorderInnerTopLeftPen.Error())
+            {
+                SetErrorId(raisedBorderInnerTopLeftPen.GetErrorId());
+                return;
+            }
+            if (raisedBorderInnerRightBottomPen.Error())
+            {
+                SetErrorId(raisedBorderInnerRightBottomPen.GetErrorId());
+                return;
+            }
         }
         public StatusBar() : this(Font(FontFamily("Segoe UI"), 9.0f), DefaultControlBackgroundColor(), Point(0, 0), Size(0, initialHeight), Dock.bottom, Anchors.none)
         {
@@ -43,7 +83,7 @@ namespace System.Windows
             statusBarItems.Add(UniquePtr<StatusBarItem>(statusBarItem));
             SetChanged();
         }
-        public nothrow inline const Color& TextColor() const
+        public inline const Color& TextColor() const
         {
             return textColor;
         }
@@ -56,19 +96,19 @@ namespace System.Windows
                 textBrush = SolidBrush(textColor);
             }
         }
-        internal nothrow inline const Brush& TextBrush() const
+        internal inline const Brush& TextBrush() const
         {
             return textBrush;
         }
-        internal nothrow inline const Font& TextFont() const
+        internal inline const Font& TextFont() const
         {
             return font;
         }
-        internal nothrow inline const Pen& TopLinePen() const
+        internal inline const Pen& TopLinePen() const
         {
             return topLinePen;
         }
-        public nothrow inline const Color& TopLineColor() const
+        public inline const Color& TopLineColor() const
         {
             return topLineColor;
         }
@@ -81,7 +121,7 @@ namespace System.Windows
                 topLinePen = Pen(topLineColor, 1.0f);
             }
         }
-        public nothrow inline const Color& SunkenBorderOuterTopLeftColor() const
+        public inline const Color& SunkenBorderOuterTopLeftColor() const
         {
             return sunkenBorderOuterTopLeftColor;
         }
@@ -94,11 +134,11 @@ namespace System.Windows
                 sunkenBorderOuterTopLeftPen = Pen(sunkenBorderOuterTopLeftColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& SunkenBorderOuterTopLeftPen() const
+        internal inline const Pen& SunkenBorderOuterTopLeftPen() const
         {
             return sunkenBorderOuterTopLeftPen;
         }
-        public nothrow inline const Color& SunkenBorderInnerTopLeftColor() const
+        public inline const Color& SunkenBorderInnerTopLeftColor() const
         {
             return sunkenBorderInnerTopLeftColor;
         }
@@ -111,11 +151,11 @@ namespace System.Windows
                 sunkenBorderInnerTopLeftPen = Pen(sunkenBorderInnerTopLeftColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& SunkenBorderInnerTopLeftPen() const
+        internal inline const Pen& SunkenBorderInnerTopLeftPen() const
         {
             return sunkenBorderInnerTopLeftPen;
         }
-        public nothrow inline const Color& SunkenBorderOuterRightBottomColor() const
+        public inline const Color& SunkenBorderOuterRightBottomColor() const
         {
             return sunkenBorderOuterRightBottomColor;
         }
@@ -128,11 +168,11 @@ namespace System.Windows
                 sunkenBorderOuterRightBottomPen = Pen(sunkenBorderOuterRightBottomColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& SunkenBorderOuterRightBottomPen() const
+        internal inline const Pen& SunkenBorderOuterRightBottomPen() const
         {
             return sunkenBorderOuterRightBottomPen;
         }
-        public nothrow inline const Color& SunkenBorderInnerRightBottomColor() const
+        public inline const Color& SunkenBorderInnerRightBottomColor() const
         {
             return sunkenBorderInnerRightBottomColor;
         }
@@ -145,11 +185,11 @@ namespace System.Windows
                 sunkenBorderInnerRightBottomPen = Pen(sunkenBorderInnerRightBottomColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& SunkenBorderInnerRightBottomPen() const
+        internal inline const Pen& SunkenBorderInnerRightBottomPen() const
         {
             return sunkenBorderInnerRightBottomPen;
         }
-        public nothrow inline const Color& RaisedBorderOuterTopLeftColor() const
+        public inline const Color& RaisedBorderOuterTopLeftColor() const
         {
             return raisedBorderOuterTopLeftColor;
         }
@@ -162,11 +202,11 @@ namespace System.Windows
                 raisedBorderOuterTopLeftPen = Pen(raisedBorderOuterTopLeftColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& RaisedBorderOuterTopLeftPen() const
+        internal inline const Pen& RaisedBorderOuterTopLeftPen() const
         {
             return raisedBorderOuterTopLeftPen;
         }
-        public nothrow inline const Color& RaisedBorderOuterRightBottomColor() const
+        public inline const Color& RaisedBorderOuterRightBottomColor() const
         {
             return raisedBorderOuterRightBottomColor;
         }
@@ -179,11 +219,11 @@ namespace System.Windows
                 raisedBorderOuterRightBottomPen = Pen(raisedBorderOuterRightBottomColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& RaisedBorderOuterRightBottomPen() const
+        internal inline const Pen& RaisedBorderOuterRightBottomPen() const
         {
             return raisedBorderOuterRightBottomPen;
         }
-        public nothrow inline const Color& RaisedBorderInnerTopLeftColor() const
+        public inline const Color& RaisedBorderInnerTopLeftColor() const
         {
             return raisedBorderInnerTopLeftColor;
         }
@@ -196,12 +236,12 @@ namespace System.Windows
                 raisedBorderInnerTopLeftPen = Pen(raisedBorderInnerTopLeftColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& RaisedBorderInnerTopLeftPen() const
+        internal inline const Pen& RaisedBorderInnerTopLeftPen() const
         {
             return raisedBorderInnerTopLeftPen;
         }
 
-        public nothrow inline const Color& RaisedBorderInnerRightBottomColor() const
+        public inline const Color& RaisedBorderInnerRightBottomColor() const
         {
             return raisedBorderInnerRightBottomColor;
         }
@@ -214,43 +254,71 @@ namespace System.Windows
                 raisedBorderInnerRightBottomPen = Pen(raisedBorderInnerRightBottomColor, 1.0f);
             }
         }
-        internal nothrow inline const Pen& RaisedBorderInnerRightBottomPen() const
+        internal inline const Pen& RaisedBorderInnerRightBottomPen() const
         {
             return raisedBorderInnerRightBottomPen;
         }
-        protected override nothrow Padding DefaultPadding() const
+        protected override Padding DefaultPadding() const
         {
             return Padding(4, 4, 4, 4);
         }
-        protected override void OnPaint(PaintEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
         {
             if (Changed())
             {
                 ResetChanged();
-                Measure(args.graphics);
+                auto result = Measure(args.graphics);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
-            args.graphics.Clear(BackgroundColor());
-            DrawTopLine(args.graphics);
-            DrawItems(args.graphics);
-            base->OnPaint(args);
+            auto result = args.graphics.Clear(BackgroundColor());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = DrawTopLine(args.graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = DrawItems(args.graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return base->OnPaint(args);
         }
-        private void DrawTopLine(Graphics& graphics)
+        private Result<bool> DrawTopLine(Graphics& graphics)
         {
             Size size = GetSize();
             Point start(0, 0);
             Point end(size.w - 1, 0);
-            graphics.DrawLineChecked(topLinePen, start, end);
+            auto result = graphics.DrawLine(topLinePen, start, end);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        private void DrawItems(Graphics& graphics)
+        private Result<bool> DrawItems(Graphics& graphics)
         {
             long n = statusBarItems.Count();
             for (long i = 0; i < n; ++i)
             {
                 StatusBarItem* item = statusBarItems[i].Get();
-                item->Draw(graphics);
+                auto result = item->Draw(graphics);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
+            return Result<bool>(true);
         }
-        private void Measure(Graphics& graphics)
+        [nodiscard]
+        private Result<bool> Measure(Graphics& graphics)
         {
             LogView* logView = Application.GetLogView();
             Padding padding = DefaultPadding();
@@ -262,9 +330,19 @@ namespace System.Windows
             {
                 StatusBarItem* item = statusBarItems[i].Get();
                 string s = item->Text();
-                ustring u(ToUtf32(s));
+                auto utf32Result = ToUtf32(s);
+                if (utf32Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+                }
+                ustring u(Rvalue(utf32Result.Value()));
                 string z('0', u.Length());
-                RectF rect = graphics.MeasureStringChecked(z, font, PointF(0, 0), stringFormat);
+                auto result = graphics.MeasureStringRectF(z, font, PointF(0, 0), stringFormat);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                RectF rect = result.Value();
                 textHeight = Max(textHeight, cast<int>(rect.size.h));
                 item->SetTextWidth(cast<int>(rect.size.w));
             }
@@ -273,8 +351,10 @@ namespace System.Windows
                 int height = topLineWidth + padding.Vertical() + 2 * statusBarItemBorderWidth + textHeight;
                 Size size = GetSize();
                 size.h = height;
-                SetSize(size);
-                DockWindow();
+                auto result = SetSize(size);
+                if (result.Error()) return result;
+                result = DockWindow();
+                if (result.Error()) return result;
                 Point leftOrigin(padding.left, topLineWidth + padding.top);
                 long springIndex = -1;
                 for (long i = 0; i < n; ++i)
@@ -308,16 +388,17 @@ namespace System.Windows
                     springItem->SetSize(Size(rightOrigin.x - leftOrigin.x + 1, 2 * statusBarItemBorderWidth + textHeight));
                 }
             }
+            return Result<bool>(true);
         }
-        private nothrow inline bool Changed() const
+        private inline bool Changed() const
         {
             return (flags & Flags.changed) != Flags.none;
         }
-        internal nothrow inline void SetChanged()
+        public inline void SetChanged()
         {
             flags = cast<Flags>(flags | Flags.changed);
         }
-        private nothrow inline void ResetChanged()
+        private inline void ResetChanged()
         {
             flags = cast<Flags>(flags & ~Flags.changed);
         }
@@ -353,156 +434,210 @@ namespace System.Windows
         {
             flat, sunken, raised
         }
-        public nothrow static int BorderWidth()
+        public static int BorderWidth()
         {
             return 2;
         }
-        public nothrow static int HorizontalPadding()
+        public static int HorizontalPadding()
         {
-            return 4;
+            return 8;
         }
-        public nothrow StatusBarItem(const string& text_, BorderStyle borderStyle_, bool spring_) : statusBar(null), text(text_), borderStyle(borderStyle_), spring(spring_)
-        {
-        }
-        public nothrow StatusBarItem(const string& text, BorderStyle borderStyle) : this(text, borderStyle, false)
+        public StatusBarItem(const string& text_, BorderStyle borderStyle_, bool spring_) : statusBar(null), text(text_), borderStyle(borderStyle_), spring(spring_)
         {
         }
-        public nothrow StatusBarItem(const string& text) : this(text, BorderStyle.flat)
+        public StatusBarItem(const string& text, BorderStyle borderStyle) : this(text, borderStyle, false)
         {
         }
-        public nothrow StatusBarItem() : this(string())
+        public StatusBarItem(const string& text) : this(text, BorderStyle.flat)
         {
         }
-        public nothrow const Point& Location() const
+        public StatusBarItem() : this(string())
+        {
+        }
+        public const Point& Location() const
         {
             return location;
         }
-        public nothrow void SetLocation(const Point& location_)
+        public void SetLocation(const Point& location_)
         {
             location = location_;
         }
-        public nothrow const Size& GetSize() const
+        public const Size& GetSize() const
         {
             return size;
         }
-        public nothrow void SetSize(const Size& size_)
+        public void SetSize(const Size& size_)
         {
             size = size_;
         }
-        public nothrow inline const string& Text() const
+        public inline const string& Text() const
         {
             return text;
         }
-        public void SetText(const string& text_)
+        [nodiscard]
+        public Result<bool> SetText(const string& text_)
         {
             if (text != text_)
             {
                 text = text_;
-                Invalidate();
+                auto result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow inline int TextWidth() const
+        public inline int TextWidth() const
         {
             return textWidth;
         }
-        public nothrow inline void SetTextWidth(int textWidth_)
+        public inline void SetTextWidth(int textWidth_)
         {
             textWidth = textWidth_;
         }
-        public nothrow inline BorderStyle GetBorderStyle() const
+        public inline BorderStyle GetBorderStyle() const
         {
             return borderStyle;
         }
-        public void SetBorderStyle(BorderStyle borderStyle_)
+        [nodiscard]
+        public Result<bool> SetBorderStyle(BorderStyle borderStyle_)
         {
             if (borderStyle != borderStyle_)
             {
                 borderStyle = borderStyle_;
-                Invalidate();
+                auto result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        public nothrow inline bool Spring() const
+        public inline bool Spring() const
         {
             return spring;
         }
-        public void SetSpring(bool spring_)
+        [nodiscard]
+        public Result<bool> SetSpring(bool spring_)
         {
             if (spring != spring_)
             {
                 spring = spring_;
-                Invalidate();
+                auto result = Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
         public default virtual ~StatusBarItem();
-        public void Draw(Graphics& graphics)
+        [nodiscard]
+        public Result<bool> Draw(Graphics& graphics)
         {
-            DrawBorder(graphics);
-            DrawText(graphics);
+            auto result = DrawBorder(graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = DrawText(graphics);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        private void DrawText(Graphics& graphics)
+        private Result<bool> DrawText(Graphics& graphics)
         {
             const Brush& brush = statusBar->TextBrush();
             const Font& font = statusBar->TextFont();
             PointF origin(location.x + 2 + HorizontalPadding() / 2, location.y + 2);
-            graphics.DrawStringChecked(text, font, origin, brush);
+            auto result = graphics.DrawString(text, font, origin, brush);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        private void DrawBorder(Graphics& graphics)
+        private Result<bool> DrawBorder(Graphics& graphics)
         {
             switch (borderStyle)
             {
                 case BorderStyle.sunken:
                 {
-                    DrawSunkenBorder(graphics);
+                    auto result = DrawSunkenBorder(graphics);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
                     break;
                 }
                 case BorderStyle.raised:
                 {
-                    DrawRaisedBorder(graphics);
+                    auto result = DrawRaisedBorder(graphics);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
                     break;
                 }
             }
+            return Result<bool>(true);
         }
-        private void DrawSunkenBorder(Graphics& graphics)
+        private Result<bool> DrawSunkenBorder(Graphics& graphics)
         {
             const Pen& outerTopLeftPen = statusBar->SunkenBorderOuterTopLeftPen();
-            graphics.DrawLineChecked(outerTopLeftPen, location, Point(location.x + size.w - 2, location.y));
-            graphics.DrawLineChecked(outerTopLeftPen, location, Point(location.x, location.y + size.h - 2));
+            auto result = graphics.DrawLine(outerTopLeftPen, location, Point(location.x + size.w - 2, location.y));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(outerTopLeftPen, location, Point(location.x, location.y + size.h - 2));
+            if (result.Error()) return result;
             const Pen& outerRightBottomPen = statusBar->SunkenBorderOuterRightBottomPen();
-            graphics.DrawLineChecked(outerRightBottomPen, Point(location.x + size.w - 1, location.y), Point(location.x + size.w - 1, location.y + size.h - 1));
-            graphics.DrawLineChecked(outerRightBottomPen, Point(location.x, location.y + size.h -1), Point(location.x + size.w - 1, location.y + size.h - 1));
+            result = graphics.DrawLine(outerRightBottomPen, Point(location.x + size.w - 1, location.y), Point(location.x + size.w - 1, location.y + size.h - 1));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(outerRightBottomPen, Point(location.x, location.y + size.h -1), Point(location.x + size.w - 1, location.y + size.h - 1));
+            if (result.Error()) return result;
             const Pen& innerTopLeftPen = statusBar->SunkenBorderInnerTopLeftPen();
-            graphics.DrawLineChecked(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + size.w - 3, location.y + 1));
-            graphics.DrawLineChecked(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + 1, location.y + size.h - 3));
+            result = graphics.DrawLine(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + size.w - 3, location.y + 1));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + 1, location.y + size.h - 3));
+            if (result.Error()) return result;
             const Pen& innerRightBottomPen = statusBar->SunkenBorderInnerRightBottomPen();
-            graphics.DrawLineChecked(innerRightBottomPen, Point(location.x + size.w - 2, location.y + 1), Point(location.x + size.w - 2, location.y + size.h - 2));
-            graphics.DrawLineChecked(innerRightBottomPen, Point(location.x + 1, location.y + size.h - 2), Point(location.x + size.w - 2, location.y + size.h - 2));
+            result = graphics.DrawLine(innerRightBottomPen, Point(location.x + size.w - 2, location.y + 1), Point(location.x + size.w - 2, location.y + size.h - 2));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(innerRightBottomPen, Point(location.x + 1, location.y + size.h - 2), Point(location.x + size.w - 2, location.y + size.h - 2));
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        private void DrawRaisedBorder(Graphics& graphics)
+        private Result<bool> DrawRaisedBorder(Graphics& graphics)
         {
             const Pen& outerTopLeftPen = statusBar->RaisedBorderOuterTopLeftPen();
-            graphics.DrawLineChecked(outerTopLeftPen, location, Point(location.x + size.w - 2, location.y));
-            graphics.DrawLineChecked(outerTopLeftPen, location, Point(location.x, location.y + size.h - 2));
+            auto result = graphics.DrawLine(outerTopLeftPen, location, Point(location.x + size.w - 2, location.y));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(outerTopLeftPen, location, Point(location.x, location.y + size.h - 2));
+            if (result.Error()) return result;
             const Pen& outerRightBottomPen = statusBar->RaisedBorderOuterRightBottomPen();
-            graphics.DrawLineChecked(outerRightBottomPen, Point(location.x + size.w - 1, location.y), Point(location.x + size.w - 1, location.y + size.h - 1));
-            graphics.DrawLineChecked(outerRightBottomPen, Point(location.x, location.y + size.h - 1), Point(location.x + size.w - 1, location.y + size.h - 1));
+            result = graphics.DrawLine(outerRightBottomPen, Point(location.x + size.w - 1, location.y), Point(location.x + size.w - 1, location.y + size.h - 1));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(outerRightBottomPen, Point(location.x, location.y + size.h - 1), Point(location.x + size.w - 1, location.y + size.h - 1));
+            if (result.Error()) return result;
             const Pen& innerTopLeftPen = statusBar->RaisedBorderInnerTopLeftPen();
-            graphics.DrawLineChecked(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + size.w - 3, location.y + 1));
-            graphics.DrawLineChecked(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + 1, location.y + size.h - 3));
+            result = graphics.DrawLine(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + size.w - 3, location.y + 1));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(innerTopLeftPen, Point(location.x + 1, location.y + 1), Point(location.x + 1, location.y + size.h - 3));
+            if (result.Error()) return result;
             const Pen& innerRightBottomPen = statusBar->RaisedBorderInnerRightBottomPen();
-            graphics.DrawLineChecked(innerRightBottomPen, Point(location.x + size.w - 2, location.y + 1), Point(location.x + size.w - 2, location.y + size.h - 2));
-            graphics.DrawLineChecked(innerRightBottomPen, Point(location.x + 1, location.y + size.h - 2), Point(location.x + size.w - 2, location.y + size.h - 2));
+            result = graphics.DrawLine(innerRightBottomPen, Point(location.x + size.w - 2, location.y + 1), Point(location.x + size.w - 2, location.y + size.h - 2));
+            if (result.Error()) return result;
+            result = graphics.DrawLine(innerRightBottomPen, Point(location.x + 1, location.y + size.h - 2), Point(location.x + size.w - 2, location.y + size.h - 2));
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        internal nothrow void SetStatusBar(StatusBar* statusBar_)
+        internal void SetStatusBar(StatusBar* statusBar_)
         {
             statusBar = statusBar_;
         }
-        public void Invalidate()
+        [nodiscard]
+        public Result<bool> Invalidate()
         {
             if (statusBar != null)
             {
                 statusBar->SetChanged();
-                statusBar->Invalidate();
+                auto result = statusBar->Invalidate();
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
         private StatusBar* statusBar;
         private Point location;

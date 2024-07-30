@@ -8,31 +8,53 @@ using System;
 
 namespace System.Windows
 {
-    public class Buffer
+    public class Buffer : GraphicsObject
     {
         public Buffer(const Size& size_, System.Windows.Graphics& graphics_) :
-            size(size_), bitmap(size.w, size.h, graphics_), graphics(System.Windows.Graphics.FromImage(bitmap))
+            size(size_), bitmap(size.w, size.h, graphics_), graphics(null)
         {
+            auto result = System.Windows.Graphics.FromImage(bitmap);
+            if (result.Error())
+            {
+                SetErrorId(graphics->GetErrorId());
+                return;
+            }
+            graphics.Reset(new Graphics(Rvalue(result.Value())));
+            if (graphics->Error())
+            {
+                SetErrorId(graphics->GetErrorId());
+                return;
+            }
         }
-        public nothrow inline const Size& GetSize() const
+        public inline const Size& GetSize() const
         {
             return size;
         }
-        public nothrow inline System.Windows.Graphics& BitmapGraphics()
+        public inline System.Windows.Graphics& BitmapGraphics()
         {
-            return graphics;
+            return *graphics;
         }
-        public nothrow inline System.Windows.Bitmap& GetBitmap() const
+        public inline System.Windows.Bitmap& GetBitmap() const
         {
             return bitmap;
         }
-        public void Draw(System.Windows.Graphics& graphics)
+        [nodiscard]
+        public Result<bool> Draw(System.Windows.Graphics& graphics)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             PointF topLeftCorner;
-            graphics.DrawImageChecked(bitmap, topLeftCorner);
+            auto result = graphics.DrawImage(bitmap, topLeftCorner);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
         private Size size;
         private Bitmap bitmap;
-        private System.Windows.Graphics graphics;
+        private UniquePtr<System.Windows.Graphics> graphics;
     }
 }

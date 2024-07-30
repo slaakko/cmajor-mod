@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 
 namespace System.Windows
 {
@@ -378,269 +379,285 @@ namespace System.Windows
         zoom = 251
     }
 
-    public nothrow ulong GetHashCode(Keys keys)
+    public ulong GetHashCode(Keys keys)
     {
         return cast<ulong>(cast<int>(keys));
     }
 
-    public const char*[] keyCodeStr =
-    [
-        "None",  
-        "LButton", 
-        "RButton",
-        "Cancel",
-        "MButton",
-        "XBUtton1",
-        "XButton2",
-        "",
-        "Backspace",
-        "Tab", 
-        "",
-        "",
-        "Clear",
-        "Enter", 
-        "",
-        "",
-        "Shift",
-        "Control",
-        "Alt",
-        "Pause",
-        "Caps Lock",
-        "Kana",
-        "IME On",
-        "Junja",
-        "Final",
-        "Hanja",
-        "IME Off",
-        "Escape",
-        "Convert",
-        "Nonconvert",
-        "Accept",
-        "Mode change",
-        "Space",
-        "Page up",
-        "Page down",
-        "End",
-        "Home",
-        "Left",
-        "Up",
-        "Right",
-        "Down",
-        "Select",
-        "Print",
-        "Execute",
-        "Snapshot",
-        "Insert",
-        "Delete",
-        "Help",
-        "0",
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9", 
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "A",
-        "B",
-        "C",
-        "D",
-        "E",
-        "F",
-        "G",
-        "H",
-        "I",
-        "J",
-        "K",
-        "L",
-        "M",
-        "N",
-        "O",
-        "P",
-        "Q",
-        "R",
-        "S",
-        "T",
-        "U",
-        "V",
-        "W",
-        "X",
-        "Y",
-        "Z",
-        "Left Windows",
-        "Right Windows",
-        "Apps",
-        "",
-        "Sleep",
-        "Num pad 0",
-        "Num pad 1",
-        "Num pad 2",
-        "Num pad 3",
-        "Num pad 4",
-        "Num pad 5",
-        "Num pad 6",
-        "Num pad 7",
-        "Num pad 8",
-        "Num pad 9",
-        "Multiply",
-        "Add",
-        "Separator",
-        "Subtract",
-        "Decimal",
-        "Divide",
-        "F1",
-        "F2",
-        "F3",
-        "F4",
-        "F5",
-        "F6",
-        "F7",
-        "F8",
-        "F9",
-        "F10",
-        "F11",
-        "F12",
-        "F13",
-        "F14",
-        "F15",
-        "F16",
-        "F17",
-        "F18",
-        "F19",
-        "F20",
-        "F21",
-        "F22",
-        "F23",
-        "F24",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Num Lock",
-        "Scroll Lock",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Left Shift",
-        "Right Shift",
-        "Left Control",
-        "Right Control",
-        "Left Alt",
-        "Right Alt",
-        "Browser Back",
-        "Browser Forward",
-        "Browser Refresh",
-        "Browser Stop",
-        "Browser Search",
-        "Browser Favorites",
-        "Browser Home",
-        "Volume Mute",
-        "Volume Down",
-        "Volume Up",
-        "Media Next Track",
-        "Media Prev Track",
-        "Media Stop",
-        "Media Play Pause",
-        "Launch Mail",
-        "Launch Media Select",
-        "Launch Application 1",
-        "Launch Application 2",
-        "",
-        "",
-        "OEM 1",
-        "OEM Plus",
-        "OEM Comma",
-        "OEM Minus",
-        "OEM Period",
-        "OEM 2",
-        "OEM 3",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "OEM 4",
-        "OEM 5",
-        "OEM 6",
-        "OEM 7",
-        "OEM 8",
-        "",
-        "",
-        "OEM 102",
-        "",
-        "",
-        "Process Key",
-        "",
-        "Packet",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "Attention",
-        "CR Select",
-        "EX Select",
-        "",
-        "Play",
-        "Zoom",
-        "",
-        "PA1",
-        "OEM Clear"
-    ];
+    public class KeyCodeStrings
+    {
+        static KeyCodeStrings() : instance(new KeyCodeStrings())
+        {
+        }
+        public static KeyCodeStrings& Instance()
+        {
+            return *instance;
+        }
+        public const string& GetKeyCodeString(Keys key) const
+        {
+            return keyCodeStrings[cast<int>(key)];
+        }
+        private KeyCodeStrings()
+        {
+            keyCodeStrings.Add("None");
+            keyCodeStrings.Add("LButton");
+            keyCodeStrings.Add("RButton");
+            keyCodeStrings.Add("Cancel");
+            keyCodeStrings.Add("MButton");
+            keyCodeStrings.Add("XBUtton1");
+            keyCodeStrings.Add("XButton2");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Backspace");
+            keyCodeStrings.Add("Tab");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Clear");
+            keyCodeStrings.Add("Enter");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Shift");
+            keyCodeStrings.Add("Control");
+            keyCodeStrings.Add("Alt");
+            keyCodeStrings.Add("Pause");
+            keyCodeStrings.Add("Caps Lock");
+            keyCodeStrings.Add("Kana");
+            keyCodeStrings.Add("IME On");
+            keyCodeStrings.Add("Junja");
+            keyCodeStrings.Add("Final");
+            keyCodeStrings.Add("Hanja");
+            keyCodeStrings.Add("IME Off");
+            keyCodeStrings.Add("Escape");
+            keyCodeStrings.Add("Convert");
+            keyCodeStrings.Add("Nonconvert");
+            keyCodeStrings.Add("Accept");
+            keyCodeStrings.Add("Mode change");
+            keyCodeStrings.Add("Space");
+            keyCodeStrings.Add("Page up");
+            keyCodeStrings.Add("Page down");
+            keyCodeStrings.Add("End");
+            keyCodeStrings.Add("Home");
+            keyCodeStrings.Add("Left");
+            keyCodeStrings.Add("Up");
+            keyCodeStrings.Add("Right");
+            keyCodeStrings.Add("Down");
+            keyCodeStrings.Add("Select");
+            keyCodeStrings.Add("Print");
+            keyCodeStrings.Add("Execute");
+            keyCodeStrings.Add("Snapshot");
+            keyCodeStrings.Add("Insert");
+            keyCodeStrings.Add("Delete");
+            keyCodeStrings.Add("Help");
+            keyCodeStrings.Add("0");
+            keyCodeStrings.Add("1");
+            keyCodeStrings.Add("2");
+            keyCodeStrings.Add("3");
+            keyCodeStrings.Add("4");
+            keyCodeStrings.Add("5");
+            keyCodeStrings.Add("6");
+            keyCodeStrings.Add("7");
+            keyCodeStrings.Add("8");
+            keyCodeStrings.Add("9");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("A");
+            keyCodeStrings.Add("B");
+            keyCodeStrings.Add("C");
+            keyCodeStrings.Add("D");
+            keyCodeStrings.Add("E");
+            keyCodeStrings.Add("F");
+            keyCodeStrings.Add("G");
+            keyCodeStrings.Add("H");
+            keyCodeStrings.Add("I");
+            keyCodeStrings.Add("J");
+            keyCodeStrings.Add("K");
+            keyCodeStrings.Add("L");
+            keyCodeStrings.Add("M");
+            keyCodeStrings.Add("N");
+            keyCodeStrings.Add("O");
+            keyCodeStrings.Add("P");
+            keyCodeStrings.Add("Q");
+            keyCodeStrings.Add("R");
+            keyCodeStrings.Add("S");
+            keyCodeStrings.Add("T");
+            keyCodeStrings.Add("U");
+            keyCodeStrings.Add("V");
+            keyCodeStrings.Add("W");
+            keyCodeStrings.Add("X");
+            keyCodeStrings.Add("Y");
+            keyCodeStrings.Add("Z");
+            keyCodeStrings.Add("Left Windows");
+            keyCodeStrings.Add("Right Windows");
+            keyCodeStrings.Add("Apps");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Sleep");
+            keyCodeStrings.Add("Num pad 0");
+            keyCodeStrings.Add("Num pad 1");
+            keyCodeStrings.Add("Num pad 2");
+            keyCodeStrings.Add("Num pad 3");
+            keyCodeStrings.Add("Num pad 4");
+            keyCodeStrings.Add("Num pad 5");
+            keyCodeStrings.Add("Num pad 6");
+            keyCodeStrings.Add("Num pad 7");
+            keyCodeStrings.Add("Num pad 8");
+            keyCodeStrings.Add("Num pad 9");
+            keyCodeStrings.Add("Multiply");
+            keyCodeStrings.Add("Add");
+            keyCodeStrings.Add("Separator");
+            keyCodeStrings.Add("Subtract");
+            keyCodeStrings.Add("Decimal");
+            keyCodeStrings.Add("Divide");
+            keyCodeStrings.Add("F1");
+            keyCodeStrings.Add("F2");
+            keyCodeStrings.Add("F3");
+            keyCodeStrings.Add("F4");
+            keyCodeStrings.Add("F5");
+            keyCodeStrings.Add("F6");
+            keyCodeStrings.Add("F7");
+            keyCodeStrings.Add("F8");
+            keyCodeStrings.Add("F9");
+            keyCodeStrings.Add("F10");
+            keyCodeStrings.Add("F11");
+            keyCodeStrings.Add("F12");
+            keyCodeStrings.Add("F13");
+            keyCodeStrings.Add("F14");
+            keyCodeStrings.Add("F15");
+            keyCodeStrings.Add("F16");
+            keyCodeStrings.Add("F17");
+            keyCodeStrings.Add("F18");
+            keyCodeStrings.Add("F19");
+            keyCodeStrings.Add("F20");
+            keyCodeStrings.Add("F21");
+            keyCodeStrings.Add("F22");
+            keyCodeStrings.Add("F23");
+            keyCodeStrings.Add("F24");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Num Lock");
+            keyCodeStrings.Add("Scroll Lock");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Left Shift");
+            keyCodeStrings.Add("Right Shift");
+            keyCodeStrings.Add("Left Control");
+            keyCodeStrings.Add("Right Control");
+            keyCodeStrings.Add("Left Alt");
+            keyCodeStrings.Add("Right Alt");
+            keyCodeStrings.Add("Browser Back");
+            keyCodeStrings.Add("Browser Forward");
+            keyCodeStrings.Add("Browser Refresh");
+            keyCodeStrings.Add("Browser Stop");
+            keyCodeStrings.Add("Browser Search");
+            keyCodeStrings.Add("Browser Favorites");
+            keyCodeStrings.Add("Browser Home");
+            keyCodeStrings.Add("Volume Mute");
+            keyCodeStrings.Add("Volume Down");
+            keyCodeStrings.Add("Volume Up");
+            keyCodeStrings.Add("Media Next Track");
+            keyCodeStrings.Add("Media Prev Track");
+            keyCodeStrings.Add("Media Stop");
+            keyCodeStrings.Add("Media Play Pause");
+            keyCodeStrings.Add("Launch Mail");
+            keyCodeStrings.Add("Launch Media Select");
+            keyCodeStrings.Add("Launch Application 1");
+            keyCodeStrings.Add("Launch Application 2");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("OEM 1");
+            keyCodeStrings.Add("OEM Plus");
+            keyCodeStrings.Add("OEM Comma");
+            keyCodeStrings.Add("OEM Minus");
+            keyCodeStrings.Add("OEM Period");
+            keyCodeStrings.Add("OEM 2");
+            keyCodeStrings.Add("OEM 3");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("OEM 4");
+            keyCodeStrings.Add("OEM 5");
+            keyCodeStrings.Add("OEM 6");
+            keyCodeStrings.Add("OEM 7");
+            keyCodeStrings.Add("OEM 8");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("OEM 102");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Process Key");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Packet");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Attention");
+            keyCodeStrings.Add("CR Select");
+            keyCodeStrings.Add("EX Select");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("Play");
+            keyCodeStrings.Add("Zoom");
+            keyCodeStrings.Add("");
+            keyCodeStrings.Add("PA1");
+            keyCodeStrings.Add("OEM Clear");
+        }
+        private static UniquePtr<KeyCodeStrings> instance;
+        private List<string> keyCodeStrings;
+    }
 
-    public nothrow string ToString(Keys keys)
+    public string ToString(Keys keys)
     {
         string s;
         if ((keys & Keys.controlModifier) != 0)
@@ -656,7 +673,7 @@ namespace System.Windows
             s.Append("Shift+");
         }
         Keys keyCode = cast<Keys>(keys & ~Keys.modifiers);
-        s.Append(keyCodeStr[cast<int>(keyCode)]);
+        s.Append(KeyCodeStrings.Instance().GetKeyCodeString(keyCode));
         return s;
     }
 }

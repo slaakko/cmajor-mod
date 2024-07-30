@@ -1,17 +1,22 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/xml/XmlContentHandler.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/xml/XmlContentHandler.cpp' using cpp2cm version 1.0.0
 
 namespace System.Xml
 {
     public class Attribute
     {
-        public Attribute(const ustring& namespaceUri_, const ustring& localName_, const ustring& qualifiedName_, const ustring& value_) :
-            namespaceUri(namespaceUri_), localName(localName_), qualifiedName(qualifiedName_), value(value_)
+        public Attribute(const System.Lex.Span& span_, const ustring& namespaceUri_, const ustring& localName_, const ustring& qualifiedName_, const ustring& value_) :
+            span(span_), namespaceUri(namespaceUri_), localName(localName_), qualifiedName(qualifiedName_), value(value_)
         {
+        }
+        public const System.Lex.Span& Span() const
+        {
+            return span;
         }
         public const ustring& NamespaceUri() const
         {
@@ -29,11 +34,13 @@ namespace System.Xml
         {
             return value;
         }
+        private System.Lex.Span span;
         private ustring namespaceUri;
         private ustring localName;
         private ustring qualifiedName;
         private ustring value;
     }
+
     public class Attributes
     {
         public typedef List<Attribute>.Iterator Iterator;
@@ -100,46 +107,59 @@ namespace System.Xml
         }
         private List<Attribute> attributes;
     }
+
     public class XmlContentHandler
     {
-        public virtual ~XmlContentHandler()
+        public default virtual ~XmlContentHandler();
+        public virtual Result<bool> StartDocument(const System.Lex.Span& span, int fileIndex)
         {
+            return Result<bool>(true);
         }
-        public virtual void StartDocument()
+        public virtual Result<bool> EndDocument()
         {
+            return Result<bool>(true);
         }
-        public virtual void EndDocument()
+        public virtual Result<bool> Version(const ustring& xmlVersion)
         {
+            return Result<bool>(true);
         }
-        public virtual void Version(const ustring& xmlVersion)
+        public virtual Result<bool> Standalone(bool standalone)
         {
+            return Result<bool>(true);
         }
-        public virtual void Standalone(bool standalone)
+        public virtual Result<bool> Encoding(const ustring& encoding)
         {
+            return Result<bool>(true);
         }
-        public virtual void Encoding(const ustring& encoding)
+        public virtual Result<bool> HandleText(const System.Lex.Span& span, int fileIndex, const ustring& text)
         {
+            return Result<bool>(true);
         }
-        public virtual void HandleText(const ustring& text)
+        public virtual Result<bool> HandleComment(const System.Lex.Span& span, int fileIndex, const ustring& comment)
         {
+            return Result<bool>(true);
         }
-        public virtual void HandleComment(const ustring& comment)
+        public virtual Result<bool> HandlePI(const System.Lex.Span& span, int fileIndex, const ustring& target, const ustring& data)
         {
+            return Result<bool>(true);
         }
-        public virtual void HandlePI(const ustring& target, const ustring& data)
+        public virtual Result<bool> HandleCDataSection(const System.Lex.Span& span, int fileIndex, const ustring& cdata)
         {
+            return Result<bool>(true);
         }
-        public virtual void HandleCDataSection(const ustring& cdata)
+        public virtual Result<bool> StartElement(const System.Lex.Span& span, int fileIndex,
+            const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName, const Attributes& attributes)
         {
+            return Result<bool>(true);
         }
-        public virtual void StartElement(const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName, const Attributes& attributes)
+        public virtual Result<bool> EndElement(const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName)
         {
+            return Result<bool>(true);
         }
-        public virtual void EndElement(const ustring& namespaceUri, const ustring& localName, const ustring& qualifiedName)
+        public virtual Result<bool> SkippedEntity(const ustring& entityName)
         {
-        }
-        public virtual void SkippedEntity(const ustring& entityName)
-        {
+            return Result<bool>(true);
         }
     }
+
 } // namespace System.Xml

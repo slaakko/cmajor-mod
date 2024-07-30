@@ -11,14 +11,15 @@ namespace System.Windows
     public string CmajorRootDir()
     {
         string cmajorRootDir;
-        const char* cmajorRootEnv = RtGetEnvironmentVariable("CMAJOR_ROOT");
-        if (cmajorRootEnv != null && *cmajorRootEnv != '\0')
+        int stringHandle = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (stringHandle != -1)
         {
-            cmajorRootDir = cmajorRootEnv;
+            cmajorRootDir = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
         }
         if (cmajorRootDir.IsEmpty())
         {
-            throw Exception("please set 'CMAJOR_ROOT' environment variable to contain /path/to/cmajor directory.");
+            WinFatalError("please set 'CMAJOR_ROOT' environment variable to contain /path/to/cmajor directory.");
         }
         return cmajorRootDir;
     }
@@ -36,11 +37,11 @@ namespace System.Windows
         return Path.Combine(LogDir(), "application.log");
     }
 
-    public delegate bool MessageProcessorFunction(void* windowHandle, uint msg, uint wparam, long lparam, long& result, void*& originalWndProc);
+    public delegate bool MessageProcessorFunction(void* windowHandle, uint msg, ulong wparam, long lparam, long& result, void*& originalWndProc);
 
     public class RunModalGuard
     {
-        public nothrow RunModalGuard()
+        public RunModalGuard()
         {
             Application.SetRunningModal();
         }
@@ -52,14 +53,13 @@ namespace System.Windows
 
     public static class Application
     {
-        static Application() : logView(null), activeWindow(null), runningModal(false)
+        static Application() : logView(null), activeWindow(null), runningModal(false), errorId(0)
         {
             MessageProcessorFunction messageProcessorFunction = ProcessMessage;
             ModelessWindowKeyPreviewFunction keyPreviewFunction = ModelessWindowKeyPreview;
             void* messageProcessorFunctionAddress = cast<void*>(messageProcessorFunction);
             void* keyPreviewFunctionAddress = cast<void*>(keyPreviewFunction);
-            int result = WinInit(messageProcessorFunctionAddress, keyPreviewFunctionAddress);
-            CheckGraphicsStatus(cast<GraphicsStatus>(result));
+            WinInit(messageProcessorFunctionAddress, keyPreviewFunctionAddress);
         }
         public static void Init()
         {
@@ -72,21 +72,41 @@ namespace System.Windows
             {
                 case WindowState.normal:
                 {
-                    mainWindow.ShowWindow(ShowCommand.SW_SHOWNORMAL);
+                    auto result = mainWindow.ShowWindow(ShowCommand.SW_SHOWNORMAL);
+                    if (result.Error())
+                    {
+                        errorId = result.GetErrorId();
+                        return 1;
+                    }
                     break;
                 }
                 case WindowState.minimized:
                 {
-                    mainWindow.ShowWindow(ShowCommand.SW_MINIMIZE);
+                    auto result = mainWindow.ShowWindow(ShowCommand.SW_MINIMIZE);
+                    if (result.Error())
+                    {
+                        errorId = result.GetErrorId();
+                        return 1;
+                    }
                     break;
                 }
                 case WindowState.maximized:
                 {
-                    mainWindow.ShowWindow(ShowCommand.SW_MAXIMIZE);
+                    auto result = mainWindow.ShowWindow(ShowCommand.SW_MAXIMIZE);
+                    if (result.Error())
+                    {
+                        errorId = result.GetErrorId();
+                        return 1;
+                    }
                     break;
                 }
             }
-            mainWindow.Show();
+            auto result = mainWindow.Show();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return 1;
+            }
             mainWindow.Update();
             int exitCode = WinRun();
             return exitCode;
@@ -96,7 +116,7 @@ namespace System.Windows
             RunModalGuard guard;
             WinRunModal();
         }
-        public static nothrow void EndModal()
+        public static void EndModal()
         {
             WinPostMessage(MainWindow()->Handle(), CM_ENDMODAL, 0u, 0);
         }
@@ -112,7 +132,7 @@ namespace System.Windows
         {
             int retval = WinApplicationMessageLoop();
         }
-        private static bool ProcessMessage(void* windowHandle, uint msg, uint wparam, long lparam, long& result, void*& originalWndProc)
+        private static bool ProcessMessage(void* windowHandle, uint msg, ulong wparam, long lparam, long& result, void*& originalWndProc)
         {
             Control* window = windowManager.GetWindow(windowHandle);
             if (window != null)
@@ -120,11 +140,28 @@ namespace System.Windows
                 if (Debug.Messages())
                 {
                     System.IO.LogWriter writer(ApplicationLogFilePath());
-                    writer << GetCurrentTimestamp().ToString() << endl();
-                    writer << ">" << MessageNameMap.Instance().GetMessageName(msg) << endl();
+                    writer << GetCurrentDateTime().ToString() << endl();
+                    auto messageNameResult = MessageNameMap.Instance().GetMessageName(msg);
+                    if (!messageNameResult.Error())
+                    {
+                        writer << ">" << messageNameResult.Value() << endl();
+                    }
                 }
                 Message message(windowHandle, msg, wparam, lparam, result);
-                bool handled = window->ProcessMessageInternal(message);
+                Result<bool> handledResult = window->ProcessMessageInternal(message);
+                if (handledResult.Error())
+                {
+                    #if (DEBUG)
+                    auto result = MessageBox.Show(handledResult.GetErrorMessage(), "error");
+                    if (result.Error())
+                    {
+                        System.IO.LogWriter writer(ApplicationLogFilePath());
+                        writer << GetCurrentDateTime().ToString() << result.GetErrorMessage() << endl();
+                    }
+                    #endif
+                    return false;
+                }
+                bool handled = handledResult.Value();
                 if (message.originalWndProc != null)
                 {
                     originalWndProc = message.originalWndProc;
@@ -136,25 +173,29 @@ namespace System.Windows
                 if (Debug.Messages())
                 {
                     System.IO.LogWriter writer(ApplicationLogFilePath());
-                    writer << "<" << MessageNameMap.Instance().GetMessageName(msg) << endl();
+                    auto messageNameResult = MessageNameMap.Instance().GetMessageName(msg);
+                    if (!messageNameResult.Error())
+                    {
+                        writer << "<" << messageNameResult.Value() << endl();
+                    }
                 }
                 return handled;
             }
             return false;
         }
-        public static nothrow WindowManager& GetWindowManager()
+        public static WindowManager& GetWindowManager()
         {
             return windowManager;
         }
-        public static nothrow ResourceManager& GetResourceManager()
+        public static ResourceManager& GetResourceManager()
         {
             return resourceManager;
         }
-        public static nothrow LogView* GetLogView()
+        public static LogView* GetLogView()
         {
             return logView;
         }
-        public static nothrow void SetLogView(LogView* logView_)
+        public static void SetLogView(LogView* logView_)
         {
             logView = logView_;
         }
@@ -168,33 +209,41 @@ namespace System.Windows
             Control* focusedControl = windowManager.GetWindow(focusedWindowHandle);
             return focusedControl;
         }
-        public static nothrow Window* GetActiveWindow()
+        public static Window* GetActiveWindow()
         {
             return activeWindow;
         }
-        public static nothrow void SetActiveWindow(Window* activeWindow_)
+        public static void SetActiveWindow(Window* activeWindow_)
         {
             activeWindow = activeWindow_;
         }
-        public static nothrow Window* MainWindow()
+        public static Window* MainWindow()
         {
             return mainWindow;
         }
-        public static nothrow void SetMainWindow(Window* w)
+        public static void SetMainWindow(Window* w)
         {
             mainWindow = w;
         }
-        internal static nothrow void SetRunningModal()
+        internal static void SetRunningModal()
         {
             runningModal = true;
         }
-        internal static nothrow void ResetRunningModal()
+        internal static void ResetRunningModal()
         {
             runningModal = false;
         }
-        public static nothrow bool RunningModal()
+        public static bool RunningModal()
         {
             return runningModal;
+        }
+        public static bool Error()
+        {
+            return errorId != 0;
+        }
+        public static int ErrorId()
+        {
+            return errorId;
         }
         private static WindowManager windowManager;
         private static ResourceManager resourceManager;
@@ -202,5 +251,6 @@ namespace System.Windows
         private static Window* activeWindow;
         private static Window* mainWindow;
         private static bool runningModal;
+        private static int errorId;
     }
 }

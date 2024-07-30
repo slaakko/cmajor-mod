@@ -58,7 +58,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     emitter->ResetCurrentDebugLocation();
     debugInfo = false;
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo) && boundCompileUnit.GetCompileUnitNode() && 
-        !boundCompileUnit.GetCompileUnitNode()->IsSynthesizedUnit() && compileUnitId != "Attribute_ED3EC2A45D6E25CEB95C30C28B428CF777D0BF18")
+        !boundCompileUnit.GetCompileUnitNode()->IsSynthesizedUnit() && !compileUnitId.starts_with("Attribute_"))
     {
         emitter->StartDebugInfo(boundCompileUnit.GetCompileUnitNode()->FilePath(), cmajor::symbols::GetCompilerVersion(), 
             cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release));

@@ -1,0 +1,3 @@
+project xpath_socrates;
+target=program;
+source <xpath_socrates.cm>;

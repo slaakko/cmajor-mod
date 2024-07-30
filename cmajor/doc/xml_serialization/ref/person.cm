@@ -1,0 +1,25 @@
+using System;
+using System.Xml;
+using System.Xml.Serialization;
+
+[xml]
+public class Person
+{
+    public Person()
+    {
+    }
+    public Person(const string& name_) : name(name_)
+    {
+    }
+    public inline const string& Name() const
+    {
+        return name;
+    }
+    private string name;
+}
+
+int main()
+{
+    // ...
+    return 0;
+}

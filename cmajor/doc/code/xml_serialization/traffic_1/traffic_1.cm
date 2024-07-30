@@ -1,0 +1,54 @@
+// traffic_1
+
+using System;
+using System.Xml;
+using System.Xml.Serialization;
+
+[xml]
+public class Person
+{
+    public Person()
+    {
+    }
+    public Person(const string& name_) : name(name_)
+    {
+    }
+    public inline const string& Name() const
+    {
+        return name;
+    }
+    private string name;
+}
+
+int main()
+{
+    Person joe("Joe Coder");
+    XmlSerializationContext ctx;
+    ctx.SetFlag(XmlSerializationFlags.suppressMetadata);
+    Result<System.Xml.Element*> toXmlResult = joe.ToXml("person", ctx);
+    if (toXmlResult.Error())
+    {
+        Console.Error() << toXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    System.Xml.Element* element = toXmlResult.Value();
+    System.Xml.Document document;
+    document.AppendChild(element);
+    System.Text.CodeFormatter formatter(Console.Out());
+    formatter.SetIndentSize(1);
+    Result<bool> writeResult = document.Write(formatter);
+    if (writeResult.Error())
+    {
+        Console.Error() << writeResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    Person person;
+    Result<bool> fromXmlResult = person.FromXml(document.DocumentElement());
+    if (fromXmlResult.Error())
+    {
+        Console.Error() << fromXmlResult.GetErrorMessage() << "\n";
+        return 1;
+    }
+    Console.Out() << person.Name() << "\n";
+    return 0;
+}

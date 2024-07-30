@@ -91,27 +91,20 @@ public void PrintMyCollection(const MyCollection& myCollection)
 
 void main()
 {
-    try
-    {
-        List<int> intList;
-        intList.Add(1);
-        intList.Add(2);
-        intList.Add(3);
-        PrintIntList(intList);
-        AddOneToAll(intList);
-        PrintIntList(intList);
-        List<string> stringList;
-        stringList.Add("foo");
-        stringList.Add("bar");
-        PrintStringList(stringList);
-        MyCollection myCollection;
-        myCollection.Add(Foo(1));
-        myCollection.Add(Foo(2));
-        myCollection.Add(Foo(3));
-        PrintMyCollection(myCollection);
-    }
-    catch (const Exception& ex)
-    {
-        Console.Error() << ex.ToString() << endl();
-    }
+    List<int> intList;
+    intList.Add(1);
+    intList.Add(2);
+    intList.Add(3);
+    PrintIntList(intList);
+    AddOneToAll(intList);
+    PrintIntList(intList);
+    List<string> stringList;
+    stringList.Add("foo");
+    stringList.Add("bar");
+    PrintStringList(stringList);
+    MyCollection myCollection;
+    myCollection.Add(Foo(1));
+    myCollection.Add(Foo(2));
+    myCollection.Add(Foo(3));
+    PrintMyCollection(myCollection);
 }

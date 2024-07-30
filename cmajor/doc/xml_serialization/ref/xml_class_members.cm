@@ -1,0 +1,82 @@
+namespace System.Xml.Serialization
+{
+    public abstract class XmlSerializable()
+    {
+        public XmlSerializable() : objectId(Uuid.Random())
+        {
+        }
+        public default virtual ~XmlSerializable();
+        public const Uuid& ObjectId() const
+        {
+            return objectId;
+        }
+        public void SetObjectId(const Uuid& objectId_)
+        {
+            objectId = objectId_;
+        }
+        public virtual string ClassName() const
+        {
+            return typename(*this);
+        }
+        public abstract Result<bool> SetObjectXmlAttributes(System.Xml.Element* element);
+        public abstract int ClassId() const;
+        public Result<System.Xml.Element*> ToXml(const string& elementName)
+        {
+            XmlSerializationContext ctx;
+            return ToXml(elementName, ctx);
+        }
+        public abstract Result<System.Xml.Element*> ToXml(const string& elementName, XmlSerializationContext& ctx);
+        public Result<bool> FromXml(System.Xml.Element* element)
+        {
+            XmlSerializationContext ctx;
+            return FromXml(element, ctx);
+        }
+        public abstract Result<bool> FromXml(System.Xml.Element* element, XmlSerializationContext& ctx);
+        private Uuid objectId;
+    }
+}
+
+public class Person : System.Xml.Serialization.XmlSerializable
+{
+    public Person() : base()
+    {
+    }
+    public static void Register()
+    {
+        // compute class id from the name of the class and set its value to the "classId" member variable.
+        System.Xml.Serialization.XmlRegister<Person>(classId);
+    }
+    public static string StaticClassName() 
+    {
+        return "Person";
+    }
+    public override Result<bool> SetObjectXmlAttributes(System.Xml.Element* element)
+    {
+        element->SetAttribute("classId", classId);
+        element->SetAttribute("objectId", ToString(ObjectId()));
+        element->SetAttribute("className", ClassName());
+        return Result<bool>(true);
+    }
+    public override int ClassId() const
+    {
+        return classId;
+    }
+    public override Result<System.Xml.Element*> ToXml(const string& elementName, XmlSerializationContext& ctx)
+    {
+        System.Xml.Element* element = System.Xml.MakeElement(elementName);
+        if (!ctx.GetFlag(System.XmlSerialization.XmlSerializationFlags.suppressMetadata))
+        {
+            SetObjectXmlAttributes(element);
+        }
+        for (const auto& memberVariable : 'memberVariables')
+        {
+            // call System.Xml.Serialization.ToXml(memberVariable, "<member_variable_name>", ctx);
+        }
+        return Result<System.Xml.Element*>(element);
+    }
+    public override Result<bool> FromXml(System.Xml.Element* element, XmlSerializationContext& ctx)
+    {
+        
+    }
+    public static int classId;
+}

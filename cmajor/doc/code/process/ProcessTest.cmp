@@ -1,3 +1,0 @@
-project ProcessTest;
-target=program;
-source <ProcessTest.cm>;

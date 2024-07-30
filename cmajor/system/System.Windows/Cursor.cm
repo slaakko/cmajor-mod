@@ -28,16 +28,16 @@ namespace System.Windows
 
     public class Cursor : Resource
     {
-        public nothrow Cursor() : cursorHandle(null), standard(false)
+        public Cursor() : cursorHandle(null), standard(false)
         {
         }
-        public nothrow Cursor(void* cursorHandle_) : cursorHandle(cursorHandle_), standard(false)
+        public Cursor(void* cursorHandle_) : cursorHandle(cursorHandle_), standard(false)
         {
         }
-        public nothrow Cursor(void* cursorHandle_, bool standard_) : cursorHandle(cursorHandle_), standard(standard_)
+        public Cursor(void* cursorHandle_, bool standard_) : cursorHandle(cursorHandle_), standard(standard_)
         {
         }
-        public nothrow Cursor(Cursor&& that) : cursorHandle(that.cursorHandle), standard(that.standard)
+        public Cursor(Cursor&& that) : cursorHandle(that.cursorHandle), standard(that.standard)
         {
             that.cursorHandle = null;
             that.standard = false;
@@ -49,18 +49,18 @@ namespace System.Windows
                 WinDestroyCursor(cursorHandle);
             }
         }
-        public default nothrow void operator=(Cursor&&);
+        public default void operator=(Cursor&&);
         suppress Cursor(const Cursor&);
         suppress void operator=(const Cursor&);
-        public nothrow void* Handle() const
+        public void* Handle() const
         {
             return cursorHandle;
         }
-        public nothrow bool IsStandard() const
+        public bool IsStandard() const
         {
             return standard;
         }
-        public nothrow void SetStandard()
+        public void SetStandard()
         {
             standard = true;
         }
@@ -68,19 +68,27 @@ namespace System.Windows
         private bool standard;
     }
 
-    public Cursor LoadStandardCursor(StandardCursorId cursorId)
+    [nodiscard]
+    public Result<Cursor> LoadStandardCursor(StandardCursorId cursorId)
     {
         void* cursorHandle = WinLoadStandardCursor(cast<int>(cursorId));
         if (cursorHandle == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("could not load standard cursor", WinGetLastError());
+            return Result<Cursor>(ErrorId(errorId));
         }
-        return Cursor(cursorHandle, true);
+        return Result<Cursor>(Cursor(cursorHandle, true));
     }
 
-    public Cursor LoadCursor(const string& cursorName)
+    [nodiscard]
+    public Result<Cursor> LoadCursor(const string& cursorName)
     {
-        return Cursor(LoadCursor(cursorName.Chars()));
+        auto cursorResult = LoadCursor(cursorName.Chars());
+        if (cursorResult.Error())
+        {
+            return Result<Cursor>(ErrorId(cursorResult.GetErrorId()));
+        }
+        return Result<Cursor>(Cursor(cursorResult.Value()));
     }
 
     public Cursor GetCursor()
@@ -88,8 +96,8 @@ namespace System.Windows
         return Cursor(WinGetCursor(), true);
     }
 
-    public void SetCursor(Cursor& cursor)
+    public void SetCursor(Cursor* cursor)
     {
-        WinSetCursor(cursor.Handle());
+        WinSetCursor(cursor->Handle());
     }
 }

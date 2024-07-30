@@ -3,35 +3,39 @@ using System.Threading.Fibers;
 
 public class Context
 {
-    public nothrow Context() : mainFiber(null), otherFiber(null), runningFiber(null), otherFiberRunning(false)
+    public Context() : mainFiber(null), otherFiber(null), runningFiber(null), otherFiberRunning(false)
     {
     }
-    public nothrow void SetFibers(Fiber* mainFiber_, Fiber* otherFiber_)
+    public void SetFibers(Fiber* mainFiber_, Fiber* otherFiber_)
     {
         mainFiber = mainFiber_;
         otherFiber = otherFiber_;
         runningFiber = mainFiber;
     }
-    public nothrow void SetOtherFiberRunning(bool running)
+    public void SetOtherFiberRunning(bool running)
     {
         otherFiberRunning = running;
     }
-    public nothrow bool IsOtherFiberRunning() const
+    public bool IsOtherFiberRunning() const
     {
         return otherFiberRunning;
     }
-    public nothrow void Switch()
+    [nodiscard]
+    public Result<bool> Switch()
     {
         if (runningFiber == mainFiber)
         {
             runningFiber = otherFiber;
-            SwitchToFiber(*otherFiber);
+            auto result = SwitchToFiber(*otherFiber);
+            if (result.Error()) return result;
         }
         else
         {
             runningFiber = mainFiber;
-            SwitchToFiber(*mainFiber);
+            auto result = SwitchToFiber(*mainFiber);
+            if (result.Error()) return result;
         }
+        return Result<bool>(true);
     }
     private Fiber* mainFiber;
     private Fiber* otherFiber;
@@ -46,7 +50,12 @@ public void FiberHelper(Context* context)
     while (count <= 3)
     {
         Console.Out() << "switching context from fiber helper, count = " << count << endl();
-        context->Switch();
+        auto result = context->Switch();
+        if (result.Error())
+        {
+            Console.Error() << result.GetErrorMessage() << endl();
+            return;
+        }
         Console.Out() << "back in fiber helper, count = " << count << endl();
         ++count;
     }
@@ -57,45 +66,44 @@ public void FiberFunc(void* data)
 {
     Console.Out() << "in fiber" << endl();
     Context* context = cast<Context*>(data);
-    try
+    context->SetOtherFiberRunning(true);
+    auto result = context->Switch();
+    if (result.Error())
     {
-        context->SetOtherFiberRunning(true);
-        context->Switch();
-        FiberHelper(context);
-        context->SetOtherFiberRunning(false);
-        Console.Out() << "fiber exiting" << endl();
+        Console.Error() << result.GetErrorMessage() << endl();
+        return;
     }
-    catch (const Exception& ex)
-    {
-        Console.Error() << "fiber got exception: " << ex.Message() << endl();
-        context->SetOtherFiberRunning(false);
-    }
-    context->Switch();
+    FiberHelper(context);
+    context->SetOtherFiberRunning(false);
+    Console.Out() << "fiber exiting" << endl();
+    result = context->Switch();
 }
 
 public int main()
 {
-    try
+    Context context;
+    Fiber mainFiber = Fiber.FromCurrentThread();
+    FiberFunction fiberFunction = FiberFunc;
+    Fiber otherFiber(fiberFunction, &context);
+    context.SetFibers(&mainFiber, &otherFiber);
+    auto result = context.Switch();
+    if (result.Error())
     {
-        Context context;
-        Fiber mainFiber = Fiber.FromCurrentThread();
-        FiberFunction fiberFunction = FiberFunc;
-        Fiber otherFiber(fiberFunction, &context);
-        context.SetFibers(&mainFiber, &otherFiber);
-        context.Switch();
-        Console.Out() << "back in main fiber" << endl();
-        while (context.IsOtherFiberRunning())
-        {
-            Console.Out() << "switch context from main fiber" << endl();
-            context.Switch();
-            Console.Out() << "back in main fiber" << endl();
-        }
-        Console.Out() << "exiting main" << endl();
-    }
-    catch (const Exception& ex)
-    {
-        Console.Error() << "main got exception: " << ex.Message() << endl();
+        Console.Error() << result.GetErrorMessage() << endl();
         return 1;
     }
+    Console.Out() << "back in main fiber" << endl();
+    while (context.IsOtherFiberRunning())
+    {
+        Console.Out() << "switch context from main fiber" << endl();
+        result = context.Switch();
+        if (result.Error())
+        {
+            Console.Error() << result.GetErrorMessage() << endl();
+            return 1;
+        }
+        Console.Out() << "back in main fiber" << endl();
+    }
+    Console.Out() << "exiting main" << endl();
     return 0;
 }

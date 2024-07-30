@@ -1,0 +1,78 @@
+using System;
+using System.Collections;
+
+namespace System.XPath
+{
+    public class RuleNameMap
+    {
+        static RuleNameMap() : instance(new RuleNameMap())
+        {
+        }
+        public static RuleNameMap& Instance()
+        {
+            return *instance;
+        }
+        public Map<long, string>* GetRuleNameMap() const
+        {
+            return &ruleNameMap;
+        }
+        private RuleNameMap()
+        {
+            ruleNameMap[4805966042268434433] = "System.XPath.XPathParser.Expr";
+            ruleNameMap[4805966042268434434] = "System.XPath.XPathParser.OrExpr";
+            ruleNameMap[4805966042268434435] = "System.XPath.XPathParser.AndExpr";
+            ruleNameMap[4805966042268434436] = "System.XPath.XPathParser.EqualityExpr";
+            ruleNameMap[4805966042268434437] = "System.XPath.XPathParser.RelationalExpr";
+            ruleNameMap[4805966042268434438] = "System.XPath.XPathParser.AdditiveExpr";
+            ruleNameMap[4805966042268434439] = "System.XPath.XPathParser.MultiplicativeExpr";
+            ruleNameMap[4805966042268434440] = "System.XPath.XPathParser.UnaryExpr";
+            ruleNameMap[4805966042268434441] = "System.XPath.XPathParser.UnionExpr";
+            ruleNameMap[4805966042268434442] = "System.XPath.XPathParser.PathExpr";
+            ruleNameMap[4805966042268434443] = "System.XPath.XPathParser.LocationPath";
+            ruleNameMap[4805966042268434444] = "System.XPath.XPathParser.AbsoluteLocationPath";
+            ruleNameMap[4805966042268434445] = "System.XPath.XPathParser.AbbreviatedAbsoluteLocationPath";
+            ruleNameMap[4805966042268434446] = "System.XPath.XPathParser.RelativeLocationPath";
+            ruleNameMap[4805966042268434447] = "System.XPath.XPathParser.Step";
+            ruleNameMap[4805966042268434448] = "System.XPath.XPathParser.AxisSpecifier";
+            ruleNameMap[4805966042268434449] = "System.XPath.XPathParser.AxisName";
+            ruleNameMap[4805966042268434450] = "System.XPath.XPathParser.AbbreviatedAxisSpecifier";
+            ruleNameMap[4805966042268434451] = "System.XPath.XPathParser.NodeTest";
+            ruleNameMap[4805966042268434452] = "System.XPath.XPathParser.Literal";
+            ruleNameMap[4805966042268434453] = "System.XPath.XPathParser.NodeType";
+            ruleNameMap[4805966042268434454] = "System.XPath.XPathParser.NameTest";
+            ruleNameMap[4805966042268434455] = "System.XPath.XPathParser.NCName";
+            ruleNameMap[4805966042268434456] = "System.XPath.XPathParser.QName";
+            ruleNameMap[4805966042268434457] = "System.XPath.XPathParser.PrefixedName";
+            ruleNameMap[4805966042268434458] = "System.XPath.XPathParser.Prefix";
+            ruleNameMap[4805966042268434459] = "System.XPath.XPathParser.UnprefixedName";
+            ruleNameMap[4805966042268434460] = "System.XPath.XPathParser.LocalPart";
+            ruleNameMap[4805966042268434461] = "System.XPath.XPathParser.Predicate";
+            ruleNameMap[4805966042268434462] = "System.XPath.XPathParser.AbbreviatedStep";
+            ruleNameMap[4805966042268434463] = "System.XPath.XPathParser.FunctionCall";
+            ruleNameMap[4805966042268434464] = "System.XPath.XPathParser.FunctionName";
+            ruleNameMap[4805966042268434465] = "System.XPath.XPathParser.Argument";
+            ruleNameMap[4805966042268434466] = "System.XPath.XPathParser.FilterExpr";
+            ruleNameMap[4805966042268434467] = "System.XPath.XPathParser.PrimaryExpr";
+            ruleNameMap[4805966042268434468] = "System.XPath.XPathParser.VariableReference";
+            ruleNameMap[4805966042268434469] = "System.XPath.XPathParser.Number";
+            ruleNameMap[4805966042268434470] = "System.XPath.XPathParser.EqualityOp";
+            ruleNameMap[4805966042268434471] = "System.XPath.XPathParser.RelationalOp";
+            ruleNameMap[4805966042268434472] = "System.XPath.XPathParser.AdditiveOp";
+            ruleNameMap[4805966042268434473] = "System.XPath.XPathParser.MultiplicativeOp";
+            ruleNameMap[4805966042268434474] = "System.XPath.XPathParser.CombinePathOp";
+            ruleNameMap[4805966042268434475] = "System.XPath.XPathParser.OrKeyword";
+            ruleNameMap[4805966042268434476] = "System.XPath.XPathParser.AndKeyword";
+            ruleNameMap[4805966042268434477] = "System.XPath.XPathParser.DivKeyword";
+            ruleNameMap[4805966042268434478] = "System.XPath.XPathParser.ModKeyword";
+            ruleNameMap[4805966042268434479] = "System.XPath.XPathParser.ProcessingInstructionKeyword";
+        }
+        private Map<long, string> ruleNameMap; 
+        private static UniquePtr<RuleNameMap> instance;
+    }
+
+    public Map<long, string>* GetRuleNameMapPtr()
+    {
+        return RuleNameMap.Instance().GetRuleNameMap();
+    }
+
+}

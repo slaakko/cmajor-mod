@@ -7,14 +7,11 @@ namespace System
 {
     public constexpr inline long Align(long n, long alignment)
     {
-        if (alignment <= 0)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(alignment > 0);
         return (n + alignment - 1) & -alignment;
     }
 
-    public constexpr nothrow inline long StrLen(const char* s)
+    public constexpr long StrLen(const char* s)
     {
         long len = 0;
         if (s != null)
@@ -28,7 +25,7 @@ namespace System
         return len;
     }
 
-    public constexpr nothrow inline long StrLen(const wchar* s)
+    public constexpr long StrLen(const wchar* s)
     {
         long len = 0;
         if (s != null)
@@ -42,7 +39,7 @@ namespace System
         return len;
     }
 
-    public constexpr nothrow inline long StrLen(const uchar* s)
+    public constexpr long StrLen(const uchar* s)
     {
         long len = 0;
         if (s != null)
@@ -56,12 +53,9 @@ namespace System
         return len;
     }
 
-    public inline void StrCopy(char* buf, const char* from)
+    public void StrCopy(char* buf, const char* from)
     {
-        if (buf == null)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(buf != null);
         if (from != null)
         {
             while (*from != '\0')
@@ -72,12 +66,9 @@ namespace System
         *buf = '\0';
     }
 
-    public inline void StrCopy(wchar* buf, const wchar* from)
+    public void StrCopy(wchar* buf, const wchar* from)
     {
-        if (buf == null)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(buf != null);
         if (from != null)
         {
             while (*from != '\0')
@@ -88,12 +79,9 @@ namespace System
         *buf = '\0';
     }
 
-    public inline void StrCopy(uchar* buf, const uchar* from)
+    public void StrCopy(uchar* buf, const uchar* from)
     {
-        if (buf == null)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(buf != null);
         if (from != null)
         {
             while (*from != '\0')
@@ -104,13 +92,10 @@ namespace System
         *buf = '\0';
     }
 
-    public inline long StrCopy(char* buf, const char* from, long length)
+    public long StrCopy(char* buf, const char* from, long length)
     {
         long resultLen = 0;
-        if (buf == null)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(buf != null);
         if (from != null)
         {
             while (resultLen < length)
@@ -127,13 +112,10 @@ namespace System
         return resultLen;
     }
 
-    public inline long StrCopy(wchar* buf, const wchar* from, long length)
+    public long StrCopy(wchar* buf, const wchar* from, long length)
     {
         long resultLen = 0;
-        if (buf == null)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(buf != null);
         if (from != null)
         {
             while (resultLen < length)
@@ -150,13 +132,10 @@ namespace System
         return resultLen;
     }
 
-    public inline long StrCopy(uchar* buf, const uchar* from, long length)
+    public long StrCopy(uchar* buf, const uchar* from, long length)
     {
         long resultLen = 0;
-        if (buf == null)
-        {
-            ThrowInvalidParameterException();
-        }
+        #assert(buf != null);
         if (from != null)
         {
             while (resultLen < length)
@@ -173,7 +152,7 @@ namespace System
         return resultLen;
     }
 
-    public nothrow long MemGrow(long size)
+    public long MemGrow(long size)
     {
         if (size < 8)
         {
@@ -195,23 +174,5 @@ namespace System
         {
             return 2 * Align(size, 4096);
         }
-    }
-
-    public nothrow inline void* MemAlloc(long size)
-    {
-        return RtMemAlloc(size);
-    }
-
-    public nothrow inline void* MemAlloc(long size, const char* info)
-    {
-        return RtMemAllocInfo(size, info);
-    }
-
-    public nothrow inline void MemFree(void* ptr)
-    {
-    #if (DEBUG)
-        RtDispose(ptr);
-    #endif
-        RtMemFree(ptr);
     }
 }

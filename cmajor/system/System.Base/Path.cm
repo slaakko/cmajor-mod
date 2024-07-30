@@ -8,33 +8,32 @@ using System.Collections;
 
 namespace System.IO
 {
-    public class InvalidPathException : Exception
+    [nodiscard]
+    public Result<string> GetCurrentWorkingDirectory()
     {
-        public nothrow InvalidPathException(const string& message_) : base(message_)
+        int errorId = 0;
+        int handle = RtmGetCurrentWorkingDirectoryHandle(errorId);
+        if (errorId > 0)
         {
+            return Result<string>(ErrorId(errorId));
         }
+        string currentWorkingDirectory = Path.MakeCanonical(RtmGetCurrentWorkingDirectory(handle));
+        RtmFreeCurrentWorkingDirectoryHandle(handle);
+        return Result<string>(currentWorkingDirectory);
     }
-    
-    public string GetCurrentWorkingDirectory()
-    {
-        int handle = RtGetCurrentWorkingDirectoryHandle();
-        if (handle < 0)
-        {
-            string errorMessage = RtGetError(handle);
-            RtDisposeError(handle);
-            throw FileSystemException(errorMessage);
-        }
-        string currentWorkingDirectory = Path.MakeCanonical(RtGetCurrentWorkingDirectory(handle));
-        RtFreeCurrentWorkingDirectoryHandle(handle);
-        return currentWorkingDirectory;
-    }
-    
-    public string GetFullPath(const string& path)
+
+    [nodiscard]
+    public Result<string> GetFullPath(const string& path)
     {
         string p = Path.MakeCanonical(path);
         if (Path.IsRelative(p))
         {
-            p = GetCurrentWorkingDirectory();
+            auto result = GetCurrentWorkingDirectory();
+            if (result.Error())
+            {
+                return Result<string>(ErrorId(result.GetErrorId()));
+            }
+            p = result.Value();
             p.Append('/');
             p.Append(Path.MakeCanonical(path));
         }
@@ -51,9 +50,11 @@ namespace System.IO
                     --w;
                     if (w < 0)
                     {
-                        throw InvalidPathException("path '" + path + "' is invalid");
+                        string errorMessage = "path '" + path + "' is invalid";
+                        int errorId = RtmAllocateError(errorMessage.Chars());
+                        return Result<string>(ErrorId(errorId));
                     }
-                }                
+                }
                 else
                 {
                     if (w != i)
@@ -66,14 +67,14 @@ namespace System.IO
         }
         if (w == 0)
         {
-            return "/";
+            return Result<string>("/");
         }
         else if (w == 1)
         {
             string p = components[0];
             if (p.Length() == 2 && IsAlpha(p[0]) && p[1] == ':')
             {
-                return p + "/";
+                return Result<string>(p + "/");
             }
         }
         string result;
@@ -87,25 +88,36 @@ namespace System.IO
         }
         if (result.IsEmpty())
         {
-            return "/";
+            return Result<string>("/");
         }
         else
         {
-            return result;
-        }            
+            return Result<string>(result);
+        }
     }
 
-    public nothrow string MakeRelativeDirPath(const string& dirPath, const string& referenceDirPath)
+    [nodiscard]
+    public Result<string> MakeRelativeDirPath(const string& dirPath, const string& referenceDirPath)
     {
-        string p = GetFullPath(dirPath);
-        string r = GetFullPath(referenceDirPath);
+        auto dp = GetFullPath(dirPath);
+        if (dp.Error())
+        {
+            return Result<string>(ErrorId(dp.GetErrorId()));
+        }
+        string p = dp.Value();
+        auto rd = GetFullPath(referenceDirPath);
+        if (rd.Error())
+        {
+            return Result<string>(ErrorId(rd.GetErrorId()));
+        }
+        string r = rd.Value();
         if (p == r)
         {
-            return string();
+            return Result<string>(string());
         }
         if (Path.GetDrive(p) != Path.GetDrive(r))
         {
-            return p;
+            return Result<string>(p);
         }
         List<string> pc = p.Split('/');
         List<string> rc = r.Split('/');
@@ -129,20 +141,18 @@ namespace System.IO
         {
             result = Path.Combine(result, pc[i]);
         }
-        return result;
+        return Result<string>(result);
     }
 
     public static class Path
     {
-        public static nothrow string MakeCanonical(const string& path)
+        public static string MakeCanonical(const string& path)
         {
             bool startsWithDriveLetter = false;
-            #if (WINDOWS)
-                if (path.Length() >= 2 && IsAlpha(path[0]) && path[1] == ':')
-                {
-                    startsWithDriveLetter = true;
-                }
-            #endif
+            if (path.Length() >= 2 && IsAlpha(path[0]) && path[1] == ':')
+            {
+                startsWithDriveLetter = true;
+            }
             string result;
             char prev = ' ';
             bool first = true;
@@ -190,7 +200,7 @@ namespace System.IO
             }
             return result;
         }
-        public static nothrow string ChangeExtension(const string& path, const string& extension)
+        public static string ChangeExtension(const string& path, const string& extension)
         {
             long lastDotPos = path.RFind('.');
             long lastSlashPos = path.RFind('/');
@@ -235,7 +245,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow bool HasExtension(const string& path)
+        public static bool HasExtension(const string& path)
         {
             string p = MakeCanonical(path);
             long lastDotPos = p.RFind('.');
@@ -261,7 +271,7 @@ namespace System.IO
                 return false;
             }
         }
-        public static nothrow string GetExtension(const string& path)
+        public static string GetExtension(const string& path)
         {
             string p = MakeCanonical(path);
             long lastDotPos = p.RFind('.');
@@ -281,21 +291,19 @@ namespace System.IO
                 return string();
             }
         }
-        public static nothrow string GetDrive(const string& path)
+        public static string GetDrive(const string& path)
         {
-            #if (WINDOWS)
-                if (path.Length() >= 2 && IsAlpha(path[0]) && path[1] == ':')
-                {
-                    char c = AsciiToUpper(path[0]);
-                    string s(c);
-                    s.Append(':');
-                    return s;
-                }
-            #endif
+            if (path.Length() >= 2 && IsAlpha(path[0]) && path[1] == ':')
+            {
+                char c = AsciiToUpper(path[0]);
+                string s(c);
+                s.Append(':');
+                return s;
+            }
             return string();
         }
 
-        public static nothrow string GetFileName(const string& path)
+        public static string GetFileName(const string& path)
         {
             if (path.IsEmpty())
             {
@@ -323,7 +331,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow string GetFileNameWithoutExtension(const string& path)
+        public static string GetFileNameWithoutExtension(const string& path)
         {
             string fileName = GetFileName(path);
             long lastDotPos = fileName.RFind('.');
@@ -336,7 +344,7 @@ namespace System.IO
                 return fileName;
             }
         }
-        public static nothrow string GetDirectoryName(const string& path)
+        public static string GetDirectoryName(const string& path)
         {
             string p = MakeCanonical(path);
             if (p.IsEmpty())
@@ -347,7 +355,7 @@ namespace System.IO
             {
                 return string();
             }
-            else 
+            else
             {
                 long lastDirSepPos = p.RFind('/');
                 if (lastDirSepPos != -1)
@@ -360,7 +368,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow string Combine(const string& path1, const string& path2)
+        public static string Combine(const string& path1, const string& path2)
         {
             string p1 = MakeCanonical(path1);
             string p2 = MakeCanonical(path2);
@@ -378,7 +386,7 @@ namespace System.IO
                 {
                     return p2;
                 }
-                else 
+                else
                 {
                     string result = p1;
                     if (p1[p1.Length() - 1] != '/')
@@ -390,7 +398,7 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow bool IsAbsolute(const string& path)
+        public static bool IsAbsolute(const string& path)
         {
             if (path.IsEmpty())
             {
@@ -413,21 +421,26 @@ namespace System.IO
                 }
             }
         }
-        public static nothrow bool IsRelative(const string& path)
+        public static bool IsRelative(const string& path)
         {
             return !IsAbsolute(path);
         }
-        public static string GetParent(const string& path)
+        public static Result<string> GetParent(const string& path)
         {
-            string fullPath = GetFullPath(path);
+            auto fp = GetFullPath(path);
+            if (fp.Error())
+            {
+                return Result<string>(ErrorId(fp.GetErrorId()));
+            }
+            string fullPath = fp.Value();
             long lastSlashPos = fullPath.RFind('/');
             if (lastSlashPos == -1)
             {
-                return string();
+                return Result<string>(string());
             }
             else
             {
-                return fullPath.Substring(0, lastSlashPos);
+                return Result<string>(fullPath.Substring(0, lastSlashPos));
             }
         }
     }

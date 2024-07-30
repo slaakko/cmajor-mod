@@ -16,7 +16,7 @@ namespace System.Collections
         public typedef RandomAccessIter<ValueType, const ValueType&, const ValueType*> ConstIterator;
         public typedef RandomAccessIter<ValueType, ValueType&, ValueType*> Iterator;
 
-        public nothrow List() : items(null), count(0), res(0)
+        public List() : items(null), count(0), res(0)
         {
         }
         public List(const Self& that) : items(null), count(that.count), res(0) where T is Copyable
@@ -27,7 +27,7 @@ namespace System.Collections
                 ConstructiveCopy(items, that.items, count);
             }
         }
-        public nothrow List(Self&& that) : items(that.items), count(that.count), res(that.res) where T is Movable
+        public List(Self&& that) : items(that.items), count(that.count), res(that.res) where T is Movable
         {
             that.items = null;
             that.count = 0;
@@ -35,10 +35,7 @@ namespace System.Collections
         }
         public List(long n, const ValueType& value) : items(null), count(0), res(0) where T is Copyable
         {
-            if (n < 0)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(n >= 0);
             count = n;
             Reserve(count);
             for (long i = 0; i < n; ++i)
@@ -53,7 +50,7 @@ namespace System.Collections
             Reserve(count);
             ConstructiveCopy(items, that.items, count);
         }
-        public nothrow void operator=(Self&& that) where T is Movable
+        public void operator=(Self&& that) where T is Movable
         {
             Swap(items, that.items);
             Swap(count, that.count);
@@ -72,10 +69,7 @@ namespace System.Collections
         }
         public void Resize(long newCount) where T is Movable
         {
-            if (newCount < 0)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(newCount >= 0);
             if (newCount != count)
             {
                 if (newCount < count)
@@ -96,19 +90,19 @@ namespace System.Collections
                 count = newCount;
             }
         }
-        public nothrow inline long Count() const
+        public inline long Count() const
         {
             return count;
         }
-        public nothrow inline long Capacity() const
+        public inline long Capacity() const
         {
             return res;
         }
-        public nothrow inline bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return count == 0;
         }
-        public nothrow void Clear()
+        public void Clear()
         {
             Destroy();
         }
@@ -174,10 +168,7 @@ namespace System.Collections
         }
         public ValueType Remove(Iterator pos)
         {
-            if (pos < Begin() || pos >= End())
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(pos >= Begin() && pos < End());
             ValueType result = Rvalue(*pos);
             Move(pos + 1, End(), pos);
             --count;
@@ -191,10 +182,7 @@ namespace System.Collections
         }
         public ValueType RemoveLast()
         {
-            if (IsEmpty())
-            {
-                ThrowPreconditionViolationException();
-            }
+            #assert(!IsEmpty());
             --count;
             Iterator end = End();
             ValueType result = Rvalue(*end);
@@ -229,35 +217,45 @@ namespace System.Collections
                 ++p;
             }
         }
+        public void Remove(Iterator first, Iterator last)
+        {
+            if (first == last) return;
+            Iterator p = first;
+            Iterator e = End();
+            while (first != last)
+            {
+                destroy(first.Ptr());
+                --count;
+                ++first;
+            }
+            while (first != e)
+            {
+                *p++ = *first++;
+            }
+        }
         public inline const ValueType& operator[](long index) const
         {
-            if (index < 0 || index >= count)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
+            #assert(index >= 0 && index < count);
             return items[index];
         }
         public inline ValueType& operator[](long index)
         {
-            if (index < 0 || index >= count)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
+            #assert(index >= 0 && index < count);
             return items[index];
         }
-        public nothrow inline Iterator Begin()
+        public inline Iterator Begin()
         {
             return Iterator(items);
         }
-        public nothrow inline ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return ConstIterator(items);
         }
-        public nothrow inline ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return ConstIterator(items);
         }
-        public nothrow inline Iterator End()
+        public inline Iterator End()
         {
             if (items != null)
             {
@@ -265,7 +263,7 @@ namespace System.Collections
             }
             return Iterator(null);
         }
-        public nothrow inline ConstIterator End() const
+        public inline ConstIterator End() const
         {
             if (items != null)
             {
@@ -273,7 +271,7 @@ namespace System.Collections
             }
             return ConstIterator(null);
         }
-        public nothrow inline ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             if (items != null)
             {
@@ -283,44 +281,28 @@ namespace System.Collections
         }
         public inline const ValueType& Front() const
         {
-            if (IsEmpty())
-            {
-                ThrowPreconditionViolationException();
-            }
+            #assert(!IsEmpty());
             return *Begin();
         }
         public inline ValueType& Front()
         {
-            if (IsEmpty())
-            {
-                ThrowPreconditionViolationException();
-            }
+            #assert(!IsEmpty());
             return *Begin();
         }
         public inline const ValueType& Back() const
         {
-            if (IsEmpty())
-            {
-                ThrowPreconditionViolationException();
-            }
+            #assert(!IsEmpty());
             return *(End() - 1);
         }
         public inline ValueType& Back()
         {
-            if (IsEmpty())
-            {
-                ThrowPreconditionViolationException();
-            }
+            #assert(!IsEmpty());
             return *(End() - 1);
         }
         private void Grow(long minRes)
         {
             minRes = MemGrow(minRes);
-        #if (MEM_DEBUG)
-            ValueType* newItems = cast<ValueType*>(MemAlloc(minRes * sizeof(ValueType), typename(*this)));
-        #else
             ValueType* newItems = cast<ValueType*>(MemAlloc(minRes * sizeof(ValueType)));
-        #endif
             if (items != null)
             {
                 ConstructiveMove(newItems, items, count);
@@ -331,7 +313,7 @@ namespace System.Collections
             items = newItems;
             res = minRes;
         }
-        private nothrow void Destroy()
+        private void Destroy()
         {
             if (count > 0)
             {
@@ -340,7 +322,7 @@ namespace System.Collections
             }
             if (res > 0)
             {
-                MemFree(items);
+                RtmMemFree(items);
                 items = null;
                 res = 0;
             }
@@ -350,7 +332,7 @@ namespace System.Collections
         private long res;
     }
 
-    public nothrow bool operator==<T>(const List<T>& left, const List<T>& right) where T is Regular
+    public bool operator==<T>(const List<T>& left, const List<T>& right) where T is Regular
     {
         long n = left.Count();
         if (n != right.Count())
@@ -367,7 +349,7 @@ namespace System.Collections
         return true;
     }
 
-    public nothrow bool operator<<T>(const List<T>& left, const List<T>& right) where T is TotallyOrdered
+    public bool operator<<T>(const List<T>& left, const List<T>& right) where T is TotallyOrdered
     {
         return LexicographicalCompare(left.Begin(), left.End(), right.Begin(), right.End());
     }
@@ -392,7 +374,7 @@ namespace System.Collections
         }
     }
 
-    public nothrow void Destroy<ValueType>(ValueType* items, long count) where ValueType is Destructible
+    public void Destroy<ValueType>(ValueType* items, long count) where ValueType is Destructible
     {
         for (long i = 0; i < count; ++i)
         {
@@ -404,6 +386,7 @@ namespace System.Collections
     [system_default]
     public TextWriter& operator<<<T>(TextWriter& writer, const List<T>& list)
     {
+        if (writer.Error()) return writer;
         writer << "[";
         bool first = true;
         for (const T& element : list)

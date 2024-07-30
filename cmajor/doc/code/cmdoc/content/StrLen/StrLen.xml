@@ -4,12 +4,20 @@
  </files>
  <namespace docPath="../../StrLen/doc/ns_.html" extPath="StrLen/doc/ns_.html" id="ns_" name="">
   <functions>
-   <function docPath="../../StrLen/doc/../index.html#function_StrLen_6ECA89B27F0E4A7FE42F2B2843CDDF977FA73400" extPath="StrLen/doc/../index.html#function_StrLen_6ECA89B27F0E4A7FE42F2B2843CDDF977FA73400" fileName="StrLen/strlen.cm" filePath="../../StrLen/file/strlen.cm.html" id="function_StrLen_6ECA89B27F0E4A7FE42F2B2843CDDF977FA73400" kind="Function" line="1" name="StrLen" returnType="f19f8da0-1054-4006-9580-ef943733c72c" specifiers="public">
+   <function docPath="../../StrLen/doc/../index.html#function_StrLen_6ECA89B27F0E4A7FE42F2B2843CDDF977FA73400" extPath="StrLen/doc/../index.html#function_StrLen_6ECA89B27F0E4A7FE42F2B2843CDDF977FA73400" fileName="StrLen/strlen.cm" filePath="../../StrLen/file/strlen.cm.html" id="function_StrLen_6ECA89B27F0E4A7FE42F2B2843CDDF977FA73400" kind="Function" line="1" name="StrLen" returnType="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9" specifiers="public">
     <parameters>
-     <parameter id="parameter_s_AEC798537499BEE109386DB13B08A3B695D770F4" name="s" type="fe78727f-b1c8-4877-b52a-fe8cb21d9a30"/>
+     <parameter id="parameter_s_AEC798537499BEE109386DB13B08A3B695D770F4" name="s" type="2807d504-6cea-61de-c7b7-b19e34a7fb90"/>
     </parameters>
    </function>
   </functions>
  </namespace>
- <types/>
+ <types>
+  <basicType id="c019d6ae-8fe3-6e9b-9924-db8ceafc4ed9" name="long"/>
+  <basicType id="e5a0727d-47ad-59b9-abb6-584b4a4b7614" name="char"/>
+  <derivedType id="2807d504-6cea-61de-c7b7-b19e34a7fb90" name="const char*">
+   <derivation name="const"/>
+   <derivation baseType="e5a0727d-47ad-59b9-abb6-584b4a4b7614"/>
+   <derivation name="*"/>
+  </derivedType>
+ </types>
 </symbolTable>

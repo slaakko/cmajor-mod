@@ -1,9 +1,10 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Algorithm.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/soulng/rex/Algorithm.cpp' using cpp2cm version 1.0.0
 
 namespace System.RegularExpressions
 {
@@ -65,4 +66,5 @@ namespace System.RegularExpressions
         }
         return false;
     }
+    
 } // namespace System.RegularExpressions

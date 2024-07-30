@@ -1,0 +1,31 @@
+using System;
+
+int main()
+{
+    System.Lex.FileMap fileMap;
+    auto parseResult = System.Xml.ParseXmlDocument("test.xml", fileMap);
+    if (parseResult.Error())
+    {
+        Console.Error() << parseResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    System.Xml.Document* doc = parseResult.Value().Get();
+    Result<UniquePtr<System.XPath.NodeSet>> evaluateResult = System.XPath.EvaluateToNodeSet("/test/alpha[@a=\"1\"]/beta/gamma/text()", doc);
+    if (evaluateResult.Error())
+    {
+        Console.Error() << evaluateResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    System.XPath.NodeSet* nodeSet = evaluateResult.Value().Get();
+    System.Xml.Element* element = nodeSet->ToXmlElement();
+    System.Xml.Document resultDoc;
+    resultDoc.AppendChild(element);
+    System.Text.CodeFormatter formatter(Console.Out());
+    auto writeResult = resultDoc.Write(formatter);
+    if (writeResult.Error())
+    {
+        Console.Error() << writeResult.GetErrorMessage() << endl();
+        return 1;
+    }
+    return 0;
+}

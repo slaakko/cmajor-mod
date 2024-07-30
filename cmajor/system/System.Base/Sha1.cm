@@ -9,18 +9,18 @@ using System.IO;
 
 namespace System.Security
 {
-    public nothrow inline uint LeftRotate(uint x, uint n)
+    public inline uint LeftRotate(uint x, uint n)
     {
         return (x << n) ^ (x >> (32u - n));
     }
-    
+
     public class Sha1
     {
-        public nothrow Sha1()
+        public Sha1()
         {
             Reset();
         }
-        public nothrow void Reset()
+        public void Reset()
         {
             digest[0] = 0x67452301u;
             digest[1] = 0xEFCDAB89u;
@@ -30,24 +30,25 @@ namespace System.Security
             byteIndex = 0u;
             bitCount = 0u;
         }
-        public nothrow void Process(byte x)
+        public void Process(byte x)
         {
             ProcessByte(x);
             bitCount = bitCount + 8u;
         }
-        public nothrow void Process(byte* begin, byte* end)
+        public void Process(byte* begin, byte* end)
         {
             while (begin != end)
             {
                 Process(*begin);
                 ++begin;
-            }            
+            }
         }
-        public nothrow void Process(byte* buf, long count)
+        public void Process(byte* buf, long count)
         {
             Process(buf, buf + count);
         }
-        public nothrow string GetDigest()
+        [nodiscard]
+        public Result<string> GetDigest()
         {
             ProcessByte(0x80u);
             if (byteIndex > 56u)
@@ -76,14 +77,39 @@ namespace System.Security
             ProcessByte(cast<byte>((bitCount >> 16u) & 0xFFu));
             ProcessByte(cast<byte>((bitCount >> 8u) & 0xFFu));
             ProcessByte(cast<byte>(bitCount & 0xFFu));
-            string s = ToHexString(digest[0]);
-            s.Append(ToHexString(digest[1]));
-            s.Append(ToHexString(digest[2]));
-            s.Append(ToHexString(digest[3]));
-            s.Append(ToHexString(digest[4]));
-            return s;
+            auto result = ToHexString(digest[0]);
+            if (result.Error())
+            {
+                return Result<string>(ErrorId(result.GetErrorId()));
+            }
+            string s = result.Value();
+            result = ToHexString(digest[1]);
+            if (result.Error())
+            {
+                return Result<string>(ErrorId(result.GetErrorId()));
+            }
+            s.Append(result.Value());
+            result = ToHexString(digest[2]);
+            if (result.Error())
+            {
+                return Result<string>(ErrorId(result.GetErrorId()));
+            }
+            s.Append(result.Value());
+            result = ToHexString(digest[3]);
+            if (result.Error())
+            {
+                return Result<string>(ErrorId(result.GetErrorId()));
+            }
+            s.Append(result.Value());
+            result = ToHexString(digest[4]);
+            if (result.Error())
+            {
+                return Result<string>(ErrorId(result.GetErrorId()));
+            }
+            s.Append(result.Value());
+            return Result<string>(s);
         }
-        private nothrow void ProcessByte(byte x)
+        private void ProcessByte(byte x)
         {
             block[byteIndex++] = x;
             if (byteIndex == 64u)
@@ -92,7 +118,7 @@ namespace System.Security
                 ProcessBlock();
             }
         }
-        private nothrow void ProcessBlock()
+        private void ProcessBlock()
         {
             uint[80] w;
             for (int i = 0; i < 16; ++i)
@@ -154,47 +180,81 @@ namespace System.Security
         private ulong bitCount;
     }
 
-    public nothrow string GetSha1MessageDigest(const string& message)
+    [nodiscard]
+    public Result<string> GetSha1MessageDigest(const string& message)
     {
         byte* data = cast<byte*>(cast<void*>(message.Chars()));
         long count = message.Length();
         return GetSha1MessageDigest(data, count);
     }
-    
-    public nothrow string GetSha1MessageDigest(byte* data, long count)
+
+    [nodiscard]
+    public Result<string> GetSha1MessageDigest(byte* data, long count)
     {
         Sha1 sha1;
         sha1.Process(data, count);
         return sha1.GetDigest();
     }
-    
-    public string GetSha1FileDigest(const string& filePath)
+
+    [nodiscard]
+    public Result<string> GetSha1FileDigest(const string& filePath)
     {
         Sha1 sha1;
-        long n = File.Size(filePath);
+        auto nr = File.Size(filePath);
+        if (nr.Error())
+        {
+            return Result<string>(ErrorId(nr.GetErrorId()));
+        }
+        long n = nr.Value();
         if (n > 0)
         {
-            BinaryReader reader = File.OpenBinary(filePath);
+            auto readerResult = File.OpenBinary(filePath);
+            if (readerResult.Error())
+            {
+                return Result<string>(ErrorId(readerResult.GetErrorId()));
+            }
+            BinaryReader& reader = readerResult.Value();
             for (long i = 0; i < n; ++i)
             {
-                sha1.Process(reader.ReadByte());
+                auto result = reader.ReadByte();
+                if (result.Error())
+                {
+                    return Result<string>(ErrorId(result.GetErrorId()));
+                }
+                sha1.Process(result.Value());
             }
-        }        
+        }
         return sha1.GetDigest();
     }
 
-    public string GetCumulativeSha1FileDigest(const List<string>& filePaths)
+    [nodiscard]
+    public Result<string> GetCumulativeSha1FileDigest(const List<string>& filePaths)
     {
         Sha1 sha1;
         for (const string& filePath : filePaths)
         {
-            long n = File.Size(filePath);
+            auto nr = File.Size(filePath);
+            if (nr.Error())
+            {
+                return Result<string>(ErrorId(nr.GetErrorId()));
+            }
+            long n = nr.Value();
             if (n > 0)
             {
-                BinaryReader reader = File.OpenBinary(filePath);
+                auto readerResult = File.OpenBinary(filePath);
+                if (readerResult.Error())
+                {
+                    return Result<string>(ErrorId(readerResult.GetErrorId()));
+                }
+                BinaryReader& reader = readerResult.Value();
                 for (long i = 0; i < n; ++i)
                 {
-                    sha1.Process(reader.ReadByte());
+                    auto result = reader.ReadByte();
+                    if (result.Error())
+                    {
+                        return Result<string>(ErrorId(result.GetErrorId()));
+                    }
+                    sha1.Process(result.Value());
                 }
             }
         }

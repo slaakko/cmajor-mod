@@ -1,3 +1,3 @@
-project Dom;
+project dom;
 target=program;
 source <dom.cm>;

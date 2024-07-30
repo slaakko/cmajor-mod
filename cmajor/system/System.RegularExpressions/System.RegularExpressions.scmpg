@@ -1,0 +1,2 @@
+project System.RegularExpressions.parser;
+parser <System.RegularExpressions.parser>;

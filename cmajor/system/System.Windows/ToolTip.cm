@@ -8,35 +8,35 @@ using System.Collections;
 
 namespace System.Windows
 {
-    public nothrow Color DefaultToolTipTextColor()
-    {
-        return Color.Black();
-    }
-    
-    public nothrow Color DefaultToolTipFrameColor()
+    public Color DefaultToolTipTextColor()
     {
         return Color.Black();
     }
 
-    public nothrow string DefaultToolTipFontFamilyName()
+    public Color DefaultToolTipFrameColor()
+    {
+        return Color.Black();
+    }
+
+    public string DefaultToolTipFontFamilyName()
     {
         return "Segoe UI";
     }
 
-    public nothrow float DefaultToolTipFontSize()
+    public float DefaultToolTipFontSize()
     {
         return 9.0f;
     }
-    
-    public nothrow ControlCreateParams& ToolTipControlCreateParams(ControlCreateParams& controlCreateParams)
+
+    public ControlCreateParams& ToolTipControlCreateParams(ControlCreateParams& controlCreateParams)
     {
         return controlCreateParams.SetWindowClassName("System.Windows.ToolTip").SetWindowStyle(HiddenChildWindowStyle()).
             SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW).SetBackgroundColor(Color.FloralWhite()).SetSize(Size(0, 0));
     }
-    
+
     public class ToolTipCreateParams
     {
-        public nothrow ToolTipCreateParams(ControlCreateParams& controlCreateParams_) :
+        public ToolTipCreateParams(ControlCreateParams& controlCreateParams_) :
             controlCreateParams(controlCreateParams_),
             textColor(DefaultToolTipTextColor()),
             frameColor(DefaultToolTipFrameColor()),
@@ -44,26 +44,26 @@ namespace System.Windows
             fontSize(DefaultToolTipFontSize())
         {
         }
-        public nothrow ToolTipCreateParams& Defaults()
+        public ToolTipCreateParams& Defaults()
         {
             return *this;
         }
-        public nothrow ToolTipCreateParams& SetTextColor(const Color& textColor_)
+        public ToolTipCreateParams& SetTextColor(const Color& textColor_)
         {
             textColor = textColor_;
             return *this;
         }
-        public nothrow ToolTipCreateParams& SetFrameColor(const Color& frameColor_)
+        public ToolTipCreateParams& SetFrameColor(const Color& frameColor_)
         {
             frameColor = frameColor_;
             return *this;
         }
-        public nothrow ToolTipCreateParams& SetFontFamilyName(const string& fontFamilyName_)
+        public ToolTipCreateParams& SetFontFamilyName(const string& fontFamilyName_)
         {
             fontFamilyName = fontFamilyName_;
             return *this;
         }
-        public nothrow ToolTipCreateParams& SetFontSize(float fontSize_)
+        public ToolTipCreateParams& SetFontSize(float fontSize_)
         {
             fontSize = fontSize_;
             return *this;
@@ -74,7 +74,7 @@ namespace System.Windows
         public string fontFamilyName;
         public float fontSize;
     }
-    
+
     public class ToolTip : Control
     {
         private enum Flags : sbyte
@@ -105,77 +105,125 @@ namespace System.Windows
         {
             SetChanged();
         }
-        public void SetTextColor(const Color& textColor)
+        [nodiscard]
+        public Result<bool> SetTextColor(const Color& textColor)
         {
             textBrush = SolidBrush(textColor);
-            Invalidate();
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public void SetFrameColor(const Color& frameColor)
+        [nodiscard]
+        public Result<bool> SetFrameColor(const Color& frameColor)
         {
             framePen = Pen(frameColor);
-            Invalidate();
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public void SetFont(const Font& font_)
+        [nodiscard]
+        public Result<bool> SetFont(const Font& font_)
         {
             font = font_;
             SetChanged();
-            Invalidate();
+            auto result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        public void MeasureExtent()
+        [nodiscard]
+        public Result<bool> MeasureExtent()
         {
-            Graphics graphics = Graphics.FromWindowHandle(Handle());
-            Measure(graphics);
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = graphicsResult.Value();
+            auto measureResult = Measure(graphics);
+            if (measureResult.Error())
+            {
+                return Result<bool>(ErrorId(measureResult.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        protected override void OnTextChanged()
+        [nodiscard]
+        protected override Result<bool> OnTextChanged()
         {
-            base->OnTextChanged();
+            auto result = base->OnTextChanged();
+            if (result.Error()) return result;
             lines = SplitIntoLines(Text());
             SetChanged();
-            Invalidate();
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnPaint(PaintEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
         {
             if (Changed())
             {
                 ResetChanged();
-                Measure(args.graphics);
+                auto measureResult = Measure(args.graphics);
+                if (measureResult.Error())
+                {
+                    return Result<bool>(ErrorId(measureResult.GetErrorId()));
+                }
             }
             Rect r(Point(), GetSize());
             r.size.w = r.size.w - 1;
             r.size.h = r.size.h - 1;
-            args.graphics.Clear(BackgroundColor());
-            args.graphics.DrawRectangleChecked(framePen, r);
+            auto clearResult = args.graphics.Clear(BackgroundColor());
+            if (clearResult.Error())
+            {
+                return Result<bool>(ErrorId(clearResult.GetErrorId()));
+            }
+            auto drawResult = args.graphics.DrawRectangle(framePen, r);
+            if (drawResult.Error())
+            {
+                return Result<bool>(ErrorId(drawResult.GetErrorId()));
+            }
             PointF pt(1, 1);
             for (const string& line : lines)
             {
-                args.graphics.DrawStringChecked(line, font, pt, textBrush);
+                auto drawStringResult = args.graphics.DrawString(line, font, pt, textBrush);
+                if (drawResult.Error())
+                {
+                    return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                }
                 pt.y = pt.y + textHeight;
             }
-            base->OnPaint(args);
+            return base->OnPaint(args);
         }
-        private void Measure(Graphics& graphics)
+        private Result<bool> Measure(Graphics& graphics)
         {
             Size size;
             for (const string& line : lines)
             {
-                RectF textRect = graphics.MeasureStringChecked(line, font, PointF(0, 0), format);
+                auto measureStringResult = graphics.MeasureStringRectF(line, font, PointF(0, 0), format);
+                if (measureStringResult.Error())
+                {
+                    return Result<bool>(ErrorId(measureStringResult.GetErrorId()));
+                }
+                RectF textRect = measureStringResult.Value();
                 textHeight = Max(textHeight, cast<int>(textRect.size.h));
                 size.w = Max(size.w, cast<int>(textRect.size.w));
             }
             size.h = cast<int>(lines.Count()) * textHeight;
             size.w = size.w + 1;
             size.h = size.h + 1;
-            SetSize(size);
+            auto result = SetSize(size);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        private nothrow inline bool Changed() const
+        private inline bool Changed() const
         {
             return (flags & Flags.changed) != Flags.none;
         }
-        private nothrow inline void SetChanged()
+        private inline void SetChanged()
         {
             flags = cast<Flags>(flags | Flags.changed);
         }
-        private nothrow inline void ResetChanged()
+        private inline void ResetChanged()
         {
             flags = cast<Flags>(flags & ~Flags.changed);
         }
@@ -188,7 +236,7 @@ namespace System.Windows
         private int textHeight;
     }
 
-    public nothrow List<string> SplitIntoLines(const string& text)
+    public List<string> SplitIntoLines(const string& text)
     {
         List<string> lines;
         string line;

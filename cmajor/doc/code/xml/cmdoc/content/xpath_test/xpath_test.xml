@@ -1,0 +1,13 @@
+<symbolTable id="xpath_test" module="xpath_test">
+ <files>
+  <file name="xpath_test/xpath_test.cm" path="file/xpath_test.cm.html"/>
+ </files>
+ <namespace docPath="../../xpath_test/doc/ns_.html" extPath="xpath_test/doc/ns_.html" id="ns_" name="">
+  <functions>
+   <function docPath="../../xpath_test/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" extPath="xpath_test/doc/../index.html#function_main_99F3726C50455B4187460FBE611E3885299323E1" fileName="xpath_test/xpath_test.cm" filePath="../../xpath_test/file/xpath_test.cm.html" id="function_main_99F3726C50455B4187460FBE611E3885299323E1" kind="Function" line="3" name="main" returnType="668cd106-4aa8-ddbe-3479-d3d42161344f" specifiers=""/>
+  </functions>
+ </namespace>
+ <types>
+  <basicType id="668cd106-4aa8-ddbe-3479-d3d42161344f" name="int"/>
+ </types>
+</symbolTable>

@@ -12,11 +12,11 @@ namespace System.Collections
     {
         public typedef T ValueType;
 
-        public inline nothrow bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return items.IsEmpty();
         }
-        public inline nothrow long Count() const
+        public inline long Count() const
         {
             return items.Count();
         }
@@ -32,15 +32,15 @@ namespace System.Collections
         {
             return items.RemoveLast();
         }
-        public inline nothrow const ValueType& Top() const
+        public inline const ValueType& Top() const
         {
             return items.Back();
         }
-        public inline nothrow ValueType& Top()
+        public inline ValueType& Top()
         {
             return items.Back();
         }
-        public inline nothrow void Clear()
+        public inline void Clear()
         {
             items.Clear();
         }

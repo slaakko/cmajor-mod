@@ -1,9 +1,8 @@
 <modules>
- <module name="Dom"/>
- <module name="Dom1"/>
- <module name="XmlStats"/>
- <module name="XPath"/>
- <module name="XPath1"/>
- <module name="XPath2"/>
- <module name="xpq"/>
+ <module name="dom"/>
+ <module name="dom_rw"/>
+ <module name="xmlstats"/>
+ <module name="xpath_test"/>
+ <module name="xpath_philosophers"/>
+ <module name="xpath_socrates"/>
 </modules>

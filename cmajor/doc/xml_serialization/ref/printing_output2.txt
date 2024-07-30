@@ -1,0 +1,11 @@
+Person
+name: Joe Coder
+vehicles:
+Bicycle
+model: Cooper
+color: blue
+price: 1000
+Car
+model: Porsche
+color: red
+registrationNumber: ABC-123

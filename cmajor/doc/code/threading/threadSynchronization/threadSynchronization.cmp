@@ -1,3 +1,0 @@
-project threadSynchronization;
-target=program;
-source <threadSynchronization.cm>;

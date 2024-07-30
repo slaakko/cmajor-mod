@@ -1,19 +1,13 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
 using System;
 using System.Collections;
 
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/xml/XmlProcessor.hpp' using cpp2cm version 1.0.0
-
-// this file has been semiautomatically generated from 'D:/work/soulng-project/sngxml/xml/XmlProcessor.cpp' using cpp2cm version 1.0.0
-
 namespace System.Xml
 {
-    public class XmlProcessingException : Exception
-    {
-        public XmlProcessingException(const string& message_) :
-            base(message_)
-        {
-        }
-    }
     public class Entity
     {
         public virtual ~Entity()
@@ -24,6 +18,7 @@ namespace System.Xml
             return false;
         }
     }
+
     public class InternalEntity : Entity
     {
         public InternalEntity(const ustring& value_) :
@@ -40,12 +35,11 @@ namespace System.Xml
         }
         private ustring value;
     }
+
     public class XmlProcessor
     {
-        public suppress XmlProcessor(const XmlProcessor& );
-        public suppress XmlProcessor(XmlProcessor&& );
-        public XmlProcessor(TrivialLexer& lexer_, XmlContentHandler* contentHandler_) :
-            lexer(lexer_), contentHandler(contentHandler_), attValue()
+        public XmlProcessor(System.Lex.TrivialLexer& lexer_, XmlContentHandler* contentHandler_) :
+            lexer(lexer_), lineStarts(lexer.GetLineStartIndeces()), contentHandler(contentHandler_), attValue(), errorId(0)
         {
             InternalEntity* quot = new InternalEntity(u"\"");
             entityMap[u"quot"] = quot;
@@ -63,8 +57,14 @@ namespace System.Xml
             entities.Add(UniquePtr<Entity>(lt));
             entities.Add(UniquePtr<Entity>(gt));
         }
-        public suppress XmlProcessor& operator=(const XmlProcessor& );
-        public suppress XmlProcessor&& operator=(XmlProcessor&& );
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
         public const ustring& AttValue() const
         {
             return attValue;
@@ -73,105 +73,305 @@ namespace System.Xml
         {
             return attValue;
         }
-        public TrivialLexer& Lexer() const
+        public System.Lex.TrivialLexer& Lexer() const
         {
             return lexer;
         }
-        public void StartDocument()
+        [nodiscard]
+        public Result<bool> StartDocument(const System.Lex.Span& span, int fileIndex)
         {
-            contentHandler->StartDocument();
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->StartDocument(span, fileIndex);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void EndDocument()
+        [nodiscard]
+        public Result<bool> EndDocument()
         {
-            contentHandler->EndDocument();
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->EndDocument();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void Text(const ustring& text)
+        [nodiscard]
+        public Result<bool> Text(const System.Lex.Span& span, int fileIndex, const ustring& text)
         {
-            contentHandler->HandleText(text);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->HandleText(span, fileIndex, text);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void Comment(const ustring& text)
+        [nodiscard]
+        public Result<bool> Comment(const System.Lex.Span& span, int fileIndex, const ustring& text)
         {
-            contentHandler->HandleComment(text);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->HandleComment(span, fileIndex, text);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void PI(const ustring& target, const ustring& data)
+        [nodiscard]
+        public Result<bool> PI(const System.Lex.Span& span, int fileIndex, const ustring& target, const ustring& data)
         {
-            contentHandler->HandlePI(target, data);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->HandlePI(span, fileIndex, target, data);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void CDataSection(const ustring& cdata)
+        [nodiscard]
+        public Result<bool> CDataSection(const System.Lex.Span& span, int fileIndex, const ustring& cdata)
         {
-            contentHandler->HandleCDataSection(cdata);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->HandleCDataSection(span, fileIndex, cdata);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void Version(const ustring& version)
+        [nodiscard]
+        public Result<bool> Version(const ustring& version)
         {
-            contentHandler->Version(version);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->Version(version);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void Standalone(bool standalone)
+        [nodiscard]
+        public Result<bool> Standalone(bool standalone)
         {
-            contentHandler->Standalone(standalone);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->Standalone(standalone);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void Encoding(const ustring& encoding)
+        [nodiscard]
+        public Result<bool> Encoding(const ustring& encoding)
         {
-            contentHandler->Encoding(encoding);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto result = contentHandler->Encoding(encoding);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void BeginStartTag(const ustring& tagName)
+        [nodiscard]
+        public Result<bool> BeginStartTag(const ustring& tagName)
         {
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
             tagStack.Push(currentTagName);
             currentTagName = tagName;
             namespaceUriStack.Push(currentNamespaceUri);
             namespacePrefixStack.Push(currentNamespacePrefix);
             attributes.Clear();
+            return Result<bool>(true);
         }
-        public void EndStartTag(const System.Lex.Span& span, const string& systemId)
+        [nodiscard]
+        public Result<bool> EndStartTag(const System.Lex.Span& span, int fileIndex, const string& systemId, long pos)
         {
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
             ustring localName;
             ustring prefix;
-            ParseQualifiedName(currentTagName, localName, prefix, span, systemId);
+            auto parseResult = ParseQualifiedName(currentTagName, localName, prefix, span, systemId, pos);
+            if (parseResult.Error())
+            {
+                SetErrorId(parseResult.GetErrorId());
+                return Result<bool>(ErrorId(parseResult.GetErrorId()));
+            }
             if (prefix == u"xmlns")
             {
-                throw XmlProcessingException(GetErrorLocationStr(systemId, span) + ": \'xmlns\' prefix cannot be declared for an element");
+                string errorMessage = MakeErrorMessage("\'xmlns\' prefix cannot be declared for an element", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
-            contentHandler->StartElement(GetNamespaceUri(prefix, span, systemId), localName, currentTagName, attributes);
+            auto uriResult = GetNamespaceUri(prefix, span, systemId, pos);
+            if (uriResult.Error())
+            {
+                SetErrorId(uriResult.GetErrorId());
+                return Result<bool>(ErrorId(uriResult.GetErrorId()));
+            }
+            auto result = contentHandler->StartElement(span, fileIndex, uriResult.Value(), localName, currentTagName, attributes);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
         }
-        public void EndTag(const ustring& tagName, const System.Lex.Span& span, const string& systemId)
+        [nodiscard]
+        public Result<bool> EndTag(const ustring& tagName, const System.Lex.Span& span, const string& systemId, long pos)
         {
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
             if (tagStack.IsEmpty())
             {
-                throw XmlProcessingException(GetErrorLocationStr(systemId, span) + ": end tag \'" + ToUtf8(tagName) + "\' has no corresponding start tag");
+                auto tagNameResult = ToUtf8(tagName);
+                if (tagNameResult.Error())
+                {
+                    SetErrorId(tagNameResult.GetErrorId());
+                    return Result<bool>(ErrorId(tagNameResult.GetErrorId()));
+                }
+                string errorMessage = MakeErrorMessage("end tag \'" + tagNameResult.Value() + "\' has no corresponding start tag", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
             if (tagName != currentTagName)
             {
-                throw XmlProcessingException(GetErrorLocationStr(systemId, span) + ": end tag \'" + ToUtf8(tagName) + "\' does not match start tag \'" + ToUtf8(currentTagName) + "\'");
+                auto tagNameResult = ToUtf8(tagName);
+                if (tagNameResult.Error())
+                {
+                    SetErrorId(tagNameResult.GetErrorId());
+                    return Result<bool>(ErrorId(tagNameResult.GetErrorId()));
+                }
+                auto currentTagNameResult = ToUtf8(currentTagName);
+                if (currentTagNameResult.Error())
+                {
+                    SetErrorId(currentTagNameResult.GetErrorId());
+                    return Result<bool>(ErrorId(currentTagNameResult.GetErrorId()));
+                }
+                string errorMessage = MakeErrorMessage("end tag \'" + tagNameResult.Value() + "\' does not match start tag \'" + currentTagNameResult.Value() + "\'",
+                    systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
             ustring localName;
             ustring prefix;
-            ParseQualifiedName(currentTagName, localName, prefix, span, systemId);
+            auto parseResult = ParseQualifiedName(currentTagName, localName, prefix, span, systemId, pos);
+            if (parseResult.Error())
+            {
+                SetErrorId(parseResult.GetErrorId());
+                return Result<bool>(ErrorId(parseResult.GetErrorId()));
+            }
             if (prefix == u"xmlns")
             {
-                throw XmlProcessingException(GetErrorLocationStr(systemId, span) + ": \'xmlns\' prefix cannot be declared for an element");
+                string errorMessage = MakeErrorMessage("\'xmlns\' prefix cannot be declared for an element", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
-            contentHandler->EndElement(GetNamespaceUri(prefix, span, systemId), localName, currentTagName);
+            auto uriResult = GetNamespaceUri(prefix, span, systemId, pos);
+            if (uriResult.Error())
+            {
+                SetErrorId(uriResult.GetErrorId());
+                return Result<bool>(ErrorId(uriResult.GetErrorId()));
+            }
+            auto result = contentHandler->EndElement(uriResult.Value(), localName, currentTagName);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             if (namespaceUriStack.IsEmpty())
             {
-                throw Exception("namespace URI stack is empty");
+                string errorMessage = MakeErrorMessage("namespace URI stack is empty", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
-            currentNamespaceUri = namespaceUriStack.Top();
-            namespaceUriStack.Pop();
+            currentNamespaceUri = namespaceUriStack.Pop();
             namespacePrefixMap.Remove(currentNamespacePrefix);
             if (namespacePrefixStack.IsEmpty())
             {
-                throw Exception("namespace prefix stack is empty");
+                string errorMessage = MakeErrorMessage("namespace prefix stack is empty", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
-            currentNamespacePrefix = namespacePrefixStack.Top();
-            namespacePrefixStack.Pop();
+            currentNamespacePrefix = namespacePrefixStack.Pop();
             namespacePrefixMap[currentNamespacePrefix] = currentNamespaceUri;
-            currentTagName = tagStack.Top();
-            tagStack.Pop();
+            if (tagStack.IsEmpty())
+            {
+                string errorMessage = MakeErrorMessage("tag stack is empty", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            currentTagName = tagStack.Pop();
+            return Result<bool>(true);
         }
-        public void AddAttribute(const ustring& attName, const ustring& attValue, const System.Lex.Span& span, const string& systemId)
+        [nodiscard]
+        public Result<bool> AddAttribute(const ustring& attName, const ustring& attValue, const System.Lex.Span& span, const string& systemId, long pos)
         {
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
             ustring localName;
             ustring prefix;
-            ParseQualifiedName(attName, localName, prefix, span, systemId);
+            auto parseResult = ParseQualifiedName(attName, localName, prefix, span, systemId, pos);
+            if (parseResult.Error())
+            {
+                SetErrorId(parseResult.GetErrorId());
+                return Result<bool>(ErrorId(parseResult.GetErrorId()));
+            }
             if (prefix == u"xmlns")
             {
                 currentNamespacePrefix = localName;
@@ -185,12 +385,24 @@ namespace System.Xml
             }
             else
             {
-                attributes.Add(Attribute(GetNamespaceUri(prefix, span, systemId), localName, attName, attValue));
+                auto uriResult = GetNamespaceUri(prefix, span, systemId, pos);
+                if (uriResult.Error())
+                {
+                    SetErrorId(uriResult.GetErrorId());
+                    return Result<bool>(ErrorId(uriResult.GetErrorId()));
+                }
+                attributes.Add(Attribute(span, uriResult.Value(), localName, attName, attValue));
             }
+            return Result<bool>(true);
         }
-        public void EntityRef(const ustring& entityName, const System.Lex.Span& span, const string& systemId)
+        [nodiscard]
+        public Result<bool> EntityRef(const ustring& entityName, const System.Lex.Span& span, int fileIndex, const string& systemId)
         {
-            HashMap<ustring, Entity*>.ConstIterator it = entityMap.CFind(entityName);
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
+            auto it = entityMap.CFind(entityName);
             if (it != entityMap.CEnd())
             {
                 Entity* entity = it->second;
@@ -204,55 +416,104 @@ namespace System.Xml
                     }
                     else
                     {
-                        Text(entityValue);
+                        return Text(span, fileIndex, entityValue);
                     }
                 }
                 else
                 {
-                    contentHandler->SkippedEntity(entityName);
+                    auto result = contentHandler->SkippedEntity(entityName);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
                 }
             }
             else
             {
-                contentHandler->SkippedEntity(entityName);
+                auto result = contentHandler->SkippedEntity(entityName);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
+            return Result<bool>(true);
         }
-        public void BeginAttributeValue()
+        [nodiscard]
+        public Result<bool> BeginAttributeValue()
         {
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
             attValueStack.Push(attValue);
             attValue.Clear();
+            return Result<bool>(true);
         }
-        public void EndAttributeValue()
+        [nodiscard]
+        public Result<bool> EndAttributeValue()
         {
-            if (attValueStack.IsEmpty())
+            if (Error())
             {
-                throw Exception("attribute value stack is empty");
+                return Result<bool>(GetErrorId());
             }
+            #assert(!attValueStack.IsEmpty());
             attValue = attValueStack.Top();
             attValueStack.Pop();
+            return Result<bool>(true);
         }
-        public ustring GetNamespaceUri(const ustring& namespacePrefix, const System.Lex.Span& span, const string& systemId)
+        [nodiscard]
+        public Result<ustring> GetNamespaceUri(const ustring& namespacePrefix, const System.Lex.Span& span, const string& systemId, long pos)
         {
+            if (Error())
+            {
+                return Result<ustring>(GetErrorId());
+            }
             if (namespacePrefix.IsEmpty())
             {
-                return currentNamespaceUri;
+                return Result<ustring>(currentNamespaceUri);
             }
-            HashMap<ustring, ustring>.ConstIterator it = namespacePrefixMap.CFind(namespacePrefix);
+            auto it = namespacePrefixMap.CFind(namespacePrefix);
             if (it != namespacePrefixMap.CEnd())
             {
-                return it->second;
+                return Result<ustring>(it->second);
             }
             else
             {
-                throw XmlProcessingException(GetErrorLocationStr(systemId, span) + ": namespace prefix \'" + ToUtf8(namespacePrefix) + "\' not bound to any namespace URI");
+                auto namespacePrefixResult = ToUtf8(namespacePrefix);
+                if (namespacePrefixResult.Error())
+                {
+                    SetErrorId(namespacePrefixResult.GetErrorId());
+                    return Result<ustring>(ErrorId(namespacePrefixResult.GetErrorId()));
+                }
+                string errorMessage = MakeErrorMessage("namespace prefix \'" + namespacePrefixResult.Value() + "\' not bound to any namespace URI", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                return Result<ustring>(ErrorId(errorId));
             }
+            return Result<ustring>(ustring());
         }
-        public void ParseQualifiedName(const ustring& qualifiedName, ustring& localName, ustring& prefix, const System.Lex.Span& span, const string& systemId)
+        [nodiscard]
+        public Result<bool> ParseQualifiedName(const ustring& qualifiedName, ustring& localName, ustring& prefix,
+            const System.Lex.Span& span, const string& systemId, long pos)
         {
+            if (Error())
+            {
+                return Result<bool>(GetErrorId());
+            }
             List<ustring> parts = qualifiedName.Split(':');
             if (parts.Count() > 2)
             {
-                throw XmlProcessingException(GetErrorLocationStr(systemId, span) + ": qualified name \'" + ToUtf8(qualifiedName) + "\' has more than one \':\' character");
+                auto qualifiedNameResult = ToUtf8(qualifiedName);
+                if (qualifiedNameResult.Error())
+                {
+                    SetErrorId(qualifiedNameResult.GetErrorId());
+                    return Result<bool>(ErrorId(qualifiedNameResult.GetErrorId()));
+                }
+                string errorMessage = MakeErrorMessage("qualified name \'" + qualifiedNameResult.Value() + "\' has more than one \':\' character", systemId, span, pos);
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
             }
             else if (parts.Count() == 2)
             {
@@ -264,28 +525,25 @@ namespace System.Xml
                 prefix.Clear();
                 localName = qualifiedName;
             }
+            return Result<bool>(true);
         }
-        public int GetErrorColumn(int index) const
+        public string MakeErrorMessage(const string& message, const string& systemId, const System.Lex.Span& span, long pos) const
         {
-            int errorColumn = 0;
-            while (index > 0 && lexer.Start()[index] != '\n' && lexer.Start()[index] != '\r')
+            System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(span, lineStarts);
+            ustring errorLines = lexer.ErrorLines(pos);
+            auto utf8Result = ToUtf8(errorLines);
+            if (!utf8Result.Error())
             {
-                ++errorColumn;
-                --index;
+                return "error: " + message + " in \'" + systemId + "\' at line " + ToString(lineColLen.line) + ":\n" + utf8Result.Value();
             }
-            if (errorColumn == 0)
-            {
-                errorColumn = 1;
-            }
-            return errorColumn;
+            return "error: " + message + " in \'" + systemId + "\' at line " + ToString(lineColLen.line);
         }
-        public string GetErrorLocationStr(const string& systemId, const System.Lex.Span& span) const
+        public void SetErrorId(int errorId_)
         {
-            System.Lex.Token token = lexer.GetToken(span.start);
-            int errorColumn = GetErrorColumn(cast<int>(token.match.begin - lexer.Start()));
-            return "error in \'" + systemId + "\' at line " + ToString(span.line) + " column " + ToString(errorColumn);
+            errorId = errorId_;
         }
-        private TrivialLexer& lexer;
+        private System.Lex.TrivialLexer& lexer;
+        private List<int> lineStarts;
         private XmlContentHandler* contentHandler;
         private Stack<ustring> tagStack;
         private ustring currentTagName;
@@ -295,9 +553,11 @@ namespace System.Xml
         private ustring currentNamespaceUri;
         private Stack<ustring> namespacePrefixStack;
         private ustring currentNamespacePrefix;
-        private HashMap<ustring, ustring> namespacePrefixMap;
+        private Map<ustring, ustring> namespacePrefixMap;
         private Attributes attributes;
-        private HashMap<ustring, Entity*> entityMap;
+        private Map<ustring, Entity*> entityMap;
         private List<UniquePtr<Entity>> entities;
+        private int errorId;
     }
+
 } // namespace System.Xml

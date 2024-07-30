@@ -11,30 +11,17 @@ namespace System
     public typedef String<wchar> wstring;   // UTF-16 string
     public typedef String<uchar> ustring;   // UTF-32 string
 
-    public nothrow const char* EmptyString(char x)
-    {
-        return "";
-    }
-
-    public nothrow const wchar* EmptyString(wchar x)
-    {
-        return w"";
-    }
-
-    public nothrow const uchar* EmptyString(uchar x)
-    {
-        return u"";
-    }
+    public uint nul = 0u;
 
     public class String<CharT>
     {
         public typedef RandomAccessIter<CharT, const CharT&, const CharT*> ConstIterator;
         public typedef RandomAccessIter<CharT, CharT&, CharT*> Iterator;
 
-        public nothrow inline String() : chars(null), len(0), res(0)
+        public inline String() : chars(null), len(0), res(0)
         {
         }
-        public nothrow inline String(const CharT* chars_) : len(StrLen(chars_)), res(0), chars(null)
+        public inline String(const CharT* chars_) : len(StrLen(chars_)), res(0), chars(null)
         {
             if (len > 0)
             {
@@ -42,7 +29,7 @@ namespace System
                 StrCopy(chars, chars_);
             }
         }
-        public nothrow inline String(const CharT* chars_, long length_) : len(0), res(0), chars(null)
+        public inline String(const CharT* chars_, long length_) : len(0), res(0), chars(null)
         {
             if (length_ > 0)
             {
@@ -50,10 +37,10 @@ namespace System
                 len = StrCopy(chars, chars_, length_);
             }
         }
-        public nothrow inline String(const CharT* begin, const CharT* end) : this(begin, end - begin)
+        public inline String(const CharT* begin, const CharT* end) : this(begin, end - begin)
         {
         }
-        public nothrow String(const String<CharT>& that) : len(that.len), res(0), chars(null)
+        public String(const String<CharT>& that) : len(that.len), res(0), chars(null)
         {
             if (len > 0)
             {
@@ -61,19 +48,19 @@ namespace System
                 StrCopy(chars, that.chars);
             }
         }
-        public nothrow String(String<CharT>&& that) : len(that.len), res(that.res), chars(that.chars)
+        public String(String<CharT>&& that) : len(that.len), res(that.res), chars(that.chars)
         {
             that.len = 0;
             that.res = 0;
             that.chars = null;
         }
-        public nothrow explicit inline String(CharT c) : len(1), res(0), chars(null)
+        public explicit inline String(CharT c) : len(1), res(0), chars(null)
         {
             Reserve(1);
             chars[0] = c;
             chars[1] = '\0';
         }
-        public nothrow String(CharT c, long n) : len(n), res(0), chars(null)
+        public String(CharT c, long n) : len(n), res(0), chars(null)
         {
             if (n > 0)
             {
@@ -85,7 +72,7 @@ namespace System
                 chars[n] = '\0';
             }
         }
-        public nothrow void operator=(const String<CharT>& that)
+        public void operator=(const String<CharT>& that)
         {
             Deallocate();
             Reserve(that.len);
@@ -95,7 +82,7 @@ namespace System
                 StrCopy(chars, that.chars);
             }
         }
-        public nothrow inline void operator=(String<CharT>&& that)
+        public inline void operator=(String<CharT>&& that)
         {
             Swap(len, that.len);
             Swap(res, that.res);
@@ -105,47 +92,41 @@ namespace System
         {
             Deallocate();
         }
-        public nothrow inline long Length() const
+        public inline long Length() const
         {
             return len;
         }
-        public nothrow inline long Capacity() const
+        public inline long Capacity() const
         {
             return res;
         }
-        public nothrow inline bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return len == 0;
         }
-        public nothrow void Clear()
+        public void Clear()
         {
             Deallocate();
         }
-        public nothrow inline const CharT* Chars() const
+        public inline const CharT* Chars() const
         {
             if (chars != null)
             {
                 return chars;
             }
-            return EmptyString(CharT());
+            return cast<CharT*>(cast<void*>(&nul));
         }
         public inline CharT operator[](long index) const
         {
-            if (index < 0 || index >= len)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
+            #assert(index >= 0 && index < len);
             return chars[index];
         }
         public inline CharT& operator[](long index)
         {
-            if (index < 0 || index >= len)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
+            #assert(index >= 0 && index < len);
             return chars[index];
         }
-        public nothrow void Reserve(long minLen)
+        public void Reserve(long minLen)
         {
             if (minLen > 0)
             {
@@ -156,7 +137,7 @@ namespace System
                 }
             }
         }
-        public nothrow inline String<CharT>& Append(CharT c)
+        public inline String<CharT>& Append(CharT c)
         {
             Reserve(len + 1);
             chars[len] = c;
@@ -165,10 +146,7 @@ namespace System
         }
         public String<CharT>& Append(CharT c, long count)
         {
-            if (count < 0)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(count >= 0);
             if (count > 0)
             {
                 Reserve(len + count);
@@ -180,27 +158,24 @@ namespace System
             }
             return *this;
         }
-        public nothrow inline String<CharT>& Append(const CharT* that)
+        public inline String<CharT>& Append(const CharT* that)
         {
             AppendFrom(that, StrLen(that));
             return *this;
         }
-        public nothrow inline String<CharT>& Append(const CharT* that, long count)
+        public inline String<CharT>& Append(const CharT* that, long count)
         {
             AppendFrom(that, count);
             return *this;
         }
-        public nothrow inline String<CharT>& Append(const String<CharT>& that)
+        public inline String<CharT>& Append(const String<CharT>& that)
         {
             AppendFrom(that.chars, that.len);
             return *this;
         }
         public void Insert(long index, CharT c)
         {
-            if (index < 0)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
+            #assert(index >= 0);
             if (index >= len)
             {
                 Append(c);
@@ -219,10 +194,7 @@ namespace System
         }
         public void Insert(long index, const String<CharT>& that)
         {
-            if (index < 0)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
+            #assert(index >= 0);
             if (that.IsEmpty()) return;
             if (index >= len)
             {
@@ -245,14 +217,8 @@ namespace System
         }
         public void Remove(long index, long count)
         {
-            if (index < 0)
-            {
-                ThrowIndexOutOfBoundsException();
-            }
-            if (count < 0)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(index >= 0);
+            #assert(count >= 0);
             if (IsEmpty()) return;
             if (index > len)
             {
@@ -269,7 +235,7 @@ namespace System
             len = len - count;
             chars[len] = '\0';
         }
-        public nothrow void Replace(CharT oldChar, CharT newChar)
+        public void Replace(CharT oldChar, CharT newChar)
         {
             long n = len;
             for (long i = 0; i < n; ++i)
@@ -280,7 +246,7 @@ namespace System
                 }
             }
         }
-        public nothrow void Replace(const String<CharT>& oldString, const String<CharT>& newString)
+        public void Replace(const String<CharT>& oldString, const String<CharT>& newString)
         {
              long oldLen = oldString.Length();
              long newLen = newString.Length();
@@ -292,7 +258,7 @@ namespace System
                  pos = Find(oldString, pos + newLen);
              }
         }
-        public nothrow String<CharT> Substring(long start) const
+        public String<CharT> Substring(long start) const
         {
             if (start >= 0 && start < len)
             {
@@ -300,7 +266,7 @@ namespace System
             }
             return String<CharT>();
         }
-        public nothrow String<CharT> Substring(long start, long length) const
+        public String<CharT> Substring(long start, long length) const
         {
             if (start >= 0 && start < len)
             {
@@ -308,19 +274,19 @@ namespace System
             }
             return String<CharT>();
         }
-        public nothrow inline Iterator Begin()
+        public inline Iterator Begin()
         {
             return Iterator(chars);
         }
-        public nothrow inline ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return ConstIterator(chars);
         }
-        public nothrow inline ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return ConstIterator(chars);
         }
-        public nothrow inline Iterator End()
+        public inline Iterator End()
         {
             if (chars != null)
             {
@@ -328,7 +294,7 @@ namespace System
             }
             return Iterator(null);
         }
-        public nothrow inline ConstIterator End() const
+        public inline ConstIterator End() const
         {
             if (chars != null)
             {
@@ -336,7 +302,7 @@ namespace System
             }
             return ConstIterator(null);
         }
-        public nothrow inline ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             if (chars != null)
             {
@@ -344,7 +310,7 @@ namespace System
             }
             return ConstIterator(null);
         }
-        public nothrow bool StartsWith(const String<CharT>& prefix) const
+        public bool StartsWith(const String<CharT>& prefix) const
         {
             long n = prefix.len;
             if (len < n) return false;
@@ -354,7 +320,7 @@ namespace System
             }
             return true;
         }
-        public nothrow bool EndsWith(const String<CharT>& suffix) const
+        public bool EndsWith(const String<CharT>& suffix) const
         {
             long n = len;
             long m = suffix.len;
@@ -386,7 +352,7 @@ namespace System
         public List<String<CharT>> Split(const String<CharT>& s)
         {
             List<String<CharT>> result;
-            if (!IsEmpty() && s.IsEmpty()) 
+            if (!IsEmpty() && s.IsEmpty())
             {
                 result.Add(*this);
             }
@@ -416,10 +382,7 @@ namespace System
         }
         public inline long Find(CharT x, long start) const
         {
-            if (start < 0)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(start >= 0);
             for (long i = start; i < len; ++i)
             {
                 if (chars[i] == x)
@@ -435,10 +398,7 @@ namespace System
         }
         public inline long RFind(CharT x, long start) const
         {
-            if (start >= len)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(start < len);
             for (long i = start; i >= 0; --i)
             {
                 if (chars[i] == x)
@@ -454,10 +414,7 @@ namespace System
         }
         public long Find(const String<CharT>& s, long start) const
         {
-            if (start < 0)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(start >= 0);
             if (s.IsEmpty()) return start;
             long n = s.Length();
             CharT x = s[0];
@@ -488,10 +445,7 @@ namespace System
         }
         public long RFind(const String<CharT>& s, long start) const
         {
-            if (start >= len)
-            {
-                ThrowInvalidParameterException();
-            }
+            #assert(start < len);
             if (s.IsEmpty()) return start;
             long n = s.Length();
             CharT x = s[0];
@@ -518,7 +472,7 @@ namespace System
             }
             return -1;
         }
-        private nothrow void AppendFrom(const CharT* that, long thatLen)
+        private void AppendFrom(const CharT* that, long thatLen)
         {
             long newLen = len + thatLen;
             if (newLen > 0)
@@ -528,28 +482,24 @@ namespace System
             }
             len = newLen;
         }
-        private nothrow void Grow(long minRes)
+        private void Grow(long minRes)
         {
             minRes = MemGrow(minRes);
-        #if (MEM_DEBUG)
-            CharT* newChars = cast<CharT*>(MemAlloc(sizeof(CharT) * minRes, typename(*this)));
-        #else
             CharT* newChars = cast<CharT*>(MemAlloc(sizeof(CharT) * minRes));
-        #endif
             if (chars != null)
             {
                 StrCopy(newChars, chars);
-                MemFree(chars);
+                RtmMemFree(chars);
             }
             chars = newChars;
             res = minRes;
         }
-        private nothrow void Deallocate()
+        private void Deallocate()
         {
             len = 0;
             if (res != 0)
             {
-                MemFree(chars);
+                RtmMemFree(chars);
                 res = 0;
             }
             chars = null;
@@ -559,7 +509,7 @@ namespace System
         private CharT* chars;
     }
 
-    public nothrow bool operator==<CharT>(const String<CharT>& left, const String<CharT>& right)
+    public bool operator==<CharT>(const String<CharT>& left, const String<CharT>& right)
     {
         long len = left.Length();
         if (len != right.Length()) return false;
@@ -573,7 +523,7 @@ namespace System
         return true;
     }
 
-    public nothrow bool operator<<CharT>(const String<CharT>& left, const String<CharT>& right)
+    public bool operator<<CharT>(const String<CharT>& left, const String<CharT>& right)
     {
         long leftLen = left.Length();
         long rightLen = right.Length();
@@ -591,21 +541,21 @@ namespace System
         return false;
     }
 
-    public nothrow String<CharT> operator+<CharT>(const String<CharT>& first, const String<CharT>& second)
+    public String<CharT> operator+<CharT>(const String<CharT>& first, const String<CharT>& second)
     {
         String<CharT> temp(first);
         temp.Append(second);
         return temp;
     }
 
-    public nothrow String<CharT> operator+<CharT>(const String<CharT>& first, const CharT* second)
+    public String<CharT> operator+<CharT>(const String<CharT>& first, const CharT* second)
     {
         String<CharT> temp(first);
         temp.Append(second);
         return temp;
     }
 
-    public nothrow String<CharT> operator+<CharT>(const CharT* first, const String<CharT>& second)
+    public String<CharT> operator+<CharT>(const CharT* first, const String<CharT>& second)
     {
         String<CharT> temp(first);
         temp.Append(second);
@@ -626,43 +576,99 @@ namespace System
         return true;
     }
 
-    public ustring ToLower(const ustring& s)
+    [nodiscard]
+    public Result<ustring> ToLower(const ustring& s)
     {
         ustring lower;
         for (uchar c : s)
         {
-            lower.Append(ToLower(c));
+            auto result = ToLower(c);
+            if (result.Error())
+            {
+                return Result<ustring>(ErrorId(result.GetErrorId()));
+            }
+            lower.Append(result.Value());
         }
-        return lower;
+        return Result<ustring>(lower);
     }
 
-    public ustring ToUpper(const ustring& s)
+    [nodiscard]
+    public Result<ustring> ToUpper(const ustring& s)
     {
         ustring upper;
         for (uchar c : s)
         {
-            upper.Append(ToUpper(c));
+            auto result = ToUpper(c);
+            if (result.Error())
+            {
+                return Result<ustring>(ErrorId(result.GetErrorId()));
+            }
+            upper.Append(result.Value());
         }
-        return upper;
+        return Result<ustring>(upper);
     }
 
-    public wstring ToLower(const wstring& s)
+    [nodiscard]
+    public Result<wstring> ToLower(const wstring& s)
     {
-        return ToUtf16(ToLower(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<wstring>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto lowerResult = ToLower(utfResult.Value());
+        if (lowerResult.Error())
+        {
+            return Result<wstring>(ErrorId(lowerResult.GetErrorId()));
+        }
+        return ToUtf16(lowerResult.Value());
     }
 
-    public wstring ToUpper(const wstring& s)
+    [nodiscard]
+    public Result<wstring> ToUpper(const wstring& s)
     {
-        return ToUtf16(ToUpper(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<wstring>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto upperResult = ToUpper(utfResult.Value());
+        if (upperResult.Error())
+        {
+            return Result<wstring>(ErrorId(upperResult.GetErrorId()));
+        }
+        return ToUtf16(upperResult.Value());
     }
 
-    public string ToLower(const string& s)
+    [nodiscard]
+    public Result<string> ToLower(const string& s)
     {
-        return ToUtf8(ToLower(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<string>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto lowerResult = ToLower(utfResult.Value());
+        if (lowerResult.Error())
+        {
+            return Result<string>(ErrorId(lowerResult.GetErrorId()));
+        }
+        return ToUtf8(lowerResult.Value());
     }
 
-    public string ToUpper(const string& s)
+    [nodiscard]
+    public Result<string> ToUpper(const string& s)
     {
-        return ToUtf8(ToUpper(ToUtf32(s)));
+        auto utfResult = ToUtf32(s);
+        if (utfResult.Error())
+        {
+            return Result<string>(ErrorId(utfResult.GetErrorId()));
+        }
+        auto upperResult = ToUpper(utfResult.Value());
+        if (upperResult.Error())
+        {
+            return Result<string>(ErrorId(upperResult.GetErrorId()));
+        }
+        return ToUtf8(upperResult.Value());
     }
 }

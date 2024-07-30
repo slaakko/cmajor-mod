@@ -1,0 +1,24 @@
+<div class="txt">
+  <span xml:space="preserve">Person</span>
+  <br/>
+  <span xml:space="preserve">name:&nbsp;Joe&nbsp;Coder</span>
+  <br/>
+  <span xml:space="preserve">vehicles:</span>
+  <br/>
+  <span xml:space="preserve">Bicycle</span>
+  <br/>
+  <span xml:space="preserve">model:&nbsp;Cooper</span>
+  <br/>
+  <span xml:space="preserve">color:&nbsp;blue</span>
+  <br/>
+  <span xml:space="preserve">price:&nbsp;1000</span>
+  <br/>
+  <span xml:space="preserve">Car</span>
+  <br/>
+  <span xml:space="preserve">model:&nbsp;Porsche</span>
+  <br/>
+  <span xml:space="preserve">color:&nbsp;red</span>
+  <br/>
+  <span xml:space="preserve">registrationNumber:&nbsp;ABC-123</span>
+  <br/>
+</div>

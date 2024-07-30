@@ -3,4 +3,4 @@
 // Distributed under the MIT license
 // =================================
 
-// The System.Install module contains no source code entities, but references the System module and installs the System Library to cmajor/system/lib/<config> directory.
+// The System.Install module contains no source code entities, but references the System module and installs the System Library to cmajor/masm/system/lib/<config> directory.

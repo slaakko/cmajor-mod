@@ -8,114 +8,160 @@ using System.IO;
 
 namespace System.Text
 {
-    public class CodeFormatter
+    public class CodeFormatter : IOBase
     {
-        public nothrow CodeFormatter(TextWriter& writer_) : 
-            writer(writer_), indent(0), indentSize(4), atBeginningOfLine(true), line(1), start(false), startText(), preserveSpace(false), pos(0)
+        public CodeFormatter(TextWriter& writer_) :
+            base(), writer(writer_), indent(0), indentSize(4), atBeginningOfLine(true), line(1), start(false), startText(), preserveSpace(false), pos(0)
         {
+            if (writer.Error())
+            {
+                SetErrorId(writer.GetErrorId());
+            }
         }
-        public void Write(const string& text)
+        [nodiscard]
+        public Result<bool> Write(const string& text)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             if (atBeginningOfLine)
             {
                 if (indent != 0)
                 {
                     string s(' ', indentSize * indent);
-                    writer.Write(s);
+                    auto result = writer.Write(s);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return result;
+                    }
                     pos = pos + indentSize * indent;
                     atBeginningOfLine = false;
                 }
             }
-            writer.Write(text);
+            auto result = writer.Write(text);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return result;
+            }
             pos = pos + text.Length();
+            return Result<bool>(true);
         }
-        public void Write(const char* text)
+        [nodiscard]
+        public Result<bool> Write(const char* text)
         {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
             string s(text);
-            Write(s);
+            return Write(s);
         }
-        public void WriteLine(const char* text)
+        [nodiscard]
+        public Result<bool> WriteLine(const char* text)
         {
-            Write(text);
-            WriteLine();
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = Write(text);
+            return result.AndThen(WriteLine());
         }
-        public void WriteLine(const string& text)
+        [nodiscard]
+        public Result<bool> WriteLine(const string& text)
         {
-            Write(text);
-            WriteLine();
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = Write(text);
+            return result.AndThen(WriteLine());
         }
-        public void WriteLine()
+        [nodiscard]
+        public Result<bool> WriteLine()
         {
-            writer.WriteLine();
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = writer.WriteLine();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return result;
+            }
             atBeginningOfLine = true;
             ++line;
             pos = 0;
+            return Result<bool>(true);
         }
-        public inline nothrow int Indent() const
+        public inline int Indent() const
         {
             return indent;
         }
-        public inline nothrow void IncIndent()
+        public inline void IncIndent()
         {
             ++indent;
         }
-        public inline nothrow void DecIndent()
+        public inline void DecIndent()
         {
             --indent;
         }
-        public inline nothrow int IndentSize() const
+        public inline int IndentSize() const
         {
             return indentSize;
         }
-        public inline nothrow void SetIndentSize(int indentSize_)
+        public inline void SetIndentSize(int indentSize_)
         {
             indentSize = indentSize_;
         }
-        public inline nothrow int CurrentIndent() const
+        public inline int CurrentIndent() const
         {
             return indent * indentSize;
         }
-        public inline nothrow bool AtBeginningOfLine() const
+        public inline bool AtBeginningOfLine() const
         {
             return atBeginningOfLine;
         }
-        public inline nothrow int Line() const
+        public inline int Line() const
         {
             return line;
         }
-        public inline nothrow void SetLine(int line_)
+        public inline void SetLine(int line_)
         {
             line = line_;
         }
-        public inline nothrow bool Start() const
+        public inline bool Start() const
         {
             return start;
         }
-        public inline nothrow void SetStart(bool start_)
+        public inline void SetStart(bool start_)
         {
             start = start_;
         }
-        public inline nothrow const string& StartText() const
+        public inline const string& StartText() const
         {
             return startText;
         }
-        public nothrow void SetStartText(const string& startText_)
+        public void SetStartText(const string& startText_)
         {
             startText = startText_;
         }
-        public inline nothrow TextWriter& Writer()
+        public inline TextWriter& Writer()
         {
             return writer;
-        }           
-        public nothrow inline bool PreserveSpace() const 
-        { 
-            return preserveSpace; 
         }
-        public nothrow inline void SetPreserveSpace(bool preserveSpace_) 
-        { 
-            preserveSpace = preserveSpace_; 
+        public inline bool PreserveSpace() const
+        {
+            return preserveSpace;
         }
-        public nothrow inline long Pos() const
+        public inline void SetPreserveSpace(bool preserveSpace_)
+        {
+            preserveSpace = preserveSpace_;
+        }
+        public inline long Pos() const
         {
             return pos;
         }
@@ -132,54 +178,72 @@ namespace System.Text
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, const char* s)
     {
-        formatter.Write(s);
+        if (formatter.Error()) return formatter;
+        auto result = formatter.Write(s);
         return formatter;
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, const string& s)
     {
-        formatter.Write(s);
+        if (formatter.Error()) return formatter;
+        auto result = formatter.Write(s);
         return formatter;
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, long x)
     {
+        if (formatter.Error()) return formatter;
         string s = ToString(x);
-        formatter.Write(s);
+        auto result = formatter.Write(s);
         return formatter;
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, ulong x)
     {
+        if (formatter.Error()) return formatter;
         string s = ToString(x);
-        formatter.Write(s);
+        auto result = formatter.Write(s);
         return formatter;
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, char c)
     {
+        if (formatter.Error()) return formatter;
         string s = ToString(c);
-        formatter.Write(s);
+        auto result = formatter.Write(s);
         return formatter;
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, wchar c)
     {
-        string s = ToString(c);
-        formatter.Write(s);
+        if (formatter.Error()) return formatter;
+        auto s = ToString(c);
+        if (s.Error())
+        {
+            formatter.SetErrorId(s.GetErrorId());
+            return formatter;
+        }
+        auto result = formatter.Write(s.Value());
         return formatter;
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, uchar c)
     {
-        string s = ToString(c);
-        formatter.Write(s);
+        if (formatter.Error()) return formatter;
+        auto s = ToString(c);
+        if (s.Error())
+        {
+            formatter.SetErrorId(s.GetErrorId());
+            return formatter;
+        }
+        auto result = formatter.Write(s.Value());
         return formatter;
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, const Endl&)
     {
-        formatter.WriteLine();
+        if (formatter.Error()) return formatter;
+        auto result = formatter.WriteLine();
         return formatter;
     }
 }

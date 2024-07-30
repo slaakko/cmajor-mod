@@ -11,121 +11,146 @@ namespace System.Json
 {
     public abstract class JsonValue
     {
-        public default virtual ~JsonValue();
-        public abstract string ToString() const;
-        public virtual void Write(CodeFormatter& formatter)
+        public JsonValue()
         {
-            formatter.Write(ToString());
+        }
+        public default virtual ~JsonValue();
+        [nodiscard]
+        public abstract Result<string> ToString() const;
+        [nodiscard]
+        public virtual Result<bool> Write(CodeFormatter& formatter)
+        {
+            Result<string> toStringResult = ToString();
+            if (toStringResult.Error())
+            {
+                return Result<bool>(ErrorId(toStringResult.GetErrorId()));
+            }
+            auto result = formatter.Write(toStringResult.Value());
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
     }
-    
+
     public class JsonNull : JsonValue
     {
-        public override string ToString() const
+        public JsonNull() : base()
         {
-            return "null";
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("null");
         }
     }
-    
+
     public class JsonNumber : JsonValue
     {
-        public nothrow JsonNumber() : value(0.0)
+        public JsonNumber() : base(), value(0.0)
         {
         }
-        public explicit nothrow JsonNumber(double value_) : value(value_)
+        public explicit JsonNumber(double value_) : value(value_)
         {
         }
-        public override string ToString() const
+        public override Result<string> ToString() const
         {
-            return System.ToString(value);
+            if (value == cast<long>(value))
+            {
+                long x = cast<long>(value);
+                return Result<string>(System.ToString(x));
+            }
+            return Result<string>(System.ToString(value));
         }
-        public nothrow inline double Value() const
+        public inline double Value() const
         {
             return value;
         }
-        public nothrow inline void SetValue(double value_) 
+        public inline void SetValue(double value_)
         {
             value = value_;
         }
         private double value;
     }
-    
+
     public class JsonBool : JsonValue
     {
-        public nothrow JsonBool() : value(false)
+        public JsonBool() : base(), value(false)
         {
         }
-        public explicit nothrow JsonBool(bool value_) : value(value_)
+        public explicit JsonBool(bool value_) : base(), value(value_)
         {
         }
-        public override string ToString() const
+        public override Result<string> ToString() const
         {
-            return System.ToString(value);
+            return Result<string>(System.ToString(value));
         }
-        public nothrow inline bool Value() const
+        public inline bool Value() const
         {
             return value;
         }
-        public nothrow inline void SetValue(bool value_) 
+        public inline void SetValue(bool value_)
         {
             value = value_;
         }
         private bool value;
     }
-    
+
     public class JsonString : JsonValue
     {
-        public nothrow JsonString() : value()
+        public JsonString() : base(), value()
         {
         }
-        public nothrow JsonString(const ustring& value_) : value(value_)
+        public JsonString(const ustring& value_) : base(), value(value_)
         {
         }
-        public nothrow inline const ustring& Value() const
+        public inline const ustring& Value() const
         {
             return value;
         }
-        public nothrow inline void SetValue(const ustring& value_)
+        public inline void SetValue(const ustring& value_)
         {
             value = value_;
         }
-        public nothrow JsonString& Append(uchar c)
+        public JsonString& Append(uchar c)
         {
             value.Append(c);
             return *this;
         }
-        public nothrow JsonString& Append(const uchar* s)
+        public JsonString& Append(const uchar* s)
         {
             value.Append(s);
             return *this;
         }
-        public nothrow JsonString& Append(const ustring& s) 
+        public JsonString& Append(const ustring& s)
         {
             value.Append(s);
             return *this;
         }
-        public override string ToString() const
+        public override Result<string> ToString() const
         {
             wstring s = w'"';
             for (uchar c : value)
             {
-                s.Append(JsonCharStr(c));
+                auto jsonCharStrResult = JsonCharStr(c);
+                if (jsonCharStrResult.Error()) return Result<string>(ErrorId(jsonCharStrResult.GetErrorId()));
+                s.Append(Rvalue(jsonCharStrResult.Value()));
             }
             s.Append(w'"');
-            return ToUtf8(s);
+            auto result = ToUtf8(s);
+            if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
+            return Result<string>(Rvalue(result.Value()));
         }
-        private wstring JsonCharStr(uchar c)
+        private Result<wstring> JsonCharStr(uchar c)
         {
             wstring result;
             ustring s(c);
-            wstring t = ToUtf16(s);
+            auto utf16result = ToUtf16(s);
+            if (utf16result.Error()) return Result<wstring>(ErrorId(utf16result.GetErrorId()));
+            wstring t = utf16result.Value();
             for (wchar x : t)
             {
                 switch (x)
                 {
                     case '"': result.Append(w"\\\""); break;
                     case '\\': result.Append(w"\\\\"); break;
-                    case '/': result.Append(w"\\/"); break;
                     case '\b': result.Append(w"\\b"); break;
                     case '\f': result.Append(w"\\f"); break;
                     case '\n': result.Append(w"\\n"); break;
@@ -139,74 +164,127 @@ namespace System.Json
                         }
                         else
                         {
-                            result.Append(w"\\u").Append(ToUtf16(ToHexString(cast<ushort>(x))));
-                        }           
+                            auto hexStringResult = ToHexString(cast<ushort>(x));
+                            if (hexStringResult.Error())
+                            {
+                                return Result<wstring>(ErrorId(hexStringResult.GetErrorId()));
+                            }
+                            auto utf16Result = ToUtf16(hexStringResult.Value());
+                            if (utf16Result.Error())
+                            {
+                                return Result<wstring>(ErrorId(utf16Result.GetErrorId()));
+                            }
+                            const wstring& s = utf16Result.Value();
+                            result.Append(w"\\u").Append(s);
+                        }
                         break;
                     }
                 }
             }
-            return result;
+            return Result<wstring>(result);
         }
         private ustring value;
     }
-    
+
     public class JsonObject : JsonValue
     {
-        public JsonObject() : fieldValues(), fieldMap()
+        public JsonObject() : base(), fieldValues(), fieldMap()
         {
         }
-        public void AddField(const string& fieldName, UniquePtr<JsonValue>&& fieldValue)
+        [nodiscard]
+        public Result<bool> AddField(const string& fieldName, UniquePtr<JsonValue>&& fieldValue)
         {
-            AddField(ToUtf32(fieldName), fieldValue);
+            auto utf32Result = ToUtf32(fieldName);
+            if (utf32Result.Error())
+            {
+                return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+            }
+            AddField(utf32Result.Value(), Rvalue(fieldValue));
+            return Result<bool>(true);
         }
-        public void AddField(const wstring& fieldName, UniquePtr<JsonValue>&& fieldValue)
+        [nodiscard]
+        public Result<bool> AddField(const wstring& fieldName, UniquePtr<JsonValue>&& fieldValue)
         {
-            AddField(ToUtf32(fieldName), fieldValue);
+            auto utf32Result = ToUtf32(fieldName);
+            if (utf32Result.Error())
+            {
+                return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+            }
+            AddField(utf32Result.Value(), Rvalue(fieldValue));
+            return Result<bool>(true);
         }
         public void AddField(const ustring& fieldName, UniquePtr<JsonValue>&& fieldValue)
         {
             fieldMap[fieldName] = fieldValue.Get();
             fieldValues.Add(Rvalue(fieldValue));
         }
-        public void AddField(const string& fieldName, JsonValue* fieldValue)
+        [nodiscard]
+        public Result<bool> AddField(const string& fieldName, JsonValue* fieldValue)
         {
-            AddField(ToUtf32(fieldName), fieldValue);
+            auto utf32Result = ToUtf32(fieldName);
+            if (utf32Result.Error())
+            {
+                return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+            }
+            AddField(utf32Result.Value(), fieldValue);
+            return Result<bool>(true);
         }
-        public void AddField(const wstring& fieldName, JsonValue* fieldValue)
+        [nodiscard]
+        public Result<bool> AddField(const wstring& fieldName, JsonValue* fieldValue)
         {
-            AddField(ToUtf32(fieldName), fieldValue);
+            auto utf32Result = ToUtf32(fieldName);
+            if (utf32Result.Error())
+            {
+                return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+            }
+            AddField(utf32Result.Value(), fieldValue);
+            return Result<bool>(true);
         }
         public void AddField(const ustring& fieldName, JsonValue* fieldValue)
         {
             fieldMap[fieldName] = fieldValue;
             fieldValues.Add(UniquePtr<JsonValue>(fieldValue));
         }
-        public JsonValue* GetField(const string& fieldName) const
+        public Result<JsonValue*> GetField(const string& fieldName) const
         {
-            return GetField(ToUtf32(fieldName));
+            auto utf32Result = ToUtf32(fieldName);
+            if (utf32Result.Error())
+            {
+                return Result<JsonValue*>(ErrorId(utf32Result.GetErrorId()));
+            }
+            ustring ufieldName = Rvalue(utf32Result.Value());
+            Result<JsonValue*> fieldValue = GetField(ufieldName);
+            return fieldValue;
         }
-        public JsonValue* GetField(const wstring& fieldName) const
+        public Result<JsonValue*> GetField(const wstring& fieldName) const
         {
-            return GetField(ToUtf32(fieldName));
+            auto utf32Result = ToUtf32(fieldName);
+            if (utf32Result.Error())
+            {
+                return Result<JsonValue*>(ErrorId(utf32Result.GetErrorId()));
+            }
+            ustring ufieldName = Rvalue(utf32Result.Value());
+            Result<JsonValue*> fieldValue = GetField(ufieldName);
+            return fieldValue;
         }
         public JsonValue* GetField(const ustring& fieldName) const
         {
-            Map<ustring, JsonValue*>.ConstIterator i = fieldMap.CFind(fieldName);
-            if (i != fieldMap.CEnd())
+            auto i = fieldMap.Find(fieldName);
+            if (i != fieldMap.End())
             {
                 return i->second;
             }
             return null;
         }
-        public nothrow const Map<ustring, JsonValue*>& Fields() const 
+        public const Map<ustring, JsonValue*>& Fields() const
         {
             return fieldMap;
         }
-        public nothrow Map<ustring, JsonValue*>& Fields()
+        public Map<ustring, JsonValue*>& Fields()
         {
             return fieldMap;
         }
-        public override string ToString() const
+        public override Result<string> ToString() const
         {
             string s = "{";
             bool first = true;
@@ -222,56 +300,76 @@ namespace System.Json
                 {
                     s.Append(", ");
                 }
-                s.Append(fs.ToString()).Append(":").Append(fv->ToString());
+                auto fsResult = fs.ToString();
+                if (fsResult.Error())
+                {
+                    return Result<string>(ErrorId(fsResult.GetErrorId()));
+                }
+                auto fvResult = fv->ToString();
+                if (fvResult.Error())
+                {
+                    return Result<string>(ErrorId(fvResult.GetErrorId()));
+                }
+                s.Append(fsResult.Value()).Append(":").Append(fvResult.Value());
             }
             s.Append("}");
-            return s;
+            return Result<string>(s);
         }
-        public override void Write(CodeFormatter& formatter)
+        [nodiscard]
+        public override Result<bool> Write(CodeFormatter& formatter)
         {
-            formatter.WriteLine("{");
+            auto result = formatter.WriteLine("{");
+            if (result.Error()) return result;
             formatter.IncIndent();
             bool first = true;
             bool lastWasArrayOrObject = false;
             for (const Pair<ustring, JsonValue*>& p : fieldMap)
             {
-                JsonString s(p.first);
-                JsonValue* v(p.second);
+                JsonString s = p.first;
+                JsonValue* v = p.second;
                 if (first)
                 {
                     first = false;
                 }
                 else
                 {
-                    formatter.WriteLine(", ");
+                    result = formatter.WriteLine(", ");
+                    if (result.Error()) return result;
                 }
-                s.Write(formatter);
-                formatter.Write(" : ");
+                result = s.Write(formatter);
+                if (result.Error()) return result;
+                result = formatter.Write(" : ");
+                if (result.Error()) return result;
                 if ((v is JsonArray*) || (v is JsonObject*))
                 {
-                    formatter.WriteLine();
+                    result = formatter.WriteLine();
+                    if (result.Error()) return result;
                     lastWasArrayOrObject = true;
                 }
                 else
                 {
                     lastWasArrayOrObject = false;
                 }
-                v->Write(formatter);
+                result = v->Write(formatter);
+                if (result.Error()) return result;
             }
             formatter.DecIndent();
             if (!lastWasArrayOrObject)
             {
-                formatter.WriteLine();
+                auto result = formatter.WriteLine();
+                if (result.Error()) return result;
             }
-            formatter.WriteLine("}");
+            result = formatter.WriteLine("}");
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private List<UniquePtr<JsonValue>> fieldValues;
         private Map<ustring, JsonValue*> fieldMap;
     }
-    
+
     public class JsonArray : JsonValue
     {
-        public nothrow JsonArray() : items()
+        public JsonArray() : base(), items()
         {
         }
         public void AddItem(UniquePtr<JsonValue>&& item)
@@ -282,15 +380,19 @@ namespace System.Json
         {
             items.Add(UniquePtr<JsonValue>(item));
         }
-        public JsonValue* operator[](long index) const 
+        public JsonValue* GetItem(long index) const
         {
             return items[index].Get();
         }
-        public inline nothrow long Count() const
+        public JsonValue* operator[](long index) const
+        {
+            return items[index].Get();
+        }
+        public inline long Count() const
         {
             return items.Count();
         }
-        public override string ToString() const
+        public override Result<string> ToString() const
         {
             string s = "[";
             bool first =  true;
@@ -301,17 +403,24 @@ namespace System.Json
                     first = false;
                 }
                 else
-                {                    
+                {
                     s.Append(", ");
                 }
-                s.Append(item->ToString());
+                auto itemResult = item->ToString();
+                if (itemResult.Error())
+                {
+                    return Result<string>(ErrorId(itemResult.GetErrorId()));
+                }
+                s.Append(itemResult.Value());
             }
             s.Append("]");
-            return s;
+            return Result<string>(s);
         }
-        public override void Write(CodeFormatter& formatter)
+        [nodiscard]
+        public override Result<bool> Write(CodeFormatter& formatter)
         {
-            formatter.WriteLine("[");
+            auto result = formatter.WriteLine("[");
+            if (result.Error()) return result;
             formatter.IncIndent();
             bool first = true;
             bool lastWasArrayOrObject = false;
@@ -323,9 +432,11 @@ namespace System.Json
                 }
                 else
                 {
-                    formatter.WriteLine(", ");
+                    result = formatter.WriteLine(", ");
+                    if (result.Error()) return result;
                 }
-                item->Write(formatter);
+                result = item->Write(formatter);
+                if (result.Error()) return result;
                 if ((item.Get() is JsonArray*) || (item.Get() is JsonObject*))
                 {
                     lastWasArrayOrObject = true;
@@ -338,27 +449,34 @@ namespace System.Json
             formatter.DecIndent();
             if (!lastWasArrayOrObject)
             {
-                formatter.WriteLine();
+                result = formatter.WriteLine();
+                if (result.Error()) return result;
             }
-            formatter.WriteLine("]");
+            result = formatter.WriteLine("]");
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         private List<UniquePtr<JsonValue>> items;
     }
-    
-    public UniquePtr<JsonValue> ParseJson(const string& jsonText)
+
+    public Result<UniquePtr<JsonValue>> ParseJson(const string& jsonText)
     {
-        return ParseJson(ToUtf32(jsonText));
+        auto utf32Result = ToUtf32(jsonText);
+        if (utf32Result.Error()) return Result<UniquePtr<JsonValue>>(ErrorId(utf32Result.GetErrorId()));
+        return ParseJson(utf32Result.Value());
     }
-    
-    public UniquePtr<JsonValue> ParseJson(const wstring& jsonText)
+
+    public Result<UniquePtr<JsonValue>> ParseJson(const wstring& jsonText)
     {
-        return ParseJson(ToUtf32(jsonText));
+        auto utf32Result = ToUtf32(jsonText);
+        if (utf32Result.Error()) return Result<UniquePtr<JsonValue>>(ErrorId(utf32Result.GetErrorId()));
+        return ParseJson(utf32Result.Value());
     }
-    
-    public UniquePtr<JsonValue> ParseJson(const ustring& jsonText)
+
+    public Result<UniquePtr<JsonValue>> ParseJson(const ustring& jsonText)
     {
-        JsonLexer jsonLexer(jsonText, "", 0);
-        UniquePtr<JsonValue> jsonValue = JsonParser.Parse(jsonLexer);
-        return jsonValue;
+        JsonLexer jsonLexer(jsonText.Chars(), jsonText.Chars() + jsonText.Length(), "json");
+        Result<UniquePtr<JsonValue>> jsonValue = JsonParser<JsonLexer>.Parse(jsonLexer);
+        return Rvalue(jsonValue);
     }
 }

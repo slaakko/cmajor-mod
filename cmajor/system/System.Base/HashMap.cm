@@ -22,51 +22,51 @@ namespace System.Collections
         private typedef HashMap<KeyType, MappedType, HashFun, Compare> Self;
         private typedef Hashtable<KeyType, ValueType, SelectFirst<KeyType, MappedType>, HashFun, Compare> TableType;
 
-        public inline nothrow Iterator Begin()
+        public inline Iterator Begin()
         {
             return table.Begin();
         }
-        public inline nothrow ConstIterator Begin() const
+        public inline ConstIterator Begin() const
         {
             return table.CBegin();
         }
-        public inline nothrow ConstIterator CBegin() const
+        public inline ConstIterator CBegin() const
         {
             return table.CBegin();
         }
-        public inline nothrow Iterator End()
+        public inline Iterator End()
         {
             return table.End();
         }
-        public inline nothrow ConstIterator End() const
+        public inline ConstIterator End() const
         {
             return table.CEnd();
         }
-        public inline nothrow ConstIterator CEnd() const
+        public inline ConstIterator CEnd() const
         {
             return table.CEnd();
         }
-        public inline nothrow long Count() const
+        public inline long Count() const
         {
             return table.Count();
         }
-        public inline nothrow bool IsEmpty() const
+        public inline bool IsEmpty() const
         {
             return table.IsEmpty();
         }
-        public inline nothrow void Clear()
+        public inline void Clear()
         {
             table.Clear();
         }
-        public inline nothrow Iterator Find(const KeyType& key) 
+        public inline Iterator Find(const KeyType& key) 
         {
             return table.Find(key);
         }
-        public inline nothrow ConstIterator Find(const KeyType& key) const
+        public inline ConstIterator Find(const KeyType& key) const
         {
             return table.CFind(key);
         }
-        public inline nothrow ConstIterator CFind(const KeyType& key) const
+        public inline ConstIterator CFind(const KeyType& key) const
         {
             return table.CFind(key);
         }
@@ -85,24 +85,24 @@ namespace System.Collections
         {
             return table.Insert(Rvalue(value));
         }
-        public inline nothrow void Remove(const KeyType& key)
+        public inline void Remove(const KeyType& key)
         {
             table.Remove(key);
         }
-        public inline nothrow void Remove(Iterator pos)
+        public inline void Remove(Iterator pos)
         {
             table.Remove(pos);
         }
         private TableType table;
     }
 
-    public nothrow bool operator==<K, T, H, C>(const HashMap<K, T, H, C>& left, const HashMap<K, T, H, C>& right) 
+    public bool operator==<K, T, H, C>(const HashMap<K, T, H, C>& left, const HashMap<K, T, H, C>& right) 
         where K is Semiregular and T is Semiregular and HashFunction<H, K> and C is Relation and C.Domain is K
     {
         if (left.Count() != right.Count()) return false;
         for (const Pair<K, T>& p : left)
         {
-            HashMap<K, T, H, C>.ConstIterator i = right.CFind(p.first);
+            auto i = right.CFind(p.first);
             if (i == right.CEnd()) return false;
             if (i->second != p.second) return false;
         }
@@ -112,6 +112,7 @@ namespace System.Collections
     [system_default]
     public TextWriter& operator<<<K, T, H, C>(TextWriter& writer, const HashMap<K, T, H, C>& hashMap)
     {
+        if (writer.Error()) return writer;
         writer << "{";
         bool first = true;
         for (const Pair<K, T>& element : hashMap)

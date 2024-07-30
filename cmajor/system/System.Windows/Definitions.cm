@@ -24,7 +24,7 @@ namespace System.Windows
         SW_SHOWDEFAULT = 10,
         SW_FORCEMINIMIZE = 11
     }
-    
+
     public enum SystemColor : int
     {
         COLOR_3DDKSHADOW = 21,
@@ -64,7 +64,7 @@ namespace System.Windows
         COLOR_WINDOWFRAME = 6,
         COLOR_WINDOWTEXT = 8
     }
-    
+
     public enum WindowClassStyle : uint
     {
         CS_DEFAULT = 0u,
@@ -144,13 +144,13 @@ namespace System.Windows
         WS_EX_PALETTEWINDOW = (WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST),
         WS_EX_OVERLAPPEDWINDOW = (WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE)
     }
-    
+
     public class WinRect
     {
-        public nothrow WinRect() : left(0), top(0), right(0), bottom(0)
+        public WinRect() : left(0), top(0), right(0), bottom(0)
         {
         }
-        public nothrow WinRect(int left_, int top_, int right_, int bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
+        public WinRect(int left_, int top_, int right_, int bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
         {
         }
         public int left;
@@ -158,18 +158,18 @@ namespace System.Windows
         public int right;
         public int bottom;
     }
-    
+
     public enum WindowState : sbyte
     {
         normal, minimized, maximized
     }
-    
+
     public enum DialogResult : int
     {
         none = 0, ok = 1, cancel = 2, abort = 3, retry = 4, ignore = 5, yes = 6, no = 7
     }
 
-    public nothrow string ToString(DialogResult dialogResult)
+    public string ToString(DialogResult dialogResult)
     {
         switch (dialogResult)
         {
@@ -189,7 +189,7 @@ namespace System.Windows
     {
         none = 0, top = 1 << 0, bottom = 1 << 1, left = 1 << 2, right = 1 << 3
     }
-    
+
     public enum Dock : sbyte
     {
         none = 0, top = 1, bottom = 2, left = 3, right = 4, fill = 5
@@ -197,17 +197,17 @@ namespace System.Windows
 
     public class Padding
     {
-        public nothrow Padding() : left(0), top(0), right(0), bottom(0)
+        public Padding() : left(0), top(0), right(0), bottom(0)
         {
         }
-        public nothrow Padding(int left_, int top_, int right_, int bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
+        public Padding(int left_, int top_, int right_, int bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
         {
         }
-        public nothrow inline int Vertical() const
+        public inline int Vertical() const
         {
             return top + bottom;
         }
-        public nothrow inline int Horizontal() const
+        public inline int Horizontal() const
         {
             return left + right;
         }
@@ -218,6 +218,27 @@ namespace System.Windows
     }
 
     public bool operator==(const Padding& left, const Padding& right)
+    {
+        return left.left == right.left && left.top == right.top && left.right == right.right && left.bottom == right.bottom;
+    }
+
+    public class PaddingF
+    {
+        public PaddingF() : left(0), top(0), right(0), bottom(0)
+        {
+        }
+        public PaddingF(float left_, float top_, float right_, float bottom_) : left(left_), top(top_), right(right_), bottom(bottom_)
+        {
+        }
+        public float Vertical() const { return top + bottom; }
+        public float Horizontal() const { return left + right; }
+        public float left;
+        public float top;
+        public float right;
+        public float bottom;
+    }
+
+    public bool operator==(const PaddingF& left, const PaddingF& right)
     {
         return left.left == right.left && left.top == right.top && left.right == right.right && left.bottom == right.bottom;
     }

@@ -3,16 +3,18 @@
 // Distributed under the MIT license
 // =================================
 
+using System.IO;
 using System.Collections;
 
 namespace System.Unicode
 {
-    public class UnicodeEngine
+    public class UnicodeEngine : IOBase
     {
-        public nothrow UnicodeEngine() : resultReady(false), result('\0'), state(0)
+        public UnicodeEngine() : resultReady(false), result('\0'), state(0)
         {
         }
-        public void Put(byte x)
+        [nodiscard]
+        public Result<bool> Put(byte x)
         {
             switch (state)
             {
@@ -41,7 +43,9 @@ namespace System.Unicode
                     }
                     else
                     {
-                        throw UnicodeException("invalid UTF-8 sequence");
+                        int errorId = AllocateError("invalid UTF-8 sequence");
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
                     }
                     break;
                 }
@@ -52,7 +56,9 @@ namespace System.Unicode
                     byte b1 = bytes[1];
                     if ((b1 & 0xC0u) != 0x80u)
                     {
-                        throw UnicodeException("invalid UTF-8 sequence");
+                        int errorId = AllocateError("invalid UTF-8 sequence");
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
                     }
                     byte shift = 0u;
                     for (byte i = 0u; i < 6u; ++i)
@@ -87,7 +93,9 @@ namespace System.Unicode
                     byte b2 = bytes[2];
                     if ((b2 & 0xC0u) != 0x80u)
                     {
-                        throw UnicodeException("invalid UTF-8 sequence");
+                        int errorId = AllocateError("invalid UTF-8 sequence");
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
                     }
                     byte shift = 0u;
                     for (byte i = 0u; i < 6u; ++i)
@@ -100,7 +108,9 @@ namespace System.Unicode
                     byte b1 = bytes[1];
                     if ((b1 & 0xC0u) != 0x80u)
                     {
-                        throw UnicodeException("invalid UTF-8 sequence");
+                        int errorId = AllocateError("invalid UTF-8 sequence");
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
                     }
                     for (byte i = 0u; i < 6u; ++i)
                     {
@@ -127,7 +137,7 @@ namespace System.Unicode
                     state = 5;
                     break;
                 }
-                case 5: 
+                case 5:
                 {
                     bytes[2] = x;
                     state = 6;
@@ -140,7 +150,9 @@ namespace System.Unicode
                     byte b3 = bytes[3];
                     if ((b3 & 0xC0u) != 0x80u)
                     {
-                        throw UnicodeException("invalid UTF-8 sequence");
+                        int errorId = AllocateError("invalid UTF-8 sequence");
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
                     }
                     byte shift = 0u;
                     for (byte i = 0u; i < 6u; ++i)
@@ -153,7 +165,9 @@ namespace System.Unicode
                     byte b2 = bytes[2];
                     if ((b2 & 0xC0u) != 0x80u)
                     {
-                        throw UnicodeException("invalid UTF-8 sequence");
+                        int errorId = AllocateError("invalid UTF-8 sequence");
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
                     }
                     for (byte i = 0u; i < 6u; ++i)
                     {
@@ -165,7 +179,9 @@ namespace System.Unicode
                     byte b1 = bytes[1];
                     if ((b1 & 0xC0u) != 0x80u)
                     {
-                        throw UnicodeException("invalid UTF-8 sequence");
+                        int errorId = AllocateError("invalid UTF-8 sequence");
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
                     }
                     for (byte i = 0u; i < 6u; ++i)
                     {
@@ -187,12 +203,13 @@ namespace System.Unicode
                     break;
                 }
             }
+            return Result<bool>(true);
         }
-        public nothrow inline bool ResultReady() const
+        public inline bool ResultReady() const
         {
             return resultReady;
         }
-        public nothrow uchar Get()
+        public uchar Get()
         {
             return result;
         }

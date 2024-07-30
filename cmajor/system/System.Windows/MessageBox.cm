@@ -43,23 +43,27 @@ namespace System.Windows
 
     public static class MessageBox
     {
-        public static void Show(const string& message)
+        public static Result<bool> Show(const string& message)
         {
             int result = WinShowMessageBox(message.Chars(), null);
             if (result == 0)
             {
-                throw WindowsAPIException(WinGetLastError());
+                int errorId = WinAllocateWindowsError("MessageBox.Show failed", WinGetLastError());
+                return Result<bool>(ErrorId(errorId));
             }
+            return Result<bool>(true);
         }
-        public static void Show(const string& message, const string& caption)
+        public static Result<bool> Show(const string& message, const string& caption)
         {
             int result = WinShowMessageBox(message.Chars(), caption.Chars());
             if (result == 0)
             {
-                throw WindowsAPIException(WinGetLastError());
+                int errorId = WinAllocateWindowsError("MessageBox.Show failed", WinGetLastError());
+                return Result<bool>(ErrorId(errorId));
             }
+            return Result<bool>(true);
         }
-        public static MessageBoxResult Show(const string& message, const string& caption, Control* owner, MessageBoxType type)
+        public static Result<MessageBoxResult> Show(const string& message, const string& caption, Control* owner, MessageBoxType type)
         {
             void* ownerWindowHandle = null;
             if (owner != null)
@@ -69,11 +73,12 @@ namespace System.Windows
             int result = WinShowMessageBoxWithType(message.Chars(), caption.Chars(), ownerWindowHandle, type);
             if (result == 0)
             {
-                throw WindowsAPIException(WinGetLastError());
+                int errorId = WinAllocateWindowsError("MessageBox.Show failed", WinGetLastError());
+                return Result<MessageBoxResult>(ErrorId(errorId));
             }
             else
             {
-                return cast<MessageBoxResult>(result);
+                return Result<MessageBoxResult>(cast<MessageBoxResult>(result));
             }
         }
     }

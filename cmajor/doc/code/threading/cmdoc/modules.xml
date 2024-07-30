@@ -1,5 +1,0 @@
-<modules>
- <module name="ThreadFunction"/>
- <module name="threadSynchronization"/>
- <module name="transferringExceptions"/>
-</modules>

@@ -24,16 +24,16 @@ namespace System.Windows
 
     public class Icon : Resource
     {
-        public nothrow Icon() : iconHandle(null), standard(false)
+        public Icon() : iconHandle(null), standard(false)
         {
         }
-        public nothrow Icon(void* iconHandle_) : iconHandle(iconHandle_), standard(false)
+        public Icon(void* iconHandle_) : iconHandle(iconHandle_), standard(false)
         {
         }
-        public nothrow Icon(void* iconHandle_, bool standard_) : iconHandle(iconHandle_), standard(standard_)
+        public Icon(void* iconHandle_, bool standard_) : iconHandle(iconHandle_), standard(standard_)
         {
         }
-        public nothrow Icon(Icon&& that) : iconHandle(that.iconHandle), standard(that.standard)
+        public Icon(Icon&& that) : iconHandle(that.iconHandle), standard(that.standard)
         {
             that.iconHandle = null;
             that.standard = false;
@@ -45,18 +45,18 @@ namespace System.Windows
                 WinDestroyIcon(iconHandle);
             }
         }
-        public default nothrow void operator=(Icon&&);
+        public default void operator=(Icon&&);
         suppress Icon(const Icon&);
         suppress void operator=(const Icon&);
-        public nothrow void* Handle() const
+        public void* Handle() const
         {
             return iconHandle;
         }
-        public nothrow bool IsStandard() const
+        public bool IsStandard() const
         {
             return standard;
         }
-        public nothrow void SetStandard()
+        public void SetStandard()
         {
             standard = true;
         }
@@ -64,18 +64,26 @@ namespace System.Windows
         private bool standard;
     }
 
-    public Icon LoadStandardIcon(StandardIconId iconId)
+    [nodiscard]
+    public Result<Icon> LoadStandardIcon(StandardIconId iconId)
     {
         void* iconHandle = WinLoadStandardIcon(cast<int>(iconId));
         if (iconHandle == null)
         {
-            throw WindowsAPIException(WinGetLastError());
+            int errorId = WinAllocateWindowsError("could not load standard icon", WinGetLastError());
+            return Result<Icon>(ErrorId(errorId));
         }
-        return Icon(iconHandle, true);
+        return Result<Icon>(Icon(iconHandle, true));
     }
 
-    public Icon LoadIcon(const string& iconName)
+    [nodiscard]
+    public Result<Icon> LoadIcon(const string& iconName)
     {
-        return Icon(LoadIcon(iconName.Chars()));
+        auto iconResult = LoadIcon(iconName.Chars());
+        if (iconResult.Error())
+        {
+            return Result<Icon>(ErrorId(iconResult.GetErrorId()));
+        }
+        return Result<Icon>(Icon(iconResult.Value()));
     }
 }

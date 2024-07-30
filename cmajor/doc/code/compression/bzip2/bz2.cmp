@@ -1,3 +1,0 @@
-project bz2;
-target=program;
-source <main.cm>;

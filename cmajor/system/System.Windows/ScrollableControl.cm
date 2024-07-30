@@ -9,18 +9,18 @@ using System.Windows.API;
 
 namespace System.Windows
 {
-    public nothrow ControlCreateParams& ScrollableControlControlCreateParams(ControlCreateParams& controlCreateParams, Control* child)
+    public ControlCreateParams& ScrollableControlControlCreateParams(ControlCreateParams& controlCreateParams, Control* child)
     {
         return controlCreateParams.SetWindowClassName("System.Windows.ScrollableControl").SetBackgroundColor(child->BackgroundColor());
     }
 
     public class ScrollableControlCreateParams
     {
-        public nothrow ScrollableControlCreateParams(ControlCreateParams& controlCreateParams_, Control* child_) :
+        public ScrollableControlCreateParams(ControlCreateParams& controlCreateParams_, Control* child_) :
             controlCreateParams(controlCreateParams_), child(child_)
         {
         }
-        public nothrow ScrollableControlCreateParams& Defaults()
+        public ScrollableControlCreateParams& Defaults()
         {
             return *this;
         }
@@ -36,35 +36,57 @@ namespace System.Windows
             verticalScrollUnit(0), horizontalScrollUnit(0), vpage(0u), vpos(0), vmin(0), vmax(0), hpage(0u), hpos(0), hmin(0), hmax(0),
             verticalScrollBarShown(false), horizontalScrollBarShown(false)
         {
-            container.AddChild(child);
+            auto result = container.AddChild(child);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
         }
         public ScrollableControl(ScrollableControlCreateParams& createParams) :
             base(createParams.controlCreateParams), container(this), child(createParams.child),
             verticalScrollUnit(0), horizontalScrollUnit(0), vpage(0u), vpos(0), vmin(0), vmax(0), hpage(0u), hpos(0), hmin(0), hmax(0),
             verticalScrollBarShown(false), horizontalScrollBarShown(false)
         {
-            container.AddChild(child);
+            auto result = container.AddChild(child);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
         }
-        protected nothrow override bool IsDecoratorControl() const
+        protected override bool IsDecoratorControl() const
         {
             return true;
         }
-        protected override void OnLocationChanged()
+        [nodiscard]
+        protected override Result<bool> OnLocationChanged()
         {
-            base->OnLocationChanged();
-            child->SetLocation(Point());
-            child->SetSize(GetSize());
+            auto result = base->OnLocationChanged();
+            if (result.Error()) return result;
+            result = child->SetLocation(Point());
+            if (result.Error()) return result;
+            result = child->SetSize(GetSize());
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnSizeChanged(uint windowState)
+        [nodiscard]
+        protected override Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
         {
-            base->OnSizeChanged(windowState);
-            child->SetLocation(Point());
-            child->SetSize(GetSize());
+            auto result = base->OnSizeChanged(args);
+            if (result.Error()) return result;
+            result = child->SetLocation(Point());
+            if (result.Error()) return result;
+            result = child->SetSize(GetSize());
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnChildSizeChanged(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildSizeChanged(ControlEventArgs& args)
         {
-            base->OnChildSizeChanged(args);
-            ChildSizeOrContentSizeChanged(args);
+            auto result = base->OnChildSizeChanged(args);
+            if (result.Error()) return result;
+            result = ChildSizeOrContentSizeChanged(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
         protected override void OnChildContentChanged(ControlEventArgs& args)
         {
@@ -85,7 +107,8 @@ namespace System.Windows
             hpos = childContentLocation.x / horizontalScrollUnit;
             SetScrollInfo(Handle(), ScrollBar.SB_HORZ, ScrollInfoMask.SIF_POS, true, 0u, hpos, 0, 0);
         }
-        private void ChildSizeOrContentSizeChanged(ControlEventArgs& args)
+        [nodiscard]
+        private Result<bool> ChildSizeOrContentSizeChanged(ControlEventArgs& args)
         {
             scrolledChild = args.control;
             Pair<int, int> scrollUnits = scrolledChild->GetScrollUnits();
@@ -105,12 +128,14 @@ namespace System.Windows
                 }
                 SetScrollInfo(Handle(), ScrollBar.SB_VERT, cast<ScrollInfoMask>(ScrollInfoMask.SIF_POS | ScrollInfoMask.SIF_PAGE | ScrollInfoMask.SIF_RANGE), true,
                     vpage, vpos, vmin, vmax);
-                ShowScrollBar(Handle(), ScrollBar.SB_VERT, true);
+                auto result = ShowScrollBar(Handle(), ScrollBar.SB_VERT, true);
+                if (result.Error()) return result;
                 verticalScrollBarShown = true;
             }
             else
             {
-                ShowScrollBar(Handle(), ScrollBar.SB_VERT, false);
+                auto result = ShowScrollBar(Handle(), ScrollBar.SB_VERT, false);
+                if (result.Error()) return result;
                 verticalScrollBarShown = false;
             }
             if (scrolledChildContentSize.w > scrolledChildClientSize.w)
@@ -125,43 +150,62 @@ namespace System.Windows
                 }
                 SetScrollInfo(Handle(), ScrollBar.SB_HORZ, cast<ScrollInfoMask>(ScrollInfoMask.SIF_POS | ScrollInfoMask.SIF_PAGE | ScrollInfoMask.SIF_RANGE), true,
                     hpage, hpos, hmin, hmax);
-                ShowScrollBar(Handle(), ScrollBar.SB_HORZ, true);
+                auto result = ShowScrollBar(Handle(), ScrollBar.SB_HORZ, true);
+                if (result.Error()) return result;
                 horizontalScrollBarShown = true;
             }
             else
             {
-                ShowScrollBar(Handle(), ScrollBar.SB_HORZ, false);
+                auto result = ShowScrollBar(Handle(), ScrollBar.SB_HORZ, false);
+                if (result.Error()) return result;
                 horizontalScrollBarShown = false;
             }
+            return Result<bool>(true);
         }
-        protected override void OnChildContentSizeChanged(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildContentSizeChanged(ControlEventArgs& args)
         {
-            base->OnChildContentSizeChanged(args);
-            ChildSizeOrContentSizeChanged(args);
+            auto result = base->OnChildContentSizeChanged(args);
+            if (result.Error()) return result;
+            result = ChildSizeOrContentSizeChanged(args);
+            if (result.Error()) return result;
+            return Result<bool>(true);
         }
-        protected override void OnChildGotFocus(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildGotFocus(ControlEventArgs& args)
         {
-            base->OnChildGotFocus(args);
+            auto result = base->OnChildGotFocus(args);
+            if (result.Error()) return result;
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->OnChildGotFocus(args);
+                result = parentControl->OnChildGotFocus(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnChildLostFocus(ControlEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnChildLostFocus(ControlEventArgs& args)
         {
-            base->OnChildLostFocus(args);
+            auto result = base->OnChildLostFocus(args);
+            if (result.Error()) return result;
             Control* parentControl = ParentControl();
             if (parentControl != null)
             {
-                parentControl->OnChildLostFocus(args);
+                result = parentControl->OnChildLostFocus(args);
+                if (result.Error()) return result;
             }
+            return Result<bool>(true);
         }
-        protected override void OnHScroll(ScrollEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnHScroll(ScrollEventArgs& args)
         {
-            base->OnHScroll(args);
+            auto result = base->OnHScroll(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0) return Result<bool>(ErrorId(args.errorId));
             int trackPos;
-            GetScrollInfo(Handle(), ScrollBar.SB_HORZ, hpage, hpos, hmin, hmax, trackPos);
+            result = GetScrollInfo(Handle(), ScrollBar.SB_HORZ, hpage, hpos, hmin, hmax, trackPos);
+            if (result.Error()) return result;
             int prevHPos = hpos;
             switch (args.request)
             {
@@ -192,70 +236,88 @@ namespace System.Windows
                 }
             }
             SetScrollInfo(Handle(), ScrollBar.SB_HORZ, ScrollInfoMask.SIF_POS, true, 0u, hpos, 0, 0);
-            GetScrollInfo(Handle(), ScrollBar.SB_HORZ, hpage, hpos, hmin, hmax, trackPos);
+            result = GetScrollInfo(Handle(), ScrollBar.SB_HORZ, hpage, hpos, hmin, hmax, trackPos);
+            if (result.Error()) return result;
             if (prevHPos != hpos)
             {
                 scrolledChild->SetContentLocationInternal(Point(horizontalScrollUnit * hpos, verticalScrollUnit * vpos));
                 int xAmount = horizontalScrollUnit * (prevHPos - hpos);
                 Rect updateRect = MakeUpdateRect(xAmount, 0);
-                ScrollWindowEx(scrolledChild->Handle(), xAmount, 0, null, null, updateRect);
+                auto result = ScrollWindowEx(scrolledChild->Handle(), xAmount, 0, null, null, updateRect);
+                if (result.Error()) return result;
                 if (scrolledChild->IsDoubleBuffered())
                 {
-                    scrolledChild->Invalidate();
+                    result = scrolledChild->Invalidate();
+                    if (result.Error()) return result;
                 }
             }
+            return Result<bool>(true);
         }
-        public override void ScrollLineDown()
+        [nodiscard]
+        public override Result<bool> ScrollLineDown()
         {
             int trackPos;
-            GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            auto result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            if (result.Error()) return result;
             int prevVPos = vpos;
             if (vpos != vmax)
             {
                 ++vpos;
                 SetScrollInfo(Handle(), ScrollBar.SB_VERT, ScrollInfoMask.SIF_POS, true, 0u, vpos, 0, 0);
-                GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                if (result.Error()) return result;
                 if (prevVPos != vpos)
                 {
                     scrolledChild->SetContentLocationInternal(Point(horizontalScrollUnit * hpos, verticalScrollUnit * vpos));
                     int yAmount = verticalScrollUnit * (prevVPos - vpos);
                     Rect updateRect = MakeUpdateRect(0, yAmount);
-                    ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                    auto result = ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                    if (result.Error()) return result;
                     if (scrolledChild->IsDoubleBuffered())
                     {
-                        scrolledChild->Invalidate();
+                        result = scrolledChild->Invalidate();
+                        if (result.Error()) return result;
                     }
                 }
             }
+            return Result<bool>(true);
         }
-        public override void ScrollLineUp()
+        [nodiscard]
+        public override Result<bool> ScrollLineUp()
         {
             int trackPos;
-            GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            auto result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            if (result.Error()) return result;
             int prevVPos = vpos;
             if (vpos != vmin)
             {
                 --vpos;
                 SetScrollInfo(Handle(), ScrollBar.SB_VERT, ScrollInfoMask.SIF_POS, true, 0u, vpos, 0, 0);
-                GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                if (result.Error()) return result;
                 if (prevVPos != vpos)
                 {
                     scrolledChild->SetContentLocationInternal(Point(horizontalScrollUnit * hpos, verticalScrollUnit * vpos));
                     int yAmount = verticalScrollUnit * (prevVPos - vpos);
                     Rect updateRect = MakeUpdateRect(0, yAmount);
-                    ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                    result = ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                    if (result.Error()) return result;
                     if (scrolledChild->IsDoubleBuffered())
                     {
-                        scrolledChild->Invalidate();
+                        result = scrolledChild->Invalidate();
+                        if (result.Error()) return result;
                     }
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnVScroll(ScrollEventArgs& args)
+        protected override Result<bool> OnVScroll(ScrollEventArgs& args)
         {
-            base->OnVScroll(args);
+            auto result = base->OnVScroll(args);
+            if (result.Error()) return result;
             int trackPos;
-            GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            if (result.Error()) return result;
             int prevVPos = vpos;
             switch (args.request)
             {
@@ -296,56 +358,72 @@ namespace System.Windows
                 }
             }
             SetScrollInfo(Handle(), ScrollBar.SB_VERT, ScrollInfoMask.SIF_POS, true, 0u, vpos, 0, 0);
-            GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+            if (result.Error()) return result;
             if (prevVPos != vpos)
             {
                 scrolledChild->SetContentLocationInternal(Point(horizontalScrollUnit * hpos, verticalScrollUnit * vpos));
                 int yAmount = verticalScrollUnit * (prevVPos - vpos);
                 Rect updateRect = MakeUpdateRect(0, yAmount);
-                ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                result = ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                if (result.Error()) return result;
                 if (scrolledChild->IsDoubleBuffered())
                 {
-                    scrolledChild->Invalidate();
+                    result = scrolledChild->Invalidate();
+                    if (result.Error()) return result;
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void OnMouseWheel(MouseWheelEventArgs& args)
+        [nodiscard]
+        protected override Result<bool> OnMouseWheel(MouseWheelEventArgs& args)
         {
-            base->OnMouseWheel(args);
+            auto result = base->OnMouseWheel(args);
+            if (result.Error()) return result;
             if (!args.handled)
             {
                 if (verticalScrollBarShown)
                 {
                     int trackPos;
-                    GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                    result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                    if (result.Error()) return result;
                     int prevVPos = vpos;
                     vpos = cast<int>(vpos - args.distance / (2.0 * verticalScrollUnit));
                     SetScrollInfo(Handle(), ScrollBar.SB_VERT, ScrollInfoMask.SIF_POS, true, 0u, vpos, 0, 0);
-                    GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                    result = GetScrollInfo(Handle(), ScrollBar.SB_VERT, vpage, vpos, vmin, vmax, trackPos);
+                    if (result.Error()) return result;
                     if (prevVPos != vpos)
                     {
                         Point contentLocation(horizontalScrollUnit * hpos, verticalScrollUnit * vpos);
                         scrolledChild->SetContentLocationInternal(contentLocation);
                         int yAmount = verticalScrollUnit * (prevVPos - vpos);
                         Rect updateRect = MakeUpdateRect(0, yAmount);
-                        ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                        result = ScrollWindowEx(scrolledChild->Handle(), 0, yAmount, null, null, updateRect);
+                        if (result.Error()) return result;
                         if (scrolledChild->IsDoubleBuffered())
                         {
-                            scrolledChild->Invalidate();
+                            result = scrolledChild->Invalidate();
+                            if (result.Error()) return result;
                         }
                     }
                     args.handled = true;
                 }
             }
+            return Result<bool>(true);
         }
-        protected override void TranslateChildGraphics(Graphics& graphics)
+        protected override Result<bool> TranslateChildGraphics(Graphics& graphics)
         {
             int dx = -hpos * horizontalScrollUnit;
             int dy = -vpos * verticalScrollUnit;
             if (dx != 0 || dy != 0)
             {
-                graphics.TranslateTransformChecked(dx, dy);
+                auto result = graphics.TranslateTransform(dx, dy);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
             }
+            return Result<bool>(true);
         }
         protected override void TranslateMousePos(Point& location)
         {
@@ -361,15 +439,15 @@ namespace System.Windows
             location.x = location.x - dx;
             location.y = location.y - dy;
         }
-        internal nothrow override Control* GetFirstEnabledTabStopControl() const
+        internal override Control* GetFirstEnabledTabStopControl() const
         {
             return child->GetFirstEnabledTabStopControl();
         }
-        internal nothrow override Control* GetLastEnabledTabStopControl() const
+        internal override Control* GetLastEnabledTabStopControl() const
         {
             return child->GetLastEnabledTabStopControl();
         }
-        private nothrow Rect MakeUpdateRect(int xAmount, int yAmount)
+        private Rect MakeUpdateRect(int xAmount, int yAmount)
         {
             Point loc(0, 0);
             Size size = scrolledChild->GetSize();
@@ -393,7 +471,7 @@ namespace System.Windows
             updateRect.Inflate(horizontalScrollUnit, verticalScrollUnit);
             return updateRect;
         }
-        private Container container;
+        private ComponentContainer container;
         private Control* child;
         private Control* scrolledChild;
         private int verticalScrollUnit;
