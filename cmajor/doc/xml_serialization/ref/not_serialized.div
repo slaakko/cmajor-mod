@@ -1,0 +1,38 @@
+<div class="cm">
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">NotSerialized</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Foo</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="id">xml</span><span class="other">=</span><span class="string">"false"</span><span class="other">]</span></span>
+  <br/>
+  <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">NotSerialized</span><span class="other">*</span>&nbsp;<span class="id">notSerialized</span><span class="other">;</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+  <span xml:space="preserve"/>
+  <br/>
+  <span xml:space="preserve"><span class="kw">void</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">{</span></span>
+  <br/>
+  <span xml:space="preserve"><span class="other">}</span></span>
+  <br/>
+</div>

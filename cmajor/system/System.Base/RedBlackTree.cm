@@ -527,7 +527,8 @@ namespace System.Collections
     }
 
     public class RedBlackTree<KeyType, ValueType, KeyOfValue, Compare>
-        where KeyType is Semiregular and ValueType is Semiregular and KeySelectionFunction<KeyOfValue, KeyType, ValueType> and Compare is Relation and Compare.Domain is KeyType
+        where KeyType is Semiregular and ValueType is Semiregular and KeySelectionFunction<KeyOfValue, KeyType, ValueType> and
+        Compare is Relation and Compare.Domain is KeyType
     {
         public typedef RedBlackTreeNodeIterator<ValueType, const ValueType&, const ValueType*> ConstIterator;
         public typedef RedBlackTreeNodeIterator<ValueType, ValueType&, ValueType*> Iterator;
@@ -998,7 +999,8 @@ namespace System.Collections
         {
             if (that.Root() != null)
             {
-                SetRoot(Copy(that.Root(), header.Get()));
+                RedBlackTreeNode<ValueType>* root = Copy(that.Root(), header.Get());
+                SetRoot(root);
                 SetLeftmost(cast<RedBlackTreeNode<ValueType>*>(RedBlackTreeNodeBase.Min(Root())));
                 SetRightmost(cast<RedBlackTreeNode<ValueType>*>(RedBlackTreeNodeBase.Max(Root())));
                 count = that.Count();

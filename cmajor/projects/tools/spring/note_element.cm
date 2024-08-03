@@ -35,9 +35,9 @@ namespace spring
             return xmlElement;
         }
         [nodiscard]
-        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement, bool setName)
         {
-            auto result = base->FromXml(xmlElement);
+            auto result = base->FromXml(xmlElement, setName);
             if (result.Error()) return result;
             auto lineNodeSetResult = System.XPath.EvaluateToNodeSet("line", xmlElement);
             if (lineNodeSetResult.Error()) return Result<bool>(ErrorId(lineNodeSetResult.GetErrorId()));

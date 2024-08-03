@@ -1,7 +1,0 @@
-project System.Net.BinaryMessageProtocol;
-target=library;
-reference <../System.Lex/System.Lex.cmp>;
-reference <../System.Net.Sockets/System.Net.Sockets.cmp>;
-source <IO.cm>;
-source <Protocol.cm>;
-source <Registry.cm>;

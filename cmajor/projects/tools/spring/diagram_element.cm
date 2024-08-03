@@ -204,9 +204,17 @@ namespace spring
         public abstract DiagramElement* Clone() const;
         public abstract System.Xml.Element* ToXml() const;
         [nodiscard]
-        public virtual Result<bool> FromXml(System.Xml.Element* xmlElement)
+        public Result<bool> FromXml(System.Xml.Element* xmlElement)
         {
-            name = xmlElement->GetAttribute("name");
+            return FromXml(xmlElement, true);
+        }
+        [nodiscard]
+        public virtual Result<bool> FromXml(System.Xml.Element* xmlElement, bool setName)
+        {
+            if (setName)
+            {
+                name = xmlElement->GetAttribute("name");
+            }
             Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("bounds", xmlElement);
             if (nodeSetResult.Error())
             {
@@ -335,4 +343,29 @@ namespace spring
     {
         return DiagramElementFactory.Instance().CreateDiagramElement(xmlElementName);
     }
+
+    System.IO.TextWriter& operator<<(System.IO.TextWriter& writer, DiagramElement* element)
+    {
+        if (element != null)
+        {
+            UniquePtr<System.Xml.Element> xmlElement(element->ToXml());
+            System.Text.CodeFormatter formatter(writer);
+            auto result = xmlElement->Write(formatter);
+        }
+        else
+        {
+            auto result = writer.Write("null");
+        }
+        return writer;
+    }
+
+    System.IO.TextWriter& operator<<(System.IO.TextWriter& writer, const Map<DiagramElement*, DiagramElement*>& map)
+    {
+        for (const auto& pair : map)
+        {
+            writer << "(" << pair.first << ", " << pair.second << ")";
+        }
+        return writer;
+    }
 }
+

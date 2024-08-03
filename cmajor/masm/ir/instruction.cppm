@@ -27,10 +27,13 @@ public:
     virtual bool IsNoOperation() const { return false; }
     void SetSourceLineNumber(int sourceLineNumber_) { sourceLineNumber = sourceLineNumber_; }
     int SourceLineNumber() const { return sourceLineNumber; }
-    void WriteSourceLineNumber(util::CodeFormatter& formatter);
+    void WriteSourceLineNumber(util::CodeFormatter& formatter, Function& function);
+    int Index() const { return index; }
+    void SetIndex(int index_) { index = index_; }
 private:
     int32_t resultId;
     int sourceLineNumber;
+    int index;
 };
 
 class UnaryInstruction : public Instruction

@@ -1,0 +1,18 @@
+using System;
+using System.Xml;
+using System.Xml.Serialization;
+
+public class NotSerialized
+{
+}
+
+[xml]
+public class Foo
+{
+    [xml="false"]
+    private NotSerialized* notSerialized;
+}
+
+void main()
+{
+}

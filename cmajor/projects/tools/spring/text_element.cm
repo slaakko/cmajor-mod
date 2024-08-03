@@ -68,9 +68,9 @@ namespace spring
             xmlElement->SetAttribute("keyword", keyword);
             return xmlElement;
         }
-        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement, bool setName)
         {
-            Result<bool> result = base->FromXml(xmlElement);
+            Result<bool> result = base->FromXml(xmlElement, false);
             if (result.Error()) return result;
             auto lineNodeSetResult = System.XPath.EvaluateToNodeSet("line", xmlElement);
             if (lineNodeSetResult.Error()) return Result<bool>(ErrorId(lineNodeSetResult.GetErrorId()));

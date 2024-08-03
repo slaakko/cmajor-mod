@@ -1,2 +1,0 @@
-project JsonParser;
-parser <Json.parser>;

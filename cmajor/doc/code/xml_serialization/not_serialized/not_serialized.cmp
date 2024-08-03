@@ -1,0 +1,3 @@
+project not_serialized;
+target=program;
+source <not_serialized.cm>;

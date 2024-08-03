@@ -87,10 +87,13 @@ public:
     void ReplaceUsesWith(Value* value);
     virtual void ReplaceValue(Value* use, Value* value);
     virtual void Write(util::CodeFormatter& formatter) = 0;
+    void SetAssemblyIndex(int assemblyIndex_) { assemblyIndex = assemblyIndex_; }
+    int AssemblyIndex() const { return assemblyIndex; }
 private:
     OpCode opCode;
     int index;
     int regValueIndex;
+    int assemblyIndex;
     std::vector<Instruction*> users;
 };
 

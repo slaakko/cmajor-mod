@@ -1,0 +1,304 @@
+<diagram>
+ <classElement abstract="false" keyword="" name="AttributeElement">
+  <bounds h="20.831835" w="48.130051" x="11.000000" y="35.112106"/>
+  <operation abstract="false" name="+Measure(graphics: Graphics)">
+   <bounds h="3.943945" w="45.130051" x="12.500000" y="46.556053"/>
+  </operation>
+  <operation abstract="false" name="+Draw(grapjhics: Graphcis)">
+   <bounds h="3.943945" w="40.764423" x="12.500000" y="50.499996"/>
+  </operation>
+ </classElement>
+ <classElement abstract="true" keyword="" name="ContainerElement">
+  <bounds h="6.943945" w="32.042664" x="96.000000" y="35.112106"/>
+ </classElement>
+ <classElement abstract="false" keyword="" name="RelationshipElement">
+  <bounds h="6.943945" w="36.403633" x="93.819519" y="49.471966"/>
+ </classElement>
+ <classElement abstract="false" keyword="" name="OperationElement">
+  <bounds h="20.831835" w="48.130051" x="165.000000" y="35.584080"/>
+  <operation abstract="false" name="+Measure(graphics: Graphics)">
+   <bounds h="3.943945" w="45.130051" x="166.500000" y="47.028023"/>
+  </operation>
+  <operation abstract="false" name="+Draw(graphics: Graphics)">
+   <bounds h="3.943945" w="40.037338" x="166.500000" y="50.971966"/>
+  </operation>
+ </classElement>
+ <classElement abstract="true" keyword="" name="DiagramElement">
+  <bounds h="6.943945" w="29.866055" x="97.088303" y="10.000000"/>
+ </classElement>
+ <classElement abstract="false" keyword="" name="ClassElement">
+  <bounds h="6.943945" w="25.505081" x="96.000000" y="76.000000"/>
+ </classElement>
+ <classElement abstract="false" keyword="" name="ObjectElement">
+  <bounds h="6.943945" w="26.956154" x="21.586948" y="76.000000"/>
+ </classElement>
+ <classElement abstract="true" keyword="" name="OperationElementRep">
+  <bounds h="6.943945" w="38.403511" x="243.000000" y="42.999996"/>
+ </classElement>
+ <classElement abstract="false" keyword="" name="ConcreteOperation">
+  <bounds h="6.943945" w="33.678223" x="299.000000" y="38.000000"/>
+ </classElement>
+ <classElement abstract="false" keyword="" name="AbstractOperation">
+  <bounds h="6.943945" w="32.768204" x="299.000000" y="47.000000"/>
+ </classElement>
+ <relationshipElement cardinality="one" rkind="aggregation">
+  <bounds h="0.000000" w="34.689468" x="59.130051" y="52.943939"/>
+  <source connector="right.bottom" index="0" x="59.130051" y="52.943939">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="18.782888" x="62.130051" y="47.999992"/>
+    <line text="relationship"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="2" x="93.819519" y="52.943939">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="7.512262" x="83.307259" y="47.999992"/>
+    <line text="0..1"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="aggregation">
+  <bounds h="0.000000" w="36.957336" x="128.042664" y="38.584080"/>
+  <source connector="left.top" index="3" x="165.000000" y="38.584080">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="15.510222" x="146.489777" y="33.640137"/>
+    <line text="container"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="right.center" index="1" x="128.042664" y="38.584080">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="3.876827" x="131.042664" y="33.640137"/>
+    <line text="1"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="many" rkind="composition">
+  <bounds h="19.584084" w="70.559952" x="118.505081" y="56.415916"/>
+  <source connector="top.right" index="5" x="118.505081" y="76.000000">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="17.328716" x="120.156357" y="65.788109"/>
+    <line text="operations"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="bottom.center" index="3" x="189.065033" y="56.415916">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="3.331123" x="179.641968" y="53.162804"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="4.943945" w="3.331123" x="181.154297" y="58.611561"/>
+    <line text="*"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="many" rkind="composition">
+  <bounds h="20.056061" w="42.869949" x="56.130051" y="55.943939"/>
+  <source connector="top.left" index="5" x="99.000000" y="76.000000">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="15.508673" x="83.558853" y="63.832146"/>
+    <line text="attributes"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="bottom.right" index="0" x="56.130051" y="55.943939">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="3.331123" x="62.556557" y="54.006538"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="4.943945" w="3.331123" x="60.060772" y="59.341286"/>
+    <line text="*"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="combinedInheritance">
+  <bounds h="19.056055" w="154.000000" x="35.065025" y="16.943945"/>
+  <source connector="none.none" x="0.000000" y="0.000000">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <sourceEndPoint connector="top.center" index="0" x="35.065025" y="36.000000">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </sourceEndPoint>
+  <sourceEndPoint connector="top.center" index="3" x="189.065033" y="36.000000">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </sourceEndPoint>
+  <target connector="bottom.center" index="4" x="112.021332" y="16.943945">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="many" rkind="composition">
+  <bounds h="20.056061" w="0.000000" x="35.065025" y="55.943939"/>
+  <source connector="top.center" index="6" x="35.065025" y="76.000000">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="15.508673" x="35.065025" y="68.056053"/>
+    <line text="attributes"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="bottom.center" index="0" x="35.065025" y="55.943939">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="3.331123" x="35.065025" y="60.943939"/>
+    <line text="*"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="combinedInheritance">
+  <bounds h="9.000000" w="26.596497" x="281.403503" y="41.000000"/>
+  <source connector="none.none" x="0.000000" y="0.000000">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <sourceEndPoint connector="left.top" index="8" x="308.000000" y="41.000000">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </sourceEndPoint>
+  <sourceEndPoint connector="left.top" index="9" x="308.000000" y="50.000000">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </sourceEndPoint>
+  <target connector="right.center" index="7" x="281.403503" y="46.471970">
+   <primaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="aggregation">
+  <bounds h="0.000000" w="29.869949" x="213.130051" y="45.999996"/>
+  <source connector="left.top" index="7" x="243.000000" y="45.999996">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="15.693157" x="224.306839" y="41.056053"/>
+    <line text="operation"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="right.center" index="3" x="213.130051" y="45.999996">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="3.876827" x="216.130051" y="41.056053"/>
+    <line text="1"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="aggregation">
+  <bounds h="0.000000" w="36.869949" x="59.130051" y="38.112106"/>
+  <source connector="right.top" index="0" x="59.130051" y="38.112106">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="15.510222" x="62.130051" y="33.168159"/>
+    <line text="container"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="left.top" index="1" x="96.000000" y="38.112106">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="3.876827" x="89.123177" y="33.168159"/>
+    <line text="1"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="aggregation">
+  <bounds h="0.000008" w="34.776855" x="130.223145" y="53.415909"/>
+  <source connector="left.bottom" index="3" x="165.000000" y="53.415916">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="18.782888" x="143.217117" y="48.471970"/>
+    <line text="relationship"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <target connector="right.bottom" index="2" x="130.223145" y="53.415909">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="7.512262" x="133.223145" y="48.471962"/>
+    <line text="0..1"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="composition">
+  <bounds h="3.471977" w="49.071701" x="213.130051" y="49.943939"/>
+  <source connector="right.bottom" index="3" x="213.130051" y="53.415916">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="6.783625" x="216.130051" y="48.471970"/>
+    <line text="rep"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </source>
+  <routingPoint x="262.201752" y="53.415916"/>
+  <target connector="bottom.center" index="7" x="262.201752" y="49.943939">
+   <primaryText keyword="">
+    <bounds h="4.943945" w="3.876827" x="262.201752" y="52.943939"/>
+    <line text="1"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0.000000" w="0.000000" x="0.000000" y="0.000000"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+</diagram>

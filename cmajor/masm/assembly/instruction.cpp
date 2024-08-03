@@ -55,6 +55,16 @@ Instruction::Instruction(OpCode opCode_) : opCode(opCode_), nocolon(false)
 {
 }
 
+Instruction* Instruction::Clone() const
+{
+    Instruction* clone = new Instruction(opCode);
+    for (auto operand : operands)
+    {
+        clone->AddOperand(operand);
+    }
+    return clone;
+}
+
 void Instruction::SetLabel(const std::string& label_)
 {
     label = label_;

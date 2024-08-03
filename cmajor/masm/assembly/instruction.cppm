@@ -49,6 +49,7 @@ class Instruction
 {
 public:
     Instruction(OpCode opCode_);
+    Instruction* Clone() const;
     void SetLabel(const std::string& label_);
     const std::string& Label() const { return label; }
     void SetNoColon() { nocolon = true; }

@@ -1111,7 +1111,7 @@
       <span xml:space="preserve">&lt;/xmlBundle></span>
       <br/>
     </div>
-    <p>The object ID's enable the bundle in the reading side to restore object connections.</p>
+    <p>The object IDs enable the bundle in the reading side to restore object connections.</p>
     <p>Here's the code to read a bundle back from XML:</p>
     <div class="cm">
       <span xml:space="preserve"><span class="comment">// ...</span></span>
@@ -1213,5 +1213,47 @@
     <p>
       <a href="../code/xml_serialization/cmdoc/content/traffic_3/file/traffic_3.cm.html">Here's</a>
       the whole program.</p>
+    <h2>Not serializing a member variable</h2>
+    <p>
+      If you don't want to serialize a member variable, declare the member variable with <span class="kw">[xml="false"]</span>
+      attribute:</p>
+    <div class="cm">
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">using</span>&nbsp;<span class="id">System</span><span class="other">.</span><span class="id">Xml</span><span class="other">.</span><span class="id">Serialization</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">NotSerialized</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="other">[</span><span class="id">xml</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="kw">public</span>&nbsp;<span class="kw">class</span>&nbsp;<span class="id">Foo</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="other">[</span><span class="id">xml</span><span class="other">=</span><span class="string">"false"</span><span class="other">]</span></span>
+      <br/>
+      <span xml:space="preserve">&nbsp;&nbsp;&nbsp;&nbsp;<span class="kw">private</span>&nbsp;<span class="id">NotSerialized</span><span class="other">*</span>&nbsp;<span class="id">notSerialized</span><span class="other">;</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+      <span xml:space="preserve"/>
+      <br/>
+      <span xml:space="preserve"><span class="kw">void</span>&nbsp;<span class="id">main</span><span class="other">(</span><span class="other">)</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">{</span></span>
+      <br/>
+      <span xml:space="preserve"><span class="other">}</span></span>
+      <br/>
+    </div>
   </body>
 </html>

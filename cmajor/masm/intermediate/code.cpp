@@ -89,7 +89,8 @@ void RemoveUser(Instruction* user, Value* value)
     }
 }
 
-Instruction::Instruction(const soul::ast::Span& span_, Type* type_, OpCode opCode_) : Value(span_, ValueKind::instruction, type_), opCode(opCode_), index(-1), regValueIndex(-1)
+Instruction::Instruction(const soul::ast::Span& span_, Type* type_, OpCode opCode_) : 
+    Value(span_, ValueKind::instruction, type_), opCode(opCode_), index(-1), regValueIndex(-1), assemblyIndex(-1)
 {
 }
 

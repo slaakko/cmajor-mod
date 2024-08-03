@@ -1,0 +1,10 @@
+using System;
+using System.Collections;
+
+
+void main()
+{
+    Map<int, int> m;
+    m[0] = 0;
+    Map<int, int> n(m);
+}

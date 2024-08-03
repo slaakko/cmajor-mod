@@ -22,6 +22,7 @@ public:
     Context* Ctx() const { return context; }
     RegisterAllocator* RegAllocator() const { return registerAllocator; }
     int ExitLabelId() const;
+    cmajor::masm::assembly::Function* AssemblyFunction() const { return assemblyFunction; }
     Function* CurrentFunction() const { return currentFunction; }
     const soul::ast::Span& Span() const;
     void Emit(cmajor::masm::assembly::Instruction* assemblyInstruction);

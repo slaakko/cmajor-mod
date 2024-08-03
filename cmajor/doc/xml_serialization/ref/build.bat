@@ -17,3 +17,4 @@ cm2html -v writing_3.cm
 txt2html -v writing_output3.txt
 txt2html -v printing_output3.txt
 cm2html -v reading_3.cm
+cm2html -v not_serialized.cm

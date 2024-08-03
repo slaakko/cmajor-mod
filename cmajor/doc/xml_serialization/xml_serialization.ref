@@ -207,7 +207,7 @@
     <ref file="ref/writing_output3.div"/>
 
     <p>
-        The object ID's enable the bundle in the reading side to restore object connections.
+        The object IDs enable the bundle in the reading side to restore object connections.
     </p>
 
     <p>
@@ -225,6 +225,14 @@
     <p>
         <a href="../code/xml_serialization/cmdoc/content/traffic_3/file/traffic_3.cm.html">Here's</a> the whole program.
     </p>
+
+    <h2>Not serializing a member variable</h2>
+
+    <p>
+        If you don't want to serialize a member variable, declare the member variable with <span class="kw">[xml="false"]</span> attribute:
+    </p>
+
+    <ref file="ref/not_serialized.div"/>
 
 </body>
 </html>

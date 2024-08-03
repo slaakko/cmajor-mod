@@ -25,6 +25,7 @@ public:
     BasicBlock* CreateCleanupBasicBlock();
     void Finalize();
     int32_t GetNextResultNumber() { return nextResultNumber++; }
+    int GetNextInstructionIndex() { return nextInstructionIndex++; }
     Type* GetType(Context& context) override { return type; }
     Value* GetParam(int index) const;
     std::string Name(Context& context) override { return "@" + name; }
@@ -41,6 +42,7 @@ private:
     std::vector<std::unique_ptr<BasicBlock>> basicBlocks;
     std::vector<std::unique_ptr<BasicBlock>> cleanupBasicBlocks;
     int32_t nextResultNumber;
+    int nextInstructionIndex;
     int nextBBNumber;
     std::string comment;
     bool isInline;

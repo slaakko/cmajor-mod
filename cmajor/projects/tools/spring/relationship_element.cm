@@ -299,9 +299,9 @@ namespace spring
             }
             return xmlElement;
         }
-        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement, bool setName)
         {
-            Result<bool> result = base->FromXml(xmlElement);
+            Result<bool> result = base->FromXml(xmlElement, setName);
             if (result.Error()) return result;
             auto rkindResult = ParseRelationshipKindStr(xmlElement->GetAttribute("rkind"));
             if (rkindResult.Error()) return Result<bool>(ErrorId(rkindResult.GetErrorId()));

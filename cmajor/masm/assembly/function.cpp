@@ -45,6 +45,11 @@ void Function::AddInstruction(Instruction* inst)
     }
 }
 
+void Function::InsertInstruction(int index, Instruction* inst)
+{
+    body.insert(body.begin() + index, std::unique_ptr<Instruction>(inst));
+}
+
 void Function::SetActiveFunctionPart(FunctionPart activeFunctionPart_)
 {
     activeFunctionPart = activeFunctionPart_;

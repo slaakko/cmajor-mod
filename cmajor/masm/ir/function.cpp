@@ -13,7 +13,8 @@ import util;
 
 namespace cmajor::masm::ir {
 
-Function::Function(const std::string& name_, Type* type_, Context& context) : Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0), isInline(false), mdId(-1)
+Function::Function(const std::string& name_, Type* type_, Context& context) : 
+    Value(), name(name_), type(type_), nextResultNumber(0), nextBBNumber(0), isInline(false), mdId(-1), nextInstructionIndex(0)
 {
     Type* t = type;
     if (type->IsPtrType())

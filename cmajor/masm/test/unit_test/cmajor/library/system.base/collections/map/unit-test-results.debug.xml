@@ -1,28 +1,5 @@
 <results>
-    <int_string_map_value_test project="map" solution="">
-        <test count="20" exitCode="0" name="int_string_map_value_test">
-            <assertion index="0" line="68" result="passed"/>
-            <assertion index="1" line="69" result="passed"/>
-            <assertion index="2" line="73" result="passed"/>
-            <assertion index="3" line="74" result="passed"/>
-            <assertion index="4" line="76" result="passed"/>
-            <assertion index="5" line="78" result="passed"/>
-            <assertion index="6" line="79" result="passed"/>
-            <assertion index="7" line="80" result="passed"/>
-            <assertion index="8" line="83" result="passed"/>
-            <assertion index="9" line="84" result="passed"/>
-            <assertion index="10" line="85" result="passed"/>
-            <assertion index="11" line="88" result="passed"/>
-            <assertion index="12" line="89" result="passed"/>
-            <assertion index="13" line="90" result="passed"/>
-            <assertion index="14" line="94" result="passed"/>
-            <assertion index="15" line="95" result="passed"/>
-            <assertion index="16" line="96" result="passed"/>
-            <assertion index="17" line="98" result="passed"/>
-            <assertion index="18" line="99" result="passed"/>
-            <assertion index="19" line="100" result="passed"/>
-        </test>
-    </int_string_map_value_test>
+    <int_string_map_value_test executeError="" project="map" solution=""/>
     <int_string_map_iterator_test project="map" solution="">
         <test count="17" exitCode="0" name="int_string_map_iterator_test">
             <assertion index="0" line="109" result="passed"/>
@@ -246,30 +223,7 @@
             <assertion index="35" line="456" result="passed"/>
         </test>
     </int_sting_map_compare_test>
-    <string_int_map_value_test project="map" solution="">
-        <test count="20" exitCode="0" name="string_int_map_value_test">
-            <assertion index="0" line="68" result="passed"/>
-            <assertion index="1" line="69" result="passed"/>
-            <assertion index="2" line="73" result="passed"/>
-            <assertion index="3" line="74" result="passed"/>
-            <assertion index="4" line="76" result="passed"/>
-            <assertion index="5" line="78" result="passed"/>
-            <assertion index="6" line="79" result="passed"/>
-            <assertion index="7" line="80" result="passed"/>
-            <assertion index="8" line="83" result="passed"/>
-            <assertion index="9" line="84" result="passed"/>
-            <assertion index="10" line="85" result="passed"/>
-            <assertion index="11" line="88" result="passed"/>
-            <assertion index="12" line="89" result="passed"/>
-            <assertion index="13" line="90" result="passed"/>
-            <assertion index="14" line="94" result="passed"/>
-            <assertion index="15" line="95" result="passed"/>
-            <assertion index="16" line="96" result="passed"/>
-            <assertion index="17" line="98" result="passed"/>
-            <assertion index="18" line="99" result="passed"/>
-            <assertion index="19" line="100" result="passed"/>
-        </test>
-    </string_int_map_value_test>
+    <string_int_map_value_test executeError="" project="map" solution=""/>
     <string_int_map_iterator_test project="map" solution="">
         <test count="17" exitCode="0" name="string_int_map_iterator_test">
             <assertion index="0" line="109" result="passed"/>

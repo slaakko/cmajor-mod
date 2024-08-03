@@ -57,9 +57,9 @@ namespace spring
             }
             return xmlElement;
         }
-        public override Result<bool> FromXml(System.Xml.Element* xmlElement)
+        public override Result<bool> FromXml(System.Xml.Element* xmlElement, bool setName)
         {
-            Result<bool> result = base->FromXml(xmlElement);
+            Result<bool> result = base->FromXml(xmlElement, setName);
             if (result.Error()) return result;
             auto abstractResult = ParseBool(xmlElement->GetAttribute("abstract"));
             if (abstractResult.Error()) return Result<bool>(ErrorId(abstractResult.GetErrorId()));
