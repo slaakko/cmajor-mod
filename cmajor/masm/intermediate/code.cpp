@@ -16,7 +16,7 @@ namespace cmajor::masm::intermediate {
 const char* opCodeStr[] =
 {
     "store", "arg", "jmp", "branch", "call", "ret", "switch",
-    "not", "neg", "signextend", "zeroextend", "truncate", "bitcast", "inttofloat", "floattoint", "inttoptr", "ptrtoint",
+    "not", "neg", "signextend", "zeroextend", "fpextend", "truncate", "bitcast", "inttofloat", "floattoint", "inttoptr", "ptrtoint",
     "add", "sub", "mul", "div", "mod", "and", "or", "xor", "shl", "shr", "equal", "less",
     "param", "local", "load", "elemaddr", "ptroffset", "ptrdiff", "call", "nop"
 };
@@ -131,6 +131,7 @@ bool Instruction::IsValueInstruction() const
         case OpCode::neg:
         case OpCode::signextend:
         case OpCode::zeroextend:
+        case OpCode::fpextend:
         case OpCode::truncate:
         case OpCode::bitcast:
         case OpCode::inttofloat:
@@ -174,6 +175,7 @@ bool Instruction::IsUnaryInstruction() const
         case OpCode::neg:
         case OpCode::signextend:
         case OpCode::zeroextend:
+        case OpCode::fpextend:
         case OpCode::truncate:
         case OpCode::bitcast:
         case OpCode::inttofloat:
@@ -226,6 +228,7 @@ bool Instruction::RequiresLocalRegister() const
         case OpCode::neg:
         case OpCode::signextend:
         case OpCode::zeroextend:
+        case OpCode::fpextend:
         case OpCode::truncate:
         case OpCode::bitcast:
         case OpCode::inttofloat:
@@ -930,6 +933,34 @@ void ZeroExtendInstruction::Write(util::CodeFormatter& formatter)
 {
     WriteResult(formatter);
     formatter.Write(" = zeroextend ");
+    WriteArg(formatter);
+}
+
+FloatingPointExtendInstruction::FloatingPointExtendInstruction(const soul::ast::Span& span_, RegValue* result_, Value* operand_) :
+    UnaryInstruction(span_, result_, operand_, OpCode::fpextend)
+{
+}
+
+void FloatingPointExtendInstruction::Accept(Visitor& visitor)
+{
+    visitor.Visit(*this);
+}
+
+Instruction* FloatingPointExtendInstruction::Clone(CloneContext& cloneContext) const
+{
+    RegValue* result = cloneContext.CurrentFunction()->MakeRegValue(Span(), GetType(), Result()->Reg(), cloneContext.GetContext());
+    FloatingPointExtendInstruction* clone = new FloatingPointExtendInstruction(Span(), result, Operand()->Clone(cloneContext));
+    clone->SetIndex(Index());
+    clone->SetRegValueIndex(RegValueIndex());
+    result->SetInst(clone);
+    clone->AddToUses();
+    return clone;
+}
+
+void FloatingPointExtendInstruction::Write(util::CodeFormatter& formatter)
+{
+    WriteResult(formatter);
+    formatter.Write(" = fpextend ");
     WriteArg(formatter);
 }
 

@@ -482,6 +482,7 @@ parser IntermediateParser
         |   NEG{ span = lexer.GetSpan(pos); } Operand(context):negOp{ return new cmajor::masm::intermediate::NegInstruction(span, result, negOp); }
         |   SIGNEXTEND{ span = lexer.GetSpan(pos); } Operand(context):sextOp{ return new cmajor::masm::intermediate::SignExtendInstruction(span, result, sextOp); }
         |   ZEROEXTEND{ span = lexer.GetSpan(pos); } Operand(context):zextOp{ return new cmajor::masm::intermediate::ZeroExtendInstruction(span, result, zextOp); }
+        |   FPEXTEND{ span = lexer.GetSpan(pos); } Operand(context):fpextOp{ return new cmajor::masm::intermediate::FloatingPointExtendInstruction(span, result, fpextOp); }
         |   TRUNCATE{ span = lexer.GetSpan(pos); } Operand(context):truncOp{ return new cmajor::masm::intermediate::TruncateInstruction(span, result, truncOp); }
         |   BITCAST{ span = lexer.GetSpan(pos); } Operand(context):bcOp{ return new cmajor::masm::intermediate::BitcastInstruction(span, result, bcOp); }
         |   INTTOFLOAT{ span = lexer.GetSpan(pos); } Operand(context):ifOp{ return new cmajor::masm::intermediate::IntToFloatInstruction(span, result, ifOp); }

@@ -33,6 +33,7 @@ public:
     void Visit(NegInstruction& inst) override;
     void Visit(SignExtendInstruction& inst) override;
     void Visit(ZeroExtendInstruction& inst) override;
+    void Visit(FloatingPointExtendInstruction& inst) override;
     void Visit(TruncateInstruction& inst) override;
     void Visit(BitcastInstruction& inst) override;
     void Visit(IntToFloatInstruction& inst) override;
@@ -70,6 +71,8 @@ private:
     void CheckIntegerType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
     void CheckIntegerOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
     void CheckFloatingPointType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
+    void CheckFloatType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
+    void CheckDoubleType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
     void CheckPointerType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
     void CheckArithmeticPointerOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
     void CheckArithmeticPointerFunctionOrBooleanType(Type* type, const std::string& typeDescription, const soul::ast::Span& span);
@@ -169,6 +172,22 @@ void VerifierVisitor::CheckFloatingPointType(Type* type, const std::string& type
     if (!type->IsFloatingPointType())
     {
         Error("type check error: floating-point type expected, note: " + typeDescription + " is '" + type->Name() + "'", span, GetContext());
+    }
+}
+
+void VerifierVisitor::CheckFloatType(Type* type, const std::string& typeDescription, const soul::ast::Span& span)
+{
+    if (!type->IsFloatType())
+    {
+        Error("type check error: float type expected, note: " + typeDescription + " is '" + type->Name() + "'", span, GetContext());
+    }
+}
+
+void VerifierVisitor::CheckDoubleType(Type* type, const std::string& typeDescription, const soul::ast::Span& span)
+{
+    if (!type->IsDoubleType())
+    {
+        Error("type check error: double type expected, note: " + typeDescription + " is '" + type->Name() + "'", span, GetContext());
     }
 }
 
@@ -482,6 +501,15 @@ void VerifierVisitor::Visit(ZeroExtendInstruction& inst)
     {
         Error("code verification error: result type width expected to be greater than operand type width", inst.Span(), GetContext());
     }
+    CheckUnaryInstuction(&inst);
+    inst.AddToUses();
+    inst.SetIndex(index++);
+}
+
+void VerifierVisitor::Visit(FloatingPointExtendInstruction& inst)
+{
+    CheckFloatType(inst.Operand()->GetType(), "operand type", inst.Span());
+    CheckDoubleType(inst.Result()->GetType(), "result type", inst.Span());
     CheckUnaryInstuction(&inst);
     inst.AddToUses();
     inst.SetIndex(index++);

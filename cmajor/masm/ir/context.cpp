@@ -258,6 +258,14 @@ Instruction* Context::CreateZeroExtend(Value* arg, Type* destType)
     return inst;
 }
 
+Instruction* Context::CreateFloatingPointExtend(Value* arg, Type* destType)
+{
+    Instruction* inst = new FloatingPointExtendInstruction(arg, destType);
+    inst->SetSourceLineNumber(currentSourceLineNumber);
+    currentBasicBlock->AddInstruction(inst);
+    return inst;
+}
+
 Instruction* Context::CreateTruncate(Value* arg, Type* destType)
 {
     Instruction* inst = new TruncateInstruction(arg, destType);

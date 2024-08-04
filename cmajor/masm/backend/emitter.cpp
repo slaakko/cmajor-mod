@@ -846,7 +846,7 @@ void* MasmEmitter::CreateZExt(void* operand, void* destinationType)
 
 void* MasmEmitter::CreateFPExt(void* operand, void* destinationType)
 {
-    return operand;
+    return context->CreateFloatingPointExtend(static_cast<cmajor::masm::ir::Value*>(operand), static_cast<cmajor::masm::ir::Type*>(destinationType));
 }
 
 void* MasmEmitter::CreateTrunc(void* operand, void* destinationType)

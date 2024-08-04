@@ -1359,7 +1359,7 @@
   <doc id="System.Runtime">
     <desc>
       The System.Runtime module contains symbols for functions that form the lowest level of the Cmajor runtime library.
-      The functions themselves are defined in the <a href="../compiler/reference/rt/rt.html">rt</a> library written in C++.
+      The functions themselves are defined in libraries written in C++.
     </desc>
   </doc>
 

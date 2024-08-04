@@ -84,6 +84,7 @@ public:
     Instruction* CreateLess(Value* left, Value* right);
     Instruction* CreateSignExtend(Value* arg, Type* destType);
     Instruction* CreateZeroExtend(Value* arg, Type* destType);
+    Instruction* CreateFloatingPointExtend(Value* arg, Type* destType);
     Instruction* CreateTruncate(Value* arg, Type* destType);
     Instruction* CreateBitCast(Value* arg, Type* destType);
     Instruction* CreateIntToFloat(Value* arg, Type* destType);

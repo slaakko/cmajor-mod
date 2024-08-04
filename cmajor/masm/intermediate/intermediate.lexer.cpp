@@ -31,6 +31,7 @@ soul::ast::slg::TokenCollection* GetTokens()
         tokens.AddToken(new soul::ast::slg::Token(NEG, "NEG", "'neg'"));
         tokens.AddToken(new soul::ast::slg::Token(SIGNEXTEND, "SIGNEXTEND", "'signextend'"));
         tokens.AddToken(new soul::ast::slg::Token(ZEROEXTEND, "ZEROEXTEND", "'zeroextend'"));
+        tokens.AddToken(new soul::ast::slg::Token(FPEXTEND, "FPEXTEND", "'fpextend'"));
         tokens.AddToken(new soul::ast::slg::Token(TRUNCATE, "TRUNCATE", "'truncate'"));
         tokens.AddToken(new soul::ast::slg::Token(BITCAST, "BITCAST", "'bitcast'"));
         tokens.AddToken(new soul::ast::slg::Token(INTTOFLOAT, "INTTOFLOAT", "'inttofloat'"));
@@ -128,6 +129,7 @@ soul::lexer::KeywordMap<char>* GetKeywords<char>()
          { "neg", NEG },
          { "signextend", SIGNEXTEND },
          { "zeroextend", ZEROEXTEND },
+         { "fpextend", FPEXTEND },
          { "truncate", TRUNCATE },
          { "bitcast", BITCAST },
          { "inttofloat", INTTOFLOAT },
@@ -200,6 +202,7 @@ soul::lexer::KeywordMap<char8_t>* GetKeywords<char8_t>()
          { u8"neg", NEG },
          { u8"signextend", SIGNEXTEND },
          { u8"zeroextend", ZEROEXTEND },
+         { u8"fpextend", FPEXTEND },
          { u8"truncate", TRUNCATE },
          { u8"bitcast", BITCAST },
          { u8"inttofloat", INTTOFLOAT },
@@ -272,6 +275,7 @@ soul::lexer::KeywordMap<char16_t>* GetKeywords<char16_t>()
          { u"neg", NEG },
          { u"signextend", SIGNEXTEND },
          { u"zeroextend", ZEROEXTEND },
+         { u"fpextend", FPEXTEND },
          { u"truncate", TRUNCATE },
          { u"bitcast", BITCAST },
          { u"inttofloat", INTTOFLOAT },
@@ -344,6 +348,7 @@ soul::lexer::KeywordMap<char32_t>* GetKeywords<char32_t>()
          { U"neg", NEG },
          { U"signextend", SIGNEXTEND },
          { U"zeroextend", ZEROEXTEND },
+         { U"fpextend", FPEXTEND },
          { U"truncate", TRUNCATE },
          { U"bitcast", BITCAST },
          { U"inttofloat", INTTOFLOAT },

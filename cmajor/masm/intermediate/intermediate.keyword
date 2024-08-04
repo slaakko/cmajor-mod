@@ -9,7 +9,7 @@ keywords cmajor.masm.intermediate.keyword
 { 
     ("types", TYPES), ("data", DATA), ("function", FUNCTION), ("extern", EXTERN), ("inline", INLINE), ("metadata", METADATA),
     ("store", STORE), ("arg", ARG), ("jmp", JMP), ("branch", BRANCH), ("call", CALL), ("ret", RET), ("switch", SWITCH), ("nop", NOP), 
-    ("not", NOT), ("neg", NEG), ("signextend", SIGNEXTEND), ("zeroextend", ZEROEXTEND), ("truncate", TRUNCATE), ("bitcast", BITCAST),
+    ("not", NOT), ("neg", NEG), ("signextend", SIGNEXTEND), ("zeroextend", ZEROEXTEND), ("fpextend", FPEXTEND), ("truncate", TRUNCATE), ("bitcast", BITCAST),
     ("inttofloat", INTTOFLOAT), ("floattoint", FLOATTOINT), ("inttoptr", INTTOPTR), ("ptrtoint", PTRTOINT),
     ("add", ADD), ("sub", SUB), ("mul", MUL), ("div", DIV), ("mod", MOD), ("and", AND), ("or", OR), ("xor", XOR), ("shl", SHL), ("shr", SHR),
     ("equal", EQUAL), ("less", LESS), ("param", PARAM), ("local", LOCAL), ("load", LOAD), ("elemaddr", ELEMADDR), ("ptroffset", PTROFFSET), ("ptrdiff", PTRDIFF), 

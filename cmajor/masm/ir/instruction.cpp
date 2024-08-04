@@ -298,6 +298,18 @@ void ZeroExtendInstruction::Write(util::CodeFormatter& formatter, Function& func
     WriteSourceLineNumber(formatter, function);
 }
 
+FloatingPointExtendInstruction::FloatingPointExtendInstruction(Value* arg_, Type* destType_) : UnaryTypeInstruction(arg_, destType_)
+{
+}
+
+void FloatingPointExtendInstruction::Write(util::CodeFormatter& formatter, Function& function, Context& context)
+{
+    WriteResult(formatter, function, context);
+    formatter.Write(" = fpextend ");
+    WriteArg(formatter, context);
+    WriteSourceLineNumber(formatter, function);
+}
+
 TruncateInstruction::TruncateInstruction(Value* arg_, Type* destType_) : UnaryTypeInstruction(arg_, destType_)
 {
 }

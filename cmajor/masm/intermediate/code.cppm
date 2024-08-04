@@ -38,7 +38,7 @@ private:
 enum class OpCode : int
 {
     store, arg, jmp, branch, procedure_call, ret, switch_,
-    not_, neg, signextend, zeroextend, truncate, bitcast, inttofloat, floattoint, inttoptr, ptrtoint,
+    not_, neg, signextend, zeroextend, truncate, fpextend, bitcast, inttofloat, floattoint, inttoptr, ptrtoint,
     add, sub, mul, div_, mod, and_, or_, xor_, shl, shr, equal, less,
     param, local, load, elemaddr, ptroffset, ptrdiff, function_call,
     nop
@@ -292,6 +292,15 @@ class ZeroExtendInstruction : public UnaryInstruction
 {
 public:
     ZeroExtendInstruction(const soul::ast::Span& span_, RegValue* result_, Value* operand_);
+    void Accept(Visitor& visitor) override;
+    Instruction* Clone(CloneContext& cloneContext) const override;
+    void Write(util::CodeFormatter& formatter) override;
+};
+
+class FloatingPointExtendInstruction : public UnaryInstruction
+{
+public:
+    FloatingPointExtendInstruction(const soul::ast::Span& span_, RegValue* result_, Value* operand_);
     void Accept(Visitor& visitor) override;
     Instruction* Clone(CloneContext& cloneContext) const override;
     void Write(util::CodeFormatter& formatter) override;

@@ -180,6 +180,13 @@ public:
     void Write(util::CodeFormatter& formatter, Function& function, Context& context) override;
 };
 
+class FloatingPointExtendInstruction : public UnaryTypeInstruction
+{
+public:
+    FloatingPointExtendInstruction(Value* arg_, Type* destType_);
+    void Write(util::CodeFormatter& formatter, Function& function, Context& context) override;
+};
+
 class TruncateInstruction : public UnaryTypeInstruction
 {
 public:

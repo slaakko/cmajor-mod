@@ -33,6 +33,7 @@ public:
     void Visit(RetInstruction& inst) override;
     void Visit(SignExtendInstruction& inst) override;
     void Visit(ZeroExtendInstruction& inst) override;
+    void Visit(FloatingPointExtendInstruction& inst) override;
     void Visit(ParamInstruction& inst) override;
     void Visit(LoadInstruction& inst) override;
     void Visit(StoreInstruction& inst) override;

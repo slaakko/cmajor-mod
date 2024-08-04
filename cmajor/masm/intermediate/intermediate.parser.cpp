@@ -7463,6 +7463,7 @@ soul::parser::Match IntermediateParser<LexerT>::Operation(LexerT& lexer, cmajor:
     {
         case BITCAST:
         case FLOATTOINT:
+        case FPEXTEND:
         case INTTOFLOAT:
         case INTTOPTR:
         case NEG:
@@ -7739,6 +7740,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
     std::unique_ptr<cmajor::masm::intermediate::Value> negOp;
     std::unique_ptr<cmajor::masm::intermediate::Value> sextOp;
     std::unique_ptr<cmajor::masm::intermediate::Value> zextOp;
+    std::unique_ptr<cmajor::masm::intermediate::Value> fpextOp;
     std::unique_ptr<cmajor::masm::intermediate::Value> truncOp;
     std::unique_ptr<cmajor::masm::intermediate::Value> bcOp;
     std::unique_ptr<cmajor::masm::intermediate::Value> ifOp;
@@ -7969,7 +7971,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
             }
             break;
         }
-        case TRUNCATE:
+        case FPEXTEND:
         {
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch17 = &match;
@@ -7979,7 +7981,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                 {
                     int64_t pos = lexer.GetPos();
                     soul::parser::Match match(false);
-                    if (*lexer == TRUNCATE)
+                    if (*lexer == FPEXTEND)
                     {
                         ++lexer;
                         match.hit = true;
@@ -8002,14 +8004,14 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                     {
                         int64_t pos = lexer.GetPos();
                         soul::parser::Match match = IntermediateParser<LexerT>::Operand(lexer, context);
-                        truncOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
+                        fpextOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
                         if (match.hit)
                         {
                             {
                                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UnaryInstruction");
                                 #endif
-                                return soul::parser::Match(true, new cmajor::masm::intermediate::TruncateInstruction(span, result, truncOp.release()));
+                                return soul::parser::Match(true, new cmajor::masm::intermediate::FloatingPointExtendInstruction(span, result, fpextOp.release()));
                             }
                         }
                         *parentMatch20 = match;
@@ -8024,7 +8026,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
             }
             break;
         }
-        case BITCAST:
+        case TRUNCATE:
         {
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch21 = &match;
@@ -8034,7 +8036,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                 {
                     int64_t pos = lexer.GetPos();
                     soul::parser::Match match(false);
-                    if (*lexer == BITCAST)
+                    if (*lexer == TRUNCATE)
                     {
                         ++lexer;
                         match.hit = true;
@@ -8057,14 +8059,14 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                     {
                         int64_t pos = lexer.GetPos();
                         soul::parser::Match match = IntermediateParser<LexerT>::Operand(lexer, context);
-                        bcOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
+                        truncOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
                         if (match.hit)
                         {
                             {
                                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UnaryInstruction");
                                 #endif
-                                return soul::parser::Match(true, new cmajor::masm::intermediate::BitcastInstruction(span, result, bcOp.release()));
+                                return soul::parser::Match(true, new cmajor::masm::intermediate::TruncateInstruction(span, result, truncOp.release()));
                             }
                         }
                         *parentMatch24 = match;
@@ -8079,7 +8081,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
             }
             break;
         }
-        case INTTOFLOAT:
+        case BITCAST:
         {
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch25 = &match;
@@ -8089,7 +8091,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                 {
                     int64_t pos = lexer.GetPos();
                     soul::parser::Match match(false);
-                    if (*lexer == INTTOFLOAT)
+                    if (*lexer == BITCAST)
                     {
                         ++lexer;
                         match.hit = true;
@@ -8112,14 +8114,14 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                     {
                         int64_t pos = lexer.GetPos();
                         soul::parser::Match match = IntermediateParser<LexerT>::Operand(lexer, context);
-                        ifOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
+                        bcOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
                         if (match.hit)
                         {
                             {
                                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UnaryInstruction");
                                 #endif
-                                return soul::parser::Match(true, new cmajor::masm::intermediate::IntToFloatInstruction(span, result, ifOp.release()));
+                                return soul::parser::Match(true, new cmajor::masm::intermediate::BitcastInstruction(span, result, bcOp.release()));
                             }
                         }
                         *parentMatch28 = match;
@@ -8134,7 +8136,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
             }
             break;
         }
-        case FLOATTOINT:
+        case INTTOFLOAT:
         {
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch29 = &match;
@@ -8144,7 +8146,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                 {
                     int64_t pos = lexer.GetPos();
                     soul::parser::Match match(false);
-                    if (*lexer == FLOATTOINT)
+                    if (*lexer == INTTOFLOAT)
                     {
                         ++lexer;
                         match.hit = true;
@@ -8167,14 +8169,14 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                     {
                         int64_t pos = lexer.GetPos();
                         soul::parser::Match match = IntermediateParser<LexerT>::Operand(lexer, context);
-                        fiOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
+                        ifOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
                         if (match.hit)
                         {
                             {
                                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UnaryInstruction");
                                 #endif
-                                return soul::parser::Match(true, new cmajor::masm::intermediate::FloatToIntInstruction(span, result, fiOp.release()));
+                                return soul::parser::Match(true, new cmajor::masm::intermediate::IntToFloatInstruction(span, result, ifOp.release()));
                             }
                         }
                         *parentMatch32 = match;
@@ -8189,7 +8191,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
             }
             break;
         }
-        case INTTOPTR:
+        case FLOATTOINT:
         {
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch33 = &match;
@@ -8199,7 +8201,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                 {
                     int64_t pos = lexer.GetPos();
                     soul::parser::Match match(false);
-                    if (*lexer == INTTOPTR)
+                    if (*lexer == FLOATTOINT)
                     {
                         ++lexer;
                         match.hit = true;
@@ -8222,14 +8224,14 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                     {
                         int64_t pos = lexer.GetPos();
                         soul::parser::Match match = IntermediateParser<LexerT>::Operand(lexer, context);
-                        ipOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
+                        fiOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
                         if (match.hit)
                         {
                             {
                                 #ifdef SOUL_PARSER_DEBUG_SUPPORT
                                 if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UnaryInstruction");
                                 #endif
-                                return soul::parser::Match(true, new cmajor::masm::intermediate::IntToPtrInstruction(span, result, ipOp.release()));
+                                return soul::parser::Match(true, new cmajor::masm::intermediate::FloatToIntInstruction(span, result, fiOp.release()));
                             }
                         }
                         *parentMatch36 = match;
@@ -8244,7 +8246,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
             }
             break;
         }
-        case PTRTOINT:
+        case INTTOPTR:
         {
             soul::parser::Match match(false);
             soul::parser::Match* parentMatch37 = &match;
@@ -8254,7 +8256,7 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                 {
                     int64_t pos = lexer.GetPos();
                     soul::parser::Match match(false);
-                    if (*lexer == PTRTOINT)
+                    if (*lexer == INTTOPTR)
                     {
                         ++lexer;
                         match.hit = true;
@@ -8277,6 +8279,61 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                     {
                         int64_t pos = lexer.GetPos();
                         soul::parser::Match match = IntermediateParser<LexerT>::Operand(lexer, context);
+                        ipOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
+                        if (match.hit)
+                        {
+                            {
+                                #ifdef SOUL_PARSER_DEBUG_SUPPORT
+                                if (parser_debug_write_to_log) soul::lexer::WriteSuccessToLog(lexer, parser_debug_match_pos, "UnaryInstruction");
+                                #endif
+                                return soul::parser::Match(true, new cmajor::masm::intermediate::IntToPtrInstruction(span, result, ipOp.release()));
+                            }
+                        }
+                        *parentMatch40 = match;
+                    }
+                    *parentMatch39 = match;
+                }
+                *parentMatch37 = match;
+            }
+            if (match.hit)
+            {
+                *parentMatch0 = match;
+            }
+            break;
+        }
+        case PTRTOINT:
+        {
+            soul::parser::Match match(false);
+            soul::parser::Match* parentMatch41 = &match;
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch42 = &match;
+                {
+                    int64_t pos = lexer.GetPos();
+                    soul::parser::Match match(false);
+                    if (*lexer == PTRTOINT)
+                    {
+                        ++lexer;
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        span = lexer.GetSpan(pos);
+                    }
+                    *parentMatch42 = match;
+                }
+                *parentMatch41 = match;
+            }
+            if (match.hit)
+            {
+                soul::parser::Match match(false);
+                soul::parser::Match* parentMatch43 = &match;
+                {
+                    soul::parser::Match match(false);
+                    soul::parser::Match* parentMatch44 = &match;
+                    {
+                        int64_t pos = lexer.GetPos();
+                        soul::parser::Match match = IntermediateParser<LexerT>::Operand(lexer, context);
                         piOp.reset(static_cast<cmajor::masm::intermediate::Value*>(match.value));
                         if (match.hit)
                         {
@@ -8287,11 +8344,11 @@ soul::parser::Match IntermediateParser<LexerT>::UnaryInstruction(LexerT& lexer, 
                                 return soul::parser::Match(true, new cmajor::masm::intermediate::PtrToIntInstruction(span, result, piOp.release()));
                             }
                         }
-                        *parentMatch40 = match;
+                        *parentMatch44 = match;
                     }
-                    *parentMatch39 = match;
+                    *parentMatch43 = match;
                 }
-                *parentMatch37 = match;
+                *parentMatch41 = match;
             }
             if (match.hit)
             {

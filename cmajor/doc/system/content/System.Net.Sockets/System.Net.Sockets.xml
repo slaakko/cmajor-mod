@@ -17,28 +17,28 @@
           <ctorsDtors>
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#constructor_NetworkStream_EB90812B4B0677D30555A443E7CE8F9EC6BF2049" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#constructor_NetworkStream_EB90812B4B0677D30555A443E7CE8F9EC6BF2049" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="constructor_NetworkStream_EB90812B4B0677D30555A443E7CE8F9EC6BF2049" kind="Constructor" line="13" name="NetworkStream" specifiers="public">
             <parameters>
-             <parameter id="parameter_socket__C4C706F155518FAD04851B3EDCCF5FA035BFD668" name="socket_" type="7da5866d-fd9a-aad6-3080-9ca15f93dd09"/>
+             <parameter id="parameter_socket__C4C706F155518FAD04851B3EDCCF5FA035BFD668" name="socket_" type="2c8ba295-c1f1-fda0-8a2c-e6abaa65367b"/>
             </parameters>
            </ctorDtor>
           </ctorsDtors>
           <functions>
-           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14" kind="Member Function" line="36" name="Read" returnType="d182e369-35e0-53ab-adc9-c0aaacc30bf9" specifiers="public override">
+           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Read_NetworkStream_A74C43812A39D3EF85EA29E227FA9FC7DCE63F14" kind="Member Function" line="36" name="Read" returnType="048cd1c4-90e2-88a5-4eeb-2d960cfee0fd" specifiers="public override">
             <parameters>
-             <parameter id="parameter_buf_DA8DDE7FFC8030CA9CAF33A5F9824C5A7679527C" name="buf" type="febb4c5a-fda1-0f48-8652-33301cac7ad6"/>
-             <parameter id="parameter_count_BFDDC7504092ACE7C489A7D7DBA040F81B093D56" name="count" type="d1798abb-6847-d6a1-dd86-a895d250ca26"/>
+             <parameter id="parameter_buf_DA8DDE7FFC8030CA9CAF33A5F9824C5A7679527C" name="buf" type="22e87e0a-21aa-dd6a-a793-c6b7ab5f5097"/>
+             <parameter id="parameter_count_BFDDC7504092ACE7C489A7D7DBA040F81B093D56" name="count" type="0ca5ce73-e943-269d-f945-640fa675c6e0"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C" kind="Member Function" line="17" name="ReadByte" returnType="b6fe7020-47ee-4f3d-93d2-1872eb7d1b18" specifiers="public override"/>
-           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6" kind="Member Function" line="56" name="Socket" returnType="5c0b8a06-7933-ca6d-9a7f-1b6c31aca16d" specifiers="public"/>
-           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5" kind="Member Function" line="47" name="Write" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public override">
+           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_ReadByte_NetworkStream_C8C3BCC6DB9C6947A69F479B11DFAD259457A01C" kind="Member Function" line="17" name="ReadByte" returnType="6b0be0ae-ccf0-68e3-3e2f-be278795e04b" specifiers="public override"/>
+           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Socket_NetworkStream_012F72785D6A9A495C7D09CA0190D0D0564093E6" kind="Member Function" line="56" name="Socket" returnType="65df6f7f-5cda-f9ce-fb7f-530039eff827" specifiers="public"/>
+           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Write_NetworkStream_75E1197C6F044989D50B073D8D9643F0561C59D5" kind="Member Function" line="47" name="Write" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public override">
             <parameters>
-             <parameter id="parameter_x_7BE07D153A4CF7980028490A696F2E28906A3F5B" name="x" type="fa14b418-8975-2411-6786-45913ddf5a5a"/>
+             <parameter id="parameter_x_7BE07D153A4CF7980028490A696F2E28906A3F5B" name="x" type="e7abf10c-9429-e764-a6bb-a1e2ba85acf7"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4" kind="Member Function" line="52" name="Write" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public override">
+           <function docPath="../../System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4" extPath="System.Net.Sockets/doc/class_NetworkStream_AA4F1AFBBC9C38BAA40A538770075C7A586FF105.html#member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4" fileName="System.Net.Sockets/NetworkStream.cm" filePath="../../System.Net.Sockets/file/NetworkStream.cm.html" id="member_function_Write_NetworkStream_9070030AFFA7C094811B1D5B61018331C191D3D4" kind="Member Function" line="52" name="Write" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public override">
             <parameters>
-             <parameter id="parameter_buf_363E2293107731E476AA87805CD7A3874566C4EF" name="buf" type="febb4c5a-fda1-0f48-8652-33301cac7ad6"/>
-             <parameter id="parameter_count_BB1D1782AF6A08CF6DEC6D29A871D3F7D480C15F" name="count" type="d1798abb-6847-d6a1-dd86-a895d250ca26"/>
+             <parameter id="parameter_buf_363E2293107731E476AA87805CD7A3874566C4EF" name="buf" type="22e87e0a-21aa-dd6a-a793-c6b7ab5f5097"/>
+             <parameter id="parameter_count_BB1D1782AF6A08CF6DEC6D29A871D3F7D480C15F" name="count" type="0ca5ce73-e943-269d-f945-640fa675c6e0"/>
             </parameters>
            </function>
           </functions>
@@ -50,23 +50,23 @@
           <ctorsDtors>
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#constructor_TcpListener_BF51D8BEC9E85FDA0AB28B2A4333A9158FDEB96C" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#constructor_TcpListener_BF51D8BEC9E85FDA0AB28B2A4333A9158FDEB96C" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="constructor_TcpListener_BF51D8BEC9E85FDA0AB28B2A4333A9158FDEB96C" kind="Constructor" line="13" name="TcpListener" specifiers="public">
             <parameters>
-             <parameter id="parameter_port__C1239FAD9D4FB0DC3580D9A765B57ACA8AFCE051" name="port_" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_port__C1239FAD9D4FB0DC3580D9A765B57ACA8AFCE051" name="port_" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </ctorDtor>
           </ctorsDtors>
           <functions>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF" kind="Member Function" line="67" name="AcceptSocket" returnType="4ce711e6-8e92-78c8-3324-23dc6afabf22" specifiers="public"/>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Socket_TcpListener_A69B763C3EBA67BB9D41803CF4E4E31D1A84B67B" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Socket_TcpListener_A69B763C3EBA67BB9D41803CF4E4E31D1A84B67B" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Socket_TcpListener_A69B763C3EBA67BB9D41803CF4E4E31D1A84B67B" kind="Member Function" line="81" name="Socket" returnType="5c0b8a06-7933-ca6d-9a7f-1b6c31aca16d" specifiers="public"/>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132" kind="Member Function" line="22" name="Start" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public"/>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE" kind="Member Function" line="31" name="Start" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_AcceptSocket_TcpListener_6821A74F872C24CD809ED3F7EA9D57A60D314DDF" kind="Member Function" line="67" name="AcceptSocket" returnType="b18022a1-814f-8385-4405-786e620df0f8" specifiers="public"/>
+           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Socket_TcpListener_A69B763C3EBA67BB9D41803CF4E4E31D1A84B67B" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Socket_TcpListener_A69B763C3EBA67BB9D41803CF4E4E31D1A84B67B" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Socket_TcpListener_A69B763C3EBA67BB9D41803CF4E4E31D1A84B67B" kind="Member Function" line="81" name="Socket" returnType="65df6f7f-5cda-f9ce-fb7f-530039eff827" specifiers="public"/>
+           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Start_TcpListener_4480CFDEF2BD170323CCDCB6A4F83814B01EE132" kind="Member Function" line="22" name="Start" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public"/>
+           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Start_TcpListener_547F46D7120436F7FE1427783B09AD5A5F0BC2FE" kind="Member Function" line="31" name="Start" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
             <parameters>
-             <parameter id="parameter_backlog_00AF6F90F9C5C4BA874EB350A0031E1922D02C54" name="backlog" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_backlog_00AF6F90F9C5C4BA874EB350A0031E1922D02C54" name="backlog" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92" kind="Member Function" line="45" name="Stop" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public"/>
+           <function docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92" fileName="System.Net.Sockets/TcpListener.cm" filePath="../../System.Net.Sockets/file/TcpListener.cm.html" id="member_function_Stop_TcpListener_74B7D4D42C0C37F38685AD7677862356A55F0F92" kind="Member Function" line="45" name="Stop" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public"/>
           </functions>
           <variables>
-           <variable docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_variable_port_2E9287CAA66375414A0F27D2812CD541B6B3DA9C" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_variable_port_2E9287CAA66375414A0F27D2812CD541B6B3DA9C" id="member_variable_port_2E9287CAA66375414A0F27D2812CD541B6B3DA9C" name="port" specifiers="private" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+           <variable docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_variable_port_2E9287CAA66375414A0F27D2812CD541B6B3DA9C" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_variable_port_2E9287CAA66375414A0F27D2812CD541B6B3DA9C" id="member_variable_port_2E9287CAA66375414A0F27D2812CD541B6B3DA9C" name="port" specifiers="private" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
            <variable docPath="../../System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_variable_socket_E339C4806BA1F7A00E1433E1C58028A947987093" extPath="System.Net.Sockets/doc/class_TcpListener_113AF33A61527FBDFBFD58155CAD89A443C91B0B.html#member_variable_socket_E339C4806BA1F7A00E1433E1C58028A947987093" id="member_variable_socket_E339C4806BA1F7A00E1433E1C58028A947987093" name="socket" specifiers="private" type="class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C"/>
           </variables>
          </class>
@@ -75,104 +75,104 @@
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#default_constructor_TcpSocket_993AEA4CBABACA8F3EB0898E95FED5886417251D" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#default_constructor_TcpSocket_993AEA4CBABACA8F3EB0898E95FED5886417251D" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="default_constructor_TcpSocket_993AEA4CBABACA8F3EB0898E95FED5886417251D" kind="Constructor" line="18" name="TcpSocket" specifiers="public"/>
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#move_constructor_TcpSocket_E47B6707C108D65263AA34CA17AC9A039280F8C2" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#move_constructor_TcpSocket_E47B6707C108D65263AA34CA17AC9A039280F8C2" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="move_constructor_TcpSocket_E47B6707C108D65263AA34CA17AC9A039280F8C2" kind="Constructor" line="46" name="TcpSocket" specifiers="public">
             <parameters>
-             <parameter id="parameter_that_12261C47E49129D9D151D1962C9BE7412830C646" name="that" type="7da5866d-fd9a-aad6-3080-9ca15f93dd09"/>
+             <parameter id="parameter_that_12261C47E49129D9D151D1962C9BE7412830C646" name="that" type="2c8ba295-c1f1-fda0-8a2c-e6abaa65367b"/>
             </parameters>
            </ctorDtor>
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#constructor_TcpSocket_0D93EE131897533F8CE31DFBB085E68683CE5C01" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#constructor_TcpSocket_0D93EE131897533F8CE31DFBB085E68683CE5C01" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="constructor_TcpSocket_0D93EE131897533F8CE31DFBB085E68683CE5C01" kind="Constructor" line="27" name="TcpSocket" specifiers="public">
             <parameters>
-             <parameter id="parameter_node_7CA6EBA754104B4218A4678ACBEC622DB889EF65" name="node" type="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c"/>
-             <parameter id="parameter_service_2F15CEC72C0790B853DD14F60D997D0ECEC6307A" name="service" type="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c"/>
+             <parameter id="parameter_node_7CA6EBA754104B4218A4678ACBEC622DB889EF65" name="node" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
+             <parameter id="parameter_service_2F15CEC72C0790B853DD14F60D997D0ECEC6307A" name="service" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
             </parameters>
            </ctorDtor>
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#constructor_TcpSocket_D706ACAF09A63C2CF916B20186EE3655ECE36C3B" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#constructor_TcpSocket_D706ACAF09A63C2CF916B20186EE3655ECE36C3B" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="constructor_TcpSocket_D706ACAF09A63C2CF916B20186EE3655ECE36C3B" kind="Constructor" line="40" name="TcpSocket" specifiers="public">
             <parameters>
-             <parameter id="parameter_node_FE92C324BBBCDCFD9A761B5C62EC66755DF12A83" name="node" type="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c"/>
-             <parameter id="parameter_port_95ADCB45E5224D838A5A6EE2592A9D8101AB3B0E" name="port" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_node_FE92C324BBBCDCFD9A761B5C62EC66755DF12A83" name="node" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
+             <parameter id="parameter_port_95ADCB45E5224D838A5A6EE2592A9D8101AB3B0E" name="port" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </ctorDtor>
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#constructor_TcpSocket_35FD6F7AD68ADD18731218717894C94C223FC870" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#constructor_TcpSocket_35FD6F7AD68ADD18731218717894C94C223FC870" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="constructor_TcpSocket_35FD6F7AD68ADD18731218717894C94C223FC870" kind="Constructor" line="43" name="TcpSocket" specifiers="public">
             <parameters>
-             <parameter id="parameter_handle__874637E9682F4C17D088F952403AFC582BD09C2C" name="handle_" type="89fa4a00-7a9e-9620-881a-8e2d1b0b3744"/>
+             <parameter id="parameter_handle__874637E9682F4C17D088F952403AFC582BD09C2C" name="handle_" type="5561bab6-5a39-10d7-449e-ddee30ad6bc7"/>
             </parameters>
            </ctorDtor>
            <ctorDtor docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#destructor_TcpSocket_5D88E4C8E2FE373689FBA6627269BC407A17E8E3" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#destructor_TcpSocket_5D88E4C8E2FE373689FBA6627269BC407A17E8E3" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="destructor_TcpSocket_5D88E4C8E2FE373689FBA6627269BC407A17E8E3" kind="Destructor" line="58" name="~TcpSocket" specifiers="public override"/>
           </ctorsDtors>
           <functions>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Accept_TcpSocket_55C5498C951594E3B4742DCF0B99A4CE7F135279" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Accept_TcpSocket_55C5498C951594E3B4742DCF0B99A4CE7F135279" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Accept_TcpSocket_55C5498C951594E3B4742DCF0B99A4CE7F135279" kind="Member Function" line="170" name="Accept" returnType="4ce711e6-8e92-78c8-3324-23dc6afabf22" specifiers="public"/>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Bind_TcpSocket_BE4984F0CC986F03C57BFA37ECB84B03ECAD5613" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Bind_TcpSocket_BE4984F0CC986F03C57BFA37ECB84B03ECAD5613" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Bind_TcpSocket_BE4984F0CC986F03C57BFA37ECB84B03ECAD5613" kind="Member Function" line="138" name="Bind" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Accept_TcpSocket_55C5498C951594E3B4742DCF0B99A4CE7F135279" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Accept_TcpSocket_55C5498C951594E3B4742DCF0B99A4CE7F135279" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Accept_TcpSocket_55C5498C951594E3B4742DCF0B99A4CE7F135279" kind="Member Function" line="170" name="Accept" returnType="b18022a1-814f-8385-4405-786e620df0f8" specifiers="public"/>
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Bind_TcpSocket_BE4984F0CC986F03C57BFA37ECB84B03ECAD5613" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Bind_TcpSocket_BE4984F0CC986F03C57BFA37ECB84B03ECAD5613" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Bind_TcpSocket_BE4984F0CC986F03C57BFA37ECB84B03ECAD5613" kind="Member Function" line="138" name="Bind" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
             <parameters>
-             <parameter id="parameter_port_195AA5F5315B1241B60D78C656E3138DA33B65DB" name="port" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_port_195AA5F5315B1241B60D78C656E3138DA33B65DB" name="port" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Close_TcpSocket_ED69A46990DDFF6A77F274E5F9A89CE776E6FB50" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Close_TcpSocket_ED69A46990DDFF6A77F274E5F9A89CE776E6FB50" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Close_TcpSocket_ED69A46990DDFF6A77F274E5F9A89CE776E6FB50" kind="Member Function" line="75" name="Close" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public"/>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_B3CB2B8D96C042B050D2071C9504E8D986738B30" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_B3CB2B8D96C042B050D2071C9504E8D986738B30" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Connect_TcpSocket_B3CB2B8D96C042B050D2071C9504E8D986738B30" kind="Member Function" line="116" name="Connect" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Close_TcpSocket_ED69A46990DDFF6A77F274E5F9A89CE776E6FB50" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Close_TcpSocket_ED69A46990DDFF6A77F274E5F9A89CE776E6FB50" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Close_TcpSocket_ED69A46990DDFF6A77F274E5F9A89CE776E6FB50" kind="Member Function" line="75" name="Close" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public"/>
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_B3CB2B8D96C042B050D2071C9504E8D986738B30" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_B3CB2B8D96C042B050D2071C9504E8D986738B30" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Connect_TcpSocket_B3CB2B8D96C042B050D2071C9504E8D986738B30" kind="Member Function" line="116" name="Connect" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
             <parameters>
-             <parameter id="parameter_node_C9DE842DCD1635367119D03E3F779D1AB1D5264C" name="node" type="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c"/>
-             <parameter id="parameter_service_A08B50C434B28070A7B93ED793D85AD435644D39" name="service" type="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c"/>
+             <parameter id="parameter_node_C9DE842DCD1635367119D03E3F779D1AB1D5264C" name="node" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
+             <parameter id="parameter_service_A08B50C434B28070A7B93ED793D85AD435644D39" name="service" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_2DFC4F0DF2E73C2B31484806D4678B574AEB2E53" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_2DFC4F0DF2E73C2B31484806D4678B574AEB2E53" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Connect_TcpSocket_2DFC4F0DF2E73C2B31484806D4678B574AEB2E53" kind="Member Function" line="107" name="Connect" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_2DFC4F0DF2E73C2B31484806D4678B574AEB2E53" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Connect_TcpSocket_2DFC4F0DF2E73C2B31484806D4678B574AEB2E53" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Connect_TcpSocket_2DFC4F0DF2E73C2B31484806D4678B574AEB2E53" kind="Member Function" line="107" name="Connect" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
             <parameters>
-             <parameter id="parameter_node_493D676B750E40FA42A838950095B32682F7F32A" name="node" type="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c"/>
-             <parameter id="parameter_port_8B6DEB5736B79DA53651935E4A42B4732E371948" name="port" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_node_493D676B750E40FA42A838950095B32682F7F32A" name="node" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
+             <parameter id="parameter_port_8B6DEB5736B79DA53651935E4A42B4732E371948" name="port" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Listen_TcpSocket_7FE642C6EAD6C66BD65E203D7AAB8F417211431F" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Listen_TcpSocket_7FE642C6EAD6C66BD65E203D7AAB8F417211431F" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Listen_TcpSocket_7FE642C6EAD6C66BD65E203D7AAB8F417211431F" kind="Member Function" line="154" name="Listen" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Listen_TcpSocket_7FE642C6EAD6C66BD65E203D7AAB8F417211431F" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Listen_TcpSocket_7FE642C6EAD6C66BD65E203D7AAB8F417211431F" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Listen_TcpSocket_7FE642C6EAD6C66BD65E203D7AAB8F417211431F" kind="Member Function" line="154" name="Listen" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
             <parameters>
-             <parameter id="parameter_backlog_87BF328635262FEFB7C87F0472E1AA7467223BEF" name="backlog" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_backlog_87BF328635262FEFB7C87F0472E1AA7467223BEF" name="backlog" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Receive_TcpSocket_5C880BB9CD4260CAD239A7A4D90AD37B69D84CA0" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Receive_TcpSocket_5C880BB9CD4260CAD239A7A4D90AD37B69D84CA0" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Receive_TcpSocket_5C880BB9CD4260CAD239A7A4D90AD37B69D84CA0" kind="Member Function" line="240" name="Receive" returnType="b6fe7020-47ee-4f3d-93d2-1872eb7d1b18" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Receive_TcpSocket_5C880BB9CD4260CAD239A7A4D90AD37B69D84CA0" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Receive_TcpSocket_5C880BB9CD4260CAD239A7A4D90AD37B69D84CA0" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Receive_TcpSocket_5C880BB9CD4260CAD239A7A4D90AD37B69D84CA0" kind="Member Function" line="240" name="Receive" returnType="6b0be0ae-ccf0-68e3-3e2f-be278795e04b" specifiers="public">
             <parameters>
-             <parameter id="parameter_buffer_3DDA96FB9E46580BE217FF3E3D7DE72E346F2553" name="buffer" type="febb4c5a-fda1-0f48-8652-33301cac7ad6"/>
-             <parameter id="parameter_count_47B3C90721A07BE2C63424173BBA7E5E54C0C50F" name="count" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_buffer_3DDA96FB9E46580BE217FF3E3D7DE72E346F2553" name="buffer" type="22e87e0a-21aa-dd6a-a793-c6b7ab5f5097"/>
+             <parameter id="parameter_count_47B3C90721A07BE2C63424173BBA7E5E54C0C50F" name="count" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Send_TcpSocket_61612787D08BCB0591BADCD1FC453AA22954650E" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Send_TcpSocket_61612787D08BCB0591BADCD1FC453AA22954650E" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Send_TcpSocket_61612787D08BCB0591BADCD1FC453AA22954650E" kind="Member Function" line="203" name="Send" returnType="b6fe7020-47ee-4f3d-93d2-1872eb7d1b18" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Send_TcpSocket_61612787D08BCB0591BADCD1FC453AA22954650E" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Send_TcpSocket_61612787D08BCB0591BADCD1FC453AA22954650E" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Send_TcpSocket_61612787D08BCB0591BADCD1FC453AA22954650E" kind="Member Function" line="203" name="Send" returnType="6b0be0ae-ccf0-68e3-3e2f-be278795e04b" specifiers="public">
             <parameters>
-             <parameter id="parameter_buffer_2E69FFF48617B4E29C52A5333EC84A88BC781A19" name="buffer" type="febb4c5a-fda1-0f48-8652-33301cac7ad6"/>
-             <parameter id="parameter_count_D5573ACDE290A0FA6740419F4442A606B1A97C12" name="count" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_buffer_2E69FFF48617B4E29C52A5333EC84A88BC781A19" name="buffer" type="22e87e0a-21aa-dd6a-a793-c6b7ab5f5097"/>
+             <parameter id="parameter_count_D5573ACDE290A0FA6740419F4442A606B1A97C12" name="count" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_SendAll_TcpSocket_1EA6CC261EE993A30081E7CE4FF1D949729AFE51" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_SendAll_TcpSocket_1EA6CC261EE993A30081E7CE4FF1D949729AFE51" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_SendAll_TcpSocket_1EA6CC261EE993A30081E7CE4FF1D949729AFE51" kind="Member Function" line="219" name="SendAll" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_SendAll_TcpSocket_1EA6CC261EE993A30081E7CE4FF1D949729AFE51" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_SendAll_TcpSocket_1EA6CC261EE993A30081E7CE4FF1D949729AFE51" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_SendAll_TcpSocket_1EA6CC261EE993A30081E7CE4FF1D949729AFE51" kind="Member Function" line="219" name="SendAll" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
             <parameters>
-             <parameter id="parameter_buffer_06E27BAFC139EFFDA6B6E1AC0A91932D15574557" name="buffer" type="febb4c5a-fda1-0f48-8652-33301cac7ad6"/>
-             <parameter id="parameter_count_763A22460823C5D7AF6FF17996C5052B2EB53F5B" name="count" type="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+             <parameter id="parameter_buffer_06E27BAFC139EFFDA6B6E1AC0A91932D15574557" name="buffer" type="22e87e0a-21aa-dd6a-a793-c6b7ab5f5097"/>
+             <parameter id="parameter_count_763A22460823C5D7AF6FF17996C5052B2EB53F5B" name="count" type="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Shutdown_TcpSocket_20B83890544FB7597A1045D244BA5BEA1268BD52" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Shutdown_TcpSocket_20B83890544FB7597A1045D244BA5BEA1268BD52" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Shutdown_TcpSocket_20B83890544FB7597A1045D244BA5BEA1268BD52" kind="Member Function" line="186" name="Shutdown" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Shutdown_TcpSocket_20B83890544FB7597A1045D244BA5BEA1268BD52" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_function_Shutdown_TcpSocket_20B83890544FB7597A1045D244BA5BEA1268BD52" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="member_function_Shutdown_TcpSocket_20B83890544FB7597A1045D244BA5BEA1268BD52" kind="Member Function" line="186" name="Shutdown" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
             <parameters>
              <parameter id="parameter_mode_4D5D76D60FDDBCD0AC725B095499494EC7BF8B4A" name="mode" type="enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D"/>
             </parameters>
            </function>
-           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#move_assignment_op_assign_TcpSocket_2346EA334D75288179431386614A2762876EC926" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#move_assignment_op_assign_TcpSocket_2346EA334D75288179431386614A2762876EC926" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="move_assignment_op_assign_TcpSocket_2346EA334D75288179431386614A2762876EC926" kind="Member Function" line="52" name="operator=" returnType="8d55b242-0e4a-bd79-69ce-f88c3a7817c8" specifiers="public">
+           <function docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#move_assignment_op_assign_TcpSocket_2346EA334D75288179431386614A2762876EC926" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#move_assignment_op_assign_TcpSocket_2346EA334D75288179431386614A2762876EC926" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="move_assignment_op_assign_TcpSocket_2346EA334D75288179431386614A2762876EC926" kind="Member Function" line="52" name="operator=" returnType="902235b0-efba-2ad9-45b6-babb217797a7" specifiers="public">
             <parameters>
-             <parameter id="parameter_that_B120D2BCF27B9C6EA1ABB68E4B3D6D060AD15B4E" name="that" type="7da5866d-fd9a-aad6-3080-9ca15f93dd09"/>
+             <parameter id="parameter_that_B120D2BCF27B9C6EA1ABB68E4B3D6D060AD15B4E" name="that" type="2c8ba295-c1f1-fda0-8a2c-e6abaa65367b"/>
             </parameters>
            </function>
           </functions>
           <variables>
-           <variable docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_connected_BC3DFC2910DBEE09BE3C681508B48A677A49321D" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_connected_BC3DFC2910DBEE09BE3C681508B48A677A49321D" id="member_variable_connected_BC3DFC2910DBEE09BE3C681508B48A677A49321D" name="connected" specifiers="private" type="62648608-f879-5d95-a4eb-d2cf52584d4a"/>
-           <variable docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_handle_5ABE9E0D38D981EDF6D407B3788EFA80DA42D084" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_handle_5ABE9E0D38D981EDF6D407B3788EFA80DA42D084" id="member_variable_handle_5ABE9E0D38D981EDF6D407B3788EFA80DA42D084" name="handle" specifiers="private" type="89fa4a00-7a9e-9620-881a-8e2d1b0b3744"/>
-           <variable docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_shutdown_3DFE83368C364BEE78D191B3A5DDD0979856072E" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_shutdown_3DFE83368C364BEE78D191B3A5DDD0979856072E" id="member_variable_shutdown_3DFE83368C364BEE78D191B3A5DDD0979856072E" name="shutdown" specifiers="private" type="62648608-f879-5d95-a4eb-d2cf52584d4a"/>
+           <variable docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_connected_BC3DFC2910DBEE09BE3C681508B48A677A49321D" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_connected_BC3DFC2910DBEE09BE3C681508B48A677A49321D" id="member_variable_connected_BC3DFC2910DBEE09BE3C681508B48A677A49321D" name="connected" specifiers="private" type="459b4621-91d8-c8e8-2760-c3c17c571c11"/>
+           <variable docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_handle_5ABE9E0D38D981EDF6D407B3788EFA80DA42D084" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_handle_5ABE9E0D38D981EDF6D407B3788EFA80DA42D084" id="member_variable_handle_5ABE9E0D38D981EDF6D407B3788EFA80DA42D084" name="handle" specifiers="private" type="5561bab6-5a39-10d7-449e-ddee30ad6bc7"/>
+           <variable docPath="../../System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_shutdown_3DFE83368C364BEE78D191B3A5DDD0979856072E" extPath="System.Net.Sockets/doc/class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C.html#member_variable_shutdown_3DFE83368C364BEE78D191B3A5DDD0979856072E" id="member_variable_shutdown_3DFE83368C364BEE78D191B3A5DDD0979856072E" name="shutdown" specifiers="private" type="459b4621-91d8-c8e8-2760-c3c17c571c11"/>
           </variables>
          </class>
         </classes>
         <functions>
-         <function docPath="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97" extPath="System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97" fileName="System.Net.Sockets/StringNetIO.cm" filePath="../../System.Net.Sockets/file/StringNetIO.cm.html" id="function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97" kind="Function" line="36" name="ReceiveString" returnType="310bfba5-4554-2251-c800-cdd298384f18" specifiers="public">
+         <function docPath="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97" extPath="System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97" fileName="System.Net.Sockets/StringNetIO.cm" filePath="../../System.Net.Sockets/file/StringNetIO.cm.html" id="function_ReceiveString_FEACB5FFB7A455875DAD65E8ED62B8E92EA4EB97" kind="Function" line="36" name="ReceiveString" returnType="c632db8b-22ae-7acd-2bbb-dc9b36635fba" specifiers="public">
           <parameters>
-           <parameter id="parameter_socket_58670EE62430FB903582810F89193560A3AAC26C" name="socket" type="5c0b8a06-7933-ca6d-9a7f-1b6c31aca16d"/>
+           <parameter id="parameter_socket_58670EE62430FB903582810F89193560A3AAC26C" name="socket" type="65df6f7f-5cda-f9ce-fb7f-530039eff827"/>
           </parameters>
          </function>
-         <function docPath="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41" extPath="System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41" fileName="System.Net.Sockets/StringNetIO.cm" filePath="../../System.Net.Sockets/file/StringNetIO.cm.html" id="function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41" kind="Function" line="11" name="SendString" returnType="24948bd0-29a1-9034-7ab1-20915cc23542" specifiers="public">
+         <function docPath="../../System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41" extPath="System.Net.Sockets/doc/ns_System.Net.Sockets.html#function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41" fileName="System.Net.Sockets/StringNetIO.cm" filePath="../../System.Net.Sockets/file/StringNetIO.cm.html" id="function_SendString_92EDBA6654F1CA3F5587286915030092FC5D9B41" kind="Function" line="11" name="SendString" returnType="69bba3b1-c597-d58d-e839-ac55e1802420" specifiers="public">
           <parameters>
-           <parameter id="parameter_socket_4ABB4ED8A3B2D13514D9ADFF43A3C69B5E6CA3D8" name="socket" type="5c0b8a06-7933-ca6d-9a7f-1b6c31aca16d"/>
-           <parameter id="parameter_s_20C6A250D0F0D22F706118C2ACCEAFA7DEF7D2EB" name="s" type="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c"/>
+           <parameter id="parameter_socket_4ABB4ED8A3B2D13514D9ADFF43A3C69B5E6CA3D8" name="socket" type="65df6f7f-5cda-f9ce-fb7f-530039eff827"/>
+           <parameter id="parameter_s_20C6A250D0F0D22F706118C2ACCEAFA7DEF7D2EB" name="s" type="0e994faf-3e1d-f80c-f710-ccafa378ea07"/>
           </parameters>
          </function>
         </functions>
         <enumTypes>
-         <enumType docPath="../../System.Net.Sockets/doc/enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D.html" extPath="System.Net.Sockets/doc/enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D.html" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D" line="11" name="ShutdownMode" specifiers="public" underlyingType="fe979f73-254f-f39f-fcbd-38dba55d8da5">
+         <enumType docPath="../../System.Net.Sockets/doc/enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D.html" extPath="System.Net.Sockets/doc/enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D.html" fileName="System.Net.Sockets/TcpSocket.cm" filePath="../../System.Net.Sockets/file/TcpSocket.cm.html" id="enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D" line="11" name="ShutdownMode" specifiers="public" underlyingType="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65">
           <typedefs/>
           <enumConstants>
            <enumConstant docPath="../../System.Net.Sockets/doc/enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D.html#enumeration_constant_receive_70B4AB0B582FE093FD5F561869C9F632F27A217D" extPath="System.Net.Sockets/doc/enumerated_type_ShutdownMode_F52114B05CC436E0AC5DDC4F8D31571053B1D29D.html#enumeration_constant_receive_70B4AB0B582FE093FD5F561869C9F632F27A217D" id="enumeration_constant_receive_70B4AB0B582FE093FD5F561869C9F632F27A217D" name="receive" value="0"/>
@@ -189,61 +189,61 @@
   </namespaces>
  </namespace>
  <types>
-  <derivedType id="7da5866d-fd9a-aad6-3080-9ca15f93dd09" name="TcpSocket&amp;&amp;">
+  <derivedType id="2c8ba295-c1f1-fda0-8a2c-e6abaa65367b" name="TcpSocket&amp;&amp;">
    <derivation baseType="class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C"/>
    <derivation name="&amp;&amp;"/>
   </derivedType>
-  <basicType id="d1798abb-6847-d6a1-dd86-a895d250ca26" name="long"/>
-  <specialization id="d182e369-35e0-53ab-adc9-c0aaacc30bf9" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="0ca5ce73-e943-269d-f945-640fa675c6e0" name="long"/>
+  <specialization id="048cd1c4-90e2-88a5-4eeb-2d960cfee0fd" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
    <templateArgumentTypes>
-    <templateArgumentType ref="d1798abb-6847-d6a1-dd86-a895d250ca26"/>
+    <templateArgumentType ref="0ca5ce73-e943-269d-f945-640fa675c6e0"/>
    </templateArgumentTypes>
   </specialization>
-  <basicType id="fa14b418-8975-2411-6786-45913ddf5a5a" name="byte"/>
-  <derivedType id="febb4c5a-fda1-0f48-8652-33301cac7ad6" name="byte*">
-   <derivation baseType="fa14b418-8975-2411-6786-45913ddf5a5a"/>
+  <basicType id="e7abf10c-9429-e764-a6bb-a1e2ba85acf7" name="byte"/>
+  <derivedType id="22e87e0a-21aa-dd6a-a793-c6b7ab5f5097" name="byte*">
+   <derivation baseType="e7abf10c-9429-e764-a6bb-a1e2ba85acf7"/>
    <derivation name="*"/>
   </derivedType>
-  <basicType id="fe979f73-254f-f39f-fcbd-38dba55d8da5" name="int"/>
-  <specialization id="b6fe7020-47ee-4f3d-93d2-1872eb7d1b18" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65" name="int"/>
+  <specialization id="6b0be0ae-ccf0-68e3-3e2f-be278795e04b" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
    <templateArgumentTypes>
-    <templateArgumentType ref="fe979f73-254f-f39f-fcbd-38dba55d8da5"/>
+    <templateArgumentType ref="1a4242f6-72b0-315a-c7db-2a3cdcfb2c65"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="5c0b8a06-7933-ca6d-9a7f-1b6c31aca16d" name="TcpSocket&amp;">
+  <derivedType id="65df6f7f-5cda-f9ce-fb7f-530039eff827" name="TcpSocket&amp;">
    <derivation baseType="class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="62648608-f879-5d95-a4eb-d2cf52584d4a" name="bool"/>
-  <specialization id="24948bd0-29a1-9034-7ab1-20915cc23542" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <basicType id="459b4621-91d8-c8e8-2760-c3c17c571c11" name="bool"/>
+  <specialization id="69bba3b1-c597-d58d-e839-ac55e1802420" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
    <templateArgumentTypes>
-    <templateArgumentType ref="62648608-f879-5d95-a4eb-d2cf52584d4a"/>
+    <templateArgumentType ref="459b4621-91d8-c8e8-2760-c3c17c571c11"/>
    </templateArgumentTypes>
   </specialization>
-  <specialization id="4ce711e6-8e92-78c8-3324-23dc6afabf22" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="b18022a1-814f-8385-4405-786e620df0f8" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
    <templateArgumentTypes>
     <templateArgumentType ref="class_TcpSocket_B38B3FFF6145E508D0B49BC2B9D97F255711ED1C"/>
    </templateArgumentTypes>
   </specialization>
-  <basicType id="317a7f91-8787-e6fc-d544-68d57ad84386" name="char"/>
-  <specialization id="a5e55f14-0acd-dd34-d31e-20033647009e" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
+  <basicType id="f438d5eb-c88c-615c-997d-7be9a1bfaabe" name="char"/>
+  <specialization id="6d955a40-5c5c-8f8d-c763-2d0773377025" name="String" primaryType="class_String_CF8CFC76E94ACA12B05A3C1C384DFA2026CAADAC">
    <templateArgumentTypes>
-    <templateArgumentType ref="317a7f91-8787-e6fc-d544-68d57ad84386"/>
+    <templateArgumentType ref="f438d5eb-c88c-615c-997d-7be9a1bfaabe"/>
    </templateArgumentTypes>
   </specialization>
-  <derivedType id="ea0bc0c5-18aa-38c6-f485-0a8285dbbc3c" name="const String&lt;char>&amp;">
+  <derivedType id="0e994faf-3e1d-f80c-f710-ccafa378ea07" name="const String&lt;char>&amp;">
    <derivation name="const"/>
-   <derivation baseType="a5e55f14-0acd-dd34-d31e-20033647009e"/>
+   <derivation baseType="6d955a40-5c5c-8f8d-c763-2d0773377025"/>
    <derivation name="&amp;"/>
   </derivedType>
-  <basicType id="8d55b242-0e4a-bd79-69ce-f88c3a7817c8" name="void"/>
-  <derivedType id="89fa4a00-7a9e-9620-881a-8e2d1b0b3744" name="void*">
-   <derivation baseType="8d55b242-0e4a-bd79-69ce-f88c3a7817c8"/>
+  <basicType id="902235b0-efba-2ad9-45b6-babb217797a7" name="void"/>
+  <derivedType id="5561bab6-5a39-10d7-449e-ddee30ad6bc7" name="void*">
+   <derivation baseType="902235b0-efba-2ad9-45b6-babb217797a7"/>
    <derivation name="*"/>
   </derivedType>
-  <specialization id="310bfba5-4554-2251-c800-cdd298384f18" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
+  <specialization id="c632db8b-22ae-7acd-2bbb-dc9b36635fba" name="Result" primaryType="class_Result_5FC25A52FA7533D21092048C597AE676BCE7B79A">
    <templateArgumentTypes>
-    <templateArgumentType ref="a5e55f14-0acd-dd34-d31e-20033647009e"/>
+    <templateArgumentType ref="6d955a40-5c5c-8f8d-c763-2d0773377025"/>
    </templateArgumentTypes>
   </specialization>
  </types>

@@ -1,9 +1,11 @@
 <solutionSettings>
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
-    <openFiles/>
-    <currentOpenFile value=""/>
-    <currentCursorLine value="73"/>
+    <openFiles>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/spring/relationships.cm"/>
+    </openFiles>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/spring/relationships.cm"/>
+    <currentCursorLine value="1779"/>
     <breakpoints/>
     <expandedProjects>
         <item value="spring"/>

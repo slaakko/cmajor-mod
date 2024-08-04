@@ -769,6 +769,37 @@ void EmitZeroExtend(ZeroExtendInstruction& inst, CodeGenerator& codeGenerator)
     }
 }
 
+void EmitFloatingPointExtend(FloatingPointExtendInstruction& inst, CodeGenerator& codeGenerator)
+{
+    cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
+    cmajor::masm::assembly::RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+    if (regGroup)
+    {
+        int64_t resultSize = inst.Result()->GetType()->Size();
+        int64_t operandSize = inst.Operand()->GetType()->Size();
+        cmajor::masm::assembly::Register* resultReg = regGroup->GetReg(resultSize);
+        cmajor::masm::assembly::Register* sourceReg = MakeFloatingPointRegOperand(
+            inst.Operand(), assemblyContext->GetGlobalReg(operandSize, cmajor::masm::assembly::RegisterGroupKind::xmm0), codeGenerator);
+        cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::NOP;
+        if (resultSize == 8 && operandSize == 4)
+        {
+            opCode = cmajor::masm::assembly::OpCode::CVTSS2SD;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting fpextend instruction: invalid floating-point types");
+        }
+        cmajor::masm::assembly::Instruction* convertInst = new cmajor::masm::assembly::Instruction(opCode);
+        convertInst->AddOperand(resultReg);
+        convertInst->AddOperand(sourceReg);
+        codeGenerator.Emit(convertInst);
+    }
+    else
+    {
+        codeGenerator.Error("error emitting fpextend instruction: reg group for inst not found");
+    }
+}
+
 void EmitIntegerTruncate(TruncateInstruction& inst, CodeGenerator& codeGenerator)
 {
     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
@@ -2713,6 +2744,12 @@ void CodeGenerator::Visit(ZeroExtendInstruction& inst)
 {
     inst.SetAssemblyIndex(assemblyFunction->Index());
     EmitZeroExtend(inst, *this);
+}
+
+void CodeGenerator::Visit(FloatingPointExtendInstruction& inst)
+{
+    inst.SetAssemblyIndex(assemblyFunction->Index());
+    EmitFloatingPointExtend(inst, *this);
 }
 
 void CodeGenerator::Visit(ParamInstruction& inst)

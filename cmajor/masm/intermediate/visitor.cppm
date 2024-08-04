@@ -27,6 +27,7 @@ class NotInstruction;
 class NegInstruction;
 class SignExtendInstruction;
 class ZeroExtendInstruction;
+class FloatingPointExtendInstruction;
 class TruncateInstruction;
 class BitcastInstruction;
 class IntToFloatInstruction;
@@ -97,6 +98,7 @@ public:
     virtual void Visit(NegInstruction& inst) {}
     virtual void Visit(SignExtendInstruction& inst) {}
     virtual void Visit(ZeroExtendInstruction& inst) {}
+    virtual void Visit(FloatingPointExtendInstruction& inst) {}
     virtual void Visit(TruncateInstruction& inst) {}
     virtual void Visit(BitcastInstruction& inst) {}
     virtual void Visit(IntToFloatInstruction& inst) {}

@@ -121,6 +121,10 @@ namespace System.Windows
         {
             return PointF(x, y);
         }
+        public string ToString() const
+        {
+            return "[" + ToString(x) + ", " + ToString(y) + "]";
+        }
         public float x;
         public float y;
     }
@@ -153,7 +157,7 @@ namespace System.Windows
     public Vector UnitVector(const Vector& v)
     {
         float length = v.Length();
-        return v * (1 / length);
+        return v * (1.0f / length);
     }
 
     // Dot product of vectors u and v:
@@ -266,6 +270,10 @@ namespace System.Windows
         public Vector ToVector() const
         {
             return Vector(end.x - start.x, end.y - start.y);
+        }
+        public string ToString() const
+        {
+            return "[" + start.ToString() + ", " + end.ToString() + "]";
         }
         public PointF start;
         public PointF end;
