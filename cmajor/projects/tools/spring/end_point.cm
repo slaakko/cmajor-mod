@@ -163,15 +163,22 @@ namespace spring
             if (element != null)
             {
                 ContainerElement* containerElement = element->GetContainerElement();
-                auto it = containerElementIndexMap.Find(containerElement);
-                if (it != containerElementIndexMap.End())
+                if (containerElement != null)
                 {
-                    index = it->second;
+                    auto it = containerElementIndexMap.Find(containerElement);
+                    if (it != containerElementIndexMap.End())
+                    {
+                        index = it->second;
+                    }
+                    else
+                    {
+                        auto errorId = AllocateError("EndPoint.SetIndex: index for container element '" + containerElement->Name() + "' not found");
+                        return Result<bool>(ErrorId(errorId));
+                    }
                 }
                 else
                 {
-                    auto errorId = AllocateError("EndPoint.SetIndex: index for container element '" + containerElement->Name() + "' not found");
-                    return Result<bool>(ErrorId(errorId));
+                    index = -1;
                 }
             }
             else

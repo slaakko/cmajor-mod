@@ -93,7 +93,7 @@ namespace spring
         {
             containerElement = containerElement_;
         }
-        public inline ContainerElement* GetContainerElement() const
+        public override ContainerElement* GetContainerElement() const
         {
             return containerElement;
         }

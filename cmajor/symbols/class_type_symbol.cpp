@@ -1310,25 +1310,22 @@ void ClassTypeSymbol::InitVmt(std::vector<FunctionSymbol*>& vmtToInit)
     {
         baseClass->InitVmt(vmtToInit);
     }
-    std::vector<FunctionSymbol*> virtualFunctions;
+    std::vector<FunctionSymbol*> functions;
     if (destructor)
     {
         if (destructor->IsVirtual() || destructor->IsOverride())
         {
-            virtualFunctions.push_back(destructor);
+            functions.push_back(destructor);
         }
     }
     for (FunctionSymbol* memberFunction : memberFunctions)
     {
-        if (memberFunction->IsVirtualAbstractOrOverride())
-        {
-            virtualFunctions.push_back(memberFunction);
-        }
+        functions.push_back(memberFunction);
     }
-    int n = virtualFunctions.size();
+    int n = functions.size();
     for (int i = 0; i < n; ++i)
     {
-        FunctionSymbol* f = virtualFunctions[i];
+        FunctionSymbol* f = functions[i];
         bool found = false;
         int m = vmtToInit.size();
         for (int j = 0; j < m; ++j)
@@ -1338,7 +1335,7 @@ void ClassTypeSymbol::InitVmt(std::vector<FunctionSymbol*>& vmtToInit)
             {
                 if (!f->IsOverride())
                 {
-                    throw Exception("overriding function should be declared with override specifier", f->GetFullSpan());
+                    throw Exception("overriding function should be declared with override specifier", f->GetFullSpan(), v->GetFullSpan());
                 }
                 f->SetVmtIndex(j);
                 vmtToInit[j] = f;
@@ -1352,8 +1349,11 @@ void ClassTypeSymbol::InitVmt(std::vector<FunctionSymbol*>& vmtToInit)
             {
                 throw Exception("no suitable function to override ('" + util::ToUtf8(f->FullName()) + "')", f->GetFullSpan());
             }
-            f->SetVmtIndex(m);
-            vmtToInit.push_back(f);
+            if (f->IsVirtualAbstractOrOverride())
+            {
+                f->SetVmtIndex(m);
+                vmtToInit.push_back(f);
+            }
         }
     }
 }

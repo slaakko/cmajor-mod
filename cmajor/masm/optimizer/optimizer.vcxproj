@@ -117,6 +117,8 @@
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
       <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>.;..;../..;../../..</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -137,6 +139,7 @@
       <EnableModules>true</EnableModules>
       <BuildStlModules>true</BuildStlModules>
       <DisableSpecificWarnings>5050;4267</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>.;..;../..;../../..</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -147,6 +150,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="identity_operation_remover.cpp" />
+    <ClCompile Include="identity_operation_remover.cppm" />
     <ClCompile Include="inline_expander.cpp" />
     <ClCompile Include="inline_expander.cppm" />
     <ClCompile Include="optimize.cpp" />

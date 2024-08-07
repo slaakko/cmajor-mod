@@ -61,7 +61,7 @@ namespace System.Xml
         {
             SetAttribute(System.Lex.Span(), -1, name, value);
         }
-        public bool HasAttributes() const
+        public override bool HasAttributes() const
         {
             return !attributeMap.IsEmpty();
         }

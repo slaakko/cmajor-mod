@@ -1,4 +1,3 @@
 project rvalue;
 source <a.cm>;
-source <b.cm>;
 source <main.cm>;

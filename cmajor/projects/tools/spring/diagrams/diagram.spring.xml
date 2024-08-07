@@ -1,0 +1,785 @@
+<diagram>
+ <classElement abstract="false" keyword="datatype" name="SizeF">
+  <bounds h="21.775779724121093" w="20.240285873413085" x="87.206108093261718" y="6"/>
+  <attribute name="w: float">
+   <bounds h="3.943944740295410" w="11.417388916015625" x="88.706108093261718" y="18.387889862060546"/>
+  </attribute>
+  <attribute name="h: float">
+   <bounds h="3.943944740295410" w="10.874786376953125" x="88.706108093261718" y="22.331834793090820"/>
+  </attribute>
+ </classElement>
+ <classElement abstract="false" keyword="datatype" name="Vector">
+  <bounds h="32.663669586181640" w="28.774648666381835" x="142.698638916015625" y="6"/>
+  <attribute name="x: float">
+   <bounds h="3.943944740295410" w="10.691851615905761" x="144.198638916015625" y="18.387889862060546"/>
+  </attribute>
+  <attribute name="y: float">
+   <bounds h="3.943944740295410" w="10.691851615905761" x="144.198638916015625" y="22.331834793090820"/>
+  </attribute>
+  <operation abstract="false" name="Length(): float">
+   <bounds h="3.943944740295410" w="21.233840942382812" x="144.198638916015625" y="29.275779724121093"/>
+  </operation>
+  <operation abstract="false" name="ToPoint(): PointF">
+   <bounds h="3.943944740295410" w="25.774648666381835" x="144.198638916015625" y="33.219722747802734"/>
+  </operation>
+ </classElement>
+ <classElement abstract="false" keyword="datatype" name="RectF">
+  <bounds h="68.159172058105468" w="50.035358428955078" x="229" y="6"/>
+  <attribute name="x: float">
+   <bounds h="3.943944740295410" w="10.691851615905761" x="230.5" y="18.387889862060546"/>
+  </attribute>
+  <attribute name="y: float">
+   <bounds h="3.943944740295410" w="10.691851615905761" x="230.5" y="22.331834793090820"/>
+  </attribute>
+  <attribute name="w: float">
+   <bounds h="3.943944740295410" w="11.417388916015625" x="230.5" y="26.275779724121093"/>
+  </attribute>
+  <attribute name="h: float">
+   <bounds h="3.943944740295410" w="10.874786376953125" x="230.5" y="30.219724655151367"/>
+  </attribute>
+  <operation abstract="false" name="Left(): float">
+   <bounds h="3.943944740295410" w="16.686832427978515" x="230.5" y="37.163669586181640"/>
+  </operation>
+  <operation abstract="false" name="Right(): float">
+   <bounds h="3.943944740295410" w="18.866542816162109" x="230.5" y="41.107612609863281"/>
+  </operation>
+  <operation abstract="false" name="Top(): float">
+   <bounds h="3.943944740295410" w="16.868217468261718" x="230.5" y="45.051555633544921"/>
+  </operation>
+  <operation abstract="false" name="Bottom(): float">
+   <bounds h="3.943944740295410" w="21.591958999633789" x="230.5" y="48.995498657226562"/>
+  </operation>
+  <operation abstract="false" name="IsEmpty(): bool">
+   <bounds h="3.943944740295410" w="23.046133041381835" x="230.5" y="52.939441680908203"/>
+  </operation>
+  <operation abstract="false" name="Contains(p: PointF): bool">
+   <bounds h="3.943944740295410" w="37.228206634521484" x="230.5" y="56.883384704589843"/>
+  </operation>
+  <operation abstract="false" name="Inflate(dx: float, dy: float)">
+   <bounds h="3.943944740295410" w="36.863887786865234" x="230.5" y="60.827327728271484"/>
+  </operation>
+  <operation abstract="false" name="Offset(dx: float, dy: float)">
+   <bounds h="3.943944740295410" w="36.679401397705078" x="230.5" y="64.771270751953125"/>
+  </operation>
+  <operation abstract="false" name="IntersectsWith(RectF that): bool">
+   <bounds h="3.943944740295410" w="47.035358428955078" x="230.5" y="68.715217590332031"/>
+  </operation>
+ </classElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="41.402294158935546" x="183" y="26"/>
+  <line text="return sqrt(x * x + y * y);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="30.238639831542968" x="53" y="27.775777816772460"/>
+  <line text="x += dx; y += dy"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="34.043060302734375" x="183" y="36"/>
+  <line text="return PointF(x, y);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="18.961814880371093" x="294" y="7"/>
+  <line text="return x;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="25.049812316894531" x="294" y="16"/>
+  <line text="return x + w;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="18.961814880371093" x="294" y="25"/>
+  <line text="return y;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="24.507209777832031" x="294" y="34"/>
+  <line text="return y + h;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="42.596019744873046" x="294" y="43"/>
+  <line text="return w == 0 &amp;&amp; h == 0;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="10.887889862060546" w="63.397850036621093" x="294" y="52"/>
+  <line text="return p.x >= Left() &amp;&amp; p.x &lt; Right() &amp;&amp;"/>
+  <line text="p.y >= Top() &amp;&amp; p.y &lt; Bottom();"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="65.315567016601562" x="294" y="65"/>
+  <line text="x -= dx; y -= dy; w += 2 * dx; h += 2 * dy;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="31.147113800048828" x="294" y="74"/>
+  <line text="x += dx; y += dy;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="18.775779724121093" w="49.2188720703125" x="294" y="83"/>
+  <line text="return Left() &lt; that.Right() &amp;&amp;"/>
+  <line text="Top() &lt; that.Bottom() &amp;&amp;"/>
+  <line text="Right() > that.Left() &amp;&amp;"/>
+  <line text="Bottom() > that.Top;"/>
+ </noteElement>
+ <classElement abstract="false" keyword="functions" name="">
+  <bounds h="72.103103637695312" w="65.310394287109375" x="4" y="53"/>
+  <operation abstract="false" name="operator==(left: PointF, right: PointF): bool">
+   <bounds h="3.943944740295410" w="62.310394287109375" x="5.5" y="64.443946838378906"/>
+  </operation>
+  <operation abstract="false" name="operator==(left: SizeF, right: SizeF): bool">
+   <bounds h="3.943944740295410" w="60.127582550048828" x="5.5" y="68.387893676757812"/>
+  </operation>
+  <operation abstract="false" name="operator==(left: Vector, right: Vector): bool">
+   <bounds h="3.943944740295410" w="62.307292938232421" x="5.5" y="72.331840515136718"/>
+  </operation>
+  <operation abstract="false" name="operator==(left: Line, right: Line): bool">
+   <bounds h="3.943944740295410" w="55.771259307861328" x="5.5" y="76.275787353515625"/>
+  </operation>
+  <operation abstract="false" name="operator*(v: Vector, a: float) : Vector">
+   <bounds h="3.943944740295410" w="53.397762298583984" x="5.5" y="80.219734191894531"/>
+  </operation>
+  <operation abstract="false" name="operator*(a: float, v: Vector): Vector">
+   <bounds h="3.943944740295410" w="52.489288330078125" x="5.5" y="84.163681030273437"/>
+  </operation>
+  <operation abstract="false" name="operator+(u: Vector, v: Vector): Vector">
+   <bounds h="3.943944740295410" w="56.396026611328125" x="5.5" y="88.107627868652343"/>
+  </operation>
+  <operation abstract="false" name="operator-(u: Vector, v: Vector): Vector">
+   <bounds h="3.943944740295410" w="55.574371337890625" x="5.5" y="92.05157470703125"/>
+  </operation>
+  <operation abstract="false" name="Dot(v: Vector, u: Vector): float">
+   <bounds h="3.943944740295410" w="44.127010345458984" x="5.5" y="95.995521545410156"/>
+  </operation>
+  <operation abstract="false" name="Distance(p: PointF, q: PointF): float">
+   <bounds h="3.943944740295410" w="51.948238372802734" x="5.5" y="99.939468383789062"/>
+  </operation>
+  <operation abstract="false" name="Union(a: RectF, b: RectF): RectF">
+   <bounds h="3.943944740295410" w="48.849201202392578" x="5.5" y="103.883415222167968"/>
+  </operation>
+  <operation abstract="false" name="Unit(v: Vector): Vector">
+   <bounds h="3.943944740295410" w="33.220699310302734" x="5.5" y="107.827362060546875"/>
+  </operation>
+  <operation abstract="false" name="Proj(u: Vector, v: Vector): Vector">
+   <bounds h="3.943944740295410" w="48.123664855957031" x="5.5" y="111.771308898925781"/>
+  </operation>
+  <operation abstract="false" name="Rotate(v: Vector, angleRad: float): Vector">
+   <bounds h="3.943944740295410" w="60.853118896484375" x="5.5" y="115.715255737304687"/>
+  </operation>
+  <operation abstract="false" name="Rotate(line: Line, angleDeg: float) : Line">
+   <bounds h="3.943944740295410" w="58.681159973144531" x="5.5" y="119.659202575683593"/>
+  </operation>
+ </classElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="48.946018218994140" x="87" y="32"/>
+  <line text="return Vector(v.x * a, v.y * a);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="48.946018218994140" x="87" y="42"/>
+  <line text="return Vector(v.x * a, v.y * a);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="55.308422088623046" x="87" y="52"/>
+  <line text="return Vector(u.x + v.x, u.y + v.y);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="53.665111541748046" x="87" y="62"/>
+  <line text="return Vector(u.x - v.x, u.y - v.y);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="44.316844940185546" x="87" y="72"/>
+  <line text="return u.x * v.x + u.y * v.y;"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="14.831834793090820" w="48.67626953125" x="87" y="82"/>
+  <line text="dx = abs(p.x - q.x);"/>
+  <line text="dy = abs(p.y - q.y);"/>
+  <line text="return sqrt(dx * dx + dy * dy);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="22.719724655151367" w="73.659225463867187" x="87" y="100"/>
+  <line text="float right = max(a.Right(), b.Right();"/>
+  <line text="float bottom = max(a.Bottom(), b.Bottom();"/>
+  <line text="float left = min(a.Left(), b.Left());"/>
+  <line text="float top = min(a.Top(), b.Top());"/>
+  <line text="return RectF(left, top, right - left, bottom - top);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="43.859508514404296" x="87" y="126"/>
+  <line text="return u * (1 / u.Length());"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="67.110801696777343" x="87" y="136"/>
+  <line text="return Unit(v) * Dot(u, v * (1 / v.Length()));"/>
+ </noteElement>
+ <classElement abstract="false" keyword="datatype" name="Line">
+  <bounds h="40.551559448242187" w="40.226657867431640" x="167" y="87"/>
+  <attribute name="start: PointF">
+   <bounds h="3.943944740295410" w="18.686708450317382" x="168.5" y="99.387893676757812"/>
+  </attribute>
+  <attribute name="end: PointF">
+   <bounds h="3.943944740295410" w="17.782888412475585" x="168.5" y="103.331840515136718"/>
+  </attribute>
+  <operation abstract="false" name="Line(s: PointF, e: PointF)">
+   <bounds h="3.943944740295410" w="37.226657867431640" x="168.5" y="110.275787353515625"/>
+  </operation>
+  <operation abstract="false" name="Line(s: PointF, v: Vector)">
+   <bounds h="3.943944740295410" w="37.042171478271484" x="168.5" y="114.219734191894531"/>
+  </operation>
+  <operation abstract="false" name="Length(): float">
+   <bounds h="3.943944740295410" w="21.233840942382812" x="168.5" y="118.163681030273437"/>
+  </operation>
+  <operation abstract="false" name="ToVector(): Vector">
+   <bounds h="3.943944740295410" w="27.769874572753906" x="168.5" y="122.107627868652343"/>
+  </operation>
+ </classElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="45.857837677001953" x="217" y="115"/>
+  <line text="return Distance(start, end);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="70.386566162109375" x="217" y="124"/>
+  <line text="return Vector(end.x - start.x, end.y - start.y);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="14.831834793090820" w="118.470443725585937" x="87" y="146"/>
+  <line text="double cosTheta = cos(angleRad);"/>
+  <line text="double sinTheta = sin(angleRad);"/>
+  <line text="return Vector(v.x * cosTheta - v.y * sinTheta, v.x * sinTheta + v.y * cosTheta);"/>
+ </noteElement>
+ <classElement abstract="false" keyword="datatype" name="PointF">
+  <bounds h="28.719724655151367" w="39.679401397705078" x="5" y="6"/>
+  <attribute name="x: float">
+   <bounds h="3.943944740295410" w="10.691851615905761" x="6.5" y="18.387889862060546"/>
+  </attribute>
+  <attribute name="y: float">
+   <bounds h="3.943944740295410" w="10.691851615905761" x="6.5" y="22.331834793090820"/>
+  </attribute>
+  <operation abstract="false" name="Offset(dx: float, dy: float)">
+   <bounds h="3.943944740295410" w="36.679401397705078" x="6.5" y="29.275779724121093"/>
+  </operation>
+ </classElement>
+ <noteElement>
+  <bounds h="18.775779724121093" w="52.510143280029296" x="87" y="164"/>
+  <line text="angleRad = pi / 180 * angleDeg"/>
+  <line text="v = line.ToVector();"/>
+  <line text="r = Rotate(v, angleRad);"/>
+  <line text="return Line(line.start, r);"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="28.407745361328125" x="217" y="97"/>
+  <line text="start(s), end(e)"/>
+ </noteElement>
+ <noteElement>
+  <bounds h="6.943944931030273" w="86.641380310058593" x="217" y="106"/>
+  <line text=" start(s.start), end(Vector(Vector(s.start) + v).ToPoint())"/>
+ </noteElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="0.000001999999904" w="5.570599555969238" x="47.429401397705078" y="31.247751235961914"/>
+  <source connector="operation.0" index="29" x="47.429401397705078" y="31.247753143310546">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="4" x="53" y="31.247749328613281">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="46.719730377197265" w="16.396881103515625" x="70.603111267089843" y="35.471973419189453"/>
+  <source connector="operation.4" index="15" x="70.603111267089843" y="82.191703796386718">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="16" x="87" y="35.471973419189453">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="40.663673400878906" w="16.396881103515625" x="70.603111267089843" y="45.471973419189453"/>
+  <source connector="operation.5" index="15" x="70.603111267089843" y="86.135650634765625">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="17" x="87" y="45.471973419189453">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="35.079597473144531" w="16.396881103515625" x="70.603111267089843" y="55"/>
+  <source connector="operation.6" index="15" x="70.603111267089843" y="90.079605102539062">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.top" index="18" x="87" y="55">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="28.55157470703125" w="16.396881103515625" x="70.603111267089843" y="65.471969604492187"/>
+  <source connector="operation.7" index="15" x="70.603111267089843" y="94.023544311523437">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="19" x="87" y="65.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="22.495519638061523" w="16.396881103515625" x="70.603111267089843" y="75.471969604492187"/>
+  <source connector="operation.8" index="15" x="70.603111267089843" y="97.967491149902343">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="20" x="87" y="75.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="12.495521545410156" w="16.396881103515625" x="70.603111267089843" y="89.415916442871093"/>
+  <source connector="operation.9" index="15" x="70.603111267089843" y="101.91143798828125">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="21" x="87" y="89.415916442871093">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="5.504478454589843" w="16.396881103515625" x="70.603111267089843" y="105.855384826660156"/>
+  <source connector="operation.10" index="15" x="70.603111267089843" y="105.855384826660156">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="22" x="87" y="111.35986328125">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="19.672639846801757" w="16.396881103515625" x="70.603111267089843" y="109.799324035644531"/>
+  <source connector="operation.11" index="15" x="70.603111267089843" y="109.799324035644531">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="23" x="87" y="129.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="25.728693008422851" w="16.396881103515625" x="70.603111267089843" y="113.743270874023437"/>
+  <source connector="operation.12" index="15" x="70.603111267089843" y="113.743270874023437">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="24" x="87" y="139.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="35.72869873046875" w="16.396881103515625" x="70.603111267089843" y="117.687232971191406"/>
+  <source connector="operation.13" index="15" x="70.603111267089843" y="117.687232971191406">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="28" x="87" y="153.415924072265625">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="51.756721496582031" w="16.396881103515625" x="70.603111267089843" y="121.63116455078125"/>
+  <source connector="operation.14" index="15" x="70.603111267089843" y="121.63116455078125">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="30" x="87" y="173.387893676757812">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="11.775786399841308" w="7.023345947265625" x="209.976638793945312" y="100.471969604492187"/>
+  <source connector="operation.0" index="25" x="209.976638793945312" y="112.247764587402343">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="31" x="217" y="100.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="6.719733715057373" w="7.023345947265625" x="209.976638793945312" y="109.471969604492187"/>
+  <source connector="operation.1" index="25" x="209.976638793945312" y="116.191703796386718">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="32" x="217" y="109.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="1.663680934906005" w="7.023345947265625" x="209.976638793945312" y="118.471969604492187"/>
+  <source connector="operation.2" index="25" x="209.976638793945312" y="120.135650634765625">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="26" x="217" y="118.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="3.392371892929077" w="7.023345947265625" x="209.976638793945312" y="124.079605102539062"/>
+  <source connector="operation.3" index="25" x="209.976638793945312" y="124.079605102539062">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="27" x="217" y="127.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="28.663671493530273" w="12.214629173278808" x="281.785369873046875" y="10.471971511840820"/>
+  <source connector="operation.0" index="2" x="281.785369873046875" y="39.135639190673828">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="6" x="294" y="10.471972465515136">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="23.607614517211914" w="12.214629173278808" x="281.785369873046875" y="19.471973419189453"/>
+  <source connector="operation.1" index="2" x="281.785369873046875" y="43.079586029052734">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="7" x="294" y="19.471971511840820">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="18.551553726196289" w="12.214629173278808" x="281.785369873046875" y="28.471973419189453"/>
+  <source connector="operation.2" index="2" x="281.785369873046875" y="47.023525238037109">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="8" x="294" y="28.471971511840820">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="13.967471122741699" w="12.214629173278808" x="281.785369873046875" y="37"/>
+  <source connector="operation.3" index="2" x="281.785369873046875" y="50.967475891113281">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.top" index="9" x="294" y="37">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="8.911414146423339" w="12.214629173278808" x="281.785369873046875" y="46"/>
+  <source connector="operation.4" index="2" x="281.785369873046875" y="54.911415100097656">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.top" index="10" x="294" y="46">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="1.411410903930664" w="12.214629173278808" x="281.785369873046875" y="57.443946838378906"/>
+  <source connector="operation.5" index="2" x="281.785369873046875" y="58.855358123779296">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="11" x="294" y="57.443946838378906">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="5.672667980194091" w="12.214629173278808" x="281.785369873046875" y="62.799301147460937"/>
+  <source connector="operation.6" index="2" x="281.785369873046875" y="62.799301147460937">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="12" x="294" y="68.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="10.728729248046875" w="12.214629173278808" x="281.785369873046875" y="66.743232727050781"/>
+  <source connector="operation.7" index="2" x="281.785369873046875" y="66.743232727050781">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="13" x="294" y="77.471969604492187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="21.700706481933593" w="12.214629173278808" x="281.785369873046875" y="70.687187194824218"/>
+  <source connector="operation.8" index="2" x="281.785369873046875" y="70.687187194824218">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.center" index="14" x="294" y="92.387893676757812">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="2.247750997543334" w="8.776701927185058" x="174.223297119140625" y="29"/>
+  <source connector="operation.0" index="1" x="174.223297119140625" y="31.247753143310546">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.top" index="3" x="183" y="29">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+ <relationshipElement cardinality="one" rkind="attachNote">
+  <bounds h="4.752250671386718" w="8.776701927185058" x="174.223297119140625" y="35.191696166992187"/>
+  <source connector="operation.1" index="1" x="174.223297119140625" y="35.191696166992187">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </source>
+  <target connector="left.bottom" index="5" x="183" y="39.943943023681640">
+   <primaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </primaryText>
+   <secondaryText keyword="">
+    <bounds h="0" w="0" x="0" y="0"/>
+   </secondaryText>
+  </target>
+ </relationshipElement>
+</diagram>

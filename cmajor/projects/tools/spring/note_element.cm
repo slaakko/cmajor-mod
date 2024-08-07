@@ -24,7 +24,6 @@ namespace spring
         public override System.Xml.Element* ToXml() const
         {
             System.Xml.Element* xmlElement = System.Xml.MakeElement("noteElement");
-            SetName(xmlElement);
             xmlElement->AppendChild(BoundsXmlElement());
             for (const auto& line : lines)
             {
@@ -37,7 +36,7 @@ namespace spring
         [nodiscard]
         public override Result<bool> FromXml(System.Xml.Element* xmlElement, bool setName)
         {
-            auto result = base->FromXml(xmlElement, setName);
+            auto result = base->FromXml(xmlElement, false);
             if (result.Error()) return result;
             auto lineNodeSetResult = System.XPath.EvaluateToNodeSet("line", xmlElement);
             if (lineNodeSetResult.Error()) return Result<bool>(ErrorId(lineNodeSetResult.GetErrorId()));

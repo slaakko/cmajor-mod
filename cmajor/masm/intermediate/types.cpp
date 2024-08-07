@@ -443,6 +443,23 @@ void FunctionType::WriteDeclaration(util::CodeFormatter& formatter)
     formatter.Write(")");
 }
 
+bool FunctionType::IsUnaryOperationType() const
+{
+    if (Arity() == 1)
+    {
+        Type* returnType = ReturnType();
+        Type* paramType = ParamType(0);
+        if (paramType == returnType)
+        {
+            if (paramType->Size() <= 8)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 PointerType::PointerType(const soul::ast::Span& span_, int32_t typeId_, int8_t pointerCount_, int32_t baseTypeId_) :
     Type(span_, TypeKind::pointerType, typeId_), pointerCount(pointerCount_), baseTypeRef(span_, baseTypeId_)
 {

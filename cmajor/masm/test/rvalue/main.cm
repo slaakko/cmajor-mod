@@ -3,5 +3,4 @@ using System;
 void main()
 {
     a();
-    b();
 }

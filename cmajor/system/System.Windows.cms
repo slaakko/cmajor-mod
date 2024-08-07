@@ -16,4 +16,4 @@ project <System.XPath/System.XPath.cmp>;
 project <System.Xml/System.Xml.cmp>;
 project <System.Xml.Serialization/System.Xml.Serialization.cmp>;
 activeProject System.Windows;
-activeBackEnd=masm;
+activeBackEnd=llvm;

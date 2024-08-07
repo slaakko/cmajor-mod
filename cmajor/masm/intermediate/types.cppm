@@ -320,6 +320,7 @@ public:
     const std::vector<TypeRef>& ParamTypeRefs() const { return paramTypeRefs; }
     Type* ParamType(int index) const { return paramTypeRefs[index].GetType(); }
     void WriteDeclaration(util::CodeFormatter& formatter) override;
+    bool IsUnaryOperationType() const;
 private:
     TypeRef returnTypeRef;
     std::vector<TypeRef> paramTypeRefs;

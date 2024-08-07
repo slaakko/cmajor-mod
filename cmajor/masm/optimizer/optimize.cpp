@@ -6,6 +6,7 @@
 module cmajor.masm.optimizer.optimize;
 
 import cmajor.masm.optimizer.inline_expander;
+import cmajor.masm.optimizer.identity_operation_remover;
 
 namespace cmajor::masm::optimizer {
 
@@ -15,6 +16,7 @@ void Optimize(cmajor::masm::intermediate::Context* intermediateContext)
     cmajor::masm::intermediate::Function* fn = code.FirstFunction();
     while (fn)
     {
+        RemoveIdentityFunctionCalls(fn);
         InlineExpand(fn);
         fn = fn->Next();
     }

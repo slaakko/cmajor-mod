@@ -283,6 +283,24 @@ namespace spring
         {
             return RelationshipKind.attachNote;
         }
+        public override bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndPointKind endPointKind)
+        {
+            if (endPointKind == EndPointKind.target)
+            {
+                if (element->IsNoteElement())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return base->Accept(element, sourceElement, endPointKind);
+            }
+        }
     }
 
     class ReferenceTool : RelationshipTool
@@ -293,6 +311,31 @@ namespace spring
         public override RelationshipKind GetRelationshipKind() const
         {
             return RelationshipKind.reference;
+        }
+        public override bool Accept(DiagramElement* element, DiagramElement* sourceElement, EndPointKind endPointKind)
+        {
+            if (sourceElement == null)
+            {
+                if (element->IsClassElement() || element->IsObjectElement())
+                {
+                    return true;
+                }
+            }
+            else if (sourceElement->IsClassElement())
+            {
+                if (element->IsClassElement())
+                {
+                    return true;
+                }
+            }
+            else if (sourceElement->IsAttributeElement())
+            {
+                if (element->IsObjectElement())
+                {
+                    return true;
+                }
+            }
+            return base->Accept(element, sourceElement, endPointKind);
         }
     }
 }

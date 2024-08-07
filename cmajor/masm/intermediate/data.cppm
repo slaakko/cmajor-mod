@@ -76,6 +76,7 @@ public:
     Type* GetType() const { return type; }
     virtual void SetType(Type* type_);
     virtual std::string ToString() const { return std::string(); }
+    Instruction* GetInstruction() const;
 private:
     soul::ast::Span span;
     ValueKind kind;

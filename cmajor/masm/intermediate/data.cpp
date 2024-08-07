@@ -8,6 +8,7 @@ module cmajor.masm.intermediate.data;
 import cmajor.masm.intermediate.context;
 import cmajor.masm.intermediate.error;
 import cmajor.masm.intermediate.visitor;
+import cmajor.masm.intermediate.code;
 
 namespace cmajor::masm::intermediate {
 
@@ -171,6 +172,16 @@ void Value::SetType(Type* type_)
 std::string Value::KindStr() const
 {
     return valueKindStr[static_cast<int>(kind)];
+}
+
+Instruction* Value::GetInstruction() const
+{
+    if (IsRegValue())
+    {
+        const RegValue* regValue = static_cast<const RegValue*>(this);
+        return regValue->Inst();
+    }
+    return nullptr;
 }
 
 BoolValue::BoolValue(bool value_, Type* type_) : Value(soul::ast::Span(), ValueKind::boolValue, type_), value(value_)

@@ -271,7 +271,7 @@ namespace System.Windows
         {
             return toolButtonHeight;
         }
-        public Padding DefaultPadding() const
+        public override Padding DefaultPadding() const
         {
             return Padding(0, 0, 0, 0);
         }

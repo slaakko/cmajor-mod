@@ -1812,17 +1812,6 @@ namespace spring
                 }
                 points.Add(relationshipElement->Target().Point());
             }
-            // DUMP
-            Console.Out() << "dump" << endl();
-            int np = cast<int>(points.Count());
-            Console.Out() << np << " points:" << endl();
-            for (int i = 0; i < np; ++i)
-            {
-                PointF p = points[i];
-                Console.Out() << p.ToString() << endl();
-            }
-            Console.Out() << "dump" << endl();
-            // DUMP
             result = graphics.DrawLines(*dotPen, cast<int>(points.Count()), points.Begin().Ptr());
             if (result.Error()) return result;
             return Result<bool>(true);
