@@ -7,6 +7,7 @@ module cmajor.masm.assembly.instruction;
 
 import util.text.util;
 import cmajor.masm.assembly.value;
+import cmajor.masm.assembly.literal;
 
 namespace cmajor::masm::assembly {
 
@@ -51,7 +52,7 @@ std::string OpCodeStr(OpCode opCode)
     return opCodeStr[int(opCode)];
 }
 
-Instruction::Instruction(OpCode opCode_) : opCode(opCode_), nocolon(false)
+Instruction::Instruction(OpCode opCode_) : opCode(opCode_), nocolon(false), writeln(false)
 {
 }
 
@@ -88,7 +89,13 @@ void Instruction::Write(util::CodeFormatter& formatter)
         {
             c = " ";
         }
-        formatter.Write(util::Format(label + c, 8, util::FormatWidth::min, util::FormatJustify::left));
+        std::string lbl = util::Format(label + c, 8, util::FormatWidth::min, util::FormatJustify::left);
+        formatter.Write(lbl);
+        if (writeln)
+        {
+            formatter.WriteLine();
+            formatter.IncIndent();
+        }
     }
     formatter.Write(util::Format(OpCodeStr(opCode), 16));
     bool first = true;
@@ -105,7 +112,7 @@ void Instruction::Write(util::CodeFormatter& formatter)
         formatter.Write(operand->ToString());
     }
     formatter.WriteLine();
-    if (!label.empty())
+    if (!label.empty() && !writeln)
     {
         formatter.IncIndent();
     }

@@ -190,7 +190,6 @@ class RetInstruction : public Instruction
 {
 public:
     RetInstruction(const soul::ast::Span& span_, Value* returnValue_);
-    ~RetInstruction();
     void Accept(Visitor& visitor) override;
     Instruction* Clone(CloneContext& cloneContext) const override;
     void Write(util::CodeFormatter& formatter) override;

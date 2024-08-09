@@ -609,11 +609,6 @@ RetInstruction::RetInstruction(const soul::ast::Span& span_, Value* returnValue_
 {
 }
 
-RetInstruction::~RetInstruction()
-{
-    cmajor::masm::intermediate::RemoveUser(this, returnValue);
-}
-
 void RetInstruction::Accept(Visitor& visitor)
 {
     visitor.Visit(*this);

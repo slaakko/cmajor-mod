@@ -16,6 +16,8 @@ class IntegerLiteral : public Value
 {
 public:
     IntegerLiteral(int64_t value_, int size_);
+    int64_t GetValue() const { return value; }
+    bool IsIntegerLiteral() const { return true; }
 private:
     int64_t value;
     int size;
@@ -25,6 +27,7 @@ class FloatLiteral : public Value
 {
 public:
     FloatLiteral(float value_);
+    float GetValue() const { return value; }
 private:
     float value;
 };
@@ -33,6 +36,7 @@ class DoubleLiteral : public Value
 {
 public:
     DoubleLiteral(double value_);
+    double GetValue() const { return value; }
 private:
     double value;
 };
@@ -44,6 +48,7 @@ public:
     bool CanSplit() const override { return true; }
     Value* Split(int length) override;
     bool IsEmpty() const override { return value.empty(); }
+    const std::string& GetValue() const { return value; }
 private:
     std::string value;
 };

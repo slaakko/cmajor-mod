@@ -1,0 +1,214 @@
+using System;
+
+void foo8()
+{
+    long x = 4;
+    int y = 0;
+    switch (x)
+    {
+        case 0: 
+        {
+            y = 0;
+            break;
+        }
+        case 1: 
+        {
+            y = 1;
+            break;
+        }
+        case 2: 
+        {
+            y = 2;
+            break;
+        }
+        case 3: 
+        {
+            y = 3;
+            break;
+        }
+        case 4: 
+        {
+            y = 4;
+            break;
+        }
+        default:
+        {
+            y = -1;
+            break;
+        }
+    }
+}
+
+void foo4()
+{
+    int x = 0;
+    int y = 0;
+    switch (x)
+    {
+        case 0: 
+        {
+            y = 0;
+            break;
+        }
+        case 1: 
+        {
+            y = 1;
+            break;
+        }
+        case 2: 
+        {
+            y = 2;
+            break;
+        }
+        case 3: 
+        {
+            y = 3;
+            break;
+        }
+        case 4: 
+        {
+            y = 4;
+            break;
+        }
+        default:
+        {
+            y = -1;
+            break;
+        }
+    }
+}
+
+void foo2()
+{
+    short x = 5;
+    int y = 0;
+    switch (x)
+    {
+        case 0: 
+        {
+            y = 0;
+            break;
+        }
+        case 1: 
+        {
+            y = 1;
+            break;
+        }
+        case 2: 
+        {
+            y = 2;
+            break;
+        }
+        case 3: 
+        {
+            y = 3;
+            break;
+        }
+        case 4: 
+        {
+            y = 4;
+            break;
+        }
+        default:
+        {
+            y = -1;
+            break;
+        }
+    }
+}
+
+void foo1()
+{
+    sbyte x = 1;
+    int y = 0;
+    switch (x)
+    {
+        case 0: 
+        {
+            y = 0;
+            break;
+        }
+        case 1: 
+        {
+            y = 1;
+            break;
+        }
+        case 2: 
+        {
+            y = 2;
+            break;
+        }
+        case 3: 
+        {
+            y = 3;
+            break;
+        }
+        case 4: 
+        {
+            y = 4;
+            break;
+        }
+        default:
+        {
+            y = -1;
+            break;
+        }
+    }
+}
+
+public enum bar : int
+{
+    first = 4,
+    second,
+    third,
+    fourth,
+    fifth
+}
+
+void bar4()
+{
+    bar x = bar.second;
+    int y = 0;
+    switch (x)
+    {
+        case bar.first: 
+        {
+            y = 0;
+            break;
+        }
+        case bar.second: 
+        {
+            y = 1;
+            break;
+        }
+        case bar.third: 
+        {
+            y = 2;
+            break;
+        }
+        case bar.fourth: 
+        {
+            y = 3;
+            break;
+        }
+        case bar.fifth: 
+        {
+            y = 4;
+            break;
+        }
+        default:
+        {
+            y = -1;
+            break;
+        }
+    }
+}
+
+void main()
+{
+    foo8();
+    foo4();
+    foo2();
+    foo1();
+    bar4();
+}

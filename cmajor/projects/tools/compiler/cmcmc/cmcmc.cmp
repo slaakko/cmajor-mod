@@ -1,0 +1,6 @@
+project cmcmc;
+target=program;
+reference <../../soulcm/cm.ast/cm.ast.cmp>;
+reference <../../soulcm/cm.lexer/cm.lexer.cmp>;
+reference <../../soulcm/cm.parser/cm.parser.cmp>;
+source <main.cm>;

@@ -1,0 +1,3 @@
+project jumptab;
+target=program;
+source <jumptab.cm>;

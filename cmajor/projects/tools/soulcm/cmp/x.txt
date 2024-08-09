@@ -1,0 +1,15 @@
+without switch optimization:
+4027 milliseconds elapsed
+4038 milliseconds elapsed
+4030 milliseconds elapsed
+-------------------------
+4031 milliseconds
+
+with switch optimization:
+3980 milliseconds elapsed
+3871 milliseconds elapsed
+3863 milliseconds elapsed
+-------------------------
+3904 milliseconds
+
+127 milliseconds = 3%

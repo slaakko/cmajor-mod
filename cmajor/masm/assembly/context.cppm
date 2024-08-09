@@ -37,6 +37,7 @@ public:
     Value* MakeContent(Value* value);
     Value* MakeSizePrefix(int64_t size, Value* value);
     Value* MakeBinaryExpr(Value* left, Value* right, Operator op);
+    int GetNextJumpTabLabelId() { return jumpTabLabelCounter++; }
 private:
     Registers registers;
     File* file;
@@ -44,6 +45,7 @@ private:
     std::vector<std::unique_ptr<Value>> values;
     Function* currentFunction;
     int floatingLiteralCounter;
+    int jumpTabLabelCounter;
 };
 
 } // cmajor::masm::assembly

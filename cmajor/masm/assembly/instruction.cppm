@@ -59,11 +59,13 @@ public:
     const std::vector<Value*>& Operands() const { return operands; }
     void Write(util::CodeFormatter& formatter);
     int Length() const;
+    void SetWriteln() { writeln = true; }
 private:
     std::string label;
     bool nocolon;
     OpCode opCode;
     std::vector<Value*> operands;
+    bool writeln;
 };
 
 Instruction* MakeInst(OpCode opCode, Value* operand);

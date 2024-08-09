@@ -1,0 +1,7 @@
+solution compiler;
+project <../soulcm/cm.ast/cm.ast.cmp>;
+project <../soulcm/cm.lexer/cm.lexer.cmp>;
+project <../soulcm/cm.parser/cm.parser.cmp>;
+project <cmcmc/cmcmc.cmp>;
+activeProject cmcmc;
+activeBackEnd=masm;

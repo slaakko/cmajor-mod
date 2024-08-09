@@ -7,6 +7,7 @@ export module cmajor.masm.intermediate.code_generator;
 
 import cmajor.masm.assembly;
 import cmajor.masm.intermediate.visitor;
+import cmajor.masm.intermediate.data;
 import soul.ast.span;
 import std.core;
 
@@ -103,5 +104,8 @@ private:
     cmajor::masm::assembly::OpCode prevDataOpCode;
     int64_t currentOffset;
 };
+
+cmajor::masm::assembly::Register* MakeIntegerRegOperand(Value* value, cmajor::masm::assembly::Register* reg, CodeGenerator& codeGenerator);
+void EmitSwitch(SwitchInstruction& inst, CodeGenerator& codeGenerator);
 
 } // cmajor::masm::intermediate

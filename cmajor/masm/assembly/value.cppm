@@ -21,6 +21,7 @@ public:
     virtual bool CanSplit() const { return false; }
     virtual Value* Split(int length) { return nullptr; }
     virtual bool IsEmpty() const { return false; }
+    virtual bool IsIntegerLiteral() const { return false; }
 private:
     std::string name;
 };

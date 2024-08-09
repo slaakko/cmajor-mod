@@ -173,6 +173,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     cmajor::masm::intermediate::Parse(boundCompileUnit.GetModule().LogStreamId(), intermediateFilePath, intermediateContext,
         cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
     cmajor::masm::intermediate::Verify(intermediateContext);
+    std::unique_ptr<cmajor::masm::intermediate::CodeGenerator> codeGenerator;
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
     {
         cmajor::masm::optimizer::Optimize(&intermediateContext);
@@ -181,11 +182,15 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
             cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose));
         cmajor::masm::intermediate::Verify(optimizationContext);
         finalContext = &optimizationContext;
+        codeGenerator.reset(new cmajor::masm::optimizer::OptimizingCodeGenerator(finalContext, boundCompileUnit.AsmFilePath()));
     }
-    cmajor::masm::intermediate::CodeGenerator codeGenerator(finalContext, boundCompileUnit.AsmFilePath());
-    finalContext->GetData().VisitGlobalVariables(codeGenerator);
-    finalContext->GetCode().VisitFunctions(codeGenerator);
-    codeGenerator.WriteOutputFile();
+    else
+    {
+        codeGenerator.reset(new cmajor::masm::intermediate::CodeGenerator(finalContext, boundCompileUnit.AsmFilePath()));
+    }
+    finalContext->GetData().VisitGlobalVariables(*codeGenerator);
+    finalContext->GetCode().VisitFunctions(*codeGenerator);
+    codeGenerator->WriteOutputFile();
 }
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundNamespace& boundNamespace)

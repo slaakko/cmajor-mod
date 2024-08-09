@@ -20,7 +20,6 @@ namespace cmajor::masm::intermediate {
 
 void EmitIntegerLoad(int64_t size, const FrameLocation& frameLocation, cmajor::masm::assembly::RegisterGroup* regGroup, CodeGenerator& codeGenerator);
 void EmitFloatingPointLoad(int64_t size, const FrameLocation& frameLocation, cmajor::masm::assembly::RegisterGroup* regGroup, CodeGenerator& codeGenerator);
-cmajor::masm::assembly::Register* MakeIntegerRegOperand(Value* value, cmajor::masm::assembly::Register* reg, CodeGenerator& codeGenerator);
 cmajor::masm::assembly::Register* MakeFloatingPointRegOperand(Value* value, cmajor::masm::assembly::Register* reg, CodeGenerator& codeGenerator);
 FrameLocation GetFrameLocation(Value* value, CodeGenerator& codeGenerator);
 void EmitFrameLocationOperand(int64_t size, const FrameLocation& frameLocation, cmajor::masm::assembly::Instruction* instruction, CodeGenerator& codeGenerator);

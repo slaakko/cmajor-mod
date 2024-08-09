@@ -1,0 +1,12 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+int main(int argc, const char** argv)
+{
+    return 0;
+}
+

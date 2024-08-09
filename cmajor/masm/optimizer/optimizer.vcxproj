@@ -156,11 +156,16 @@
     <ClCompile Include="inline_expander.cppm" />
     <ClCompile Include="optimize.cpp" />
     <ClCompile Include="optimize.cppm" />
+    <ClCompile Include="optimizing_code_generator.cpp" />
+    <ClCompile Include="optimizing_code_generator.cppm" />
     <ClCompile Include="optmizer.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\util\util.vcxproj">
       <Project>{e8a7af4a-afa3-4dbd-a112-df250841cf10}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\assembly\assembly.vcxproj">
+      <Project>{9bbc4416-9892-4f2c-9c12-cd1919942ea4}</Project>
     </ProjectReference>
     <ProjectReference Include="..\intermediate\intermediate.vcxproj">
       <Project>{8ad4db0b-d173-4ca8-92b9-d3b70f8429a4}</Project>
