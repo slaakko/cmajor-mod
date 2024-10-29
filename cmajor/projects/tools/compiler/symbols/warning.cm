@@ -1,0 +1,99 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public const int nodiscardWarning = 1;
+
+    public class Warning
+    {
+        public Warning(int number_, const string& moduleName_, const string& message_) :
+            number(number_), moduleName(moduleName_), message(message_)
+        {
+        }
+        public inline int Number() const
+        {
+            return number;
+        }
+        public inline const string& ModuleName() const
+        {
+            return moduleName;
+        }
+        public inline const string& Message() const
+        {
+            return message;
+        }
+        public inline const System.Lex.FullSpan& Defined() const
+        {
+            return defined;
+        }
+        public void SetDefined(const System.Lex.FullSpan& defined_)
+        {
+            defined = defined_;
+        }
+        public inline const List<System.Lex.FullSpan>& References() const
+        {
+            return references;
+        }
+        public void SetReferences(List<System.Lex.FullSpan>&& references_)
+        {
+            references = references_;
+        }
+        private int number;
+        private string moduleName;
+        private string message;
+        private System.Lex.FullSpan defined;
+        private List<System.Lex.FullSpan> references;
+    }
+
+    public class CompileWarningCollection
+    {
+        public CompileWarningCollection()
+        {
+        }
+        public bool IsWarningDisabled(int warningNumber) const
+        {
+            return disabledWarnings.Find(warningNumber) != disabledWarnings.End();
+        }
+        public void DisableWarning(int warningNumber)
+        {
+            disabledWarnings.Insert(warningNumber);
+        }
+        public void ClearDisabledWarnings()
+        {
+            disabledWarnings.Clear();
+        }
+        public void AddWarning(Warning&& warning)
+        {
+            warnings.Add(warning);
+        }
+        private static UniquePtr<CompileWarningCollection> instance;
+        private Set<int> disabledWarnings;
+        private List<Warning> warnings;
+    }
+
+    public bool IsWarningDisabled(Module* module, int warningNumber)
+    {
+        return module->WarningCollection().IsWarningDisabled(warningNumber);
+    }
+
+    public void DisableWarning(Module* module, int warningNumber)
+    {
+        module->WarningCollection().DisableWarning(warningNumber);
+    }
+
+    public void ClearDisabledWarnings(Module* module)
+    {
+        module->WarningCollection().ClearDisabledWarnings();
+    }
+
+    public void AddWarning(Module* module, Warning&& warning)
+    {
+        module->WarningCollection().AddWarning(warning);
+    }
+}

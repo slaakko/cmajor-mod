@@ -1,0 +1,2041 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public enum OverloadResolutionFlags : byte
+    {
+        none = 0u,
+        dontInstantiate = 1u << 0u,
+        noTemplates = 1u << 1u,
+        noRvalueRef = 1u << 2u,
+        includeSystemDefaultFunctions = 1u << 3u
+    }
+
+    public Result<string> MakeOverloadName(const ustring& groupName, const List<UniquePtr<BoundExpression>>& arguments, SymbolsContext& context)
+    {
+        Result<string> groupNameResult = ToUtf8(groupName);
+        if (groupNameResult.Error()) return groupNameResult;
+        string overloadName = Rvalue(groupNameResult.Value());
+        overloadName.Append('(');
+        bool first = true;
+        for (const UniquePtr<BoundExpression>& argument : arguments)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                overloadName.Append(", ");
+            }
+            Result<string> argResult = ToUtf8(argument->Type()->FullName());
+            if (argResult.Error()) return argResult;
+            overloadName.Append(argResult.Value());
+        }
+        overloadName.Append(')');
+        return Result<string>(Rvalue(overloadName));
+    }
+
+    public inline bool GetOverloadResolutionFlag(OverloadResolutionFlags flags, OverloadResolutionFlags flag)
+    {
+        return cast<OverloadResolutionFlags>(flags & flag) != OverloadResolutionFlags.none;
+    }
+
+    public class FunctionScopeLookup
+    {
+        public FunctionScopeLookup(ScopeLookup scopeLookup_) : scopeLookup(scopeLookup_), scope(null)
+        {
+        }
+        public FunctionScopeLookup(ScopeLookup scopeLookup_, ContainerScope* scope_) : scopeLookup(scopeLookup_), scope(scope_)
+        {
+        }
+        public inline ScopeLookup Lookup() const
+        {
+            return scopeLookup;
+        }
+        public inline ContainerScope* GetScope() const
+        {
+            return scope;
+        }
+        private ScopeLookup scopeLookup;
+        private ContainerScope* scope;
+    }
+
+    public class ArgumentMatch
+    {
+        public ArgumentMatch() : preReferenceConversionFlags(OperationFlags.none), conversionFn(null), postReferenceConversionFlags(OperationFlags.none), conversionDistance(0)
+        {
+        }
+        public ArgumentMatch(OperationFlags preReferenceConversionFlags_, FunctionSymbol* conversionFn_, OperationFlags postReferenceConversionFlags_, int conversionDistance_) :
+            preReferenceConversionFlags(preReferenceConversionFlags_), conversionFn(conversionFn_), postReferenceConversionFlags(postReferenceConversionFlags_),
+            conversionDistance(conversionDistance_)
+        {
+        }
+        public inline OperationFlags PreReferenceFlags() const
+        {
+            return preReferenceConversionFlags;
+        }
+        public inline void SetPrereferenceFlag(OperationFlags flag)
+        {
+            preReferenceConversionFlags = cast<OperationFlags>(preReferenceConversionFlags | flag);
+        }
+        public inline void SetConversionFn(FunctionSymbol* conversionFn_)
+        {
+            conversionFn = conversionFn_;
+        }
+        public inline FunctionSymbol* ConversionFn() const
+        {
+            return conversionFn;
+        }
+        public inline OperationFlags PostReferenceFlags() const
+        {
+            return postReferenceConversionFlags;
+        }
+        public inline void SetPostReferenceFlag(OperationFlags flag)
+        {
+            postReferenceConversionFlags = cast<OperationFlags>(postReferenceConversionFlags | flag);
+        }
+        public inline int ConversionDistance() const
+        {
+            return conversionDistance;
+        }
+        public inline void SetConversionDistance(int conversionDistance_)
+        {
+            conversionDistance = conversionDistance_;
+        }
+        private OperationFlags preReferenceConversionFlags;
+        private FunctionSymbol* conversionFn;
+        private OperationFlags postReferenceConversionFlags;
+        private int conversionDistance;
+    }
+
+    public bool BetterArgumentMatch(const ArgumentMatch& left, const ArgumentMatch& right)
+    {
+        if (left.PreReferenceFlags() == OperationFlags.none && right.PreReferenceFlags() != OperationFlags.none) return true;
+        if (left.PreReferenceFlags() != OperationFlags.none && right.PreReferenceFlags() == OperationFlags.none) return false;
+        if (left.ConversionFn() == null && right.ConversionFn() != null) return true;
+        if (left.ConversionFn() != null && right.ConversionFn() == null) return false;
+        if (left.PostReferenceFlags() == OperationFlags.none && right.PostReferenceFlags() != OperationFlags.none) return true;
+        if (left.PostReferenceFlags() != OperationFlags.none && right.PostReferenceFlags() == OperationFlags.none) return false;
+        if (left.ConversionDistance() < right.ConversionDistance()) return true;
+        if (left.ConversionDistance() > right.ConversionDistance()) return false;
+        return false;
+    }
+
+    public enum OverloadResolutionErrorFlags : byte
+    {
+        none = 0u,
+        referenceMustBeInitialized = 1u << 0u,
+        castRequired = 1u << 1u,
+        cannotBindConstArgToNonConstParam = 1u << 2u,
+        cannotAssignToConstObject = 1u << 3u
+    }
+
+    public class FunctionMatch
+    {
+        public FunctionMatch(FunctionSymbol* fn_) : fn(fn_)
+        {
+        }
+        public inline FunctionSymbol* Fn() const
+        {
+            return fn;
+        }
+        public inline const List<ArgumentMatch>& ArgumentMatches() const
+        {
+            return argumentMatches;
+        }
+        public inline int NumConversions() const
+        {
+            return numConversions;
+        }
+        public inline void IncNumConversions()
+        {
+            ++numConversions;
+        }
+        public inline int NumQualifyingConversions() const
+        {
+            return numQualifyingConversions;
+        }
+        public inline void IncNumQualifyingConversions()
+        {
+            ++numQualifyingConversions;
+        }
+        public inline OverloadResolutionErrorFlags ErrorFlags() const
+        {
+            return errorFlags;
+        }
+        public inline bool GetErrorFlag(OverloadResolutionErrorFlags flag) const
+        {
+            return cast<OverloadResolutionErrorFlags>(errorFlags & flag) != OverloadResolutionErrorFlags.none;
+        }
+        public inline void SetErrorFlag(OverloadResolutionErrorFlags flag)
+        {
+            errorFlags = cast<OverloadResolutionErrorFlags>(errorFlags | flag);
+        }
+        public inline void SetSourceType(TypeSymbol* sourceType_)
+        {
+            sourceType = sourceType_;
+        }
+        public inline TypeSymbol* SourceType() const
+        {
+            return sourceType;
+        }
+        public inline void SetTargetType(TypeSymbol* targetType_)
+        {
+            targetType = targetType_;
+        }
+        public inline TypeSymbol* TargetType() const
+        {
+            return targetType;
+        }
+        public inline const Map<TemplateParameterSymbol*, TypeSymbol*>& TemplateParameterMap() const
+        {
+            return templateParameterMap;
+        }
+        public void MapTemplateParameter(TemplateParameterSymbol* templateParameter, TypeSymbol* templateArgumentType)
+        {
+            templateParameterMap[templateParameter] = templateArgumentType;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        public inline void SetConceptCheckErrorId(int conceptCheckErrorId_)
+        {
+            conceptCheckErrorId = conceptCheckErrorId_;
+        }
+        public inline int ConceptCheckErrorId() const
+        {
+            return conceptCheckErrorId;
+        }
+        public inline const List<System.Lex.FullSpan>& Locations() const
+        {
+            return locations;
+        }
+        public void AddLocation(const System.Lex.FullSpan& location)
+        {
+            locations.Add(location);
+        }
+        public inline void SetBoundConstraint(BoundConstraint* boundConstraint_)
+        {
+            boundConstraint = boundConstraint_;
+        }
+        public inline BoundConstraint* GetBoundConstraint() const
+        {
+            return boundConstraint;
+        }
+        public void AddArgumentMatch(const ArgumentMatch& argumentMatch)
+        {
+            argumentMatches.Add(argumentMatch);
+        }
+        public void ResizeArgumentMatches(int numArgumentMatches)
+        {
+            argumentMatches.Resize(numArgumentMatches);
+        }
+        private FunctionSymbol* fn;
+        private List<ArgumentMatch> argumentMatches;
+        private int numConversions;
+        private int numQualifyingConversions;
+        private OverloadResolutionErrorFlags errorFlags;
+        private TypeSymbol* sourceType;
+        private TypeSymbol* targetType;
+        private Map<TemplateParameterSymbol*, TypeSymbol*> templateParameterMap;
+        private int errorId;
+        private int conceptCheckErrorId;
+        private List<System.Lex.FullSpan> locations;
+        private BoundConstraint* boundConstraint;
+    }
+
+    public class BetterFunctionMatch : Rel<FunctionMatch>
+    {
+        public bool operator()(const FunctionMatch& left, const FunctionMatch& right) const
+        {
+            int leftBetterArgumentMatches = 0;
+            int rightBetterArgumentMatches = 0;
+            int n = Max(cast<int>(left.ArgumentMatches().Count()), cast<int>(right.ArgumentMatches().Count()));
+            for (int i = 0; i < n; ++i)
+            {
+                ArgumentMatch leftMatch;
+                if (i < cast<int>(left.ArgumentMatches().Count()))
+                {
+                    leftMatch = left.ArgumentMatches()[i];
+                }
+                ArgumentMatch rightMatch;
+                if (i < cast<int>(right.ArgumentMatches().Count()))
+                {
+                    rightMatch = right.ArgumentMatches()[i];
+                }
+                if (BetterArgumentMatch(leftMatch, rightMatch))
+                {
+                    ++leftBetterArgumentMatches;
+                }
+                else if (BetterArgumentMatch(rightMatch, leftMatch))
+                {
+                    ++rightBetterArgumentMatches;
+                }
+            }
+            if (leftBetterArgumentMatches > rightBetterArgumentMatches)
+            {
+                return true;
+            }
+            if (rightBetterArgumentMatches > leftBetterArgumentMatches)
+            {
+                return false;
+            }
+            if (left.NumConversions() < right.NumConversions())
+            {
+                return true;
+            }
+            if (left.NumConversions() > right.NumConversions())
+            {
+                return false;
+            }
+            if (left.NumQualifyingConversions() < right.NumQualifyingConversions())
+            {
+                return true;
+            }
+            if (left.NumQualifyingConversions() > right.NumQualifyingConversions())
+            {
+                return false;
+            }
+            if (!left.Fn()->IsFunctionTemplate() && right.Fn()->IsFunctionTemplate())
+            {
+                return true;
+            }
+            if (left.Fn()->IsFunctionTemplate() && !right.Fn()->IsFunctionTemplate())
+            {
+                return false;
+            }
+            if (!left.Fn()->IsTemplateSpecialization() && right.Fn()->IsTemplateSpecialization())
+            {
+                return true;
+            }
+            if (left.Fn()->IsTemplateSpecialization() && !right.Fn()->IsTemplateSpecialization())
+            {
+                return false;
+            }
+            if (left.GetBoundConstraint() != null && right.GetBoundConstraint() == null)
+            {
+                return true;
+            }
+            if (left.GetBoundConstraint() == null && right.GetBoundConstraint() != null)
+            {
+                return false;
+            }
+            if (left.GetBoundConstraint() != null && right.GetBoundConstraint() != null)
+            {
+                bool leftSubsumeRight = left.GetBoundConstraint()->Subsume(right.GetBoundConstraint());
+                bool rightSubsumeLeft = right.GetBoundConstraint()->Subsume(left.GetBoundConstraint());
+                if (leftSubsumeRight && !rightSubsumeLeft)
+                {
+                    return true;
+                }
+                if (rightSubsumeLeft && !leftSubsumeRight)
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+    }
+
+    public Result<UniquePtr<BoundFunctionCall>> ResolveOverload(const ustring& groupName, ContainerScope* containerScope, const List<FunctionScopeLookup>& functionScopeLookups,
+        List<UniquePtr<BoundExpression>>& arguments, BoundCompileUnit* boundCompileUnit, BoundFunction* currentFunction, Node* node)
+    {
+        List<TypeSymbol*> templateArgumentTypes;
+        OverloadResolutionFlags flags = OverloadResolutionFlags.none;
+        return ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, currentFunction, node, flags, templateArgumentTypes);
+    }
+
+    public Result<UniquePtr<BoundFunctionCall>> ResolveOverload(const ustring& groupName, ContainerScope* containerScope, const List<FunctionScopeLookup>& functionScopeLookups,
+        List<UniquePtr<BoundExpression>>& arguments, BoundCompileUnit* boundCompileUnit, BoundFunction* currentFunction, Node* node, OverloadResolutionFlags flags,
+        const List<TypeSymbol*>& templateArgumentTypes)
+    {
+        int arity = cast<int>(arguments.Count());
+        ViableFunctionSet viableFunctions;
+        string collectMessage;
+        if (currentFunction != null)
+        {
+            CollectFlags collectFlags = CollectFlags.none;
+            if (GetOverloadResolutionFlag(flags, OverloadResolutionFlags.noRvalueRef))
+            {
+                SetCollectFlag(collectFlags, CollectFlags.noRvalueRef);
+            }
+            if (GetOverloadResolutionFlag(flags, OverloadResolutionFlags.dontInstantiate))
+            {
+                SetCollectFlag(collectFlags, CollectFlags.dontInstantiate);
+            }
+            Result<bool> result = boundCompileUnit->GetOperationRepository()->CollectViableFunctions(
+                groupName, containerScope, arguments, currentFunction, node, collectFlags, viableFunctions);
+            if (result.Error())
+            {
+                collectMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+            }
+        }
+        if (viableFunctions.IsEmpty())
+        {
+            Result<bool> result = CollectViableFunctionsFromSymbolTable(arity, groupName, functionScopeLookups, boundCompileUnit, viableFunctions);
+            if (result.Error())
+            {
+                if (!collectMessage.IsEmpty())
+                {
+                    collectMessage.Append('\n');
+                }
+                collectMessage.Append(RtmGetErrorMessageWithoutStackTrace(result.GetErrorId()));
+            }
+        }
+        if (viableFunctions.IsEmpty())
+        {
+            Result<string> overloadNameResult = MakeOverloadName(groupName, arguments, boundCompileUnit->Context());
+            if (overloadNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(overloadNameResult.GetErrorId()));
+            string overloadName = Rvalue(overloadNameResult.Value());
+            if (groupName == u"@constructor" && arity == 1 && arguments[0]->Type()->IsReferenceType())
+            {
+                string message = "overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.";
+                if (!collectMessage.IsEmpty())
+                {
+                    message.Append("\ncollect errors: ").Append(collectMessage);
+                }
+                int errorId = MakeError(message, node->GetFullSpan());
+                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+            }
+            else
+            {
+                Result<string> functionGroupNameResult = ToUtf8(groupName);
+                if (functionGroupNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(functionGroupNameResult.GetErrorId()));
+                string functionGroupName = Rvalue(functionGroupNameResult.Value());
+                string message = "overload resolution failed: '" + overloadName + "' not found. No viable functions taking " + ToString(arity) + " arguments found in " +
+                    "function group '" + functionGroupName + "'";
+                if (!collectMessage.IsEmpty())
+                {
+                    message.Append("\ncollect errors: ").Append(collectMessage);
+                }
+                int errorId = MakeError(message, node->GetFullSpan());
+                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+            }
+        }
+        else
+        {
+            Result<UniquePtr<BoundFunctionCall>> result = SelectViableFunction(
+                viableFunctions, groupName, arguments, containerScope, boundCompileUnit, currentFunction, node, flags, templateArgumentTypes, collectMessage);
+            return result;
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> CollectViableFunctionsFromSymbolTable(int arity, const ustring& groupName, const List<FunctionScopeLookup>& functionScopeLookups,
+        BoundCompileUnit* boundCompileUnit, ViableFunctionSet& viableFunctions)
+    {
+        bool result = false;
+        Set<ContainerScope*> scopesLookedUp;
+        bool fileScopesLookedUp = false;
+        for (const FunctionScopeLookup& functionScopeLookup : functionScopeLookups)
+        {
+            if (functionScopeLookup.Lookup() == ScopeLookup.fileScopes && !fileScopesLookedUp)
+            {
+                fileScopesLookedUp = true;
+                for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
+                {
+                    Result<bool> scopeResult = fileScope->CollectViableFunctions(arity, groupName, scopesLookedUp, viableFunctions);
+                    if (scopeResult.Value()) result = true;
+                }
+            }
+            else
+            {
+                ContainerScope* scope = functionScopeLookup.GetScope();
+                Result<bool> scopeResult = scope->CollectViableFunctions(arity, groupName, scopesLookedUp, functionScopeLookup.Lookup(), viableFunctions);
+                if (scopeResult.Value()) result = true;
+            }
+        }
+        return Result<bool>(result);
+    }
+
+    Result<UniquePtr<BoundFunctionCall>> SelectViableFunction(ViableFunctionSet& viableFunctions, const ustring& groupName, List<UniquePtr<BoundExpression>>& arguments,
+        ContainerScope* containerScope, BoundCompileUnit* boundCompileUnit, BoundFunction* currentFunction, Node* node, OverloadResolutionFlags flags,
+        const List<TypeSymbol*>& templateArgumentTypes, const string& collectMessage)
+    {
+        List<FunctionMatch> functionMatches;
+        List<FunctionMatch> failedFunctionMatches;
+        List<UniquePtr<BoundConstraint>> boundConstraints;
+        for (FunctionSymbol* viableFunction : viableFunctions.Get())
+        {
+            if (viableFunction->DontReuse())
+            {
+                if (!boundCompileUnit->CanReuse(viableFunction))
+                {
+                    continue;
+                }
+            }
+            if (viableFunction->IsSystemDefault())
+            {
+                if (!GetOverloadResolutionFlag(flags, OverloadResolutionFlags.includeSystemDefaultFunctions))
+                {
+                    continue;
+                }
+            }
+            FunctionMatch functionMatch(viableFunction);
+            if (viableFunction->IsFunctionTemplate())
+            {
+                if (GetOverloadResolutionFlag(flags, OverloadResolutionFlags.noTemplates))
+                {
+                    continue;
+                }
+                int n = cast<int>(templateArgumentTypes.Count());
+                if (n > viableFunction->TemplateParameters().Count())
+                {
+                    continue;
+                }
+                else
+                {
+                    for (int i = 0; i < n; ++i)
+                    {
+                        TemplateParameterSymbol* templateParameter = viableFunction->TemplateParameters()[i];
+                        functionMatch.MapTemplateParameter(templateParameter, templateArgumentTypes[i]);
+                    }
+                }
+            }
+            else
+            {
+                if (!templateArgumentTypes.IsEmpty())
+                {
+                    continue;
+                }
+            }
+            Result<bool> conversionFoundResult = FindConversions(
+                boundCompileUnit, viableFunction, arguments, functionMatch, ConversionType.implicit, containerScope, currentFunction, node);
+            if (conversionFoundResult.Error())
+            {
+                functionMatch.SetErrorId(conversionFoundResult.GetErrorId());
+                failedFunctionMatches.Add(functionMatch);
+            }
+            else
+            {
+                bool conversionFound = conversionFoundResult.Value();
+                if (conversionFound)
+                {
+                    if (viableFunction->IsFunctionTemplate())
+                    {
+                        bool allTemplateParametersFound = true;
+                        int n = cast<int>(viableFunction->TemplateParameters().Count());
+                        for (int i = 0; i < n; ++i)
+                        {
+                            TemplateParameterSymbol* templateParameterSymbol = viableFunction->TemplateParameters()[i];
+                            auto it = functionMatch.TemplateParameterMap().Find(templateParameterSymbol);
+                            if (it == functionMatch.TemplateParameterMap().End())
+                            {
+                                allTemplateParametersFound = false;
+                                break;
+                            }
+                        }
+                        if (allTemplateParametersFound)
+                        {
+                            if (viableFunction->Constraint() == null)
+                            {
+                                Node* node = boundCompileUnit->GetSymbolTable()->GetNode(viableFunction);
+                                if (node != null)
+                                {
+                                    #assert(node->IsFunctionNode());
+                                    FunctionNode* functionNode = cast<FunctionNode*>(node);
+                                    ConstraintNode* constraint = functionNode->WhereConstraint();
+                                    if (constraint != null)
+                                    {
+                                        CloneContext cloneContext;
+                                        viableFunction->SetConstraint(cast<ConstraintNode*>(constraint->Clone(cloneContext)));
+                                    }
+                                }
+                            }
+                            if (viableFunction->Constraint() != null)
+                            {
+                                UniquePtr<BoundConstraint> boundConstraint;
+                                Result<bool> candidateFoundResult = CheckConstraint(
+                                    viableFunction->Constraint(), viableFunction->UsingNodes(), boundCompileUnit, containerScope, currentFunction,
+                                    viableFunction->TemplateParameters(), functionMatch.TemplateParameterMap(), boundConstraint, node, viableFunction);
+                                if (candidateFoundResult.Error())
+                                {
+                                    functionMatch.SetConceptCheckErrorId(candidateFoundResult.GetErrorId());
+                                    failedFunctionMatches.Add(functionMatch);
+                                }
+                                else
+                                {
+                                    bool candidateFound = candidateFoundResult.Value();
+                                    if (candidateFound)
+                                    {
+                                        functionMatch.SetBoundConstraint(boundConstraint.Get());
+                                        functionMatches.Add(functionMatch);
+                                        boundConstraints.Add(Rvalue(boundConstraint));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                functionMatches.Add(functionMatch);
+                            }
+                        }
+                        else
+                        {
+                            failedFunctionMatches.Add(functionMatch);
+                        }
+                    }
+                    else
+                    {
+                        functionMatches.Add(functionMatch);
+                    }
+                }
+                else
+                {
+                    failedFunctionMatches.Add(functionMatch);
+                }
+            }
+        }
+        if (functionMatches.IsEmpty())
+        {
+            if (!GetOverloadResolutionFlag(flags, OverloadResolutionFlags.includeSystemDefaultFunctions))
+            {
+                return SelectViableFunction(viableFunctions, groupName, arguments, containerScope, boundCompileUnit, currentFunction, node,
+                    cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.includeSystemDefaultFunctions), templateArgumentTypes, collectMessage);
+            }
+            int errorId = FailWithOverloadNotFound(viableFunctions, groupName, arguments, failedFunctionMatches, node, flags, collectMessage, boundCompileUnit->Context());
+            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+        }
+        else if (functionMatches.Count() > 1)
+        {
+            BetterFunctionMatch betterMatch;
+            Sort(functionMatches, betterMatch);
+            if (betterMatch(functionMatches[0], functionMatches[1]))
+            {
+                const FunctionMatch& bestMatch = functionMatches[0];
+                FunctionSymbol* bestFn = bestMatch.Fn();
+                if (bestFn->IsSuppressed())
+                {
+                    Result<string> fullNameResult = ToUtf8(bestFn->FullName());
+                    if (fullNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(fullNameResult.GetErrorId()));
+                    string message = "cannot call a suppressed member function '"  + fullNameResult.Value() + "'";
+                    if (!collectMessage.IsEmpty())
+                    {
+                        message.Append("\ncollect errors:").Append(collectMessage);
+                    }
+                    int errorId = MakeError(message, node->GetFullSpan(), bestFn->FullSpan());
+                    return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+                }
+                bool instantiate = !GetOverloadResolutionFlag(flags, OverloadResolutionFlags.dontInstantiate);
+                if (bestFn->IsFunctionTemplate())
+                {
+                    if (instantiate)
+                    {
+                        Result<FunctionSymbol*> result = boundCompileUnit->GetFunctionTemplateRepository()->Instantiate(bestFn, bestMatch.TemplateParameterMap(), node);
+                        if (result.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                        bestFn = result.Value();
+                    }
+                    else
+                    {
+                        templateArgumentTypes.Clear();
+                        for (TemplateParameterSymbol* templateParameter : bestFn->TemplateParameters())
+                        {
+                            auto it = bestMatch.TemplateParameterMap().Find(templateParameter);
+                            if (it != bestMatch.TemplateParameterMap().End())
+                            {
+                                TypeSymbol* templateArgumentType = it->second;
+                                templateArgumentTypes.Add(templateArgumentType);
+                            }
+                        }
+                    }
+                }
+                else if (!bestFn->IsGenerated() && bestFn->Parent()->IsClassTemplateSpecializationSymbol())
+                {
+                    if (instantiate)
+                    {
+                        ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(bestFn->Parent());
+                        if (specialization->GetModule() != boundCompileUnit->GetModule())
+                        {
+                            specialization = boundCompileUnit->GetSymbolTable()->GetCurrentClassTemplateSpecialization(specialization);
+                            int index = bestFn->Index();
+                            FunctionSymbol* fn = specialization->GetFunctionByIndex(index);
+                            if (fn == null)
+                            {
+                                Result<string> fullNameResult = ToUtf8(specialization->FullName());
+                                if (fullNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(fullNameResult.GetErrorId()));
+                                string fullName = Rvalue(fullNameResult.Value());
+                                int errorId = MakeError("function by index " + ToString(index) + " not found in class template specialization '" + fullName + "'",
+                                    node->GetFullSpan());
+                                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+                            }
+                            bestFn = fn;
+                        }
+                        Result<FunctionSymbol*> result = boundCompileUnit->GetClassTemplateRepository()->Instantiate(bestFn, containerScope, currentFunction, node);
+                        if (result.Error())
+                        {
+                            ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(bestFn->Parent());
+                            LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
+                            ClassTemplateSpecializationSymbol* copy = boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization);
+                            Result<bool> bindResult = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
+                                copy, boundCompileUnit->GetSymbolTable()->GlobalNs().GetContainerScope(), node);
+                            if (bindResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(bindResult.GetErrorId()));
+                            int index = bestFn->Index();
+                            FunctionSymbol* fn = copy->GetFunctionByIndex(index);
+                            if (fn == null)
+                            {
+                                Result<string> fullNameResult = ToUtf8(copy->FullName());
+                                if (fullNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(fullNameResult.GetErrorId()));
+                                string fullName = Rvalue(fullNameResult.Value());
+                                int errorId = MakeError("function by index " + ToString(index) + " not found in class template specialization '" + fullName + "'",
+                                    node->GetFullSpan());
+                                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+                            }
+                            bestFn = fn;
+                            Result<FunctionSymbol*> result = boundCompileUnit->GetClassTemplateRepository()->Instantiate(bestFn, containerScope, currentFunction, node);
+                            if (result.Error())
+                            {
+                                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                            }
+                            else
+                            {
+                                bestFn = result.Value();
+                            }
+                        }
+                        else
+                        {
+                            bestFn = result.Value();
+                        }
+                    }
+                }
+                else if (!bestFn->IsGenerated() && GetGlobalFlag(GlobalFlags.release) && bestFn->IsInline())
+                {
+                    if (instantiate)
+                    {
+                        if (bestFn->IsTemplateSpecialization())
+                        {
+                            FunctionSymbol* functionTemplate = bestFn->FunctionTemplate();
+                            Map<TemplateParameterSymbol*, TypeSymbol*> templateParameterMap;
+                            int n = cast<int>(functionTemplate->TemplateParameters().Count());
+                            for (int i = 0; i < n; ++i)
+                            {
+                                TemplateParameterSymbol* templateParameter = functionTemplate->TemplateParameters()[i];
+                                TypeSymbol* templateArgumentType = bestFn->TemplateArgumentTypes()[i];
+                                templateParameterMap[templateParameter] = templateArgumentType;
+                            }
+                            Result<FunctionSymbol*> result = boundCompileUnit->GetFunctionTemplateRepository()->Instantiate(functionTemplate, templateParameterMap, node);
+                            if (result.Error())
+                            {
+                                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                            }
+                            else
+                            {
+                                bestFn = result.Value();
+                            }
+                        }
+                        else
+                        {
+                            Result<FunctionSymbol*> result = boundCompileUnit->GetInlineFunctionRepository()->Instantiate(bestFn, containerScope, node);
+                            if (result.Error())
+                            {
+                                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                            }
+                            else
+                            {
+                                bestFn = result.Value();
+                            }
+                        }
+                    }
+                }
+                return CreateBoundFunctionCall(bestFn, arguments, boundCompileUnit, currentFunction, bestMatch, containerScope, node);
+            }
+            else
+            {
+                int errorId = FailWithAmbiguousOverload(groupName, arguments, functionMatches, node, flags, boundCompileUnit->Context());
+                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+            }
+        }
+        else // single match
+        {
+            const FunctionMatch& bestMatch = functionMatches[0];
+            FunctionSymbol* singleBest = bestMatch.Fn();
+            if (singleBest->IsSuppressed())
+            {
+                Result<string> fullNameResult = ToUtf8(singleBest->FullName());
+                if (fullNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(fullNameResult.GetErrorId()));
+                string message = "cannot call a suppressed member function '"  + fullNameResult.Value() + "'";
+                if (!collectMessage.IsEmpty())
+                {
+                    message.Append("\ncollect errors:").Append(collectMessage);
+                }
+                int errorId = MakeError(message, node->GetFullSpan(), singleBest->FullSpan());
+                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+            }
+            bool instantiate = !GetOverloadResolutionFlag(flags, OverloadResolutionFlags.dontInstantiate);
+            if (singleBest->IsFunctionTemplate())
+            {
+                if (instantiate)
+                {
+                    Result<FunctionSymbol*> result = boundCompileUnit->GetFunctionTemplateRepository()->Instantiate(singleBest, bestMatch.TemplateParameterMap(), node);
+                    if (result.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                    singleBest = result.Value();
+                }
+                else
+                {
+                    templateArgumentTypes.Clear();
+                    for (TemplateParameterSymbol* templateParameter : singleBest->TemplateParameters())
+                    {
+                        auto it = bestMatch.TemplateParameterMap().Find(templateParameter);
+                        if (it != bestMatch.TemplateParameterMap().End())
+                        {
+                            TypeSymbol* templateArgumentType = it->second;
+                            templateArgumentTypes.Add(templateArgumentType);
+                        }
+                    }
+                }
+            }
+            else if (!singleBest->IsGenerated() && singleBest->Parent()->IsClassTemplateSpecializationSymbol())
+            {
+                if (instantiate)
+                {
+                    ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(singleBest->Parent());
+                    if (specialization->GetModule() != boundCompileUnit->GetModule())
+                    {
+                        specialization = boundCompileUnit->GetSymbolTable()->GetCurrentClassTemplateSpecialization(specialization);
+                        int index = singleBest->Index();
+                        FunctionSymbol* fn = specialization->GetFunctionByIndex(index);
+                        if (fn == null)
+                        {
+                            Result<string> fullNameResult = ToUtf8(specialization->FullName());
+                            if (fullNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(fullNameResult.GetErrorId()));
+                            string fullName = Rvalue(fullNameResult.Value());
+                            int errorId = MakeError("function by index " + ToString(index) + " not found in class template specialization '" + fullName + "'",
+                                node->GetFullSpan());
+                            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+                        }
+                        singleBest = fn;
+                    }
+                    Result<FunctionSymbol*> result = boundCompileUnit->GetClassTemplateRepository()->Instantiate(singleBest, containerScope, currentFunction, node);
+                    if (result.Error())
+                    {
+                        ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(singleBest->Parent());
+                        LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
+                        ClassTemplateSpecializationSymbol* copy = boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization);
+                        Result<bool> bindResult = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
+                            copy, boundCompileUnit->GetSymbolTable()->GlobalNs().GetContainerScope(), node);
+                        if (bindResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(bindResult.GetErrorId()));
+                        int index = singleBest->Index();
+                        FunctionSymbol* fn = copy->GetFunctionByIndex(index);
+                        if (fn == null)
+                        {
+                            Result<string> fullNameResult = ToUtf8(copy->FullName());
+                            if (fullNameResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(fullNameResult.GetErrorId()));
+                            string fullName = Rvalue(fullNameResult.Value());
+                            int errorId = MakeError("function by index " + ToString(index) + " not found in class template specialization '" + fullName + "'",
+                                node->GetFullSpan());
+                            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+                        }
+                        singleBest = fn;
+                        Result<FunctionSymbol*> result = boundCompileUnit->GetClassTemplateRepository()->Instantiate(singleBest, containerScope, currentFunction, node);
+                        if (result.Error())
+                        {
+                            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                        }
+                        else
+                        {
+                            singleBest = result.Value();
+                        }
+                    }
+                    else
+                    {
+                        singleBest = result.Value();
+                    }
+                }
+            }
+            else if (!singleBest->IsGenerated() && GetGlobalFlag(GlobalFlags.release) && singleBest->IsInline())
+            {
+                if (instantiate)
+                {
+                    if (singleBest->IsTemplateSpecialization())
+                    {
+                        FunctionSymbol* functionTemplate = singleBest->FunctionTemplate();
+                        Map<TemplateParameterSymbol*, TypeSymbol*> templateParameterMap;
+                        int n = cast<int>(functionTemplate->TemplateParameters().Count());
+                        for (int i = 0; i < n; ++i)
+                        {
+                            TemplateParameterSymbol* templateParameter = functionTemplate->TemplateParameters()[i];
+                            TypeSymbol* templateArgumentType = singleBest->TemplateArgumentTypes()[i];
+                            templateParameterMap[templateParameter] = templateArgumentType;
+                        }
+                        Result<FunctionSymbol*> result = boundCompileUnit->GetFunctionTemplateRepository()->Instantiate(functionTemplate, templateParameterMap, node);
+                        if (result.Error())
+                        {
+                            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                        }
+                        else
+                        {
+                            singleBest = result.Value();
+                        }
+                    }
+                    else
+                    {
+                        Result<FunctionSymbol*> result = boundCompileUnit->GetInlineFunctionRepository()->Instantiate(singleBest, containerScope, node);
+                        if (result.Error())
+                        {
+                            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                        }
+                        else
+                        {
+                            singleBest = result.Value();
+                        }
+                    }
+                }
+            }
+            return CreateBoundFunctionCall(singleBest, arguments, boundCompileUnit, currentFunction, bestMatch, containerScope, node);
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> FindConversions(BoundCompileUnit* boundCompileUnit, FunctionSymbol* function, const List<UniquePtr<BoundExpression>>& arguments,
+        FunctionMatch& functionMatch, ConversionType conversionType, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
+    {
+        if (currentFunction == null)
+        {
+            if (function->IsProject() && !function->IsBound())
+            {
+                Node* node = boundCompileUnit->GetSymbolTable()->GetNode(function);
+                if (node != null)
+                {
+                    TypeBinder typeBinder(boundCompileUnit);
+                    typeBinder.SetContainerScope(containerScope);
+                    typeBinder.SetCurrentFunctionSymbol(function);
+                    node->Accept(typeBinder);
+                    if (typeBinder.Error())
+                    {
+                        return Result<bool>(ErrorId(typeBinder.GetErrorId()));
+                    }
+                }
+            }
+        }
+        SymbolsContext& context = boundCompileUnit->Context();
+        int arity = cast<int>(arguments.Count());
+        if (arity == 1 && function->GroupName() == u"@constructor" && arguments[0]->Type()->IsReferenceType())
+        {
+            functionMatch.SetErrorFlag(OverloadResolutionErrorFlags.referenceMustBeInitialized);
+            return Result<bool>(false);
+        }
+        int n = Min(arity, function->Arity());
+        #assert(arity == function->Arity());
+        for (int i = 0; i < n; ++i)
+        {
+            BoundExpression* argument = arguments[i].Get();
+            TypeSymbol* sourceType = argument->Type();
+            if (sourceType->RemoveConst(context)->IsBasicTypeSymbol())
+            {
+                sourceType = sourceType->RemoveConst(context);
+            }
+            ParameterSymbol* parameter = function->Parameters()[i];
+            TypeSymbol* targetType = parameter->Type();
+            if (arity == 2 && function->GroupName() == u"operator=")
+            {
+                if (targetType->IsRvalueReferenceType() && !sourceType->IsRvalueReferenceType() && !argument->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+                {
+                    functionMatch.IncNumQualifyingConversions();
+                }
+                if (i == 0)
+                {
+                    if (targetType->IsConstType() && targetType->PointerCount() <= 1)
+                    {
+                        functionMatch.SetErrorFlag(OverloadResolutionErrorFlags.cannotAssignToConstObject);
+                        return Result<bool>(false);
+                    }
+                }
+                if (i == 0 && TypesEqual(sourceType, targetType))    // exact match
+                {
+                    if (sourceType->IsReferenceType() && !function->IsConstructorDestructorOrNonstaticMemberFunction())
+                    {
+                        functionMatch.AddArgumentMatch(ArgumentMatch(OperationFlags.none, null, OperationFlags.deref, 1));
+                        functionMatch.IncNumConversions();
+                        continue;
+                    }
+                }
+                else if (i == 1 && sourceType->IsReferenceType() && targetType->IsLvalueReferenceType() &&
+                    TypesEqual(sourceType->RemoveReference(context)->RemoveConst(context), targetType->RemoveReference(context)))
+                {
+                    if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
+                    {
+                        functionMatch.AddArgumentMatch(ArgumentMatch(OperationFlags.none, null, OperationFlags.deref, 1));
+                        functionMatch.IncNumConversions();
+                        continue;
+                    }
+                }
+                else if (i == 1 && sourceType->IsReferenceType() && targetType->IsRvalueReferenceType() &&
+                    TypesEqual(sourceType->RemoveReference(context), targetType->RemoveReference(context)))
+                {
+                    if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
+                    {
+                        functionMatch.AddArgumentMatch(ArgumentMatch(OperationFlags.none, null, OperationFlags.none, 0));
+                        continue;
+                    }
+                }
+                else if (i == 1 && !sourceType->IsReferenceType() && argument->IsLvalueExpression() && targetType->IsReferenceType() &&
+                    TypesEqual(sourceType, targetType->RemoveReference(context)))
+                {
+                    if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
+                    {
+                        functionMatch.AddArgumentMatch(ArgumentMatch(OperationFlags.none, null, OperationFlags.none, 0));
+                        continue;
+                    }
+                }
+                else if (i == 1 && function->IsLvalueReferenceCopyAssignment() && TypesEqual(sourceType, targetType->RemoveReference(context)))
+                {
+                    functionMatch.AddArgumentMatch(ArgumentMatch(OperationFlags.none, null, OperationFlags.none, 0));
+                    continue;
+                }
+                else if (i == 1 && function->IsLvalueReferenceCopyAssignment())
+                {
+                    ArgumentMatch argumentMatch;
+                    Result<FunctionSymbol*> conversionResult = GetConversion(sourceType, targetType->RemoveReference(context), containerScope, boundCompileUnit, currentFunction,
+                        argumentMatch, node);
+                    if (!conversionResult.Error())
+                    {
+                        FunctionSymbol* conversionFn = conversionResult.Value();
+                        if (conversionFn != null && (conversionFn->GetConversionType() == conversionType || conversionFn->GetConversionType() == ConversionType.implicit))
+                        {
+                            functionMatch.IncNumConversions();
+                            functionMatch.AddArgumentMatch(ArgumentMatch(OperationFlags.none, conversionFn, OperationFlags.none, 1));
+                            continue;
+                        }
+                    }
+                }
+            }
+            if (TypesEqual(sourceType, targetType))
+            {
+                functionMatch.AddArgumentMatch(ArgumentMatch());
+            }
+            else
+            {
+                if (arity == 2 && (function->GroupName() == u"@constructor" || function->GroupName() == u"operator="))
+                {
+                    if (i == 0)
+                    {
+                        return Result<bool>(false);
+                    }
+                }
+                bool qualificationConversionMatch = false;
+                ArgumentMatch argumentMatch;
+                if (TypesEqual(sourceType->PlainType(context), targetType->PlainType(context)))
+                {
+                    qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
+                    functionMatch.AddArgumentMatch(argumentMatch);
+                }
+                if (!qualificationConversionMatch)
+                {
+                    Result<FunctionSymbol*> conversionResult = GetConversion(sourceType, targetType, containerScope, boundCompileUnit, currentFunction, argumentMatch, node);
+                    if (conversionResult.Error())
+                    {
+                        if (function->IsFunctionTemplate())
+                        {
+                            if (FindTemplateParameterMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope,
+                                currentFunction, node))
+                            {
+                                continue;
+                            }
+                            if (FindClassTemplateSpecializationMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope,
+                                currentFunction, node))
+                            {
+                                continue;
+                            }
+                        }
+                        functionMatch.SetErrorId(conversionResult.GetErrorId());
+                        return Result<bool>(false);
+                    }
+                    else
+                    {
+                        FunctionSymbol* conversionFn = conversionResult.Value();
+                        if (conversionFn->GetConversionType() == conversionType || conversionFn->GetConversionType() == ConversionType.implicit)
+                        {
+                            argumentMatch.SetConversionFn(conversionFn);
+                            functionMatch.IncNumConversions();
+                            if (argumentMatch.PreReferenceFlags() == OperationFlags.none)
+                            {
+                                if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
+                                {
+                                    functionMatch.AddArgumentMatch(argumentMatch);
+                                    continue;
+                                }
+                                else
+                                {
+                                    return Result<bool>(false);
+                                }
+                            }
+                            else
+                            {
+                                if (FindQualificationConversion(conversionFn->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
+                                {
+                                    functionMatch.AddArgumentMatch(argumentMatch);
+                                    continue;
+                                }
+                                else
+                                {
+                                    return Result<bool>(false);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (arity == 2 && i == 1 && conversionType == ConversionType.implicit && conversionFn->IsExplicitConversion())
+                            {
+                                functionMatch.SetErrorFlag(OverloadResolutionErrorFlags.castRequired);
+                                functionMatch.SetSourceType(sourceType);
+                                functionMatch.SetTargetType(targetType);
+                            }
+                            return Result<bool>(false);
+                        }
+                    }
+                }
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    public bool FindQualificationConversion(TypeSymbol* sourceType, TypeSymbol* targetType, BoundExpression* argument, ConversionType conversionType,
+        FunctionMatch& functionMatch, ArgumentMatch& argumentMatch)
+    {
+        int distance = 0;
+        if (argumentMatch.ConversionFn() != null)
+        {
+            distance = argumentMatch.ConversionFn()->ConversionDistance();
+        }
+        if (targetType->IsRvalueReferenceType() && !sourceType->IsRvalueReferenceType())
+        {
+            functionMatch.IncNumQualifyingConversions();
+        }
+        if (sourceType->IsConstType())
+        {
+            if (targetType->IsConstType() || !targetType->IsReferenceType())
+            {
+                ++distance;
+            }
+            else if (conversionType == ConversionType.implicit)
+            {
+                if (sourceType->PointerCount() < 1)
+                {
+                    functionMatch.SetErrorFlag(OverloadResolutionErrorFlags.cannotBindConstArgToNonConstParam);
+                    functionMatch.SetSourceType(sourceType);
+                    functionMatch.SetTargetType(targetType);
+                    return false;
+                }
+                else
+                {
+                    ++distance;
+                }
+            }
+            else
+            {
+                distance = 255;
+            }
+        }
+        else
+        {
+            if (targetType->IsConstType())
+            {
+                distance = distance + 2;
+            }
+            else
+            {
+                distance = distance + 3;
+            }
+        }
+        if (sourceType->IsReferenceType() && !targetType->IsReferenceType())
+        {
+            argumentMatch.SetPostReferenceFlag(OperationFlags.deref);
+            argumentMatch.SetConversionDistance(distance);
+            functionMatch.IncNumQualifyingConversions();
+            return true;
+        }
+        else if (!sourceType->IsReferenceType() &&
+            (targetType->IsReferenceType() || targetType->IsClassTypeSymbol() || targetType->IsClassDelegateTypeSymbol()))
+        {
+            if (targetType->IsConstType() || targetType->IsClassTypeSymbol() || targetType->IsClassDelegateTypeSymbol())
+            {
+                argumentMatch.SetPostReferenceFlag(OperationFlags.addr);
+                argumentMatch.SetConversionDistance(distance);
+                functionMatch.IncNumQualifyingConversions();
+                return true;
+            }
+            else if ((!sourceType->IsConstType() || sourceType->PointerCount() >= 1) && argument->IsLvalueExpression())
+            {
+                if (targetType->IsRvalueReferenceType() && !sourceType->IsRvalueReferenceType())
+                {
+                    if (argument->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+                    {
+                        distance = 0;
+                    }
+                    else
+                    {
+                        distance = distance + 10;
+                    }
+                }
+                argumentMatch.SetPostReferenceFlag(OperationFlags.addr);
+                argumentMatch.SetConversionDistance(distance);
+                functionMatch.IncNumQualifyingConversions();
+                return true;
+            }
+            else
+            {
+                functionMatch.SetErrorFlag(OverloadResolutionErrorFlags.cannotBindConstArgToNonConstParam);
+                functionMatch.SetSourceType(sourceType);
+                functionMatch.SetTargetType(targetType);
+            }
+        }
+        else if (sourceType->IsConstType() && !targetType->IsConstType())
+        {
+            functionMatch.IncNumQualifyingConversions();
+            ++distance;
+            if (sourceType->IsLvalueReferenceType() && targetType->IsRvalueReferenceType())
+            {
+                ++distance;
+                functionMatch.IncNumQualifyingConversions();
+            }
+            argumentMatch.SetConversionDistance(distance);
+            return true;
+        }
+        else if (!sourceType->IsConstType() && targetType->IsConstType())
+        {
+            functionMatch.IncNumQualifyingConversions();
+            ++distance;
+            if (sourceType->IsLvalueReferenceType() && targetType->IsRvalueReferenceType())
+            {
+                ++distance;
+                functionMatch.IncNumQualifyingConversions();
+            }
+            argumentMatch.SetConversionDistance(distance);
+            return true;
+        }
+        else if (sourceType->IsLvalueReferenceType() && targetType->IsRvalueReferenceType())
+        {
+            ++distance;
+            functionMatch.IncNumQualifyingConversions();
+            argumentMatch.SetConversionDistance(distance);
+            return true;
+        }
+        else if (sourceType->IsRvalueReferenceType() && targetType->IsLvalueReferenceType())
+        {
+            ++distance;
+            functionMatch.IncNumQualifyingConversions();
+            argumentMatch.SetConversionDistance(distance);
+            return true;
+        }
+        else if (argumentMatch.ConversionFn() != null)
+        {
+            argumentMatch.SetConversionDistance(distance);
+            return true;
+        }
+        return false;
+    }
+
+    public bool FindTemplateParameterMatch(TypeSymbol* sourceType, TypeSymbol* targetType, ConversionType conversionType, BoundExpression* argument,
+        BoundCompileUnit* boundCompileUnit, FunctionMatch& functionMatch, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
+    {
+        if (!targetType->BaseType()->IsTemplateParameterSymbol()) return false;
+        TemplateParameterSymbol* templateParameter = cast<TemplateParameterSymbol*>(targetType->BaseType());
+        TypeSymbol* templateArgumentType = null;
+        auto it = functionMatch.TemplateParameterMap().Find(templateParameter);
+        if (it == functionMatch.TemplateParameterMap().End())
+        {
+            templateArgumentType = sourceType->RemoveDerivations(targetType->GetDerivations(), boundCompileUnit->Context());
+            if (templateArgumentType != null)
+            {
+                functionMatch.MapTemplateParameter(templateParameter, templateArgumentType);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            templateArgumentType = it->second;
+        }
+        targetType = targetType->Unify(templateArgumentType, boundCompileUnit->Context());
+        if (targetType == null)
+        {
+            return false;
+        }
+        if (TypesEqual(sourceType, targetType))
+        {
+            functionMatch.AddArgumentMatch(ArgumentMatch());
+            return true;
+        }
+        else
+        {
+            bool qualificationConversionMatch = false;
+            ArgumentMatch argumentMatch;
+            SymbolsContext& context = boundCompileUnit->Context();
+            if (TypesEqual(sourceType->PlainType(context), targetType->PlainType(context)))
+            {
+                qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
+            }
+            if (qualificationConversionMatch)
+            {
+                functionMatch.AddArgumentMatch(argumentMatch);
+                return true;
+            }
+            else
+            {
+                Result<FunctionSymbol*> conversionResult = GetConversion(sourceType, targetType, containerScope, boundCompileUnit, currentFunction, argumentMatch, node);
+                if (!conversionResult.Error())
+                {
+                    FunctionSymbol* conversionFn = conversionResult.Value();
+                    if (conversionFn != null)
+                    {
+                        if (conversionFn->GetConversionType() == conversionType || conversionFn->GetConversionType() == ConversionType.implicit)
+                        {
+                            functionMatch.IncNumConversions();
+                            argumentMatch.SetConversionFn(conversionFn);
+                            if (argumentMatch.PreReferenceFlags() == OperationFlags.none)
+                            {
+                                if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
+                                {
+                                    functionMatch.AddArgumentMatch(argumentMatch);
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                if (FindQualificationConversion(conversionFn->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
+                                {
+                                    functionMatch.AddArgumentMatch(argumentMatch);
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public bool FindClassTemplateSpecializationMatch(TypeSymbol* sourceType, TypeSymbol* targetType, ConversionType conversionType, BoundExpression* argument,
+        BoundCompileUnit* boundCompileUnit, FunctionMatch& functionMatch, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
+    {
+        if (!targetType->BaseType()->IsClassTemplateSpecializationSymbol()) return false;
+        SymbolsContext& context = boundCompileUnit->Context();
+        ClassTemplateSpecializationSymbol* targetClassTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(targetType->BaseType());
+        int n = cast<int>(targetClassTemplateSpecialization->TemplateArgumentTypes().Count());
+        int numArgumentMatches = cast<int>(functionMatch.ArgumentMatches().Count());
+        if (sourceType->BaseType()->IsClassTemplateSpecializationSymbol())
+        {
+            ClassTemplateSpecializationSymbol* sourceClassTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(sourceType->BaseType());
+            int m = cast<int>(sourceClassTemplateSpecialization->TemplateArgumentTypes().Count());
+            if (n != m) return false;
+            for (int i = 0; i < n; ++i)
+            {
+                TypeSymbol* sourceArgumentType = sourceClassTemplateSpecialization->TemplateArgumentTypes()[i];
+                TypeSymbol* targetArgumentType = targetClassTemplateSpecialization->TemplateArgumentTypes()[i];
+                if (FindTemplateParameterMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch,
+                    containerScope, currentFunction, node))
+                {
+                    continue;
+                }
+                else if (FindClassTemplateSpecializationMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch,
+                    containerScope, currentFunction, node))
+                {
+                    continue;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        functionMatch.ResizeArgumentMatches(numArgumentMatches);
+        List<TypeSymbol*> targetTemplateArguments;
+        for (int i = 0; i < n; ++i)
+        {
+            TypeSymbol* type = targetClassTemplateSpecialization->TemplateArgumentTypes()[i];
+            TypeSymbol* templateArgumentType = type->BaseType()->UnifyTemplateArgumentType(
+                functionMatch.TemplateParameterMap(), context);
+            if (templateArgumentType != null)
+            {
+                targetTemplateArguments.Add(templateArgumentType);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        TypeSymbol* plainTargetType = boundCompileUnit->GetSymbolTable()->MakeClassTemplateSpecialization(targetClassTemplateSpecialization->ClassTemplate(),
+            targetTemplateArguments);
+        targetType = boundCompileUnit->GetSymbolTable()->MakeDerivedType(context, plainTargetType, targetType->GetDerivations());
+        if (TypesEqual(sourceType, targetType))
+        {
+            functionMatch.AddArgumentMatch(ArgumentMatch());
+            return true;
+        }
+        else
+        {
+            bool qualificationConversionMatch = false;
+            ArgumentMatch argumentMatch;
+            if (TypesEqual(sourceType->PlainType(context), targetType->PlainType(context)))
+            {
+                qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
+            }
+            if (qualificationConversionMatch)
+            {
+                functionMatch.AddArgumentMatch(argumentMatch);
+                return true;
+            }
+            else
+            {
+                Result<FunctionSymbol*> conversionResult = GetConversion(sourceType, targetType, containerScope, boundCompileUnit, currentFunction, argumentMatch, node);
+                if (!conversionResult.Error())
+                {
+                    FunctionSymbol* conversionFn = conversionResult.Value();
+                    if (conversionFn != null)
+                    {
+                        if (conversionFn->GetConversionType() == conversionType || conversionFn->GetConversionType() == ConversionType.implicit)
+                        {
+                            argumentMatch.SetConversionFn(conversionFn);
+                            functionMatch.IncNumConversions();
+                            if (argumentMatch.PreReferenceFlags() == OperationFlags.none)
+                            {
+                                if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
+                                {
+                                    functionMatch.AddArgumentMatch(argumentMatch);
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else
+                            {
+                                if (FindQualificationConversion(conversionFn->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
+                                {
+                                    functionMatch.AddArgumentMatch(argumentMatch);
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public int FailWithOverloadNotFound(const ViableFunctionSet& viableFunctions, const ustring& groupName, const List<UniquePtr<BoundExpression>>& arguments,
+        const List<FunctionMatch>& failedFunctionMatches, Node* node, OverloadResolutionFlags flags, const string& collectMessage, SymbolsContext& context)
+    {
+        Result<string> overloadNameResult = MakeOverloadName(groupName, arguments, context);
+        if (overloadNameResult.Error()) return overloadNameResult.GetErrorId();
+        string overloadName = Rvalue(overloadNameResult.Value());
+        bool referenceMustBeInitialized = false;
+        bool castRequired = false;
+        bool cannotBindConstArgToNonConstParam = false;
+        bool cannotAssignToConstObject = false;
+        bool conceptCheckError = false;
+        TypeSymbol* sourceType = null;
+        TypeSymbol* targetType = null;
+        List<System.Lex.FullSpan> locations;
+        locations.Add(node->GetFullSpan());
+        string message;
+        string note;
+        string matchError;
+        if (!failedFunctionMatches.IsEmpty())
+        {
+            int n = cast<int>(failedFunctionMatches.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                const FunctionMatch& failedFunctionMatch = failedFunctionMatches[i];
+                if (failedFunctionMatch.GetErrorFlag(OverloadResolutionErrorFlags.referenceMustBeInitialized))
+                {
+                    referenceMustBeInitialized = true;
+                    break;
+                }
+            }
+            if (!referenceMustBeInitialized)
+            {
+                for (int i = 0; i < n; ++i)
+                {
+                    const FunctionMatch& failedFunctionMatch = failedFunctionMatches[i];
+                    if (failedFunctionMatch.GetErrorFlag(OverloadResolutionErrorFlags.castRequired))
+                    {
+                        castRequired = true;
+                        sourceType = failedFunctionMatch.SourceType();
+                        targetType = failedFunctionMatch.TargetType();
+                        locations.Add(failedFunctionMatch.Fn()->FullSpan());
+                        break;
+                    }
+                }
+            }
+            if (!referenceMustBeInitialized && !castRequired)
+            {
+                for (int i = 0; i < n; ++i)
+                {
+                    const FunctionMatch& failedFunctionMatch = failedFunctionMatches[i];
+                    if (failedFunctionMatch.GetErrorFlag(OverloadResolutionErrorFlags.cannotBindConstArgToNonConstParam))
+                    {
+                        cannotBindConstArgToNonConstParam = true;
+                        sourceType = failedFunctionMatch.SourceType();
+                        targetType = failedFunctionMatch.TargetType();
+                        locations.Add(failedFunctionMatch.Fn()->FullSpan());
+                        break;
+                    }
+                }
+            }
+            if (!referenceMustBeInitialized && !castRequired && !cannotBindConstArgToNonConstParam)
+            {
+                for (int i = 0; i < n; ++i)
+                {
+                    const FunctionMatch& failedFunctionMatch = failedFunctionMatches[i];
+                    if (failedFunctionMatch.GetErrorFlag(OverloadResolutionErrorFlags.cannotAssignToConstObject))
+                    {
+                        cannotAssignToConstObject = true;
+                        locations.Add(failedFunctionMatch.Fn()->FullSpan());
+                        break;
+                    }
+                }
+            }
+            if (!referenceMustBeInitialized && !castRequired && !cannotBindConstArgToNonConstParam && !cannotAssignToConstObject)
+            {
+                for (int i = 0; i < n; ++i)
+                {
+                    const FunctionMatch& failedFunctionMatch = failedFunctionMatches[i];
+                    if (failedFunctionMatch.ConceptCheckErrorId() != 0)
+                    {
+                        conceptCheckError = true;
+                        note.Append("Note: concept check failed:\n").Append(RtmGetErrorMessageWithoutStackTrace(failedFunctionMatch.ConceptCheckErrorId()));
+                        for (const System.Lex.FullSpan& location : failedFunctionMatch.Locations())
+                        {
+                            locations.Add(location);
+                        }
+                        break;
+                    }
+                }
+            }
+            if (!referenceMustBeInitialized && !castRequired && !cannotBindConstArgToNonConstParam && !cannotAssignToConstObject && !conceptCheckError)
+            {
+                for (int i = 0; i < n; ++i)
+                {
+                    const FunctionMatch& failedFunctionMatch = failedFunctionMatches[i];
+                    if (failedFunctionMatch.GetErrorId() != 0)
+                    {
+                        matchError = RtmGetErrorMessageWithoutStackTrace(failedFunctionMatch.GetErrorId());
+                        for (const System.Lex.FullSpan& location : failedFunctionMatch.Locations())
+                        {
+                            locations.Add(location);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        if (referenceMustBeInitialized || groupName == u"@constructor" && arguments.Count() == 1 && arguments[0]->Type()->IsReferenceType())
+        {
+            locations.Add(arguments[0]->FullSpan());
+            message = "overload resolution failed: '";
+            message.Append(overloadName).Append("' not found. Note: reference must be initialized.");
+            if (!collectMessage.IsEmpty())
+            {
+                message.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            if (viableFunctions.Count() == 1)
+            {
+                FunctionSymbol* candidate = *viableFunctions.Get().Begin();
+                if (!candidate->IsSuppressed())
+                {
+                    Result<string> candidateFullNameResult = ToUtf8(candidate->FullName());
+                    if (candidateFullNameResult.Error())
+                    {
+                        return candidateFullNameResult.GetErrorId();
+                    }
+                    string candidateFullName = Rvalue(candidateFullNameResult.Value());
+                    message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
+                }
+            }
+            return MakeError(message, locations);
+        }
+        else if (castRequired)
+        {
+            #assert(sourceType != null && targetType != null);
+            Result<string> sourceTypeFullNameResult = ToUtf8(sourceType->FullName());
+            if (sourceTypeFullNameResult.Error()) return sourceTypeFullNameResult.GetErrorId();
+            string sourceTypeFullName = Rvalue(sourceTypeFullNameResult.Value());
+            Result<string> targetTypeFullNameResult = ToUtf8(targetType->FullName());
+            if (targetTypeFullNameResult.Error()) return targetTypeFullNameResult.GetErrorId();
+            string targetTypeFullName = Rvalue(targetTypeFullNameResult.Value());
+            message = "overload resolution failed: '";
+            message.Append(overloadName).Append("' not found, or there are no acceptable conversions for all argument types. ").
+                Append(ToString(viableFunctions.Count())).Append(" viable functions examined. Note: cannot convert implicitly from '").
+                Append(sourceTypeFullName).Append("' to '").
+                Append(targetTypeFullName).Append("' but explicit conversion (cast) exists.");
+            if (!collectMessage.IsEmpty())
+            {
+                message.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            if (viableFunctions.Count() == 1)
+            {
+                FunctionSymbol* candidate = *viableFunctions.Get().Begin();
+                if (!candidate->IsSuppressed())
+                {
+                    Result<string> candidateFullNameResult = ToUtf8(candidate->FullName());
+                    if (candidateFullNameResult.Error())
+                    {
+                        return candidateFullNameResult.GetErrorId();
+                    }
+                    string candidateFullName = Rvalue(candidateFullNameResult.Value());
+                    message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
+                }
+            }
+            return MakeError(message, locations);
+        }
+        else if (cannotBindConstArgToNonConstParam)
+        {
+            #assert(sourceType != null && targetType != null);
+            Result<string> sourceTypeFullNameResult = ToUtf8(sourceType->FullName());
+            if (sourceTypeFullNameResult.Error()) return sourceTypeFullNameResult.GetErrorId();
+            string sourceTypeFullName = Rvalue(sourceTypeFullNameResult.Value());
+            Result<string> targetTypeFullNameResult = ToUtf8(targetType->FullName());
+            if (targetTypeFullNameResult.Error()) return targetTypeFullNameResult.GetErrorId();
+            string targetTypeFullName = Rvalue(targetTypeFullNameResult.Value());
+            message = "overload resolution failed: '";
+            message.Append(overloadName).Append("' not found, or there are no acceptable conversions for all argument types. ").
+                Append(ToString(viableFunctions.Count())).Append(" viable functions examined. Note: cannot bind constant '").
+                Append(sourceTypeFullName).Append("' argument to nonconstant '").
+                Append(targetTypeFullName).Append("' parameter.");
+            if (!collectMessage.IsEmpty())
+            {
+                message.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            if (viableFunctions.Count() == 1)
+            {
+                FunctionSymbol* candidate = *viableFunctions.Get().Begin();
+                if (!candidate->IsSuppressed())
+                {
+                    Result<string> candidateFullNameResult = ToUtf8(candidate->FullName());
+                    if (candidateFullNameResult.Error())
+                    {
+                        return candidateFullNameResult.GetErrorId();
+                    }
+                    string candidateFullName = Rvalue(candidateFullNameResult.Value());
+                    message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
+                }
+            }
+            return MakeError(message, locations);
+        }
+        else if (cannotAssignToConstObject)
+        {
+            message = "overload resolution failed: '";
+            message.Append(overloadName).Append("' not found, or there are no acceptable conversions for all argument types. ").
+                Append(ToString(viableFunctions.Count())).Append(" viable functions examined. Note: cannot assign to constant object.");
+            if (!collectMessage.IsEmpty())
+            {
+                message.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            if (viableFunctions.Count() == 1)
+            {
+                FunctionSymbol* candidate = *viableFunctions.Get().Begin();
+                if (!candidate->IsSuppressed())
+                {
+                    Result<string> candidateFullNameResult = ToUtf8(candidate->FullName());
+                    if (candidateFullNameResult.Error())
+                    {
+                        return candidateFullNameResult.GetErrorId();
+                    }
+                    string candidateFullName = Rvalue(candidateFullNameResult.Value());
+                    message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
+                }
+            }
+            return MakeError(message, locations);
+        }
+        else
+        {
+            message = "overload resolution failed: '";
+            message.Append(overloadName).Append("' not found, or there are no acceptable conversions for all argument types. ").
+                Append(ToString(viableFunctions.Count())).Append(" viable functions examined.");
+            if (!note.IsEmpty())
+            {
+                message.Append("\n").Append(note);
+            }
+            if (!collectMessage.IsEmpty())
+            {
+                message.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            if (!matchError.IsEmpty())
+            {
+                message.Append("\nmatch error: ").Append(matchError);
+            }
+            if (viableFunctions.Count() == 1)
+            {
+                FunctionSymbol* candidate = *viableFunctions.Get().Begin();
+                if (!candidate->IsSuppressed())
+                {
+                    Result<string> candidateFullNameResult = ToUtf8(candidate->FullName());
+                    if (candidateFullNameResult.Error())
+                    {
+                        return candidateFullNameResult.GetErrorId();
+                    }
+                    string candidateFullName = Rvalue(candidateFullNameResult.Value());
+                    message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
+                }
+            }
+            return MakeError(message, locations);
+        }
+    }
+
+    public int FailWithAmbiguousOverload(const ustring& groupName, const List<UniquePtr<BoundExpression>>& arguments, const List<FunctionMatch>& functionMatches,
+        Node* node, OverloadResolutionFlags flags, SymbolsContext& context)
+    {
+        Result<string> overloadNameResult = MakeOverloadName(groupName, arguments, context);
+        if (overloadNameResult.Error()) return overloadNameResult.GetErrorId();
+        string overloadName = Rvalue(overloadNameResult.Value());
+        FunctionMatch equalMatch = Rvalue(functionMatches[0]);
+        List<FunctionMatch> equalMatches;
+        equalMatches.Add(Rvalue(equalMatch));
+        int n = cast<int>(functionMatches.Count());
+        BetterFunctionMatch betterMatch;
+        for (int i = 1; i < n; ++i)
+        {
+            FunctionMatch match = Rvalue(functionMatches[i]);
+            if (!betterMatch(equalMatches[0], match) && !betterMatch(match, equalMatches[0]))
+            {
+                equalMatches.Add(Rvalue(match));
+            }
+        }
+        List<System.Lex.FullSpan> locations;
+        string matchedFunctionNames;
+        bool first = true;
+        for (const FunctionMatch& match : equalMatches)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                matchedFunctionNames.Append(", or ");
+            }
+            Result<string> functionNameResult = ToUtf8(match.Fn()->FullName());
+            if (functionNameResult.Error()) return functionNameResult.GetErrorId();
+            string functionName = Rvalue(functionNameResult.Value());
+            matchedFunctionNames.Append(functionName);
+            locations.Add(match.Fn()->FullSpan());
+        }
+        string message = "overload resolution for overload name '" + overloadName + "' failed: call is ambiguous:\n" + matchedFunctionNames;
+        int errorId = MakeError(message, locations);
+        return errorId;
+    }
+
+    public Result<UniquePtr<BoundFunctionCall>> CreateBoundFunctionCall(FunctionSymbol* bestFn, List<UniquePtr<BoundExpression>>& arguments,
+        BoundCompileUnit* boundCompileUnit, BoundFunction* currentFunction, const FunctionMatch& bestMatch, ContainerScope* containerScope, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        UniquePtr<BoundFunctionCall> boundFunctionCall(new BoundFunctionCall(node->GetSpan(), bestFn));
+        int arity = cast<int>(arguments.Count());
+        int n = Min(arity, bestFn->Arity());
+        for (int i = 0; i < n; ++i)
+        {
+            UniquePtr<BoundExpression>& argument = arguments[i];
+            if (i == 0 && !bestFn->IsConstructorDestructorOrNonstaticMemberFunction() &&
+                (bestFn->GroupName() == u"@constructor" || bestFn->GroupName() == u"operator=" || bestFn->GroupName() == u"operator->"))
+            {
+                if (argument->IsAddressOfExpression())
+                {
+                    BoundAddressOfExpression* addrOf = cast<BoundAddressOfExpression*>(argument.Get());
+                    UniquePtr<BoundExpression> subject(addrOf->ReleaseSubject());
+                    argument.Reset(subject.Release());
+                }
+            }
+            const ArgumentMatch& argumentMatch = bestMatch.ArgumentMatches()[i];
+            if (argumentMatch.PreReferenceFlags() != OperationFlags.none)
+            {
+                if (argumentMatch.PreReferenceFlags() == OperationFlags.addr)
+                {
+                    if (!argument->IsLvalueExpression())
+                    {
+                        #assert(currentFunction != null);
+                        Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), argument->Type(), context);
+                        if (temporaryResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryResult.GetErrorId()));
+                        BoundLocalVariable* backingStore = new BoundLocalVariable(node->GetSpan(), temporaryResult.Value());
+                        TypeSymbol* type = argument->Type();
+                        argument.Reset(new BoundTemporary(node->GetSpan(), Rvalue(argument), UniquePtr<BoundLocalVariable>(backingStore), type));
+                    }
+                    TypeSymbol* type = null;
+                    if (argument->Type()->IsClassTypeSymbol() && argument->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+                    {
+                        type = argument->Type()->AddRvalueReference(context);
+                    }
+                    else
+                    {
+                        type = argument->Type()->AddLvalueReference(context);
+                    }
+                    BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type);
+                    argument.Reset(addressOfExpression);
+                }
+                else if (argumentMatch.PreReferenceFlags() == OperationFlags.deref)
+                {
+                    TypeSymbol* type = argument->Type()->RemoveReference(context);
+                    BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(node->GetSpan(), Rvalue(argument), type);
+                    argument.Reset(dereferenceExpression);
+                }
+            }
+            if (argumentMatch.ConversionFn() != null)
+            {
+                FunctionSymbol* conversionFn = argumentMatch.ConversionFn();
+                if (conversionFn->IsConstructorSymbol())
+                {
+                    BoundFunctionCall* constructorCall = new BoundFunctionCall(node->GetSpan(), conversionFn);
+                    TypeSymbol* conversionTargetType = conversionFn->ConversionTargetType();
+                    if (conversionTargetType->IsClassTemplateSpecializationSymbol())
+                    {
+                        ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(conversionTargetType);
+                        if (!specialization->IsBound())
+                        {
+                            Result<bool> result = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(specialization, containerScope, node);
+                            if (result.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                        }
+                    }
+                    #assert(currentFunction != null);
+                    Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), argument->Type(), context);
+                    if (temporaryResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryResult.GetErrorId()));
+                    LocalVariableSymbol* temporary = temporaryResult.Value();
+                    constructorCall->AddArgument(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
+                        new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer(context))));
+                    if (conversionTargetType->IsClassTypeSymbol())
+                    {
+                        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(conversionTargetType);
+                        if (classType->Destructor() != null)
+                        {
+                            UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
+                            destructorCall->AddArgument(UniquePtr<BoundExpression>(constructorCall->Arguments()[0]->Clone()));
+                            currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                        }
+                    }
+                    constructorCall->AddArgument(Rvalue(argument));
+                    Result<List<LocalVariableSymbol*>> temporariesResult = conversionFn->CreateTemporariesTo(currentFunction->GetFunctionSymbol(), context);
+                    if (temporariesResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporariesResult.GetErrorId()));
+                    for (LocalVariableSymbol* temporaryLocalVariable : temporariesResult.Value())
+                    {
+                        constructorCall->AddArgument(UniquePtr<BoundExpression>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
+                    }
+                    BoundConstructAndReturnTemporaryExpression* conversion = new BoundConstructAndReturnTemporaryExpression(node->GetSpan(),
+                        UniquePtr<BoundExpression>(constructorCall), UniquePtr<BoundExpression>(new BoundLocalVariable(node->GetSpan(), temporary)));
+                    argument.Reset(conversion);
+                }
+                else if (conversionFn->IsConversionFunctionSymbol() && conversionFn->ReturnsClassInterfaceOrClassDelegateByValue())
+                {
+                    BoundFunctionCall* conversionFunctionCall = new BoundFunctionCall(node->GetSpan(), conversionFn);
+                    conversionFunctionCall->AddArgument(Rvalue(argument));
+                    TypeSymbol* conversionTargetType = conversionFn->ConversionTargetType();
+                    if (conversionTargetType->IsClassTemplateSpecializationSymbol())
+                    {
+                        ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(conversionTargetType);
+                        if (!specialization->IsBound())
+                        {
+                            Result<bool> result = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(specialization, containerScope, node);
+                            if (result.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                        }
+                    }
+                    #assert(currentFunction != null);
+                    Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), conversionTargetType, context);
+                    if (temporaryResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryResult.GetErrorId()));
+                    LocalVariableSymbol* temporary = temporaryResult.Value();
+                    conversionFunctionCall->AddArgument(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
+                        new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer(context))));
+                    Result<List<LocalVariableSymbol*>> temporariesResult = conversionFn->CreateTemporariesTo(currentFunction->GetFunctionSymbol(), context);
+                    if (temporariesResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporariesResult.GetErrorId()));
+                    for (LocalVariableSymbol* temporaryLocalVariable : temporariesResult.Value())
+                    {
+                        conversionFunctionCall->AddArgument(UniquePtr<BoundExpression>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
+                    }
+                    BoundLocalVariable* conversionResult = new BoundLocalVariable(node->GetSpan(), temporary);
+                    if (conversionTargetType->IsClassTypeSymbol())
+                    {
+                        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(conversionTargetType);
+                        if (classType->Destructor() != null)
+                        {
+                            UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
+                            TypeSymbol* type = conversionResult->Type()->AddPointer(context);
+                            destructorCall->AddArgument(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(),
+                                UniquePtr<BoundExpression>(conversionResult->Clone()), type)));
+                            currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                        }
+                    }
+                    BoundClassOrClassDelegateConversionResult* conversion = new BoundClassOrClassDelegateConversionResult(node->GetSpan(),
+                        UniquePtr<BoundExpression>(conversionResult), UniquePtr<BoundFunctionCall>(conversionFunctionCall));
+                    argument.Reset(conversion);
+                }
+                else
+                {
+                    BoundConversion* conversion = new BoundConversion(node->GetSpan(), Rvalue(argument), conversionFn);
+                    Result<List<LocalVariableSymbol*>> temporariesResult = conversionFn->CreateTemporariesTo(currentFunction->GetFunctionSymbol(), context);
+                    if (temporariesResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporariesResult.GetErrorId()));
+                    for (LocalVariableSymbol* temporaryLocalVariable : temporariesResult.Value())
+                    {
+                        conversion->AddTemporary(UniquePtr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
+                    }
+                    argument.Reset(conversion);
+                }
+            }
+            if (argumentMatch.PostReferenceFlags() != OperationFlags.none)
+            {
+                if (argumentMatch.PostReferenceFlags() == OperationFlags.addr)
+                {
+                    if (!argument->IsLvalueExpression())
+                    {
+                        #assert(currentFunction != null);
+                        Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), argument->Type(), context);
+                        if (temporaryResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryResult.GetErrorId()));
+                        BoundLocalVariable* backingStore = new BoundLocalVariable(node->GetSpan(), temporaryResult.Value());
+                        TypeSymbol* type = argument->Type();
+                        argument.Reset(new BoundTemporary(node->GetSpan(), Rvalue(argument), UniquePtr<BoundLocalVariable>(backingStore), type));
+                    }
+                    TypeSymbol* type = null;
+                    if (argument->Type()->IsClassTypeSymbol() && argument->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+                    {
+                        type = argument->Type()->AddRvalueReference(context);
+                    }
+                    else
+                    {
+                        type = argument->Type()->AddLvalueReference(context);
+                    }
+                    BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type);
+                    argument.Reset(addressOfExpression);
+                }
+                else if (argumentMatch.PostReferenceFlags() == OperationFlags.deref)
+                {
+                    TypeSymbol* type = argument->Type()->RemoveReference(context);
+                    BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(node->GetSpan(), Rvalue(argument), type);
+                    argument.Reset(dereferenceExpression);
+                }
+            }
+            if (argument->Type()->IsClassTypeSymbol() || argument->Type()->IsClassDelegateTypeSymbol() || argument->Type()->IsInterfaceTypeSymbol())
+            {
+                if (argument->Type()->IsClassTypeSymbol())
+                {
+                    ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(argument->Type());
+                    if (classType->CopyConstructor() == null)
+                    {
+                        ViableFunctionSet viableFunctions;
+                        List<UniquePtr<BoundExpression>> args;
+                        UniquePtr<BoundExpression> firstArg(new BoundTypeExpression(node->GetSpan(), classType->AddPointer(context)));
+                        args.Add(Rvalue(firstArg));
+                        UniquePtr<BoundExpression> secondArg(new BoundTypeExpression(node->GetSpan(), classType->AddConst(context)->AddLvalueReference(context)));
+                        args.Add(Rvalue(secondArg));
+                        Result<bool> collectResult = boundCompileUnit->GetOperationRepository()->CollectViableFunctions(u"@constructor", containerScope, args,
+                            currentFunction, node, CollectFlags.none, viableFunctions);
+                        if (collectResult.Error())
+                        {
+                            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(collectResult.GetErrorId()));
+                        }
+                    }
+                    TypeSymbol* type = classType->AddConst(context)->AddLvalueReference(context);
+                    argument.Reset(new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type));
+                }
+                else if (argument->Type()->IsClassDelegateTypeSymbol())
+                {
+                    TypeSymbol* type = argument->Type()->AddConst(context)->AddLvalueReference(context);
+                    argument.Reset(new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type));
+                }
+                else if (argument->Type()->IsInterfaceTypeSymbol())
+                {
+                    // todo
+                }
+            }
+            boundFunctionCall->AddArgument(Rvalue(argument));
+        }
+        for (int i = n; i < arity; ++i)
+        {
+            UniquePtr<BoundExpression>& argument = arguments[i];
+            boundFunctionCall->AddArgument(Rvalue(argument));
+        }
+        if (currentFunction != null)
+        {
+            Result<List<LocalVariableSymbol*>> temporaryLocalVariableResult = bestFn->CreateTemporariesTo(currentFunction->GetFunctionSymbol(), context);
+            if (temporaryLocalVariableResult.Error())
+            {
+                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryLocalVariableResult.GetErrorId()));
+            }
+            List<LocalVariableSymbol*> temporaries = Rvalue(temporaryLocalVariableResult.Value());
+            for (LocalVariableSymbol* temporaryLocalVariable : temporaries)
+            {
+                boundFunctionCall->AddTemporary(UniquePtr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
+            }
+        }
+        FunctionSymbol* functionSymbol = boundFunctionCall->GetFunctionSymbol();
+        if (functionSymbol->IsDestructorSymbol())
+        {
+            DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(functionSymbol);
+            if (destructorSymbol->IsGenerated())
+            {
+                if (destructorSymbol->Parent()->IsClassTypeSymbol())
+                {
+                    ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(destructorSymbol->Parent());
+                    if (!boundCompileUnit->IsGeneratedDestructorInstantiated(destructorSymbol))
+                    {
+                        Result<FunctionSymbol*> copyResult = destructorSymbol->Copy();
+                        if (copyResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(copyResult.GetErrorId()));
+                        DestructorSymbol* copy = cast<DestructorSymbol*>(copyResult.Value());
+                        boundCompileUnit->GetSymbolTable()->AddFunctionSymbol(UniquePtr<FunctionSymbol>(copy));
+                        SourceFileNode* sourceFile = boundCompileUnit->SourceFile();
+                        Result<string> idResult = sourceFile->Id();
+                        if (idResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(idResult.GetErrorId()));
+                        copy->SetSourceFileId(idResult.Value());
+                        Result<bool> result = copy->ComputeMangledName();
+                        if (result.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                        destructorSymbol->SetInstantiatedName(copy->MangledName());
+                        destructorSymbol = copy;
+                        boundFunctionCall->SetFunctionSymbol(destructorSymbol);
+                        boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
+                        UniquePtr<BoundClass> boundClass(new BoundClass(node->GetSpan(), classType, node->ModuleId(), node->FileIndex()));
+                        Result<bool> destructorResult = GenerateDestructorImplementation(
+                            boundClass.Get(), destructorSymbol, boundCompileUnit, containerScope, currentFunction, node);
+                        if (destructorResult.Error())
+                        {
+                            return Result<UniquePtr<BoundFunctionCall>>(ErrorId(destructorResult.GetErrorId()));
+                        }
+                        boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundClass.Release()));
+                    }
+                }
+            }
+        }
+        return boundFunctionCall;
+    }
+}
+

@@ -377,6 +377,10 @@ int main(int argc, const char** argv)
                         cmajor::build::BuildProject(util::GetFullPath(fp.generic_string()), rootModule, builtProjects);
                     }
                 }
+                else
+                {
+                    throw std::runtime_error("file '" + fp.generic_string() + "' has unknown extension (not .cmp or .cms)");
+                }
                 if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::unitTest))
                 {
                     cmajor::symbols::EndUnitTest(prevUnitTest);

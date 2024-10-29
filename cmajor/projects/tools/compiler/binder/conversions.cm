@@ -1,0 +1,630 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class NullPtrToPtrConversion : FunctionSymbol
+    {
+        public NullPtrToPtrConversion(TypeSymbol* nullPtrType, TypeSymbol* targetPointerType, SymbolsContext& context) :
+            base(System.Lex.Span(), u"@nullptr2ptr")
+        {
+            SetGroupName(u"@conversion");
+            SetImplicitConversion();
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionDistance(1u);
+            SetConversionSourceType(nullPtrType->PlainType(context));
+            SetConversionTargetType(targetPointerType->PlainType(context));
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(value, conversionTargetIrType);
+            if (bitcastResult.Error())
+            {
+                return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            }
+            emitter.Stack().Push(bitcastResult.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class VoidPtrToPtrConversion : FunctionSymbol
+    {
+        public VoidPtrToPtrConversion(TypeSymbol* voidPtrType, TypeSymbol* targetPointerType, SymbolsContext& context) :
+            base(System.Lex.Span(), u"@voidptr2ptr")
+        {
+            SetGroupName(u"@conversion");
+            SetExplicitConversion();
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionSourceType(voidPtrType->PlainType(context));
+            SetConversionTargetType(targetPointerType->PlainType(context));
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(value, conversionTargetIrType);
+            if (bitcastResult.Error())
+            {
+                return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            }
+            emitter.Stack().Push(bitcastResult.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class PtrToULongConversion : FunctionSymbol
+    {
+        public PtrToULongConversion(TypeSymbol* sourceType, TypeSymbol* ulongType, SymbolsContext& context) :
+            base(System.Lex.Span(), u"@ptr2ulong")
+        {
+            SetGroupName(u"@conversion");
+            SetExplicitConversion();
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionSourceType(sourceType->PlainType(context));
+            SetConversionTargetType(ulongType);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> result = emitter.CreatePtrToInt(value, conversionTargetIrType);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            emitter.Stack().Push(result.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class ULongToVoidPtrConversion : FunctionSymbol
+    {
+        public ULongToVoidPtrConversion(TypeSymbol* ulongType, TypeSymbol* voidPtrType) :
+            base(System.Lex.Span(), u"@ulong2voidptr")
+        {
+            SetGroupName(u"@conversion");
+            SetExplicitConversion();
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionSourceType(ulongType);
+            SetConversionTargetType(voidPtrType);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> result = emitter.CreateIntToPtr(value, conversionTargetIrType);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            emitter.Stack().Push(result.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class PtrToVoidPtrConversion : FunctionSymbol
+    {
+        public PtrToVoidPtrConversion(TypeSymbol* ptrType, TypeSymbol* voidPtrType, SymbolsContext& context) :
+            base(System.Lex.Span(), u"@ptr2voidptr")
+        {
+            SetGroupName(u"@conversion");
+            SetImplicitConversion();
+            SetConversionDistance(10u);
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionSourceType(ptrType->PlainType(context));
+            SetConversionTargetType(voidPtrType);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(value, conversionTargetIrType);
+            if (bitcastResult.Error())
+            {
+                return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            }
+            emitter.Stack().Push(bitcastResult.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class ImplicitClassTypeConversion : FunctionSymbol
+    {
+        public ImplicitClassTypeConversion(const ustring& name, sbyte conversionDistance, TypeSymbol* sourceType, TypeSymbol* targetType) :
+            base(System.Lex.Span(), name)
+        {
+            SetGroupName(u"@conversion");
+            SetImplicitConversion();
+            SetConversionDistance(cast<byte>(conversionDistance));
+            SetAccess(SymbolAccess.public_);
+            SetConversionSourceType(sourceType);
+            SetConversionTargetType(targetType);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(value, conversionTargetIrType);
+            if (bitcastResult.Error())
+            {
+                return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            }
+            emitter.Stack().Push(bitcastResult.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class ExplicitClassTypeConversion : FunctionSymbol
+    {
+        public ExplicitClassTypeConversion(const ustring& name, TypeSymbol* sourceType, TypeSymbol* targetType) :
+            base(System.Lex.Span(), name)
+        {
+            SetGroupName(u"@conversion");
+            SetExplicitConversion();
+            SetAccess(SymbolAccess.public_);
+            SetConversionSourceType(sourceType);
+            SetConversionTargetType(targetType);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(value, conversionTargetIrType);
+            if (bitcastResult.Error())
+            {
+                return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            }
+            emitter.Stack().Push(bitcastResult.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public Result<FunctionSymbol*> GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, ContainerScope* containerScope,
+        BoundCompileUnit* boundCompileUnit, BoundFunction* currentFunction, ArgumentMatch& argumentMatch, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+        FunctionSymbol* conversion = symbolTable->GetConversion(sourceType, targetType, context);
+        if (conversion != null)
+        {
+            if (conversion->IsConversionFunctionSymbol())
+            {
+                argumentMatch.SetPrereferenceFlag(OperationFlags.addr);
+            }
+        }
+        if (conversion == null)
+        {
+            conversion = boundCompileUnit->GetConversionTable()->GetConversion(sourceType, targetType, context);
+        }
+        if (conversion == null)
+        {
+            Result<TypeSymbol*> ulongTypeResult = symbolTable->GetTypeByName(u"ulong");
+            if (ulongTypeResult.Error())
+            {
+                return Result<FunctionSymbol*>(ErrorId(ulongTypeResult.GetErrorId()));
+            }
+            TypeSymbol* ulongType = ulongTypeResult.Value();
+            Result<TypeSymbol*> nullPtrTypeResult = symbolTable->GetTypeByName(u"@nullptr_type");
+            if (nullPtrTypeResult.Error())
+            {
+                return Result<FunctionSymbol*>(ErrorId(nullPtrTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nullPtrType = nullPtrTypeResult.Value();
+            Result<TypeSymbol*> voidTypeResult = symbolTable->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                return Result<FunctionSymbol*>(ErrorId(voidTypeResult.GetErrorId()));
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            TypeSymbol* voidPtrType = voidType->AddPointer(context);
+            if (sourceType->IsNullPtrType() && targetType->IsPointerType() && !targetType->IsReferenceType())
+            {
+                UniquePtr<FunctionSymbol> nullPtrToPtrConversion(new NullPtrToPtrConversion(nullPtrType, targetType, context));
+                if (nullPtrToPtrConversion->Error())
+                {
+                    return Result<FunctionSymbol*>(ErrorId(nullPtrToPtrConversion->GetErrorId()));
+                }
+                nullPtrToPtrConversion->SetParent(&symbolTable->GlobalNs());
+                conversion = nullPtrToPtrConversion.Get();
+                boundCompileUnit->GetConversionTable()->AddConversion(conversion);
+                boundCompileUnit->GetConversionTable()->Add(Rvalue(nullPtrToPtrConversion));
+                return Result<FunctionSymbol*>(conversion);
+            }
+            if (sourceType->PlainType(context) == voidPtrType && targetType->IsPointerType() && !targetType->IsReferenceType())
+            {
+                UniquePtr<FunctionSymbol> voidPtrToPtrConversion(new VoidPtrToPtrConversion(voidPtrType, targetType, context));
+                if (voidPtrToPtrConversion->Error())
+                {
+                    return Result<FunctionSymbol*>(ErrorId(voidPtrToPtrConversion->GetErrorId()));
+                }
+                voidPtrToPtrConversion->SetParent(&symbolTable->GlobalNs());
+                conversion = voidPtrToPtrConversion.Get();
+                boundCompileUnit->GetConversionTable()->AddConversion(conversion);
+                boundCompileUnit->GetConversionTable()->Add(Rvalue(voidPtrToPtrConversion));
+                return Result<FunctionSymbol*>(conversion);
+            }
+            if (sourceType->PlainType(context)->IsPointerType() && targetType == ulongType)
+            {
+                UniquePtr<FunctionSymbol> ptrToULongConversion(new PtrToULongConversion(sourceType, ulongType, context));
+                if (ptrToULongConversion->Error())
+                {
+                    return Result<FunctionSymbol*>(ErrorId(ptrToULongConversion->GetErrorId()));
+                }
+                ptrToULongConversion->SetParent(&symbolTable->GlobalNs());
+                conversion = ptrToULongConversion.Get();
+                boundCompileUnit->GetConversionTable()->AddConversion(conversion);
+                boundCompileUnit->GetConversionTable()->Add(Rvalue(ptrToULongConversion));
+                return Result<FunctionSymbol*>(conversion);
+            }
+            if (sourceType == ulongType && targetType == voidPtrType)
+            {
+                UniquePtr<FunctionSymbol> ulongToVoidPtrConversion(new ULongToVoidPtrConversion(ulongType, voidPtrType));
+                if (ulongToVoidPtrConversion->Error())
+                {
+                    return Result<FunctionSymbol*>(ErrorId(ulongToVoidPtrConversion->GetErrorId()));
+                }
+                ulongToVoidPtrConversion->SetParent(&symbolTable->GlobalNs());
+                conversion = ulongToVoidPtrConversion.Get();
+                boundCompileUnit->GetConversionTable()->AddConversion(conversion);
+                boundCompileUnit->GetConversionTable()->Add(Rvalue(ulongToVoidPtrConversion));
+                return Result<FunctionSymbol*>(conversion);
+            }
+            if (sourceType->IsDelegateTypeSymbol() && targetType == voidPtrType)
+            {
+                DelegateTypeSymbol* delegateType = cast<DelegateTypeSymbol*>(sourceType);
+                UniquePtr<FunctionSymbol> delegateTypeToVoidPtrConversion(new DelegateToVoidPtrConversion(context, delegateType));
+                if (delegateTypeToVoidPtrConversion->Error())
+                {
+                    return Result<FunctionSymbol*>(ErrorId(delegateTypeToVoidPtrConversion->GetErrorId()));
+                }
+                delegateTypeToVoidPtrConversion->SetParent(&symbolTable->GlobalNs());
+                conversion = delegateTypeToVoidPtrConversion.Get();
+                boundCompileUnit->GetConversionTable()->AddConversion(conversion);
+                boundCompileUnit->GetConversionTable()->Add(Rvalue(delegateTypeToVoidPtrConversion));
+                return Result<FunctionSymbol*>(conversion);
+            }
+            if (sourceType == voidPtrType && targetType->IsDelegateTypeSymbol())
+            {
+                DelegateTypeSymbol* delegateType = cast<DelegateTypeSymbol*>(targetType);
+                UniquePtr<FunctionSymbol> voidPtrToDelegateTypeConversion(new VoidPtrToDelegateConversion(context, delegateType));
+                if (voidPtrToDelegateTypeConversion->Error())
+                {
+                    return Result<FunctionSymbol*>(ErrorId(voidPtrToDelegateTypeConversion->GetErrorId()));
+                }
+                voidPtrToDelegateTypeConversion->SetParent(&symbolTable->GlobalNs());
+                conversion = voidPtrToDelegateTypeConversion.Get();
+                boundCompileUnit->GetConversionTable()->AddConversion(conversion);
+                boundCompileUnit->GetConversionTable()->Add(Rvalue(voidPtrToDelegateTypeConversion));
+                return Result<FunctionSymbol*>(conversion);
+            }
+            if (sourceType->PlainType(context)->IsPointerType() && targetType->RemoveConst(context) == voidPtrType)
+            {
+                UniquePtr<FunctionSymbol> ptrToVoidPtrConversion(new PtrToVoidPtrConversion(sourceType, voidPtrType, context));
+                if (ptrToVoidPtrConversion->Error())
+                {
+                    return Result<FunctionSymbol*>(ErrorId(ptrToVoidPtrConversion->GetErrorId()));
+                }
+                ptrToVoidPtrConversion->SetParent(&symbolTable->GlobalNs());
+                conversion = ptrToVoidPtrConversion.Get();
+                boundCompileUnit->GetConversionTable()->AddConversion(conversion);
+                boundCompileUnit->GetConversionTable()->Add(Rvalue(ptrToVoidPtrConversion));
+                return Result<FunctionSymbol*>(conversion);
+            }
+            if (sourceType->BaseType()->IsClassTypeSymbol() && targetType->BaseType()->IsClassTypeSymbol())
+            {
+                if (sourceType->PointerCount() == targetType->PointerCount() && !sourceType->IsArrayTypeSymbol() && !targetType->IsArrayTypeSymbol())
+                {
+                    ClassTypeSymbol* sourceClassType = cast<ClassTypeSymbol*>(sourceType->BaseType());
+                    ClassTypeSymbol* targetClassType = cast<ClassTypeSymbol*>(targetType->BaseType());
+                    sbyte conversionDistance = 0;
+                    if (sourceClassType->HasBaseClass(targetClassType, conversionDistance))
+                    {
+                        if (targetType->IsReferenceType() && !sourceType->IsReferenceType())
+                        {
+                            argumentMatch.SetPrereferenceFlag(OperationFlags.addr);
+                            sourceType = sourceType->AddLvalueReference(context);
+                            if (targetType->IsConstType())
+                            {
+                                sourceType = sourceType->AddConst(context);
+                            }
+                        }
+                        ustring conversionName = u"@" + sourceType->FullName() + u"2" + targetType->FullName();
+                        UniquePtr<FunctionSymbol> implicitClassTypeConversion(new ImplicitClassTypeConversion(conversionName, conversionDistance, sourceType, targetType));
+                        if (implicitClassTypeConversion->Error())
+                        {
+                            return Result<FunctionSymbol*>(ErrorId(implicitClassTypeConversion->GetErrorId()));
+                        }
+                        implicitClassTypeConversion->SetParent(&symbolTable->GlobalNs());
+                        conversion = implicitClassTypeConversion.Get();
+                        // do not add conversion to conversion table
+                        boundCompileUnit->GetConversionTable()->Add(Rvalue(implicitClassTypeConversion));
+                        return Result<FunctionSymbol*>(conversion);
+                    }
+                    else if (targetClassType->HasBaseClass(sourceClassType))
+                    {
+                        if (targetType->IsReferenceType() && !sourceType->IsReferenceType())
+                        {
+                            argumentMatch.SetPrereferenceFlag(OperationFlags.addr);
+                            sourceType = sourceType->AddLvalueReference(context);
+                            if (targetType->IsConstType())
+                            {
+                                sourceType = sourceType->AddConst(context);
+                            }
+                        }
+                        ustring conversionName = u"@" + sourceType->FullName() + u"2" + targetType->FullName();
+                        UniquePtr<FunctionSymbol> explicitClassTypeConversion(new ExplicitClassTypeConversion(conversionName, sourceType, targetType));
+                        if (explicitClassTypeConversion->Error())
+                        {
+                            return Result<FunctionSymbol*>(ErrorId(explicitClassTypeConversion->GetErrorId()));
+                        }
+                        explicitClassTypeConversion->SetParent(&symbolTable->GlobalNs());
+                        conversion = explicitClassTypeConversion.Get();
+                        // do not add conversion to conversion table
+                        boundCompileUnit->GetConversionTable()->Add(Rvalue(explicitClassTypeConversion));
+                        return Result<FunctionSymbol*>(conversion);
+                    }
+                }
+            }
+            if ((sourceType->IsFunctionGroupTypeSymbol() || sourceType->IsMemberExpressionTypeSymbol()) && targetType->IsDelegateTypeSymbol())
+            {
+                FunctionGroupSymbol* functionGroupSymbol = null;
+                BoundMemberExpression* boundMemberExpression = null;
+                List<TypeSymbol*> templateArgumentTypes;
+                if (sourceType->IsFunctionGroupTypeSymbol())
+                {
+                    FunctionGroupTypeSymbol* functionGroupTypeSymbol = cast<FunctionGroupTypeSymbol*>(sourceType);
+                    functionGroupSymbol = functionGroupTypeSymbol->FunctionGroup();
+                    BoundFunctionGroupExpression* boundFunctionGroupExpression = cast<BoundFunctionGroupExpression*>(functionGroupTypeSymbol->GetBoundFunctionGroup());
+                    if (boundFunctionGroupExpression != null)
+                    {
+                        templateArgumentTypes = boundFunctionGroupExpression->TemplateArgumentTypes();
+                    }
+                }
+                else if (sourceType->IsMemberExpressionTypeSymbol())
+                {
+                    MemberExpressionTypeSymbol* memberExpressionTypeSymbol = cast<MemberExpressionTypeSymbol*>(sourceType);
+                    boundMemberExpression = cast<BoundMemberExpression*>(memberExpressionTypeSymbol->GetBoundMemberExpression());
+                    if (boundMemberExpression->Member()->IsBoundFunctionGroupExpression())
+                    {
+                        BoundFunctionGroupExpression* boundFunctionGroupExpression = cast<BoundFunctionGroupExpression*>(boundMemberExpression->Member());
+                        functionGroupSymbol = boundFunctionGroupExpression->FunctionGroup();
+                        templateArgumentTypes = boundFunctionGroupExpression->TemplateArgumentTypes();
+                    }
+                }
+                if (functionGroupSymbol != null)
+                {
+                    DelegateTypeSymbol* delegateTypeSymbol = cast<DelegateTypeSymbol*>(targetType);
+                    int arity = delegateTypeSymbol->Arity();
+                    ViableFunctionSet viableFunctions;
+                    Result<bool> collectResult = functionGroupSymbol->CollectViableFunctions(arity, viableFunctions);
+                    if (collectResult.Error())
+                    {
+                        return Result<FunctionSymbol*>(ErrorId(collectResult.GetErrorId()));
+                    }
+                    for (FunctionSymbol* viableFunction : viableFunctions.Get())
+                    {
+                        if (viableFunction->IsMemberFunctionSymbol() && !viableFunction->IsStatic()) continue;
+                        if (viableFunction->GroupName() != functionGroupSymbol->Name()) continue;
+                        int na = cast<int>(viableFunction->TemplateArgumentTypes().Count());
+                        if (na > 0)
+                        {
+                            if (na != templateArgumentTypes.Count()) continue;
+                            bool found = true;
+                            for (int i = 0; i < na; ++i)
+                            {
+                                if (!TypesEqual(viableFunction->TemplateArgumentTypes()[i], templateArgumentTypes[i]))
+                                {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            if (!found) continue;
+                        }
+                        bool found = true;
+                        for (int i = 0; i < arity; ++i)
+                        {
+                            ParameterSymbol* sourceParam = viableFunction->Parameters()[i];
+                            ParameterSymbol* targetParam = delegateTypeSymbol->Parameters()[i];
+                            if (!TypesEqual(sourceParam->Type(), targetParam->Type()))
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            found = TypesEqual(viableFunction->ReturnType(), delegateTypeSymbol->ReturnType());
+                        }
+                        if (found)
+                        {
+                            if (boundMemberExpression != null)
+                            {
+                                boundMemberExpression->ResetClassPtr();
+                            }
+                            if (viableFunction->IsFunctionTemplate())
+                            {
+                                if (sourceType->IsFunctionGroupTypeSymbol())
+                                {
+                                    FunctionGroupTypeSymbol* functionGroupTypeSymbol = cast<FunctionGroupTypeSymbol*>(sourceType);
+                                    BoundFunctionGroupExpression* boundFunctionGroupExpression = cast<BoundFunctionGroupExpression*>(
+                                        functionGroupTypeSymbol->GetBoundFunctionGroup());
+                                    Map<TemplateParameterSymbol*, TypeSymbol*> templateParameterMap;
+                                    int n = cast<int>(viableFunction->TemplateParameters().Count());
+                                    if (boundFunctionGroupExpression->TemplateArgumentTypes().Count() == n)
+                                    {
+                                        for (int i = 0; i < n; ++i)
+                                        {
+                                            TemplateParameterSymbol* templateParameterSymbol = viableFunction->TemplateParameters()[i];
+                                            TypeSymbol* templateArgumentType = boundFunctionGroupExpression->TemplateArgumentTypes()[i];
+                                            templateParameterMap[templateParameterSymbol] = templateArgumentType;
+                                        }
+                                        Result<FunctionSymbol*> result = boundCompileUnit->GetFunctionTemplateRepository()->Instantiate(
+                                            viableFunction, templateParameterMap, node);
+                                        if (result.Error()) return result;
+                                        viableFunction = result.Value();
+                                    }
+                                    else
+                                    {
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                            UniquePtr<FunctionSymbol> functionToDelegateConversion(new FunctionToDelegateConversion(context, sourceType, delegateTypeSymbol, viableFunction));
+                            if (functionToDelegateConversion->Error())
+                            {
+                                return Result<FunctionSymbol*>(ErrorId(functionToDelegateConversion->GetErrorId()));
+                            }
+                            functionToDelegateConversion->SetParent(&symbolTable->GlobalNs());
+                            conversion = functionToDelegateConversion.Get();
+                            // do not add conversion to conversion table
+                            boundCompileUnit->GetConversionTable()->Add(Rvalue(functionToDelegateConversion));
+                            return Result<FunctionSymbol*>(conversion);
+                        }
+                    }
+                }
+            }
+            if ((sourceType->IsFunctionGroupTypeSymbol() || sourceType->IsMemberExpressionTypeSymbol()) && targetType->PlainType(context)->IsClassDelegateTypeSymbol() &&
+                currentFunction != null)
+            {
+                ClassDelegateTypeSymbol* classDelegateType = cast<ClassDelegateTypeSymbol*>(targetType->PlainType(context));
+                FunctionGroupSymbol* functionGroup = null;
+                if (sourceType->IsFunctionGroupTypeSymbol())
+                {
+                    FunctionGroupTypeSymbol* functionGroupTypeSymbol = cast<FunctionGroupTypeSymbol*>(sourceType);
+                    functionGroup = functionGroupTypeSymbol->FunctionGroup();
+                }
+                else if (sourceType->IsMemberExpressionTypeSymbol())
+                {
+                    MemberExpressionTypeSymbol* memberExpressionType = cast<MemberExpressionTypeSymbol*>(sourceType);
+                    BoundMemberExpression* boundMemberExpr = cast<BoundMemberExpression*>(memberExpressionType->GetBoundMemberExpression());
+                    if (boundMemberExpr->Member()->IsBoundFunctionGroupExpression())
+                    {
+                        BoundFunctionGroupExpression* boundFunctionGroup = cast<BoundFunctionGroupExpression*>(boundMemberExpr->Member());
+                        functionGroup = boundFunctionGroup->FunctionGroup();
+                    }
+                }
+                if (functionGroup != null)
+                {
+                    int arity = classDelegateType->Arity();
+                    ViableFunctionSet viableFunctions;
+                    Result<bool> collectResult = functionGroup->CollectViableFunctions(arity + 1, viableFunctions);
+                    if (collectResult.Error())
+                    {
+                        return Result<FunctionSymbol*>(ErrorId(collectResult.GetErrorId()));
+                    }
+                    for (FunctionSymbol* viableFunction : viableFunctions.Get())
+                    {
+                        bool found = true;
+                        for (int i = 1; i < arity + 1; ++i)
+                        {
+                            ParameterSymbol* sourceParam = viableFunction->Parameters()[i];
+                            ParameterSymbol* targetParam = classDelegateType->Parameters()[i - 1];
+                            if (!TypesEqual(sourceParam->Type(), targetParam->Type()))
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            found = TypesEqual(viableFunction->ReturnType(), classDelegateType->ReturnType());
+                        }
+                        if (found)
+                        {
+                            UniquePtr<FunctionSymbol> memberFunctionToClassDelegateConversion(new MemberFunctionToClassDelegateConversion(
+                                context, node->GetSpan(), sourceType, classDelegateType, viableFunction));
+                            memberFunctionToClassDelegateConversion->SetParent(&symbolTable->GlobalNs());
+                            conversion = memberFunctionToClassDelegateConversion.Get();
+                            // do not add entry to the conversion table
+                            boundCompileUnit->GetConversionTable()->Add(Rvalue(memberFunctionToClassDelegateConversion));
+                            return Result<FunctionSymbol*>(conversion);
+                        }
+                    }
+                }
+            }
+        }
+        if (conversion != null)
+        {
+            if (conversion->Parent() != null && !conversion->IsGenerated() && conversion->Parent()->IsClassTemplateSpecializationSymbol())
+            {
+                ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(conversion->Parent());
+                if (specialization->GetModule() != boundCompileUnit->GetModule())
+                {
+                    // todo
+                }
+            }
+            else if (GetGlobalFlag(GlobalFlags.release) && conversion->IsInline())
+            {
+                Result<FunctionSymbol*> inlineFunctionResult = boundCompileUnit->GetInlineFunctionRepository()->Instantiate(conversion, containerScope, node);
+                if (inlineFunctionResult.Error())
+                {
+                    string errorMessage = RtmGetErrorMessageWithoutStackTrace(inlineFunctionResult.GetErrorId());
+                    int errorId = MakeError("could not instantiate inline conversion:\n" + errorMessage, node->GetFullSpan());
+                    return Result<FunctionSymbol*>(ErrorId(errorId));
+                }
+                conversion = inlineFunctionResult.Value();
+            }
+        }
+        if (conversion != null)
+        {
+            return Result<FunctionSymbol*>(conversion);
+        }
+        else
+        {
+            Result<string> sourceTypeFullNameResult = ToUtf8(sourceType->FullName());
+            if (sourceTypeFullNameResult.Error())
+            {
+                return Result<FunctionSymbol*>(ErrorId(sourceTypeFullNameResult.GetErrorId()));
+            }
+            string sourceTypeFullName = Rvalue(sourceTypeFullNameResult.Value());
+            Result<string> targetTypeFullNameResult = ToUtf8(targetType->FullName());
+            if (targetTypeFullNameResult.Error())
+            {
+                return Result<FunctionSymbol*>(ErrorId(targetTypeFullNameResult.GetErrorId()));
+            }
+            string targetTypeFullName = Rvalue(targetTypeFullNameResult.Value());
+            int errorId = MakeError("no conversion from '" + sourceTypeFullName + "' to '" + targetTypeFullName + "' found", node->GetFullSpan());
+            return Result<FunctionSymbol*>(ErrorId(errorId));
+        }
+    }
+}
+

@@ -178,9 +178,6 @@ bool TerminatesDefault(cmajor::ast::StatementNode* statementNode)
     return false;
 }
 
-void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::CompoundStatementNode* bodyNode, cmajor::ast::Node* node,
-    cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit);
-
 void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::FunctionNode& functionNode, cmajor::symbols::ContainerScope* containerScope, 
     BoundCompileUnit& boundCompileUnit)
 {
@@ -203,7 +200,7 @@ void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, c
             cmajor::ast::StatementNode* statement = body->Statements()[i];
             if (TerminatesFunction(statement, false, containerScope, boundCompileUnit)) return;
         }
-        throw cmajor::symbols::Exception("not all control paths terminate in return or throw statement", node->GetFullSpan());
+        throw cmajor::symbols::Exception("not all control paths terminate in return statement", node->GetFullSpan());
     }
 }
 
@@ -373,6 +370,10 @@ void StatementBinder::Visit(cmajor::ast::FunctionNode& functionNode)
     cmajor::symbols::Symbol* symbol = boundCompileUnit.GetSymbolTable().GetSymbol(&functionNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
     cmajor::symbols::FunctionSymbol* functionSymbol = static_cast<cmajor::symbols::FunctionSymbol*>(symbol);
+    if (functionSymbol->GroupName() == U"GetBinaryOperatorFn")
+    {
+        int x = 0;
+    }
     if (!dontCheckDuplicateFunctionSymbols)
     {
         functionSymbol->FunctionGroup()->CheckDuplicateFunctionSymbols();
@@ -945,21 +946,28 @@ void StatementBinder::Visit(cmajor::ast::ReturnStatementNode& returnStatementNod
             }
             if (expression->GetBoundNodeType() == BoundNodeType::boundLocalVariable)
             {
-                std::vector<FunctionScopeLookup> rvalueLookups;
-                rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
-                rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
-                std::vector<std::unique_ptr<BoundExpression>> rvalueArguments;
-                if (returnClassDelegateType && expression->GetType()->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupTypeSymbol)
+                if (!expression->GetType()->IsRvalueReferenceType())
                 {
-                    cmajor::symbols::TypeSymbol* exprType = expression->GetType();
-                    ArgumentMatch argumentMatch;
-                    expression.reset(new BoundConversion(std::move(expression),
-                        boundCompileUnit.GetConversion(exprType, returnType, containerScope, currentFunction, argumentMatch, &returnStatementNode)));
+                    std::vector<FunctionScopeLookup> rvalueLookups;
+                    rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
+                    rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
+                    std::vector<std::unique_ptr<BoundExpression>> rvalueArguments;
+                    if (returnClassDelegateType && expression->GetType()->BaseType()->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupTypeSymbol)
+                    {
+                        cmajor::symbols::TypeSymbol* exprType = expression->GetType();
+                        ArgumentMatch argumentMatch;
+                        expression.reset(new BoundConversion(std::move(expression),
+                            boundCompileUnit.GetConversion(exprType, returnType, containerScope, currentFunction, argumentMatch, &returnStatementNode)));
+                    }
+                    rvalueArguments.push_back(std::move(expression));
+                    std::unique_ptr<BoundExpression> rvalueExpr = ResolveOverload(U"System.Rvalue", containerScope, rvalueLookups, rvalueArguments, boundCompileUnit, currentFunction,
+                        &returnStatementNode);
+                    expression = std::move(rvalueExpr);
                 }
-                rvalueArguments.push_back(std::move(expression));
-                std::unique_ptr<BoundExpression> rvalueExpr = ResolveOverload(U"System.Rvalue", containerScope, rvalueLookups, rvalueArguments, boundCompileUnit, currentFunction,
-                    &returnStatementNode);
-                expression = std::move(rvalueExpr);
+                else
+                {
+                    int x = 0;
+                }
             }
             classReturnArgs.push_back(std::move(expression));
             std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, classReturnLookups, classReturnArgs, boundCompileUnit, currentFunction,
@@ -1833,7 +1841,7 @@ void StatementBinder::Visit(cmajor::ast::CaseStatementNode& caseStatementNode)
     }
     if (!terminated)
     {
-        throw cmajor::symbols::Exception("case must end in break, continue, return, throw, goto, goto case or goto default statement", caseStatementNode.GetFullSpan());
+        throw cmajor::symbols::Exception("case must end in break, continue, return, goto, goto case or goto default statement", caseStatementNode.GetFullSpan());
     }
     int ne = caseStatementNode.CaseExprs().Count();
     for (int i = 0; i < ne; ++i)
@@ -1845,7 +1853,7 @@ void StatementBinder::Visit(cmajor::ast::CaseStatementNode& caseStatementNode)
         auto it = currentCaseValueMap->find(integralCaseValue);
         if (it != currentCaseValueMap->cend())
         {
-            throw cmajor::symbols::Exception("case value already used", caseStatementNode.GetFullSpan(), caseExprNode->GetFullSpan());
+            throw cmajor::symbols::Exception("case value already used", caseExprNode->GetFullSpan(), caseStatementNode.GetFullSpan());
         }
         (*currentCaseValueMap)[integralCaseValue] = &caseStatementNode;
         boundCaseStatement->AddCaseValue(std::move(caseValue));
@@ -1870,7 +1878,7 @@ void StatementBinder::Visit(cmajor::ast::DefaultStatementNode& defaultStatementN
     }
     if (!terminated)
     {
-        throw cmajor::symbols::Exception("default must end in break, continue, return, throw, goto, or goto case statement", defaultStatementNode.GetFullSpan());
+        throw cmajor::symbols::Exception("default must end in break, continue, return, goto, or goto case statement", defaultStatementNode.GetFullSpan());
     }
     AddStatement(boundDefaultStatement.release());
 }

@@ -1,0 +1,979 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    [nodiscard]
+    public Result<bool> GenerateStaticClassInitialization(StaticConstructorSymbol* staticConstructorSymbol, StaticConstructorNode* staticConstructorNode,
+        BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope,
+        StatementBinder* statementBinder, Node* node)
+    {
+        Result<bool> result = GenerateStaticClassInitializationContent(staticConstructorSymbol, staticConstructorNode, boundCompoundStatement, boundFunction,
+            boundCompileUnit, containerScope, statementBinder, node);
+        if (result.Error())
+        {
+            Symbol* parent = staticConstructorSymbol->Parent();
+            #assert(parent->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+            Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+            if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+            string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+            string message = "Could not generate static initialization for class '" + classTypeFullName + "'. Reason:\n";
+            string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+            message.Append(reasonMessage);
+            return MakeError(message, node->GetFullSpan());
+        }
+        return result;
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateStaticClassInitializationContent(StaticConstructorSymbol* staticConstructorSymbol, StaticConstructorNode* staticConstructorNode,
+        BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope,
+        StatementBinder* statementBinder, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        Symbol* parent = staticConstructorSymbol->Parent();
+        #assert(parent->IsClassTypeSymbol());
+        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+        #assert(classType->InitializedVar() != null);
+        UniquePtr<BoundIfStatement> ifStatement(new BoundIfStatement(node->GetSpan(), UniquePtr<BoundExpression>(
+            new BoundMemberVariable(node->GetSpan(), classType->InitializedVar())),
+            UniquePtr<BoundStatement>(new BoundReturnStatement(node->GetSpan(), UniquePtr<BoundFunctionCall>())),
+            UniquePtr<BoundStatement>()));
+        boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(ifStatement.Release()));
+        IdentifierNode staticInitCriticalSectionNode(node->GetSpan(), node->FileIndex(), u"System.Runtime.StaticInitCriticalSection");
+        Result<TypeSymbol*> staticInitCriticalSectionClassTypeResult = ResolveType(&staticInitCriticalSectionNode, boundCompileUnit, containerScope);
+        if (staticInitCriticalSectionClassTypeResult.Error()) return Result<bool>(ErrorId(staticInitCriticalSectionClassTypeResult.GetErrorId()));
+        TypeSymbol* staticInitCriticalSectionClassType = staticInitCriticalSectionClassTypeResult.Value();
+        List<FunctionScopeLookup> constructorLookups;
+        constructorLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+        Result<ContainerScope*> scopeResult = staticInitCriticalSectionClassType->ClassInterfaceOrNsScope();
+        ContainerScope* scope = scopeResult.Value();
+        constructorLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+        constructorLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+        List<UniquePtr<BoundExpression>> constructorArguments;
+        Result<LocalVariableSymbol*> temporaryResult = staticConstructorSymbol->CreateTemporary(node->GetSpan(), staticInitCriticalSectionClassType, context);
+        if (temporaryResult.Error()) return Result<bool>(ErrorId(temporaryResult.GetErrorId()));
+        LocalVariableSymbol* temporary = temporaryResult.Value();
+        constructorArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
+            new BoundLocalVariable(node->GetSpan(), temporary)), staticInitCriticalSectionClassType->AddPointer(context))));
+        Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, constructorLookups, constructorArguments,
+            boundCompileUnit, boundFunction, node);
+        if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
+        UniquePtr<BoundConstructionStatement> constructionStatement(new BoundConstructionStatement(node->GetSpan(), Rvalue(resolutionResult.Value())));
+        boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(constructionStatement.Release()));
+        UniquePtr<BoundIfStatement> ifStatement2(new BoundIfStatement(node->GetSpan(), UniquePtr<BoundExpression>(
+            new BoundMemberVariable(node->GetSpan(), classType->InitializedVar())),
+            UniquePtr<BoundStatement>(new BoundReturnStatement(node->GetSpan(), UniquePtr<BoundFunctionCall>())),
+            UniquePtr<BoundStatement>()));
+        boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(ifStatement2.Release()));
+        Result<TypeSymbol*> boolTypeResult = boundCompileUnit->GetSymbolTable()->GetTypeByName(u"bool");
+        if (boolTypeResult.Error()) return Result<bool>(ErrorId(boolTypeResult.GetErrorId()));
+        TypeSymbol* boolType = boolTypeResult.Value();
+        List<FunctionScopeLookup> assignmentLookups;
+        assignmentLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+        assignmentLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+        List<UniquePtr<BoundExpression>> assignmentArguments;
+        assignmentArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
+            new BoundMemberVariable(node->GetSpan(), classType->InitializedVar())), classType->InitializedVar()->Type()->AddPointer(context))));
+        assignmentArguments.Add(UniquePtr<BoundExpression>(new BoundLiteral(node->GetSpan(), UniquePtr<Value>(new BoolValue(node->GetSpan(), true)), boolType)));
+        Result<UniquePtr<BoundFunctionCall>> assignmentCallResult = ResolveOverload(u"operator=", containerScope, assignmentLookups, assignmentArguments,
+            boundCompileUnit, boundFunction, node);
+        if (assignmentCallResult.Error()) return Result<bool>(ErrorId(assignmentCallResult.GetErrorId()));
+        UniquePtr<BoundAssignmentStatement> assignmentStatement(new BoundAssignmentStatement(node->GetSpan(), Rvalue(assignmentCallResult.Value())));
+        boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(assignmentStatement.Release()));
+        ClassTypeSymbol* baseClass = classType->BaseClass();
+        if (baseClass != null)
+        {
+            if (baseClass->StaticConstructor() != null)
+            {
+                boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                    UniquePtr<BoundExpression>(new BoundFunctionCall(node->GetSpan(), baseClass->StaticConstructor())))));
+            }
+        }
+        Map<ustring, MemberInitializerNode*> memberInitializerMap;
+        int n = cast<int>(staticConstructorNode->Initializers().Count());
+        for (int i = 0; i < n; ++i)
+        {
+            InitializerNode* initializer = staticConstructorNode->Initializers()[i];
+            if (initializer->IsThisInitializerNode())
+            {
+                int errorId = MakeError("static constructor cannot have 'this' initializers", node->GetFullSpan(), initializer->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (initializer->IsBaseInitializerNode())
+            {
+                int errorId = MakeError("static constructor cannot have 'base' initializers", node->GetFullSpan(), initializer->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (initializer->IsMemberInitializerNode())
+            {
+                MemberInitializerNode* memberInitializer = cast<MemberInitializerNode*>(initializer);
+                ustring memberName = memberInitializer->MemberId()->Str();
+                auto it = memberInitializerMap.Find(memberName);
+                if (it != memberInitializerMap.End())
+                {
+                    Result<string> memberNameResult = ToUtf8(memberName);
+                    if (memberNameResult.Error()) return Result<bool>(ErrorId(memberNameResult.GetErrorId()));
+                    int errorId = MakeError("already has initializer for static member variable '" + memberNameResult.Value() + "'", node->GetFullSpan(), initializer->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+                memberInitializerMap[memberName] = memberInitializer;
+            }
+        }
+        int nm = cast<int>(classType->StaticMemberVariables().Count());
+        for (int i = 0; i < nm; ++i)
+        {
+            MemberVariableSymbol* memberVariableSymbol = classType->StaticMemberVariables()[i];
+            auto it = memberInitializerMap.Find(memberVariableSymbol->Name());
+            if (it != memberInitializerMap.End())
+            {
+                MemberInitializerNode* memberInitializer = it->second;
+                memberInitializerMap.Remove(memberInitializer->MemberId()->Str());
+                List<FunctionScopeLookup> lookups;
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->GetContainerScope();
+                if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
+                ContainerScope* scope = scopeResult.Value();
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> arguments;
+                BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                UniquePtr<BoundExpression> addrOfBoundMemberVariable(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
+                    boundMemberVariable->Type()->AddPointer(context)));
+                UniquePtr<BoundExpression> addrOfBoundMemberVariable2;
+                ClassTypeSymbol* memberVariableClassTypeWithDestructor = null;
+                if (memberVariableSymbol->Type()->HasNontrivialDestructor())
+                {
+                    addrOfBoundMemberVariable2.Reset(addrOfBoundMemberVariable->Clone());
+                    memberVariableClassTypeWithDestructor = cast<ClassTypeSymbol*>(memberVariableSymbol->Type()->BaseType());
+                }
+                arguments.Add(Rvalue(addrOfBoundMemberVariable));
+                int n = cast<int>(memberInitializer->Arguments().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    Node* argumentNode = memberInitializer->Arguments()[i];
+                    Result<UniquePtr<BoundExpression>> argumentResult = BindExpression(argumentNode, boundCompileUnit, boundFunction, containerScope, statementBinder);
+                    if (argumentResult.Error()) return Result<bool>(ErrorId(argumentResult.GetErrorId()));
+                    arguments.Add(Rvalue(argumentResult.Value()));
+                }
+                Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"constructor", containerScope, lookups, arguments,
+                    boundCompileUnit, boundFunction, node);
+                if (constructorCallResult.Error()) return Result<bool>(ErrorId(constructorCallResult.GetErrorId()));
+                boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                    UniquePtr<BoundExpression>(constructorCallResult.Value().Release()))));
+                if (memberVariableClassTypeWithDestructor != null)
+                {
+                    Result<TypeSymbol*> voidTypeResult = boundCompileUnit->GetSymbolTable()->GetTypeByName(u"void");
+                    if (voidTypeResult.Error()) return Result<bool>(ErrorId(voidTypeResult.GetErrorId()));
+                    TypeSymbol* voidType = voidTypeResult.Value();
+                    TypeSymbol* voidPtrType = voidType->AddPointer(context);
+                    List<FunctionScopeLookup> enqueueLookups;
+                    enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> enqueueArguments;
+                    enqueueArguments.Add(UniquePtr<BoundExpression>(new BoundBitcast(node->GetSpan(), UniquePtr<BoundExpression>(
+                        new BoundFunctionPtr(node->GetSpan(), memberVariableClassTypeWithDestructor->Destructor(), voidPtrType)),
+                        voidPtrType)));
+                    enqueueArguments.Add(UniquePtr<BoundExpression>(new BoundBitcast(node->GetSpan(), Rvalue(addrOfBoundMemberVariable2), voidPtrType)));
+                    Result<UniquePtr<BoundFunctionCall>> enqueueDestructorCallResult = ResolveOverload(u"RtmEnqueueDestruction", containerScope, enqueueLookups, enqueueArguments,
+                        boundCompileUnit, boundFunction, node);
+                    if (enqueueDestructorCallResult.Error()) return Result<bool>(ErrorId(enqueueDestructorCallResult.GetErrorId()));
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                        UniquePtr<BoundExpression>(enqueueDestructorCallResult.Value().Release()))));
+                }
+            }
+            else
+            {
+                List<FunctionScopeLookup> lookups;
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->GetContainerScope();
+                if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
+                ContainerScope* scope = scopeResult.Value();
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> arguments;
+                BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                UniquePtr<BoundExpression> addrOfBoundMemberVariable(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
+                    boundMemberVariable->Type()->AddPointer(context)));
+                UniquePtr<BoundExpression> addrOfBoundMemberVariable2;
+                ClassTypeSymbol* memberVariableClassTypeWithDestructor = null;
+                if (memberVariableSymbol->Type()->HasNontrivialDestructor())
+                {
+                    addrOfBoundMemberVariable2.Reset(addrOfBoundMemberVariable->Clone());
+                    memberVariableClassTypeWithDestructor = cast<ClassTypeSymbol*>(memberVariableSymbol->Type()->BaseType());
+                }
+                arguments.Add(Rvalue(addrOfBoundMemberVariable));
+                Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments,
+                    boundCompileUnit, boundFunction, node);
+                boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                    UniquePtr<BoundExpression>(constructorCallResult.Value().Release()))));
+                if (memberVariableClassTypeWithDestructor != null)
+                {
+                    Result<TypeSymbol*> voidTypeResult = boundCompileUnit->GetSymbolTable()->GetTypeByName(u"void");
+                    if (voidTypeResult.Error()) return Result<bool>(ErrorId(voidTypeResult.GetErrorId()));
+                    TypeSymbol* voidType = voidTypeResult.Value();
+                    TypeSymbol* voidPtrType = voidType->AddPointer(context);
+                    List<FunctionScopeLookup> enqueueLookups;
+                    enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> enqueueArguments;
+                    enqueueArguments.Add(UniquePtr<BoundExpression>(new BoundBitcast(node->GetSpan(), UniquePtr<BoundExpression>(
+                        new BoundFunctionPtr(node->GetSpan(), memberVariableClassTypeWithDestructor->Destructor(), voidPtrType)),
+                        voidPtrType)));
+                    enqueueArguments.Add(UniquePtr<BoundExpression>(new BoundBitcast(node->GetSpan(), Rvalue(addrOfBoundMemberVariable2), voidPtrType)));
+                    Result<UniquePtr<BoundFunctionCall>> enqueueDestructorCallResult = ResolveOverload(u"RtmEnqueueDestruction", containerScope, enqueueLookups, enqueueArguments,
+                        boundCompileUnit, boundFunction, node);
+                    if (enqueueDestructorCallResult.Error()) return Result<bool>(ErrorId(enqueueDestructorCallResult.GetErrorId()));
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                        UniquePtr<BoundExpression>(enqueueDestructorCallResult.Value().Release()))));
+                }
+            }
+        }
+        if (!memberInitializerMap.IsEmpty())
+        {
+            MemberInitializerNode* initializer = memberInitializerMap.Begin()->second;
+            Result<string> initializerNameResult = ToUtf8(initializer->MemberId()->Str());
+            if (initializerNameResult.Error()) return Result<bool>(ErrorId(initializerNameResult.GetErrorId()));
+            string initializerName = Rvalue(initializerNameResult.Value());
+            int errorId = MakeError("no static member variable found for initializer named '" + initializerName + "'", node->GetFullSpan(), initializer->GetFullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateClassInitialization(ConstructorSymbol* constructorSymbol, ConstructorNode* constructorNode, BoundCompoundStatement* boundCompoundStatement,
+        BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, Node* node)
+    {
+        Result<bool> result = GenerateClassInitializationContent(constructorSymbol, constructorNode, boundCompoundStatement, boundFunction,
+            boundCompileUnit, containerScope, statementBinder, generateDefault, node);
+        if (result.Error())
+        {
+            Symbol* parent = constructorSymbol->Parent();
+            #assert(parent->IsClassTypeSymbol() );
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+            Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+            if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+            string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+            string message = "Could not generate initialization for class '" + classTypeFullName + "'. Reason:\n";
+            string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+            message.Append(reasonMessage);
+            return MakeError(message, node->GetFullSpan());
+        }
+        return result;
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateClassInitializationContent(ConstructorSymbol* constructorSymbol, ConstructorNode* constructorNode, BoundCompoundStatement* boundCompoundStatement,
+        BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        Symbol* parent = constructorSymbol->Parent();
+        #assert(parent->IsClassTypeSymbol());
+        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+        if (generateDefault)
+        {
+            if (classType->IsStatic())
+            {
+                Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+                if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+                string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+                int errorId = MakeError("cannot create default initialization for class '" + classTypeFullName + "'. Reason: class is static", node->GetFullSpan(),
+                    classType->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        if (classType->StaticConstructor() != null)
+        {
+            boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
+                new BoundFunctionCall(node->GetSpan(), classType->StaticConstructor())))));
+        }
+        ParameterSymbol* thisParam = constructorSymbol->GetThisParam();
+        #assert(thisParam != null);
+        ThisInitializerNode* thisInitializer = null;
+        BaseInitializerNode* baseInitializer = null;
+        Map<ustring, MemberInitializerNode*> memberInitializerMap;
+        int ni = cast<int>(constructorNode->Initializers().Count());
+        for (int i = 0; i < ni; ++i)
+        {
+            InitializerNode* initializer = constructorNode->Initializers()[i];
+            if (initializer->IsThisInitializerNode())
+            {
+                if (thisInitializer != null)
+                {
+                    int errorId = MakeError("already has 'this' initializer", node->GetFullSpan(), initializer->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+                else if (baseInitializer != null)
+                {
+                    int errorId = MakeError("cannot have both 'this' and 'base' initializer", node->GetFullSpan(), initializer->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+                thisInitializer = cast<ThisInitializerNode*>(initializer);
+            }
+            else if (initializer->IsBaseInitializerNode())
+            {
+                if (baseInitializer != null)
+                {
+                    int errorId = MakeError("already has 'base' initializer", node->GetFullSpan(), initializer->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+                else if (thisInitializer != null)
+                {
+                    int errorId = MakeError("cannot have both 'this' and 'base' initializer", node->GetFullSpan(), initializer->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+                baseInitializer = cast<BaseInitializerNode*>(initializer);
+            }
+            else if (initializer->IsMemberInitializerNode())
+            {
+                MemberInitializerNode* memberInitializer = cast<MemberInitializerNode*>(initializer);
+                ustring memberName = memberInitializer->MemberId()->Str();
+                auto it = memberInitializerMap.Find(memberName);
+                if (it != memberInitializerMap.End())
+                {
+                    Result<string> memberNameResult = ToUtf8(memberName);
+                    if (memberNameResult.Error()) return Result<bool>(ErrorId(memberNameResult.GetErrorId()));
+                    int errorId = MakeError("already has initializer for member variable '" + memberNameResult.Value() + "'", node->GetFullSpan(), initializer->GetFullSpan());
+                }
+                memberInitializerMap[memberName] = memberInitializer;
+            }
+        }
+        if (thisInitializer != null)
+        {
+            List<FunctionScopeLookup> lookups;
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_, classType->GetContainerScope()));
+            lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            List<UniquePtr<BoundExpression>> arguments;
+            arguments.Add(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+            int n = cast<int>(thisInitializer->Arguments().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Node* argumentNode = thisInitializer->Arguments()[i];
+                Result<UniquePtr<BoundExpression>> argumentResult = BindExpression(argumentNode, boundCompileUnit, boundFunction, containerScope, statementBinder);
+                if (argumentResult.Error()) return Result<bool>(ErrorId(argumentResult.GetErrorId()));
+                arguments.Add(Rvalue(argumentResult.Value()));
+            }
+            OverloadResolutionFlags flags = OverloadResolutionFlags.none;
+            if (!constructorSymbol->IsMoveConstructor(context))
+            {
+                flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
+            }
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments, boundCompileUnit,
+                boundFunction, node, flags, templateArgumentTypes);
+            if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
+            boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
+                resolutionResult.Value().Release()))));
+        }
+        else if (baseInitializer != null)
+        {
+            if (classType->BaseClass() == null)
+            {
+                Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+                if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+                string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+                int errorId = MakeError("class '" + classTypeFullName + "' does not have a base class", node->GetFullSpan(), baseInitializer->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            List<FunctionScopeLookup> lookups;
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_, classType->BaseClass()->GetContainerScope()));
+            lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            List<UniquePtr<BoundExpression>> arguments;
+            ArgumentMatch argumentMatch;
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+            if (thisToBaseConversionResult.Error())
+            {
+                return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
+            }
+            FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
+            BoundExpression* baseClassPointerConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
+            arguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
+            int n = cast<int>(baseInitializer->Arguments().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Node* argumentNode = baseInitializer->Arguments()[i];
+                Result<UniquePtr<BoundExpression>> argumentResult = BindExpression(argumentNode, boundCompileUnit, boundFunction, containerScope, statementBinder);
+                if (argumentResult.Error()) return Result<bool>(ErrorId(argumentResult.GetErrorId()));
+                arguments.Add(Rvalue(argumentResult.Value()));
+            }
+            OverloadResolutionFlags flags = OverloadResolutionFlags.none;
+            if (!constructorSymbol->IsMoveConstructor(context))
+            {
+                flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
+            }
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments, boundCompileUnit,
+                boundFunction, node, flags, templateArgumentTypes);
+            if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
+            boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
+                resolutionResult.Value().Release()))));
+        }
+        else if (classType->BaseClass() != null)
+        {
+            List<FunctionScopeLookup> lookups;
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_, classType->BaseClass()->GetContainerScope()));
+            lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            List<UniquePtr<BoundExpression>> arguments;
+            ArgumentMatch argumentMatch;
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+            if (thisToBaseConversionResult.Error())
+            {
+                return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
+            }
+            FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
+            BoundExpression* baseClassPointerConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
+            arguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
+            bool copyConstructor = constructorSymbol->IsCopyConstructor(context);
+            if (copyConstructor)
+            {
+                ParameterSymbol* thatParam = constructorSymbol->Parameters()[1];
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(),
+                    classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                if (thatToBaseConversionResult.Error()) return Result<bool>(ErrorId(thatToBaseConversionResult.GetErrorId()));
+                FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
+                BoundExpression* baseClassReferenceConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                    new BoundParameter(node->GetSpan(), thatParam)), thatToBaseConversion);
+                arguments.Add(UniquePtr<BoundExpression>(baseClassReferenceConversion));
+            }
+            OverloadResolutionFlags flags = OverloadResolutionFlags.none;
+            if (!constructorSymbol->IsMoveConstructor(context))
+            {
+                flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
+            }
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments, boundCompileUnit,
+                boundFunction, node, flags, templateArgumentTypes);
+            if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
+            boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
+                resolutionResult.Value().Release()))));
+        }
+        if (classType->IsPolymorphic() && thisInitializer == null)
+        {
+            BoundExpression* classPtr = null;
+            Result<ClassTypeSymbol*> vmtPtrHolderClassResult = classType->VmtPtrHolderClass();
+            if (vmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
+            if (vmtPtrHolderClass == classType)
+            {
+                classPtr = new BoundParameter(node->GetSpan(), thisParam);
+            }
+            else
+            {
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context),
+                    containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                if (thisToHolderConversionResult.Error()) return Result<bool>(ErrorId(thisToHolderConversionResult.GetErrorId()));
+                FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
+                classPtr = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToHolderConversion);
+            }
+            boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundSetVmtPtrStatement(node->GetSpan(), UniquePtr<BoundExpression>(classPtr), classType)));
+        }
+        int nm = cast<int>(classType->MemberVariables().Count());
+        for (int i = 0; i < nm; ++i)
+        {
+            MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
+            auto it = memberInitializerMap.Find(memberVariableSymbol->Name());
+            if (it != memberInitializerMap.End())
+            {
+                MemberInitializerNode* memberInitializer = it->second;
+                memberInitializerMap.Remove(memberInitializer->MemberId()->Str());
+                List<FunctionScopeLookup> lookups;
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_, memberVariableSymbol->Type()->BaseType()->GetContainerScope()));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> arguments;
+                BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                arguments.Add(UniquePtr<BoundExpression>(
+                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                int n = cast<int>(memberInitializer->Arguments().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    Node* argumentNode = memberInitializer->Arguments()[i];
+                    Result<UniquePtr<BoundExpression>> argumentResult = BindExpression(argumentNode, boundCompileUnit, boundFunction, containerScope, statementBinder);
+                    if (argumentResult.Error()) return Result<bool>(ErrorId(argumentResult.GetErrorId()));
+                    arguments.Add(Rvalue(argumentResult.Value()));
+                }
+                Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments,
+                    boundCompileUnit, boundFunction, node);
+                if (constructorCallResult.Error()) return Result<bool>(ErrorId(constructorCallResult.GetErrorId()));
+                boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                    UniquePtr<BoundExpression>(constructorCallResult.Value().Release()))));
+            }
+            else if (thisInitializer == null)
+            {
+                if (constructorSymbol->IsCopyConstructor(context))
+                {
+                    List<FunctionScopeLookup> lookups;
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_, memberVariableSymbol->Type()->BaseType()->GetContainerScope()));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> arguments;
+                    BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                    boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                    arguments.Add(UniquePtr<BoundExpression>(
+                        new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                    CloneContext cloneContext;
+                    DotNode thatMemberVarNode(node->GetSpan(), node->FileIndex(), constructorNode->Parameters()[0]->Clone(cloneContext),
+                        new IdentifierNode(node->GetSpan(), node->FileIndex(), memberVariableSymbol->Name()));
+                    Result<UniquePtr<BoundExpression>> thatMemberVarArgumentResult = BindExpression(&thatMemberVarNode, boundCompileUnit, boundFunction,
+                        containerScope, statementBinder);
+                    if (thatMemberVarArgumentResult.Error()) return Result<bool>(ErrorId(thatMemberVarArgumentResult.GetErrorId()));
+                    arguments.Add(Rvalue(thatMemberVarArgumentResult.Value()));
+                    Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments,
+                        boundCompileUnit, boundFunction, node);
+                    if (constructorCallResult.Error()) return Result<bool>(ErrorId(constructorCallResult.GetErrorId()));
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                        UniquePtr<BoundExpression>(constructorCallResult.Value().Release()))));
+                }
+                else if (constructorSymbol->IsMoveConstructor(context))
+                {
+                    List<FunctionScopeLookup> lookups;
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_, memberVariableSymbol->Type()->BaseType()->GetContainerScope()));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> arguments;
+                    BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                    boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                    ParameterSymbol* thatParam = constructorSymbol->Parameters()[1];
+                    UniquePtr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
+                    thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(
+                        new BoundReferenceToPointerExpression(node->GetSpan(), UniquePtr<BoundExpression>(
+                            new BoundParameter(node->GetSpan(), thatParam)), thatParam->Type()->BaseType()->AddPointer(context))));
+                    List<FunctionScopeLookup> rvalueLookups;
+                    rvalueLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    rvalueLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> rvalueArguments;
+                    rvalueArguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable.Release()));
+                    Result<UniquePtr<BoundFunctionCall>> rvalueCallResult = ResolveOverload(u"System.Rvalue", containerScope, rvalueLookups, rvalueArguments,
+                        boundCompileUnit, boundFunction, node);
+                    if (rvalueCallResult.Error()) return Result<bool>(ErrorId(rvalueCallResult.GetErrorId()));
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                        UniquePtr<BoundExpression>(rvalueCallResult.Value().Release()))));
+                }
+                else
+                {
+                    List<FunctionScopeLookup> lookups;
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_, memberVariableSymbol->Type()->BaseType()->GetContainerScope()));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> arguments;
+                    BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                    boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                    arguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
+                        boundMemberVariable->Type()->AddPointer(context))));
+                    OverloadResolutionFlags flags = OverloadResolutionFlags.none;
+                    if (!constructorSymbol->IsMoveConstructor(context))
+                    {
+                        flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
+                    }
+                    List<TypeSymbol*> templateArgumentTypes;
+                    Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments,
+                        boundCompileUnit, boundFunction, node, flags, templateArgumentTypes);
+                    if (constructorCallResult.Error()) return Result<bool>(ErrorId(constructorCallResult.GetErrorId()));
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                        UniquePtr<BoundExpression>(constructorCallResult.Value().Release()))));
+                }
+            }
+        }
+        if (!memberInitializerMap.IsEmpty())
+        {
+            MemberInitializerNode* initializer = memberInitializerMap.Begin()->second;
+            Result<string> initializerNameResult = ToUtf8(initializer->MemberId()->Str());
+            if (initializerNameResult.Error()) return Result<bool>(ErrorId(initializerNameResult.GetErrorId()));
+            string initializerName = Rvalue(initializerNameResult.Value());
+            int errorId = MakeError("no member variable found for initializer named '" + initializerName + "'", node->GetFullSpan(), initializer->GetFullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateClassAssignment(MemberFunctionSymbol* assignmentFunctionSymbol, MemberFunctionNode* assignmentNode, BoundCompoundStatement* boundCompoundStatement,
+        BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, Node* node)
+    {
+        Result<bool> result = GenerateClassAssignmentContent(assignmentFunctionSymbol, assignmentNode, boundCompoundStatement, boundFunction,
+            boundCompileUnit, containerScope, statementBinder, generateDefault, node);
+        if (result.Error())
+        {
+            Symbol* parent = assignmentFunctionSymbol->Parent();
+            #assert(parent->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+            Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+            if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+            string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+            string message = "Could not generate assignment for class '" + classTypeFullName + "'. Reason:\n";
+            string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+            message.Append(reasonMessage);
+            return MakeError(message, node->GetFullSpan());
+        }
+        return result;
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateClassAssignmentContent(MemberFunctionSymbol* assignmentFunctionSymbol, MemberFunctionNode* assignmentNode,
+        BoundCompoundStatement* boundCompoundStatement, BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope,
+        StatementBinder* statementBinder, bool generateDefault, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        Symbol* parent = assignmentFunctionSymbol->Parent();
+        #assert(parent->IsClassTypeSymbol());
+        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+        if (generateDefault)
+        {
+            if (classType->IsStatic())
+            {
+                Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+                if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+                string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+                int errorId = MakeError("cannot create default assignment for class '" + classTypeFullName + "'. Reason: class is static", node->GetFullSpan(),
+                    classType->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        ParameterSymbol* thisParam = assignmentFunctionSymbol->GetThisParam();
+        #assert(thisParam != null);
+        if (assignmentFunctionSymbol->IsCopyAssignment(context))
+        {
+            if (classType->BaseClass() != null)
+            {
+                List<FunctionScopeLookup> lookups;
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_, classType->BaseClass()->GetContainerScope()));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> arguments;
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                    containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
+                FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
+                BoundExpression* baseClassPointerConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                    new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
+                arguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
+                ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
+                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(),
+                    classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                if (thatToBaseConversionResult.Error()) return Result<bool>(ErrorId(thatToBaseConversionResult.GetErrorId()));
+                FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
+                BoundExpression* baseClassReferenceConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                    new BoundParameter(node->GetSpan(), thatParam)), thatToBaseConversion);
+                arguments.Add(UniquePtr<BoundExpression>(baseClassReferenceConversion));
+                Result<UniquePtr<BoundFunctionCall>> assignmentCallResult = ResolveOverload(u"operator=", containerScope, lookups, arguments,
+                    boundCompileUnit, boundFunction, node);
+                if (assignmentCallResult.Error()) return Result<bool>(ErrorId(assignmentCallResult.GetErrorId()));
+                boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                    UniquePtr<BoundExpression>(assignmentCallResult.Value().Release()))));
+            }
+            if (generateDefault)
+            {
+                int n = cast<int>(classType->MemberVariables().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
+                    List<FunctionScopeLookup> lookups;
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_, memberVariableSymbol->Type()->BaseType()->GetContainerScope()));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> arguments;
+                    BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                    boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                    arguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
+                        boundMemberVariable->Type()->AddPointer(context))));
+                    CloneContext cloneContext;
+                    DotNode thatMemberVarNode(node->GetSpan(), node->FileIndex(), assignmentNode->Parameters()[0]->Clone(cloneContext),
+                        new IdentifierNode(node->GetSpan(), node->FileIndex(), memberVariableSymbol->Name()));
+                    Result<UniquePtr<BoundExpression>> thatMemberVarArgumentResult = BindExpression(&thatMemberVarNode, boundCompileUnit, boundFunction,
+                        containerScope, statementBinder);
+                    if (thatMemberVarArgumentResult.Error()) return Result<bool>(ErrorId(thatMemberVarArgumentResult.GetErrorId()));
+                    arguments.Add(Rvalue(thatMemberVarArgumentResult.Value()));
+                    Result<UniquePtr<BoundFunctionCall>> assignmentCallResult = ResolveOverload(u"operator=", containerScope, lookups, arguments,
+                        boundCompileUnit, boundFunction, node);
+                    if (assignmentCallResult.Error()) return Result<bool>(ErrorId(assignmentCallResult.GetErrorId()));
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                        UniquePtr<BoundExpression>(assignmentCallResult.Value().Release()))));
+                }
+            }
+        }
+        else if (assignmentFunctionSymbol->IsMoveAssignment(context))
+        {
+            if (classType->BaseClass() != null)
+            {
+                List<FunctionScopeLookup> lookups;
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.this_, classType->BaseClass()->GetContainerScope()));
+                lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> arguments;
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context), containerScope,
+                    boundCompileUnit, boundFunction, argumentMatch, node);
+                if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
+                FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
+                BoundExpression* baseClassPointerConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                    new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
+                arguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
+                ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
+                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(),
+                    classType->BaseClass()->AddRvalueReference(context), containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                if (thatToBaseConversionResult.Error()) return Result<bool>(ErrorId(thatToBaseConversionResult.GetErrorId()));
+                FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
+                BoundExpression* baseClassReferenceConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                    new BoundParameter(node->GetSpan(), thatParam)), thatToBaseConversion);
+                arguments.Add(UniquePtr<BoundExpression>(baseClassReferenceConversion));
+                Result<UniquePtr<BoundFunctionCall>> assignmentCallResult = ResolveOverload(u"operator=", containerScope, lookups, arguments,
+                    boundCompileUnit, boundFunction, node);
+                if (assignmentCallResult.Error()) return Result<bool>(ErrorId(assignmentCallResult.GetErrorId()));
+                boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
+                    assignmentCallResult.Value().Release()))));
+            }
+            if (generateDefault)
+            {
+                int n = cast<int>(classType->MemberVariables().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
+                    List<FunctionScopeLookup> lookups;
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_, memberVariableSymbol->Type()->BaseType()->GetContainerScope()));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                    List<UniquePtr<BoundExpression>> arguments;
+                    BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                    boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                    arguments.Add(UniquePtr<BoundExpression>(boundMemberVariable));
+                    BoundMemberVariable* thatBoundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                    ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
+                    TypeSymbol* thatPtrType = thatParam->Type()->RemoveReference(context)->AddPointer(context);
+                    thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundReferenceToPointerExpression(node->GetSpan(),
+                        UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), thatPtrType)));
+                    arguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable));
+                    Result<UniquePtr<BoundFunctionCall>> swapCallResult = ResolveOverload(u"System.Swap", containerScope, lookups, arguments,
+                        boundCompileUnit, boundFunction, node);
+                    if (swapCallResult.Error()) return Result<bool>(ErrorId(swapCallResult.GetErrorId()));
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
+                        UniquePtr<BoundExpression>(swapCallResult.Value().Release()))));
+                }
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateClassTermination(DestructorSymbol* destructorSymbol, DestructorNode* destructorNode, BoundCompoundStatement* boundCompoundStatement,
+        BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, StatementBinder* statementBinder, Node* node)
+    {
+        Result<bool> result = GenerateClassTerminationContent(destructorSymbol, destructorNode, boundCompoundStatement, boundFunction, boundCompileUnit,
+            containerScope, statementBinder, node);
+        if (result.Error())
+        {
+            Symbol* parent = destructorSymbol->Parent();
+            #assert(parent->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+            Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+            if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+            string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+            string message = "Could not generate termination for class '" + classTypeFullName + "'. Reason:\n";
+            string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+            message.Append(reasonMessage);
+            return MakeError(message, node->GetFullSpan());
+        }
+        return result;
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateClassTerminationContent(DestructorSymbol* destructorSymbol, DestructorNode* destructorNode, BoundCompoundStatement* boundCompoundStatement,
+        BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, StatementBinder* statementBinder, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        Symbol* parent = destructorSymbol->Parent();
+        #assert(parent->IsClassTypeSymbol());
+        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+        ParameterSymbol* thisParam = destructorSymbol->GetThisParam();
+        #assert(thisParam != null);
+        if (classType->IsPolymorphic())
+        {
+            BoundExpression* classPtr = null;
+            Result<ClassTypeSymbol*> vmtPtrHolderClassResult = classType->VmtPtrHolderClass();
+            if (vmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
+            if (vmtPtrHolderClass == classType)
+            {
+                classPtr = new BoundParameter(node->GetSpan(), thisParam);
+            }
+            else
+            {
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context), containerScope,
+                    boundCompileUnit, boundFunction, argumentMatch, node);
+                if (thisToHolderConversionResult.Error()) return Result<bool>(ErrorId(thisToHolderConversionResult.GetErrorId()));
+                FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
+                classPtr = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToHolderConversion);
+            }
+            boundCompoundStatement->InsertStatementToFront(UniquePtr<BoundStatement>(new BoundSetVmtPtrStatement(node->GetSpan(),
+                UniquePtr<BoundExpression>(classPtr), classType)));
+        }
+        int n = cast<int>(classType->MemberVariables().Count());
+        for (int i = n - 1; i >= 0; --i)
+        {
+            MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
+            if (memberVariableSymbol->Type()->HasNontrivialDestructor())
+            {
+                List<FunctionScopeLookup> memberDestructorCallLookups;
+                memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
+                ContainerScope* scope = scopeResult.Value();
+                memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+                memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> memberDestructorCallArguments;
+                BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                memberDestructorCallArguments.Add(UniquePtr<BoundExpression>(
+                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
+                    boundCompileUnit, boundFunction, node);
+                if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
+                boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundExpressionStatement(node->GetSpan(),
+                    UniquePtr<BoundExpression>(resolutionResult.Value().Release()))));
+            }
+        }
+        if (classType->BaseClass() != null && classType->BaseClass()->HasNontrivialDestructor())
+        {
+            List<FunctionScopeLookup> baseDestructorCallLookups;
+            baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_, classType->BaseClass()->GetContainerScope()));
+            baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            List<UniquePtr<BoundExpression>> baseDestructorCallArguments;
+            ArgumentMatch argumentMatch;
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context), containerScope,
+                boundCompileUnit, boundFunction, argumentMatch, node);
+            if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
+            FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
+            BoundExpression* baseClassPointerConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
+            baseDestructorCallArguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
+            Result<UniquePtr<BoundFunctionCall>> destructorCallResult = ResolveOverload(u"@destructor", containerScope, baseDestructorCallLookups, baseDestructorCallArguments,
+                boundCompileUnit, boundFunction, node);
+            if (destructorCallResult.Error()) return Result<bool>(ErrorId(destructorCallResult.GetErrorId()));
+            boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundExpressionStatement(node->GetSpan(),
+                UniquePtr<BoundExpression>(destructorCallResult.Value().Release()))));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateDestructorImplementation(
+        BoundClass* boundClass, DestructorSymbol* destructorSymbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
+    {
+        Result<bool> result = GenerateDestructorImplementationContent(boundClass, destructorSymbol, boundCompileUnit, containerScope, currentFunction, node);
+        if (result.Error())
+        {
+            string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+            ClassTypeSymbol* classType = boundClass->GetClassTypeSymbol();
+            Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+            if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+            string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+            int errorId = MakeError("Cannot create destructor for class '" + classTypeFullName + "'. Reason:\n" + reasonMessage, node->GetFullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        return result;
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateDestructorImplementationContent(
+        BoundClass* boundClass, DestructorSymbol* destructorSymbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        ClassTypeSymbol* classType = boundClass->GetClassTypeSymbol();
+        UniquePtr<BoundFunction> boundFunction(new BoundFunction(node->GetSpan(), destructorSymbol, node->ModuleId(), node->FileIndex()));
+        boundFunction->SetNode(node);
+        boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(new BoundCompoundStatement(node->GetSpan())));
+        ParameterSymbol* thisParam = destructorSymbol->Parameters()[0];
+        if (classType->IsPolymorphic())
+        {
+            BoundExpression* classPtr = null;
+            Result<ClassTypeSymbol*> vmtPtrHolderClassResult = classType->VmtPtrHolderClass();
+            if (vmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
+            if (vmtPtrHolderClass == classType)
+            {
+                classPtr = new BoundParameter(node->GetSpan(), thisParam);
+            }
+            else
+            {
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context), containerScope,
+                    boundCompileUnit, boundFunction.Get(), argumentMatch, node);
+                if (thisToHolderConversionResult.Error()) return Result<bool>(ErrorId(thisToHolderConversionResult.GetErrorId()));
+                FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
+                classPtr = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToHolderConversion);
+            }
+            boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundSetVmtPtrStatement(node->GetSpan(),
+                UniquePtr<BoundExpression>(classPtr), classType)));
+        }
+        int n = cast<int>(classType->MemberVariables().Count());
+        for (int i = n - 1; i >= 0; --i)
+        {
+            MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
+            if (memberVariableSymbol->Type()->HasNontrivialDestructor())
+            {
+                List<FunctionScopeLookup> memberDestructorCallLookups;
+                memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
+                ContainerScope* scope = scopeResult.Value();
+                memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+                memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> memberDestructorCallArguments;
+                BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                memberDestructorCallArguments.Add(UniquePtr<BoundExpression>(
+                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
+                    boundCompileUnit, boundFunction.Get(), node);
+                if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
+                boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundExpressionStatement(node->GetSpan(),
+                    UniquePtr<BoundExpression>(resolutionResult.Value().Release()))));
+            }
+        }
+        if (classType->BaseClass() != null && classType->BaseClass()->HasNontrivialDestructor())
+        {
+            List<FunctionScopeLookup> baseDestructorCallLookups;
+            baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_, classType->BaseClass()->GetContainerScope()));
+            baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            List<UniquePtr<BoundExpression>> baseDestructorCallArguments;
+            ArgumentMatch argumentMatch;
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context), containerScope,
+                boundCompileUnit, boundFunction.Get(), argumentMatch, node);
+            if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
+            FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
+            BoundExpression* baseClassPointerConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
+                new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
+            baseDestructorCallArguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
+            Result<UniquePtr<BoundFunctionCall>> destructorCallResult = ResolveOverload(u"@destructor", containerScope, baseDestructorCallLookups, baseDestructorCallArguments,
+                boundCompileUnit, boundFunction.Get(), node);
+            if (destructorCallResult.Error()) return Result<bool>(ErrorId(destructorCallResult.GetErrorId()));
+            boundFunction->Body()->AddStatement(UniquePtr<BoundStatement>(new BoundExpressionStatement(node->GetSpan(),
+                UniquePtr<BoundExpression>(destructorCallResult.Value().Release()))));
+        }
+        boundClass->AddMember(UniquePtr<BoundNode>(boundFunction.Release()));
+        return Result<bool>(true);
+    }
+}
+

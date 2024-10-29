@@ -10,6 +10,6 @@ import cmajor.masm.intermediate;
 
 export namespace cmajor::masm::optimizer {
 
-void InlineExpand(cmajor::masm::intermediate::Function* function);
+bool InlineExpand(cmajor::masm::intermediate::Function* function);
 
 } // cmajor::masm::optimizer

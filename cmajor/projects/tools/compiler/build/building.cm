@@ -1,0 +1,484 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using binder;
+using symbols;
+using cm.ast;
+
+namespace build
+{
+    internal bool stopBuild = false;
+    internal Solution* currentSolution;
+
+    internal class CurrentSolutionGuard
+    {
+        public CurrentSolutionGuard(Solution* solution)
+        {
+            currentSolution = solution;
+        }
+        public ~CurrentSolutionGuard()
+        {
+            currentSolution = null;
+        }
+    }
+
+    [nodiscard]
+    internal Result<bool> CleanProject(Project* project)
+    {
+        return Result<bool>(true);
+    }
+
+    internal void SetDefines(Module* module)
+    {
+        module->ClearDefines();
+        if (GetConfig() == "debug")
+        {
+            module->DefineSymbol(u"DEBUG");
+        }
+        else if (GetConfig() == "release")
+        {
+            module->DefineSymbol(u"RELEASE");
+        }
+        else if (GetConfig() == "profile")
+        {
+            module->DefineSymbol(u"RELEASE");
+            module->DefineSymbol(u"PROFILE");
+        }
+        module->DefineSymbol(u"WINDOWS");
+        module->DefineSymbol(u"CM_BACKEND");
+    }
+
+    [nodiscard]
+    internal Result<bool> BuildProject(Project* project, UniquePtr<Module>& rootModule, bool& stop, bool resetRootModule, Set<string>& builtProjects)
+    {
+        if (builtProjects.Find(project->FilePath()) != builtProjects.End()) return Result<bool>(true);
+        builtProjects.Insert(project->FilePath());
+        if (GetGlobalFlag(GlobalFlags.buildAll))
+        {
+            for (const string& referencedProjectFilePath : project->ReferencedProjectFilePaths())
+            {
+                auto referencedProjectResult = ParseProjectFile(referencedProjectFilePath);
+                if (referencedProjectResult.Error())
+                {
+                    return Result<bool>(ErrorId(referencedProjectResult.GetErrorId()));
+                }
+                Project* referencedProject = referencedProjectResult.Value().Get();
+                if (builtProjects.Find(referencedProjectFilePath) == builtProjects.End())
+                {
+                    UniquePtr<Module> module;
+                    auto result = BuildProject(referencedProject, module, stop, resetRootModule, builtProjects);
+                    if (result.Error())
+                    {
+                        rootModule.Reset(module.Release());
+                        return result;
+                    }
+                }
+            }
+        }
+        bool systemLibraryInstalled = false;
+        string config = GetConfig();
+        auto projectNameResult = ToUtf8(project->Name());
+        if (projectNameResult.Error())
+        {
+            return Result<bool>(ErrorId(projectNameResult.GetErrorId()));
+        }
+        string projectName = Rvalue(projectNameResult.Value());
+        bool isSystemModule = IsSystemModule(projectName);
+        if (isSystemModule)
+        {
+            project->SetSystemProject();
+        }
+        bool upToDate = false;
+        if (!GetGlobalFlag(GlobalFlags.rebuild))
+        {
+            Result<string> systemModuleFilePathResult = CmajorSystemModuleFilePath(config, BackEnd.cm, "cm");
+            if (systemModuleFilePathResult.Error())
+            {
+                return Result<bool>(ErrorId(systemModuleFilePathResult.GetErrorId()));
+            }
+            const string& systemModuleFilePath = systemModuleFilePathResult.Value();
+            auto upToDateResult = project->IsUpToDate(systemModuleFilePath);
+            if (upToDateResult.Error())
+            {
+                return Result<bool>(ErrorId(upToDateResult.GetErrorId()));
+            }
+            upToDate = upToDateResult.Value();
+        }
+        if (upToDate)
+        {
+            if (GetGlobalFlag(GlobalFlags.verbose))
+            {
+                LogMessage(project->LogStreamId(), "===== Project '" + projectName + "' (" + project->FilePath() + ") is up-to-date.");
+                return Result<bool>(true);
+            }
+        }
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(project->LogStreamId(), "===== Building project '" + projectName + "' (" + project->FilePath() + ") using " + config + " configuration.");
+        }
+        SymbolsContext context;
+        rootModule.Reset(new Module(projectName, project->ModuleFilePath()));
+        context.SetRootModule(rootModule.Get());
+        rootModule->SetRootModule();
+        rootModule->SetLogStreamId(project->LogStreamId());
+        SetDefines(rootModule.Get());
+        auto result = ParseSourceFiles(project, rootModule.Get());
+        if (result.Error()) return result;
+        result = PrepareModuleForCompilation(context, rootModule.Get(), project->References(), project->GetTarget(), project->RootSpan(), project->RootFileIndex(),
+            project->RootSourceFile());
+        if (result.Error()) return result;
+        Preprocess(project);
+        result = CreateSymbols(context, rootModule->GetSymbolTable(), project, stop);
+        if (result.Error())
+        {
+            stop = true;
+            return result;
+        }
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(project->LogStreamId(), "Binding types...");
+        }
+        AttributeBinder attributeBinder(rootModule.Get());
+        List<UniquePtr<BoundCompileUnit>> boundCompileUnits;
+        Result<bool> typeBindingResult = BindTypes(context, rootModule.Get(), project, &attributeBinder, boundCompileUnits, stop);
+        if (typeBindingResult.Error())
+        {
+            stop = true;
+            return typeBindingResult;
+        }
+        List<string> objectFilePaths;
+        List<string> asmFilePaths;
+        Result<bool> compileResult = Compile(context, project, rootModule.Get(), boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+        if (compileResult.Error())
+        {
+            stop = true;
+            return compileResult;
+        }
+        SymbolWriter writer(context, project->ModuleFilePath());
+        result = rootModule->Write(writer);
+        if (result.Error()) return result;
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(project->LogStreamId(), "Project '" + projectName + "' built successfully.");
+        }
+        if (rootModule->IsSystemModule())
+        {
+            project->SetSystemProject();
+        }
+        if (rootModule->Name() == "System.Install")
+        {
+            result = InstallSystemLibraries(rootModule.Get());
+            if (result.Error()) return result;
+            systemLibraryInstalled = true;
+        }
+        else if (rootModule->Name() == "System.Windows.Install")
+        {
+            result = InstallSystemWindowsLibraries(rootModule.Get());
+            if (result.Error()) return result;
+            systemLibraryInstalled = true;
+        }
+        if (resetRootModule)
+        {
+            PutModuleToModuleCache(Rvalue(rootModule));
+            rootModule.Reset();
+        }
+        if (systemLibraryInstalled)
+        {
+            ResetModuleCache();
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> BuildProject(const string& projectFilePath, UniquePtr<Module>& rootModule, Set<string>& builtProjects)
+    {
+        auto projectResult = ParseProjectFile(projectFilePath);
+        if (projectResult.Error())
+        {
+            return Result<bool>(ErrorId(projectResult.GetErrorId()));
+        }
+        Project* project = projectResult.Value().Get();
+        if (GetGlobalFlag(GlobalFlags.clean))
+        {
+            for (const string& referencedProjectFilePath : project->ReferencedProjectFilePaths())
+            {
+                auto referencedProjectResult = ParseProjectFile(referencedProjectFilePath);
+                if (referencedProjectResult.Error())
+                {
+                    return Result<bool>(ErrorId(referencedProjectResult.GetErrorId()));
+                }
+                Project* referencedProject = referencedProjectResult.Value().Get();
+                if (currentSolution == null)
+                {
+                    auto result = BuildProject(referencedProjectFilePath, rootModule, builtProjects);
+                    if (result.Error()) return result;
+                }
+            }
+            auto result = CleanProject(project);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            stopBuild = false;
+            auto result = BuildProject(project, rootModule, stopBuild, true, builtProjects);
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    internal Result<bool> BuildSolutionSingleThreaded(Solution* solution, const List<Project*>& projectsToBuild, List<UniquePtr<Module>>& rootModules,
+        Set<string>& builtProjects)
+    {
+        int numProjectsToBuild = cast<int>(projectsToBuild.Count());
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(-1, "Building " + ToString(numProjectsToBuild) + " projects...");
+        }
+        for (int i = 0; i < numProjectsToBuild; ++i)
+        {
+            Project* project = projectsToBuild[i];
+            stopBuild = false;
+            auto result = BuildProject(project, rootModules[i], stopBuild, true, builtProjects);
+            if (result.Error()) return result;
+        }
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            string solutionName;
+            auto utf8Result = ToUtf8(solution->Name());
+            if (!utf8Result.Error())
+            {
+                solutionName = Rvalue(utf8Result.Value());
+            }
+            LogMessage(-1, "Solution '" + solutionName + "' built successfully.");
+        }
+        return Result<bool>(true);
+    }
+
+    internal class SolutionBuildData
+    {
+        public SolutionBuildData(bool& stop_, List<UniquePtr<Module>>& rootModules_, Set<string>& builtProjects_) :
+            stop(stop_), rootModules(rootModules_), builtProjects(builtProjects_)
+        {
+            results.Resize(rootModules.Count());
+        }
+        public bool& stop;
+        public SynchronizedQueue<Project*> buildQueue;
+        public SynchronizedQueue<Project*> readyQueue;
+        public List<UniquePtr<Module>>& rootModules;
+        public Set<string>& builtProjects;
+        public Mutex getResultsMutex;
+        public List<Result<bool>> getResults;
+        public List<Result<bool>> results;
+    }
+
+    internal void BuildFunc(void* data)
+    {
+        SolutionBuildData* buildData = cast<SolutionBuildData*>(data);
+        auto getResult = buildData->buildQueue.Get();
+        if (getResult.Error())
+        {
+            {
+                LockGuard<Mutex> lock(buildData->getResultsMutex);
+                buildData->getResults.Add(Result<bool>(ErrorId(getResult.GetErrorId())));
+            }
+            buildData->stop = true;
+            auto exitResult = buildData->buildQueue.Exit();
+            exitResult = buildData->readyQueue.Exit();
+            return;
+        }
+        Project* projectToBuild = getResult.Value();
+        while (projectToBuild != null && !buildData->stop)
+        {
+            auto result = BuildProject(projectToBuild, buildData->rootModules[projectToBuild->Index()], buildData->stop, true, buildData->builtProjects);
+            if (result.Error())
+            {
+                buildData->results[projectToBuild->Index()] = Rvalue(result);
+                buildData->stop = true;
+                auto exitResult = buildData->buildQueue.Exit();
+                exitResult = buildData->readyQueue.Exit();
+                return;
+            }
+            else
+            {
+                auto result = buildData->readyQueue.Put(projectToBuild);
+                if (result.Error())
+                {
+                    buildData->results[projectToBuild->Index()] = Rvalue(result);
+                    buildData->stop = true;
+                    auto exitResult = buildData->buildQueue.Exit();
+                    exitResult = buildData->readyQueue.Exit();
+                    return;
+                }
+                getResult = buildData->buildQueue.Get();
+                if (getResult.Error())
+                {
+                    {
+                        LockGuard<Mutex> lock(buildData->getResultsMutex);
+                        buildData->getResults.Add(Result<bool>(ErrorId(getResult.GetErrorId())));
+                    }
+                    buildData->stop = true;
+                    auto exitResult = buildData->buildQueue.Exit();
+                    exitResult = buildData->readyQueue.Exit();
+                    return;
+                }
+                projectToBuild = getResult.Value();
+            }
+        }
+    }
+
+    [nodiscard]
+    internal Result<bool> BuildSolutionMultiThreaded(int numThreads, Solution* solution, const List<Project*>& projectsToBuild, List<UniquePtr<Module>>& rootModules,
+        Set<string>& builtProjects)
+    {
+        int numProjectsToBuild = cast<int>(projectsToBuild.Count());
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(-1, "Building " + ToString(numProjectsToBuild) + " projects using " + ToString(numThreads) + " threads...");
+        }
+        stopBuild = false;
+        SolutionBuildData buildData(stopBuild, rootModules, builtProjects);
+        List<Thread> threads;
+        for (int i = 0; i < numThreads; ++i)
+        {
+            Thread thread = Thread.StartFunction(BuildFunc, &buildData);
+            if (buildData.stop) break;
+            threads.Add(Rvalue(thread));
+        }
+        while (numProjectsToBuild > 0 && !stopBuild)
+        {
+            List<Project*> building;
+            for (Project* project : projectsToBuild)
+            {
+                if (project->Ready())
+                {
+                    building.Add(project);
+                    auto result = buildData.buildQueue.Put(project);
+                    if (result.Error()) return result;
+                }
+            }
+            for (Project* project : building)
+            {
+                projectsToBuild.Remove(project);
+            }
+            Result<Project*> readyResult = buildData.readyQueue.Get();
+            if (readyResult.Error()) return Result<bool>(ErrorId(readyResult.GetErrorId()));
+            Project* ready = readyResult.Value();
+            if (ready != null)
+            {
+                ready->SetBuilt();
+                --numProjectsToBuild;
+            }
+        }
+        buildData.buildQueue.Exit();
+        buildData.readyQueue.Exit();
+        stopBuild = true;
+        int numStartedThreads = cast<int>(threads.Count());
+        for (int i = 0; i < numStartedThreads; ++i)
+        {
+            auto result = buildData.buildQueue.Put(null);
+            if (result.Error()) return result;
+        }
+        for (int i = 0; i < numStartedThreads; ++i)
+        {
+            threads[i].Join();
+        }
+        for (const auto& getResult : buildData.getResults)
+        {
+            if (getResult.Error()) return getResult;
+        }
+        for (const auto& result : buildData.results)
+        {
+            if (result.Error()) return result;
+        }
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            string solutionName;
+            auto utf8Result = ToUtf8(solution->Name());
+            if (!utf8Result.Error())
+            {
+                solutionName = Rvalue(utf8Result.Value());
+            }
+            LogMessage(-1, "Solution '" + solutionName + "' built successfully.");
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> BuildSolution(const string& solutionFilePath, List<UniquePtr<Module>>& rootModules)
+    {
+        Set<string> builtProjects;
+        string config = GetConfig();
+        if (GetGlobalFlag(GlobalFlags.clean))
+        {
+            LogMessage(-1, "Cleaning solution '" + solutionFilePath + "' using " + config + " configuration.");
+        }
+        else
+        {
+            LogMessage(-1, "Building solution '" + solutionFilePath + "' using " + config + " configuration.");
+        }
+        auto solutionFileResult = ParseSolutionFile(solutionFilePath);
+        if (solutionFileResult.Error())
+        {
+            return Result<bool>(ErrorId(solutionFileResult.GetErrorId()));
+        }
+        Solution* solution = solutionFileResult.Value().Get();
+        CurrentSolutionGuard currentSolutionGuard(solution);
+        for (const auto& projectFilePath : solution->ProjectFilePaths())
+        {
+            auto projectResult = ParseProjectFile(projectFilePath);
+            if (projectResult.Error())
+            {
+                return Result<bool>(ErrorId(projectResult.GetErrorId()));
+            }
+            solution->AddProject(Rvalue(projectResult.Value()));
+        }
+        Result<List<Project*>> buildOrderResult = solution->CreateBuildOrder();
+        if (buildOrderResult.Error())
+        {
+            return Result<bool>(ErrorId(buildOrderResult.GetErrorId()));
+        }
+        List<Project*> buildOrder = Rvalue(buildOrderResult.Value());
+        List<Project*> projectsToBuild;
+        int logStreamId = 0;
+        for (Project* project : buildOrder)
+        {
+            if (GetGlobalFlag(GlobalFlags.clean))
+            {
+                auto result = CleanProject(project);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                project->SetLogStreamId(logStreamId++);
+                projectsToBuild.Add(project);
+            }
+        }
+        if (!projectsToBuild.IsEmpty())
+        {
+            int numProjectsToBuild = cast<int>(projectsToBuild.Count());
+            int numThreads = 1;
+            if (!GetGlobalFlag(GlobalFlags.singleThreadedCompile))
+            {
+                numThreads = Min(numProjectsToBuild, HardwareConcurrency());
+            }
+            rootModules.Resize(numProjectsToBuild);
+            if (numThreads <= 1)
+            {
+                auto result = BuildSolutionSingleThreaded(solution, projectsToBuild, rootModules, builtProjects);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                auto result = BuildSolutionMultiThreaded(numThreads, solution, projectsToBuild, rootModules, builtProjects);
+                if (result.Error()) return result;
+            }
+        }
+        return Result<bool>(true);
+    }
+}

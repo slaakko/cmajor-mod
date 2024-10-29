@@ -20,6 +20,9 @@ class BoundFunction;
 class BoundCompileUnit;
 class BoundStatement;
 
+void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::CompoundStatementNode* bodyNode, cmajor::ast::Node* node,
+    cmajor::symbols::ContainerScope* containerScope, BoundCompileUnit& boundCompileUnit);
+
 void CheckFunctionReturnPaths(cmajor::symbols::FunctionSymbol* functionSymbol, cmajor::ast::FunctionNode& functionNode, cmajor::symbols::ContainerScope* containerScope, 
     BoundCompileUnit& boundCompileUnit);
 

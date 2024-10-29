@@ -58,7 +58,10 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     emitter->ResetCurrentDebugLocation();
     debugInfo = false;
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::generateDebugInfo) && boundCompileUnit.GetCompileUnitNode() && 
-        !boundCompileUnit.GetCompileUnitNode()->IsSynthesizedUnit() && !compileUnitId.starts_with("Attribute_"))
+        !boundCompileUnit.GetCompileUnitNode()->IsSynthesizedUnit() && 
+        !compileUnitId.starts_with("Attribute_") && 
+        !compileUnitId.starts_with("type_symbol_") &&
+        !compileUnitId.starts_with("interface_type_symbol_"))
     {
         emitter->StartDebugInfo(boundCompileUnit.GetCompileUnitNode()->FilePath(), cmajor::symbols::GetCompilerVersion(), 
             cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release));
@@ -937,6 +940,7 @@ void LLVMCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundC
             cmajor::symbols::TypeSymbol* firstArgumentBaseType = firstArgument->GetType()->BaseType();
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
+                std::lock_guard<std::recursive_mutex> lock(compileUnit->GetModule().Lock());
                 if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);

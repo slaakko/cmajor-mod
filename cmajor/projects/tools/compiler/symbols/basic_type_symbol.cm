@@ -1,0 +1,521 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public abstract class BasicTypeSymbol : TypeSymbol
+    {
+        public BasicTypeSymbol(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) : base(kind_, span_, name_)
+        {
+            SetBasicTypeSymbol();
+        }
+        public inline FunctionSymbol* DefaultConstructor() const
+        {
+            return defaultConstructor;
+        }
+        public inline void SetDefaultConstructor(FunctionSymbol* defaultConstructor_)
+        {
+            defaultConstructor = defaultConstructor_;
+        }
+        public inline FunctionSymbol* CopyConstructor() const
+        {
+            return copyConstructor;
+        }
+        public inline void SetCopyConstructor(FunctionSymbol* copyConstructor_)
+        {
+            copyConstructor = copyConstructor_;
+        }
+        public inline FunctionSymbol* MoveConstructor() const
+        {
+            return moveConstructor;
+        }
+        public inline void SetMoveConstructor(FunctionSymbol* moveConstructor_)
+        {
+            moveConstructor = moveConstructor_;
+        }
+        public inline FunctionSymbol* CopyAssignment() const
+        {
+            return copyAssignment;
+        }
+        public inline void SetCopyAssignment(FunctionSymbol* copyAssignment_)
+        {
+            copyAssignment = copyAssignment_;
+        }
+        public inline FunctionSymbol* MoveAssignment() const
+        {
+            return moveAssignment;
+        }
+        public inline void SetMoveAssignment(FunctionSymbol* moveAssignment_)
+        {
+            moveAssignment = moveAssignment_;
+        }
+        public inline FunctionSymbol* ReturnFun() const
+        {
+            return returnFun;
+        }
+        public inline void SetReturnFun(FunctionSymbol* returnFun_)
+        {
+            returnFun = returnFun_;
+        }
+        public inline FunctionSymbol* EqualityOp() const
+        {
+            return equalityOp;
+        }
+        public inline void SetEqualityOp(FunctionSymbol* equalityOp_)
+        {
+            equalityOp = equalityOp_;
+        }
+        private FunctionSymbol* defaultConstructor;
+        private FunctionSymbol* copyConstructor;
+        private FunctionSymbol* moveConstructor;
+        private FunctionSymbol* copyAssignment;
+        private FunctionSymbol* moveAssignment;
+        private FunctionSymbol* returnFun;
+        private FunctionSymbol* equalityOp;
+    }
+
+    public class BoolTypeSymbol : BasicTypeSymbol
+    {
+        public BoolTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.boolTypeSymbol, span_, u"bool")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"bool";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetBoolType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultBool());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.boolValue;
+        }
+    }
+
+    public class SByteTypeSymbol : BasicTypeSymbol
+    {
+        public SByteTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.sbyteTypeSymbol, span_, u"sbyte")
+        {
+        }
+        public override bool IsSignedType() const
+        {
+            return true;
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"sbyte";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetSByteType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultSByte());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.sbyteValue;
+        }
+    }
+
+    public class ByteTypeSymbol : BasicTypeSymbol
+    {
+        public ByteTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.byteTypeSymbol, span_, u"byte")
+        {
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"byte";
+        }
+        public override bool IsUnsignedType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetByteType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultByte());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.byteValue;
+        }
+    }
+
+    public class ShortTypeSymbol : BasicTypeSymbol
+    {
+        public ShortTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.shortTypeSymbol, span_, u"short")
+        {
+        }
+        public override bool IsSignedType() const
+        {
+            return true;
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"short";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetShortType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultShort());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.shortValue;
+        }
+    }
+
+    public class UShortTypeSymbol : BasicTypeSymbol
+    {
+        public UShortTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.ushortTypeSymbol, span_, u"ushort")
+        {
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"ushort";
+        }
+        public override bool IsUnsignedType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetUShortType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultUShort());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.ushortValue;
+        }
+    }
+
+    public class IntTypeSymbol : BasicTypeSymbol
+    {
+        public IntTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.intTypeSymbol, span_, u"int")
+        {
+        }
+        public override bool IsSignedType() const
+        {
+            return true;
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"int";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetIntType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultInt());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.intValue;
+        }
+    }
+
+    public class UIntTypeSymbol : BasicTypeSymbol
+    {
+        public UIntTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.uintTypeSymbol, span_, u"uint")
+        {
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"uint";
+        }
+        public override bool IsUnsignedType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetUIntType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultUInt());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.uintValue;
+        }
+    }
+
+    public class LongTypeSymbol : BasicTypeSymbol
+    {
+        public LongTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.longTypeSymbol, span_, u"long")
+        {
+        }
+        public override bool IsSignedType() const
+        {
+            return true;
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"long";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetLongType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultLong());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.longValue;
+        }
+    }
+
+    public class ULongTypeSymbol : BasicTypeSymbol
+    {
+        public ULongTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.ulongTypeSymbol, span_, u"ulong")
+        {
+        }
+        public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override ustring TypeString() const
+        {
+             return u"ulong";
+        }
+        public override bool IsUnsignedType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetULongType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultULong());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.ulongValue;
+        }
+    }
+
+    public class FloatTypeSymbol : BasicTypeSymbol
+    {
+        public FloatTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.floatTypeSymbol, span_, u"float")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"float";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetFloatType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultFloat());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.floatValue;
+        }
+    }
+
+    public class DoubleTypeSymbol : BasicTypeSymbol
+    {
+        public DoubleTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.doubleTypeSymbol, span_, u"double")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"double";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetDoubleType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultDouble());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.doubleValue;
+        }
+    }
+
+    public class CharTypeSymbol : BasicTypeSymbol
+    {
+        public CharTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.charTypeSymbol, span_, u"char")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"char";
+        }
+        public override bool IsUnsignedType() const
+        {
+            return true;
+        }
+        public override bool IsCharacterType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetByteType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultByte());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.charValue;
+        }
+    }
+
+    public class WCharTypeSymbol : BasicTypeSymbol
+    {
+        public WCharTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.wcharTypeSymbol, span_, u"wchar")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"wchar";
+        }
+        public override bool IsUnsignedType() const
+        {
+            return true;
+        }
+        public override bool IsCharacterType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetUShortType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultUShort());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.wcharValue;
+        }
+    }
+
+    public class UCharTypeSymbol : BasicTypeSymbol
+    {
+        public UCharTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.ucharTypeSymbol, span_, u"uchar")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"uchar";
+        }
+        public override bool IsUnsignedType() const
+        {
+            return true;
+        }
+        public override bool IsCharacterType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetUIntType());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.MakeDefaultUInt());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.ucharValue;
+        }
+    }
+
+    public class VoidTypeSymbol : BasicTypeSymbol
+    {
+        public VoidTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.voidTypeSymbol, span_, u"void")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"void";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetVoidType());
+        }
+    }
+
+    public class AutoTypeSymbol : BasicTypeSymbol
+    {
+        public AutoTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.autoTypeSymbol, span_, u"auto")
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"auto";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            #assert(false);
+            return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
+        }
+    }
+}

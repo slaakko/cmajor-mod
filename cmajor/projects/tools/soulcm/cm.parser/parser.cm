@@ -48,7 +48,7 @@ namespace cm.parser
         return Result<UniquePtr<cm.ast.SourceFileNode>>(Rvalue(parseResult.Value()));
     }
 
-    public Result<UniquePtr<cm.ast.Project>> ParseProjectFile(const string& projectFilePath)
+    public Result<UniquePtr<cm.ast.Project>> ParseProjectFile(const string& projectFilePath, const string& config, cm.ast.BackEnd backend, const string& toolChain)
     {
         auto projectFileContentResult = File.ReadAllText(projectFilePath);
         if (projectFileContentResult.Error())
@@ -70,7 +70,7 @@ namespace cm.parser
             return Result<UniquePtr<cm.ast.Project>>(ErrorId(lexer.GetErrorId()));
         }
         lexer.SetRuleNameMapPtr(cm.parser.GetRuleNameMapPtr());
-        auto parseResult = ProjectFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
+        auto parseResult = ProjectFileParser<cm.lexer.CmajorLexer>.Parse(lexer, config, backend, toolChain);
         if (parseResult.Error())
         {
             return Result<UniquePtr<cm.ast.Project>>(ErrorId(parseResult.GetErrorId()));

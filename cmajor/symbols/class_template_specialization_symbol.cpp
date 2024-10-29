@@ -225,4 +225,25 @@ void ClassTemplateSpecializationSymbol::Check()
         }
     }
 }
+
+void ClassTemplateSpecializationSymbol::ComputeMangledName()
+{
+    std::u32string mangledName = util::ToUtf32(TypeString());
+    std::string constraintStr;
+    if (Constraint())
+    {
+        constraintStr = " " + Constraint()->ToString();
+    }
+    std::string templateArgumentStr;
+    for (const auto& templateArgumentType : TemplateArgumentTypes())
+    {
+        templateArgumentStr.append(".").append(
+            util::ToUtf8(templateArgumentType->BaseType()->FullName()).append(".").append(util::ToUtf8(templateArgumentType->FullName())));
+    }
+    mangledName.append(1, U'_').append(SimpleName());
+    mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(util::ToUtf8(FullNameWithSpecifiers()) + constraintStr + templateArgumentStr)));
+    SetMangledName(mangledName);
+
+}
+
 } // namespace cmajor::symbols

@@ -222,7 +222,6 @@ void CompileThreadFunction(CompileData* data, int threadId)
                     {
                         data->objectFilePaths.push_back(boundCompileUnit->ObjectFilePath());
                     }
-                    data->boundCompileUnits[compileUnitIndex].reset();
                 }
                 data->output.Put(compileUnitIndex);
             }
@@ -293,7 +292,7 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
                 {
                     threads[i].join();
                 }
-            }
+            } 
             throw;
         }
         input.Put(i);
@@ -302,10 +301,10 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
     while (numOutputsReceived < n && !stop)
     {
         int compileUnitIndex = output.Get(); 
-        if (compileUnitIndex != -1)
+        if (compileUnitIndex != -1) 
         {
             ++numOutputsReceived;
-        }
+        } 
     }
     {
         std::lock_guard<std::mutex> lock(mtx);
@@ -343,6 +342,21 @@ void Compile(cmajor::ast::Project* project, cmajor::symbols::Module* module, std
     else
     {
         CompileMultiThreaded(project, module, boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+    }
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose) && cmajor::symbols::GetBackEnd() == cmajor::symbols::BackEnd::masm)
+    {
+        int functionsCompiled = 0;
+        int functionsInlined = 0;
+        for (const auto& boudCompileUnit : boundCompileUnits)
+        {
+            functionsCompiled += boudCompileUnit->TotalFunctions(); 
+            functionsInlined += boudCompileUnit->FunctionsInlined();
+        }
+        util::LogMessage(module->LogStreamId(), std::to_string(functionsCompiled) + " functions compiled");
+        if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+        {
+            util::LogMessage(module->LogStreamId(), std::to_string(functionsInlined) + " functions inlined");
+        }
     }
 }
 

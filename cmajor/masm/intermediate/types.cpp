@@ -286,6 +286,7 @@ int64_t StructureType::Size() const
 
 void StructureType::ComputeSizeAndOffsets() const
 {
+    sizeAndOffsetsComputed = true;
     int64_t offset = 0;
     int n = FieldCount();
     for (int i = 0; i < n; ++i)
@@ -308,7 +309,6 @@ void StructureType::ComputeSizeAndOffsets() const
     {
         size = 8 * ((offset - 1) / 8 + 1);
     }
-    sizeAndOffsetsComputed = true;
 }
 
 int64_t StructureType::GetFieldOffset(int64_t index) const

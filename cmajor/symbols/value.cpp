@@ -770,7 +770,7 @@ Value* SByteValue::As(TypeSymbol* targetType, bool cast, cmajor::ast::Node* node
     }
     case ValueType::doubleValue:
     {
-        return new FloatValue(GetSpan(), value);
+        return new DoubleValue(GetSpan(), value);
     }
     case ValueType::charValue:
     {

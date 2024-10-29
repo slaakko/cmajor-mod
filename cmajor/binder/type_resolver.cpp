@@ -433,13 +433,13 @@ void TypeResolver::Visit(cmajor::ast::DotNode& dotNode)
     {
         cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(type);
         cmajor::symbols::TypeSymbol* originalType = type;
-        if (currentClass && classGroup->Name() == currentClass->Name())
+        type = classGroup->GetClass(0);
+        if (!type)
         {
-            type = currentClass;
-        }
-        else
-        {
-            type = classGroup->GetClass(0);
+            if (currentClass && classGroup->Name() == currentClass->Name())
+            {
+                type = currentClass;
+            }
         }
         if (!type)
         {
@@ -494,13 +494,13 @@ void TypeResolver::Visit(cmajor::ast::AliasNode& aliasNode)
     {
         cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(type);
         cmajor::symbols::TypeSymbol* originalType = type;
-        if (currentClass && classGroup->Name() == currentClass->Name())
+        type = classGroup->GetClass(0);
+        if (!type)
         {
-            type = currentClass;
-        }
-        else
-        {
-            type = classGroup->GetClass(0);
+            if (currentClass && classGroup->Name() == currentClass->Name())
+            {
+                type = currentClass;
+            }
         }
         if (!type)
         {
@@ -539,13 +539,13 @@ cmajor::symbols::TypeSymbol* ResolveType(cmajor::ast::Node* typeExprNode, BoundC
     if (type && type->GetSymbolType() == cmajor::symbols::SymbolType::classGroupTypeSymbol)
     {
         cmajor::symbols::ClassGroupTypeSymbol* classGroup = static_cast<cmajor::symbols::ClassGroupTypeSymbol*>(type);
-        if (currentClass && classGroup->Name() == currentClass->GroupName())
+        type = classGroup->GetClass(0);
+        if (!type)
         {
-            type = currentClass;
-        }
-        else
-        {
-            type = classGroup->GetClass(0);
+            if (currentClass && classGroup->Name() == currentClass->GroupName())
+            {
+                type = currentClass;
+            }
         }
     }
     if (!type || type->IsInComplete())

@@ -191,6 +191,15 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundCompileUnit& boundCompileUnit
     finalContext->GetData().VisitGlobalVariables(*codeGenerator);
     finalContext->GetCode().VisitFunctions(*codeGenerator);
     codeGenerator->WriteOutputFile();
+    if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release))
+    {
+        boundCompileUnit.SetTotal(intermediateContext.TotalFunctions());
+        boundCompileUnit.SetInlined(intermediateContext.FunctionsInlined());
+    }
+    else
+    {
+        boundCompileUnit.SetTotal(finalContext->GetCode().TotalFunctions());
+    }
 }
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundNamespace& boundNamespace)
@@ -222,6 +231,14 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (!boundFunction.Body()) return;
     currentFunction = &boundFunction;
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
+    if (functionSymbol->MangledName() == U"function_EvaluateShiftLeft_A5F0E366587CE3348FEE8B6A4362E042D75F4128")
+    {
+        int x = 0;
+    }
+    if (functionSymbol->MangledName() == U"function_EvaluateShiftLeft_CA12133843227B43D2C38AD3F56F4E15EE936D30")
+    {
+        int x = 0;
+    }
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
     void* functionType = functionSymbol->IrType(*emitter);
@@ -257,7 +274,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
         emitter->AddInlineFunctionAttribute(function);
         functionSymbol->SetLinkOnceOdrLinkage();
     }
-    else if (functionSymbol->IsGeneratedFunction())
+    else if (functionSymbol->IsGeneratedFunction() && functionSymbol->CanInline())
     {
         emitter->AddInlineFunctionAttribute(function);
         functionSymbol->SetLinkOnceOdrLinkage();
@@ -1057,7 +1074,7 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundEmptyStatement& boundEmptySta
     basicBlockOpen = false;
     latestRet = nullptr;
     SetTarget(&boundEmptyStatement);
-    // todo
+    emitter->CreateNop();
 }
 
 void MasmCodeGenerator::Visit(cmajor::binder::BoundSetVmtPtrStatement& boundSetVmtPtrStatement)

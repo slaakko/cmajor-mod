@@ -1,0 +1,84 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public int MakeError(const string& message)
+    {
+        return AllocateError(message);
+    }
+
+    public int MakeError(const string& message, const System.Lex.FullSpan& location)
+    {
+        List<System.Lex.FullSpan> locations;
+        locations.Add(location);
+        return MakeError(message, locations);
+    }
+
+    public int MakeError(const string& message, const System.Lex.FullSpan& location, const System.Lex.FullSpan& referenceLocation)
+    {
+        List<System.Lex.FullSpan> locations;
+        locations.Add(location);
+        locations.Add(referenceLocation);
+        return MakeError(message, locations);
+    }
+
+    public int MakeError(const string& message, const List<System.Lex.FullSpan>& locations)
+    {
+        string msg(message);
+        bool first = true;
+        List<System.Lex.FullSpan> usedLocations;
+        for (const System.Lex.FullSpan& location : locations)
+        {
+            if (Find(usedLocations.Begin(), usedLocations.End(), location) != usedLocations.End()) continue;
+            usedLocations.Add(location);
+            if (location.span.IsValid())
+            {
+                Module* module = GetModuleById(location.moduleId);
+                if (module != null)
+                {
+                    int fileIndex = location.fileIndex;
+                    const System.Lex.FileMap& fileMap = module->GetFileMap();
+                    if (fileMap.HasFileName(fileIndex))
+                    {
+                        Result<System.Lex.SourceFile*> sourceFileResult = fileMap.GetOrReadSourceFile(fileIndex);
+                        if (sourceFileResult.Error())
+                        {
+                            return sourceFileResult.GetErrorId();
+                        }
+                        System.Lex.SourceFile* sourceFile = sourceFileResult.Value();
+                        if (sourceFile != null)
+                        {
+                            System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(location.span, sourceFile->LineStartIndeces());
+                            if (lineColLen.IsValid())
+                            {
+                                if (first)
+                                {
+                                    first = false;
+                                }
+                                else
+                                {
+                                    msg.Append("\n").Append("see reference");
+                                }
+                                msg.Append(": ").Append(fileMap.GetFileName(fileIndex)).Append(" line ").Append(ToString(lineColLen.line)).Append(":\n");
+                                Result<string> lineResult = sourceFile->GetLine(lineColLen.line);
+                                if (!lineResult.Error())
+                                {
+                                    msg.Append(lineResult.Value()).Append("\n");
+                                    msg.Append(string(' ', lineColLen.col - 1)).Append(string('^', lineColLen.len));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return AllocateError(msg);
+    }
+}
+

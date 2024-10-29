@@ -1,0 +1,14 @@
+project assembly;
+target=library;
+source <context.cm>;
+source <data.cm>;
+source <declaration.cm>;
+source <expr.cm>;
+source <file.cm>;
+source <function.cm>;
+source <instruction.cm>;
+source <literal.cm>;
+source <macro.cm>;
+source <register.cm>;
+source <symbol.cm>;
+source <value.cm>;

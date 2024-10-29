@@ -1,0 +1,255 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.IO
+{
+    public abstract class TextWriter : IOBase
+    {
+        public TextWriter() : base() {}
+        suppress TextWriter(const TextWriter&);
+        suppress void operator=(const TextWriter&);
+        [nodiscard]
+        public abstract Result<bool> Write(const string& x);
+        [nodiscard]
+        public abstract Result<bool> Write(const wstring& x);
+        [nodiscard]
+        public abstract Result<bool> Write(const ustring& x);
+        [nodiscard]
+        public abstract Result<bool> Write(bool x);
+        [nodiscard]
+        public abstract Result<bool> Write(char x);
+        [nodiscard]
+        public abstract Result<bool> Write(wchar x);
+        [nodiscard]
+        public abstract Result<bool> Write(uchar x);
+        [nodiscard]
+        public abstract Result<bool> Write(sbyte x);
+        [nodiscard]
+        public abstract Result<bool> Write(byte x);
+        [nodiscard]
+        public abstract Result<bool> Write(short x);
+        [nodiscard]
+        public abstract Result<bool> Write(ushort x);
+        [nodiscard]
+        public abstract Result<bool> Write(int x);
+        [nodiscard]
+        public abstract Result<bool> Write(uint x);
+        [nodiscard]
+        public abstract Result<bool> Write(long x);
+        [nodiscard]
+        public abstract Result<bool> Write(ulong x);
+        [nodiscard]
+        public abstract Result<bool> Write(float x);
+        [nodiscard]
+        public abstract Result<bool> Write(double x);
+        [nodiscard]
+        public abstract Result<bool> Write(const Date& date);
+        [nodiscard]
+        public abstract Result<bool> Write(const DateTime& dateTime);
+        [nodiscard]
+        public abstract Result<bool> WriteLine();
+        [nodiscard]
+        public abstract Result<bool> WriteLine(const string& x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(const wstring& x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(const ustring& x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(bool x);
+        [nodiscard]
+    		  public abstract Result<bool> WriteLine(char x);
+        [nodiscard]
+    		  public abstract Result<bool> WriteLine(wchar x);
+        [nodiscard]
+    		  public abstract Result<bool> WriteLine(uchar x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(sbyte x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(byte x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(short x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(ushort x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(int x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(uint x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(long x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(ulong x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(float x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(double x);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(const Date& date);
+        [nodiscard]
+        public abstract Result<bool> WriteLine(const DateTime& dateTime);
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const char* x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const wchar* x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const uchar* x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const string& x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const wstring& x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const ustring& x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, bool x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, sbyte x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, byte x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, short x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, ushort x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, int x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, uint x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, long x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, ulong x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, float x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, double x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const Date& date)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(date);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const DateTime& dateTime)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(dateTime);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, char x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, wchar x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, uchar x)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.Write(x);
+        return writer;
+    }
+
+    public TextWriter& operator<<(TextWriter& writer, const Endl&)
+    {
+        if (writer.Error()) return writer;
+        auto result = writer.WriteLine();
+        return writer;
+    }
+}

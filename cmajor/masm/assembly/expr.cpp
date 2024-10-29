@@ -27,11 +27,11 @@ std::string MakeBinaryExprStr(Value* left, Value* right, Operator op)
     return std::string();
 }
 
-UnaryExpr::UnaryExpr(Value* value_, const std::string& str_) : Value(str_), value(value_)
+UnaryExpr::UnaryExpr(ValueKind kind_, Value* value_, const std::string& str_) : Value(kind_, str_), value(value_)
 {
 }
 
-BinaryExpr::BinaryExpr(Value* left_, Value* right_, Operator op_) : Value(MakeBinaryExprStr(left_, right_, op_)), left(left_), right(right_), op(op_)
+BinaryExpr::BinaryExpr(Value* left_, Value* right_, Operator op_) : Value(ValueKind::binaryExpr, MakeBinaryExprStr(left_, right_, op_)), left(left_), right(right_), op(op_)
 {
 }
 
@@ -40,7 +40,7 @@ std::string BinaryExpr::ToString() const
     return MakeBinaryExprStr(left, right, op);
 }
 
-Content::Content(Value* value_) : UnaryExpr(value_, "[" + value_->ToString() + "]")
+Content::Content(Value* value_) : UnaryExpr(ValueKind::content, value_, "[" + value_->ToString() + "]")
 {
 }
 
@@ -62,7 +62,7 @@ std::string SizePrefixStr(int size, Value* value)
     return std::string();
 }
 
-SizePrefix::SizePrefix(int size_, Value* value_) : UnaryExpr(value_, SizePrefixStr(size_, value_)), size(size_)
+SizePrefix::SizePrefix(int size_, Value* value_) : UnaryExpr(ValueKind::sizePrefix, value_, SizePrefixStr(size_, value_)), size(size_)
 {
 }
 

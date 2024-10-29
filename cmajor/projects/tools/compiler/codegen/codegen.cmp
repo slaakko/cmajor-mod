@@ -1,0 +1,10 @@
+project codegen;
+target=library;
+reference <../assembly/assembly.cmp>;
+reference <../binder/binder.cmp>;
+reference <../../soulcm/cm.ast/cm.ast.cmp>;
+reference <../../soulcm/cm.lexer/cm.lexer.cmp>;
+reference <../../soulcm/cm.parser/cm.parser.cmp>;
+reference <../intermediate/intermediate.cmp>;
+reference <../symbols/symbols.cmp>;
+source <codegen.cm>;

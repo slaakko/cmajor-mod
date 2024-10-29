@@ -1,0 +1,78 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public enum OperationFlags : ushort
+    {
+        none = 0u,
+        addr = 1u << 0u,
+        deref = 1u << 1u,
+        virtualCall = 1u << 2u,
+        leaveFirstArg = 1u << 3u,
+        copyFirst = 1u << 4u,
+        functionCallFlags = leaveFirstArg,
+        derefCount = 0xFFu << 8u
+    }
+
+    public inline bool GetFlag(OperationFlags flags, OperationFlags flag)
+    {
+        return cast<OperationFlags>(flags & flag) != OperationFlags.none;
+    }
+
+    public inline byte GetDerefCount(OperationFlags flags)
+    {
+        return cast<byte>(cast<ushort>(flags & OperationFlags.derefCount) >> 8u);
+    }
+
+    public inline OperationFlags SetDerefCount(OperationFlags flags, byte n)
+    {
+        return cast<OperationFlags>(flags | cast<OperationFlags>(cast<ushort>(n) << 8u));
+    }
+
+    public abstract class IrObject
+    {
+        public IrObject()
+        {
+        }
+        public default virtual ~IrObject();
+        [nodiscard]
+        public abstract Result<bool> Load(Emitter& emitter, OperationFlags flags);
+        [nodiscard]
+        public abstract Result<bool> Store(Emitter& emitter, OperationFlags flags);
+        public inline TypeSymbol* Type() const
+        {
+            return type;
+        }
+        public inline void SetType(TypeSymbol* type_)
+        {
+            type = type_;
+        }
+        private TypeSymbol* type;
+    }
+
+    public class NativeValue : IrObject
+    {
+        public NativeValue(intermediate.Value* value_) : value(value_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            emitter.Stack().Push(value);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            intermediate.Value* val = emitter.Stack().Pop();
+            return emitter.CreateStore(val, value);
+        }
+        private intermediate.Value* value;
+    }
+}
+

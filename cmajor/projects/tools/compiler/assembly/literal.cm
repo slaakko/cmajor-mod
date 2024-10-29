@@ -1,0 +1,157 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace assembly
+{
+    public const int maxAssemblyLineLength = 128;
+
+    public string ToHexStr(const string& hexStr)
+    {
+        if (!hexStr.IsEmpty())
+        {
+            if ((hexStr[0] >= 'a' && hexStr[0] <= 'f') || (hexStr[0] >= 'A' && hexStr[0] <= 'F'))
+            {
+                return "0" + hexStr;
+            }
+        }
+        return hexStr;
+    }
+
+    public Result<string> ToIntegerLiteralStr(long value, int size)
+    {
+        switch (size)
+        {
+            case 1:
+            {
+                Result<string> result = ToHexString(cast<byte>(value));
+                if (result.Error()) return result;
+                return Result<string>(ToHexStr(result.Value()) + "H");
+            }
+            case 2:
+            {
+                Result<string> result = ToHexString(cast<ushort>(value));
+                if (result.Error()) return result;
+                return Result<string>(ToHexStr(result.Value()) + "H");
+            }
+            case 4:
+            {
+                Result<string> result = ToHexString(cast<uint>(value));
+                if (result.Error()) return result;
+                return Result<string>(ToHexStr(result.Value()) + "H");
+            }
+            case 8:
+            {
+                Result<string> result = ToHexString(cast<ulong>(value));
+                if (result.Error()) return result;
+                return Result<string>(ToHexStr(result.Value()) + "H");
+            }
+        }
+        Result<string> result = ToHexString(cast<ulong>(value));
+        if (result.Error()) return result;
+        return Result<string>(ToHexStr(result.Value()));
+    }
+
+    public class IntegerLiteral : Value
+    {
+        public IntegerLiteral(long value_, int size_) : base(ValueKind.integerLiteral, string()), value(value_), size(size_)
+        {
+            Result<string> s = ToIntegerLiteralStr(value, size);
+            if (s.Error())
+            {
+                SetErrorId(s.GetErrorId());
+                return;
+            }
+            SetName(s.Value());
+        }
+        public inline long GetValue() const
+        {
+            return value;
+        }
+        public inline int Size() const
+        {
+            return size;
+        }
+        private long value;
+        private int size;
+    }
+
+    public class FloatLiteral : Value
+    {
+        public FloatLiteral(float value_) : base(ValueKind.floatLiteral, ToString(value_)), value(value_)
+        {
+        }
+        public inline float GetValue() const
+        {
+            return value;
+        }
+        private float value;
+    }
+
+    public class DoubleLiteral : Value
+    {
+        public DoubleLiteral(double value_) : base(ValueKind.doubleLiteral, ToString(value_)), value(value_)
+        {
+        }
+        public inline double GetValue() const
+        {
+            return value;
+        }
+        private double value;
+    }
+
+    public string ToStringLiteralStr(const string& s)
+    {
+        if (s.Find('\'') == -1) return s;
+        string result;
+        for (char c : s)
+        {
+            if (c == '\'')
+            {
+                result.Append('\'', 2);
+            }
+            else
+            {
+                result.Append(c);
+            }
+        }
+        return result;
+    }
+
+    public class StringLiteral : Value
+    {
+        public StringLiteral(const string& value_) : base(ValueKind.stringLiteral, ToStringLiteralStr(value_)), value(value_)
+        {
+        }
+        public override bool CanSplit() const
+        {
+            return true;
+        }
+        public override Value* Split(int length)
+        {
+            SetName("'" + ToStringLiteralStr(value.Substring(0, length)) + "'");
+            if (value.Length() < length)
+            {
+                return new StringLiteral(string());
+            }
+            else
+            {
+                return new StringLiteral(value.Substring(length));
+            }
+        }
+        public override bool IsEmpty() const
+        {
+            return value.IsEmpty();
+        }
+        public inline const string& GetValue() const
+        {
+            return value;
+        }
+        private string value;
+    }
+}
+
+

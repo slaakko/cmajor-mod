@@ -1,0 +1,52 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace intermediate
+{
+    [nodiscard]
+    public Result<bool> AppendReferenceLines(string& errorMessage, const System.Lex.Span& span, Context* context, bool primary)
+    {
+        if (span.IsValid())
+        {
+            if (context->FileIndex() != -1)
+            {
+                System.Lex.SourceFile* sourceFile = context->FileMap().GetSourceFile(context->FileIndex());
+                System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(span, sourceFile->LineStartIndeces());
+                Result<string> lineResult = sourceFile->GetLine(lineColLen.line);
+                if (lineResult.Error()) return Result<bool>(ErrorId(lineResult.GetErrorId()));
+                string line = Rvalue(lineResult.Value());
+                if (primary)
+                {
+                    errorMessage.Append(": ");
+                }
+                else
+                {
+                    errorMessage.Append("see reference: ");
+                }
+                errorMessage.Append("file=").Append(context->FileMap().GetFileName(context->FileIndex())).Append(", line=").Append(ToString(lineColLen.line)).
+                    Append(":\n").Append(line).Append("\n").Append(string(' ', lineColLen.col - 1)).Append(string('^', lineColLen.len));
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    public int Error(const string& message, const System.Lex.Span& span, Context* context)
+    {
+        return Error(message, span, System.Lex.Span(), context);
+    }
+
+    public int Error(const string& message, const System.Lex.Span& span, const System.Lex.Span& refSpan, Context* context)
+    {
+        string errorMessage = message;
+        Result<bool> result = AppendReferenceLines(errorMessage, span, context, true);
+        if (result.Error()) return result.GetErrorId();
+        result = AppendReferenceLines(errorMessage, refSpan, context, false);
+        if (result.Error()) return result.GetErrorId();
+        return AllocateError(errorMessage);
+    }
+}
+

@@ -25,6 +25,7 @@ void ReplaceParamsWithArgs(cmajor::masm::intermediate::Instruction* callInst, cm
                 {
                     inst->ReplaceUsesWith(firstArg->Arg());
                     cmajor::masm::intermediate::Instruction* nextArg = firstArg->Next();
+                    firstArg->RemoveFromUses();
                     firstArg->Parent()->RemoveInstruction(firstArg);
                     if (nextArg && nextArg->IsArgInstruction())
                     {
@@ -39,6 +40,7 @@ void ReplaceParamsWithArgs(cmajor::masm::intermediate::Instruction* callInst, cm
                 {
                     cmajor::masm::intermediate::Error("number of arguments and parameters do not match", callInst->Span(), context, originalCallee->Span());
                 }
+                inst->RemoveFromUses();
                 inst->Parent()->RemoveInstruction(inst);
             }
             else
@@ -97,8 +99,10 @@ void MergeSingleBasicBlock(cmajor::masm::intermediate::Function* function, cmajo
     }
     for (cmajor::masm::intermediate::RetInstruction* ret : rets)
     {
+        ret->RemoveFromUses();
         ret->Parent()->RemoveInstruction(ret);
     }
+    callInst->RemoveFromUses();
     callInst->Parent()->RemoveInstruction(callInst);
 }
 
@@ -147,6 +151,7 @@ void MergeManyBasicBlocks(cmajor::masm::intermediate::Function* function, cmajor
             cmajor::masm::intermediate::JmpInstruction* jmp = new cmajor::masm::intermediate::JmpInstruction(ret->Span(), targetBB->Id());
             jmp->SetTargetBasicBlock(targetBB);
             lastInst->Parent()->InsertInstructionAfter(jmp, lastInst);
+            ret->RemoveFromUses();
             removedBasicBlock->RemoveInstruction(ret);
         }
         function->InsertBasicBlockBefore(removedBasicBlock.release(), targetBB);
@@ -164,6 +169,7 @@ void MergeManyBasicBlocks(cmajor::masm::intermediate::Function* function, cmajor
     cmajor::masm::intermediate::JmpInstruction* jmp = new cmajor::masm::intermediate::JmpInstruction(callInst->Span(), firstMergedBasicBlock->Id());
     jmp->SetTargetBasicBlock(firstMergedBasicBlock);
     callInst->Parent()->InsertInstructionAfter(jmp, lastInst);
+    callInst->RemoveFromUses();
     callInst->Parent()->RemoveInstruction(callInst);
     callee->MoveRegValues(function);
 }
@@ -189,13 +195,17 @@ void InlineExpand(cmajor::masm::intermediate::Function* function, cmajor::masm::
     cmajor::masm::intermediate::Function* callee, cmajor::masm::intermediate::Context* context)
 {
     std::unique_ptr<cmajor::masm::intermediate::Function> clonedCallee(callee->Clone());
+    //clonedCallee->Check();
     ReplaceParamsWithArgs(callInst, firstArg, clonedCallee.get(), callee, context);
     MergeBasicBlocks(function, clonedCallee.get(), callInst, context);
     function->SetNumbers();
+    //function->Check();
 }
 
-void InlineExpand(cmajor::masm::intermediate::Function* function)
+bool InlineExpand(cmajor::masm::intermediate::Function* function)
 {
+    //function->Check();
+    bool inlineExpanded = false;
     cmajor::masm::intermediate::Context* context = function->Parent()->GetContext();
     int inlineDepth = context->InlineDepth();
     int inlineCount = 0;
@@ -240,6 +250,7 @@ void InlineExpand(cmajor::masm::intermediate::Function* function)
                         {
                             InlineExpand(function, inst, firstArg, callee, context);
                             inlined = true;
+                            inlineExpanded = true;
                         }
                     }
                 }
@@ -252,7 +263,12 @@ void InlineExpand(cmajor::masm::intermediate::Function* function)
             bb = bb->Next();
         }
     } 
-    while (inlined && ++inlineCount <= inlineDepth);
+    while (inlined && ++inlineCount < inlineDepth);
+    if (inlineCount > 1)
+    {
+        //std::cout << inlineCount << " inline count for " << function->Name() << "\n";
+    }
+    return inlineExpanded;
 }
 
 } // cmajor::masm::optimizer

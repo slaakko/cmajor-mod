@@ -1,7 +1,8 @@
 project re.lexer;
 target=library;
-source <scm.regex.RegExLexer.cm>;
 source <re.token.cm>;
+source <scm.regex.RegExLexer.cm>;
+source <tokenmap.cm>;
 rc <scm.regex.RegExLexer.classmap.rc>;
 text <re.expr>;
 text <re.lexer>;

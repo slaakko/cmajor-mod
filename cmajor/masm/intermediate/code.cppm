@@ -46,11 +46,13 @@ enum class OpCode : int
 
 void AddUser(Instruction* user, Value* value);
 void RemoveUser(Instruction* user, Value* value);
+void AddToUsesVec(std::vector<Instruction*>& uses, Value* value);
 
 class Instruction : public Value, public util::Component
 {
 public:
     Instruction(const soul::ast::Span& span_, Type* type_, OpCode opCode_);
+    void Check();
     std::string Name() const;
     virtual void Accept(Visitor& visitor) = 0;
     virtual Instruction* Clone(CloneContext& cloneContext) const = 0;
@@ -59,6 +61,7 @@ public:
     Instruction* Prev() { return static_cast<Instruction*>(PrevSibling()); }
     OpCode GetOpCode() const { return opCode; }
     bool IsLeader() const;
+    void SetLeader() { leader = true; }
     bool IsTerminator() const;
     bool IsValueInstruction() const;
     bool IsUnaryInstruction() const;
@@ -73,6 +76,7 @@ public:
     bool IsFunctionCallInstruction() const { return opCode == OpCode::function_call; }
     bool IsProcedureCallInstruction() const { return opCode == OpCode::procedure_call; }
     bool IsRetInstruction() const { return opCode == OpCode::ret; }
+    bool IsJumpInstruction() const { return opCode == OpCode::jmp; }
     bool RequiresLocalRegister() const;
     virtual bool IsFloatingPointInstruction() const { return false; }
     std::vector<BasicBlock*> Successors() const;
@@ -83,8 +87,10 @@ public:
     const std::vector<Instruction*>& Users() const { return users; }
     void AddUser(Instruction* user);
     void RemoveUser(Instruction* user);
+    virtual std::vector<Instruction*> Uses() const { return std::vector<Instruction*>(); }
     virtual void AddToUses();
     void ReplaceUsesWith(Value* value);
+    void RemoveFromUses();
     virtual void ReplaceValue(Value* use, Value* value);
     virtual void Write(util::CodeFormatter& formatter) = 0;
     void SetAssemblyIndex(int assemblyIndex_) { assemblyIndex = assemblyIndex_; }
@@ -95,6 +101,7 @@ private:
     int regValueIndex;
     int assemblyIndex;
     std::vector<Instruction*> users;
+    bool leader;
 };
 
 class StoreInstruction : public Instruction
@@ -109,6 +116,7 @@ public:
     bool IsFloatingPointInstruction() const override { return value->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* value;
     Value* ptr;
@@ -125,6 +133,7 @@ public:
     bool IsFloatingPointInstruction() const override { return arg->GetType()->IsFloatingPointType(); }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* arg;
 };
@@ -160,6 +169,7 @@ public:
     void SetFalseTargetBasicBlock(BasicBlock* falseTargetBasicBlock_) { falseTargetBasicBlock = falseTargetBasicBlock_; }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* cond;
     int32_t trueTargetLabelId;
@@ -181,6 +191,7 @@ public:
     void SetArgs(std::vector<Value*>&& args_);
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -197,6 +208,7 @@ public:
     bool IsFloatingPointInstruction() const override;
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* returnValue;
 };
@@ -226,6 +238,7 @@ public:
     void SetDefaultTargetBlock(BasicBlock* defaultTargetBlock_) { defaultTargetBlock = defaultTargetBlock_; }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* cond;
     int32_t defaultTargetLabelId;
@@ -255,6 +268,7 @@ public:
     void SetOperand(Value* operand_) { operand = operand_; }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* operand;
 };
@@ -371,6 +385,7 @@ public:
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
     void WriteArgs(util::CodeFormatter& formatter);
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* left;
     Value* right;
@@ -517,6 +532,7 @@ public:
     Value* Ptr() const { return ptr; }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* ptr;
 };
@@ -538,6 +554,7 @@ public:
     ElemAddrKind GetElemAddrKind(Context* context) const;
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* ptr;
     Value* indexValue;
@@ -554,6 +571,7 @@ public:
     Value* Offset() const { return offset; }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* ptr;
     Value* offset;
@@ -570,6 +588,7 @@ public:
     Value* RightPtr() const { return rightPtr; }
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* leftPtr;
     Value* rightPtr;
@@ -588,6 +607,7 @@ public:
     void SetArgs(std::vector<Value*>&& args_);
     void AddToUses() override;
     void ReplaceValue(Value* use, Value* value) override;
+    std::vector<Instruction*> Uses() const override;
 private:
     Value* callee;
     std::vector<Value*> args;
@@ -618,6 +638,7 @@ class BasicBlock : public util::Component
 {
 public:
     BasicBlock(const soul::ast::Span& span_, int32_t id_);
+    void Check();
     void Accept(Visitor& visitor);
     BasicBlock* Clone(CloneContext& cloneContext) const;
     void CloneInstructions(CloneContext& cloneContext, BasicBlock* to);
@@ -631,6 +652,7 @@ public:
     BasicBlock* Prev() { return static_cast<BasicBlock*>(PrevSibling()); }
     Instruction* FirstInstruction() { return static_cast<Instruction*>(instructions.FirstChild()); }
     Instruction* LastInstruction() { return static_cast<Instruction*>(instructions.LastChild()); }
+    bool IsLast() const;
     void AddInstruction(Instruction* instruction);
     void AddInstruction(Instruction* instruction, bool mapInstruction);
     std::unique_ptr<Instruction> RemoveInstruction(Instruction* instruction);
@@ -683,6 +705,7 @@ public:
     Function(const soul::ast::Span& span_, FunctionType* functionType_, const std::string& name_, bool definition_, MetadataRef* metadataRef_);
     Function(const Function&) = delete;
     Function& operator=(const Function&) = delete;
+    void Check();
     bool GetFlag(FunctionFlags flag) const { return (flags & flag) != FunctionFlags::none; }
     void SetFlag(FunctionFlags flag) { flags = flags | flag; }
     void ResetFlag(FunctionFlags flag) { flags = flags & ~flag; }
@@ -773,11 +796,13 @@ public:
     Function* FirstFunction() { return static_cast<Function*>(functions.FirstChild()); }
     Function* LastFunction() { return static_cast<Function*>(functions.LastChild()); }
     void VisitFunctions(Visitor& visitor);
+    int TotalFunctions() const { return totalFunctions; }
 private:
     Context* context;
     Function* currentFunction;
     util::Container functions;
     std::map<std::string, Function*> functionMap;
+    int totalFunctions;
 };
 
 } // cmajor::masm::intermediate

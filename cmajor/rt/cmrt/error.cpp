@@ -49,7 +49,7 @@ namespace cmajor::rt {
     public:
         Error();
         Error(const std::string& message_, StackTrace&& stackTrace_);
-        const char* Message();
+        const char* Message(bool addStackTrace);
     private:
         std::string message;
         StackTrace stackTrace;
@@ -64,12 +64,15 @@ namespace cmajor::rt {
     {
     }
 
-    const char* Error::Message()
+    const char* Error::Message(bool addStackTrace)
     {
-        if (!stackTraceGenerated && !stackTrace.IsEmpty())
+        if (addStackTrace)
         {
-            stackTraceGenerated = true;
-            message.append("\nSTACK TRACE:\n").append(stackTrace.ToString());
+            if (!stackTraceGenerated && !stackTrace.IsEmpty())
+            {
+                stackTraceGenerated = true;
+                message.append("\nSTACK TRACE:\n").append(stackTrace.ToString());
+            }
         }
         return message.c_str();
     }
@@ -81,7 +84,7 @@ namespace cmajor::rt {
         static Errors& Instance();
         int AllocateError(const std::string& errorMessage, StackTrace&& stackTrace);
         void DisposeError(int errorId);
-        const char* GetErrorMessage(int errorId) const;
+        const char* GetErrorMessage(int errorId, bool addStackTrace) const;
     private:
         std::vector<std::unique_ptr<Error>> errors;
     };
@@ -112,14 +115,14 @@ namespace cmajor::rt {
         }
     }
 
-    const char* Errors::GetErrorMessage(int errorId) const
+    const char* Errors::GetErrorMessage(int errorId, bool addStackTrace) const
     {
         if (errorId > 0 && errorId < errors.size())
         {
             Error* error = errors[errorId].get();
             if (error)
             {
-                return error->Message();
+                return error->Message(addStackTrace);
             }
         }
         return "";
@@ -135,7 +138,14 @@ namespace cmajor::rt {
 const char* RtmGetErrorMessage(int errorId)
 {
     if (errorId == 0) return "unknown error";
-    return cmajor::rt::Errors::Instance().GetErrorMessage(errorId);
+    return cmajor::rt::Errors::Instance().GetErrorMessage(errorId, true);
+}
+
+const char* RtmGetErrorMessageWithoutStackTrace(int errorId)
+{
+    if (errorId == 0) return "unknown error";
+    return cmajor::rt::Errors::Instance().GetErrorMessage(errorId, false);
+
 }
 
 int RtmAllocateError(const char* errorMessage)

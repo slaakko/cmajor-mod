@@ -1,0 +1,74 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+namespace System
+{
+    public double Pow(double x, int exponent)
+    {
+        return RtmPow(x, exponent);
+    }
+
+    public double Sqrt(double x)
+    {
+        return RtmSqrt(x);
+    }
+
+    public int Log10(int n)
+    {
+        int log10 = 1;
+        int m = n / 10;
+        while (m > 0)
+        {
+            ++log10;
+            m = m / 10;
+        }
+        return log10;
+    }
+
+    public double PI()
+    {
+        return RtmPi();
+    }
+
+    public double DegToRad(double angleDeg)
+    {
+        return PI() * angleDeg / 180.0;
+    }
+
+    public double RadToDeg(double angleRad)
+    {
+        return angleRad * 180.0 / PI();
+    }
+
+    public double Cos(double angleRad)
+    {
+        return RtmCos(angleRad);
+    }
+
+    public double Sin(double angleRad)
+    {
+        return RtmSin(angleRad);
+    }
+
+    public double ArcCos(double x)
+    {
+        return RtmArcCos(x);
+    }
+
+    public double ArcSin(double x)
+    {
+        return RtmArcSin(x);
+    }
+
+    public double Atan2(double y, double x)
+    {
+        return RtmAtan2(y, x);
+    }
+
+    public double Epsilon()
+    {
+        return RtmEpsilon();
+    }
+}

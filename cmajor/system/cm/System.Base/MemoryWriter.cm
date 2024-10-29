@@ -1,0 +1,291 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.IO
+{
+    public class MemoryWriter : IOBase
+    {
+        public MemoryWriter(byte* ptr_, long count_) : base(), ptr(ptr_), pos(ptr), count(count_)
+        {
+        }
+        [nodiscard]
+        public Result<bool> Write(bool x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<byte>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(byte x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            if (pos - ptr >= count)
+            {
+                int errorId = AllocateError("memory writer: end of space");
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            *pos++ = x;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Write(sbyte x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<byte>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(ushort x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            byte b0 = cast<byte>(x >> 8u);
+            byte b1 = cast<byte>(x);
+            auto result = Write(b0);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(b1);
+        }
+        [nodiscard]
+        public Result<bool> Write(short x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<ushort>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(uint x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            byte b0 = cast<byte>(x >> 24u);
+            byte b1 = cast<byte>(x >> 16u);
+            byte b2 = cast<byte>(x >> 8u);
+            byte b3 = cast<byte>(x);
+            auto result = Write(b0);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b1);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b2);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(b3);
+        }
+        [nodiscard]
+        public Result<bool> Write(int x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<uint>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(ulong x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            byte b0 = cast<byte>(x >> 56u);
+            byte b1 = cast<byte>(x >> 48u);
+            byte b2 = cast<byte>(x >> 40u);
+            byte b3 = cast<byte>(x >> 32u);
+            byte b4 = cast<byte>(x >> 24u);
+            byte b5 = cast<byte>(x >> 16u);
+            byte b6 = cast<byte>(x >> 8u);
+            byte b7 = cast<byte>(x);
+            auto result = Write(b0);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b1);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b2);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b3);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b4);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b5);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(b6);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(b7);
+        }
+        [nodiscard]
+        public Result<bool> Write(long x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<ulong>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(float x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            uint* u = cast<uint*>(cast<void*>(&x));
+            return Write(*u);
+        }
+        [nodiscard]
+        public Result<bool> Write(double x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            ulong* u = cast<ulong*>(cast<void*>(&x));
+            return Write(*u);
+        }
+        [nodiscard]
+        public Result<bool> Write(char x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<byte>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(wchar x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<ushort>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(uchar x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Write(cast<uint>(x));
+        }
+        [nodiscard]
+        public Result<bool> Write(const Date& date)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = Write(date.Year());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            result = Write(cast<sbyte>(date.GetMonth()));
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(date.Day());
+        }
+        [nodiscard]
+        public Result<bool> Write(const DateTime& dt)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            Date date = dt.GetDate();
+            auto result = Write(date);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Write(dt.Seconds());
+        }
+        [nodiscard]
+        public Result<bool> Write(const string& s)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            for (char c : s)
+            {
+                auto result = Write(cast<byte>(c));
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Write(cast<byte>(0u));
+        }
+        [nodiscard]
+        public Result<bool> Write(const Uuid& x)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            for (byte b : x)
+            {
+                auto result = Write(b);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        private byte* ptr;
+        private byte* pos;
+        private long count;
+    }
+}

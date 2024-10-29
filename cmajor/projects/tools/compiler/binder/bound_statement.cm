@@ -1,0 +1,680 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace binder
+{
+    public enum BoundStatementFlags : byte
+    {
+        none = 0u, postfix = 1u << 0u, generated = 1u << 1u, forLoopStatementNode = 1u << 2u, ignoreNode = 1u << 3u, assertNode = 1u << 4u, destroyed = 1u << 5u
+    }
+
+    public abstract class BoundStatement : BoundNode
+    {
+        public BoundStatement(const System.Lex.Span& span_, BoundNodeKind kind_) : base(span_, kind_), flags(BoundStatementFlags.none), label()
+        {
+        }
+        public inline BoundStatementFlags Flags() const
+        {
+            return flags;
+        }
+        public inline bool GetFlag(BoundStatementFlags flag)
+        {
+            return cast<BoundStatementFlags>(flags & flag) != BoundStatementFlags.none;
+        }
+        public inline void SetFlag(BoundStatementFlags flag)
+        {
+            flags = cast<BoundStatementFlags>(flags | flag);
+        }
+        public inline bool Postfix() const
+        {
+            return GetFlag(BoundStatementFlags.postfix);
+        }
+        public inline void SetPostfix()
+        {
+            SetFlag(BoundStatementFlags.postfix);
+        }
+        public inline bool Generated() const
+        {
+            return GetFlag(BoundStatementFlags.generated);
+        }
+        public inline void SetGenerated()
+        {
+            SetFlag(BoundStatementFlags.generated);
+        }
+        public inline bool IsForLoopStatementNode() const
+        {
+            return GetFlag(BoundStatementFlags.forLoopStatementNode);
+        }
+        public inline void SetForLoopStatementNode()
+        {
+            SetFlag(BoundStatementFlags.forLoopStatementNode);
+        }
+        public inline bool IgnoreNode() const
+        {
+            return GetFlag(BoundStatementFlags.ignoreNode);
+        }
+        public inline void SetIgnoreNode()
+        {
+            SetFlag(BoundStatementFlags.ignoreNode);
+        }
+        public inline bool IsAssertNode() const
+        {
+            return GetFlag(BoundStatementFlags.assertNode);
+        }
+        public inline void SetAssertNode()
+        {
+            SetFlag(BoundStatementFlags.assertNode);
+        }
+        public inline bool IsDestroyed() const
+        {
+            return GetFlag(BoundStatementFlags.destroyed);
+        }
+        public inline void SetDestroyed()
+        {
+            SetFlag(BoundStatementFlags.destroyed);
+        }
+        public Result<bool> IsConditionalStatementInBlock(BoundCompoundStatement* block) const
+        {
+            if (this == block)
+            {
+                return Result<bool>(false);
+            }
+            if (IsBoundIfStatement() || IsBoundSwitchStatement()) return Result<bool>(true);
+            Result<BoundStatement*> parentResult = StatementParent();
+            if (parentResult.Error()) return Result<bool>(ErrorId(parentResult.GetErrorId()));
+            BoundStatement* parent = parentResult.Value();
+            if (parent != null)
+            {
+                return parent->IsConditionalStatementInBlock(block);
+            }
+            return Result<bool>(false);
+        }
+        public inline const ustring& Label() const
+        {
+            return label;
+        }
+        public void SetLabel(const ustring& label_)
+        {
+            label = label_;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load from statement", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to statement", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool IsBoundStatement() const
+        {
+            return true;
+        }
+        public Result<BoundStatement*> StatementParent() const
+        {
+            BoundNode* parent = Parent();
+            if (parent->IsBoundStatement())
+            {
+                return Result<BoundStatement*>(cast<BoundStatement*>(parent));
+            }
+            else
+            {
+                int errorId = MakeError("statement parent expected", FullSpan());
+                return Result<BoundStatement*>(ErrorId(errorId));
+            }
+        }
+        public Result<BoundCompoundStatement*> Block() const
+        {
+            if (IsBoundCompoundStatement())
+            {
+                return Result<BoundCompoundStatement*>(cast<BoundCompoundStatement*>(this));
+            }
+            else
+            {
+                Result<BoundStatement*> statementParentResult = StatementParent();
+                if (statementParentResult.Error()) return Result<BoundCompoundStatement*>(ErrorId(statementParentResult.GetErrorId()));
+                BoundStatement* statementParent = statementParentResult.Value();
+                return statementParent->Block();
+            }
+        }
+        private BoundStatementFlags flags;
+        private ustring label;
+    }
+
+    public class BoundSequenceStatement : BoundStatement
+    {
+        BoundSequenceStatement(const System.Lex.Span& span_, UniquePtr<BoundStatement>&& first_, UniquePtr<BoundStatement>&& second_) :
+            base(span_, BoundNodeKind.boundSequenceStatement), first(first_), second(second_)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundStatement* First() const
+        {
+            return first.Get();
+        }
+        public inline BoundStatement* Second() const
+        {
+            return second.Get();
+        }
+        private UniquePtr<BoundStatement> first;
+        private UniquePtr<BoundStatement> second;
+    }
+
+    public class BoundCompoundStatement : BoundStatement
+    {
+        public BoundCompoundStatement(const System.Lex.Span& span_) :
+            base(span_, BoundNodeKind.boundCompoundStatement), endSpan()
+        {
+        }
+        public BoundCompoundStatement(const System.Lex.Span& span_, const System.Lex.Span& endSpan_) :
+            base(span_, BoundNodeKind.boundCompoundStatement), endSpan(endSpan_)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline const System.Lex.Span& EndSpan() const
+        {
+            return endSpan;
+        }
+        public inline const List<UniquePtr<BoundStatement>>& Statements() const
+        {
+            return statements;
+        }
+        public void InsertStatementToFront(UniquePtr<BoundStatement>&& statement)
+        {
+            statement->SetParent(this);
+            statements.Insert(statements.Begin(), statement);
+        }
+        public void AddStatement(UniquePtr<BoundStatement>&& statement)
+        {
+            statement->SetParent(this);
+            statements.Add(statement);
+        }
+        private System.Lex.Span endSpan;
+        private List<UniquePtr<BoundStatement>> statements;
+    }
+
+    public class BoundReturnStatement : BoundStatement
+    {
+        public BoundReturnStatement(const System.Lex.Span& span_, UniquePtr<BoundFunctionCall>&& returnFunctionCall_) :
+            base(span_, BoundNodeKind.boundReturnStatement), returnFunctionCall(returnFunctionCall_)
+        {
+            if (!returnFunctionCall.IsNull())
+            {
+                returnFunctionCall->SetParent(this);
+            }
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundFunctionCall* ReturnFunctionCall() const
+        {
+            return returnFunctionCall.Get();
+        }
+        private UniquePtr<BoundFunctionCall> returnFunctionCall;
+    }
+
+    public class BoundIfStatement : BoundStatement
+    {
+        public BoundIfStatement(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& condition_, UniquePtr<BoundStatement>&& thenS_, UniquePtr<BoundStatement>&& elseS_) :
+            base(span_, BoundNodeKind.boundIfStatement), condition(condition_), thenS(thenS_), elseS(elseS_)
+        {
+            condition->SetParent(this);
+            thenS->SetParent(this);
+            if (!elseS.IsNull())
+            {
+                elseS->SetParent(this);
+            }
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundExpression* Condition() const
+        {
+            return condition.Get();
+        }
+        public inline BoundStatement* ThenS() const
+        {
+            return thenS.Get();
+        }
+        public inline BoundStatement* ElseS() const
+        {
+            return elseS.Get();
+        }
+        private UniquePtr<BoundExpression> condition;
+        private UniquePtr<BoundStatement> thenS;
+        private UniquePtr<BoundStatement> elseS;
+    }
+
+    public class BoundWhileStatement : BoundStatement
+    {
+        public BoundWhileStatement(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& condition_, UniquePtr<BoundStatement>&& statement_) :
+            base(span_, BoundNodeKind.boundWhileStatement), condition(condition_), statement(statement_)
+        {
+            condition->SetParent(this);
+            statement->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundExpression* Condition() const
+        {
+            return condition.Get();
+        }
+        public inline BoundStatement* Statement() const
+        {
+            return statement.Get();
+        }
+        private UniquePtr<BoundExpression> condition;
+        private UniquePtr<BoundStatement> statement;
+    }
+
+    public class BoundDoStatement : BoundStatement
+    {
+        public BoundDoStatement(const System.Lex.Span& span_, UniquePtr<BoundStatement>&& statement_, UniquePtr<BoundExpression>&& condition_) :
+            base(span_, BoundNodeKind.boundDoStatement), statement(statement_), condition(condition_)
+        {
+            statement->SetParent(this);
+            condition->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundStatement* Statement() const
+        {
+            return statement.Get();
+        }
+        public inline BoundExpression* Condition() const
+        {
+            return condition.Get();
+        }
+        private UniquePtr<BoundStatement> statement;
+        private UniquePtr<BoundExpression> condition;
+    }
+
+    public class BoundForStatement : BoundStatement
+    {
+        public BoundForStatement(const System.Lex.Span& span_, UniquePtr<BoundStatement>&& initS_, UniquePtr<BoundExpression>&& condition_, UniquePtr<BoundStatement>&& loopS_,
+            UniquePtr<BoundStatement>&& actionS_) : base(span_, BoundNodeKind.boundForStatement), initS(initS_), condition(condition_), loopS(loopS_), actionS(actionS_)
+        {
+            initS->SetParent(this);
+            condition->SetParent(this);
+            loopS->SetParent(this);
+            actionS->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundStatement* InitS() const
+        {
+            return initS.Get();
+        }
+        public inline BoundExpression* Condition() const
+        {
+            return condition.Get();
+        }
+        public inline BoundStatement* LoopS() const
+        {
+            return loopS.Get();
+        }
+        public inline BoundStatement* ActionS() const
+        {
+            return actionS.Get();
+        }
+        private UniquePtr<BoundStatement> initS;
+        private UniquePtr<BoundExpression> condition;
+        private UniquePtr<BoundStatement> loopS;
+        private UniquePtr<BoundStatement> actionS;
+    }
+
+    public class BoundSwitchStatement : BoundStatement
+    {
+        public BoundSwitchStatement(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& condition_) : base(span_, BoundNodeKind.boundSwitchStatement), condition(condition_)
+        {
+            condition->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundExpression* Condition() const
+        {
+            return condition.Get();
+        }
+        public inline const List<UniquePtr<BoundCaseStatement>>& CaseStatements() const
+        {
+            return caseStatements;
+        }
+        public inline BoundDefaultStatement* DefaultStatement() const
+        {
+            return defaultStatement.Get();
+        }
+        public void AddCaseStatement(UniquePtr<BoundCaseStatement>&& caseStatement)
+        {
+            caseStatement->SetParent(this);
+            caseStatements.Add(caseStatement);
+        }
+        public void SetDefaultStatement(UniquePtr<BoundDefaultStatement>&& defaultStatement_)
+        {
+            defaultStatement = defaultStatement_;
+            defaultStatement->SetParent(this);
+        }
+        private UniquePtr<BoundExpression> condition;
+        private List<UniquePtr<BoundCaseStatement>> caseStatements;
+        private UniquePtr<BoundDefaultStatement> defaultStatement;
+    }
+
+    public class BoundCaseStatement : BoundStatement
+    {
+        public BoundCaseStatement(const System.Lex.Span& span_) : base(span_, BoundNodeKind.boundCaseStatement)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public void AddCaseValue(UniquePtr<Value>&& caseValue_)
+        {
+            caseValues.Add(caseValue_);
+        }
+        public void AddStatement(UniquePtr<BoundStatement>&& statement)
+        {
+            if (!compoundStatement.IsNull())
+            {
+                compoundStatement->AddStatement(statement);
+            }
+            else if (statement->IsBoundCompoundStatement())
+            {
+                compoundStatement = UniquePtr<BoundCompoundStatement>(cast<BoundCompoundStatement*>(statement.Release()));
+                compoundStatement->SetParent(this);
+            }
+            else
+            {
+                compoundStatement.Reset(new BoundCompoundStatement(Span()));
+                compoundStatement->SetParent(this);
+                compoundStatement->AddStatement(statement);
+            }
+        }
+        public inline const List<UniquePtr<Value>>& CaseValues() const
+        {
+            return caseValues;
+        }
+        public inline BoundCompoundStatement* CompoundStatement() const
+        {
+            return compoundStatement.Get();
+        }
+        private List<UniquePtr<Value>> caseValues;
+        private UniquePtr<BoundCompoundStatement> compoundStatement;
+    }
+
+    public class BoundDefaultStatement : BoundStatement
+    {
+        public BoundDefaultStatement(const System.Lex.Span& span_) : base(span_, BoundNodeKind.boundDefaultStatement)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public void AddStatement(UniquePtr<BoundStatement>&& statement)
+        {
+            if (!compoundStatement.IsNull())
+            {
+                compoundStatement->AddStatement(statement);
+            }
+            else if (statement->IsBoundCompoundStatement())
+            {
+                compoundStatement = UniquePtr<BoundCompoundStatement>(cast<BoundCompoundStatement*>(statement.Release()));
+                compoundStatement->SetParent(this);
+            }
+            else
+            {
+                compoundStatement.Reset(new BoundCompoundStatement(Span()));
+                compoundStatement->SetParent(this);
+                compoundStatement->AddStatement(statement);
+            }
+        }
+        public inline BoundCompoundStatement* CompoundStatement() const
+        {
+            return compoundStatement.Get();
+        }
+        private UniquePtr<BoundCompoundStatement> compoundStatement;
+    }
+
+    public class BoundGotoCaseStatement : BoundStatement
+    {
+        public BoundGotoCaseStatement(const System.Lex.Span& span_, UniquePtr<Value>&& caseValue_) : base(span_, BoundNodeKind.boundGotoCaseStatement), caseValue(caseValue_)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline Value* CaseValue() const
+        {
+            return caseValue.Get();
+        }
+        private UniquePtr<Value> caseValue;
+    }
+
+    public class BoundGotoDefaultStatement : BoundStatement
+    {
+        public BoundGotoDefaultStatement(const System.Lex.Span& span_) : base(span_, BoundNodeKind.boundGotoDefaultStatement)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class BoundBreakStatement : BoundStatement
+    {
+        public BoundBreakStatement(const System.Lex.Span& span_) : base(span_, BoundNodeKind.boundBreakStatement)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class BoundContinueStatement : BoundStatement
+    {
+        public BoundContinueStatement(const System.Lex.Span& span_) : base(span_, BoundNodeKind.boundContinueStatement)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class BoundGotoStatement : BoundStatement
+    {
+        public BoundGotoStatement(const System.Lex.Span& span_, const ustring& target_) :
+            base(span_, BoundNodeKind.boundGotoStatement), target(target_), targetStatement(null), targetBlock(null)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline const ustring& Target() const
+        {
+            return target;
+        }
+        public void SetTargetStatement(BoundStatement* targetStatement_)
+        {
+            targetStatement = targetStatement_;
+        }
+        public inline BoundStatement* TargetStatement() const
+        {
+            return targetStatement;
+        }
+        public void SetTargetBlock(BoundCompoundStatement* targetBlock_)
+        {
+            targetBlock = targetBlock_;
+        }
+        public inline BoundCompoundStatement* TargetBlock() const
+        {
+            return targetBlock;
+        }
+        private ustring target;
+        private BoundStatement* targetStatement;
+        private BoundCompoundStatement* targetBlock;
+    }
+
+    public class BoundConstructionStatement : BoundStatement
+    {
+        public BoundConstructionStatement(const System.Lex.Span& span_, UniquePtr<BoundFunctionCall>&& constructorCall_) :
+            base(span_, BoundNodeKind.boundConstructionStatement), constructorCall(constructorCall_)
+        {
+            constructorCall->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundFunctionCall* ConstructorCall() const
+        {
+            return constructorCall.Get();
+        }
+        public inline LocalVariableSymbol* LocalVariable() const
+        {
+            return localVariable;
+        }
+        public inline void SetLocalVariable(LocalVariableSymbol* localVariable_)
+        {
+            localVariable = localVariable_;
+        }
+        private UniquePtr<BoundFunctionCall> constructorCall;
+        private LocalVariableSymbol* localVariable;
+    }
+
+    public class BoundAssignmentStatement : BoundStatement
+    {
+        public BoundAssignmentStatement(const System.Lex.Span& span_, UniquePtr<BoundFunctionCall>&& assignmentCall_) :
+            base(span_, BoundNodeKind.boundAssignmentStatement), assignmentCall(assignmentCall_)
+        {
+            assignmentCall->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundFunctionCall* AssignmentCall() const
+        {
+            return assignmentCall.Get();
+        }
+        private UniquePtr<BoundFunctionCall> assignmentCall;
+    }
+
+    public class BoundExpressionStatement : BoundStatement
+    {
+        public BoundExpressionStatement(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& expression_) :
+            base(span_, BoundNodeKind.boundExpressionStatement), expression(expression_)
+        {
+            if (!expression.IsNull())
+            {
+                expression->SetParent(this);
+            }
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundExpression* Expression() const
+        {
+            return expression.Get();
+        }
+        private UniquePtr<BoundExpression> expression;
+    }
+
+    public class BoundInitializationStatement : BoundStatement
+    {
+        public BoundInitializationStatement(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& initializationExpression_) :
+            base(span_, BoundNodeKind.boundInitializationStatement), initializationExpression(initializationExpression_)
+        {
+            initializationExpression->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundExpression* InitializationExpression() const
+        {
+            return initializationExpression.Get();
+        }
+        private UniquePtr<BoundExpression> initializationExpression;
+    }
+
+    public class BoundEmptyStatement : BoundStatement
+    {
+        public BoundEmptyStatement(const System.Lex.Span& span_) : base(span_, BoundNodeKind.boundEmptyStatement)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class BoundSetVmtPtrStatement : BoundStatement
+    {
+        public BoundSetVmtPtrStatement(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& classPtr_, ClassTypeSymbol* classType_) :
+            base(span_, BoundNodeKind.boundSetVmtPtrStatement), classPtr(classPtr_), classType(classType_)
+        {
+            classPtr->SetParent(this);
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline BoundExpression* ClassPtr() const
+        {
+            return classPtr.Get();
+        }
+        public inline ClassTypeSymbol* ClassType() const
+        {
+            return classType;
+        }
+        private UniquePtr<BoundExpression> classPtr;
+        private ClassTypeSymbol* classType;
+    }
+
+    public Result<bool> InDirectSwitchStatement(BoundStatement* statement)
+    {
+        Result<BoundStatement*> parentResult = statement->StatementParent();
+        if (parentResult.Error()) return Result<bool>(ErrorId(parentResult.GetErrorId()));
+        BoundStatement* parent = parentResult.Value();
+        while (parent != null)
+        {
+            if (parent->IsBoundSwitchStatement()) return Result<bool>(true);
+            if (parent->IsBoundWhileStatement() || parent->IsBoundDoStatement() || parent->IsBoundForStatement()) return Result<bool>(false);
+            parentResult = parent->StatementParent();
+            if (parentResult.Error()) return Result<bool>(ErrorId(parentResult.GetErrorId()));
+            parent = parentResult.Value();
+        }
+        return Result<bool>(false);
+    }
+}
+

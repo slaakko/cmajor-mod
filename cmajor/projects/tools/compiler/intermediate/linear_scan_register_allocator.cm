@@ -1,0 +1,461 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using assembly;
+
+namespace intermediate
+{
+    public class LiveRange
+    {
+        public LiveRange() : start(-1), end(-1)
+        {
+        }
+        public LiveRange(int start_, int end_) : start(start_), end(end_)
+        {
+        }
+        public inline int Start() const
+        {
+            return start;
+        }
+        public inline int End() const
+        {
+            return end;
+        }
+        public inline bool IsValid() const
+        {
+            return start != -1 && end != -1;
+        }
+        private int start;
+        private int end;
+    }
+
+    public class LiveRangeByStart : Rel<LiveRange>
+    {
+        public inline bool operator()(const LiveRange& left, const LiveRange& right) const
+        {
+            if (left.Start() < right.Start()) return true;
+            if (left.Start() > right.Start()) return false;
+            return left.End() < right.End();
+        }
+    }
+
+    public class LiveRangeByEnd : Rel<LiveRange>
+    {
+        public inline bool operator()(const LiveRange& left, const LiveRange& right) const
+        {
+            if (left.End() < right.End()) return true;
+            if (left.End() > right.End()) return false;
+            return left.Start() < right.Start();
+        }
+    }
+
+    public LiveRange GetLiveRange(Instruction* inst)
+    {
+        if (inst->RequiresLocalRegister())
+        {
+            int lastUserIndex = inst->Index();
+            const List<Instruction*>& users = inst->Users();
+            List<Instruction*> finalUsers;
+            for (Instruction* user : users)
+            {
+                if (user->IsArgInstruction())
+                {
+                    while (user != null && !(user->IsFunctionCallInstruction() || user->IsProcedureCallInstruction()))
+                    {
+                        user = user->Next();
+                    }
+                    if (user != null)
+                    {
+                        finalUsers.Add(user);
+                    }
+                }
+                else
+                {
+                    finalUsers.Add(user);
+                }
+            }
+            for (Instruction* user : finalUsers)
+            {
+                if (user->Index() > lastUserIndex)
+                {
+                    lastUserIndex = user->Index();
+                }
+            }
+            LiveRange range(inst->Index(), lastUserIndex);
+            return range;
+        }
+        else
+        {
+            return LiveRange(inst->Index(), inst->Index());
+        }
+    }
+
+    public class LinearScanRegisterAllocator : RegisterAllocator
+    {
+        public LinearScanRegisterAllocator(Function& function, Context* context_) :
+            frame(), liveRanges(), activeInteger(), activeFP(), frameLocations(), registerGroups(), context(context_)
+        {
+            ComputeLiveRanges(function);
+        }
+        public void AddLiveRange(const LiveRange& liveRange, Instruction* inst)
+        {
+            liveRanges.Insert(liveRange);
+            instructionRangeMap[inst] = liveRange;
+            rangeInstructionMap[liveRange].Add(inst);
+            if (inst->IsParamInstruction() || inst->IsLocalInstruction())
+            {
+                AllocateFrameLocation(inst, false);
+            }
+        }
+        public void AllocateFrameLocation(Instruction* inst, bool spill)
+        {
+            if (inst->IsParamInstruction())
+            {
+                ParamInstruction* paramInst = cast<ParamInstruction*>(inst);
+                int alignment = 8;
+                #assert(paramInst->GetType() != null);
+                if (paramInst->GetType()->IsFloatingPointType())
+                {
+                    alignment = 16;
+                }
+                long size = Align(paramInst->GetType()->Size(), alignment);
+                if (spill)
+                {
+                    frameLocations[paramInst] = frame.GetFrameLocation(size);
+                    locations[paramInst] = cast<Locations>(locations[paramInst] | Locations.frame);
+                }
+                else
+                {
+                    frameLocations[paramInst] = frame.GetParamLocation(size, context->GetAssemblyContext());
+                    locations[paramInst] = cast<Locations>(locations[paramInst] | Locations.frame);
+                }
+            }
+            else if (inst->IsLocalInstruction())
+            {
+                LocalInstruction* localInst = cast<LocalInstruction*>(inst);
+                long size = Align(localInst->LocalType()->Size(), 8);
+                frameLocations[localInst] = frame.GetFrameLocation(size);
+                locations[localInst] = cast<Locations>(locations[localInst] | Locations.frame);
+            }
+            else
+            {
+                frameLocations[inst] = frame.GetFrameLocation(8);
+                locations[inst] = cast<Locations>(locations[inst] | Locations.frame);
+            }
+        }
+        public void AddFreeRegGroupToPool(Instruction* inst)
+        {
+            assembly.RegisterGroup* reg = GetRegisterGroup(inst);
+            if (reg != null)
+            {
+                if (reg->IsFloatingPointReg())
+                {
+                    context->GetAssemblyContext()->GetRegisterPool()->AddLocalXMMRegisterGroup(reg);
+                }
+                else
+                {
+                    context->GetAssemblyContext()->GetRegisterPool()->AddLocalRegisterGroup(reg);
+                }
+                RemoveRegisterGroup(inst);
+            }
+        }
+        public override assembly.RegisterGroup* GetRegisterGroup(Instruction* inst) const
+        {
+            auto it = registerGroups.Find(inst);
+            if (it != registerGroups.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void Spill(Instruction* inst)
+        {
+            spillDataList.Clear();
+            LiveRange spill;
+            bool integer = false;
+            if (inst->IsFloatingPointInstruction())
+            {
+                spill = *--activeFP.End();
+            }
+            else
+            {
+                spill = *--activeInteger.End();
+                integer = true;
+            }
+            LiveRange range = GetLiveRange(inst);
+            List<Instruction*> instructions = GetInstructions(spill);
+            for (Instruction* instToSpill : instructions)
+            {
+                registerGroups[inst] = registerGroups[instToSpill];
+                AllocateFrameLocation(instToSpill, true);
+                locations[instToSpill] = Locations.frame;
+                locations[inst] = cast<Locations>(locations[inst] | Locations.reg);
+                if (integer)
+                {
+                    activeInteger.Remove(spill);
+                    activeInteger.Insert(range);
+                }
+                else
+                {
+                    activeFP.Remove(spill);
+                    activeFP.Insert(range);
+                }
+                SpillData spillData(registerGroups[instToSpill], frameLocations[instToSpill], instToSpill);
+                spillDataList.Add(spillData);
+            }
+        }
+        public LiveRange GetLiveRange(Instruction* inst) const
+        {
+            auto it = instructionRangeMap.Find(inst);
+            if (it != instructionRangeMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return LiveRange(inst->Index(), inst->Index());
+            }
+        }
+        public override Frame& GetFrame()
+        {
+            return frame;
+        }
+        public void RemoveRegisterGroup(Instruction* inst)
+        {
+            registerGroups.Remove(inst);
+        }
+        public void RemoveFromActive(const LiveRange& range, bool integer)
+        {
+            if (integer)
+            {
+                activeInteger.Remove(range);
+            }
+            else
+            {
+                activeFP.Remove(range);
+            }
+            List<Instruction*> instructions = GetInstructions(range);
+            for (Instruction* inst : instructions)
+            {
+                locations[inst] = cast<Locations>(locations[inst] & ~Locations.reg);
+            }
+        }
+        public bool NoFreeRegs(bool floatingPoint) const
+        {
+            if (floatingPoint)
+            {
+                return context->GetAssemblyContext()->GetRegisterPool()->NumFreeLocalXMMRegisters() == 0;
+            }
+            else
+            {
+                return context->GetAssemblyContext()->GetRegisterPool()->NumFreeLocalRegisters() == 0;
+            }
+        }
+        public inline const Set<LiveRange, LiveRangeByStart>& LiveRanges() const
+        {
+            return liveRanges;
+        }
+        public inline const Set<LiveRange, LiveRangeByEnd>& ActiveInteger() const
+        {
+            return activeInteger;
+        }
+        public inline const Set<LiveRange, LiveRangeByEnd>& ActiveFP() const
+        {
+            return activeFP;
+        }
+        public override FrameLocation GetFrameLocation(Instruction* inst) const
+        {
+            auto it = frameLocations.Find(inst);
+            if (it != frameLocations.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return FrameLocation();
+            }
+        }
+        public override Locations GetLocations(Instruction* inst) const
+        {
+            auto it = locations.Find(inst);
+            if (it != locations.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return Locations.none;
+            }
+        }
+        public override void AddRegisterLocation(Instruction* inst, assembly.RegisterGroup* regGroup)
+        {
+            locations[inst] = cast<Locations>(locations[inst] | Locations.reg);
+            registerGroups[inst] = regGroup;
+        }
+        public override int LastActiveLocalRegGroup() const
+        {
+            int lastActiveLocalRegGroup = -1;
+            for (const auto& instRegGroup : registerGroups)
+            {
+                assembly.RegisterGroup* regGroup = instRegGroup.second;
+                if (regGroup->IsLocal())
+                {
+                    if (cast<int>(regGroup->Kind()) > lastActiveLocalRegGroup)
+                    {
+                        lastActiveLocalRegGroup = cast<int>(regGroup->Kind());
+                    }
+                }
+            }
+            return lastActiveLocalRegGroup;
+        }
+        public override void RemoveFromRegisterGroups(Instruction* inst)
+        {
+            registerGroups.Remove(inst);
+        }
+        [nodiscard]
+        public Result<bool> AllocateRegister(Instruction* inst)
+        {
+            if (inst->IsFloatingPointInstruction())
+            {
+                Result<assembly.RegisterGroup*> regGroupResult = context->GetAssemblyContext()->GetRegisterPool()->GetLocalXMMRegisterGroup();
+                if (regGroupResult.Error())
+                {
+                    return Result<bool>(ErrorId(regGroupResult.GetErrorId()));
+                }
+                assembly.RegisterGroup* regGroup = regGroupResult.Value();
+                registerGroups[inst] = regGroup;
+            }
+            else
+            {
+                Result<assembly.RegisterGroup*> regGroupResult = context->GetAssemblyContext()->GetRegisterPool()->GetLocalRegisterGroup();
+                if (regGroupResult.Error())
+                {
+                    return Result<bool>(ErrorId(regGroupResult.GetErrorId()));
+                }
+                assembly.RegisterGroup* regGroup = regGroupResult.Value();
+                registerGroups[inst] = regGroup;
+            }
+            LiveRange range = GetLiveRange(inst);
+            if (inst->IsFloatingPointInstruction())
+            {
+                activeFP.Insert(range);
+            }
+            else
+            {
+                activeInteger.Insert(range);
+            }
+            locations[inst] = cast<Locations>(locations[inst] | Locations.reg);
+            return Result<bool>(true);
+        }
+        public List<Instruction*> GetInstructions(const LiveRange& range) const
+        {
+            auto it = rangeInstructionMap.Find(range);
+            if (it != rangeInstructionMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return List<Instruction*>();
+            }
+        }
+        [nodiscard]
+        public override Result<RegisterAllocationAction> Run(Instruction* inst)
+        {
+            LiveRange liveRange = GetLiveRange(inst);
+            ExpireOldRanges(liveRange);
+            if (inst->RequiresLocalRegister())
+            {
+                if (NoFreeRegs(inst->IsFloatingPointInstruction()))
+                {
+                    Spill(inst);
+                    return Result<RegisterAllocationAction>(RegisterAllocationAction.spill);
+                }
+                else
+                {
+                    Result<bool> result = AllocateRegister(inst);
+                    if (result.Error()) return Result<RegisterAllocationAction>(ErrorId(result.GetErrorId()));
+                    return Result<RegisterAllocationAction>(RegisterAllocationAction.registerAllocated);
+                }
+            }
+            else
+            {
+                return Result<RegisterAllocationAction>(RegisterAllocationAction.none);
+            }
+        }
+        public override const List<SpillData>& GetSpillData() const
+        {
+            return spillDataList;
+        }
+        private void ComputeLiveRanges(Function& function)
+        {
+            BasicBlock* basicBlock = function.FirstBasicBlock();
+            while (basicBlock != null)
+            {
+                Instruction* inst = basicBlock->FirstInstruction();
+                while (inst != null)
+                {
+                    LiveRange liveRange = intermediate.GetLiveRange(inst);
+                    if (liveRange.IsValid())
+                    {
+                        AddLiveRange(liveRange, inst);
+                    }
+                    inst = inst->Next();
+                }
+                basicBlock = basicBlock->Next();
+            }
+        }
+        private void ExpireOldRanges(const LiveRange& range)
+        {
+            List<LiveRange> toRemove;
+            for (const auto& activeRange : activeInteger)
+            {
+                if (activeRange.End() >= range.Start()) break;
+                toRemove.Add(activeRange);
+                List<Instruction*> instructions = GetInstructions(activeRange);
+                for (Instruction* inst : instructions)
+                {
+                    AddFreeRegGroupToPool(inst);
+                }
+            }
+            for (const auto& r : toRemove)
+            {
+                RemoveFromActive(r, true);
+            }
+            toRemove.Clear();
+            for (const auto& activeRange : activeFP)
+            {
+                if (activeRange.End() >= range.Start()) break;
+                toRemove.Add(activeRange);
+                List<Instruction*> instructions = GetInstructions(activeRange);
+                for (Instruction* inst : instructions)
+                {
+                    AddFreeRegGroupToPool(inst);
+                }
+            }
+            for (const auto& r : toRemove)
+            {
+                RemoveFromActive(r, false);
+            }
+        }
+        private Frame frame;
+        private Set<LiveRange, LiveRangeByStart> liveRanges;
+        private Set<LiveRange, LiveRangeByEnd> activeInteger;
+        private Set<LiveRange, LiveRangeByEnd> activeFP;
+        private Map<Instruction*, FrameLocation> frameLocations;
+        private Map<Instruction*, assembly.RegisterGroup*> registerGroups;
+        private Map<Instruction*, LiveRange> instructionRangeMap;
+        private Map<LiveRange, List<Instruction*>, LiveRangeByStart> rangeInstructionMap;
+        private Map<Instruction*, Locations> locations;
+        private List<SpillData> spillDataList;
+        private Context* context;
+    }
+}
+

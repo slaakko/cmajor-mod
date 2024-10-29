@@ -1,0 +1,69 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace binder
+{
+    public class BoundClass : BoundNode
+    {
+        public BoundClass(const System.Lex.Span& span_, ClassTypeSymbol* classTypeSymbol_, const Uuid& moduleId_, int fileIndex_) :
+            base(span_, BoundNodeKind.boundClass), classTypeSymbol(classTypeSymbol_), moduleId(moduleId_), fileIndex(fileIndex_),
+            inlineFunctionContainer(false)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline ClassTypeSymbol* GetClassTypeSymbol() const
+        {
+            return classTypeSymbol;
+        }
+        public void AddMember(UniquePtr<BoundNode>&& member)
+        {
+            members.Add(member);
+        }
+        public inline const List<UniquePtr<BoundNode>>& Members() const
+        {
+            return members;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load from class", classTypeSymbol->FullSpan(), FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to class", classTypeSymbol->FullSpan(), FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override const Uuid& ModuleId() const
+        {
+            return moduleId;
+        }
+        public override int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public inline bool IsInlineFunctionContainer() const
+        {
+            return inlineFunctionContainer;
+        }
+        public inline void SetInlineFunctionContainer()
+        {
+            inlineFunctionContainer = true;
+        }
+        private ClassTypeSymbol* classTypeSymbol;
+        private List<UniquePtr<BoundNode>> members;
+        private Uuid moduleId;
+        private int fileIndex;
+        private bool inlineFunctionContainer;
+    }
+}
+

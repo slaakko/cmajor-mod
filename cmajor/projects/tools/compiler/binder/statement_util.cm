@@ -1,0 +1,283 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    [nodiscard]
+    public Result<bool> IsAlwaysTrue(Node* node, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, BoundFunction* currentFunction)
+    {
+        Result<TypeSymbol*> boolTypeResult = boundCompileUnit->GetSymbolTable()->GetTypeByName(u"bool");
+        if (boolTypeResult.Error()) return Result<bool>(ErrorId(boolTypeResult.GetErrorId()));
+        TypeSymbol* boolType = boolTypeResult.Value();
+        Result<UniquePtr<Value>> valueResult = Evaluate(node, boolType, containerScope, boundCompileUnit, currentFunction);
+        if (valueResult.Error())
+        {
+            return Result<bool>(ErrorId(valueResult.GetErrorId()));
+        }
+        else
+        {
+            Value* value = valueResult.Value().Get();
+            if (value->IsBoolValue())
+            {
+                BoolValue* boolValue = cast<BoolValue*>(value);
+                return boolValue->GetValue() == true;
+            }
+        }
+        return false;
+    }
+
+    public Result<bool> TerminatesFunction(StatementNode* statement, bool inForEverLoop, ContainerScope* containerScope, BoundCompileUnit* boundCompileUnit,
+        BoundFunction* currentFunction)
+    {
+        switch (statement->GetNodeType())
+        {
+            case NodeType.compoundStatementNode:
+            {
+                CompoundStatementNode* compoundStatement = cast<CompoundStatementNode*>(statement);
+                int n = cast<int>(compoundStatement->Statements().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    StatementNode* statement = compoundStatement->Statements()[i];
+                    Result<bool> terminatesResult = TerminatesFunction(statement, inForEverLoop, containerScope, boundCompileUnit, currentFunction);
+                    if (terminatesResult.Error()) return terminatesResult;
+                    bool terminates = terminatesResult.Value();
+                    if (terminates) return Result<bool>(true);
+                }
+                break;
+            }
+            case NodeType.ifStatementNode:
+            {
+                IfStatementNode* ifStatement = cast<IfStatementNode*>(statement);
+                if (inForEverLoop || ifStatement->ElseS() != null)
+                {
+                    Result<bool> terminatesResult = TerminatesFunction(ifStatement->ThenS(), inForEverLoop, containerScope, boundCompileUnit, currentFunction);
+                    if (terminatesResult.Error()) return terminatesResult;
+                    bool terminates = terminatesResult.Value();
+                    if (terminates)
+                    {
+                        if (inForEverLoop) return Result<bool>(true);
+                        if (ifStatement->ElseS() != null)
+                        {
+                            terminatesResult = TerminatesFunction(ifStatement->ElseS(), inForEverLoop, containerScope, boundCompileUnit, currentFunction);
+                            if (terminatesResult.Error()) return terminatesResult;
+                            terminates = terminatesResult.Value();
+                            if (terminates)
+                            {
+                                return Result<bool>(true);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+            case NodeType.whileStatementNode:
+            {
+                WhileStatementNode* whileStatement = cast<WhileStatementNode*>(statement);
+                Result<bool> alwaysTrueResult = IsAlwaysTrue(whileStatement->Condition(), boundCompileUnit, containerScope, currentFunction);
+                if (alwaysTrueResult.Error()) return alwaysTrueResult;
+                bool alwaysTrue = alwaysTrueResult.Value();
+                if (alwaysTrue)
+                {
+                    Result<bool> terminatesResult = TerminatesFunction(whileStatement->Statement(), true, containerScope, boundCompileUnit, currentFunction);
+                    if (terminatesResult.Error()) return terminatesResult;
+                    bool terminates = terminatesResult.Value();
+                    if (terminates)
+                    {
+                        return Result<bool>(true);
+                    }
+                }
+                break;
+            }
+            case NodeType.doStatementNode:
+            {
+                DoStatementNode* doStatement = cast<DoStatementNode*>(statement);
+                Result<bool> alwaysTrueResult = IsAlwaysTrue(doStatement->Condition(), boundCompileUnit, containerScope, currentFunction);
+                if (alwaysTrueResult.Error()) return alwaysTrueResult;
+                bool alwaysTrue = alwaysTrueResult.Value();
+                if (alwaysTrue)
+                {
+                    Result<bool> terminatesResult = TerminatesFunction(doStatement->Statement(), true, containerScope, boundCompileUnit, currentFunction);
+                    if (terminatesResult.Error()) return terminatesResult;
+                    bool terminates = terminatesResult.Value();
+                    if (terminates)
+                    {
+                        return Result<bool>(true);
+                    }
+                }
+                break;
+            }
+            case NodeType.forStatementNode:
+            {
+                ForStatementNode* forStatement = cast<ForStatementNode*>(statement);
+                bool alwaysTrue = false;
+                if (forStatement->Condition() != null)
+                {
+                    Result<bool> alwaysTrueResult = IsAlwaysTrue(forStatement->Condition(), boundCompileUnit, containerScope, currentFunction);
+                    if (alwaysTrueResult.Error()) return alwaysTrueResult;
+                    alwaysTrue = alwaysTrueResult.Value();
+                }
+                if (forStatement->Condition() == null || alwaysTrue)
+                {
+                    Result<bool> terminatesResult = TerminatesFunction(forStatement->ActionS(), true, containerScope, boundCompileUnit, currentFunction);
+                    if (terminatesResult.Error()) return terminatesResult;
+                    bool terminates = terminatesResult.Value();
+                    if (terminates)
+                    {
+                        return Result<bool>(true);
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                if (statement->IsFunctionTerminatingNode())
+                {
+                    return Result<bool>(true);
+                }
+                break;
+            }
+        }
+        return Result<bool>(false);
+    }
+
+    [nodiscard]
+    public Result<bool> TerminatesCase(StatementNode* statementNode)
+    {
+        switch (statementNode->GetNodeType())
+        {
+            case NodeType.ifStatementNode:
+            {
+                IfStatementNode* ifStatementNode = cast<IfStatementNode*>(statementNode);
+                if (ifStatementNode->ElseS() != null)
+                {
+                    Result<bool> thensTerminatesResult = TerminatesCase(ifStatementNode->ThenS());
+                    if (thensTerminatesResult.Error()) return thensTerminatesResult;
+                    if (thensTerminatesResult.Value())
+                    {
+                        Result<bool> elsesTerminatesResult = TerminatesCase(ifStatementNode->ElseS());
+                        if (elsesTerminatesResult.Error()) return elsesTerminatesResult;
+                        if (elsesTerminatesResult.Value())
+                        {
+                            return Result<bool>(true);
+                        }
+                    }
+                }
+                break;
+            }
+            case NodeType.compoundStatementNode:
+            {
+                CompoundStatementNode* compoundStatement = cast<CompoundStatementNode*>(statementNode);
+                int n = cast<int>(compoundStatement->Statements().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    StatementNode* statementNode = compoundStatement->Statements()[i];
+                    Result<bool> terminatesResult = TerminatesCase(statementNode);
+                    if (terminatesResult.Error()) return terminatesResult;
+                    bool terminates = terminatesResult.Value();
+                    if (terminates)
+                    {
+                        return Result<bool>(true);
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                return Result<bool>(statementNode->IsCaseTerminatingNode());
+            }
+        }
+        return Result<bool>(false);
+    }
+
+    [nodiscard]
+    public Result<bool> TerminatesDefault(StatementNode* statementNode)
+    {
+        switch (statementNode->GetNodeType())
+        {
+            case NodeType.ifStatementNode:
+            {
+                IfStatementNode* ifStatementNode = cast<IfStatementNode*>(statementNode);
+                if (ifStatementNode->ElseS() != null)
+                {
+                    Result<bool> terminatesResult = TerminatesDefault(ifStatementNode->ThenS());
+                    if (terminatesResult.Error()) return terminatesResult;
+                    if (terminatesResult.Value())
+                    {
+                        terminatesResult = TerminatesDefault(ifStatementNode->ElseS());
+                        if (terminatesResult.Error()) return terminatesResult;
+                        if (terminatesResult.Value())
+                        {
+                            return Result<bool>(true);
+                        }
+                    }
+                }
+                break;
+            }
+            case NodeType.compoundStatementNode:
+            {
+                CompoundStatementNode* compoundStatement = cast<CompoundStatementNode*>(statementNode);
+                int n = compoundStatement->Statements().Count();
+                for (int i = 0; i < n; ++i)
+                {
+                    StatementNode* statementNode = compoundStatement->Statements()[i];
+                    Result<bool> terminatesResult = TerminatesDefault(statementNode);
+                    if (terminatesResult.Error()) return terminatesResult;
+                    bool terminates = terminatesResult.Value();
+                    if (terminates)
+                    {
+                        return Result<bool>(true);
+                    }
+                }
+                break;
+            }
+            default:
+            {
+                return Result<bool>(statementNode->IsDefaultTerminatingNode());
+            }
+        }
+        return Result<bool>(false);
+    }
+
+    [nodiscard]
+    public Result<bool> CheckFunctionReturnPaths(FunctionSymbol* functionSymbol, CompoundStatementNode* bodyNode, Node* node, ContainerScope* containerScope,
+        BoundCompileUnit* boundCompileUnit, BoundFunction* currentFunction)
+    {
+        TypeSymbol* returnType = functionSymbol->ReturnType();
+        if (returnType == null || returnType->IsVoidTypeSymbol()) return Result<bool>(true);
+        if (functionSymbol->IsExternal()) return Result<bool>(true);
+        if (functionSymbol->IsAbstract()) return Result<bool>(true);
+        CompoundStatementNode* body = bodyNode;
+        if (body != null)
+        {
+            int n = cast<int>(body->Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statement = body->Statements()[i];
+                Result<bool> terminatesResult = TerminatesFunction(statement, false, containerScope, boundCompileUnit, currentFunction);
+                if (terminatesResult.Error()) return terminatesResult;
+                bool terminates = terminatesResult.Value();
+                if (terminates)
+                {
+                    return Result<bool>(true);
+                }
+            }
+            int errorId = MakeError("not all control paths terminate in return statement", node->GetFullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> CheckFunctionReturnPaths(FunctionSymbol* functionSymbol, FunctionNode* functionNode, ContainerScope* containerScope,
+        BoundCompileUnit* boundCompileUnit, BoundFunction* currentFunction)
+    {
+        return CheckFunctionReturnPaths(functionSymbol, functionNode->Body(), functionNode, containerScope, boundCompileUnit, currentFunction);
+    }
+}
+

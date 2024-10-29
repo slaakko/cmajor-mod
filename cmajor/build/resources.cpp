@@ -12,6 +12,13 @@ import util;
 
 namespace cmajor::build {
 
+std::recursive_mutex resourceLock;
+
+std::recursive_mutex& GetResourceLock()
+{
+    return resourceLock;
+}
+
 void AddResourcesSystemX(cmajor::ast::Project* project, std::vector<std::string>& objectFilePaths)
 {
     for (const auto& resourceFilePath : project->ResourceFilePaths())
@@ -90,6 +97,7 @@ void GenerateRuntimeResourceFile(cmajor::ast::Project* project, cmajor::symbols:
 
 void CompileResourceScriptFiles(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule)
 {
+    std::lock_guard<std::recursive_mutex> lock(resourceLock);
     for (const auto& rcFilePath : rootModule->AllResourceScriptFilePaths())
     {
         std::string compiledResourceFilePath = CompileResourceFile(rcFilePath, project);

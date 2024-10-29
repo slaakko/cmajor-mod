@@ -1,0 +1,36 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public class ValueStack
+    {
+        public inline void Push(intermediate.Value* value)
+        {
+            s.Add(value);
+        }
+        public intermediate.Value* Pop()
+        {
+            return s.RemoveLast();
+        }
+        public inline void Dup()
+        {
+            s.Add(s.Back());
+        }
+        public inline void Swap()
+        {
+            System.Swap(s.Back(), s[s.Count() - 2]);
+        }
+        public void Rotate()
+        {
+            System.Swap(s[s.Count() - 3], s[s.Count() - 2]);
+            System.Swap(s.Back(), s[s.Count() - 2]);
+        }
+        private List<intermediate.Value*> s;
+    }
+}

@@ -1,0 +1,98 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace assembly
+{
+    public enum ValueKind
+    {
+        integerLiteral, floatLiteral, doubleLiteral, stringLiteral, symbol, macro, reg, binaryExpr, content, sizePrefix
+    }
+
+    public class Value
+    {
+        public Value(ValueKind kind_, const string& name_) : kind(kind_), name(name_), errorId(0)
+        {
+        }
+        public default virtual ~Value();
+        public inline ValueKind Kind() const
+        {
+            return kind;
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public inline bool IsIntegerLiteral() const
+        {
+            return kind == ValueKind.integerLiteral;
+        }
+        public inline bool IsFloatLiteral() const
+        {
+            return kind == ValueKind.floatLiteral;
+        }
+        public inline bool IsDoubleLiteral() const
+        {
+            return kind == ValueKind.doubleLiteral;
+        }
+        public inline bool IsStringLiteral() const
+        {
+            return kind == ValueKind.stringLiteral;
+        }
+        public inline bool IsSymbol() const
+        {
+            return kind == ValueKind.symbol;
+        }
+        public inline bool IsMacro() const
+        {
+            return kind == ValueKind.macro;
+        }
+        public inline bool IsRegister() const
+        {
+            return kind == ValueKind.reg;
+        }
+        public void SetName(const string& name_)
+        {
+            name = name_;
+        }
+        public virtual string ToString() const
+        {
+            return name;
+        }
+        public int Length() const
+        {
+            return cast<int>(ToString().Length());
+        }
+        public virtual bool CanSplit() const
+        {
+            return false;
+        }
+        public virtual Value* Split(int length)
+        {
+            return null;
+        }
+        public virtual bool IsEmpty() const
+        {
+            return false;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private ValueKind kind;
+        private string name;
+        private int errorId;
+    }
+}
+

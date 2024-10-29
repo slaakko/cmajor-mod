@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.masm.intermediate.code;
 
 import cmajor.masm.intermediate.context;
@@ -89,9 +92,35 @@ void RemoveUser(Instruction* user, Value* value)
     }
 }
 
-Instruction::Instruction(const soul::ast::Span& span_, Type* type_, OpCode opCode_) : 
-    Value(span_, ValueKind::instruction, type_), opCode(opCode_), index(-1), regValueIndex(-1), assemblyIndex(-1)
+void AddToUsesVec(std::vector<Instruction*>& uses, Value* value)
 {
+    if (value)
+    {
+        if (value->IsRegValue())
+        {
+            RegValue* regValue = static_cast<RegValue*>(value);
+            if (regValue->Inst())
+            {
+                uses.push_back(regValue->Inst());
+            }
+        }
+    }
+}
+
+Instruction::Instruction(const soul::ast::Span& span_, Type* type_, OpCode opCode_) : 
+    Value(span_, ValueKind::instruction, type_), opCode(opCode_), index(-1), regValueIndex(-1), assemblyIndex(-1), leader(false)
+{
+}
+
+void Instruction::Check()
+{
+    for (Instruction* user : users)
+    {
+        if (user->opCode < OpCode::store || user->opCode > OpCode::nop)
+        {
+            Assert(false, "invalid instruction");
+        }
+    }
 }
 
 std::string Instruction::Name() const
@@ -101,6 +130,7 @@ std::string Instruction::Name() const
 
 bool Instruction::IsLeader() const
 {
+    if (leader) return true;
     BasicBlock* basicBlock = Parent();
     return this == basicBlock->FirstInstruction();
 }
@@ -334,6 +364,15 @@ void Instruction::ReplaceUsesWith(Value* value)
     }
 }
 
+void Instruction::RemoveFromUses()
+{
+    std::vector<Instruction*> uses = Uses();
+    for (Instruction* use : uses)
+    {
+        use->RemoveUser(this);
+    }
+}
+
 void Instruction::ReplaceValue(Value* use, Value* value)
 {
 }
@@ -362,6 +401,14 @@ void StoreInstruction::ReplaceValue(Value* use, Value* value)
         ptr = value;
         cmajor::masm::intermediate::AddUser(this, ptr);
     }
+}
+
+std::vector<Instruction*> StoreInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, value);
+    AddToUsesVec(uses, ptr);
+    return uses;
 }
 
 void StoreInstruction::Accept(Visitor& visitor)
@@ -421,6 +468,13 @@ void ArgInstruction::ReplaceValue(Value* use, Value* value)
         arg = value;
         cmajor::masm::intermediate::AddUser(this, arg);
     }
+}
+
+std::vector<Instruction*> ArgInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, arg);
+    return uses;
 }
 
 void ArgInstruction::Write(util::CodeFormatter& formatter)
@@ -518,6 +572,13 @@ void BranchInstruction::ReplaceValue(Value* use, Value* value)
     }
 }
 
+std::vector<Instruction*> BranchInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, cond);
+    return uses;
+}
+
 void BranchInstruction::Write(util::CodeFormatter& formatter)
 {
     formatter.Write(util::Format("branch ", 8));
@@ -597,6 +658,17 @@ void ProcedureCallInstruction::ReplaceValue(Value* use, Value* value)
     }
 }
 
+std::vector<Instruction*> ProcedureCallInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, callee);
+    for (auto& arg : args)
+    {
+        AddToUsesVec(uses, arg);
+    }
+    return uses;
+}
+
 void ProcedureCallInstruction::Write(util::CodeFormatter& formatter)
 {
     formatter.Write(util::Format("call ", 8));
@@ -665,6 +737,16 @@ void RetInstruction::ReplaceValue(Value* use, Value* value)
         returnValue = value;
         cmajor::masm::intermediate::AddUser(this, returnValue);
     }
+}
+
+std::vector<Instruction*> RetInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    if (returnValue)
+    {
+        AddToUsesVec(uses, returnValue);
+    }
+    return uses;
 }
 
 CaseTarget::CaseTarget() : caseValue(nullptr), targetLabelId(-1), targetBlock(nullptr)
@@ -778,8 +860,20 @@ void SwitchInstruction::ReplaceValue(Value* use, Value* value)
     }
 }
 
+std::vector<Instruction*> SwitchInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, cond);
+    for (const CaseTarget& caseTarget : caseTargets)
+    {
+        AddToUsesVec(uses, caseTarget.caseValue);
+    }
+    return uses;
+}
+
 ValueInstruction::ValueInstruction(const soul::ast::Span& span_, RegValue* result_, OpCode opCode_) : Instruction(span_, result_->GetType(), opCode_), result(result_)
 {
+    result->SetInst(this);
 }
 
 ValueInstruction::~ValueInstruction()
@@ -814,6 +908,13 @@ void UnaryInstruction::ReplaceValue(Value* use, Value* value)
         operand = value;
         cmajor::masm::intermediate::AddUser(this, operand);
     }
+}
+
+std::vector<Instruction*> UnaryInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, operand);
+    return uses;
 }
 
 void UnaryInstruction::WriteArg(util::CodeFormatter& formatter)
@@ -1146,6 +1247,14 @@ void BinaryInstruction::ReplaceValue(Value* use, Value* value)
         right = value;
         cmajor::masm::intermediate::AddUser(this, right);
     }
+}
+
+std::vector<Instruction*> BinaryInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, left);
+    AddToUsesVec(uses, right);
+    return uses;
 }
 
 void BinaryInstruction::WriteArgs(util::CodeFormatter& formatter)
@@ -1580,6 +1689,13 @@ void LoadInstruction::ReplaceValue(Value* use, Value* value)
     }
 }
 
+std::vector<Instruction*> LoadInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, ptr);
+    return uses;
+}
+
 ElemAddrInstruction::ElemAddrInstruction(const soul::ast::Span& span_, RegValue* result_, Value* ptr_, Value* indexValue_) :
     ValueInstruction(span_, result_, OpCode::elemaddr), ptr(ptr_), indexValue(indexValue_)
 {
@@ -1655,6 +1771,14 @@ void ElemAddrInstruction::ReplaceValue(Value* use, Value* value)
     }
 }
 
+std::vector<Instruction*> ElemAddrInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, ptr);
+    AddToUsesVec(uses, indexValue);
+    return uses;
+}
+
 PtrOffsetInstruction::PtrOffsetInstruction(const soul::ast::Span& span_, RegValue* result_, Value* ptr_, Value* offset_) :
     ValueInstruction(span_, result_, OpCode::ptroffset), ptr(ptr_), offset(offset_)
 {
@@ -1711,6 +1835,14 @@ void PtrOffsetInstruction::ReplaceValue(Value* use, Value* value)
     }
 }
 
+std::vector<Instruction*> PtrOffsetInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, ptr);
+    AddToUsesVec(uses, offset);
+    return uses;
+}
+
 PtrDiffInstruction::PtrDiffInstruction(const soul::ast::Span& span_, RegValue* result_, Value* leftPtr_, Value* rightPtr_) :
     ValueInstruction(span_, result_, OpCode::ptrdiff), leftPtr(leftPtr_), rightPtr(rightPtr_)
 {
@@ -1765,6 +1897,14 @@ void PtrDiffInstruction::ReplaceValue(Value* use, Value* value)
         rightPtr = value;
         cmajor::masm::intermediate::AddUser(this, rightPtr);
     }
+}
+
+std::vector<Instruction*> PtrDiffInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, leftPtr);
+    AddToUsesVec(uses, rightPtr);
+    return uses;
 }
 
 FunctionCallInstruction::FunctionCallInstruction(const soul::ast::Span& span_, RegValue* result_, Value* callee_) :
@@ -1846,6 +1986,17 @@ void FunctionCallInstruction::Write(util::CodeFormatter& formatter)
     formatter.Write(callee->ToString());
 }
 
+std::vector<Instruction*> FunctionCallInstruction::Uses() const
+{
+    std::vector<Instruction*> uses;
+    AddToUsesVec(uses, callee);
+    for (const auto& arg : args)
+    {
+        AddToUsesVec(uses, arg);
+    }
+    return uses;
+}
+
 BlockValue::BlockValue(Value* value_, BasicBlock* block_) : value(value_), blockId(block_->Id()), block(block_)
 {
 }
@@ -1875,6 +2026,16 @@ void NoOperationInstruction::Write(util::CodeFormatter& formatter)
 
 BasicBlock::BasicBlock(const soul::ast::Span& span_, int32_t id_) : span(span_), id(id_), instructions(this)
 {
+}
+
+void BasicBlock::Check()
+{
+    Instruction* inst = FirstInstruction();
+    while (inst)
+    {
+        inst->Check();
+        inst = inst->Next();
+    }
 }
 
 void BasicBlock::Accept(Visitor& visitor)
@@ -1925,6 +2086,12 @@ std::string BasicBlock::Name() const
     {
         return std::to_string(id);
     }
+}
+
+bool BasicBlock::IsLast() const
+{
+    Function* fn = Parent();
+    return this == fn->LastBasicBlock();
 }
 
 void BasicBlock::AddInstruction(Instruction* instruction, bool mapInstruction)
@@ -2078,6 +2245,16 @@ Function::Function(const soul::ast::Span& span_, FunctionType* type_, const std:
     if (definition_)
     {
         SetFlag(FunctionFlags::defined);
+    }
+}
+
+void Function::Check()
+{
+    BasicBlock* bb = FirstBasicBlock();
+    while (bb)
+    {
+        bb->Check();
+        bb = bb->Next();
     }
 }
 
@@ -2516,7 +2693,7 @@ void Function::Write(util::CodeFormatter& formatter)
     formatter.WriteLine("}");
 }
 
-Code::Code() : context(nullptr), currentFunction(nullptr), functions(this)
+Code::Code() : context(nullptr), currentFunction(nullptr), functions(this), totalFunctions(0)
 {
 }
 
@@ -2591,10 +2768,12 @@ Function* Code::AddFunctionDeclaration(const soul::ast::Span& span, FunctionType
 
 void Code::VisitFunctions(Visitor& visitor)
 {
+    totalFunctions = 0;
     Function* function = FirstFunction();
     while (function)
     {
         function->Accept(visitor);
+        ++totalFunctions;
         function = function->Next();
     }
 }

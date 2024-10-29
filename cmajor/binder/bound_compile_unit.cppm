@@ -145,8 +145,10 @@ public:
     void SetCanReuse(cmajor::symbols::FunctionSymbol* functionSymbol);
     void SetLatestIdentifier(cmajor::ast::IdentifierNode* latestIdentifierNode_) { latestIdentifierNode = latestIdentifierNode_; }
     cmajor::ast::IdentifierNode* GetLatestIdentifier() { return latestIdentifierNode; }
-    void AddDeferredFullInstantiationRequest(cmajor::ast::FullInstantiationRequestNode* fullInstantiationRequestNode);
-    std::vector<std::unique_ptr<cmajor::ast::FullInstantiationRequestNode>> GetDeferredInstantiationRequests();
+    int TotalFunctions() const { return totalFunctions; }
+    int FunctionsInlined() const { return functionsInlined; }
+    void SetTotal(int n) { totalFunctions = n; }
+    void SetInlined(int n) { functionsInlined = n; }
 private:
     cmajor::symbols::Module& module;
     util::uuid moduleId;
@@ -202,7 +204,8 @@ private:
     std::vector<std::unique_ptr<cmajor::symbols::FunctionSymbol>> allCompileUnitInitFunctionSymbols;
     cmajor::symbols::TypeSymbol* traceEntryTypeSymbol;
     cmajor::symbols::TypeSymbol* traceGuardTypeSymbol;
-    std::vector<std::unique_ptr<cmajor::ast::FullInstantiationRequestNode>> deferredFullInstantiationRequests;
+    int totalFunctions;
+    int functionsInlined;
 };
 
 } // namespace cmajor::binder

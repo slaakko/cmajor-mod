@@ -4,6 +4,7 @@
 // =================================
 
 using System;
+using System.Collections;
 using scmlg.parser;
 using scmlg.ast;
 
@@ -72,6 +73,101 @@ namespace scmlg
             return Result<bool>(ErrorId(genResult.GetErrorId()));
         }
         scmlgFile->AddTokenFile(result.Value().Release());
+        return Result<bool>(true);
+    }
+
+    public Result<bool> GenerateTokenMapFile(scmlg.ast.ScmlgFile* scmlgFile, const string& scmlgVersion, bool verbose)
+    {
+        string cmFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(scmlgFile->FilePath()), "tokenmap.cm");
+        auto cmFileResult = System.IO.File.CreateText(cmFilePath);
+        if (cmFileResult.Error())
+        {
+            return Result<bool>(cmFileResult.GetErrorId());
+        }
+        string namespaceName;
+        System.IO.StreamWriter& writer = cmFileResult.Value();
+        System.Text.CodeFormatter formatter(writer);
+        Map<long, string> tokenMap;
+        int n = cast<int>(scmlgFile->TokenFiles().Count());
+        for (int i = 0; i < n; ++i)
+        {
+            TokenFile* tokenFile = scmlgFile->TokenFiles()[i].Get();
+            TokenCollection* tokenCollection = tokenFile->GetTokenCollection();
+            if (namespaceName.IsEmpty())
+            {
+                namespaceName = tokenCollection->Name();
+            }
+            int nt = cast<int>(tokenCollection->Tokens().Count());
+            for (int i = 0; i < nt; ++i)
+            {
+                Token* token = tokenCollection->Tokens()[i].Get();
+                tokenMap[token->Id()] = token->Name();
+            }
+        }
+        formatter << "using System;" << endl();
+        formatter << "using System.Collections;" << endl() << endl();
+        formatter << "namespace " << namespaceName << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "public class TokenMap" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "static TokenMap() : instance(new TokenMap())" << endl();
+        formatter << "{" << endl();
+        formatter << "}" << endl();
+        formatter << "public static TokenMap& Instance()" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "return *instance;" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << "public string TokenName(long tokenId) const" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "auto it = tokenMap.Find(tokenId);" << endl();
+        formatter << "if (it != tokenMap.End())" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "return it->second;" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << "else" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "return \"unknown token id\";" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << "private TokenMap()" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        for (const Pair<long, string>& p : tokenMap)
+        {
+            Result<string> tokenNameResult = StringStr(p.second);
+            if (tokenNameResult.Error()) return Result<bool>(ErrorId(tokenNameResult.GetErrorId()));
+            string tokenName = Rvalue(tokenNameResult.Value());
+            formatter << "tokenMap[" << p.first << "] = \"" << tokenName << "\";" << endl();
+        }
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << "private static UniquePtr<TokenMap> instance;" << endl();
+        formatter << "private Map<long, string> tokenMap;" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter << endl();
+        formatter << "public string TokenName(long tokenId)" << endl();
+        formatter << "{" << endl();
+        formatter.IncIndent();
+        formatter << "return TokenMap.Instance().TokenName(tokenId);" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        formatter.DecIndent();
+        formatter << "}" << endl();
+        if (verbose)
+        {
+            Console.Out() << "==> " << cmFilePath << endl();
+        }
         return Result<bool>(true);
     }
 }

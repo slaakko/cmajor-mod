@@ -1,0 +1,14 @@
+project build;
+target=library;
+reference <../assembly/assembly.cmp>;
+reference <../binder/binder.cmp>;
+reference <../../soulcm/cm.ast/cm.ast.cmp>;
+reference <../../soulcm/cm.lexer/cm.lexer.cmp>;
+reference <../../soulcm/cm.parser/cm.parser.cmp>;
+reference <../codegen/codegen.cmp>;
+reference <../intermediate/intermediate.cmp>;
+reference <../symbols/symbols.cmp>;
+source <building.cm>;
+source <compiling.cm>;
+source <install.cm>;
+source <parsing.cm>;

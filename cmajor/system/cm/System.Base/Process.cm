@@ -1,0 +1,180 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+
+namespace System.Threading
+{
+    public class Process : IOBase
+    {
+        public enum Redirections : int
+        {
+            none = 0,
+            processStdIn = 1 << 0,
+            processStdOut = 1 << 1,
+            processStdErr = 1 << 2
+        }
+        public enum StdHandle : int
+        {
+            stdOut = 1, stdErr = 2
+        }
+        public Process(const string& command, Redirections redirections_) : redirections(redirections_)
+        {
+            int errorId = 0;
+            nativeProcess = RtmCreateProcess(command.Chars(), cast<int>(redirections), errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+            }
+        }
+        public ~Process()
+        {
+            if (nativeProcess != null)
+            {
+                RtmDeleteProcess(nativeProcess);
+            }
+        }
+        public Result<bool> Running()
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            if (RtmProcessRunning(nativeProcess, errorId))
+            {
+                return Result<bool>(true);
+            }
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(false);
+        }
+        public Result<bool> WaitForExit()
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            bool result = RtmProcessWaitForExit(nativeProcess, errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public Result<int> ExitCode()
+        {
+            if (Error())
+            {
+                return Result<int>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            int exitCode = RtmProcessExitCode(nativeProcess, errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<int>(ErrorId(errorId));
+            }
+            return Result<int>(exitCode);
+        }
+        public Result<bool> Terminate()
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            if (!RtmProcessTerminate(nativeProcess, errorId))
+            {
+                if (errorId > 0)
+                {
+                    SetErrorId(errorId);
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        public Result<bool> Eof(StdHandle handle)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            bool eof = RtmProcessEof(nativeProcess, cast<int>(handle), errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(eof);
+        }
+        public Result<string> ReadLine(StdHandle handle)
+        {
+            if (Error())
+            {
+                return Result<string>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            int stringHandle = RtmProcessReadLine(nativeProcess, cast<int>(handle), errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<string>(ErrorId(errorId));
+            }
+            string line = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+            return Result<string>(line);
+        }
+        public Result<string> ReadToEnd(StdHandle handle)
+        {
+            if (Error())
+            {
+                return Result<string>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            int stringHandle = RtmProcessReadToEnd(nativeProcess, cast<int>(handle), errorId);
+            if (errorId > 0)
+            {
+                SetErrorId(errorId);
+                return Result<string>(ErrorId(errorId));
+            }
+            string content = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+            return Result<string>(content);
+        }
+        public Result<bool> WriteLine(const string& line)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            if ((redirections & Redirections.processStdIn) != Redirections.none)
+            {
+                int errorId = 0;
+                if (!RtmProcessWriteLine(nativeProcess, line.Chars(), errorId))
+                {
+                    SetErrorId(errorId);
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                string errorMessage = "process stdin not redirected";
+                int errorId = AllocateError(errorMessage);
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        private void* nativeProcess;
+        private Redirections redirections;
+    }
+}

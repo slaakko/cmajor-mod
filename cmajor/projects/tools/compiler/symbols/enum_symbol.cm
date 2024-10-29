@@ -1,0 +1,170 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+
+namespace symbols
+{
+    public class EnumTypeSymbol : TypeSymbol
+    {
+        public EnumTypeSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.enumTypeSymbol, span_, name_), underlyingType(null)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"enum_type";
+        }
+        public inline TypeSymbol* UnderlyingType() const
+        {
+            return underlyingType;
+        }
+        public inline void SetUnderlyingType(TypeSymbol* underlyingType_)
+        {
+            underlyingType = underlyingType_;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return underlyingType->IrType(emitter);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be nothrow", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be throw", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("enumerated type cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        private TypeSymbol* underlyingType;
+    }
+
+    public class EnumConstantSymbol : Symbol
+    {
+        public EnumConstantSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.enumConstantSymbol, span_, name_), evaluating(false)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"enum_constant";
+        }
+        public inline TypeSymbol* Type() const
+        {
+            return cast<EnumTypeSymbol*>(Parent());
+        }
+        public inline Value* GetValue() const
+        {
+            return value.Get();
+        }
+        public inline void SetValue(Value* value_)
+        {
+            value.Reset(value_);
+        }
+        public void SetStrValue(const string& strValue_)
+        {
+            strValue = strValue_;
+        }
+        public inline const string& StrValue() const
+        {
+            return strValue;
+        }
+        public inline bool Evaluating() const
+        {
+            return evaluating;
+        }
+        public inline void SetEvaluating()
+        {
+            evaluating = true;
+        }
+        public inline void ResetEvaluating()
+        {
+            evaluating = false;
+        }
+        private UniquePtr<Value> value;
+        private bool evaluating;
+        private string strValue;
+    }
+}
+

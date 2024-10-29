@@ -1,0 +1,76 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public class ConversionTableEntry
+    {
+        public ConversionTableEntry(TypeSymbol* sourceType_, TypeSymbol* targetType_) : sourceType(sourceType_), targetType(targetType_)
+        {
+        }
+        public inline TypeSymbol* SourceType() const
+        {
+            return sourceType;
+        }
+        public inline TypeSymbol* TargetType() const
+        {
+            return targetType;
+        }
+        private TypeSymbol* sourceType;
+        private TypeSymbol* targetType;
+    }
+
+    public ulong GetHashCode(const ConversionTableEntry& entry)
+    {
+        return GetHashCode(entry.SourceType()->TypeId()) ^ GetHashCode(entry.TargetType()->TypeId());
+    }
+
+    public bool operator==(const ConversionTableEntry& left, const ConversionTableEntry& right)
+    {
+        return TypesEqual(left.SourceType(), right.SourceType()) && TypesEqual(left.TargetType(), right.TargetType());
+    }
+
+    public class ConversionTable
+    {
+        public void AddConversion(FunctionSymbol* conversion)
+        {
+            ConversionTableEntry entry(conversion->ConversionSourceType(), conversion->ConversionTargetType());
+            conversionMap[entry] = conversion;
+        }
+        public FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context)
+        {
+            TypeSymbol* sourcePlainType = sourceType->PlainType(context);
+            TypeSymbol* targetPlainType = targetType->PlainType(context);
+            ConversionTableEntry entry(sourcePlainType, targetPlainType);
+            auto it = conversionMap.Find(entry);
+            if (it != conversionMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void Add(UniquePtr<FunctionSymbol>&& conversion)
+        {
+            conversions.Add(conversion);
+        }
+        public void Import(const ConversionTable& that)
+        {
+            for (const auto& p : that.conversionMap)
+            {
+                ConversionTableEntry entry(p.first);
+                conversionMap[entry] = p.second;
+            }
+        }
+        private HashMap<ConversionTableEntry, FunctionSymbol*> conversionMap;
+        private List<UniquePtr<FunctionSymbol>> conversions;
+    }
+}
+

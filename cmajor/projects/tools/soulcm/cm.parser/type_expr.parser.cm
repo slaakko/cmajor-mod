@@ -10,6 +10,59 @@ namespace cm.parser
 {
     public static class TypeExprParser<LexerT>
     {
+        public static System.Result<System.UniquePtr<cm.ast.Node>> Parse(LexerT& lexer, cm.parser.Context* context)
+        {
+            System.UniquePtr<cm.ast.Node> value;
+            #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                auto result = lexer.Log()->WriteBeginRule(u"parse");
+                if (result.Error())
+                {
+                    return System.Result<System.UniquePtr<cm.ast.Node>>(System.ErrorId(result.GetErrorId())); 
+                }
+                lexer.Log()->IncIndent();
+            }
+            #endif
+            auto incResult3 = ++lexer; 
+            if (incResult3.Error())
+            {
+                return System.Result<System.UniquePtr<cm.ast.Node>>(System.ErrorId(incResult3.GetErrorId())); 
+            }
+            System.Result<System.Parsing.Match> matchResult = cm.parser.TypeExprParser<LexerT>.TypeExpr(lexer, context);
+            if (matchResult.Error())
+            {
+                return System.Result<System.UniquePtr<cm.ast.Node>>(System.ErrorId(matchResult.GetErrorId()));
+            }
+            System.Parsing.Match match = matchResult.Value();
+            value.Reset(cast<cm.ast.Node*>(match.value));
+            #if (DEBUG)
+            if (lexer.Log() != null)
+            {
+                lexer.Log()->DecIndent();
+                auto result = lexer.Log()->WriteEndRule(u"parse");
+                if (result.Error())
+                {
+                    return System.Result<System.UniquePtr<cm.ast.Node>>(System.ErrorId(result.GetErrorId())); 
+                }
+            }
+            #endif
+            if (match.hit)
+            {
+                if (*lexer == System.Lex.END_TOKEN)
+                {
+                    return System.Result<System.UniquePtr<cm.ast.Node>>(System.Rvalue(value)); 
+                }
+                else
+                {
+                    return System.Result<System.UniquePtr<cm.ast.Node>>(lexer.GetFarthestError()); 
+                }
+            }
+            else
+            {
+                return System.Result<System.UniquePtr<cm.ast.Node>>(lexer.GetFarthestError()); 
+            }
+        }
         public static System.Result<System.Parsing.Match> TypeExpr(LexerT& lexer, cm.parser.Context* context)
         {
             #if (DEBUG)

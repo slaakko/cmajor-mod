@@ -33,7 +33,7 @@ class Register : public Value
 public:
     Register();
     Register(RegisterKind kind_, RegisterGroupKind group_, int size_);
-    RegisterKind Kind() const { return kind; }
+    RegisterKind RegKind() const { return kind; }
     RegisterGroupKind Group() const { return group; }
     int Size() const { return size; }
     bool IsFloatingPointReg() const { return group >= RegisterGroupKind::xmm0 && group <= RegisterGroupKind::xmm15; }

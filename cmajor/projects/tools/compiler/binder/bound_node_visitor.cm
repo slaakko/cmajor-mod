@@ -1,0 +1,194 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+
+namespace binder
+{
+    public abstract class BoundNodeVisitor : EmittingDelegate
+    {
+        public BoundNodeVisitor()
+        {
+        }
+        public virtual void Visit(BoundCompileUnit& boundCompileUnit)
+        {
+        }
+        public virtual void Visit(BoundNamespace& boundNamespace)
+        {
+        }
+        public virtual void Visit(BoundClass& boundClass)
+        {
+        }
+        public virtual void Visit(BoundFunction& boundFunction)
+        {
+        }
+        public virtual void Visit(BoundSequenceStatement& boundSequenceStatement)
+        {
+        }
+        public virtual void Visit(BoundCompoundStatement& boundCompoundStatement)
+        {
+        }
+        public virtual void Visit(BoundReturnStatement& boundReturnStatement)
+        {
+        }
+        public virtual void Visit(BoundIfStatement& boundIfStatement)
+        {
+        }
+        public virtual void Visit(BoundWhileStatement& boundWhileStatement)
+        {
+        }
+        public virtual void Visit(BoundDoStatement& boundDoStatement)
+        {
+        }
+        public virtual void Visit(BoundForStatement& boundForStatement)
+        {
+        }
+        public virtual void Visit(BoundSwitchStatement& boundSwitchStatement)
+        {
+        }
+        public virtual void Visit(BoundCaseStatement& boundCaseStatement)
+        {
+        }
+        public virtual void Visit(BoundDefaultStatement& boundDefaultStatement)
+        {
+        }
+        public virtual void Visit(BoundGotoCaseStatement& boundGotoCaseStatement)
+        {
+        }
+        public virtual void Visit(BoundGotoDefaultStatement& boundGotoDefaultStatement)
+        {
+        }
+        public virtual void Visit(BoundBreakStatement& boundBreakStatement)
+        {
+        }
+        public virtual void Visit(BoundContinueStatement& boundContinueStatement)
+        {
+        }
+        public virtual void Visit(BoundGotoStatement& boundGotoStatement)
+        {
+        }
+        public virtual void Visit(BoundConstructionStatement& boundConstructionStatement)
+        {
+        }
+        public virtual void Visit(BoundAssignmentStatement& boundAssignmentStatement)
+        {
+        }
+        public virtual void Visit(BoundExpressionStatement& boundExpressionStatement)
+        {
+        }
+        public virtual void Visit(BoundInitializationStatement& boundInitializationStatement)
+        {
+        }
+        public virtual void Visit(BoundEmptyStatement& boundEmptyStatement)
+        {
+        }
+        public virtual void Visit(BoundSetVmtPtrStatement&  boundSetVmtPtrStatement)
+        {
+        }
+        public virtual void Visit(BoundParameter& boundParameter)
+        {
+        }
+        public virtual void Visit(BoundLocalVariable& boundLocalVariable)
+        {
+        }
+        public virtual void Visit(BoundMemberVariable& boundMemberVariable)
+        {
+        }
+        public virtual void Visit(BoundGlobalVariable& boundGlobalVariable)
+        {
+        }
+        public virtual void Visit(BoundConstant& boundConstant)
+        {
+        }
+        public virtual void Visit(BoundEnumConstant& boundEnumConstant)
+        {
+        }
+        public virtual void Visit(BoundLiteral& boundLiteral)
+        {
+        }
+        public virtual void Visit(BoundTemporary& boundTemporary)
+        {
+        }
+        public virtual void Visit(BoundSizeOfExpression& boundSizeOfExpression)
+        {
+        }
+        public virtual void Visit(BoundAddressOfExpression& boundAddressOfExpression)
+        {
+        }
+        public virtual void Visit(BoundDereferenceExpression& boundDeferenceExpression)
+        {
+        }
+        public virtual void Visit(BoundReferenceToPointerExpression& boundReferenceToPointerExpression)
+        {
+        }
+        public virtual void Visit(BoundFunctionCall& boundFunctionCall)
+        {
+        }
+        public virtual void Visit(BoundDelegateCall& boundDelegateCall)
+        {
+        }
+        public virtual void Visit(BoundClassDelegateCall& boundClassDelegateCall)
+        {
+        }
+        public virtual void Visit(BoundConstructExpression& boundConstructExpression)
+        {
+        }
+        public virtual void Visit(BoundConstructAndReturnTemporaryExpression& boundConstructAndReturnTemporaryExpression)
+        {
+        }
+        public virtual void Visit(BoundClassOrClassDelegateConversionResult& boundClassOrClassDelegateConversionResult)
+        {
+        }
+        public virtual void Visit(BoundConversion& boundConversion)
+        {
+        }
+        public virtual void Visit(BoundIsExpression& boundIsExpression)
+        {
+        }
+        public virtual void Visit(BoundAsExpression& boundAsExpression)
+        {
+        }
+        public virtual void Visit(BoundTypeNameExpression& boundTypeNameExpression)
+        {
+        }
+        public virtual void Visit(BoundBitcast& boundBitcast)
+        {
+        }
+        public virtual void Visit(BoundFunctionPtr& boundFunctionPtr)
+        {
+        }
+        public virtual void Visit(BoundDisjunction& boundDisjunction)
+        {
+        }
+        public virtual void Visit(BoundConjunction& boundConjunction)
+        {
+        }
+        public virtual void Visit(BoundTypeExpression& boundTypeExpression)
+        {
+        }
+        public virtual void Visit(BoundNamespaceExpression& boundNamespaceExpression)
+        {
+        }
+        public virtual void Visit(BoundFunctionGroupExpression& boundFunctionGroupExpression)
+        {
+        }
+        public virtual void Visit(BoundMemberExpression& boundMemberExpression)
+        {
+        }
+        public virtual void Visit(BoundAtomicConstraint& boundAtomicConstraint)
+        {
+        }
+        public virtual void Visit(BoundDisjunctiveConstraint& boundDisjunctiveConstraint)
+        {
+        }
+        public virtual void Visit(BoundConjunctiveConstraint& boundConjunctivecConstraint)
+        {
+        }
+        public virtual void Visit(BoundConcept& boundConcept)
+        {
+        }
+    }
+}

@@ -1,0 +1,16 @@
+public class delegate void ClsDlg();
+
+public class Foo
+{
+    public void foo()
+    {
+    }
+}
+
+void main()
+{
+    Foo f;
+    ClsDlg clsDlg;
+    clsDlg = f.foo;
+    clsDlg();
+}

@@ -5,6 +5,7 @@
 
 module cmajor.build.main.unit;
 
+import cmajor.build.resources;
 import cmajor.binder;
 import cmajor.backend;
 import cmajor.ir.emitting.context;
@@ -1004,6 +1005,7 @@ void GenerateMainUnitMasmWindowsGUI(cmajor::symbols::Module* rootModule, std::ve
 
 void GenerateMainUnit(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths, std::vector<std::string>& cppFilePaths)
 {
+    std::lock_guard<std::recursive_mutex> lock(GetResourceLock());
     switch (project->GetTarget())
     {
         case cmajor::ast::Target::program:

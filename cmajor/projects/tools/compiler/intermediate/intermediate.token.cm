@@ -1,0 +1,93 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/compiler/intermediate/intermediate.token' using SoulCm lexer generator scmlg version 5.0.0
+
+using System;
+
+namespace intermediate.token
+{
+    public const long tokenSetID = 1047889579;
+
+    public const long ID = (tokenSetID << 32) | 1;
+    public const long TYPES = (tokenSetID << 32) | 2;
+    public const long DATA = (tokenSetID << 32) | 3;
+    public const long FUNCTION = (tokenSetID << 32) | 4;
+    public const long EXTERN = (tokenSetID << 32) | 5;
+    public const long INLINE = (tokenSetID << 32) | 6;
+    public const long METADATA = (tokenSetID << 32) | 7;
+    public const long STORE = (tokenSetID << 32) | 8;
+    public const long ARG = (tokenSetID << 32) | 9;
+    public const long JMP = (tokenSetID << 32) | 10;
+    public const long BRANCH = (tokenSetID << 32) | 11;
+    public const long CALL = (tokenSetID << 32) | 12;
+    public const long RET = (tokenSetID << 32) | 13;
+    public const long SWITCH = (tokenSetID << 32) | 14;
+    public const long NOP = (tokenSetID << 32) | 15;
+    public const long NOT = (tokenSetID << 32) | 16;
+    public const long NEG = (tokenSetID << 32) | 17;
+    public const long SIGNEXTEND = (tokenSetID << 32) | 18;
+    public const long ZEROEXTEND = (tokenSetID << 32) | 19;
+    public const long FPEXTEND = (tokenSetID << 32) | 20;
+    public const long TRUNCATE = (tokenSetID << 32) | 21;
+    public const long BITCAST = (tokenSetID << 32) | 22;
+    public const long INTTOFLOAT = (tokenSetID << 32) | 23;
+    public const long FLOATTOINT = (tokenSetID << 32) | 24;
+    public const long INTTOPTR = (tokenSetID << 32) | 25;
+    public const long PTRTOINT = (tokenSetID << 32) | 26;
+    public const long ADD = (tokenSetID << 32) | 27;
+    public const long SUB = (tokenSetID << 32) | 28;
+    public const long MUL = (tokenSetID << 32) | 29;
+    public const long DIV = (tokenSetID << 32) | 30;
+    public const long MOD = (tokenSetID << 32) | 31;
+    public const long AND = (tokenSetID << 32) | 32;
+    public const long OR = (tokenSetID << 32) | 33;
+    public const long XOR = (tokenSetID << 32) | 34;
+    public const long SHL = (tokenSetID << 32) | 35;
+    public const long SHR = (tokenSetID << 32) | 36;
+    public const long EQUAL = (tokenSetID << 32) | 37;
+    public const long LESS = (tokenSetID << 32) | 38;
+    public const long PARAM = (tokenSetID << 32) | 39;
+    public const long LOCAL = (tokenSetID << 32) | 40;
+    public const long LOAD = (tokenSetID << 32) | 41;
+    public const long ELEMADDR = (tokenSetID << 32) | 42;
+    public const long PTROFFSET = (tokenSetID << 32) | 43;
+    public const long PTRDIFF = (tokenSetID << 32) | 44;
+    public const long TYPE = (tokenSetID << 32) | 45;
+    public const long OFFSET = (tokenSetID << 32) | 46;
+    public const long SIZE = (tokenSetID << 32) | 47;
+    public const long ALIGNMENT = (tokenSetID << 32) | 48;
+    public const long VOID = (tokenSetID << 32) | 49;
+    public const long BOOL = (tokenSetID << 32) | 50;
+    public const long SBYTE = (tokenSetID << 32) | 51;
+    public const long BYTE = (tokenSetID << 32) | 52;
+    public const long SHORT = (tokenSetID << 32) | 53;
+    public const long USHORT = (tokenSetID << 32) | 54;
+    public const long INT = (tokenSetID << 32) | 55;
+    public const long UINT = (tokenSetID << 32) | 56;
+    public const long LONG = (tokenSetID << 32) | 57;
+    public const long ULONG = (tokenSetID << 32) | 58;
+    public const long FLOAT = (tokenSetID << 32) | 59;
+    public const long DOUBLE = (tokenSetID << 32) | 60;
+    public const long TRUE = (tokenSetID << 32) | 61;
+    public const long FALSE = (tokenSetID << 32) | 62;
+    public const long NULL_TOKEN = (tokenSetID << 32) | 63;
+    public const long CONV = (tokenSetID << 32) | 64;
+    public const long LPAREN = (tokenSetID << 32) | 65;
+    public const long RPAREN = (tokenSetID << 32) | 66;
+    public const long COMMA = (tokenSetID << 32) | 67;
+    public const long LBRACE = (tokenSetID << 32) | 68;
+    public const long RBRACE = (tokenSetID << 32) | 69;
+    public const long AST = (tokenSetID << 32) | 70;
+    public const long COLON = (tokenSetID << 32) | 71;
+    public const long SEMICOLON = (tokenSetID << 32) | 72;
+    public const long LBRACKET = (tokenSetID << 32) | 73;
+    public const long RBRACKET = (tokenSetID << 32) | 74;
+    public const long ASSIGN = (tokenSetID << 32) | 75;
+    public const long AT = (tokenSetID << 32) | 76;
+    public const long DOLLAR = (tokenSetID << 32) | 77;
+    public const long EXCLAMATION = (tokenSetID << 32) | 78;
+    public const long TYPEID = (tokenSetID << 32) | 79;
+    public const long CLSID = (tokenSetID << 32) | 80;
+    public const long STRING = (tokenSetID << 32) | 81;
+    public const long NUMBER = (tokenSetID << 32) | 82;
+    public const long HEXNUM = (tokenSetID << 32) | 83;
+
+} // intermediate.token

@@ -1,0 +1,40 @@
+using System;
+
+public class Printer
+{
+    public virtual void Print()
+    {
+    }
+}
+
+public class Default
+{
+    public static void Print()
+    {
+        Console.Out() << "default" << endl();
+    }
+}
+
+public class Virtual
+{
+    public static void Print()
+    {
+        Console.Out() << "virtual" << endl();
+    }
+}
+
+public class TemplatePrinter<T> : Printer
+{
+    public override void Print()
+    {
+        T.Print();
+    }
+}
+
+void main()
+{
+    TemplatePrinter<Default> defaultPrinter;
+    defaultPrinter.Print();
+    TemplatePrinter<Virtual> virtualPrinter;
+    virtualPrinter.Print();
+}

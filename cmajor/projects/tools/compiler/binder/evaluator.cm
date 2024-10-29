@@ -1,0 +1,2809 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public int MakeCannotEvaluateStaticallyError(Node* node)
+    {
+        return MakeError("cannot evaluate statically", node->GetFullSpan());
+    }
+
+    public delegate Result<UniquePtr<Value>> BinaryOperatorFn(Value* left, Value* right, Node* node);
+
+    public delegate Result<UniquePtr<Value>> UnaryOperatorFn(Value* operand, Node* node);
+
+    public Result<UniquePtr<Value>> NotSupported(Value* subject, Node* node)
+    {
+        int errorId = MakeError("operation not supported for type " + ValueKindStr(subject->Kind()), node->GetFullSpan());
+        return Result<UniquePtr<Value>>(ErrorId(errorId));
+    }
+
+    public Result<UniquePtr<Value>> NotSupported(Value* left, Value* right, Node* node)
+    {
+        int errorId = MakeError("operation not supported for types " + ValueKindStr(left->Kind()) + " and " + ValueKindStr(right->Kind()), node->GetFullSpan());
+        return Result<UniquePtr<Value>>(ErrorId(errorId));
+    }
+
+    public Result<UniquePtr<Value>> BinaryEvaluate<ValueT, Op>(Value* left, Value* right, Op op, Node* node)
+    {
+        ValueT* leftCasted = cast<ValueT*>(left);
+        ValueT* rightCasted = cast<ValueT*>(right);
+        return Result<UniquePtr<Value>>(UniquePtr<Value>(new ValueT(node->GetSpan(), op(leftCasted->GetValue(), rightCasted->GetValue()))));
+    }
+
+    public Result<UniquePtr<Value>> BinaryPredEvaluate<ValueT, Op>(Value* left, Value* right, Op op, Node* node)
+    {
+        ValueT* leftCasted = cast<ValueT*>(left);
+        ValueT* rightCasted = cast<ValueT*>(right);
+        return Result<UniquePtr<Value>>(UniquePtr<Value>(new BoolValue(node->GetSpan(), op(leftCasted->GetValue(), rightCasted->GetValue()))));
+    }
+
+    public Result<UniquePtr<Value>> UnaryEvaluate<ValueT, Op>(Value* subject, Op op, Node* node)
+    {
+        ValueT* subjectCasted = cast<ValueT*>(subject);
+        return Result<UniquePtr<Value>>(UniquePtr<Value>(new ValueT(node->GetSpan(), op(subjectCasted->GetValue()))));
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateDisjunction<ValueT>(Value* left, Value* right, Node* node)
+    {
+         return BinaryEvaluate<ValueT>(left, right, LogicalOr<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateConjunction<ValueT>(Value* left, Value* right, Node* node)
+    {
+         return BinaryEvaluate<ValueT>(left, right, LogicalAnd<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateBitOr<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, BitOr<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateBitXor<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, BitXor<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateBitAnd<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, BitAnd<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateShiftLeft<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, ShiftLeft<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateShiftRight<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, ShiftRight<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateAdd<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, Plus<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateSub<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, Minus<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateMul<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, Multiplies<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateDiv<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, Divides<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateMod<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryEvaluate<ValueT>(left, right, Remainder<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateEqual<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryPredEvaluate<ValueT>(left, right, EqualTo<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateNotEqual<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryPredEvaluate<ValueT>(left, right, NotEqualTo<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateLess<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryPredEvaluate<ValueT>(left, right, Less<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateGreater<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryPredEvaluate<ValueT>(left, right, Greater<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateLessEqual<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryPredEvaluate<ValueT>(left, right, LessOrEqualTo<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateGreaterEqual<ValueT>(Value* left, Value* right, Node* node)
+    {
+        return BinaryPredEvaluate<ValueT>(left, right, GreaterOrEqualTo<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateNot<ValueT>(Value* operand, Node* node)
+    {
+        return UnaryEvaluate<ValueT>(operand, LogicalNot<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateUnaryPlus<ValueT>(Value* operand, Node* node)
+    {
+        return UnaryEvaluate<ValueT>(operand, Identity<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateUnaryMinus<ValueT>(Value* operand, Node* node)
+    {
+        return UnaryEvaluate<ValueT>(operand, Negate<ValueT.OperandType>(), node);
+    }
+
+    public inline Result<UniquePtr<Value>> EvaluateComplement<ValueT>(Value* operand, Node* node)
+    {
+        return UnaryEvaluate<ValueT>(operand, BitNot<ValueT.OperandType>(), node);
+    }
+
+    public UnaryOperatorFn GetUnaryOperatorFn(NodeType nodeType, ValueKind valueKind)
+    {
+        switch (nodeType)
+        {
+            case NodeType.notNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.boolValue:
+                    {
+                        return EvaluateNot<BoolValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.unaryPlusNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateUnaryPlus<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateUnaryPlus<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateUnaryPlus<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateUnaryPlus<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateUnaryPlus<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateUnaryPlus<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateUnaryPlus<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateUnaryPlus<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateUnaryPlus<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateUnaryPlus<DoubleValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.unaryMinusNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateUnaryMinus<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateUnaryMinus<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateUnaryMinus<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateUnaryMinus<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateUnaryMinus<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateUnaryMinus<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateUnaryMinus<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateUnaryMinus<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateUnaryMinus<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateUnaryMinus<DoubleValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.complementNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateComplement<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateComplement<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateComplement<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateComplement<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateComplement<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateComplement<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateComplement<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateComplement<ULongValue>;
+                    }
+                }
+                break;
+            }
+        }
+        return NotSupported;
+    }
+
+    public BinaryOperatorFn GetBinaryOperatorFn(NodeType nodeType, ValueKind valueKind)
+    {
+        switch (nodeType)
+        {
+            case NodeType.disjunctionNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.boolValue:
+                    {
+                        return EvaluateDisjunction<BoolValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.conjunctionNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.boolValue:
+                    {
+                        return EvaluateConjunction<BoolValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.bitOrNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateBitOr<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateBitOr<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateBitOr<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateBitOr<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateBitOr<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateBitOr<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateBitOr<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateBitOr<ULongValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.bitXorNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateBitXor<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateBitXor<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateBitXor<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateBitXor<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateBitXor<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateBitXor<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateBitXor<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateBitXor<ULongValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.bitAndNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateBitAnd<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateBitAnd<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateBitAnd<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateBitAnd<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateBitAnd<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateBitAnd<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateBitAnd<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateBitAnd<ULongValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.shiftLeftNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateShiftLeft<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateShiftLeft<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateShiftLeft<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateShiftLeft<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateShiftLeft<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateShiftLeft<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateShiftLeft<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateShiftLeft<ULongValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.shiftRightNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateShiftRight<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateShiftRight<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateShiftRight<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateShiftRight<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateShiftRight<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateShiftRight<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateShiftRight<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateShiftRight<ULongValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.addNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateAdd<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateAdd<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateAdd<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateAdd<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateAdd<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateAdd<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateAdd<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateAdd<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateAdd<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateAdd<DoubleValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.subNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateSub<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateSub<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateSub<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateSub<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateSub<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateSub<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateSub<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateSub<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateSub<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateSub<DoubleValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.mulNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateMul<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateMul<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateMul<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateMul<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateMul<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateMul<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateMul<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateMul<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateMul<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateMul<DoubleValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.divNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateDiv<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateDiv<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateDiv<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateDiv<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateDiv<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateDiv<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateDiv<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateDiv<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateDiv<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateDiv<DoubleValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.remNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateMod<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateMod<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateMod<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateMod<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateMod<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateMod<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateMod<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateMod<ULongValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.equalNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.boolValue:
+                    {
+                        return EvaluateEqual<BoolValue>;
+                    }
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateEqual<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateEqual<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateEqual<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateEqual<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateEqual<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateEqual<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateEqual<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateEqual<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateEqual<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateEqual<DoubleValue>;
+                    }
+                    case ValueKind.charValue:
+                    {
+                        return EvaluateEqual<CharValue>;
+                    }
+                    case ValueKind.wcharValue:
+                    {
+                        return EvaluateEqual<WCharValue>;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return EvaluateEqual<UCharValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.notEqualNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.boolValue:
+                    {
+                        return EvaluateNotEqual<BoolValue>;
+                    }
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateNotEqual<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateNotEqual<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateNotEqual<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateNotEqual<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateNotEqual<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateNotEqual<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateNotEqual<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateNotEqual<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateNotEqual<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateNotEqual<DoubleValue>;
+                    }
+                    case ValueKind.charValue:
+                    {
+                        return EvaluateNotEqual<CharValue>;
+                    }
+                    case ValueKind.wcharValue:
+                    {
+                        return EvaluateNotEqual<WCharValue>;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return EvaluateNotEqual<UCharValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.lessNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateLess<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateLess<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateLess<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateLess<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateLess<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateLess<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateLess<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateLess<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateLess<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateLess<DoubleValue>;
+                    }
+                    case ValueKind.charValue:
+                    {
+                        return EvaluateLess<CharValue>;
+                    }
+                    case ValueKind.wcharValue:
+                    {
+                        return EvaluateLess<WCharValue>;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return EvaluateLess<UCharValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.greaterNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateGreater<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateGreater<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateGreater<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateGreater<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateGreater<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateGreater<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateGreater<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateGreater<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateGreater<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateGreater<DoubleValue>;
+                    }
+                    case ValueKind.charValue:
+                    {
+                        return EvaluateGreater<CharValue>;
+                    }
+                    case ValueKind.wcharValue:
+                    {
+                        return EvaluateGreater<WCharValue>;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return EvaluateGreater<UCharValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.lessOrEqualNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateLessEqual<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateLessEqual<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateLessEqual<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateLessEqual<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateLessEqual<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateLessEqual<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateLessEqual<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateLessEqual<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateLessEqual<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateLessEqual<DoubleValue>;
+                    }
+                    case ValueKind.charValue:
+                    {
+                        return EvaluateLessEqual<CharValue>;
+                    }
+                    case ValueKind.wcharValue:
+                    {
+                        return EvaluateLessEqual<WCharValue>;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return EvaluateLessEqual<UCharValue>;
+                    }
+                }
+                break;
+            }
+            case NodeType.greaterOrEqualNode:
+            {
+                switch (valueKind)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return EvaluateGreaterEqual<SByteValue>;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return EvaluateGreaterEqual<ByteValue>;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return EvaluateGreaterEqual<ShortValue>;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return EvaluateGreaterEqual<UShortValue>;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return EvaluateGreaterEqual<IntValue>;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return EvaluateGreaterEqual<UIntValue>;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return EvaluateGreaterEqual<LongValue>;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return EvaluateGreaterEqual<ULongValue>;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return EvaluateGreaterEqual<FloatValue>;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return EvaluateGreaterEqual<DoubleValue>;
+                    }
+                    case ValueKind.charValue:
+                    {
+                        return EvaluateGreaterEqual<CharValue>;
+                    }
+                    case ValueKind.wcharValue:
+                    {
+                        return EvaluateGreaterEqual<WCharValue>;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return EvaluateGreaterEqual<UCharValue>;
+                    }
+                }
+                break;
+            }
+        }
+        return NotSupported;
+    }
+
+    public class Evaluator : Visitor
+    {
+        public Evaluator(BoundCompileUnit* boundCompileUnit_, ContainerScope* containerScope_, TypeSymbol* targetType_, BoundFunction* currentFunction_, bool doCast_) :
+            boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), context(boundCompileUnit->Context()),
+            module(boundCompileUnit->GetModule()), containerScope(containerScope_), targetType(targetType_), currentFunction(currentFunction_), doCast(doCast_), errorId(0)
+        {
+        }
+        public Result<UniquePtr<Value>> GetResult()
+        {
+            if (Error())
+            {
+                return Result<UniquePtr<Value>>(ErrorId(errorId));
+            }
+            else
+            {
+                return Result<UniquePtr<Value>>(Rvalue(value));
+            }
+        }
+        public void SetResult(Result<UniquePtr<Value>>& result)
+        {
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
+            else
+            {
+                value.Reset(result.Value().Release());
+            }
+        }
+        public override void Visit(FunctionNode& functionNode)
+        {
+            bool fileScopeAdded = false;
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&functionNode);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol->IsFunctionSymbol())
+            {
+                FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(symbol);
+                int n = cast<int>(functionSymbol->UsingNodes().Count());
+                if (n > 0)
+                {
+                    FileScope* fileScope = new FileScope();
+                    FileScope* prevFileScope = currentFileScope;
+                    currentFileScope = fileScope;
+                    boundCompileUnit->AddFileScope(fileScope);
+                    fileScopeAdded = true;
+                    for (int i = 0; i < n; ++i)
+                    {
+                        Node* usingNode = functionSymbol->UsingNodes()[i];
+                        usingNode->Accept(*this);
+                        if (Error()) return;
+                    }
+                    currentFileScope = prevFileScope;
+                }
+            }
+            bool prevReturned = returned;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = symbol->GetContainerScope();
+            DeclarationBlockSymbol* prevDeclarationBlock = currentDeclarationBlock;
+            DeclarationBlockSymbol declarationBlock(functionNode.GetSpan(), u"functionBlock");
+            currentDeclarationBlock = &declarationBlock;
+            declarationBlock.SetParent(containerScope->Container());
+            containerScope = declarationBlock.GetContainerScope();
+            int nt = cast<int>(functionNode.TemplateParameters().Count());
+            if (nt != templateTypeArguments.Count())
+            {
+                int errorId = MakeError("wrong number of function template type arguments", functionNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            for (int i = 0; i < nt; ++i)
+            {
+                TemplateParameterNode* templateParameterNode = functionNode.TemplateParameters()[i];
+                TypeSymbol* templateTypeArgument = templateTypeArguments[i];
+                BoundTemplateParameterSymbol* boundTemplateParameter = new BoundTemplateParameterSymbol(templateParameterNode->GetSpan(), templateParameterNode->Id()->Str());
+                boundTemplateParameter->SetType(templateTypeArgument);
+                declarationBlock.AddMember(boundTemplateParameter, context);
+            }
+            int n = cast<int>(functionNode.Parameters().Count());
+            if (n != argumentValues.Count())
+            {
+                int errorId = MakeError("wrong number of function arguments", functionNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                UniquePtr<Value> argumentValue = Rvalue(argumentValues[i]);
+                Result<TypeSymbol*> argumentTypeResult = argumentValue->Type(symbolTable, context);
+                if (argumentTypeResult.Error())
+                {
+                    SetErrorId(argumentTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* argumentType = argumentTypeResult.Value();
+                ParameterNode* parameterNode = functionNode.Parameters()[i];
+                VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), Rvalue(argumentValue));
+                variableValueSymbol->SetType(argumentType);
+                declarationBlock.AddMember(variableValueSymbol, context);
+            }
+            functionNode.Body()->Accept(*this);
+            if (Error()) return;
+            containerScope = prevContainerScope;
+            currentDeclarationBlock = prevDeclarationBlock;
+            if (fileScopeAdded)
+            {
+                boundCompileUnit->RemoveLastFileScope();
+            }
+            returned = prevReturned;
+        }
+        public override void Visit(NamespaceImportNode& namespaceImportNode)
+        {
+            if (currentFileScope != null)
+            {
+                Result<bool> result = currentFileScope->InstallNamespaceImport(containerScope, &namespaceImportNode);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(AliasNode& aliasNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&aliasNode);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsAliasTypeSymbol());
+            AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+            TypeSymbol* type = aliasTypeSymbol->Type();
+            EvaluateSymbol(type, &aliasNode);
+            if (Error()) return;
+            if (currentFileScope != null)
+            {
+                currentFileScope->InstallAlias(&aliasNode, type);
+            }
+        }
+        public override void Visit(CompoundStatementNode& compoundStatementNode)
+        {
+            DeclarationBlockSymbol* prevDeclarationBlock = currentDeclarationBlock;
+            DeclarationBlockSymbol declarationBlock(compoundStatementNode.GetSpan(), u"block");
+            currentDeclarationBlock = &declarationBlock;
+            ContainerScope* prevContainerScope = containerScope;
+            declarationBlock.SetParent(containerScope->Container());
+            containerScope = declarationBlock.GetContainerScope();
+            int n = cast<int>(compoundStatementNode.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statementNode = compoundStatementNode.Statements()[i];
+                statementNode->Accept(*this);
+                if (Error()) return;
+                if (returned || broke || continued)
+                {
+                    break;
+                }
+            }
+            containerScope = prevContainerScope;
+            currentDeclarationBlock = prevDeclarationBlock;
+        }
+        public override void Visit(LabeledStatementNode& labeledStatementNode)
+        {
+            labeledStatementNode.Stmt()->Accept(*this);
+        }
+        public override void Visit(ReturnStatementNode& returnStatementNode)
+        {
+            if (returnStatementNode.Expression() != null)
+            {
+                returnStatementNode.Expression()->Accept(*this);
+                if (Error()) return;
+            }
+            returned = true;
+        }
+        public override void Visit(IfStatementNode& ifStatementNode)
+        {
+            ifStatementNode.Condition()->Accept(*this);
+            if (Error()) return;
+            if (value->IsBoolValue())
+            {
+                BoolValue* condition = cast<BoolValue*>(value.Get());
+                if (condition->GetValue())
+                {
+                    ifStatementNode.ThenS()->Accept(*this);
+                    if (Error()) return;
+                }
+                else if (ifStatementNode.ElseS() != null)
+                {
+                    ifStatementNode.ElseS()->Accept(*this);
+                    if (Error()) return;
+                }
+            }
+            else
+            {
+                int errorId = MakeError("Boolean expression expected", ifStatementNode.Condition()->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(WhileStatementNode& whileStatementNode)
+        {
+            bool prevBroke = broke;
+            bool prevContinued = continued;
+            whileStatementNode.Condition()->Accept(*this);
+            if (Error()) return;
+            if (value->IsBoolValue())
+            {
+                BoolValue* condition = cast<BoolValue*>(value.Get());
+                while (condition->GetValue())
+                {
+                    whileStatementNode.Statement()->Accept(*this);
+                    if (Error()) return;
+                    if (returned)
+                    {
+                        broke = prevBroke;
+                        continued = prevContinued;
+                        return;
+                    }
+                    if (broke)
+                    {
+                        break;
+                    }
+                    if (continued)
+                    {
+                        continued = false;
+                    }
+                    whileStatementNode.Condition()->Accept(*this);
+                    if (Error()) return;
+                    if (value->IsBoolValue())
+                    {
+                        condition = cast<BoolValue*>(value.Get());
+                    }
+                    else
+                    {
+                        int errorId = MakeError("Boolean expression expected", whileStatementNode.Condition()->GetFullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                int errorId = MakeError("Boolean expression expected", whileStatementNode.Condition()->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            broke = prevBroke;
+            continued = prevContinued;
+        }
+        public override void Visit(DoStatementNode& doStatementNode)
+        {
+            bool prevBroke = broke;
+            bool prevContinued = continued;
+            bool loop = true;
+            while (loop)
+            {
+                doStatementNode.Statement()->Accept(*this);
+                if (Error()) return;
+                if (returned)
+                {
+                    broke = prevBroke;
+                    continued = prevContinued;
+                    return;
+                }
+                if (broke)
+                {
+                    break;
+                }
+                if (continued)
+                {
+                    continued = false;
+                }
+                doStatementNode.Condition()->Accept(*this);
+                if (Error()) return;
+                if (value->IsBoolValue())
+                {
+                    BoolValue* condition = cast<BoolValue*>(value.Get());
+                    loop = condition->GetValue();
+                }
+                else
+                {
+                    int errorId = MakeError("Boolean expression expected", doStatementNode.Condition()->GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            broke = prevBroke;
+            continued = prevContinued;
+        }
+        public override void Visit(ForStatementNode& forStatementNode)
+        {
+            bool prevBroke = broke;
+            bool prevContinued = continued;
+            DeclarationBlockSymbol* prevDeclarationBlock = currentDeclarationBlock;
+            DeclarationBlockSymbol declarationBlock(forStatementNode.GetSpan(), u"forBlock");
+            currentDeclarationBlock = &declarationBlock;
+            ContainerScope* prevContainerScope = containerScope;
+            declarationBlock.SetParent(containerScope->Container());
+            containerScope = declarationBlock.GetContainerScope();
+            forStatementNode.InitS()->Accept(*this);
+            if (Error()) return;
+            if (returned)
+            {
+                containerScope = prevContainerScope;
+                currentDeclarationBlock = prevDeclarationBlock;
+                broke = prevBroke;
+                continued = prevContinued;
+                return;
+            }
+            forStatementNode.Condition()->Accept(*this);
+            if (Error()) return;
+            if (value->IsBoolValue())
+            {
+                BoolValue* condition = cast<BoolValue*>(value.Get());
+                bool loop = condition->GetValue();
+                while (loop)
+                {
+                    forStatementNode.ActionS()->Accept(*this);
+                    if (Error()) return;
+                    if (returned)
+                    {
+                        containerScope = prevContainerScope;
+                        currentDeclarationBlock = prevDeclarationBlock;
+                        broke = prevBroke;
+                        continued = prevContinued;
+                        return;
+                    }
+                    if (broke)
+                    {
+                        break;
+                    }
+                    if (continued)
+                    {
+                        continued = false;
+                    }
+                    forStatementNode.LoopS()->Accept(*this);
+                    if (Error()) return;
+                    forStatementNode.Condition()->Accept(*this);
+                    if (Error()) return;
+                    if (value->IsBoolValue())
+                    {
+                        BoolValue* condition = cast<BoolValue*>(value.Get());
+                        loop = condition->GetValue();
+                    }
+                    else
+                    {
+                        int errorId = MakeError("Boolean expression expected", forStatementNode.Condition()->GetFullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                int errorId = MakeError("Boolean expression expected", forStatementNode.Condition()->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            containerScope = prevContainerScope;
+            currentDeclarationBlock = prevDeclarationBlock;
+            broke = prevBroke;
+            continued = prevContinued;
+        }
+        public override void Visit(BreakStatementNode& breakStatementNode)
+        {
+            broke = true;
+        }
+        public override void Visit(ContinueStatementNode& continueStatementNode)
+        {
+            continued = true;
+        }
+        public override void Visit(GotoStatementNode& gotoStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&gotoStatementNode));
+        }
+        public override void Visit(ConstructionStatementNode& constructionStatementNode)
+        {
+            Result<TypeSymbol*> typeResult = ResolveType(constructionStatementNode.TypeExpr(), boundCompileUnit, containerScope);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* type = typeResult.Value();
+            List<UniquePtr<Value>> values;
+            int n = cast<int>(constructionStatementNode.Arguments().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Node* argumentNode = constructionStatementNode.Arguments()[i];
+                argumentNode->Accept(*this);
+                if (Error()) return;
+                values.Add(Rvalue(value));
+            }
+            List<UniquePtr<BoundExpression>> arguments;
+            Result<bool> argumentResult = ValuesToLiterals(values, symbolTable, context, arguments);
+            if (argumentResult.Error())
+            {
+                SetErrorId(argumentResult.GetErrorId());
+                return;
+            }
+            arguments.Insert(arguments.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(constructionStatementNode.GetSpan(), type->AddPointer(context))));
+            List<FunctionScopeLookup> scopeLookups;
+            scopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            scopeLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            OverloadResolutionFlags flags = OverloadResolutionFlags.dontInstantiate;
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, scopeLookups, arguments,
+                boundCompileUnit, currentFunction, &constructionStatementNode, flags, templateArgumentTypes);
+            if (constructorCallResult.Error())
+            {
+                SetErrorId(constructorCallResult.GetErrorId());
+                return;
+            }
+            BoundFunctionCall* constructorCall = constructorCallResult.Value().Get();
+            List<UniquePtr<Value>> constructorArgumentValues;
+            Result<bool> result = ArgumentsToValues(constructorCall->Arguments(), true, &constructionStatementNode, constructorArgumentValues);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            FunctionSymbol* constructorSymbol = constructorCall->GetFunctionSymbol();
+            if (constructorSymbol->IsCompileTimePrimitiveFunction())
+            {
+                Result<UniquePtr<Value>> valueResult = constructorSymbol->Evaluate(constructorArgumentValues, null, &constructionStatementNode);
+                if (valueResult.Error())
+                {
+                    SetErrorId(valueResult.GetErrorId());
+                    return;
+                }
+                value = Rvalue(valueResult.Value());
+            }
+            else if (constructorSymbol->IsConstExpr())
+            {
+                Result<FunctionNode*> constructorNodeResult = boundCompileUnit->GetConstExprFunctionRepository()->GetFunctionNode(constructorSymbol);
+                if (constructorNodeResult.Error())
+                {
+                    SetErrorId(constructorNodeResult.GetErrorId());
+                    return;
+                }
+                FunctionNode* constructorNode = constructorNodeResult.Value();
+                argumentValues = Rvalue(constructorArgumentValues);
+                constructorNode->Accept(*this);
+                if (Error()) return;
+            }
+            else
+            {
+                SetErrorId(MakeCannotEvaluateStaticallyError(&constructionStatementNode));
+                return;
+            }
+            VariableValueSymbol* variableValue = new VariableValueSymbol(constructionStatementNode.GetSpan(), constructionStatementNode.Id()->Str(), Rvalue(value));
+            variableValue->SetType(type);
+            currentDeclarationBlock->AddMember(variableValue, context);
+        }
+        public override void Visit(DeleteStatementNode& deleteStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&deleteStatementNode));
+        }
+        public override void Visit(DestroyStatementNode& destroyStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&destroyStatementNode));
+        }
+        public override void Visit(AssignmentStatementNode& assignmentStatementNode)
+        {
+            bool prevLvalue = lvalue;
+            lvalue = true;
+            VariableValueSymbol* prevTargetValueSymbol = targetValueSymbol;
+            assignmentStatementNode.TargetExpr()->Accept(*this);
+            if (Error()) return;
+            VariableValueSymbol* target = targetValueSymbol;
+            targetValueSymbol = prevTargetValueSymbol;
+            lvalue = prevLvalue;
+            assignmentStatementNode.SourceExpr()->Accept(*this);
+            if (Error()) return;
+            List<UniquePtr<Value>> values;
+            values.Add(Rvalue(value));
+            List<UniquePtr<BoundExpression>> literals;
+            Result<bool> result = ValuesToLiterals(values, symbolTable, context, literals);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            literals.Insert(literals.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(assignmentStatementNode.GetSpan(), target->Type()->AddPointer(context))));
+            List<FunctionScopeLookup> scopeLookups;
+            scopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            scopeLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            OverloadResolutionFlags flags = OverloadResolutionFlags.dontInstantiate;
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> assignmentCallResult = ResolveOverload(u"operator=", containerScope, scopeLookups, literals,
+                boundCompileUnit, currentFunction, &assignmentStatementNode, flags, templateArgumentTypes);
+            if (assignmentCallResult.Error())
+            {
+                SetErrorId(assignmentCallResult.GetErrorId());
+                return;
+            }
+            BoundFunctionCall* assignmentCall = assignmentCallResult.Value().Get();
+            List<UniquePtr<Value>> argumentValues;
+            result = ArgumentsToValues(assignmentCall->Arguments(), true, &assignmentStatementNode, argumentValues);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
+            target->SetValue(argumentValues.Front().Release());
+        }
+        public override void Visit(ExpressionStatementNode& expressionStatementNode)
+        {
+            expressionStatementNode.Expression()->Accept(*this);
+        }
+        public override void Visit(EmptyStatementNode& emptyStatementNode)
+        {
+        }
+        public override void Visit(RangeForStatementNode& rangeForStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&rangeForStatementNode));
+        }
+        public override void Visit(SwitchStatementNode& switchStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&switchStatementNode));
+        }
+        public override void Visit(CaseStatementNode& caseStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&caseStatementNode));
+        }
+        public override void Visit(DefaultStatementNode& defaultStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&defaultStatementNode));
+        }
+        public override void Visit(GotoCaseStatementNode& gotoCaseStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&gotoCaseStatementNode));
+        }
+        public override void Visit(GotoDefaultStatementNode& gotoDefaultStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&gotoDefaultStatementNode));
+        }
+        public override void Visit(ThrowStatementNode& throwStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&throwStatementNode));
+        }
+        public override void Visit(TryStatementNode& tryStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&tryStatementNode));
+        }
+        public override void Visit(CatchNode& catchNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&catchNode));
+        }
+        public override void Visit(AssertStatementNode& assertStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&assertStatementNode));
+        }
+        public override void Visit(ConditionalCompilationPartNode& conditionalCompilationPartNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&conditionalCompilationPartNode));
+        }
+        public override void Visit(ConditionalCompilationDisjunctionNode& conditionalCompilationDisjunctionNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&conditionalCompilationDisjunctionNode));
+        }
+        public override void Visit(ConditionalCompilationConjunctionNode& conditionalCompilationConjunctionNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&conditionalCompilationConjunctionNode));
+        }
+        public override void Visit(ConditionalCompilationNotNode& conditionalCompilationNotNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&conditionalCompilationNotNode));
+        }
+        public override void Visit(ConditionalCompilationPrimaryNode& conditionalCompilationPrimaryNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&conditionalCompilationPrimaryNode));
+        }
+        public override void Visit(ConditionalCompilationStatementNode& conditionalCompilationStatementNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&conditionalCompilationStatementNode));
+        }
+        public override void Visit(BoolNode& boolNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&boolNode));
+        }
+        public override void Visit(SByteNode& sbyteNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&sbyteNode));
+        }
+        public override void Visit(ByteNode& byteNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&byteNode));
+        }
+        public override void Visit(ShortNode& shortNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&shortNode));
+        }
+        public override void Visit(UShortNode& ushortNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&ushortNode));
+        }
+        public override void Visit(IntNode& intNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&intNode));
+        }
+        public override void Visit(UIntNode& uintNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&uintNode));
+        }
+        public override void Visit(LongNode& longNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&longNode));
+        }
+        public override void Visit(ULongNode& ulongNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&ulongNode));
+        }
+        public override void Visit(FloatNode& floatNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&floatNode));
+        }
+        public override void Visit(DoubleNode& doubleNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&doubleNode));
+        }
+        public override void Visit(CharNode& charNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&charNode));
+        }
+        public override void Visit(WCharNode& wcharNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&wcharNode));
+        }
+        public override void Visit(UCharNode& ucharNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&ucharNode));
+        }
+        public override void Visit(VoidNode& voidNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&voidNode));
+        }
+        public override void Visit(AutoNode& autoNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&autoNode));
+        }
+        public override void Visit(CastNode& castNode)
+        {
+            Result<TypeSymbol*> typeResult = ResolveType(castNode.TargetTypeExpr(), boundCompileUnit, containerScope);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* type = typeResult.Value();
+            bool prevCast = doCast;
+            doCast = true;
+            castNode.SourceExpr()->Accept(*this);
+            if (Error()) return;
+            Result<Value*> result = value->As(type, true, &castNode);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            doCast = prevCast;
+            value.Reset(result.Value());
+        }
+        public override void Visit(ConstructNode& constructNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&constructNode));
+        }
+        public override void Visit(NewNode& newNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&newNode));
+        }
+        public override void Visit(ThisNode& thisNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&thisNode));
+        }
+        public override void Visit(BaseNode& baseNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&baseNode));
+        }
+        public override void Visit(ParenthesizedExpressionNode& parenthesizedExpressionNode)
+        {
+            parenthesizedExpressionNode.Subject()->Accept(*this);
+        }
+        public override void Visit(DisjunctionNode& disjunctionNode)
+        {
+            EvaluateBinOp(disjunctionNode);
+        }
+        public override void Visit(ConjunctionNode& conjunctionNode)
+        {
+            EvaluateBinOp(conjunctionNode);
+        }
+        public override void Visit(BitOrNode& bitOrNode)
+        {
+            EvaluateBinOp(bitOrNode);
+        }
+        public override void Visit(BitXorNode& bitXorNode)
+        {
+            EvaluateBinOp(bitXorNode);
+        }
+        public override void Visit(BitAndNode& bitAndNode)
+        {
+            EvaluateBinOp(bitAndNode);
+        }
+        public override void Visit(EqualNode& equalNode)
+        {
+            EvaluateBinOp(equalNode);
+        }
+        public override void Visit(NotEqualNode& notEqualNode)
+        {
+            EvaluateBinOp(notEqualNode);
+        }
+        public override void Visit(LessNode& lessNode)
+        {
+            EvaluateBinOp(lessNode);
+        }
+        public override void Visit(GreaterNode& greaterNode)
+        {
+            EvaluateBinOp(greaterNode);
+        }
+        public override void Visit(LessOrEqualNode& lessOrEqualNode)
+        {
+            EvaluateBinOp(lessOrEqualNode);
+        }
+        public override void Visit(GreaterOrEqualNode& greaterOrEqualNode)
+        {
+            EvaluateBinOp(greaterOrEqualNode);
+        }
+        public override void Visit(ShiftLeftNode& shiftLeftNode)
+        {
+            EvaluateBinOp(shiftLeftNode);
+        }
+        public override void Visit(ShiftRightNode& shiftRightNode)
+        {
+            EvaluateBinOp(shiftRightNode);
+        }
+        public override void Visit(AddNode& addNode)
+        {
+            EvaluateBinOp(addNode);
+        }
+        public override void Visit(SubNode& subNode)
+        {
+            EvaluateBinOp(subNode);
+        }
+        public override void Visit(MulNode& mulNode)
+        {
+            EvaluateBinOp(mulNode);
+        }
+        public override void Visit(DivNode& divNode)
+        {
+            EvaluateBinOp(divNode);
+        }
+        public override void Visit(RemNode& remNode)
+        {
+            EvaluateBinOp(remNode);
+        }
+        public override void Visit(NotNode& notNode)
+        {
+            EvaluateUnaryOp(notNode);
+        }
+        public override void Visit(UnaryPlusNode& unaryPlusNode)
+        {
+            EvaluateUnaryOp(unaryPlusNode);
+        }
+        public override void Visit(UnaryMinusNode& unaryMinusNode)
+        {
+            EvaluateUnaryOp(unaryMinusNode);
+        }
+        public override void Visit(ComplementNode& complementNode)
+        {
+            EvaluateUnaryOp(complementNode);
+        }
+        public override void Visit(IsNode& isNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&isNode));
+        }
+        public override void Visit(AsNode& asNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&asNode));
+        }
+        public override void Visit(IndexingNode& indexingNode)
+        {
+            indexingNode.Subject()->Accept(*this);
+            if (Error()) return;
+            if (value->IsArrayReferenceValue())
+            {
+                ArrayValue* arrayValue = cast<ArrayReferenceValue*>(value.Get())->GetArrayValue();
+                Result<TypeSymbol*> longTypeResult = symbolTable->GetTypeByName(u"long");
+                if (longTypeResult.Error())
+                {
+                    SetErrorId(longTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* longType = longTypeResult.Value();
+                Result<UniquePtr<Value>> valueResult = Evaluate(indexingNode.Index(), longType, containerScope, boundCompileUnit, currentFunction);
+                if (valueResult.Error())
+                {
+                    SetErrorId(valueResult.GetErrorId());
+                    return;
+                }
+                value = Rvalue(valueResult.Value());
+                #assert(value.Get()->IsLongValue());
+                LongValue* indexValue = cast<LongValue*>(value.Get());
+                long index = indexValue->GetValue();
+                if (index < 0 || index >= arrayValue->Elements().Count())
+                {
+                    SetErrorId(MakeError("array index out of range", indexingNode.GetFullSpan()));
+                    return;
+                }
+                Value* elementValue = arrayValue->Elements()[index].Get();
+                switch (elementValue->Kind())
+                {
+                    case ValueKind.arrayValue:
+                    {
+                        value.Reset(new ArrayReferenceValue(indexingNode.GetSpan(), cast<ArrayValue*>(elementValue)));
+                        break;
+                    }
+                    case ValueKind.structuredValue:
+                    {
+                        value.Reset(new StructureReferenceValue(indexingNode.GetSpan(), cast<StructureValue*>(elementValue)));
+                        break;
+                    }
+                    default:
+                    {
+                        value = UniquePtr<Value>(elementValue->Clone());
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                SetErrorId(MakeCannotEvaluateStaticallyError(&indexingNode));
+                return;
+            }
+        }
+        public override void Visit(InvokeNode& invokeNode)
+        {
+            List<UniquePtr<Value>> values;
+            int n = cast<int>(invokeNode.Arguments().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Node* arg = invokeNode.Arguments()[i];
+                arg->Accept(*this);
+                if (Error()) return;
+                values.Add(Rvalue(value));
+            }
+            invokeNode.Subject()->Accept(*this);
+            if (Error()) return;
+            if (value->IsFunctionGroupValue())
+            {
+                FunctionGroupValue* functionGroupValue = cast<FunctionGroupValue*>(value.Get());
+                FunctionGroupSymbol* functionGroup = functionGroupValue->FunctionGroup();
+                List<FunctionScopeLookup> functionScopeLookups;
+                if (functionGroupValue->QualifiedScope() != null)
+                {
+                    functionScopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base, functionGroupValue->QualifiedScope()));
+                }
+                else
+                {
+                    functionScopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    functionScopeLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                }
+                List<UniquePtr<BoundExpression>> arguments;
+                Result<bool> argumentResult = ValuesToLiterals(values, symbolTable, context, arguments);
+                if (argumentResult.Error())
+                {
+                    SetErrorId(argumentResult.GetErrorId());
+                    return;
+                }
+                OverloadResolutionFlags flags = OverloadResolutionFlags.dontInstantiate;
+                Result<UniquePtr<BoundFunctionCall>> functionCallResult = ResolveOverload(functionGroup->Name(), containerScope, functionScopeLookups, arguments,
+                    boundCompileUnit, currentFunction, &invokeNode, flags, functionGroupValue->TemplateTypeArguments());
+                bool memberFunctionCall = false;
+                if (functionCallResult.Error())
+                {
+                    if (currentClassType != null)
+                    {
+                        arguments.Insert(arguments.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), currentClassType->AddPointer(context))));
+                        functionScopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, currentClassType->GetContainerScope()));
+                        functionCallResult = ResolveOverload(functionGroup->Name(), containerScope, functionScopeLookups, arguments,
+                            boundCompileUnit, currentFunction, &invokeNode, flags, functionGroupValue->TemplateTypeArguments());
+                        if (functionCallResult.Error())
+                        {
+                            SetErrorId(MakeCannotEvaluateStaticallyError(&invokeNode));
+                            return;
+                        }
+                    }
+                }
+                BoundFunctionCall* boundFunctionCall = functionCallResult.Value().Get();
+                FunctionSymbol* functionSymbol = boundFunctionCall->GetFunctionSymbol();
+                if (functionSymbol->IsCompileTimePrimitiveFunction())
+                {
+                    Value* receiver = functionGroupValue->Receiver();
+                    bool skipFirst = receiver != null;
+                    List<UniquePtr<Value>> values;
+                    Result<bool> result = ArgumentsToValues(boundFunctionCall->Arguments(), skipFirst, &invokeNode, values);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
+                    Result<UniquePtr<Value>> evaluatedValueResult = functionSymbol->Evaluate(values, receiver, &invokeNode);
+                    if (evaluatedValueResult.Error())
+                    {
+                        SetErrorId(evaluatedValueResult.GetErrorId());
+                        return;
+                    }
+                    value = Rvalue(evaluatedValueResult.Value());
+                }
+                else if (functionSymbol->IsConstExpr())
+                {
+                    Result<FunctionNode*> functionNodeResult = boundCompileUnit->GetConstExprFunctionRepository()->GetFunctionNode(functionSymbol);
+                    if (functionNodeResult.Error())
+                    {
+                        SetErrorId(functionNodeResult.GetErrorId());
+                        return;
+                    }
+                    FunctionNode* functionNode = functionNodeResult.Value();
+                    Result<bool> result = CheckFunctionReturnPaths(functionSymbol, functionNode, containerScope, boundCompileUnit, currentFunction);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
+                    bool skipFirst = memberFunctionCall || functionGroupValue->Receiver() != null;
+                    List<UniquePtr<Value>> values;
+                    result = ArgumentsToValues(boundFunctionCall->Arguments(), skipFirst, &invokeNode, values);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
+                    ClassTypeSymbol* prevClassType = currentClassType;
+                    if (functionGroupValue->Receiver() != null && functionGroupValue->Receiver()->IsScopedValue())
+                    {
+                        ScopedValue* receiver = cast<ScopedValue*>(functionGroupValue->Receiver());
+                        if (receiver->Subject() != null)
+                        {
+                            Result<TypeSymbol*> typeResult = receiver->Subject()->Type(symbolTable, context);
+                            if (typeResult.Error())
+                            {
+                                SetErrorId(typeResult.GetErrorId());
+                                return;
+                            }
+                            TypeSymbol* type = typeResult.Value();
+                            if (type->IsClassTypeSymbol())
+                            {
+                                currentClassType = cast<ClassTypeSymbol*>(type);
+                            }
+                        }
+                    }
+                    templateTypeArguments = functionGroupValue->TemplateTypeArguments();
+                    argumentValues = Rvalue(values);
+                    functionNode->Accept(*this);
+                    if (Error()) return;
+                    currentClassType = prevClassType;
+                }
+                else
+                {
+                    IntrinsicFunction* intrinsic = functionSymbol->GetIntrinsic();
+                    if (intrinsic != null)
+                    {
+                        List<UniquePtr<Value>> values;
+                        Result<bool> result = ArgumentsToValues(boundFunctionCall->Arguments(), false, &invokeNode, values);
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
+                        Result<UniquePtr<Value>> valueResult = intrinsic->Evaluate(values, functionGroupValue->TemplateTypeArguments(), &invokeNode);
+                        if (valueResult.Error())
+                        {
+                            SetErrorId(valueResult.GetErrorId());
+                            return;
+                        }
+                        value = Rvalue(valueResult.Value());
+                    }
+                    else
+                    {
+                        SetErrorId(MakeCannotEvaluateStaticallyError(&invokeNode));
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                SetErrorId(MakeError("function group expected", invokeNode.GetFullSpan()));
+                return;
+            }
+        }
+        public override void Visit(SizeOfNode& sizeOfNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&sizeOfNode));
+        }
+        public override void Visit(TypeNameNode& typeNameNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&typeNameNode));
+        }
+        public override void Visit(TypeIdNode& typeIdNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&typeIdNode));
+        }
+        public override void Visit(BooleanLiteralNode& booleanLiteralNode)
+        {
+            value.Reset(new BoolValue(booleanLiteralNode.GetSpan(), booleanLiteralNode.Value()));
+        }
+        public override void Visit(SByteLiteralNode& sbyteLiteralNode)
+        {
+            value.Reset(new SByteValue(sbyteLiteralNode.GetSpan(), sbyteLiteralNode.Value()));
+        }
+        public override void Visit(ByteLiteralNode& byteLiteralNode)
+        {
+            value.Reset(new ByteValue(byteLiteralNode.GetSpan(), byteLiteralNode.Value()));
+        }
+        public override void Visit(ShortLiteralNode& shortLiteralNode)
+        {
+            value.Reset(new ShortValue(shortLiteralNode.GetSpan(), shortLiteralNode.Value()));
+        }
+        public override void Visit(UShortLiteralNode& ushortLiteralNode)
+        {
+            value.Reset(new UShortValue(ushortLiteralNode.GetSpan(), ushortLiteralNode.Value()));
+        }
+        public override void Visit(IntLiteralNode& intLiteralNode)
+        {
+            value.Reset(new IntValue(intLiteralNode.GetSpan(), intLiteralNode.Value()));
+        }
+        public override void Visit(UIntLiteralNode& uintLiteralNode)
+        {
+            value.Reset(new UIntValue(uintLiteralNode.GetSpan(), uintLiteralNode.Value()));
+        }
+        public override void Visit(LongLiteralNode& longLiteralNode)
+        {
+            value.Reset(new LongValue(longLiteralNode.GetSpan(), longLiteralNode.Value()));
+        }
+        public override void Visit(ULongLiteralNode& ulongLiteralNode)
+        {
+            value.Reset(new ULongValue(ulongLiteralNode.GetSpan(), ulongLiteralNode.Value()));
+        }
+        public override void Visit(FloatLiteralNode& floatLiteralNode)
+        {
+            value.Reset(new FloatValue(floatLiteralNode.GetSpan(), floatLiteralNode.Value()));
+        }
+        public override void Visit(DoubleLiteralNode& doubleLiteralNode)
+        {
+            value.Reset(new DoubleValue(doubleLiteralNode.GetSpan(), doubleLiteralNode.Value()));
+        }
+        public override void Visit(CharLiteralNode& charLiteralNode)
+        {
+            value.Reset(new CharValue(charLiteralNode.GetSpan(), charLiteralNode.Value()));
+        }
+        public override void Visit(WCharLiteralNode& wcharLiteralNode)
+        {
+            value.Reset(new WCharValue(wcharLiteralNode.GetSpan(), wcharLiteralNode.Value()));
+        }
+        public override void Visit(UCharLiteralNode& ucharLiteralNode)
+        {
+            value.Reset(new UCharValue(ucharLiteralNode.GetSpan(), ucharLiteralNode.Value()));
+        }
+        public override void Visit(StringLiteralNode& stringLiteralNode)
+        {
+            value.Reset(new StringValue(stringLiteralNode.GetSpan(), boundCompileUnit->Install(stringLiteralNode.Value()), stringLiteralNode.Value()));
+        }
+        public override void Visit(WStringLiteralNode& wstringLiteralNode)
+        {
+            value.Reset(new WStringValue(wstringLiteralNode.GetSpan(), boundCompileUnit->Install(wstringLiteralNode.Value()), wstringLiteralNode.Value()));
+        }
+        public override void Visit(UStringLiteralNode& ustringLiteralNode)
+        {
+            value.Reset(new UStringValue(ustringLiteralNode.GetSpan(), boundCompileUnit->Install(ustringLiteralNode.Value()), ustringLiteralNode.Value()));
+        }
+        public override void Visit(NullLiteralNode& nullLiteralNode)
+        {
+            value.Reset(new NullValue(nullLiteralNode.GetSpan()));
+        }
+        public override void Visit(ArrayLiteralNode& arrayLiteralNode)
+        {
+            if (!targetType->IsArrayTypeSymbol())
+            {
+                SetErrorId(MakeError("array type expected", arrayLiteralNode.GetFullSpan()));
+                return;
+            }
+            ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(targetType);
+            TypeSymbol* elementType = arrayType->ElementType();
+            List<UniquePtr<Value>> elementValues;
+            int n = cast<int>(arrayLiteralNode.Values().Count());
+            if (arrayType->Size() != -1 && arrayType->Size() != n)
+            {
+                Result<string> arrayTypeFullNameResult = ToUtf8(arrayType->FullName());
+                if (arrayTypeFullNameResult.Error())
+                {
+                    SetErrorId(arrayTypeFullNameResult.GetErrorId());
+                    return;
+                }
+                string arrayTypeFullName = Rvalue(arrayTypeFullNameResult.Value());
+                SetErrorId(MakeError("invalid length for array literal of type '" + arrayTypeFullName + "'", arrayLiteralNode.GetFullSpan()));
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                Result<UniquePtr<Value>> result = Evaluate(arrayLiteralNode.Values()[i], elementType, containerScope, boundCompileUnit, currentFunction);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                elementValues.Add(Rvalue(result.Value()));
+            }
+            if (arrayType->Size() == -1)
+            {
+                Result<ArrayTypeSymbol*> arrayTypeResult = symbolTable->MakeArrayType(context, arrayType->ElementType(), n);
+                if (arrayTypeResult.Error())
+                {
+                    SetErrorId(arrayTypeResult.GetErrorId());
+                    return;
+                }
+                arrayType = arrayTypeResult.Value();
+            }
+            value.Reset(new ArrayValue(arrayLiteralNode.GetSpan(), arrayType, Rvalue(elementValues)));
+        }
+        public override void Visit(StructuredLiteralNode& structuredLiteralNode)
+        {
+            if (!targetType->IsClassTypeSymbol())
+            {
+                SetErrorId(MakeError("class type expected", structuredLiteralNode.GetFullSpan()));
+                return;
+            }
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(targetType);
+            if (currentFunction == null)
+            {
+                if (classType->IsProject() && !classType->IsBound())
+                {
+                    Node* node = boundCompileUnit->GetSymbolTable()->GetNode(classType);
+                    if (node != null)
+                    {
+                        TypeBinder typeBinder(boundCompileUnit);
+                        typeBinder.SetContainerScope(containerScope);
+                        node->Accept(typeBinder);
+                    }
+                }
+            }
+            if (classType->IsLiteralClassType())
+            {
+                List<UniquePtr<Value>> memberValues;
+                int n = cast<int>(structuredLiteralNode.Members().Count());
+                if (classType->MemberVariables().Count() != n)
+                {
+                    Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+                    if (classTypeFullNameResult.Error())
+                    {
+                        SetErrorId(classTypeFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+                    SetErrorId(MakeError("wrong number of members variables for class literal of type '" + classTypeFullName + "'", structuredLiteralNode.GetFullSpan()));
+                    return;
+                }
+                for (int i = 0; i < n; ++i)
+                {
+                    TypeSymbol* memberType = classType->MemberVariables()[i]->Type();
+                    Result<UniquePtr<Value>> memberValueResult = Evaluate(structuredLiteralNode.Members()[i], memberType, containerScope, boundCompileUnit, currentFunction);
+                    if (memberValueResult.Error())
+                    {
+                        SetErrorId(memberValueResult.GetErrorId());
+                        return;
+                    }
+                    memberValues.Add(Rvalue(memberValueResult.Value()));
+                }
+                value.Reset(new StructureValue(structuredLiteralNode.GetSpan(), classType, Rvalue(memberValues)));
+            }
+            else
+            {
+                SetErrorId(MakeError("literal class type expected", structuredLiteralNode.GetFullSpan()));
+                return;
+            }
+        }
+        public override void Visit(IdentifierNode& identifierNode)
+        {
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol == null)
+            {
+                for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
+                {
+                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    if (symbolResult.Error())
+                    {
+                        SetErrorId(symbolResult.GetErrorId());
+                        return;
+                    }
+                    symbol = symbolResult.Value();
+                    if (symbol != null) break;
+                }
+            }
+            if (symbol != null)
+            {
+                qualifiedScope = null;
+                if (identifierNode.Str().Find('.') != -1)
+                {
+                    qualifiedScope = symbol->Parent()->GetContainerScope();
+                }
+                EvaluateSymbol(symbol, &identifierNode);
+            }
+            else
+            {
+                Result<string> symbolNameResult = ToUtf8(identifierNode.Str());
+                if (symbolNameResult.Error())
+                {
+                    SetErrorId(symbolNameResult.GetErrorId());
+                    return;
+                }
+                string symbolName = Rvalue(symbolNameResult.Value());
+                SetErrorId(MakeError("symbol '" + symbolName + "' not found", identifierNode.GetFullSpan()));
+                return;
+            }
+        }
+        public override void Visit(DotNode& dotNode)
+        {
+            dotNode.Subject()->Accept(*this);
+            if (Error()) return;
+            if (!value.IsNull())
+            {
+                switch (value->Kind())
+                {
+                    case ValueKind.arrayReferenceValue:
+                    {
+                        Result<TypeSymbol*> typeResult = cast<ArrayReferenceValue*>(value.Get())->GetArrayValue()->Type(symbolTable, context);
+                        if (typeResult.Error())
+                        {
+                            SetErrorId(typeResult.GetErrorId());
+                            return;
+                        }
+                        TypeSymbol* type = typeResult.Value();
+                        ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
+                        scopedValue->SetType(type);
+                        value.Reset(scopedValue);
+                        break;
+                    }
+                    case ValueKind.structureReferenceValue:
+                    {
+                        Result<TypeSymbol*> typeResult = cast<StructureReferenceValue*>(value.Get())->GetStructureValue()->Type(symbolTable, context);
+                        if (typeResult.Error())
+                        {
+                            SetErrorId(typeResult.GetErrorId());
+                            return;
+                        }
+                        TypeSymbol* type = typeResult.Value();
+                        ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
+                        scopedValue->SetType(type->AddPointer(context));
+                        scopedValue->SetSubject(value.Release());
+                        value.Reset(scopedValue);
+                        break;
+                    }
+                    case ValueKind.structuredValue:
+                    {
+                        Result<TypeSymbol*> typeResult = cast<StructureValue*>(value.Get())->Type(symbolTable, context);
+                        if (typeResult.Error())
+                        {
+                            SetErrorId(typeResult.GetErrorId());
+                            return;
+                        }
+                        TypeSymbol* type = typeResult.Value();
+                        ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
+                        scopedValue->SetType(type);
+                        value.Reset(scopedValue);
+                        break;
+                    }
+                }
+            }
+            if (!value.IsNull() && value->IsScopedValue())
+            {
+                ScopedValue* scopedValue = cast<ScopedValue*>(value.Get());
+                ContainerSymbol* containerSymbol = scopedValue->GetContainerSymbol();
+                if (containerSymbol->IsClassGroupSymbol())
+                {
+                    ClassGroupSymbol* classGroupSymbol = cast<ClassGroupSymbol*>(containerSymbol);
+                    containerSymbol = classGroupSymbol->GetClass(0);
+                    if (containerSymbol == null)
+                    {
+                        Result<string> classGroupNameResult = ToUtf8(classGroupSymbol->Name());
+                        if (classGroupNameResult.Error())
+                        {
+                            SetErrorId(classGroupNameResult.GetErrorId());
+                            return;
+                        }
+                        string classGroupName = Rvalue(classGroupNameResult.Value());
+                        int errorId = MakeError("nontemplate class not found from class group '" + classGroupName + "'", dotNode.GetFullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
+                }
+                ContainerScope* scope = containerSymbol->GetContainerScope();
+                qualifiedScope = scope;
+                Result<Symbol*> symbolResult = scope->Lookup(dotNode.MemberId()->Str());
+                if (symbolResult.Error())
+                {
+                    SetErrorId(symbolResult.GetErrorId());
+                    return;
+                }
+                Symbol* symbol = symbolResult.Value();
+                if (symbol != null)
+                {
+                    // todo
+                    EvaluateSymbol(symbol, &dotNode);
+                }
+                else
+                {
+                    Result<string> containerSymbolFullNameResult = ToUtf8(containerSymbol->FullName());
+                    if (containerSymbolFullNameResult.Error())
+                    {
+                        SetErrorId(containerSymbolFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string containerSymbolFullName = Rvalue(containerSymbolFullNameResult.Value());
+                    Result<string> memberNameResult = ToUtf8(dotNode.MemberId()->Str());
+                    if (memberNameResult.Error())
+                    {
+                        SetErrorId(memberNameResult.GetErrorId());
+                        return;
+                    }
+                    string memberName = Rvalue(memberNameResult.Value());
+                    int errorId = MakeError("symbol '" + containerSymbolFullName + "' does not have member '" + memberName + "'", dotNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            else
+            {
+                SetErrorId(MakeError("scoped value expected", dotNode.GetFullSpan()));
+                return;
+            }
+        }
+        public override void Visit(ArrowNode& arrowNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&arrowNode));
+        }
+
+        private void EvaluateSymbol(Symbol* symbol, Node* node)
+        {
+            if (symbol->IsConstantSymbol())
+            {
+                ConstantSymbol* constantSymbol = cast<ConstantSymbol*>(symbol);
+                EvaluateConstantSymbol(constantSymbol, node);
+            }
+            else if (symbol->IsEnumConstantSymbol())
+            {
+                EnumConstantSymbol* enumConstantSymbol = cast<EnumConstantSymbol*>(symbol);
+                EvaluateEnumConstantSymbol(enumConstantSymbol, node);
+            }
+            else if (symbol->IsAliasTypeSymbol())
+            {
+                AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+                EvaluateSymbol(aliasTypeSymbol->Type(), node);
+            }
+            else if (symbol->IsContainerSymbol())
+            {
+                ContainerSymbol* containerSymbol = cast<ContainerSymbol*>(symbol);
+                value.Reset(new ScopedValue(node->GetSpan(), containerSymbol));
+            }
+            else if (symbol->IsFunctionGroupSymbol())
+            {
+                FunctionGroupSymbol* functionGroup = cast<FunctionGroupSymbol*>(symbol);
+                value.Reset(new FunctionGroupValue(node->GetSpan(), functionGroup, qualifiedScope));
+            }
+            else if (symbol->IsVariableValueSymbol())
+            {
+                VariableValueSymbol* variableValueSymbol = cast<VariableValueSymbol*>(symbol);
+                if (lvalue)
+                {
+                    targetValueSymbol = variableValueSymbol;
+                }
+                else
+                {
+                    value.Reset(variableValueSymbol->GetValue()->Clone());
+                }
+            }
+            else
+            {
+                SetErrorId(MakeCannotEvaluateStaticallyError(node));
+                return;
+            }
+        }
+        private void EvaluateConstantSymbol(ConstantSymbol* constantSymbol, Node* node)
+        {
+            if (constantSymbol->Evaluating())
+            {
+                SetErrorId(MakeError("cyclic depenency detected", node->GetFullSpan()));
+                return;
+            }
+            Value* constantValue = constantSymbol->GetValue();
+            if (constantValue != null)
+            {
+                switch (constantValue->Kind())
+                {
+                    case ValueKind.arrayValue:
+                    {
+                        value.Reset(new ArrayReferenceValue(node->GetSpan(), cast<ArrayValue*>(constantValue)));
+                        break;
+                    }
+                    case ValueKind.structuredValue:
+                    {
+                        value.Reset(new StructureReferenceValue(node->GetSpan(), cast<StructureValue*>(constantValue)));
+                        break;
+                    }
+                    default:
+                    {
+                        value.Reset(constantValue->Clone());
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                Node* node = symbolTable->GetNode(constantSymbol);
+                if (node == null)
+                {
+                    Result<string> constantSymbolNameResult = ToUtf8(constantSymbol->Name());
+                    if (constantSymbolNameResult.Error())
+                    {
+                        SetErrorId(constantSymbolNameResult.GetErrorId());
+                        return;
+                    }
+                    string constantSymbolName = Rvalue(constantSymbolNameResult.Value());
+                    SetErrorId(MakeError("node for constant symbol '" + constantSymbolName + "' not found from symbol table", constantSymbol->FullSpan()));
+                    return;
+                }
+                #assert(node->IsConstantNode());
+                ConstantNode* constantNode = cast<ConstantNode*>(node);
+                constantSymbol->SetEvaluating();
+                TypeBinder typeBinder(boundCompileUnit);
+                typeBinder.SetContainerScope(containerScope);
+                constantNode->Accept(typeBinder);
+                if (typeBinder.Error())
+                {
+                    SetErrorId(typeBinder.GetErrorId());
+                    return;
+                }
+                constantSymbol->ResetEvaluating();
+                Value* constantValue = constantSymbol->GetValue();
+                #assert(constantValue != null);
+                value.Reset(constantValue->Clone());
+            }
+        }
+        private void EvaluateEnumConstantSymbol(EnumConstantSymbol* enumConstantSymbol, Node* node)
+        {
+            if (enumConstantSymbol->Evaluating())
+            {
+                SetErrorId(MakeError("cyclic depenency detected", node->GetFullSpan()));
+                return;
+            }
+            Value* enumConstantValue = enumConstantSymbol->GetValue();
+            if (enumConstantValue != null)
+            {
+                value.Reset(enumConstantValue->Clone());
+            }
+            else
+            {
+                Symbol* symbol = enumConstantSymbol->Parent();
+                #assert(symbol->IsEnumTypeSymbol());
+                EnumTypeSymbol* enumTypeSymbol = cast<EnumTypeSymbol*>(symbol);
+                Node* node = boundCompileUnit->GetSymbolTable()->GetNode(enumTypeSymbol);
+                if (node == null)
+                {
+                    Result<string> enumConstantSymbolNameResult = ToUtf8(enumConstantSymbol->Name());
+                    if (enumConstantSymbolNameResult.Error())
+                    {
+                        SetErrorId(enumConstantSymbolNameResult.GetErrorId());
+                        return;
+                    }
+                    string enumConstantSymbolName = Rvalue(enumConstantSymbolNameResult.Value());
+                    SetErrorId(MakeError("node for enumeration constant symbol '" + enumConstantSymbolName + "' not found from symbol table", enumConstantSymbol->FullSpan()));
+                    return;
+                }
+                EnumTypeNode* enumTypeNode = cast<EnumTypeNode*>(node);
+                TypeBinder typeBinder(boundCompileUnit);
+                typeBinder.SetContainerScope(containerScope);
+                enumTypeNode->Accept(typeBinder);
+                enumConstantSymbol->ResetEvaluating();
+                Value* enumConstantValue = enumConstantSymbol->GetValue();
+                #assert(enumConstantValue != null);
+                value.Reset(enumConstantValue->Clone());
+            }
+        }
+        private void EvaluateBinOp(BinaryNode& node)
+        {
+            node.Left()->Accept(*this);
+            if (Error()) return;
+            UniquePtr<Value> left(value.Release());
+            node.Right()->Accept(*this);
+            if (Error()) return;
+            UniquePtr<Value> right(value.Release());
+            ValueKind leftKind = left->Kind();
+            ValueKind rightKind = right->Kind();
+            ValueKind commonKind = CommonValueKind(leftKind, rightKind);
+            ValueKind operationKind = commonKind;
+            ValueKind targetKind = targetType->GetValueKind();
+            if (targetKind > operationKind)
+            {
+                operationKind = targetKind;
+            }
+            Result<TypeSymbol*> typeResult = GetType(operationKind, symbolTable, &node);
+            if (typeResult.Error())
+            {
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(typeResult.GetErrorId());
+                SetErrorId(MakeError("conversion from " + ValueKindStr(leftKind) + " to " + ValueKindStr(rightKind) + " is not valid: " + reasonMessage, node.GetFullSpan()));
+                return;
+            }
+            TypeSymbol* type = typeResult.Value();
+            Result<Value*> leftConvertedResult(left->As(type, doCast, &node));
+            if (leftConvertedResult.Error())
+            {
+                SetErrorId(leftConvertedResult.GetErrorId());
+                return;
+            }
+            UniquePtr<Value> leftConverted(leftConvertedResult.Value());
+            Result<Value*> rightConvertedResult(right->As(type, doCast, &node));
+            if (rightConvertedResult.Error())
+            {
+                SetErrorId(rightConvertedResult.GetErrorId());
+                return;
+            }
+            UniquePtr<Value> rightConverted(rightConvertedResult.Value());
+            BinaryOperatorFn fn = GetBinaryOperatorFn(node.GetNodeType(), operationKind);
+            Result<UniquePtr<Value>> result = fn(leftConverted.Get(), rightConverted.Get(), &node);
+            SetResult(result);
+        }
+        private void EvaluateUnaryOp(UnaryNode& node)
+        {
+            node.Subject()->Accept(*this);
+            if (Error()) return;
+            UniquePtr<Value> operand(value.Release());
+            ValueKind operandKind = operand->Kind();
+            ValueKind operationKind = operandKind;
+            ValueKind targetKind = targetType->GetValueKind();
+            if (targetKind > operationKind)
+            {
+                operationKind = targetKind;
+            }
+            Result<TypeSymbol*> typeResult = GetType(operationKind, symbolTable, &node);
+            if (typeResult.Error())
+            {
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(typeResult.GetErrorId());
+                SetErrorId(MakeError("conversion from " + ValueKindStr(operandKind) + " to " + ValueKindStr(operationKind) + " is not valid: " + reasonMessage,
+                    node.GetFullSpan()));
+                return;
+            }
+            TypeSymbol* type = typeResult.Value();
+            Result<Value*> operandConvertedResult(operand->As(type, doCast, &node));
+            if (operandConvertedResult.Error())
+            {
+                SetErrorId(operandConvertedResult.GetErrorId());
+                return;
+            }
+            UniquePtr<Value> operandConverted(operandConvertedResult.Value());
+            UnaryOperatorFn fn = GetUnaryOperatorFn(node.GetNodeType(), operationKind);
+            Result<UniquePtr<Value>> result = fn(operandConverted.Get(), &node);
+            SetResult(result);
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private SymbolTable* symbolTable;
+        private SymbolsContext& context;
+        private Module* module;
+        private ContainerScope* containerScope;
+        private ContainerScope* qualifiedScope;
+        private FileScope* currentFileScope;
+        private ClassTypeSymbol* currentClassType;
+        private BoundFunction* currentFunction;
+        private DeclarationBlockSymbol* currentDeclarationBlock;
+        private List<TypeSymbol*> templateTypeArguments;
+        private List<UniquePtr<Value>> argumentValues;
+        private TypeSymbol* targetType;
+        private VariableValueSymbol* targetValueSymbol;
+        private bool doCast;
+        private int errorId;
+        private UniquePtr<Value> value;
+        private bool returned;
+        private bool broke;
+        private bool continued;
+        private bool lvalue;
+    }
+
+    public Result<UniquePtr<Value>> Evaluate(Node* node, TypeSymbol* targetType, ContainerScope* containerScope, BoundCompileUnit* boundCompileUnit,
+        BoundFunction* currentFunction)
+    {
+        Evaluator evaluator(boundCompileUnit, containerScope, targetType, currentFunction, false);
+        node->Accept(evaluator);
+        Result<UniquePtr<Value>> result = evaluator.GetResult();
+        if (result.Error())
+        {
+            return result;
+        }
+        else if (result.Value().Get() != null)
+        {
+            SymbolsContext& context = boundCompileUnit->Context();
+            Value* value = result.Value().Get();
+            if (value != null && value->IsComplete())
+            {
+                Result<TypeSymbol*> typeResult = value->Type(boundCompileUnit->GetSymbolTable(), context);
+                if (typeResult.Error()) return Result<UniquePtr<Value>>(ErrorId(typeResult.GetErrorId()));
+                TypeSymbol* type = typeResult.Value();
+                if (!TypesEqual(targetType->PlainType(context), type))
+                {
+                    if (targetType->IsArrayTypeSymbol() && cast<ArrayTypeSymbol*>(targetType)->Size() == -1)
+                    {
+                        return result;
+                    }
+                    Result<Value*> targetValueResult = value->As(targetType->PlainType(context), false, node);
+                    if (targetValueResult.Error()) return Result<UniquePtr<Value>>(ErrorId(targetValueResult.GetErrorId()));
+                    return Result<UniquePtr<Value>>(UniquePtr<Value>(targetValueResult.Value()));
+                }
+                return result;
+            }
+            else
+            {
+                int errorId = MakeError("value not complete", node->GetFullSpan());
+                return Result<UniquePtr<Value>>(ErrorId(errorId));
+            }
+        }
+        else
+        {
+            return Result<UniquePtr<Value>>(ErrorId(MakeCannotEvaluateStaticallyError(node)));
+        }
+    }
+
+    public Result<bool> ValuesToLiterals(List<UniquePtr<Value>>& values, SymbolTable* symbolTable, SymbolsContext& context, List<UniquePtr<BoundExpression>>& literals)
+    {
+        for (UniquePtr<Value>& value : values)
+        {
+            Result<TypeSymbol*> typeResult = value->Type(symbolTable, context);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            TypeSymbol* type = typeResult.Value();
+            BoundLiteral* literal = new BoundLiteral(value->Span(), Rvalue(value), type);
+            literals.Add(UniquePtr<BoundExpression>(literal));
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<bool> ArgumentsToValues(const List<UniquePtr<BoundExpression>>& arguments, bool skipFirst, Node* node, List<UniquePtr<Value>>& values)
+    {
+        bool first = true;
+        for (const UniquePtr<BoundExpression>& argument : arguments)
+        {
+            if (first)
+            {
+                first = false;
+                if (skipFirst)
+                {
+                    continue;
+                }
+            }
+            Result<UniquePtr<Value>> valueResult = argument->ToValue(node);
+            if (valueResult.Error())
+            {
+                return Result<bool>(ErrorId(valueResult.GetErrorId()));
+            }
+            values.Add(Rvalue(valueResult.Value()));
+        }
+        return Result<bool>(true);
+    }
+ }
+

@@ -515,6 +515,12 @@ void DelegateTypeCopyConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std
 {
     Assert(genObjects.size() == 2, "copy constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
+    if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
+    {
+        emitter.Stack().Dup();
+        void* ptr = emitter.Stack().Pop();
+        emitter.SaveObjectPointer(ptr);
+    }
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
 }
 
@@ -568,6 +574,12 @@ void DelegateTypeMoveConstructor::GenerateCall(cmajor::ir::Emitter& emitter, std
 {
     Assert(genObjects.size() == 2, "move constructor needs two objects");
     genObjects[1]->Load(emitter, cmajor::ir::OperationFlags::none);
+    if ((flags & cmajor::ir::OperationFlags::leaveFirstArg) != cmajor::ir::OperationFlags::none)
+    {
+        emitter.Stack().Dup();
+        void* ptr = emitter.Stack().Pop();
+        emitter.SaveObjectPointer(ptr);
+    }
     void* rvalueRefValue = emitter.Stack().Pop();
     emitter.Stack().Push(emitter.CreateLoad(delegateType->IrType(emitter), rvalueRefValue)); // TODO
     genObjects[0]->Store(emitter, cmajor::ir::OperationFlags::none);
@@ -1069,7 +1081,7 @@ ClassDelegateTypeDefaultConstructor::ClassDelegateTypeDefaultConstructor(ClassDe
 {
     SetGroupName(U"@constructor");
     SetAccess(SymbolAccess::public_);
-    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType_->GetSpan(), U"this");
+    ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->GetSpan(), U"this");
     thisParam->SetType(classDelegateType->AddPointer());
     AddMember(thisParam);
     ComputeName();

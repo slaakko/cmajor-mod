@@ -2,12 +2,10 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/cmcmc/main.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/evaluator.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/cmcmc/main.cm"/>
-    <currentCursorLine value="9"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/evaluator.cm"/>
+    <currentCursorLine value="1770"/>
     <breakpoints/>
-    <expandedProjects>
-        <item value="cmcmc"/>
-    </expandedProjects>
+    <expandedProjects/>
 </solutionSettings>

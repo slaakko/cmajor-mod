@@ -63,7 +63,7 @@ public:
     const std::set<LiveRange, LiveRangeByStart>& LiveRanges() const { return liveRanges; }
     const std::set<LiveRange, LiveRangeByEnd>& ActiveInteger() const { return activeInteger; }
     const std::set<LiveRange, LiveRangeByEnd>& ActiveFP() const { return activeFP; }
-    FrameLocation GetFrameLocation(Instruction* inst) const;
+    FrameLocation GetFrameLocation(Instruction* inst) const override;
     cmajor::masm::assembly::RegisterGroup* GetRegisterGroup(Instruction* inst) const override;
     void RemoveRegisterGroup(Instruction* inst);
     void AllocateRegister(Instruction* inst);

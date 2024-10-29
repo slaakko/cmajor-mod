@@ -1,0 +1,48 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public class NamespaceSymbol : ContainerSymbol
+    {
+        public NamespaceSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.namespaceSymbol, span_, name_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"namespace";
+        }
+        public inline bool IsGlobalNamespace() const
+        {
+            return Name().IsEmpty();
+        }
+        [nodiscard]
+        public Result<bool> Import(NamespaceSymbol* that, SymbolTable* symbolTable, SymbolsContext& context)
+        {
+            Result<NamespaceSymbol*> nsResult = symbolTable->BeginNamespace(that->Name(), Span(), ModuleId(), FileIndex(), context);
+            if (nsResult.Error()) return Result<bool>(ErrorId(nsResult.GetErrorId()));
+            for (const UniquePtr<Symbol>& symbol : that->Members())
+            {
+                if (symbol->IsNamespaceSymbol())
+                {
+                    NamespaceSymbol* thatNs = cast<NamespaceSymbol*>(symbol.Get());
+                    auto result = Import(thatNs, symbolTable, context);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    if (symbol->IsGroupSymbol()) continue;
+                    auto result = symbolTable->Container()->AddOwnedMember(symbol.Get(), context);
+                    if (result.Error()) return result;
+                }
+            }
+            symbolTable->EndNamespace();
+            return Result<bool>(true);
+        }
+    }
+}

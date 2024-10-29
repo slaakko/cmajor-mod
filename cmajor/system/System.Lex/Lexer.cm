@@ -57,11 +57,11 @@ namespace System.Lex
         {
             return current->id;
         }
-        public void SetKeywordMap(KeywordMap* keywordMap_)
+        public inline void SetKeywordMap(KeywordMap* keywordMap_)
         {
             keywordMap = keywordMap_;
         }
-        public KeywordMap* GetKeywordMap()
+        public inline KeywordMap* GetKeywordMap()
         {
             return keywordMap;
         }
@@ -268,7 +268,7 @@ namespace System.Lex
         }
         public long GetKeywordToken(const Lexeme& lexeme) const
         {
-            if ((keywordMap != null))
+            if (keywordMap != null)
             {
                 return keywordMap->GetKeywordToken(lexeme);
             }

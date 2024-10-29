@@ -180,6 +180,7 @@ public:
     ConstructorSymbol* MoveConstructor() { return moveConstructor; }
     void SetMoveConstructor(ConstructorSymbol* moveConstructor_) { moveConstructor = moveConstructor_; }
     DestructorSymbol* Destructor() { return destructor; }
+    void SetDestructor(DestructorSymbol* destructor_) { destructor = destructor_; }
     MemberFunctionSymbol* CopyAssignment() { return copyAssignment; }
     void SetCopyAssignment(MemberFunctionSymbol* copyAssignment_) { copyAssignment = copyAssignment_; }
     MemberFunctionSymbol* MoveAssignment() { return moveAssignment; }

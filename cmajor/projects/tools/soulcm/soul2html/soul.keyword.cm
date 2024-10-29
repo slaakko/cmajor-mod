@@ -15,7 +15,7 @@ namespace soul.keyword
         {
             return *instance;
         }
-        public System.Lex.KeywordMap* GetKeywordMap() const
+        public System.Lex.KeywordMap* GetKeywords() const
         {
             return &keywordMap;
         }
@@ -118,9 +118,9 @@ namespace soul.keyword
         private static UniquePtr<Keywords> instance;
     }
 
-    public System.Lex.KeywordMap* GetKeywordMap()
+    public System.Lex.KeywordMap* GetKeywords()
     {
-        return Keywords.Instance().GetKeywordMap();
+        return Keywords.Instance().GetKeywords();
     }
 
 } // soul.keyword

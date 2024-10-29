@@ -1,0 +1,70 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace assembly
+{
+    public class Data
+    {
+        public Data()
+        {
+        }
+        public void AddInstruction(UniquePtr<Instruction>&& instruction)
+        {
+            if (instruction->HasOperands())
+            {
+                instructions.Add(instruction);
+            }
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            for (const auto& instruction : instructions)
+            {
+                Result<bool> result = instruction->Write(formatter);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private List<UniquePtr<Instruction>> instructions;
+    }
+
+    public class PublicDataDeclaration : Declaration
+    {
+        public PublicDataDeclaration(const string& name_) : base(name_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.Write("PUBLIC ");
+            if (result.Error()) return result;
+            result = formatter.WriteLine(Name());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ExternalDataDeclaration : Declaration
+    {
+        public ExternalDataDeclaration(const string& name_) : base(name_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.Write("EXTRN ");
+            if (result.Error()) return result;
+            result = formatter.Write(Name());
+            if (result.Error()) return result;
+            result = formatter.WriteLine(":BYTE");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+}
+

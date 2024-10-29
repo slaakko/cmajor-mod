@@ -1,0 +1,2980 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+
+namespace symbols
+{
+    public static class DefaultBool
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultBool();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new BoolValue(node->GetSpan(), false)));
+        }
+    }
+
+    public static class DefaultSByte
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultSByte();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new SByteValue(node->GetSpan(), 0)));
+        }
+    }
+
+    public static class DefaultByte
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultByte();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new ByteValue(node->GetSpan(), 0u)));
+        }
+    }
+
+    public static class DefaultShort
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultShort();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new ShortValue(node->GetSpan(), 0)));
+        }
+    }
+
+    public static class DefaultUShort
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultUShort();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new UShortValue(node->GetSpan(), 0u)));
+        }
+    }
+
+    public static class DefaultInt
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultInt();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new IntValue(node->GetSpan(), 0)));
+        }
+    }
+
+    public static class DefaultUInt
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultUInt();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new UIntValue(node->GetSpan(), 0u)));
+        }
+    }
+
+    public static class DefaultLong
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultLong();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new LongValue(node->GetSpan(), 0)));
+        }
+    }
+
+    public static class DefaultULong
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultULong();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new ULongValue(node->GetSpan(), 0u)));
+        }
+    }
+
+    public static class DefaultFloat
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultFloat();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new FloatValue(node->GetSpan(), 0.0f)));
+        }
+    }
+
+    public static class DefaultDouble
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultDouble();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new DoubleValue(node->GetSpan(), 0.0)));
+        }
+    }
+
+    public static class DefaultChar
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultChar();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new CharValue(node->GetSpan(), cast<char>(0))));
+        }
+    }
+
+    public static class DefaultWChar
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultWChar();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new WCharValue(node->GetSpan(), cast<wchar>(0))));
+        }
+    }
+
+    public static class DefaultUChar
+    {
+        public static inline intermediate.Value* Generate(Emitter& emitter)
+        {
+            return emitter.MakeDefaultUChar();
+        }
+        public static Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.IsEmpty());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(new UCharValue(node->GetSpan(), cast<uchar>(0))));
+        }
+    }
+
+    public class BasicTypeDefaultCtor<DefaultOp> : FunctionSymbol
+    {
+        public BasicTypeDefaultCtor(SymbolKind kind_, const System.Lex.Span& span_) : base(kind_, span_, u"@constructor")
+        {
+        }
+        public BasicTypeDefaultCtor(SymbolKind kind_, const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(kind_, span_, u"@constructor")
+        {
+            SetBasicTypeOperation();
+            SetCompileTimePrimitiveFunction();
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
+            thisParam->SetType(type->AddPointer(context));
+            auto result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (type->IsBasicTypeSymbol())
+            {
+                BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
+                basicTypeSymbol->SetDefaultConstructor(this);
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            emitter.Stack().Push(DefaultOp.Generate(emitter));
+            IrObject* object = irObjects.Front();
+            Result<bool> storeResult = object->Store(emitter, cast<OperationFlags>(OperationFlags.functionCallFlags & flags));
+            if (storeResult.Error()) return storeResult;
+            return Result<bool>(true);
+        }
+        public override Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            return DefaultOp.Evaluate(argumentValues, receiver, node);
+        }
+    }
+
+    public class BasicTypeDefaultBoolOperation : BasicTypeDefaultCtor<DefaultBool>
+    {
+        public BasicTypeDefaultBoolOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultBool, span_)
+        {
+        }
+        public BasicTypeDefaultBoolOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultBool, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultSByteOperation : BasicTypeDefaultCtor<DefaultSByte>
+    {
+        public BasicTypeDefaultSByteOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultSByte, span_)
+        {
+        }
+        public BasicTypeDefaultSByteOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultSByte, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultByteOperation : BasicTypeDefaultCtor<DefaultByte>
+    {
+        public BasicTypeDefaultByteOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultByte, span_)
+        {
+        }
+        public BasicTypeDefaultByteOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultByte, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultShortOperation : BasicTypeDefaultCtor<DefaultShort>
+    {
+        public BasicTypeDefaultShortOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultShort, span_)
+        {
+        }
+        public BasicTypeDefaultShortOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultShort, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultUShortOperation : BasicTypeDefaultCtor<DefaultUShort>
+    {
+        public BasicTypeDefaultUShortOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultUShort, span_)
+        {
+        }
+        public BasicTypeDefaultUShortOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultUShort, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultIntOperation : BasicTypeDefaultCtor<DefaultInt>
+    {
+        public BasicTypeDefaultIntOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultInt, span_)
+        {
+        }
+        public BasicTypeDefaultIntOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultInt, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultUIntOperation : BasicTypeDefaultCtor<DefaultUInt>
+    {
+        public BasicTypeDefaultUIntOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultUInt, span_)
+        {
+        }
+        public BasicTypeDefaultUIntOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultUInt, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultLongOperation : BasicTypeDefaultCtor<DefaultLong>
+    {
+        public BasicTypeDefaultLongOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultLong, span_)
+        {
+        }
+        public BasicTypeDefaultLongOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultLong, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultULongOperation : BasicTypeDefaultCtor<DefaultULong>
+    {
+        public BasicTypeDefaultULongOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultULong, span_)
+        {
+        }
+        public BasicTypeDefaultULongOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultULong, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultFloatOperation : BasicTypeDefaultCtor<DefaultFloat>
+    {
+        public BasicTypeDefaultFloatOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultFloat, span_)
+        {
+        }
+        public BasicTypeDefaultFloatOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultFloat, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultDoubleOperation : BasicTypeDefaultCtor<DefaultDouble>
+    {
+        public BasicTypeDefaultDoubleOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultDouble, span_)
+        {
+        }
+        public BasicTypeDefaultDoubleOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultDouble, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultCharOperation : BasicTypeDefaultCtor<DefaultChar>
+    {
+        public BasicTypeDefaultCharOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultChar, span_)
+        {
+        }
+        public BasicTypeDefaultCharOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultChar, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultWCharOperation : BasicTypeDefaultCtor<DefaultWChar>
+    {
+        public BasicTypeDefaultWCharOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultWChar, span_)
+        {
+        }
+        public BasicTypeDefaultWCharOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultWChar, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeDefaultUCharOperation : BasicTypeDefaultCtor<DefaultUChar>
+    {
+        public BasicTypeDefaultUCharOperation(const System.Lex.Span& span_) :
+            base(SymbolKind.defaultUChar, span_)
+        {
+        }
+        public BasicTypeDefaultUCharOperation(const System.Lex.Span& span_, TypeSymbol* type_, SymbolsContext& context) :
+            base(SymbolKind.defaultUChar, span_, type_, context)
+        {
+        }
+    }
+
+    public class BasicTypeCopyCtor : FunctionSymbol
+    {
+        public BasicTypeCopyCtor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeCopyCtor, span_, name_)
+        {
+        }
+        public BasicTypeCopyCtor(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeCopyCtor, span_, u"@constructor")
+        {
+            SetBasicTypeOperation();
+            SetCompileTimePrimitiveFunction();
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
+            thisParam->SetType(type->AddPointer(context));
+            auto result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
+            thatParam->SetType(type);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (type->IsBasicTypeSymbol())
+            {
+                BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
+                basicTypeSymbol->SetCopyConstructor(this);
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object1->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            Result<bool> storeResult = object0->Store(emitter, cast<OperationFlags>(OperationFlags.functionCallFlags & flags));
+            if (storeResult.Error()) return storeResult;
+            return Result<bool>(true);
+        }
+        public override Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.Count() == 1);
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(argumentValues[0]->Clone()));
+        }
+    }
+
+    public class BasicTypeMoveCtor : FunctionSymbol
+    {
+        public BasicTypeMoveCtor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeMoveCtor, span_, name_)
+        {
+        }
+        public BasicTypeMoveCtor(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(SymbolKind.basicTypeMoveCtor, span_, u"@constructor")
+        {
+            SetBasicTypeOperation();
+            SetCompileTimePrimitiveFunction();
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
+            thisParam->SetType(type->AddPointer(context));
+            auto result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
+            thatParam->SetType(type->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (type->IsBasicTypeSymbol())
+            {
+                BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
+                basicTypeSymbol->SetMoveConstructor(this);
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object1->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* rvalueRefValue = emitter.Stack().Pop();
+            Result<intermediate.Value*> instResult = emitter.CreateLoad(rvalueRefValue);
+            if (instResult.Error()) return Result<bool>(ErrorId(instResult.GetErrorId()));
+            intermediate.Value* inst = instResult.Value();
+            emitter.Stack().Push(inst);
+            Result<bool> storeResult = object0->Store(emitter, cast<OperationFlags>(OperationFlags.functionCallFlags & flags));
+            if (storeResult.Error()) return storeResult;
+            return Result<bool>(true);
+        }
+        public override Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            #assert(argumentValues.Count() == 1);
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(argumentValues[0]->Clone()));
+        }
+    }
+
+    public class BasicTypeCopyAssignment : FunctionSymbol
+    {
+        public BasicTypeCopyAssignment(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeCopyAssignment, span_, name_)
+        {
+        }
+        public BasicTypeCopyAssignment(const System.Lex.Span& span_, TypeSymbol* type, TypeSymbol* voidType, SymbolsContext& context) :
+            base(SymbolKind.basicTypeCopyAssignment, span_, u"operator=")
+        {
+            SetBasicTypeOperation();
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
+            thisParam->SetType(type->AddPointer(context));
+            auto result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
+            thatParam->SetType(type);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (type->IsBasicTypeSymbol())
+            {
+                BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
+                basicTypeSymbol->SetCopyAssignment(this);
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object1->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            Result<bool> storeResult = object0->Store(emitter, OperationFlags.none);
+            if (storeResult.Error()) return storeResult;
+            return Result<bool>(true);
+        }
+    }
+
+    public class BasicTypeMoveAssignment : FunctionSymbol
+    {
+        public BasicTypeMoveAssignment(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeMoveAssignment, span_, name_)
+        {
+        }
+        public BasicTypeMoveAssignment(const System.Lex.Span& span_, TypeSymbol* type, TypeSymbol* voidType, SymbolsContext& context) :
+            base(SymbolKind.basicTypeMoveAssignment, span_, u"operator=")
+        {
+            SetBasicTypeOperation();
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
+            thisParam->SetType(type->AddPointer(context));
+            auto result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
+            thatParam->SetType(type->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (type->IsBasicTypeSymbol())
+            {
+                BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
+                basicTypeSymbol->SetMoveAssignment(this);
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object1->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* rvalueRefValue = emitter.Stack().Pop();
+            Result<intermediate.Value*> instResult = emitter.CreateLoad(rvalueRefValue);
+            if (instResult.Error()) return Result<bool>(ErrorId(instResult.GetErrorId()));
+            Result<bool> storeResult = object0->Store(emitter, OperationFlags.none);
+            if (storeResult.Error()) return storeResult;
+            return Result<bool>(true);
+        }
+    }
+
+    public class BasicTypeReturn : FunctionSymbol
+    {
+        public BasicTypeReturn(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeReturn, span_, name_)
+        {
+        }
+        public BasicTypeReturn(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(SymbolKind.basicTypeReturn, span_, u"@return")
+        {
+            SetBasicTypeOperation();
+            SetGroupName(u"@return");
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* valueParam = new ParameterSymbol(span_, u"value");
+            valueParam->SetType(type);
+            auto result = AddMember(valueParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(type);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (type->IsBasicTypeSymbol())
+            {
+                BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
+                basicTypeSymbol->SetReturnFun(this);
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object0->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            return Result<bool>(true);
+        }
+    }
+
+    public static class BasicTypeNot
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator!";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand)
+        {
+            return emitter.CreateNot(operand);
+        }
+    }
+
+    public static class BasicTypeUnaryPlus
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator+";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand)
+        {
+            return Result<intermediate.Value*>(operand);
+        }
+    }
+
+    public static class BasicTypeUnaryMinus
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator-";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand)
+        {
+            return emitter.CreateNeg(operand);
+        }
+    }
+
+    public static class BasicTypeComplement
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator~";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand)
+        {
+            return emitter.CreateNot(operand);
+        }
+    }
+
+    public class BasicTypeUnaryOperation<UnaryOp> : FunctionSymbol
+    {
+        public BasicTypeUnaryOperation(SymbolKind symbolKind_, const System.Lex.Span& span_, const ustring& name_) : base(symbolKind_, span_, name_)
+        {
+        }
+        public BasicTypeUnaryOperation(SymbolKind symbolKind_, const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(symbolKind_, span_, UnaryOp.GroupName())
+        {
+            SetBasicTypeOperation();
+            SetGroupName(UnaryOp.GroupName());
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* operandParam = new ParameterSymbol(System.Lex.Span(), u"operand");
+            operandParam->SetType(type);
+            auto result = AddMember(operandParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(type);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object0->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* arg = emitter.Stack().Pop();
+            auto result = UnaryOp.Generate(emitter, arg);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            emitter.Stack().Push(result.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class BasicTypeNotOperation : BasicTypeUnaryOperation<BasicTypeNot>
+    {
+        public BasicTypeNotOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeNot, span_, name_)
+        {
+        }
+        public BasicTypeNotOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(SymbolKind.basicTypeNot, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeUnaryPlusOperation : BasicTypeUnaryOperation<BasicTypeUnaryPlus>
+    {
+        public BasicTypeUnaryPlusOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeUnaryPlus, span_, name_)
+        {
+        }
+        public BasicTypeUnaryPlusOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(SymbolKind.basicTypeUnaryPlus, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeUnaryMinusOperation : BasicTypeUnaryOperation<BasicTypeUnaryMinus>
+    {
+        public BasicTypeUnaryMinusOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeUnaryMinus, span_, name_)
+        {
+        }
+        public BasicTypeUnaryMinusOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(SymbolKind.basicTypeUnaryMinus, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeComplementOperation : BasicTypeUnaryOperation<BasicTypeComplement>
+    {
+        public BasicTypeComplementOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeComplement, span_, name_)
+        {
+        }
+        public BasicTypeComplementOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(SymbolKind.basicTypeComplement, span_, type, context)
+        {
+        }
+    }
+
+    public static class BasicTypeAdd
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator+";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateAdd(left, right);
+        }
+    }
+
+    public static class BasicTypeSub
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator-";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateSub(left, right);
+        }
+    }
+
+    public static class BasicTypeMul
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator*";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateMul(left, right);
+        }
+    }
+
+    public static class BasicTypeDiv
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator/";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateDiv(left, right);
+        }
+    }
+
+    public static class BasicTypeMod
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator%";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateMod(left, right);
+        }
+    }
+
+    public static class BasicTypeAnd
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator&";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateAnd(left, right);
+        }
+    }
+
+    public static class BasicTypeOr
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator|";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateOr(left, right);
+        }
+    }
+
+    public static class BasicTypeXor
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator^";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateXor(left, right);
+        }
+    }
+
+    public static class BasicTypeShl
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator<<";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateShl(left, right);
+        }
+    }
+
+    public static class BasicTypeShr
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator>>";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateShr(left, right);
+        }
+    }
+
+    public class BasicTypeBinaryOperation<BinaryOp> : FunctionSymbol
+    {
+        public BasicTypeBinaryOperation(SymbolKind symbolKind_, const System.Lex.Span& span_, const ustring& name_) : base(symbolKind_, span_, name_)
+        {
+        }
+        public BasicTypeBinaryOperation(SymbolKind symbolKind_, const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) :
+            base(symbolKind_, span_, BinaryOp.GroupName())
+        {
+            SetBasicTypeOperation();
+            SetGroupName(BinaryOp.GroupName());
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* leftParam = new ParameterSymbol(System.Lex.Span(), u"left");
+            leftParam->SetType(type);
+            auto result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(System.Lex.Span(), u"right");
+            rightParam->SetType(type);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(type);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object0->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* left = emitter.Stack().Pop();
+            IrObject* object1 = irObjects[1];
+            loadResult = object1->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* right = emitter.Stack().Pop();
+            auto result = BinaryOp.Generate(emitter, left, right);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            emitter.Stack().Push(result.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class BasicTypeAddOperation : BasicTypeBinaryOperation<BasicTypeAdd>
+    {
+        public BasicTypeAddOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeAdd, span_, name_)
+        {
+        }
+        public BasicTypeAddOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeAdd, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeSubOperation : BasicTypeBinaryOperation<BasicTypeSub>
+    {
+        public BasicTypeSubOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeSub, span_, name_)
+        {
+        }
+        public BasicTypeSubOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeSub, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeMulOperation : BasicTypeBinaryOperation<BasicTypeMul>
+    {
+        public BasicTypeMulOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeMul, span_, name_)
+        {
+        }
+        public BasicTypeMulOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeMul, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeDivOperation : BasicTypeBinaryOperation<BasicTypeDiv>
+    {
+        public BasicTypeDivOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeDiv, span_, name_)
+        {
+        }
+        public BasicTypeDivOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeDiv, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeModOperation : BasicTypeBinaryOperation<BasicTypeMod>
+    {
+        public BasicTypeModOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeMod, span_, name_)
+        {
+        }
+        public BasicTypeModOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeMod, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeAndOperation : BasicTypeBinaryOperation<BasicTypeAnd>
+    {
+        public BasicTypeAndOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeAnd, span_, name_)
+        {
+        }
+        public BasicTypeAndOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeAnd, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeOrOperation : BasicTypeBinaryOperation<BasicTypeOr>
+    {
+        public BasicTypeOrOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeOr, span_, name_)
+        {
+        }
+        public BasicTypeOrOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeOr, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeXorOperation : BasicTypeBinaryOperation<BasicTypeXor>
+    {
+        public BasicTypeXorOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeXor, span_, name_)
+        {
+        }
+        public BasicTypeXorOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeXor, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeShlOperation : BasicTypeBinaryOperation<BasicTypeShl>
+    {
+        public BasicTypeShlOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeShl, span_, name_)
+        {
+        }
+        public BasicTypeShlOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeShl, span_, type, context)
+        {
+        }
+    }
+
+    public class BasicTypeShrOperation : BasicTypeBinaryOperation<BasicTypeShr>
+    {
+        public BasicTypeShrOperation(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.basicTypeShr, span_, name_)
+        {
+        }
+        public BasicTypeShrOperation(const System.Lex.Span& span_, TypeSymbol* type, SymbolsContext& context) : base(SymbolKind.basicTypeShr, span_, type, context)
+        {
+        }
+    }
+
+    public static class BasicTypeEqual
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator==";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateEqual(left, right);
+        }
+        public static bool IsEqualityOp()
+        {
+            return true;
+        }
+    }
+
+    public static class BasicTypeLess
+    {
+        public static inline ustring GroupName()
+        {
+            return u"operator<";
+        }
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* left, intermediate.Value* right)
+        {
+            return emitter.CreateLess(left, right);
+        }
+        public static bool IsEqualityOp()
+        {
+            return false;
+        }
+    }
+
+    public class BasicTypeComparisonOperation<ComparisonOp> : FunctionSymbol
+    {
+        public BasicTypeComparisonOperation(SymbolKind symbolKind_, const System.Lex.Span& span_, const ustring& name_) : base(symbolKind_, span_, name_)
+        {
+        }
+        public BasicTypeComparisonOperation(SymbolKind symbolKind_, const System.Lex.Span& span_, TypeSymbol* type, TypeSymbol* boolType, SymbolsContext& context) :
+            base(symbolKind_, span_, ComparisonOp.GroupName())
+        {
+            SetBasicTypeOperation();
+            SetGroupName(ComparisonOp.GroupName());
+            SetAccess(SymbolAccess.public_);
+            ParameterSymbol* leftParam = new ParameterSymbol(System.Lex.Span(), u"left");
+            leftParam->SetType(type);
+            auto result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(System.Lex.Span(), u"right");
+            rightParam->SetType(type);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (type->IsBasicTypeSymbol())
+            {
+                if (ComparisonOp.IsEqualityOp())
+                {
+                    BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
+                    basicTypeSymbol->SetEqualityOp(this);
+                }
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            Result<bool> loadResult = object0->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* left = emitter.Stack().Pop();
+            IrObject* object1 = irObjects[1];
+            loadResult = object1->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* right = emitter.Stack().Pop();
+            auto result = ComparisonOp.Generate(emitter, left, right);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            emitter.Stack().Push(result.Value());
+            return Result<bool>(true);
+        }
+    }
+
+    public class BasicTypeEqualOperation : BasicTypeComparisonOperation<BasicTypeEqual>
+    {
+        public BasicTypeEqualOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeEqual, span_, name_)
+        {
+        }
+        public BasicTypeEqualOperation(const System.Lex.Span& span_, TypeSymbol* type, TypeSymbol* boolType, SymbolsContext& context) :
+            base(SymbolKind.basicTypeEqual, span_, type, boolType, context)
+        {
+        }
+    }
+
+    public class BasicTypeLessOperation : BasicTypeComparisonOperation<BasicTypeLess>
+    {
+        public BasicTypeLessOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeLess, span_, name_)
+        {
+        }
+        public BasicTypeLessOperation(const System.Lex.Span& span_, TypeSymbol* type, TypeSymbol* boolType, SymbolsContext& context) :
+            base(SymbolKind.basicTypeLess, span_, type, boolType, context)
+        {
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> MakeIntegerOperations(SymbolsContext& context, SymbolTable* symbolTable, const System.Lex.Span& rootSpan, TypeSymbol* type)
+    {
+        FunctionSymbol* unaryPlus = new BasicTypeUnaryPlusOperation(rootSpan, type, context);
+        if (unaryPlus->Error()) return Result<bool>(ErrorId(unaryPlus->GetErrorId()));
+        auto result = symbolTable->AddFunctionSymbolToGlobalScope(unaryPlus, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* unaryMinus = new BasicTypeUnaryMinusOperation(rootSpan, type, context);
+        if (unaryMinus->Error()) return Result<bool>(ErrorId(unaryMinus->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(unaryMinus, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* complement = new BasicTypeComplementOperation(rootSpan, type, context);
+        if (complement->Error()) return Result<bool>(ErrorId(complement->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(complement, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* add = new BasicTypeAddOperation(rootSpan, type, context);
+        if (add->Error()) return Result<bool>(ErrorId(add->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(add, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sub = new BasicTypeSubOperation(rootSpan, type, context);
+        if (sub->Error()) return Result<bool>(ErrorId(sub->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sub, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* mul = new BasicTypeMulOperation(rootSpan, type, context);
+        if (mul->Error()) return Result<bool>(ErrorId(mul->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(mul, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* div = new BasicTypeDivOperation(rootSpan, type, context);
+        if (div->Error()) return Result<bool>(ErrorId(div->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(div, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* mod = new BasicTypeModOperation(rootSpan, type, context);
+        if (mod->Error()) return Result<bool>(ErrorId(mod->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(mod, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* and_ = new BasicTypeAndOperation(rootSpan, type, context);
+        if (and_->Error()) return Result<bool>(ErrorId(and_->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(and_, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* or_ = new BasicTypeOrOperation(rootSpan, type, context);
+        if (or_->Error()) return Result<bool>(ErrorId(or_->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(or_, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* xor_ = new BasicTypeXorOperation(rootSpan, type, context);
+        if (xor_->Error()) return Result<bool>(ErrorId(xor_->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(xor_, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* shl = new BasicTypeShlOperation(rootSpan, type, context);
+        if (shl->Error()) return Result<bool>(ErrorId(shl->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shl, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* shr = new BasicTypeShrOperation(rootSpan, type, context);
+        if (shr->Error()) return Result<bool>(ErrorId(shr->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shr, context);
+        if (result.Error()) return result;
+
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> MakeFloatingPointOperations(SymbolsContext& context, SymbolTable* symbolTable, const System.Lex.Span& rootSpan, TypeSymbol* type)
+    {
+        FunctionSymbol* unaryPlus = new BasicTypeUnaryPlusOperation(rootSpan, type, context);
+        if (unaryPlus->Error()) return Result<bool>(ErrorId(unaryPlus->GetErrorId()));
+        auto result = symbolTable->AddFunctionSymbolToGlobalScope(unaryPlus, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* unaryMinus = new BasicTypeUnaryMinusOperation(rootSpan, type, context);
+        if (unaryMinus->Error()) return Result<bool>(ErrorId(unaryMinus->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(unaryMinus, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* add = new BasicTypeAddOperation(rootSpan, type, context);
+        if (add->Error()) return Result<bool>(ErrorId(add->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(add, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sub = new BasicTypeSubOperation(rootSpan, type, context);
+        if (sub->Error()) return Result<bool>(ErrorId(sub->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sub, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* mul = new BasicTypeMulOperation(rootSpan, type, context);
+        if (mul->Error()) return Result<bool>(ErrorId(mul->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(mul, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* div = new BasicTypeDivOperation(rootSpan, type, context);
+        if (div->Error()) return Result<bool>(ErrorId(div->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(div, context);
+        if (result.Error()) return result;
+
+        return Result<bool>(true);
+    }
+
+    public static class BasicTypeSignExtension
+    {
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return emitter.CreateSignExtension(operand, destinationType);
+        }
+    }
+
+    public static class BasicTypeZeroExtension
+    {
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return emitter.CreateZeroExtension(operand, destinationType);
+        }
+    }
+
+    public static class BasicTypeFloatingExtension
+    {
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return emitter.CreateFloatingPointExtension(operand, destinationType);
+        }
+    }
+
+    public static class BasicTypeTruncation
+    {
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return emitter.CreateTruncation(operand, destinationType);
+        }
+    }
+
+    public static class BasicTypeBitcast
+    {
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return emitter.CreateBitcast(operand, destinationType);
+        }
+    }
+
+    public static class BasicTypeIntToFloating
+    {
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return emitter.CreateIntToFloat(operand, destinationType);
+        }
+    }
+
+    public static class BasicTypeFloatingToInt
+    {
+        public static inline Result<intermediate.Value*> Generate(Emitter& emitter, intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return emitter.CreateFloatToInt(operand, destinationType);
+        }
+    }
+
+    public class BasicTypeConversion<ConversionOp> : FunctionSymbol
+    {
+        public BasicTypeConversion(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) : base(kind_, span_, name_)
+        {
+        }
+        public BasicTypeConversion(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_, bool isExplicitConversion_, byte conversionDistance_,
+            TypeSymbol* sourceType_, TypeSymbol* targetType_, SymbolsContext& context) :
+            base(kind_, span_, name_)
+        {
+            SetBasicTypeOperation();
+            SetGroupName(u"@conversion");
+            SetAccess(SymbolAccess.public_);
+            if (isExplicitConversion_)
+            {
+                SetExplicitConversion();
+            }
+            else
+            {
+                SetImplicitConversion();
+            }
+            SetConversionDistance(conversionDistance_);
+            SetConversionSourceType(sourceType_->PlainType(context));
+            SetConversionTargetType(targetType_->PlainType(context));
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> conversionTargetIrTypeResult = ConversionTargetType()->IrType(emitter);
+            if (conversionTargetIrTypeResult.Error()) return Result<bool>(ErrorId(conversionTargetIrTypeResult.GetErrorId()));
+            intermediate.Type* conversionTargetIrType = conversionTargetIrTypeResult.Value();
+            Result<intermediate.Value*> conversionResult = ConversionOp.Generate(emitter, value, conversionTargetIrType);
+            if (conversionResult.Error()) return Result<bool>(ErrorId(conversionResult.GetErrorId()));
+            emitter.Stack().Push(conversionResult.Value());
+            return Result<bool>(true);
+        }
+        public override Result<UniquePtr<Value>> ConvertValue(Value* value, Node* node)
+        {
+            Result<Value*> conversionResult = value->As(ConversionTargetType(), IsExplicitConversion(), node);
+            if (conversionResult.Error()) return Result<UniquePtr<Value>>(ErrorId(conversionResult.GetErrorId()));
+            Result<UniquePtr<Value>> valueResult(UniquePtr<Value>(conversionResult.Value()));
+            return valueResult;
+        }
+    }
+
+    public class BasicTypeImplicitSignExtensionOperation : BasicTypeConversion<BasicTypeSignExtension>
+    {
+        public BasicTypeImplicitSignExtensionOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeImplicitSignExtension, span_, name_)
+        {
+        }
+        public BasicTypeImplicitSignExtensionOperation(const System.Lex.Span& span_, const ustring& name_, byte conversionDistance_,
+            TypeSymbol* sourceType_, TypeSymbol* targetType_, SymbolsContext& context) :
+            base(SymbolKind.basicTypeImplicitSignExtension, span_, name_, false, conversionDistance_, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeExplicitSignExtensionOperation : BasicTypeConversion<BasicTypeSignExtension>
+    {
+        public BasicTypeExplicitSignExtensionOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeExplicitSignExtension, span_, name_)
+        {
+        }
+        public BasicTypeExplicitSignExtensionOperation(const System.Lex.Span& span_, const ustring& name_,
+            TypeSymbol* sourceType_, TypeSymbol* targetType_, SymbolsContext& context) :
+            base(SymbolKind.basicTypeExplicitSignExtension, span_, name_, false, 0u, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeImplicitZeroExtensionOperation : BasicTypeConversion<BasicTypeZeroExtension>
+    {
+        public BasicTypeImplicitZeroExtensionOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeImplicitZeroExtension, span_, name_)
+        {
+        }
+        public BasicTypeImplicitZeroExtensionOperation(const System.Lex.Span& span_, const ustring& name_, byte conversionDistance_,
+            TypeSymbol* sourceType_, TypeSymbol* targetType_, SymbolsContext& context) :
+            base(SymbolKind.basicTypeImplicitZeroExtension, span_, name_, false, conversionDistance_, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeExplicitZeroExtensionOperation : BasicTypeConversion<BasicTypeZeroExtension>
+    {
+        public BasicTypeExplicitZeroExtensionOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeExplicitZeroExtension, span_, name_)
+        {
+        }
+        public BasicTypeExplicitZeroExtensionOperation(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_,
+            SymbolsContext& context) :
+            base(SymbolKind.basicTypeExplicitZeroExtension, span_, name_, true, 0u, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeTruncationOperation : BasicTypeConversion<BasicTypeTruncation>
+    {
+        public BasicTypeTruncationOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeTruncation, span_, name_)
+        {
+        }
+        public BasicTypeTruncationOperation(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_,
+            SymbolsContext& context) :
+            base(SymbolKind.basicTypeTruncation, span_, name_, true, 0u, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeBitcastOperation : BasicTypeConversion<BasicTypeBitcast>
+    {
+        public BasicTypeBitcastOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeBitcast, span_, name_)
+        {
+        }
+        public BasicTypeBitcastOperation(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_,
+            SymbolsContext& context) :
+            base(SymbolKind.basicTypeBitcast, span_, name_, true, 0u, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeImplicitIntToFloatingOperation : BasicTypeConversion<BasicTypeIntToFloating>
+    {
+        public BasicTypeImplicitIntToFloatingOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeImplicitIntToFloating, span_, name_)
+        {
+        }
+        public BasicTypeImplicitIntToFloatingOperation(const System.Lex.Span& span_, const ustring& name_, byte conversionDistance_,
+            TypeSymbol* sourceType_, TypeSymbol* targetType_, SymbolsContext& context) :
+            base(SymbolKind.basicTypeImplicitIntToFloating, span_, name_, false, conversionDistance_, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeImplicitFloatingExtensionOperation : BasicTypeConversion<BasicTypeFloatingExtension>
+    {
+        public BasicTypeImplicitFloatingExtensionOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeFloatingExtension, span_, name_)
+        {
+        }
+        public BasicTypeImplicitFloatingExtensionOperation(const System.Lex.Span& span_, const ustring& name_, byte conversionDistance_,
+            TypeSymbol* sourceType_, TypeSymbol* targetType_, SymbolsContext& context) :
+            base(SymbolKind.basicTypeFloatingExtension, span_, name_, false, conversionDistance_, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    public class BasicTypeFloatingToIntOperation : BasicTypeConversion<BasicTypeFloatingToInt>
+    {
+        public BasicTypeFloatingToIntOperation(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.basicTypeFloatingToInt, span_, name_)
+        {
+        }
+        public BasicTypeFloatingToIntOperation(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* sourceType_, TypeSymbol* targetType_,
+            SymbolsContext& context) :
+            base(SymbolKind.basicTypeFloatingToInt, span_, name_, true, 0u, sourceType_, targetType_, context)
+        {
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> MakeBasicTypeConversions(SymbolsContext& context, SymbolTable* symbolTable, const System.Lex.Span& rootSpan,
+        BoolTypeSymbol* boolType, SByteTypeSymbol* sbyteType,
+        ByteTypeSymbol* byteType, ShortTypeSymbol* shortType, UShortTypeSymbol* ushortType, IntTypeSymbol* intType, UIntTypeSymbol* uintType,
+        LongTypeSymbol* longType, ULongTypeSymbol* ulongType, FloatTypeSymbol* floatType, DoubleTypeSymbol* doubleType,
+        CharTypeSymbol* charType, WCharTypeSymbol* wcharType, UCharTypeSymbol* ucharType)
+    {
+
+//      bool
+
+        FunctionSymbol* bool2sbyte = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2sbyte", boolType, sbyteType, context);
+        if (bool2sbyte->Error()) return Result<bool>(ErrorId(bool2sbyte->GetErrorId()));
+        auto result = symbolTable->AddFunctionSymbolToGlobalScope(bool2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2byte = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2byte", boolType, byteType, context);
+        if (bool2byte->Error()) return Result<bool>(ErrorId(bool2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2short = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2short", boolType, shortType, context);
+        if (bool2short->Error()) return Result<bool>(ErrorId(bool2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2ushort = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2ushort", boolType, ushortType, context);
+        if (bool2ushort->Error()) return Result<bool>(ErrorId(bool2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2int = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2int", boolType, intType, context);
+        if (bool2int->Error()) return Result<bool>(ErrorId(bool2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2uint = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2uint", boolType, uintType, context);
+        if (bool2uint->Error()) return Result<bool>(ErrorId(bool2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2long = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2long", boolType, longType, context);
+        if (bool2long->Error()) return Result<bool>(ErrorId(bool2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2ulong = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2ulong", boolType, ulongType, context);
+        if (bool2ulong->Error()) return Result<bool>(ErrorId(bool2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"bool2float", 1u, boolType, floatType, context);
+        if (bool2float->Error()) return Result<bool>(ErrorId(bool2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"bool2double", 2u, boolType, doubleType, context);
+        if (bool2double->Error()) return Result<bool>(ErrorId(bool2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2char = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2char", boolType, charType, context);
+        if (bool2char->Error()) return Result<bool>(ErrorId(bool2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2wchar = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2wchar", boolType, wcharType, context);
+        if (bool2wchar->Error()) return Result<bool>(ErrorId(bool2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* bool2uchar = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"bool2uchar", boolType, ucharType, context);
+        if (bool2uchar->Error()) return Result<bool>(ErrorId(bool2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(bool2uchar, context);
+        if (result.Error()) return result;
+
+//      sbyte
+
+        FunctionSymbol* sbyte2bool = new BasicTypeTruncationOperation(rootSpan, u"sbyte2bool", sbyteType, boolType, context);
+        if (sbyte2bool->Error()) return Result<bool>(ErrorId(sbyte2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2byte = new BasicTypeBitcastOperation(rootSpan, u"sbyte2byte", sbyteType, byteType, context);
+        if (sbyte2byte->Error()) return Result<bool>(ErrorId(sbyte2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2short = new BasicTypeImplicitSignExtensionOperation(rootSpan, u"sbyte2short", 1u, sbyteType, shortType, context);
+        if (sbyte2short->Error()) return Result<bool>(ErrorId(sbyte2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2ushort = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"sbyte2ushort", sbyteType, ushortType, context);
+        if (sbyte2ushort->Error()) return Result<bool>(ErrorId(sbyte2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2int = new BasicTypeImplicitSignExtensionOperation(rootSpan, u"sbyte2int", 2u, sbyteType, intType, context);
+        if (sbyte2int->Error()) return Result<bool>(ErrorId(sbyte2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2uint = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"sbyte2uint", sbyteType, uintType, context);
+        if (sbyte2uint->Error()) return Result<bool>(ErrorId(sbyte2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2long = new BasicTypeImplicitSignExtensionOperation(rootSpan, u"sbyte2long", 3u, sbyteType, longType, context);
+        if (sbyte2long->Error()) return Result<bool>(ErrorId(sbyte2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2ulong = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"sbyte2ulong", sbyteType, ulongType, context);
+        if (sbyte2ulong->Error()) return Result<bool>(ErrorId(sbyte2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"sbyte2float", 4u, sbyteType, floatType, context);
+        if (sbyte2float->Error()) return Result<bool>(ErrorId(sbyte2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"sbyte2double", 5u, sbyteType, doubleType, context);
+        if (sbyte2double->Error()) return Result<bool>(ErrorId(sbyte2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2char = new BasicTypeBitcastOperation(rootSpan, u"sbyte2char", sbyteType, charType, context);
+        if (sbyte2char->Error()) return Result<bool>(ErrorId(sbyte2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2wchar = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"sbyte2wchar", sbyteType, wcharType, context);
+        if (sbyte2wchar->Error()) return Result<bool>(ErrorId(sbyte2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyte2uchar = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"sbyte2uchar", sbyteType, ucharType, context);
+        if (sbyte2uchar->Error()) return Result<bool>(ErrorId(sbyte2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyte2uchar, context);
+        if (result.Error()) return result;
+
+//      byte
+
+        FunctionSymbol* byte2bool = new BasicTypeTruncationOperation(rootSpan, u"byte2bool", byteType, boolType, context);
+        if (byte2bool->Error()) return Result<bool>(ErrorId(byte2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2sbyte = new BasicTypeBitcastOperation(rootSpan, u"byte2sbyte", byteType, sbyteType, context);
+        if (byte2sbyte->Error()) return Result<bool>(ErrorId(byte2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2short = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"byte2short", 1u, byteType, shortType, context);
+        if (byte2short->Error()) return Result<bool>(ErrorId(byte2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2suhort = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"byte2suhort", 2u, byteType, ushortType, context);
+        if (byte2suhort->Error()) return Result<bool>(ErrorId(byte2suhort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2suhort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2int = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"byte2int", 3u, byteType, intType, context);
+        if (byte2int->Error()) return Result<bool>(ErrorId(byte2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2uint = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"byte2uint", 4u, byteType, uintType, context);
+        if (byte2uint->Error()) return Result<bool>(ErrorId(byte2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2long = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"byte2long", 5u, byteType, longType, context);
+        if (byte2long->Error()) return Result<bool>(ErrorId(byte2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2ulong = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"byte2ulong", 6u, byteType, ulongType, context);
+        if (byte2ulong->Error()) return Result<bool>(ErrorId(byte2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"byte2float", 7u, byteType, floatType, context);
+        if (byte2float->Error()) return Result<bool>(ErrorId(byte2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"byte2double", 8u, byteType, doubleType, context);
+        if (byte2double->Error()) return Result<bool>(ErrorId(byte2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2char = new BasicTypeBitcastOperation(rootSpan, u"byte2char", byteType, charType, context);
+        if (byte2char->Error()) return Result<bool>(ErrorId(byte2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2wchar = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"byte2wchar", byteType, wcharType, context);
+        if (byte2wchar->Error()) return Result<bool>(ErrorId(byte2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byte2uchar = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"byte2uchar", byteType, ucharType, context);
+        if (byte2uchar->Error()) return Result<bool>(ErrorId(byte2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byte2uchar, context);
+        if (result.Error()) return result;
+
+//      short
+
+        FunctionSymbol* short2bool = new BasicTypeTruncationOperation(rootSpan, u"short2bool", shortType, boolType, context);
+        if (short2bool->Error()) return Result<bool>(ErrorId(short2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2sbyte = new BasicTypeTruncationOperation(rootSpan, u"short2sbyte", shortType, sbyteType, context);
+        if (short2sbyte->Error()) return Result<bool>(ErrorId(short2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2byte = new BasicTypeTruncationOperation(rootSpan, u"short2byte", shortType, byteType, context);
+        if (short2byte->Error()) return Result<bool>(ErrorId(short2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2ushort = new BasicTypeBitcastOperation(rootSpan, u"short2ushort", shortType, ushortType, context);
+        if (short2ushort->Error()) return Result<bool>(ErrorId(short2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2int = new BasicTypeImplicitSignExtensionOperation(rootSpan, u"short2int", 1u, shortType, intType, context);
+        if (short2int->Error()) return Result<bool>(ErrorId(short2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2uint = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"short2uint", shortType, uintType, context);
+        if (short2uint->Error()) return Result<bool>(ErrorId(short2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2long = new BasicTypeImplicitSignExtensionOperation(rootSpan, u"short2long", 2u, shortType, longType, context);
+        if (short2long->Error()) return Result<bool>(ErrorId(short2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2ulong = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"short2ulong", shortType, ulongType, context);
+        if (short2ulong->Error()) return Result<bool>(ErrorId(short2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"short2float", 3u, shortType, floatType, context);
+        if (short2float->Error()) return Result<bool>(ErrorId(short2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"short2double", 4u, shortType, doubleType, context);
+        if (short2double->Error()) return Result<bool>(ErrorId(short2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2char = new BasicTypeTruncationOperation(rootSpan, u"short2char", shortType, charType, context);
+        if (short2char->Error()) return Result<bool>(ErrorId(short2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2wchar = new BasicTypeBitcastOperation(rootSpan, u"short2wchar", shortType, wcharType, context);
+        if (short2wchar->Error()) return Result<bool>(ErrorId(short2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* short2uchar = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"short2uchar", shortType, ucharType, context);
+        if (short2uchar->Error()) return Result<bool>(ErrorId(short2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(short2uchar, context);
+        if (result.Error()) return result;
+
+//      ushort
+
+        FunctionSymbol* ushort2bool = new BasicTypeTruncationOperation(rootSpan, u"ushort2bool", ushortType, boolType, context);
+        if (ushort2bool->Error()) return Result<bool>(ErrorId(ushort2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2sbyte = new BasicTypeTruncationOperation(rootSpan, u"ushort2sbyte", ushortType, sbyteType, context);
+        if (ushort2sbyte->Error()) return Result<bool>(ErrorId(ushort2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2byte = new BasicTypeTruncationOperation(rootSpan, u"ushort2byte", ushortType, byteType, context);
+        if (ushort2byte->Error()) return Result<bool>(ErrorId(ushort2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2short = new BasicTypeBitcastOperation(rootSpan, u"ushort2short", ushortType, shortType, context);
+        if (ushort2short->Error()) return Result<bool>(ErrorId(ushort2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2int = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"ushort2int", 1u, ushortType, intType, context);
+        if (ushort2int->Error()) return Result<bool>(ErrorId(ushort2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2uint = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"ushort2uint", 2u, ushortType, uintType, context);
+        if (ushort2uint->Error()) return Result<bool>(ErrorId(ushort2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2long = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"ushort2long", 3u, ushortType, longType, context);
+        if (ushort2long->Error()) return Result<bool>(ErrorId(ushort2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2ulong = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"ushort2ulong", 4u, ushortType, ulongType, context);
+        if (ushort2ulong->Error()) return Result<bool>(ErrorId(ushort2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"ushort2float", 5u, ushortType, floatType, context);
+        if (ushort2float->Error()) return Result<bool>(ErrorId(ushort2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"ushort2double", 6u, ushortType, doubleType, context);
+        if (ushort2double->Error()) return Result<bool>(ErrorId(ushort2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2char = new BasicTypeTruncationOperation(rootSpan, u"ushort2char", ushortType, charType, context);
+        if (ushort2char->Error()) return Result<bool>(ErrorId(ushort2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2wchar = new BasicTypeBitcastOperation(rootSpan, u"ushort2wchar", ushortType, wcharType, context);
+        if (ushort2wchar->Error()) return Result<bool>(ErrorId(ushort2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushort2uchar = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"ushort2uchar", ushortType, ucharType, context);
+        if (ushort2uchar->Error()) return Result<bool>(ErrorId(ushort2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2uchar, context);
+        if (result.Error()) return result;
+
+//      int
+
+        FunctionSymbol* int2bool = new BasicTypeTruncationOperation(rootSpan, u"int2bool", intType, boolType, context);
+        if (int2bool->Error()) return Result<bool>(ErrorId(int2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2sbyte = new BasicTypeTruncationOperation(rootSpan, u"int2sbyte", intType, sbyteType, context);
+        if (int2sbyte->Error()) return Result<bool>(ErrorId(int2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2byte = new BasicTypeTruncationOperation(rootSpan, u"int2byte", intType, byteType, context);
+        if (int2byte->Error()) return Result<bool>(ErrorId(int2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2short = new BasicTypeTruncationOperation(rootSpan, u"int2short", intType, shortType, context);
+        if (int2short->Error()) return Result<bool>(ErrorId(int2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2ushort = new BasicTypeTruncationOperation(rootSpan, u"int2ushort", intType, ushortType, context);
+        if (int2ushort->Error()) return Result<bool>(ErrorId(int2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2uint= new BasicTypeBitcastOperation(rootSpan, u"int2uint", intType, uintType, context);
+        if (int2uint->Error()) return Result<bool>(ErrorId(int2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2long = new BasicTypeImplicitSignExtensionOperation(rootSpan, u"int2long", 1u, intType, longType, context);
+        if (int2long->Error()) return Result<bool>(ErrorId(int2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2ulong = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"int2ulong", intType, ulongType, context);
+        if (int2ulong->Error()) return Result<bool>(ErrorId(int2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"int2float", 2u, intType, floatType, context);
+        if (int2float->Error()) return Result<bool>(ErrorId(int2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"int2double", 3u, intType, doubleType, context);
+        if (int2double->Error()) return Result<bool>(ErrorId(int2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2char = new BasicTypeTruncationOperation(rootSpan, u"int2char", intType, charType, context);
+        if (int2char->Error()) return Result<bool>(ErrorId(int2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2wchar = new BasicTypeTruncationOperation(rootSpan, u"int2wchar", intType, wcharType, context);
+        if (int2wchar->Error()) return Result<bool>(ErrorId(int2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* int2uchar = new BasicTypeBitcastOperation(rootSpan, u"int2uchar", intType, ucharType, context);
+        if (int2uchar->Error()) return Result<bool>(ErrorId(int2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(int2uchar, context);
+        if (result.Error()) return result;
+
+//      uint
+
+        FunctionSymbol* uint2bool = new BasicTypeTruncationOperation(rootSpan, u"uint2bool", uintType, boolType, context);
+        if (uint2bool->Error()) return Result<bool>(ErrorId(uint2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2sbyte = new BasicTypeTruncationOperation(rootSpan, u"uint2sbyte", uintType, sbyteType, context);
+        if (uint2sbyte->Error()) return Result<bool>(ErrorId(uint2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2byte = new BasicTypeTruncationOperation(rootSpan, u"uint2byte", uintType, byteType, context);
+        if (uint2byte->Error()) return Result<bool>(ErrorId(uint2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2short = new BasicTypeTruncationOperation(rootSpan, u"uint2short", uintType, shortType, context);
+        if (uint2short->Error()) return Result<bool>(ErrorId(uint2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2ushort = new BasicTypeTruncationOperation(rootSpan, u"uint2ushort", uintType, ushortType, context);
+        if (uint2ushort->Error()) return Result<bool>(ErrorId(uint2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2int = new BasicTypeBitcastOperation(rootSpan, u"uint2int", uintType, intType, context);
+        if (uint2int->Error()) return Result<bool>(ErrorId(uint2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2long = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"uint2long", 1u, uintType, longType, context);
+        if (uint2long->Error()) return Result<bool>(ErrorId(uint2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2ulong = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"uint2ulong", 2u, uintType, ulongType, context);
+        if (uint2ulong->Error()) return Result<bool>(ErrorId(uint2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"uint2float", 3u, uintType, floatType, context);
+        if (uint2float->Error()) return Result<bool>(ErrorId(uint2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"uint2double", 4u, uintType, doubleType, context);
+        if (uint2double->Error()) return Result<bool>(ErrorId(uint2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2char = new BasicTypeTruncationOperation(rootSpan, u"uint2char", uintType, charType, context);
+        if (uint2char->Error()) return Result<bool>(ErrorId(uint2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2wchar = new BasicTypeTruncationOperation(rootSpan, u"uint2wchar", uintType, wcharType, context);
+        if (uint2wchar->Error()) return Result<bool>(ErrorId(uint2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uint2uchar = new BasicTypeBitcastOperation(rootSpan, u"uint2uchar", uintType, ucharType, context);
+        if (uint2uchar->Error()) return Result<bool>(ErrorId(uint2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uint2uchar, context);
+        if (result.Error()) return result;
+
+//      long
+
+        FunctionSymbol* long2bool = new BasicTypeTruncationOperation(rootSpan, u"long2bool", longType, boolType, context);
+        if (long2bool->Error()) return Result<bool>(ErrorId(long2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2sbyte = new BasicTypeTruncationOperation(rootSpan, u"long2sbyte", longType, sbyteType, context);
+        if (long2sbyte->Error()) return Result<bool>(ErrorId(long2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2byte = new BasicTypeTruncationOperation(rootSpan, u"long2byte", longType, byteType, context);
+        if (long2byte->Error()) return Result<bool>(ErrorId(long2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2short = new BasicTypeTruncationOperation(rootSpan, u"long2short", longType, shortType, context);
+        if (long2short->Error()) return Result<bool>(ErrorId(long2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2ushort = new BasicTypeTruncationOperation(rootSpan, u"long2ushort", longType, ushortType, context);
+        if (long2ushort->Error()) return Result<bool>(ErrorId(long2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2int = new BasicTypeTruncationOperation(rootSpan, u"long2int", longType, intType, context);
+        if (long2int->Error()) return Result<bool>(ErrorId(long2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2uint = new BasicTypeTruncationOperation(rootSpan, u"long2uint", longType, uintType, context);
+        if (long2uint->Error()) return Result<bool>(ErrorId(long2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2ulong = new BasicTypeBitcastOperation(rootSpan, u"long2ulong", longType, ulongType, context);
+        if (long2ulong->Error()) return Result<bool>(ErrorId(long2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"long2float", 1u, longType, floatType, context);
+        if (long2float->Error()) return Result<bool>(ErrorId(long2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"long2double", 2u, longType, doubleType, context);
+        if (long2double->Error()) return Result<bool>(ErrorId(long2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2char = new BasicTypeTruncationOperation(rootSpan, u"long2char", longType, charType, context);
+        if (long2char->Error()) return Result<bool>(ErrorId(long2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2wchar = new BasicTypeTruncationOperation(rootSpan, u"long2wchar", longType, wcharType, context);
+        if (long2wchar->Error()) return Result<bool>(ErrorId(long2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* long2uchar = new BasicTypeTruncationOperation(rootSpan, u"long2uchar", longType, ucharType, context);
+        if (long2uchar->Error()) return Result<bool>(ErrorId(long2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(long2uchar, context);
+        if (result.Error()) return result;
+
+//      ulong
+
+        FunctionSymbol* ulong2bool = new BasicTypeTruncationOperation(rootSpan, u"ulong2bool", ulongType, boolType, context);
+        if (ulong2bool->Error()) return Result<bool>(ErrorId(ulong2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2sbyte = new BasicTypeTruncationOperation(rootSpan, u"ulong2sbyte", ulongType, sbyteType, context);
+        if (ulong2sbyte->Error()) return Result<bool>(ErrorId(ulong2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2byte = new BasicTypeTruncationOperation(rootSpan, u"ulong2byte", ulongType, byteType, context);
+        if (ulong2byte->Error()) return Result<bool>(ErrorId(ulong2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2short = new BasicTypeTruncationOperation(rootSpan, u"ulong2short", ulongType, shortType, context);
+        if (ulong2short->Error()) return Result<bool>(ErrorId(ulong2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2ushort = new BasicTypeTruncationOperation(rootSpan, u"ulong2ushort", ulongType, ushortType, context);
+        if (ulong2ushort->Error()) return Result<bool>(ErrorId(ulong2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2int = new BasicTypeTruncationOperation(rootSpan, u"ulong2int", ulongType, intType, context);
+        if (ulong2int->Error()) return Result<bool>(ErrorId(ulong2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2uint = new BasicTypeTruncationOperation(rootSpan, u"ulong2uint", ulongType, uintType, context);
+        if (ulong2uint->Error()) return Result<bool>(ErrorId(ulong2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2long = new BasicTypeBitcastOperation(rootSpan, u"ulong2long", ulongType, longType, context);
+        if (ulong2long->Error()) return Result<bool>(ErrorId(ulong2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"ulong2float", 1u, ulongType, floatType, context);
+        if (ulong2float->Error()) return Result<bool>(ErrorId(ulong2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"ulong2double", 2u, ulongType, doubleType, context);
+        if (ulong2double->Error()) return Result<bool>(ErrorId(ulong2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2char = new BasicTypeTruncationOperation(rootSpan, u"ulong2char", ulongType, charType, context);
+        if (ulong2char->Error()) return Result<bool>(ErrorId(ulong2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2wchar = new BasicTypeTruncationOperation(rootSpan, u"ulong2wchar", ulongType, wcharType, context);
+        if (ulong2wchar->Error()) return Result<bool>(ErrorId(ulong2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulong2uchar = new BasicTypeTruncationOperation(rootSpan, u"ulong2uchar", ulongType, ucharType, context);
+        if (ulong2uchar->Error()) return Result<bool>(ErrorId(ulong2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulong2uchar, context);
+        if (result.Error()) return result;
+
+//      float
+
+        FunctionSymbol* float2bool = new BasicTypeFloatingToIntOperation(rootSpan, u"float2bool", floatType, boolType, context);
+        if (float2bool->Error()) return Result<bool>(ErrorId(float2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2sbyte = new BasicTypeFloatingToIntOperation(rootSpan, u"float2sbyte", floatType, sbyteType, context);
+        if (float2sbyte->Error()) return Result<bool>(ErrorId(float2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2byte = new BasicTypeFloatingToIntOperation(rootSpan, u"float2byte", floatType, byteType, context);
+        if (float2byte->Error()) return Result<bool>(ErrorId(float2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2short = new BasicTypeFloatingToIntOperation(rootSpan, u"float2short", floatType, shortType, context);
+        if (float2short->Error()) return Result<bool>(ErrorId(float2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2ushort = new BasicTypeFloatingToIntOperation(rootSpan, u"float2ushort", floatType, ushortType, context);
+        if (float2ushort->Error()) return Result<bool>(ErrorId(float2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2int = new BasicTypeFloatingToIntOperation(rootSpan, u"float2int", floatType, intType, context);
+        if (float2int->Error()) return Result<bool>(ErrorId(float2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2uint = new BasicTypeFloatingToIntOperation(rootSpan, u"float2uint", floatType, uintType, context);
+        if (float2int->Error()) return Result<bool>(ErrorId(float2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2long = new BasicTypeFloatingToIntOperation(rootSpan, u"float2long", floatType, longType, context);
+        if (float2long->Error()) return Result<bool>(ErrorId(float2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2ulong = new BasicTypeFloatingToIntOperation(rootSpan, u"float2ulong", floatType, ulongType, context);
+        if (float2long->Error()) return Result<bool>(ErrorId(float2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2double = new BasicTypeImplicitFloatingExtensionOperation(rootSpan, u"float2double", 1u, floatType, doubleType, context);
+        if (float2double->Error()) return Result<bool>(ErrorId(float2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2char = new BasicTypeFloatingToIntOperation(rootSpan, u"float2char", floatType, charType, context);
+        if (float2char->Error()) return Result<bool>(ErrorId(float2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2wchar = new BasicTypeFloatingToIntOperation(rootSpan, u"float2wchar", floatType, wcharType, context);
+        if (float2wchar->Error()) return Result<bool>(ErrorId(float2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* float2uchar = new BasicTypeFloatingToIntOperation(rootSpan, u"float2uchar", floatType, ucharType, context);
+        if (float2uchar->Error()) return Result<bool>(ErrorId(float2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(float2uchar, context);
+        if (result.Error()) return result;
+
+//      double
+
+        FunctionSymbol* double2bool = new BasicTypeFloatingToIntOperation(rootSpan, u"double2bool", doubleType, boolType, context);
+        if (double2bool->Error()) return Result<bool>(ErrorId(double2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2sbyte = new BasicTypeFloatingToIntOperation(rootSpan, u"double2sbyte", doubleType, sbyteType, context);
+        if (double2sbyte->Error()) return Result<bool>(ErrorId(double2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2byte = new BasicTypeFloatingToIntOperation(rootSpan, u"double2byte", doubleType, byteType, context);
+        if (double2byte->Error()) return Result<bool>(ErrorId(double2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2short = new BasicTypeFloatingToIntOperation(rootSpan, u"double2short", doubleType, shortType, context);
+        if (double2short->Error()) return Result<bool>(ErrorId(double2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2ushort = new BasicTypeFloatingToIntOperation(rootSpan, u"double2ushort", doubleType, ushortType, context);
+        if (double2ushort->Error()) return Result<bool>(ErrorId(double2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2int = new BasicTypeFloatingToIntOperation(rootSpan, u"double2int", doubleType, intType, context);
+        if (double2int->Error()) return Result<bool>(ErrorId(double2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2uint = new BasicTypeFloatingToIntOperation(rootSpan, u"double2uint", doubleType, uintType, context);
+        if (double2uint->Error()) return Result<bool>(ErrorId(double2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2long = new BasicTypeFloatingToIntOperation(rootSpan, u"double2long", doubleType, longType, context);
+        if (double2long->Error()) return Result<bool>(ErrorId(double2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2ulong = new BasicTypeFloatingToIntOperation(rootSpan, u"double2ulong", doubleType, ulongType, context);
+        if (double2ulong->Error()) return Result<bool>(ErrorId(double2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2float = new BasicTypeTruncationOperation(rootSpan, u"double2float", doubleType, floatType, context);
+        if (double2float->Error()) return Result<bool>(ErrorId(double2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2char = new BasicTypeFloatingToIntOperation(rootSpan, u"double2char", doubleType, charType, context);
+        if (double2char->Error()) return Result<bool>(ErrorId(double2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2wchar = new BasicTypeFloatingToIntOperation(rootSpan, u"double2wchar", doubleType, wcharType, context);
+        if (double2wchar->Error()) return Result<bool>(ErrorId(double2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* double2uchar = new BasicTypeFloatingToIntOperation(rootSpan, u"double2uchar", doubleType, ucharType, context);
+        if (double2uchar->Error()) return Result<bool>(ErrorId(double2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(double2uchar, context);
+        if (result.Error()) return result;
+
+//      char
+
+        FunctionSymbol* char2bool = new BasicTypeTruncationOperation(rootSpan, u"char2bool", charType, boolType, context);
+        if (char2bool->Error()) return Result<bool>(ErrorId(char2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2sbyte = new BasicTypeBitcastOperation(rootSpan, u"char2sbyte", charType, sbyteType, context);
+        if (char2sbyte->Error()) return Result<bool>(ErrorId(char2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2byte = new BasicTypeBitcastOperation(rootSpan, u"char2byte", charType, byteType, context);
+        if (char2byte->Error()) return Result<bool>(ErrorId(char2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2short = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2short", 1u, charType, shortType, context);
+        if (char2short->Error()) return Result<bool>(ErrorId(char2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2ushort = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2ushort", 2u, charType, ushortType, context);
+        if (char2ushort->Error()) return Result<bool>(ErrorId(char2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2int = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2int", 3u, charType, intType, context);
+        if (char2int->Error()) return Result<bool>(ErrorId(char2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2uint = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2uint", 4u, charType, uintType, context);
+        if (char2uint->Error()) return Result<bool>(ErrorId(char2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2long = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2long", 5u, charType, longType, context);
+        if (char2long->Error()) return Result<bool>(ErrorId(char2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2ulong = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2ulong", 6u, charType, ulongType, context);
+        if (char2ulong->Error()) return Result<bool>(ErrorId(char2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"char2float", 7u, charType, floatType, context);
+        if (char2float->Error()) return Result<bool>(ErrorId(char2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"char2double", 8u, charType, doubleType, context);
+        if (char2double->Error()) return Result<bool>(ErrorId(char2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2wchar = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2wchar", 9u, charType, wcharType, context);
+        if (char2wchar->Error()) return Result<bool>(ErrorId(char2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2wchar, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* char2uchar = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"char2uchar", 10u, charType, ucharType, context);
+        if (char2uchar->Error()) return Result<bool>(ErrorId(char2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(char2uchar, context);
+        if (result.Error()) return result;
+
+//      wchar
+
+        FunctionSymbol* wchar2bool = new BasicTypeTruncationOperation(rootSpan, u"wchar2bool", wcharType, boolType, context);
+        if (wchar2bool->Error()) return Result<bool>(ErrorId(wchar2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2sbyte = new BasicTypeTruncationOperation(rootSpan, u"wchar2sbyte", wcharType, sbyteType, context);
+        if (wchar2sbyte->Error()) return Result<bool>(ErrorId(wchar2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2byte = new BasicTypeTruncationOperation(rootSpan, u"wchar2byte", wcharType, byteType, context);
+        if (wchar2byte->Error()) return Result<bool>(ErrorId(wchar2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2short = new BasicTypeBitcastOperation(rootSpan, u"wchar2short", wcharType, shortType, context);
+        if (wchar2short->Error()) return Result<bool>(ErrorId(wchar2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2ushort = new BasicTypeBitcastOperation(rootSpan, u"wchar2ushort", wcharType, ushortType, context);
+        if (wchar2ushort->Error()) return Result<bool>(ErrorId(wchar2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2int = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"wchar2int", 1u, wcharType, intType, context);
+        if (wchar2int->Error()) return Result<bool>(ErrorId(wchar2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2uint = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"wchar2uint", 2u, wcharType, uintType, context);
+        if (wchar2uint->Error()) return Result<bool>(ErrorId(wchar2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2long = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"wchar2long", 3u, wcharType, longType, context);
+        if (wchar2long->Error()) return Result<bool>(ErrorId(wchar2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2ulong = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"wchar2ulong", 4u, wcharType, ulongType, context);
+        if (wchar2ulong->Error()) return Result<bool>(ErrorId(wchar2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"wchar2float", 5u, wcharType, floatType, context);
+        if (wchar2float->Error()) return Result<bool>(ErrorId(wchar2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"wchar2double", 6u, wcharType, doubleType, context);
+        if (wchar2double->Error()) return Result<bool>(ErrorId(wchar2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2char = new BasicTypeTruncationOperation(rootSpan, u"wchar2char", wcharType, charType, context);
+        if (wchar2char->Error()) return Result<bool>(ErrorId(wchar2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wchar2uchar = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"wchar2uchar", 7u, wcharType, ucharType, context);
+        if (wchar2uchar->Error()) return Result<bool>(ErrorId(wchar2uchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wchar2uchar, context);
+        if (result.Error()) return result;
+
+//      uchar
+
+        FunctionSymbol* uchar2bool = new BasicTypeTruncationOperation(rootSpan, u"uchar2bool", ucharType, boolType, context);
+        if (uchar2bool->Error()) return Result<bool>(ErrorId(uchar2bool->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2bool, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2sbyte = new BasicTypeTruncationOperation(rootSpan, u"uchar2sbyte", ucharType, sbyteType, context);
+        if (uchar2sbyte->Error()) return Result<bool>(ErrorId(uchar2sbyte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2sbyte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2byte = new BasicTypeTruncationOperation(rootSpan, u"uchar2byte", ucharType, byteType, context);
+        if (uchar2byte->Error()) return Result<bool>(ErrorId(uchar2byte->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2byte, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2short = new BasicTypeTruncationOperation(rootSpan, u"uchar2short", ucharType, shortType, context);
+        if (uchar2short->Error()) return Result<bool>(ErrorId(uchar2short->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2short, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2ushort = new BasicTypeTruncationOperation(rootSpan, u"uchar2ushort", ucharType, ushortType, context);
+        if (uchar2ushort->Error()) return Result<bool>(ErrorId(uchar2ushort->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2ushort, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2int = new BasicTypeBitcastOperation(rootSpan, u"uchar2int", ucharType, intType, context);
+        if (uchar2int->Error()) return Result<bool>(ErrorId(uchar2int->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2int, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2uint = new BasicTypeBitcastOperation(rootSpan, u"uchar2uint", ucharType, uintType, context);
+        if (uchar2uint->Error()) return Result<bool>(ErrorId(uchar2uint->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2uint, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2long = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"uchar2long", 1u, ucharType, longType, context);
+        if (uchar2long->Error()) return Result<bool>(ErrorId(uchar2long->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2long, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2ulong = new BasicTypeImplicitZeroExtensionOperation(rootSpan, u"uchar2ulong", 2u, ucharType, ulongType, context);
+        if (uchar2ulong->Error()) return Result<bool>(ErrorId(uchar2ulong->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2ulong, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2float = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"uchar2float", 3u, ucharType, floatType, context);
+        if (uchar2float->Error()) return Result<bool>(ErrorId(uchar2float->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2float, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2double = new BasicTypeImplicitIntToFloatingOperation(rootSpan, u"uchar2double", 4u, ucharType, doubleType, context);
+        if (uchar2double->Error()) return Result<bool>(ErrorId(uchar2double->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2double, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2char = new BasicTypeTruncationOperation(rootSpan, u"uchar2char", ucharType, charType, context);
+        if (uchar2char->Error()) return Result<bool>(ErrorId(uchar2char->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2char, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uchar2wchar = new BasicTypeTruncationOperation(rootSpan, u"uchar2wchar", ucharType, wcharType, context);
+        if (uchar2wchar->Error()) return Result<bool>(ErrorId(uchar2wchar->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uchar2wchar, context);
+        if (result.Error()) return result;
+
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> MakeBasicTypeOperations(SymbolsContext& context, SymbolTable* symbolTable, const System.Lex.Span& rootSpan,
+        BoolTypeSymbol* boolType, SByteTypeSymbol* sbyteType,
+        ByteTypeSymbol* byteType, ShortTypeSymbol* shortType, UShortTypeSymbol* ushortType, IntTypeSymbol* intType, UIntTypeSymbol* uintType,
+        LongTypeSymbol* longType, ULongTypeSymbol* ulongType, FloatTypeSymbol* floatType, DoubleTypeSymbol* doubleType,
+        CharTypeSymbol* charType, WCharTypeSymbol* wcharType, UCharTypeSymbol* ucharType, VoidTypeSymbol* voidType)
+    {
+        FunctionSymbol* boolDefaultCtor = new BasicTypeDefaultBoolOperation(rootSpan, boolType, context);
+        if (boolDefaultCtor->Error()) return Result<bool>(ErrorId(boolDefaultCtor->GetErrorId()));
+        auto result = symbolTable->AddFunctionSymbolToGlobalScope(boolDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* boolCopyCtor = new BasicTypeCopyCtor(rootSpan, boolType, context);
+        if (boolCopyCtor->Error()) return Result<bool>(ErrorId(boolCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(boolCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* boolMoveCtor = new BasicTypeMoveCtor(rootSpan, boolType, context);
+        if (boolMoveCtor->Error()) return Result<bool>(ErrorId(boolMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(boolMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* boolCopyAssignment = new BasicTypeCopyAssignment(rootSpan, boolType, voidType, context);
+        if (boolCopyAssignment->Error()) return Result<bool>(ErrorId(boolCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(boolCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* boolMoveAssignment = new BasicTypeMoveAssignment(rootSpan, boolType, voidType, context);
+        if (boolMoveAssignment->Error()) return Result<bool>(ErrorId(boolMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(boolMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* boolReturn = new BasicTypeReturn(rootSpan, boolType, context);
+        if (boolReturn->Error()) return Result<bool>(ErrorId(boolReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(boolReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* boolNot = new BasicTypeNotOperation(rootSpan, boolType, context);
+        if (boolNot->Error()) return Result<bool>(ErrorId(boolNot->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(boolNot, context);
+        if (result.Error()) return result;
+        FunctionSymbol* boolEqual = new BasicTypeEqualOperation(rootSpan, boolType, boolType, context);
+        if (boolEqual->Error()) return Result<bool>(ErrorId(boolEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(boolEqual, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* sbyteDefaultCtor = new BasicTypeDefaultSByteOperation(rootSpan, sbyteType, context);
+        if (sbyteDefaultCtor->Error()) return Result<bool>(ErrorId(sbyteDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* sbyteCopyCtor = new BasicTypeCopyCtor(rootSpan, sbyteType, context);
+        if (sbyteCopyCtor->Error()) return Result<bool>(ErrorId(sbyteCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* sbyteMoveCtor = new BasicTypeMoveCtor(rootSpan, sbyteType, context);
+        if (sbyteMoveCtor->Error()) return Result<bool>(ErrorId(sbyteMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* sbyteCopyAssignment = new BasicTypeCopyAssignment(rootSpan, sbyteType, voidType, context);
+        if (sbyteCopyAssignment->Error()) return Result<bool>(ErrorId(sbyteCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* sbyteMoveAssignment = new BasicTypeMoveAssignment(rootSpan, sbyteType, voidType, context);
+        if (sbyteMoveAssignment->Error()) return Result<bool>(ErrorId(sbyteMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* sbyteReturn = new BasicTypeReturn(rootSpan, sbyteType, context);
+        if (sbyteReturn->Error()) return Result<bool>(ErrorId(sbyteReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* sbyteEqual = new BasicTypeEqualOperation(rootSpan, sbyteType, boolType, context);
+        if (sbyteEqual->Error()) return Result<bool>(ErrorId(sbyteEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* sbyteLess = new BasicTypeLessOperation(rootSpan, sbyteType, boolType, context);
+        if (sbyteLess->Error()) return Result<bool>(ErrorId(sbyteLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(sbyteLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, sbyteType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* byteDefaultCtor = new BasicTypeDefaultByteOperation(rootSpan, byteType, context);
+        if (byteDefaultCtor->Error()) return Result<bool>(ErrorId(byteDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* byteCopyCtor = new BasicTypeCopyCtor(rootSpan, byteType, context);
+        if (byteCopyCtor->Error()) return Result<bool>(ErrorId(byteCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* byteMoveCtor = new BasicTypeMoveCtor(rootSpan, byteType, context);
+        if (byteMoveCtor->Error()) return Result<bool>(ErrorId(byteMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* byteCopyAssignment = new BasicTypeCopyAssignment(rootSpan, byteType, voidType, context);
+        if (byteCopyAssignment->Error()) return Result<bool>(ErrorId(byteCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* byteMoveAssignment = new BasicTypeMoveAssignment(rootSpan, byteType, voidType, context);
+        if (byteMoveAssignment->Error()) return Result<bool>(ErrorId(byteMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* byteReturn = new BasicTypeReturn(rootSpan, byteType, context);
+        if (byteReturn->Error()) return Result<bool>(ErrorId(byteReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* byteEqual = new BasicTypeEqualOperation(rootSpan, byteType, boolType, context);
+        if (byteEqual->Error()) return Result<bool>(ErrorId(byteEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* byteLess = new BasicTypeLessOperation(rootSpan, byteType, boolType, context);
+        if (byteLess->Error()) return Result<bool>(ErrorId(byteLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(byteLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, byteType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* shortDefaultCtor = new BasicTypeDefaultShortOperation(rootSpan, shortType, context);
+        if (shortDefaultCtor->Error()) return Result<bool>(ErrorId(shortDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* shortCopyCtor = new BasicTypeCopyCtor(rootSpan, shortType, context);
+        if (shortCopyCtor->Error()) return Result<bool>(ErrorId(shortCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* shortMoveCtor = new BasicTypeMoveCtor(rootSpan, shortType, context);
+        if (shortMoveCtor->Error()) return Result<bool>(ErrorId(shortMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* shortCopyAssignment = new BasicTypeCopyAssignment(rootSpan, shortType, voidType, context);
+        if (shortCopyAssignment->Error()) return Result<bool>(ErrorId(shortCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* shortMoveAssignment = new BasicTypeMoveAssignment(rootSpan, shortType, voidType, context);
+        if (shortMoveAssignment->Error()) return Result<bool>(ErrorId(shortMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* shortReturn = new BasicTypeReturn(rootSpan, shortType, context);
+        if (shortReturn->Error()) return Result<bool>(ErrorId(shortReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* shortEqual = new BasicTypeEqualOperation(rootSpan, shortType, boolType, context);
+        if (shortEqual->Error()) return Result<bool>(ErrorId(shortEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* shortLess = new BasicTypeLessOperation(rootSpan, shortType, boolType, context);
+        if (shortLess->Error()) return Result<bool>(ErrorId(shortLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(shortLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, shortType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ushortDefaultCtor = new BasicTypeDefaultUShortOperation(rootSpan, ushortType, context);
+        if (ushortDefaultCtor->Error()) return Result<bool>(ErrorId(ushortDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ushortCopyCtor = new BasicTypeCopyCtor(rootSpan, ushortType, context);
+        if (ushortCopyCtor->Error()) return Result<bool>(ErrorId(ushortCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ushortMoveCtor = new BasicTypeMoveCtor(rootSpan, ushortType, context);
+        if (ushortMoveCtor->Error()) return Result<bool>(ErrorId(ushortMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ushortCopyAssignment = new BasicTypeCopyAssignment(rootSpan, ushortType, voidType, context);
+        if (ushortCopyAssignment->Error()) return Result<bool>(ErrorId(ushortCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ushortMoveAssignment = new BasicTypeMoveAssignment(rootSpan, ushortType, voidType, context);
+        if (ushortMoveAssignment->Error()) return Result<bool>(ErrorId(ushortMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ushortReturn = new BasicTypeReturn(rootSpan, ushortType, context);
+        if (ushortReturn->Error()) return Result<bool>(ErrorId(ushortReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ushortEqual = new BasicTypeEqualOperation(rootSpan, ushortType, boolType, context);
+        if (ushortEqual->Error()) return Result<bool>(ErrorId(ushortEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ushortLess = new BasicTypeLessOperation(rootSpan, ushortType, boolType, context);
+        if (ushortLess->Error()) return Result<bool>(ErrorId(ushortLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ushortLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, ushortType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* intDefaultCtor = new BasicTypeDefaultIntOperation(rootSpan, intType, context);
+        if (intDefaultCtor->Error()) return Result<bool>(ErrorId(intDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* intCopyCtor = new BasicTypeCopyCtor(rootSpan, intType, context);
+        if (intCopyCtor->Error()) return Result<bool>(ErrorId(intCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* intMoveCtor = new BasicTypeMoveCtor(rootSpan, intType, context);
+        if (intMoveCtor->Error()) return Result<bool>(ErrorId(intMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* intCopyAssignment = new BasicTypeCopyAssignment(rootSpan, intType, voidType, context);
+        if (intCopyAssignment->Error()) return Result<bool>(ErrorId(intCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* intMoveAssignment = new BasicTypeMoveAssignment(rootSpan, intType, voidType, context);
+        if (intMoveAssignment->Error()) return Result<bool>(ErrorId(intMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* intReturn = new BasicTypeReturn(rootSpan, intType, context);
+        if (intReturn->Error()) return Result<bool>(ErrorId(intReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* intEqual = new BasicTypeEqualOperation(rootSpan, intType, boolType, context);
+        if (intEqual->Error()) return Result<bool>(ErrorId(intEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* intLess = new BasicTypeLessOperation(rootSpan, intType, boolType, context);
+        if (intLess->Error()) return Result<bool>(ErrorId(intLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(intLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, intType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* uintDefaultCtor = new BasicTypeDefaultUIntOperation(rootSpan, uintType, context);
+        if (uintDefaultCtor->Error()) return Result<bool>(ErrorId(uintDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* uintCopyCtor = new BasicTypeCopyCtor(rootSpan, uintType, context);
+        if (uintCopyCtor->Error()) return Result<bool>(ErrorId(uintCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* uintMoveCtor = new BasicTypeMoveCtor(rootSpan, uintType, context);
+        if (uintMoveCtor->Error()) return Result<bool>(ErrorId(uintMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* uintCopyAssignment = new BasicTypeCopyAssignment(rootSpan, uintType, voidType, context);
+        if (uintCopyAssignment->Error()) return Result<bool>(ErrorId(uintCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* uintMoveAssignment = new BasicTypeMoveAssignment(rootSpan, uintType, voidType, context);
+        if (uintMoveAssignment->Error()) return Result<bool>(ErrorId(uintMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* uintReturn = new BasicTypeReturn(rootSpan, uintType, context);
+        if (uintReturn->Error()) return Result<bool>(ErrorId(uintReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* uintEqual = new BasicTypeEqualOperation(rootSpan, uintType, boolType, context);
+        if (uintEqual->Error()) return Result<bool>(ErrorId(uintEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* uintLess = new BasicTypeLessOperation(rootSpan, uintType, boolType, context);
+        if (uintLess->Error()) return Result<bool>(ErrorId(uintLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(uintLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, uintType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* longDefaultCtor = new BasicTypeDefaultLongOperation(rootSpan, longType, context);
+        if (longDefaultCtor->Error()) return Result<bool>(ErrorId(longDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* longCopyCtor = new BasicTypeCopyCtor(rootSpan, longType, context);
+        if (longCopyCtor->Error()) return Result<bool>(ErrorId(longCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* longMoveCtor = new BasicTypeMoveCtor(rootSpan, longType, context);
+        if (longMoveCtor->Error()) return Result<bool>(ErrorId(longMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* longCopyAssignment = new BasicTypeCopyAssignment(rootSpan, longType, voidType, context);
+        if (longCopyAssignment->Error()) return Result<bool>(ErrorId(longCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* longMoveAssignment = new BasicTypeMoveAssignment(rootSpan, longType, voidType, context);
+        if (longMoveAssignment->Error()) return Result<bool>(ErrorId(longMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* longReturn = new BasicTypeReturn(rootSpan, longType, context);
+        if (longReturn->Error()) return Result<bool>(ErrorId(longReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* longEqual = new BasicTypeEqualOperation(rootSpan, longType, boolType, context);
+        if (longEqual->Error()) return Result<bool>(ErrorId(longEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* longLess = new BasicTypeLessOperation(rootSpan, longType, boolType, context);
+        if (longLess->Error()) return Result<bool>(ErrorId(longLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(longLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, longType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ulongDefaultCtor = new BasicTypeDefaultULongOperation(rootSpan, ulongType, context);
+        if (ulongDefaultCtor->Error()) return Result<bool>(ErrorId(ulongDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ulongCopyCtor = new BasicTypeCopyCtor(rootSpan, ulongType, context);
+        if (ulongCopyCtor->Error()) return Result<bool>(ErrorId(ulongCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ulongMoveCtor = new BasicTypeMoveCtor(rootSpan, ulongType, context);
+        if (ulongMoveCtor->Error()) return Result<bool>(ErrorId(ulongMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ulongCopyAssignment = new BasicTypeCopyAssignment(rootSpan, ulongType, voidType, context);
+        if (ulongCopyAssignment->Error()) return Result<bool>(ErrorId(ulongCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ulongMoveAssignment = new BasicTypeMoveAssignment(rootSpan, ulongType, voidType, context);
+        if (ulongMoveAssignment->Error()) return Result<bool>(ErrorId(ulongMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ulongReturn = new BasicTypeReturn(rootSpan, ulongType, context);
+        if (ulongReturn->Error()) return Result<bool>(ErrorId(ulongReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ulongEqual = new BasicTypeEqualOperation(rootSpan, ulongType, boolType, context);
+        if (ulongEqual->Error()) return Result<bool>(ErrorId(ulongEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ulongLess = new BasicTypeLessOperation(rootSpan, ulongType, boolType, context);
+        if (ulongLess->Error()) return Result<bool>(ErrorId(ulongLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ulongLess, context);
+        if (result.Error()) return result;
+        result = MakeIntegerOperations(context, symbolTable, rootSpan, ulongType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* floatDefaultCtor = new BasicTypeDefaultFloatOperation(rootSpan, floatType, context);
+        if (floatDefaultCtor->Error()) return Result<bool>(ErrorId(floatDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* floatCopyCtor = new BasicTypeCopyCtor(rootSpan, floatType, context);
+        if (floatCopyCtor->Error()) return Result<bool>(ErrorId(floatCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* floatMoveCtor = new BasicTypeMoveCtor(rootSpan, floatType, context);
+        if (floatMoveCtor->Error()) return Result<bool>(ErrorId(floatMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* floatCopyAssignment = new BasicTypeCopyAssignment(rootSpan, floatType, voidType, context);
+        if (floatCopyAssignment->Error()) return Result<bool>(ErrorId(floatCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* floatMoveAssignment = new BasicTypeMoveAssignment(rootSpan, floatType, voidType, context);
+        if (floatMoveAssignment->Error()) return Result<bool>(ErrorId(floatMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* floatReturn = new BasicTypeReturn(rootSpan, floatType, context);
+        if (floatReturn->Error()) return Result<bool>(ErrorId(floatReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* floatEqual = new BasicTypeEqualOperation(rootSpan, floatType, boolType, context);
+        if (floatEqual->Error()) return Result<bool>(ErrorId(floatEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* floatLess = new BasicTypeLessOperation(rootSpan, floatType, boolType, context);
+        if (floatLess->Error()) return Result<bool>(ErrorId(floatLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(floatLess, context);
+        if (result.Error()) return result;
+        result = MakeFloatingPointOperations(context, symbolTable, rootSpan, floatType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* doubleDefaultCtor = new BasicTypeDefaultDoubleOperation(rootSpan, doubleType, context);
+        if (doubleDefaultCtor->Error()) return Result<bool>(ErrorId(doubleDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* doubleCopyCtor = new BasicTypeCopyCtor(rootSpan, doubleType, context);
+        if (doubleCopyCtor->Error()) return Result<bool>(ErrorId(doubleCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* doubleMoveCtor = new BasicTypeMoveCtor(rootSpan, doubleType, context);
+        if (doubleMoveCtor->Error()) return Result<bool>(ErrorId(doubleMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* doubleCopyAssignment = new BasicTypeCopyAssignment(rootSpan, doubleType, voidType, context);
+        if (doubleCopyAssignment->Error()) return Result<bool>(ErrorId(doubleCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* doubleMoveAssignment = new BasicTypeMoveAssignment(rootSpan, doubleType, voidType, context);
+        if (doubleMoveAssignment->Error()) return Result<bool>(ErrorId(doubleMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* doubleReturn = new BasicTypeReturn(rootSpan, doubleType, context);
+        if (doubleReturn->Error()) return Result<bool>(ErrorId(doubleReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* doubleEqual = new BasicTypeEqualOperation(rootSpan, doubleType, boolType, context);
+        if (doubleEqual->Error()) return Result<bool>(ErrorId(doubleEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* doubleLess = new BasicTypeLessOperation(rootSpan, doubleType, boolType, context);
+        if (doubleLess->Error()) return Result<bool>(ErrorId(doubleLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(doubleLess, context);
+        if (result.Error()) return result;
+        result = MakeFloatingPointOperations(context, symbolTable, rootSpan, doubleType);
+        if (result.Error()) return result;
+
+        FunctionSymbol* charDefaultCtor = new BasicTypeDefaultCharOperation(rootSpan, charType, context);
+        if (charDefaultCtor->Error()) return Result<bool>(ErrorId(charDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* charCopyCtor = new BasicTypeCopyCtor(rootSpan, charType, context);
+        if (charCopyCtor->Error()) return Result<bool>(ErrorId(charCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* charMoveCtor = new BasicTypeMoveCtor(rootSpan, charType, context);
+        if (charMoveCtor->Error()) return Result<bool>(ErrorId(charMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* charCopyAssignment = new BasicTypeCopyAssignment(rootSpan, charType, voidType, context);
+        if (charCopyAssignment->Error()) return Result<bool>(ErrorId(charCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* charMoveAssignment = new BasicTypeMoveAssignment(rootSpan, charType, voidType, context);
+        if (charMoveAssignment->Error()) return Result<bool>(ErrorId(charMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* charReturn = new BasicTypeReturn(rootSpan, charType, context);
+        if (charReturn->Error()) return Result<bool>(ErrorId(charReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* charEqual = new BasicTypeEqualOperation(rootSpan, charType, boolType, context);
+        if (charEqual->Error()) return Result<bool>(ErrorId(charEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* charLess = new BasicTypeLessOperation(rootSpan, charType, boolType, context);
+        if (charLess->Error()) return Result<bool>(ErrorId(charLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(charLess, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* wcharDefaultCtor = new BasicTypeDefaultWCharOperation(rootSpan, wcharType, context);
+        if (wcharDefaultCtor->Error()) return Result<bool>(ErrorId(wcharDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* wcharCopyCtor = new BasicTypeCopyCtor(rootSpan, wcharType, context);
+        if (wcharCopyCtor->Error()) return Result<bool>(ErrorId(wcharCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* wcharMoveCtor = new BasicTypeMoveCtor(rootSpan, wcharType, context);
+        if (wcharMoveCtor->Error()) return Result<bool>(ErrorId(wcharMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* wcharCopyAssignment = new BasicTypeCopyAssignment(rootSpan, wcharType, voidType, context);
+        if (wcharCopyAssignment->Error()) return Result<bool>(ErrorId(wcharCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* wcharMoveAssignment = new BasicTypeMoveAssignment(rootSpan, wcharType, voidType, context);
+        if (wcharMoveAssignment->Error()) return Result<bool>(ErrorId(wcharMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* wcharReturn = new BasicTypeReturn(rootSpan, wcharType, context);
+        if (wcharReturn->Error()) return Result<bool>(ErrorId(wcharReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* wcharEqual = new BasicTypeEqualOperation(rootSpan, wcharType, boolType, context);
+        if (wcharEqual->Error()) return Result<bool>(ErrorId(wcharEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* wcharLess = new BasicTypeLessOperation(rootSpan, wcharType, boolType, context);
+        if (wcharLess->Error()) return Result<bool>(ErrorId(wcharLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(wcharLess, context);
+        if (result.Error()) return result;
+
+        FunctionSymbol* ucharDefaultCtor = new BasicTypeDefaultUCharOperation(rootSpan, ucharType, context);
+        if (ucharDefaultCtor->Error()) return Result<bool>(ErrorId(ucharDefaultCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharDefaultCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ucharCopyCtor = new BasicTypeCopyCtor(rootSpan, ucharType, context);
+        if (ucharCopyCtor->Error()) return Result<bool>(ErrorId(ucharCopyCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharCopyCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ucharMoveCtor = new BasicTypeMoveCtor(rootSpan, ucharType, context);
+        if (ucharMoveCtor->Error()) return Result<bool>(ErrorId(ucharMoveCtor->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharMoveCtor, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ucharCopyAssignment = new BasicTypeCopyAssignment(rootSpan, ucharType, voidType, context);
+        if (ucharCopyAssignment->Error()) return Result<bool>(ErrorId(ucharCopyAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharCopyAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ucharMoveAssignment = new BasicTypeMoveAssignment(rootSpan, ucharType, voidType, context);
+        if (ucharMoveAssignment->Error()) return Result<bool>(ErrorId(ucharMoveAssignment->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharMoveAssignment, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ucharReturn = new BasicTypeReturn(rootSpan, ucharType, context);
+        if (ucharReturn->Error()) return Result<bool>(ErrorId(ucharReturn->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharReturn, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ucharEqual = new BasicTypeEqualOperation(rootSpan, ucharType, boolType, context);
+        if (ucharEqual->Error()) return Result<bool>(ErrorId(ucharEqual->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharEqual, context);
+        if (result.Error()) return result;
+        FunctionSymbol* ucharLess = new BasicTypeLessOperation(rootSpan, ucharType, boolType, context);
+        if (ucharLess->Error()) return Result<bool>(ErrorId(ucharLess->GetErrorId()));
+        result = symbolTable->AddFunctionSymbolToGlobalScope(ucharLess, context);
+        if (result.Error()) return result;
+
+        result = MakeBasicTypeConversions(context, symbolTable, rootSpan, boolType, sbyteType, byteType, shortType, ushortType, intType, uintType,
+            longType, ulongType, floatType, doubleType, charType, wcharType, ucharType);
+        if (result.Error()) return result;
+
+        return Result<bool>(true);
+    }
+}

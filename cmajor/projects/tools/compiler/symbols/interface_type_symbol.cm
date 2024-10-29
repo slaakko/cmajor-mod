@@ -1,0 +1,26 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public class InterfaceTypeSymbol : TypeSymbol
+    {
+        public InterfaceTypeSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.interfaceTypeSymbol, span_, name_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"interface";
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            // todo
+            return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
+        }
+    }
+}
+

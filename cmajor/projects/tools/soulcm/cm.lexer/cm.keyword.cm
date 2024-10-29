@@ -15,7 +15,7 @@ namespace cm.keyword
         {
             return *instance;
         }
-        public System.Lex.KeywordMap* GetKeywordMap() const
+        public System.Lex.KeywordMap* GetKeywords() const
         {
             return &keywordMap;
         }
@@ -108,9 +108,9 @@ namespace cm.keyword
         private static UniquePtr<Keywords> instance;
     }
 
-    public System.Lex.KeywordMap* GetKeywordMap()
+    public System.Lex.KeywordMap* GetKeywords()
     {
-        return Keywords.Instance().GetKeywordMap();
+        return Keywords.Instance().GetKeywords();
     }
 
 } // cm.keyword

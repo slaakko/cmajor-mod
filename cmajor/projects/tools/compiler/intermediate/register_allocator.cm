@@ -1,0 +1,60 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using assembly;
+
+namespace intermediate
+{
+    public class SpillData
+    {
+        public SpillData() : registerGroupToSpill(null), spillToFrameLocation(), instToSpill(null)
+        {
+        }
+        public SpillData(assembly.RegisterGroup* registerGroupToSpill_, const FrameLocation& spillToFrameLocation_, Instruction* instToSpill_) :
+            registerGroupToSpill(registerGroupToSpill_), spillToFrameLocation(spillToFrameLocation_), instToSpill(instToSpill_)
+        {
+        }
+        public inline assembly.RegisterGroup* RegisterGroupToSpill() const
+        {
+            return registerGroupToSpill;
+        }
+        public inline const FrameLocation& SpillToFrameLocation() const
+        {
+            return spillToFrameLocation;
+        }
+        public inline Instruction* InstToSpill() const
+        {
+            return instToSpill;
+        }
+        private assembly.RegisterGroup* registerGroupToSpill;
+        private FrameLocation spillToFrameLocation;
+        private Instruction* instToSpill;
+    }
+
+    public enum RegisterAllocationAction
+    {
+        none, spill, registerAllocated
+    }
+
+    public abstract class RegisterAllocator
+    {
+        public RegisterAllocator()
+        {
+        }
+        public default virtual ~RegisterAllocator();
+        public abstract Result<RegisterAllocationAction> Run(Instruction* inst);
+        public abstract const List<SpillData>& GetSpillData() const;
+        public abstract Locations GetLocations(Instruction* inst) const;
+        public abstract assembly.RegisterGroup* GetRegisterGroup(Instruction* inst) const;
+        public abstract void AddRegisterLocation(Instruction* inst, assembly.RegisterGroup* regGroup);
+        public abstract Frame& GetFrame();
+        public abstract FrameLocation GetFrameLocation(Instruction* inst) const;
+        public abstract int LastActiveLocalRegGroup() const;
+        public abstract void RemoveFromRegisterGroups(Instruction* inst);
+    }
+}
+

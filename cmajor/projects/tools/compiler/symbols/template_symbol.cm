@@ -1,0 +1,82 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public class TemplateParameterSymbol : TypeSymbol
+    {
+        public TemplateParameterSymbol(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.templateParameterSymbol, span_, name_), hasDefault(false), defaultType(null)
+        {
+        }
+        public override ustring FullName() const
+        {
+            return Name();
+        }
+        public inline bool HasDefault() const
+        {
+            return hasDefault;
+        }
+        public inline void SetHasDefault()
+        {
+            hasDefault = true;
+        }
+        public inline TypeSymbol* DefaultType() const
+        {
+            return defaultType;
+        }
+        public inline void SetDefaultType(TypeSymbol* defaultType_)
+        {
+            defaultType = defaultType_;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            #assert(false);
+            return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
+        }
+        public override TypeSymbol* Unify(TypeSymbol* that, SymbolsContext& context)
+        {
+            return that;
+        }
+        public override TypeSymbol* UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
+        {
+            auto it = templateParameterMap.Find(this);
+            if (it != templateParameterMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private bool hasDefault;
+        private TypeSymbol* defaultType;
+    }
+
+    public class BoundTemplateParameterSymbol : Symbol
+    {
+        public BoundTemplateParameterSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.boundTemplateParameterSymbol, span_, name_), type(null)
+        {
+        }
+        public override ustring FullName() const
+        {
+            return Name();
+        }
+        public inline TypeSymbol* Type() const
+        {
+            return type;
+        }
+        public inline void SetType(TypeSymbol* type_)
+        {
+            type = type_;
+        }
+        private TypeSymbol* type;
+    }
+}
+

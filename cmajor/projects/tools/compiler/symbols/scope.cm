@@ -1,0 +1,536 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+
+namespace symbols
+{
+    public enum ScopeLookup : byte
+    {
+        none = 0u,
+        this_ = 1u << 0u,
+        base_ = 1u << 1u,
+        parent = 1u << 2u,
+        this_and_base = this_ | base_,
+        this_and_parent = this_ | parent,
+        this_and_base_and_parent = this_ | base_ | parent,
+        fileScopes = 1u << 3u
+    }
+
+    public abstract class Scope
+    {
+        public Scope()
+        {
+        }
+        public default virtual ~Scope();
+        public abstract Result<Symbol*> Lookup(const ustring& name) const;
+        public abstract Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup) const;
+    }
+
+    public class ContainerScope : Scope
+    {
+        public ContainerScope() : base()
+        {
+        }
+        public inline void SetContainer(ContainerSymbol* container_)
+        {
+            container = container_;
+        }
+        public inline ContainerSymbol* Container() const
+        {
+            return container;
+        }
+        public ContainerScope* BaseScope() const
+        {
+            if (container != null)
+            {
+                if (container->IsClassTypeSymbol())
+                {
+                    ClassTypeSymbol* cls = cast<ClassTypeSymbol*>(container);
+                    ClassTypeSymbol* baseClass = cls->BaseClass();
+                    if (baseClass != null)
+                    {
+                        return baseClass->GetContainerScope();
+                    }
+                }
+            }
+            return null;
+        }
+        public ContainerScope* ParentScope() const
+        {
+            if (container != null)
+            {
+                Symbol* parent = container->Parent();
+                if (parent != null)
+                {
+                    return parent->GetContainerScope();
+                }
+            }
+            return null;
+        }
+        public Result<NamespaceSymbol*> Ns() const
+        {
+            return container->Ns();
+        }
+        [nodiscard]
+        public Result<bool> CollectViableFunctions(int arity, const ustring& groupName, Set<ContainerScope*>& scopesLookedUp, ScopeLookup scopeLookup,
+            ViableFunctionSet& viableFunctions)
+        {
+            bool result = false;
+            if ((scopeLookup & ScopeLookup.this_) != ScopeLookup.none)
+            {
+                if (scopesLookedUp.Find(this) == scopesLookedUp.End())
+                {
+                    scopesLookedUp.Insert(this);
+                    Result<Symbol*> symbolResult = Lookup(groupName);
+                    if (symbolResult.Error())
+                    {
+                        return Result<bool>(ErrorId(symbolResult.GetErrorId()));
+                    }
+                    Symbol* symbol = symbolResult.Value();
+                    if (symbol != null)
+                    {
+                        if (symbol->IsFunctionGroupSymbol())
+                        {
+                            FunctionGroupSymbol* functionGroupSymbol = cast<FunctionGroupSymbol*>(symbol);
+                            Result<bool> groupResult = functionGroupSymbol->CollectViableFunctions(arity, viableFunctions);
+                            if (groupResult.Value()) result = true;
+                        }
+                    }
+                }
+            }
+            if ((scopeLookup & ScopeLookup.base_) != ScopeLookup.none)
+            {
+                ContainerScope* baseScope = BaseScope();
+                if (baseScope != null)
+                {
+                    Result<bool> scopeResult = baseScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions);
+                    if (scopeResult.Value()) result = true;
+                }
+            }
+            if ((scopeLookup& ScopeLookup.parent) != ScopeLookup.none)
+            {
+                ContainerScope* parentScope = ParentScope();
+                if (parentScope != null)
+                {
+                    Result<bool> scopeResult = parentScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions);
+                    if (scopeResult.Value()) return true;
+                }
+            }
+            return Result<bool>(result);
+        }
+        public Result<NamespaceSymbol*> CreateNamespace(const ustring& qualifiedNamespaceName, const System.Lex.Span& span, const Uuid& moduleId, int fileIndex,
+            SymbolsContext& context)
+        {
+            ContainerScope* scope = this;
+            Result<NamespaceSymbol*> parentNsResult = scope->Ns();
+            if (parentNsResult.Error()) return parentNsResult;
+            NamespaceSymbol* parentNs = parentNsResult.Value();
+            List<ustring> components = qualifiedNamespaceName.Split('.');
+            for (const ustring& component : components)
+            {
+                Result<Symbol*> result = scope->Lookup(component);
+                if (result.Error()) return Result<NamespaceSymbol*>(ErrorId(result.GetErrorId()));
+                Symbol* s = result.Value();
+                if (s != null)
+                {
+                    if (s->IsNamespaceSymbol())
+                    {
+                        scope = s->GetContainerScope();
+                        parentNsResult = scope->Ns();
+                        if (parentNsResult.Error()) return parentNsResult;
+                        parentNs = parentNsResult.Value();
+                    }
+                    else
+                    {
+                        auto nameResult = ToUtf8(s->Name());
+                        if (nameResult.Error()) return Result<NamespaceSymbol*>(ErrorId(nameResult.GetErrorId()));
+                        int errorId = MakeError("symbol '" + nameResult.Value() + "' does not denote a namespace", s->FullSpan());
+                        return Result<NamespaceSymbol*>(ErrorId(errorId));
+                    }
+                }
+                else
+                {
+                    NamespaceSymbol* newNs = new NamespaceSymbol(span, component);
+                    newNs->SetModuleId(moduleId);
+                    newNs->SetFileIndex(fileIndex);
+                    newNs->SetModule(container->GetModule());
+                    scope = newNs->GetContainerScope();
+                    auto result = parentNs->AddMember(newNs, context);
+                    if (result.Error()) return Result<NamespaceSymbol*>(ErrorId(result.GetErrorId()));
+                    parentNs = newNs;
+                }
+            }
+            return Result<NamespaceSymbol*>(parentNs);
+        }
+        public override Result<Symbol*> Lookup(const ustring& name) const
+        {
+            return Lookup(name, ScopeLookup.this_);
+        }
+        public override Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup) const
+        {
+            int numQualifiedNameComponents = CountQualifiedNameComponents(name);
+            if (numQualifiedNameComponents > 1)
+            {
+                List<ustring> components = ParseQualifiedName(name);
+                return LookupQualified(components, lookup);
+            }
+            else
+            {
+                auto it = symbolMap.Find(name);
+                if (it != symbolMap.End())
+                {
+                    Symbol* s = it->second;
+                    return Result<Symbol*>(s);
+                }
+                if ((lookup & ScopeLookup.base_) != ScopeLookup.none)
+                {
+                    ContainerScope* baseScope = BaseScope();
+                    if (baseScope != null)
+                    {
+                        Result<Symbol*> baseResult = baseScope->Lookup(name, lookup);
+                        if (baseResult.Error()) return Result<Symbol*>(ErrorId(baseResult.GetErrorId()));
+                        Symbol* s = baseResult.Value();
+                        if (s != null)
+                        {
+                            return Result<Symbol*>(s);
+                        }
+                    }
+                }
+                if ((lookup & ScopeLookup.parent) != ScopeLookup.none)
+                {
+                    ContainerScope* parentScope = ParentScope();
+                    if (parentScope != null)
+                    {
+                        Result<Symbol*> parentResult = parentScope->Lookup(name, lookup);
+                        if (parentResult.Error()) return Result<Symbol*>(ErrorId(parentResult.GetErrorId()));
+                        Symbol* s = parentResult.Value();
+                        if (s != null)
+                        {
+                            return Result<Symbol*>(s);
+                        }
+                    }
+                }
+                return Result<Symbol*>(cast<Symbol*>(null));
+            }
+        }
+        public Result<Symbol*> LookupQualified(const List<ustring>& components, ScopeLookup lookup) const
+        {
+            ContainerScope* scope = this;
+            Symbol* s = null;
+            int n = cast<int>(components.Count());
+            bool allComponentsMatched = true;
+            for (int i = 0; i < n; ++i)
+            {
+                const ustring& component = components[i];
+                if (scope != null)
+                {
+                    Result<Symbol*> scopeResult = scope->Lookup(component, ScopeLookup.this_);
+                    if (scopeResult.Error()) return Result<Symbol*>(ErrorId(scopeResult.GetErrorId()));
+                    s = scopeResult.Value();
+                    if (s != null)
+                    {
+                        scope = s->GetContainerScope();
+                    }
+                    else
+                    {
+                        allComponentsMatched = false;
+                    }
+                }
+            }
+            if (s == null || !allComponentsMatched)
+            {
+                if ((lookup & ScopeLookup.parent) != ScopeLookup.none)
+                {
+                    ContainerScope* parentScope = ParentScope();
+                    if (parentScope != null)
+                    {
+                        return parentScope->LookupQualified(components, lookup);
+                    }
+                    else
+                    {
+                        return Result<Symbol*>(cast<Symbol*>(null));
+                    }
+                }
+            }
+            return Result<Symbol*>(s);
+        }
+        [nodiscard]
+        public Result<bool> Install(Symbol* symbol)
+        {
+            auto it = symbolMap.Find(symbol->Name());
+            if (it != symbolMap.End() && symbol->NameMustBeUnique())
+            {
+                Symbol* prev = it->second;
+                if (prev != symbol)
+                {
+                    auto symbolNameStrResult = ToUtf8(symbol->Name());
+                    if (symbolNameStrResult.Error()) return Result<bool>(ErrorId(symbolNameStrResult.GetErrorId()));
+                    string symbolNameStr = Rvalue(symbolNameStrResult.Value());
+                    int errorId = MakeError("symbol '" + symbolNameStr + "' already defined", symbol->FullSpan(), prev->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                symbolMap[symbol->Name()] = symbol;
+            }
+            return Result<bool>(true);
+        }
+        public inline const Map<ustring, Symbol*>& SymbolMap() const
+        {
+            return symbolMap;
+        }
+        private ContainerSymbol* container;
+        private Map<ustring, Symbol*> symbolMap;
+    }
+
+    internal int CountQualifiedNameComponents(const ustring& qualifiedName)
+    {
+        int numComponents = 0;
+        int componentSize = 0;
+        int state = 0;
+        int angleBracketCount = 0;
+        for (uchar c : qualifiedName)
+        {
+            switch (state)
+            {
+                case 0:
+                {
+                    if (c == '.')
+                    {
+                        ++numComponents;
+                        componentSize = 0;
+                    }
+                    else if (c == '<')
+                    {
+                        ++componentSize;
+                        angleBracketCount = 1;
+                        state = 1;
+                    }
+                    else
+                    {
+                        ++componentSize;
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    ++componentSize;
+                    if (c == '<')
+                    {
+                        ++angleBracketCount;
+                    }
+                    else if (c == '>')
+                    {
+                        --angleBracketCount;
+                        if (angleBracketCount == 0)
+                        {
+                            state = 0;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        if (componentSize > 0)
+        {
+            ++numComponents;
+        }
+        return numComponents;
+    }
+
+    internal List<ustring> ParseQualifiedName(const ustring& qualifiedName)
+    {
+        List<ustring> components;
+        int state = 0;
+        ustring component;
+        int angleBracketCount = 0;
+        for (uchar c : qualifiedName)
+        {
+            switch (state)
+            {
+                case 0:
+                {
+                    if (c == '.')
+                    {
+                        components.Add(component);
+                        component.Clear();
+                    }
+                    else if (c == '<')
+                    {
+                        component.Append(c);
+                        angleBracketCount = 1;
+                        state = 1;
+                    }
+                    else
+                    {
+                        component.Append(c);
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    component.Append(c);
+                    if (c == '<')
+                    {
+                        ++angleBracketCount;
+                    }
+                    else if (c == '>')
+                    {
+                        --angleBracketCount;
+                        if (angleBracketCount == 0)
+                        {
+                            state = 0;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        if (!component.IsEmpty())
+        {
+            components.Add(component);
+        }
+        return components;
+    }
+
+    public class FileScope : Scope
+    {
+        public FileScope() : base()
+        {
+        }
+        public void AddContainerScope(ContainerScope* containerScope)
+        {
+            if (Find(containerScopes.Begin(), containerScopes.End(), containerScope) == containerScopes.End())
+            {
+                containerScopes.Add(containerScope);
+            }
+        }
+        public void InstallAlias(AliasNode* aliasNode, TypeSymbol* type)
+        {
+            aliasMap[aliasNode->Id()->Str()] = type;
+        }
+        [nodiscard]
+        public Result<bool> InstallNamespaceImport(ContainerScope* containerScope, NamespaceImportNode* namespaceImportNode)
+        {
+            #assert(containerScope != null);
+            const ustring& importedNamespaceName = namespaceImportNode->Ns()->Str();
+            Result<Symbol*> symbolResult = containerScope->Lookup(importedNamespaceName, ScopeLookup.this_and_parent);
+            if (symbolResult.Error()) return Result<bool>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol != null)
+            {
+                if (symbol->IsNamespaceSymbol())
+                {
+                    ContainerScope* symbolContainerScope = symbol->GetContainerScope();
+                    if (Find(containerScopes.Begin(), containerScopes.End(), symbolContainerScope) == containerScopes.End())
+                    {
+                        containerScopes.Add(symbolContainerScope);
+                    }
+                }
+                else
+                {
+                    auto nsNameResult = ToUtf8(importedNamespaceName);
+                    if (nsNameResult.Error()) return Result<bool>(ErrorId(nsNameResult.GetErrorId()));
+                    string nsName = Rvalue(nsNameResult.Value());
+                    int errorId = MakeError("'" + nsName + "' does not denote a namespace", namespaceImportNode->GetFullSpan(), symbol->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else 
+            {
+                auto nsNameResult = ToUtf8(importedNamespaceName);
+                if (nsNameResult.Error()) return Result<bool>(ErrorId(nsNameResult.GetErrorId()));
+                string nsName = Rvalue(nsNameResult.Value());
+                int errorId = MakeError("referred namespace '" + nsName + "' not found", namespaceImportNode->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public override Result<Symbol*> Lookup(const ustring& name) const
+        {
+            return Lookup(name, ScopeLookup.this_);
+        }
+        public override Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup) const
+        {
+            Set<Symbol*> foundSymbols;
+            auto it = aliasMap.Find(name);
+            if (it != aliasMap.End())
+            {
+                TypeSymbol* symbol = it->second;
+                foundSymbols.Insert(symbol);
+            }
+            else
+            {
+                for (ContainerScope* containerScope : containerScopes)
+                {
+                    Result<Symbol*> containerScopeResult = containerScope->Lookup(name, ScopeLookup.this_);
+                    if (containerScopeResult.Error()) return Result<Symbol*>(ErrorId(containerScopeResult.GetErrorId()));
+                    Symbol* symbol = containerScopeResult.Value();
+                    if (symbol != null)
+                    {
+                        foundSymbols.Insert(symbol);
+                    }
+                }
+            }
+            if (foundSymbols.IsEmpty())
+            {
+                return Result<Symbol*>(cast<Symbol*>(null));
+            }
+            else if (foundSymbols.Count() > 1)
+            {
+                auto objectNameResult = ToUtf8(name);
+                if (objectNameResult.Error()) return Result<Symbol*>(ErrorId(objectNameResult.GetErrorId()));
+                string objectNameStr = Rvalue(objectNameResult.Value());
+                string message = "reference to object '" + objectNameStr + "' is ambiguous: ";
+                List<System.Lex.FullSpan> fullSpans;
+                bool first = true;
+                for (Symbol* symbol : foundSymbols)
+                {
+                    fullSpans.Add(symbol->FullSpan());
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        message.Append(" or ");
+                    }
+                    auto fullNameResult = ToUtf8(symbol->FullName());
+                    if (fullNameResult.Error()) return Result<Symbol*>(ErrorId(fullNameResult.GetErrorId()));
+                    string fullName = Rvalue(fullNameResult.Value());
+                    message.Append(fullName);
+                }
+                int errorId = MakeError(message, fullSpans);
+                return Result<Symbol*>(ErrorId(errorId));
+            }
+            else
+            {
+                return Result<Symbol*>(*foundSymbols.Begin());
+            }
+        }
+        [nodiscard]
+        public Result<bool> CollectViableFunctions(int arity, const ustring& groupName, Set<ContainerScope*>& scopesLookedUp, ViableFunctionSet& viableFunctions)
+        {
+            bool result = false;
+            for (ContainerScope* containerScope : containerScopes)
+            {
+                if (scopesLookedUp.Find(containerScope) == scopesLookedUp.End())
+                {
+                    Result<bool> scopeResult = containerScope->CollectViableFunctions(arity, groupName, scopesLookedUp, ScopeLookup.this_, viableFunctions);
+                    if (scopeResult.Value()) result = true;
+                    scopesLookedUp.Insert(containerScope);
+                }
+            }
+            return Result<bool>(result);
+        }
+        private List<ContainerScope*> containerScopes;
+        private Map<ustring, TypeSymbol*> aliasMap;
+    }
+}
+

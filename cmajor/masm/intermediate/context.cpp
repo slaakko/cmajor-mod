@@ -12,7 +12,7 @@ import util;
 
 namespace cmajor::masm::intermediate {
 
-Context::Context() : compileUnit(), inlineDepth(4)
+Context::Context() : compileUnit(), inlineDepth(4), flags(ContextFlags::none), functionsInlined(0), totalFunctions(0)
 {
     compileUnit.SetContext(this);
     types.SetContext(this);

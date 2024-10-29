@@ -397,6 +397,8 @@ void TypeBinder::Visit(cmajor::ast::StaticConstructorNode& staticConstructorNode
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&staticConstructorNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::staticConstructorSymbol, "static constructor symbol expected"); 
     cmajor::symbols::StaticConstructorSymbol* staticConstructorSymbol = static_cast<cmajor::symbols::StaticConstructorSymbol*>(symbol);
+    if (staticConstructorSymbol->IsBound()) return;
+    staticConstructorSymbol->SetBound();
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
     {
         symbolTable.MapSymbol(staticConstructorNode.ClassId(), staticConstructorSymbol);
@@ -556,6 +558,8 @@ void TypeBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&destructorNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::destructorSymbol, "destructor symbol expected"); 
     cmajor::symbols::DestructorSymbol* destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(symbol);
+    if (destructorSymbol->IsBound()) return;
+    destructorSymbol->SetBound();
     if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::cmdoc))
     {
         symbolTable.MapSymbol(destructorNode.ClassId(), destructorSymbol);
@@ -565,7 +569,7 @@ void TypeBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;
     containerScope = destructorSymbol->GetContainerScope();
     destructorSymbol->SetSpecifiers(destructorNode.GetSpecifiers());
-    const cmajor::symbols::Symbol* parent = destructorSymbol->Parent();
+    cmajor::symbols::Symbol* parent = destructorSymbol->Parent();
     if (parent->IsStatic())
     {
         throw cmajor::symbols::Exception("static class cannot contain a destructor", destructorNode.GetFullSpan(), parent->GetFullSpan());
@@ -575,6 +579,9 @@ void TypeBinder::Visit(cmajor::ast::DestructorNode& destructorNode)
         destructorSymbol->SetTemplateSpecialization();
         destructorSymbol->SetLinkOnceOdrLinkage();
     }
+    Assert(parent->IsClassTypeSymbol(), "class type symbol expected");
+    cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
+    classType->SetDestructor(destructorSymbol);
     if (!destructorSymbol->Constraint() && destructorNode.WhereConstraint())
     {
         cmajor::ast::CloneContext cloneContext;
@@ -698,14 +705,17 @@ void TypeBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
         returnParam->SetType(returnType->AddPointer());
         memberFunctionSymbol->SetReturnParam(returnParam);
     }
-    cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
-    if (memberFunctionSymbol->IsCopyAssignment())
+    if (parent->IsClassTypeSymbol())
     {
-        classType->SetCopyAssignment(memberFunctionSymbol);
-    }
-    else if (memberFunctionSymbol->IsMoveAssignment())
-    {
-        classType->SetMoveAssignment(memberFunctionSymbol);
+        cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(parent);
+        if (memberFunctionSymbol->IsCopyAssignment())
+        {
+            classType->SetCopyAssignment(memberFunctionSymbol);
+        }
+        else if (memberFunctionSymbol->IsMoveAssignment())
+        {
+            classType->SetMoveAssignment(memberFunctionSymbol);
+        }
     }
     if (memberFunctionNode.Body())
     {
@@ -807,6 +817,8 @@ void TypeBinder::Visit(cmajor::ast::MemberVariableNode& memberVariableNode)
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&memberVariableNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::memberVariableSymbol, "member variable symbol expected"); 
     cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = static_cast<cmajor::symbols::MemberVariableSymbol*>(symbol);
+    if (memberVariableSymbol->IsBound()) return;
+    memberVariableSymbol->SetBound();
     memberVariableSymbol->SetSpecifiers(memberVariableNode.GetSpecifiers());
     memberVariableSymbol->ComputeMangledName();
     const cmajor::symbols::Symbol* parent = memberVariableSymbol->Parent();
@@ -1112,6 +1124,10 @@ void TypeBinder::Visit(cmajor::ast::ForStatementNode& forStatementNode)
 void TypeBinder::Visit(cmajor::ast::ConstructionStatementNode& constructionStatementNode)
 {
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&constructionStatementNode);
+    if (symbol->Name() == U"codeGenerator")
+    {
+        int x = 0;
+    }
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::localVariableSymbol, "local variable symbol expected"); 
     cmajor::symbols::LocalVariableSymbol* localVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
     cmajor::symbols::TypeSymbol* type = ResolveType(constructionStatementNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
@@ -1477,6 +1493,8 @@ void TypeBinder::Visit(cmajor::ast::EnumConstantNode& enumConstantNode)
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(&enumConstantNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::enumConstantSymbol, "enumeration constant symbol expected");
     cmajor::symbols::EnumConstantSymbol* enumConstantSymbol = static_cast<cmajor::symbols::EnumConstantSymbol*>(symbol);
+    if (enumConstantSymbol->IsBound()) return;
+    enumConstantSymbol->SetBound();
     enumConstantSymbol->ComputeMangledName();
     enumConstantSymbol->SetEvaluating();
     std::unique_ptr<cmajor::symbols::Value> value = Evaluate(enumConstantNode.GetValue(), enumType->UnderlyingType(), containerScope, boundCompileUnit, false, nullptr);
@@ -1501,6 +1519,8 @@ void TypeBinder::Visit(cmajor::ast::GlobalVariableNode& globalVariableNode)
     {
         symbolTable.MapSymbol(globalVariableNode.Id(), globalVariableSymbol);
     }
+    if (globalVariableSymbol->IsBound()) return;
+    globalVariableSymbol->SetBound();
     globalVariableSymbol->SetSpecifiers(globalVariableNode.GetSpecifiers());
     globalVariableSymbol->ComputeMangledName();
     cmajor::symbols::ContainerScope* prevContainerScope = containerScope;

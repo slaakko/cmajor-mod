@@ -175,8 +175,6 @@ public:
     void AddConversion(FunctionSymbol* conversion);
     void AddConversion(FunctionSymbol* conversion, Module* module);
     FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const;
-    ConversionTable& GetConversionTable() { return conversionTable; }
-    const ConversionTable& GetConversionTable() const { return conversionTable; }
     void AddPolymorphicClass(ClassTypeSymbol* polymorphicClass);
     const std::set<ClassTypeSymbol*>& PolymorphicClasses() const { return polymorphicClasses; }
     void AddClassHavingStaticConstructor(ClassTypeSymbol* classHavingStaticConstructor);

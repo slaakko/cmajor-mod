@@ -1,0 +1,17 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace assembly
+{
+    public class Symbol : Value
+    {
+        public Symbol(const string& name_) : base(ValueKind.symbol, name_)
+        {
+        }
+    }
+}
+

@@ -1,0 +1,2941 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public enum OpCode : byte
+    {
+        store, arg, jmp, branch, procedure_call, ret, switch_,
+        not_, neg, signextend, zeroextend, truncate, fpextend, bitcast, inttofloat, floattoint, inttoptr, ptrtoint,
+        add, sub, mul, div_, mod, and_, or_, xor_, shl, shr, equal, less,
+        param, local, load, elemaddr, ptroffset, ptrdiff, function_call,
+        nop
+    }
+
+    inline public void AddInstToInstructionSet(Instruction* inst, List<Instruction*>& set)
+    {
+        if (Find(set.Begin(), set.End(), inst) == set.End())
+        {
+            set.Add(inst);
+        }
+    }
+
+    inline public void RemoveInstFromInstructionSet(Instruction* inst, List<Instruction*>& set)
+    {
+        set.Remove(inst);
+    }
+
+    inline public void AddBasicBlockToBasicBlockSet(BasicBlock* bb, List<BasicBlock*>& set)
+    {
+        if (Find(set.Begin(), set.End(), bb) == set.End())
+        {
+            set.Add(bb);
+        }
+    }
+
+    inline public void RemoveBasicBlockFromBasicBlockSet(BasicBlock* bb, List<BasicBlock*>& set)
+    {
+        set.Remove(bb);
+    }
+
+    public void AddUser(Instruction* user, Value* value)
+    {
+        if (value != null)
+        {
+            if (value->IsRegValue())
+            {
+                RegValue* regValue = cast<RegValue*>(value);
+                if (regValue->Inst() != null)
+                {
+                    regValue->Inst()->AddUser(user);
+                }
+            }
+        }
+    }
+
+    public void RemoveUser(Instruction* user, Value* value)
+    {
+        if (value != null)
+        {
+            if (value->IsRegValue())
+            {
+                RegValue* regValue = cast<RegValue*>(value);
+                if (regValue->Inst() != null)
+                {
+                    regValue->Inst()->RemoveUser(user);
+                }
+            }
+        }
+    }
+
+    public void AddToUsesList(List<Instruction*>& uses, Value* value)
+    {
+        if (value != null)
+        {
+            if (value->IsRegValue())
+            {
+                RegValue* regValue = cast<RegValue*>(value);
+                if (regValue->Inst() != null)
+                {
+                    uses.Add(regValue->Inst());
+                }
+            }
+        }
+    }
+
+    public string OpCodeStr(OpCode opCode)
+    {
+        switch (opCode)
+        {
+            case OpCode.store:
+            {
+                return "store";
+            }
+            case OpCode.arg:
+            {
+                return "arg";
+            }
+            case OpCode.jmp:
+            {
+                return "jmp";
+            }
+            case OpCode.branch:
+            {
+                return "branch";
+            }
+            case OpCode.procedure_call:
+            {
+                return "call";
+            }
+            case OpCode.ret:
+            {
+                return "ret";
+            }
+            case OpCode.switch_:
+            {
+                return "switch";
+            }
+            case OpCode.not_:
+            {
+                return "not";
+            }
+            case OpCode.neg:
+            {
+                return "neg";
+            }
+            case OpCode.signextend:
+            {
+                return "signextend";
+            }
+            case OpCode.zeroextend:
+            {
+                return "zeroextend";
+            }
+            case OpCode.truncate:
+            {
+                return "truncate";
+            }
+            case OpCode.fpextend:
+            {
+                return "fpextend";
+            }
+            case OpCode.bitcast:
+            {
+                return "bitcast";
+            }
+            case OpCode.inttofloat:
+            {
+                return "inttofloat";
+            }
+            case OpCode.floattoint:
+            {
+                return "floattoint";
+            }
+            case OpCode.inttoptr:
+            {
+                return "inttoptr";
+            }
+            case OpCode.ptrtoint:
+            {
+                return "ptrtoint";
+            }
+            case OpCode.add:
+            {
+                return "add";
+            }
+            case OpCode.sub:
+            {
+                return "sub";
+            }
+            case OpCode.mul:
+            {
+                return "mul";
+            }
+            case OpCode.div_:
+            {
+                return "div";
+            }
+            case OpCode.mod:
+            {
+                return "mod";
+            }
+            case OpCode.and_:
+            {
+                return "and";
+            }
+            case OpCode.or_:
+            {
+                return "or";
+            }
+            case OpCode.xor_:
+            {
+                return "xor";
+            }
+            case OpCode.shl:
+            {
+                return "shl";
+            }
+            case OpCode.shr:
+            {
+                return "shr";
+            }
+            case OpCode.equal:
+            {
+                return "equal";
+            }
+            case OpCode.less:
+            {
+                return "less";
+            }
+            case OpCode.param:
+            {
+                return "param";
+            }
+            case OpCode.local:
+            {
+                return "local";
+            }
+            case OpCode.load:
+            {
+                return "load";
+            }
+            case OpCode.elemaddr:
+            {
+                return "elemaddr";
+            }
+            case OpCode.ptroffset:
+            {
+                return "ptroffset";
+            }
+            case OpCode.ptrdiff:
+            {
+                return "ptrdiff";
+            }
+            case OpCode.function_call:
+            {
+                return "call";
+            }
+            case OpCode.nop:
+            {
+                return "nop";
+            }
+        }
+        return "<unknown opcode>";
+    }
+
+    public class RegValue : Value
+    {
+        public RegValue(const System.Lex.Span& span_, Type* type_, int reg_) : base(ValueKind.regValue, span_, type_), reg(reg_), inst(null)
+        {
+            #assert(GetType() != null);
+        }
+        public override string ToString() const
+        {
+            return "$" + ToString(inst->RegValueIndex());
+        }
+        public inline int Reg() const
+        {
+            return reg;
+        }
+        public inline void SetReg(int reg_)
+        {
+            reg = reg_;
+        }
+        public inline Instruction* Inst() const
+        {
+            return inst;
+        }
+        public inline void SetInst(Instruction* inst_)
+        {
+            inst = inst_;
+        }
+        private int reg;
+        private Instruction* inst;
+    }
+
+    public abstract class Instruction : Component
+    {
+        public Instruction(const System.Lex.Span& span_, Type* type_, OpCode opCode_) :
+            base(ValueKind.instruction, span_, type_), opCode(opCode_), index(-1), sourceLineNumber(0), regValueIndex(-1), assemblyIndex(-1), leader(false)
+        {
+        }
+        public bool IsLeader() const
+        {
+            if (leader) return true;
+            BasicBlock* basicBlock = Parent();
+            return this == basicBlock->FirstInstruction();
+        }
+        public inline void SetLeader()
+        {
+            leader = true;
+        }
+        public string Name()
+        {
+            return OpCodeStr(opCode);
+        }
+        [nodiscard]
+        public abstract Result<bool> Write(System.Text.CodeFormatter& formatter);
+        public inline BasicBlock* Parent() const
+        {
+            #assert(GetContainer() != null);
+            return cast<BasicBlock*>(GetContainer()->Parent());
+        }
+        public inline Instruction* Next() const
+        {
+            return cast<Instruction*>(NextSibling());
+        }
+        public inline Instruction* Prev() const
+        {
+            return cast<Instruction*>(PrevSibling());
+        }
+        public inline OpCode GetOpCode() const
+        {
+            return opCode;
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        public inline void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public inline int SourceLineNumber() const
+        {
+            return sourceLineNumber;
+        }
+        public inline void SetSourceLineNumber(int sourceLineNumber_)
+        {
+            sourceLineNumber = sourceLineNumber_;
+        }
+        public inline int RegValueIndex() const
+        {
+            return regValueIndex;
+        }
+        public inline void SetRegValueIndex(int regValueIndex_)
+        {
+            regValueIndex = regValueIndex_;
+        }
+        public inline int AssemblyIndex() const
+        {
+            return assemblyIndex;
+        }
+        public inline void SetAssemblyIndex(int assemblyIndex_)
+        {
+            assemblyIndex = assemblyIndex_;
+        }
+        public inline const List<Instruction*>& Users() const
+        {
+            return users;
+        }
+        public bool IsValueInstruction() const
+        {
+            switch (opCode)
+            {
+                case OpCode.not_:
+                case OpCode.neg:
+                case OpCode.signextend:
+                case OpCode.zeroextend:
+                case OpCode.fpextend:
+                case OpCode.truncate:
+                case OpCode.bitcast:
+                case OpCode.inttofloat:
+                case OpCode.floattoint:
+                case OpCode.inttoptr:
+                case OpCode.ptrtoint:
+                case OpCode.add:
+                case OpCode.sub:
+                case OpCode.mul:
+                case OpCode.div_:
+                case OpCode.mod:
+                case OpCode.and_:
+                case OpCode.or_:
+                case OpCode.xor_:
+                case OpCode.shl:
+                case OpCode.shr:
+                case OpCode.equal:
+                case OpCode.less:
+                case OpCode.param:
+                case OpCode.local:
+                case OpCode.load:
+                case OpCode.elemaddr:
+                case OpCode.ptroffset:
+                case OpCode.ptrdiff:
+                case OpCode.function_call:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool IsUnaryInstruction()
+        {
+            switch (opCode)
+            {
+                case OpCode.not_:
+                case OpCode.neg:
+                case OpCode.signextend:
+                case OpCode.zeroextend:
+                case OpCode.fpextend:
+                case OpCode.truncate:
+                case OpCode.bitcast:
+                case OpCode.inttofloat:
+                case OpCode.floattoint:
+                case OpCode.inttoptr:
+                case OpCode.ptrtoint:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool IsBinaryInstruction()
+        {
+            switch (opCode)
+            {
+                case OpCode.add:
+                case OpCode.sub:
+                case OpCode.mul:
+                case OpCode.div_:
+                case OpCode.mod:
+                case OpCode.and_:
+                case OpCode.or_:
+                case OpCode.xor_:
+                case OpCode.shl:
+                case OpCode.shr:
+                case OpCode.equal:
+                case OpCode.less:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool RequiresLocalRegister() const
+        {
+            switch (opCode)
+            {
+                case OpCode.arg:
+                case OpCode.procedure_call:
+                case OpCode.not_:
+                case OpCode.neg:
+                case OpCode.signextend:
+                case OpCode.zeroextend:
+                case OpCode.fpextend:
+                case OpCode.truncate:
+                case OpCode.bitcast:
+                case OpCode.inttofloat:
+                case OpCode.floattoint:
+                case OpCode.inttoptr:
+                case OpCode.ptrtoint:
+                case OpCode.add:
+                case OpCode.sub:
+                case OpCode.mul:
+                case OpCode.div_:
+                case OpCode.mod:
+                case OpCode.and_:
+                case OpCode.or_:
+                case OpCode.xor_:
+                case OpCode.shl:
+                case OpCode.shr:
+                case OpCode.equal:
+                case OpCode.less:
+                case OpCode.param:
+                case OpCode.load:
+                case OpCode.elemaddr:
+                case OpCode.ptroffset:
+                case OpCode.ptrdiff:
+                case OpCode.function_call:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public inline bool IsSwitchInstruction() const
+        {
+            return opCode == OpCode.switch_;
+        }
+        public inline bool IsParamInstruction() const
+        {
+            return opCode == OpCode.param;
+        }
+        public inline bool IsLocalInstruction() const
+        {
+            return opCode == OpCode.local;
+        }
+        public inline bool IsLoadInstruction() const
+        {
+            return opCode == OpCode.load;
+        }
+        public inline bool IsStoreInstruction() const
+        {
+            return opCode == OpCode.store;
+        }
+        public inline bool IsElemAddrInstruction() const
+        {
+            return opCode == OpCode.elemaddr;
+        }
+        public inline bool IsArgInstruction() const
+        {
+            return opCode == OpCode.arg;
+        }
+        public inline bool IsFunctionCallInstruction() const
+        {
+            return opCode == OpCode.function_call;
+        }
+        public inline bool IsProcedureCallInstruction() const
+        {
+            return opCode == OpCode.procedure_call;
+        }
+        public inline bool IsRetInstruction() const
+        {
+            return opCode == OpCode.ret;
+        }
+        public bool IsTerminator() const
+        {
+            switch (opCode)
+            {
+                case OpCode.jmp:
+                case OpCode.branch:
+                case OpCode.ret:
+                case OpCode.switch_:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public virtual bool IsFloatingPointInstruction() const
+        {
+            return false;
+        }
+        public void AddUser(Instruction* user)
+        {
+            AddInstToInstructionSet(user, users);
+        }
+        public void RemoveUser(Instruction* user)
+        {
+            RemoveInstFromInstructionSet(user, users);
+        }
+        public virtual List<Instruction*> Uses() const
+        {
+            return List<Instruction*>();
+        }
+        public virtual void AddToUses()
+        {
+        }
+        public void RemoveFromUses()
+        {
+            List<Instruction*> uses = Uses();
+            for (Instruction* use : uses)
+            {
+                use->RemoveUser(this);
+            }
+        }
+        public void ReplaceUsesWith(Value* value)
+        {
+            Function* fn = Parent()->Parent();
+            RegValue* use = fn->GetRegValue(RegValueIndex());
+            if (use != null)
+            {
+                List<Instruction*> copiedUsers = users;
+                for (Instruction* user : copiedUsers)
+                {
+                    user->ReplaceValue(use, value);
+                }
+            }
+            else
+            {
+                Code* code = fn->Parent();
+                Context* context = code->GetContext();
+                Error("reg value " + ToString(RegValueIndex()) + "not found", Span(), context);
+            }
+        }
+        public virtual void ReplaceValue(Value* use, Value* value)
+        {
+        }
+        private OpCode opCode;
+        private int index;
+        private int sourceLineNumber;
+        private int regValueIndex;
+        private int assemblyIndex;
+        private List<Instruction*> users;
+        bool leader;
+    }
+
+    public class StoreInstruction : Instruction
+    {
+        public StoreInstruction(const System.Lex.Span& span_, Value* value_, Value* ptr_) : base(span_, null, OpCode.store), value(value_), ptr(ptr_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(Format("store ", 8));
+            if (result.Error()) return result;
+            result = formatter.Write(value->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(value->ToString());
+            if (result.Error()) return result;
+            result = formatter.Write(", ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* GetValue() const
+        {
+            return value;
+        }
+        public inline Value* Ptr() const
+        {
+            return ptr;
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return value->GetType()->IsFloatingPointType();
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, value);
+            intermediate.AddUser(this, ptr);
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, value);
+            AddToUsesList(uses, ptr);
+            return uses;
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (this->value == use)
+            {
+                intermediate.RemoveUser(this, this->value);
+                this->value = value;
+                intermediate.AddUser(this, this->value);
+            }
+            if (ptr == use)
+            {
+                intermediate.RemoveUser(this, ptr);
+                ptr = value;
+                intermediate.AddUser(this, ptr);
+            }
+        }
+        private Value* value;
+        private Value* ptr;
+    }
+
+    public class ArgInstruction : Instruction
+    {
+        public ArgInstruction(const System.Lex.Span& span_, Value* arg_) : base(span_, null, OpCode.arg), arg(arg_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(Format("arg ", 8));
+            if (result.Error()) return result;
+            result = formatter.Write(arg->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(arg->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* Arg() const
+        {
+            return arg;
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return arg->GetType()->IsFloatingPointType();
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, arg);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, arg);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (arg == use)
+            {
+                intermediate.RemoveUser(this, arg);
+                arg = value;
+                intermediate.AddUser(this, arg);
+            }
+        }
+        private Value* arg;
+    }
+
+    public class JmpInstruction : Instruction
+    {
+        public JmpInstruction(const System.Lex.Span& span_, int targetLabelId_) : base(span_, null, OpCode.jmp), targetLabelId(targetLabelId_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(Format("jmp", 8));
+            if (result.Error()) return result;
+            result = formatter.Write("@" + ToString(targetBasicBlock->Id()));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline int TargetLabelId() const
+        {
+            return targetLabelId;
+        }
+        public inline BasicBlock* TargetBasicBlock() const
+        {
+            return targetBasicBlock;
+        }
+        public inline void SetTargetBasicBlock(BasicBlock* targetBasicBlock_)
+        {
+            targetBasicBlock = targetBasicBlock_;
+        }
+        private int targetLabelId;
+        private BasicBlock* targetBasicBlock;
+    }
+
+    public class BranchInstruction : Instruction
+    {
+        public BranchInstruction(const System.Lex.Span& span_, Value* cond_, int trueTargetLabelId_, int falseTargetLabelId_) :
+            base(span_, null, OpCode.branch), cond(cond_), trueTargetLabelId(trueTargetLabelId_), falseTargetLabelId(falseTargetLabelId_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(Format("branch", 8));
+            if (result.Error()) return result;
+            result = formatter.Write(cond->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(cond->ToString());
+            if (result.Error()) return result;
+            result = formatter.Write(", ");
+            if (result.Error()) return result;
+            result = formatter.Write("@" + ToString(trueTargetBasicBlock->Id()));
+            if (result.Error()) return result;
+            result = formatter.Write(", ");
+            if (result.Error()) return result;
+            result = formatter.Write("@" + ToString(falseTargetBasicBlock->Id()));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* Cond() const
+        {
+            return cond;
+        }
+        public inline int TrueTargetLabelId() const
+        {
+            return trueTargetLabelId;
+        }
+        public inline BasicBlock* TrueTargetBasicBlock() const
+        {
+            return trueTargetBasicBlock;
+        }
+        public inline void SetTrueTargetBasicBlock(BasicBlock* trueTargetBasicBlock_)
+        {
+            trueTargetBasicBlock = trueTargetBasicBlock_;
+        }
+        public inline int FalseTargetLabelId() const
+        {
+            return falseTargetLabelId;
+        }
+        public inline BasicBlock* FalseTargetBasicBlock() const
+        {
+            return falseTargetBasicBlock;
+        }
+        public inline void SetFalseTargetBasicBlock(BasicBlock* falseTargetBasicBlock_)
+        {
+            falseTargetBasicBlock = falseTargetBasicBlock_;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, cond);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, cond);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (cond == use)
+            {
+                intermediate.RemoveUser(this, cond);
+                cond = value;
+                intermediate.AddUser(this, cond);
+            }
+        }
+        private Value* cond;
+        private int trueTargetLabelId;
+        private BasicBlock* trueTargetBasicBlock;
+        private int falseTargetLabelId;
+        private BasicBlock* falseTargetBasicBlock;
+    }
+
+    public class ProcedureCallInstruction : Instruction
+    {
+        ProcedureCallInstruction(const System.Lex.Span& span_, Value* callee_) : base(span_, null, OpCode.procedure_call), callee(callee_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(Format("call", 8));
+            if (result.Error()) return result;
+            result = formatter.Write(callee->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(callee->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* Callee() const
+        {
+            return callee;
+        }
+        public Function* CalleeFn() const
+        {
+            if (callee->IsSymbolValue())
+            {
+                SymbolValue* symbolValue = cast<SymbolValue*>(callee);
+                return symbolValue->GetFunction();
+            }
+            return null;
+        }
+        public inline const List<Value*>& Args() const
+        {
+            return args;
+        }
+        public void SetArgs(List<Value*>&& args_)
+        {
+            args = args_;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, callee);
+            for (Value* arg : args)
+            {
+                AddToUsesList(uses, arg);
+            }
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, callee);
+            for (Value* arg : args)
+            {
+                intermediate.AddUser(this, arg);
+            }
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (callee == use)
+            {
+                intermediate.RemoveUser(this, callee);
+                callee = value;
+                intermediate.AddUser(this, callee);
+            }
+            for (Value* arg : args)
+            {
+                if (arg == use)
+                {
+                    intermediate.RemoveUser(this, arg);
+                    arg = value;
+                    intermediate.AddUser(this, arg);
+                }
+            }
+        }
+        private Value* callee;
+        private List<Value*> args;
+    }
+
+    public class RetInstruction : Instruction
+    {
+        public RetInstruction(const System.Lex.Span& span_, Value* returnValue_) : base(span_, null, OpCode.ret), returnValue(returnValue_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(Format("ret", 8));
+            if (result.Error()) return result;
+            if (returnValue != null)
+            {
+                result = formatter.Write(returnValue->GetType()->Name());
+                if (result.Error()) return result;
+                result = formatter.Write(" ");
+                if (result.Error()) return result;
+                result = formatter.Write(returnValue->ToString());
+                if (result.Error()) return result;
+            }
+            else
+            {
+                result = formatter.Write("void");
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public inline Value* ReturnValue() const
+        {
+            return returnValue;
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            if (returnValue != null)
+            {
+                return returnValue->GetType()->IsFloatingPointType();
+            }
+            return false;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            if (returnValue != null)
+            {
+                AddToUsesList(uses, returnValue);
+            }
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, returnValue);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (returnValue == use)
+            {
+                intermediate.RemoveUser(this, returnValue);
+                returnValue = value;
+                intermediate.AddUser(this, returnValue);
+            }
+        }
+        private Value* returnValue;
+    }
+
+    public class CaseTarget
+    {
+        public CaseTarget() : caseValue(null), targetLabelId(-1), targetBlock(null)
+        {
+        }
+        public CaseTarget(Value* caseValue_, int targetLabelId_) : caseValue(caseValue_), targetLabelId(targetLabelId_), targetBlock(null)
+        {
+        }
+        public Value* caseValue;
+        public int targetLabelId;
+        public BasicBlock* targetBlock;
+    }
+
+    public class SwitchInstruction : Instruction
+    {
+        public SwitchInstruction(const System.Lex.Span& span_, Value* cond_, int defaultTargetLabelId_) :
+            base(span_, null, OpCode.switch_), cond(cond_), defaultTargetLabelId(defaultTargetLabelId_), defaultTargetBlock(null)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(Format("switch", 8));
+            if (result.Error()) return result;
+            result = formatter.Write(cond->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(cond->ToString());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write("@" + ToString(defaultTargetBlock->Id()));
+            if (result.Error()) return result;
+            result = formatter.Write(", [");
+            if (result.Error()) return result;
+            bool first = true;
+            for (const auto& p : caseTargets)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    result = formatter.Write(" : ");
+                    if (result.Error()) return result;
+                }
+                Value* value = p.caseValue;
+                BasicBlock* dest = p.targetBlock;
+                result = formatter.Write(value->GetType()->Name());
+                if (result.Error()) return result;
+                result = formatter.Write(" ");
+                if (result.Error()) return result;
+                result = formatter.Write(value->ToString());
+                if (result.Error()) return result;
+                result = formatter.Write(", ");
+                if (result.Error()) return result;
+                result = formatter.Write("@" + ToString(dest->Id()));
+                if (result.Error()) return result;
+            }
+            result = formatter.Write("]");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* Cond() const
+        {
+            return cond;
+        }
+        public inline int DefaultTargetLabelId() const
+        {
+            return defaultTargetLabelId;
+        }
+        public void AddCaseTarget(const CaseTarget& caseTarget)
+        {
+            caseTargets.Add(caseTarget);
+        }
+        public inline const List<CaseTarget>& CaseTargets() const
+        {
+            return caseTargets;
+        }
+        public inline List<CaseTarget>& CaseTargets()
+        {
+            return caseTargets;
+        }
+        public inline BasicBlock* DefaultTargetBlock() const
+        {
+            return defaultTargetBlock;
+        }
+        public inline void SetDefaultTargetBlock(BasicBlock* defaultTargetBlock_)
+        {
+            defaultTargetBlock = defaultTargetBlock_;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, cond);
+            for (const CaseTarget& target : caseTargets)
+            {
+                AddToUsesList(uses, target.caseValue);
+            }
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, cond);
+            for (const auto& caseTarget : caseTargets)
+            {
+                intermediate.AddUser(this, caseTarget.caseValue);
+            }
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (cond == use)
+            {
+                intermediate.RemoveUser(this, cond);
+                cond = value;
+                intermediate.AddUser(this, cond);
+            }
+            for (CaseTarget& caseTarget : caseTargets)
+            {
+                if (caseTarget.caseValue == use)
+                {
+                    intermediate.RemoveUser(this, caseTarget.caseValue);
+                    caseTarget.caseValue = value;
+                    intermediate.AddUser(this, caseTarget.caseValue);
+                }
+            }
+        }
+        private Value* cond;
+        private int defaultTargetLabelId;
+        private BasicBlock* defaultTargetBlock;
+        private List<CaseTarget> caseTargets;
+    }
+
+    public abstract class ValueInstruction : Instruction
+    {
+        public ValueInstruction(const System.Lex.Span& span_, RegValue* result_, OpCode opCode_) : base(span_, result_->GetType(), opCode_), result(result_)
+        {
+            #assert(GetType() != null);
+            result->SetInst(this);
+        }
+        public override ~ValueInstruction()
+        {
+            if (result != null)
+            {
+                result->SetInst(null);
+            }
+        }
+        public inline RegValue* GetResult() const
+        {
+            return result;
+        }
+        public inline void ResetResult()
+        {
+            result = null;
+        }
+        [nodiscard]
+        public Result<bool> WriteResult(System.Text.CodeFormatter& formatter)
+        {
+            auto writeResult = formatter.Write(Format(result->GetType()->Name(), 7, FormatWidth.min));
+            if (writeResult.Error()) return writeResult;
+            writeResult = formatter.Write(" ");
+            if (writeResult.Error()) return writeResult;
+            writeResult = formatter.Write(result->ToString());
+            if (writeResult.Error()) return writeResult;
+            return Result<bool>(true);
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return result->GetType()->IsFloatingPointType();
+        }
+        public override string ToString() const
+        {
+            return result->ToString();
+        }
+        private RegValue* result;
+    }
+
+    public abstract class UnaryInstruction : ValueInstruction
+    {
+        public UnaryInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_, OpCode opCode_) :
+            base(span_, result_, opCode_), operand(operand_)
+        {
+        }
+        public inline Value* Operand() const
+        {
+            return operand;
+        }
+        [nodiscard]
+        public Result<bool> WriteArg(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(operand->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(operand->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, operand);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, operand);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (operand == use)
+            {
+                intermediate.RemoveUser(this, operand);
+                operand = value;
+                intermediate.AddUser(this, operand);
+            }
+        }
+        private Value* operand;
+    }
+
+    public class NotInstruction : UnaryInstruction
+    {
+        public NotInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.not_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = not ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class NegInstruction : UnaryInstruction
+    {
+        public NegInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.neg)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return Operand()->GetType()->IsFloatingPointType();
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = neg ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class SignExtendInstruction : UnaryInstruction
+    {
+        public SignExtendInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.signextend)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = signextend ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ZeroExtendInstruction : UnaryInstruction
+    {
+        public ZeroExtendInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.zeroextend)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = zeroextend ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class FloatingPointExtendInstruction : UnaryInstruction
+    {
+        public FloatingPointExtendInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.fpextend)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = fpextend ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class TruncateInstruction : UnaryInstruction
+    {
+        public TruncateInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.truncate)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = truncate ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class BitcastInstruction : UnaryInstruction
+    {
+        public BitcastInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.bitcast)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = bitcast ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class IntToFloatInstruction : UnaryInstruction
+    {
+        public IntToFloatInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.inttofloat)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = inttofloat ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class FloatToIntInstruction : UnaryInstruction
+    {
+        public FloatToIntInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.floattoint)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = floattoint ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class IntToPtrInstruction : UnaryInstruction
+    {
+        public IntToPtrInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.inttoptr)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = inttoptr ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class PtrToIntInstruction : UnaryInstruction
+    {
+        public PtrToIntInstruction(const System.Lex.Span& span_, RegValue* result_, Value* operand_) : base(span_, result_, operand_, OpCode.ptrtoint)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = ptrtoint ");
+            if (result.Error()) return result;
+            result = WriteArg(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public abstract class BinaryInstruction : ValueInstruction
+    {
+        public BinaryInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_, OpCode opCode_) :
+            base(span_, result_, opCode_), left(left_), right(right_)
+        {
+        }
+        public inline Value* Left() const
+        {
+            return left;
+        }
+        public inline Value* Right() const
+        {
+            return right;
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return Left()->GetType()->IsFloatingPointType();
+        }
+        [nodiscard]
+        public Result<bool> WriteArgs(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(left->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(left->ToString());
+            if (result.Error()) return result;
+            result = formatter.Write(", ");
+            if (result.Error()) return result;
+            result = formatter.Write(right->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(right->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, left);
+            AddToUsesList(uses, right);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, left);
+            intermediate.AddUser(this, right);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (left == use)
+            {
+                intermediate.RemoveUser(this, left);
+                left = value;
+                intermediate.AddUser(this, left);
+            }
+            if (right == use)
+            {
+                intermediate.RemoveUser(this, right);
+                right = value;
+                intermediate.AddUser(this, right);
+            }
+        }
+        private Value* left;
+        private Value* right;
+    }
+
+    public class AddInstruction : BinaryInstruction
+    {
+        public AddInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.add)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = add ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class SubInstruction : BinaryInstruction
+    {
+        public SubInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.sub)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = sub ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class MulInstruction : BinaryInstruction
+    {
+        public MulInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.mul)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = mul ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class DivInstruction : BinaryInstruction
+    {
+        public DivInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.div_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = div ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ModInstruction : BinaryInstruction
+    {
+        public ModInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.mod)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = mod ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class AndInstruction : BinaryInstruction
+    {
+        public AndInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.and_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = and ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class OrInstruction : BinaryInstruction
+    {
+        public OrInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.or_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = or ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class XorInstruction : BinaryInstruction
+    {
+        public XorInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.xor_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = xor ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ShlInstruction : BinaryInstruction
+    {
+         ShlInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.shl)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = shl ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ShrInstruction : BinaryInstruction
+    {
+         ShrInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.shr)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = shr ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class EqualInstruction : BinaryInstruction
+    {
+         EqualInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.equal)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = equal ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class LessInstruction : BinaryInstruction
+    {
+         LessInstruction(const System.Lex.Span& span_, RegValue* result_, Value* left_, Value* right_) :
+            base(span_, result_, left_, right_, OpCode.less)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = less ");
+            if (result.Error()) return result;
+            result = WriteArgs(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ParamInstruction : ValueInstruction
+    {
+        public ParamInstruction(const System.Lex.Span& span_, RegValue* result_) : base(span_, result_, OpCode.param)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = param");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class LocalInstruction : ValueInstruction
+    {
+        public LocalInstruction(const System.Lex.Span& span_, RegValue* result_, Type* localType_) : base(span_, result_, OpCode.local), localType(localType_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline Type* LocalType() const
+        {
+            return localType;
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = local ");
+            if (result.Error()) return result;
+            result = formatter.Write(localType->Name());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private Type* localType;
+    }
+
+    public class LoadInstruction : ValueInstruction
+    {
+        public LoadInstruction(const System.Lex.Span& span_, RegValue* result_, Value* ptr_) : base(span_, result_, OpCode.load), ptr(ptr_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = load ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* Ptr() const
+        {
+            return ptr;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, ptr);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, ptr);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (ptr == use)
+            {
+                intermediate.RemoveUser(this, ptr);
+                ptr = value;
+                intermediate.AddUser(this, ptr);
+            }
+        }
+        private Value* ptr;
+    }
+
+    public enum ElemAddrKind
+    {
+        none, array, structure
+    }
+
+    public class ElemAddrInstruction : ValueInstruction
+    {
+        public ElemAddrInstruction(const System.Lex.Span& span_, RegValue* result_, Value* ptr_, Value* indexValue_) :
+            base(span_, result_, OpCode.elemaddr), ptr(ptr_), indexValue(indexValue_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = elemaddr ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->ToString());
+            if (result.Error()) return result;
+            result = formatter.Write(", ");
+            if (result.Error()) return result;
+            result = formatter.Write(indexValue->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(indexValue->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* Ptr() const
+        {
+            return ptr;
+        }
+        public inline Value* IndexValue() const
+        {
+            return indexValue;
+        }
+        public inline Result<ElemAddrKind> GetElemAddrKind(Context* context) const
+        {
+            if (ptr->GetType()->IsPointerType())
+            {
+                PointerType* ptrType = cast<PointerType*>(ptr->GetType());
+                Result<Type*> pointeeTypeResult = ptrType->RemovePointer(context);
+                if (pointeeTypeResult.Error()) return Result<ElemAddrKind>(ErrorId(pointeeTypeResult.GetErrorId()));
+                Type* pointeeType = pointeeTypeResult.Value();
+                if (pointeeType->IsArrayType())
+                {
+                    return Result<ElemAddrKind>(ElemAddrKind.array);
+                }
+                else if (pointeeType->IsStructureType())
+                {
+                    return Result<ElemAddrKind>(ElemAddrKind.structure);
+                }
+            }
+            int errorId = AllocateError("invalid elemaddr kind");
+            return Result<ElemAddrKind>(ErrorId(errorId));
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, ptr);
+            AddToUsesList(uses, indexValue);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, ptr);
+            intermediate.AddUser(this, indexValue);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (ptr == use)
+            {
+                intermediate.RemoveUser(this, ptr);
+                ptr = value;
+                intermediate.AddUser(this, ptr);
+            }
+            if (indexValue == use)
+            {
+                intermediate.RemoveUser(this, indexValue);
+                indexValue = value;
+                intermediate.AddUser(this, indexValue);
+            }
+        }
+        private Value* ptr;
+        private Value* indexValue;
+    }
+
+    public class PtrOffsetInstruction : ValueInstruction
+    {
+        public PtrOffsetInstruction(const System.Lex.Span& span_, RegValue* result_, Value* ptr_, Value* offset_) :
+            base(span_, result_, OpCode.ptroffset), ptr(ptr_), offset(offset_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = ptroffset ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(ptr->ToString());
+            if (result.Error()) return result;
+            result = formatter.Write(", ");
+            if (result.Error()) return result;
+            result = formatter.Write(offset->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(offset->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* Ptr() const
+        {
+            return ptr;
+        }
+        public inline Value* Offset() const
+        {
+            return offset;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, ptr);
+            AddToUsesList(uses, offset);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, ptr);
+            intermediate.AddUser(this, offset);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (ptr == use)
+            {
+                intermediate.RemoveUser(this, ptr);
+                ptr = value;
+                intermediate.AddUser(this, ptr);
+            }
+            if (offset == use)
+            {
+                intermediate.RemoveUser(this, offset);
+                offset = value;
+                intermediate.AddUser(this, offset);
+            }
+        }
+        private Value* ptr;
+        private Value* offset;
+    }
+
+    public class PtrDiffInstruction : ValueInstruction
+    {
+        public PtrDiffInstruction(const System.Lex.Span& span_, RegValue* result_, Value* leftPtr_, Value* rightPtr_) :
+            base(span_, result_, OpCode.ptrdiff), leftPtr(leftPtr_), rightPtr(rightPtr_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = ptrdiff ");
+            if (result.Error()) return result;
+            result = formatter.Write(leftPtr->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(leftPtr->ToString());
+            if (result.Error()) return result;
+            result = formatter.Write(", ");
+            if (result.Error()) return result;
+            result = formatter.Write(rightPtr->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(rightPtr->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline Value* LeftPtr() const
+        {
+            return leftPtr;
+        }
+        public inline Value* RightPtr() const
+        {
+            return rightPtr;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, leftPtr);
+            AddToUsesList(uses, rightPtr);
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, leftPtr);
+            intermediate.AddUser(this, rightPtr);
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (leftPtr == use)
+            {
+                intermediate.RemoveUser(this, leftPtr);
+                leftPtr = value;
+                intermediate.AddUser(this, leftPtr);
+            }
+            if (rightPtr == use)
+            {
+                intermediate.RemoveUser(this, rightPtr);
+                rightPtr = value;
+                intermediate.AddUser(this, rightPtr);
+            }
+        }
+        private Value* leftPtr;
+        private Value* rightPtr;
+    }
+
+    public class FunctionCallInstruction : ValueInstruction
+    {
+        public FunctionCallInstruction(const System.Lex.Span& span_, RegValue* result_, Value* callee_) :
+            base(span_, result_, OpCode.function_call), callee(callee_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = WriteResult(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write(" = call ");
+            if (result.Error()) return result;
+            result = formatter.Write(callee->GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(callee->ToString());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline const List<Value*>& Args() const
+        {
+            return args;
+        }
+        public void SetArgs(List<Value*>&& args_)
+        {
+            args = args_;
+        }
+        public inline Value* Callee() const
+        {
+            return callee;
+        }
+        public Function* CalleeFn() const
+        {
+            if (callee->IsSymbolValue())
+            {
+                SymbolValue* symbolValue = cast<SymbolValue*>(callee);
+                return symbolValue->GetFunction();
+            }
+            return null;
+        }
+        public override List<Instruction*> Uses() const
+        {
+            List<Instruction*> uses;
+            AddToUsesList(uses, callee);
+            for (Value* arg : args)
+            {
+                AddToUsesList(uses, arg);
+            }
+            return uses;
+        }
+        public override void AddToUses()
+        {
+            intermediate.AddUser(this, callee);
+            for (Value* arg : args)
+            {
+                intermediate.AddUser(this, arg);
+            }
+        }
+        public override void ReplaceValue(Value* use, Value* value)
+        {
+            if (callee == use)
+            {
+                intermediate.RemoveUser(this, callee);
+                callee = value;
+                intermediate.AddUser(this, callee);
+            }
+            for (Value* arg : args)
+            {
+                if (arg == use)
+                {
+                    intermediate.RemoveUser(this, arg);
+                    arg = value;
+                    intermediate.AddUser(this, arg);
+                }
+            }
+        }
+        private Value* callee;
+        private List<Value*> args;
+    }
+
+    public class NoOperationInstruction : Instruction
+    {
+        public NoOperationInstruction(const System.Lex.Span& span_) : base(span_, null, OpCode.nop)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write("nop");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class BasicBlock : Component
+    {
+        public BasicBlock(const System.Lex.Span& span_, int id_) : base(ValueKind.basic_block, span_, null), id(id_), instructions(this)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public inline void SetId(int id_)
+        {
+            id = id_;
+        }
+        public inline bool IsEmpty() const
+        {
+            return instructions.IsEmpty();
+        }
+        public inline Function* Parent() const
+        {
+            #assert(GetContainer() != null);
+            return cast<Function*>(GetContainer()->Parent());
+        }
+        public void VisitInstructions(Visitor& visitor)
+        {
+            Instruction* inst = FirstInstruction();
+            while (inst != null)
+            {
+                inst->Accept(visitor);
+                inst = inst->Next();
+            }
+        }
+        public inline BasicBlock* Next() const
+        {
+             return cast<BasicBlock*>(NextSibling());
+        }
+        public inline BasicBlock* Prev() const
+        {
+             return cast<BasicBlock*>(PrevSibling());
+        }
+        public inline Instruction* FirstInstruction() const
+        {
+            return cast<Instruction*>(instructions.FirstChild());
+        }
+        public inline Instruction* LastInstruction() const
+        {
+            return cast<Instruction*>(instructions.LastChild());
+        }
+        public bool IsLast() const
+        {
+            Function* fn = Parent();
+            return this == fn->LastBasicBlock();
+        }
+        [nodiscard]
+        public Result<bool> AddInstruction(Instruction* instruction, bool mapInstruction)
+        {
+            instructions.AddChild(instruction);
+            if (mapInstruction && instruction->IsValueInstruction())
+            {
+                ValueInstruction* valueInstruction = cast<ValueInstruction*>(instruction);
+                Function* function = Parent();
+                Context* context = function->Parent()->GetContext();
+                auto result = function->MapInstruction(valueInstruction->GetResult()->Reg(), valueInstruction);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddInstruction(Instruction* instruction)
+        {
+            return AddInstruction(instruction, true);
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            int indent = formatter.IndentSize();
+            bool indentDecremented = false;
+            if (formatter.CurrentIndent() > 0)
+            {
+                formatter.DecIndent();
+                indentDecremented = true;
+            }
+            Result<bool> result = formatter.Write(Format("@" + ToString(id), indent, FormatWidth.min));
+            if (result.Error()) return result;
+            bool first = true;
+            Instruction* inst = FirstInstruction();
+            while (inst != null)
+            {
+                result = inst->Write(formatter);
+                if (result.Error()) return result;
+                result = formatter.WriteLine();
+                if (result.Error()) return result;
+                if (first)
+                {
+                    if (indentDecremented)
+                    {
+                        formatter.IncIndent();
+                    }
+                    first = false;
+                }
+                inst = inst->Next();
+            }
+            return Result<bool>(true);
+        }
+        private int id;
+        private ComponentContainer instructions;
+    }
+
+    public enum FunctionFlags : byte
+    {
+        none = 0u, defined = 1u << 0u, inline_ = 1u << 1u
+    }
+
+    public class Function : Component
+    {
+        public Function(Context* context, ComponentContainer* container, const System.Lex.Span& span_, FunctionType* type_, const string& name_, bool definition_, MetadataRef* metadataRef_,
+            bool parsing) :
+            base(ValueKind.function, span_, type_), flags(FunctionFlags.none), type(type_), name(name_), metadataRef(metadataRef_), comment(),
+                basicBlocks(this), nextRegNumber(0), nextBBNumber(0), mdId(-1), errorId(0)
+        {
+            SetContainer(container);
+            if (definition_)
+            {
+                SetDefined();
+            }
+            if (!parsing)
+            {
+                entryBlock.Reset(new BasicBlock(span_, NextBBNumber()));
+                entryBlock->SetContainer(&basicBlocks);
+                for (int i = 0; i < type->Arity(); ++i)
+                {
+                    Type* paramType = type->ParamType(i);
+                    #assert(paramType != null);
+                    Instruction* paramInst = new ParamInstruction(span_, MakeNextRegValue(paramType));
+                    Result<bool> addResult = entryBlock->AddInstruction(paramInst);
+                    if (addResult.Error())
+                    {
+                        errorId = addResult.GetErrorId();
+                        return;
+                    }
+                    params.Add(paramInst);
+                }
+            }
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public override string ToString() const
+        {
+            return name;
+        }
+        public void SetMetadataRef(MetadataRef* metadataRef_)
+        {
+            metadataRef = metadataRef_;
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (metadataRef != null)
+            {
+                SetComment(ResolveFullName());
+            }
+            if (!comment.IsEmpty())
+            {
+                Result<bool> result = formatter.WriteLine("// " + comment);
+                if (result.Error()) return result;
+                result = formatter.WriteLine();
+                if (result.Error()) return result;
+            }
+            if (basicBlocks.IsEmpty())
+            {
+                Result<bool> result = formatter.Write("extern ");
+                if (result.Error()) return result;
+            }
+            else if (IsInline())
+            {
+                Result<bool> result = formatter.Write("inline ");
+                if (result.Error()) return result;
+            }
+            Context* context = Parent()->GetContext();
+            Result<Type*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+            Type* ptrType = ptrTypeResult.Value();
+            if (metadataRef != null)
+            {
+                mdId = metadataRef->NodeId();
+            }
+            string mdIdStr;
+            if (mdId != -1)
+            {
+                mdIdStr.Append(" !").Append(ToString(mdId));
+            }
+            Result<bool> result = formatter.WriteLine("function " + ptrType->Name() + " " + name + mdIdStr);
+            if (result.Error()) return result;
+            if (basicBlocks.IsEmpty())
+            {
+                return Result<bool>(false);
+            }
+            result = SetNumbers();
+            if (result.Error()) return result;
+            result = formatter.WriteLine("{");
+            if (result.Error()) return result;
+            formatter.IncIndent();
+            bool first = true;
+            BasicBlock* bb = FirstBasicBlock();
+            while (bb != null)
+            {
+                if (bb->IsEmpty())
+                {
+                    continue;
+                }
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    result = formatter.WriteLine();
+                    if (result.Error()) return result;
+                }
+                result = bb->Write(formatter);
+                if (result.Error()) return result;
+                bb = bb->Next();
+            }
+            formatter.DecIndent();
+            result = formatter.WriteLine("}");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetNumbers()
+        {
+            Context* context = Parent()->GetContext();
+            basicBlockMap.Clear();
+            regValueMap.Clear();
+            instructionMap.Clear();
+            nextBBNumber = 0;
+            BasicBlock* bb = FirstBasicBlock();
+            while (bb != null)
+            {
+                bb->SetId(nextBBNumber++);
+                basicBlockMap[bb->Id()] = bb;
+                bb = bb->Next();
+            }
+            int instructionIndex = 0;
+            nextRegNumber = 0;
+            bb = FirstBasicBlock();
+            while (bb != null)
+            {
+                Instruction* inst = bb->FirstInstruction();
+                while (inst != null)
+                {
+                    inst->SetIndex(instructionIndex++);
+                    if (inst->IsValueInstruction())
+                    {
+                        ValueInstruction* valueInst = cast<ValueInstruction*>(inst);
+                        valueInst->SetRegValueIndex(nextRegNumber++);
+                        valueInst->GetResult()->SetReg(valueInst->RegValueIndex());
+                        MapRegValue(valueInst->GetResult());
+                        Result<bool> result = MapInstruction(valueInst->RegValueIndex(), valueInst);
+                        if (result.Error()) return result;
+                    }
+                    inst = inst->Next();
+                }
+                bb = bb->Next();
+            }
+            return Result<bool>(true);
+        }
+        public inline Code* Parent() const
+        {
+            #assert(GetContainer() != null);
+            return cast<Code*>(GetContainer()->Parent());
+        }
+        public inline Function* Next() const
+        {
+            return cast<Function*>(NextSibling());
+        }
+        public inline Function* Prev() const
+        {
+            return cast<Function*>(PrevSibling());
+        }
+        public inline bool IsEmpty() const
+        {
+            return basicBlocks.IsEmpty();
+        }
+        [nodiscard]
+        public Result<bool> VisitBasicBlocks(Visitor& visitor)
+        {
+            BasicBlock* bb = FirstBasicBlock();
+            while (bb != null)
+            {
+                bb->Accept(visitor);
+                if (visitor.Error())
+                {
+                    return Result<bool>(ErrorId(visitor.GetErrorId()));
+                }
+                bb = bb->Next();
+            }
+            return Result<bool>(true);
+        }
+        public inline BasicBlock* FirstBasicBlock() const
+        {
+            return cast<BasicBlock*>(basicBlocks.FirstChild());
+        }
+        public inline BasicBlock* LastBasicBlock() const
+        {
+            return cast<BasicBlock*>(basicBlocks.LastChild());
+        }
+        public BasicBlock* GetBasicBlock(int id) const
+        {
+            auto it = basicBlockMap.Find(id);
+            if (it != basicBlockMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Result<BasicBlock*> AddBasicBlock(const System.Lex.Span& span, int id)
+        {
+            BasicBlock* prev = GetBasicBlock(id);
+            if (prev != null)
+            {
+                Context* context = Parent()->GetContext();
+                return Result<BasicBlock*>(ErrorId(Error("error adding basic block: basic block id not unique", span, prev->Span(), context)));
+            }
+            BasicBlock* basicBlock = new BasicBlock(span, id);
+            basicBlocks.AddChild(basicBlock);
+            basicBlockMap[id] = basicBlock;
+            return Result<BasicBlock*>(basicBlock);
+        }
+        public Value* Param(int index) const
+        {
+            return params[index];
+        }
+        public BasicBlock* CreateBasicBlock()
+        {
+            if (basicBlocks.IsEmpty())
+            {
+                BasicBlock* bb = entryBlock.Release();
+                basicBlocks.AddChild(bb);
+                return bb;
+            }
+            BasicBlock* bb = new BasicBlock(Span(), NextBBNumber());
+            basicBlocks.AddChild(bb);
+            return bb;
+        }
+        public inline int GetNextRegNumber()
+        {
+            return nextRegNumber++;
+        }
+        public RegValue* MakeNextRegValue(Type* type)
+        {
+            #assert(type != null);
+            RegValue* regValue = new RegValue(System.Lex.Span(), type, GetNextRegNumber());
+            regValues.Add(UniquePtr<RegValue>(regValue));
+            regValueMap[regValue->Reg()] = regValue;
+            return regValue;
+        }
+        public Result<RegValue*> MakeRegValue(const System.Lex.Span& span, Type* type, int reg)
+        {
+            RegValue* prev = GetRegValue(reg);
+            if (prev != null)
+            {
+                Context* context = Parent()->GetContext();
+                return Result<RegValue*>(ErrorId(Error("error adding register " + ToString(reg) + ": register not unique", span, prev->Span(), context)));
+            }
+            #assert(type != null);
+            RegValue* regValue = new RegValue(span, type, reg);
+            regValues.Add(UniquePtr<RegValue>(regValue));
+            regValueMap[regValue->Reg()] = regValue;
+            return Result<RegValue*>(regValue);
+        }
+        public RegValue* GetRegValue(int reg) const
+        {
+            auto it = regValueMap.Find(reg);
+            if (it != regValueMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Result<RegValue*> GetRegRef(const System.Lex.Span& span, Type* type, int reg) const
+        {
+            RegValue* regValue = GetRegValue(reg);
+            if (regValue != null)
+            {
+                if (regValue->GetType() == type)
+                {
+                    return Result<RegValue*>(regValue);
+                }
+                else
+                {
+                    Context* context = Parent()->GetContext();
+                    int errorId = Error("error referencing register value " + ToString(reg) + ": type conflick", span, regValue->Span(), context);
+                    return Result<RegValue*>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                Context* context = Parent()->GetContext();
+                int errorId = Error("error referencing register: register " + ToString(reg) + " not found", span, context);
+                return Result<RegValue*>(ErrorId(errorId));
+            }
+        }
+        public void MapRegValue(RegValue* regValue)
+        {
+            regValueMap[regValue->Reg()] = regValue;
+        }
+        public Instruction* GetInstruction(int reg) const
+        {
+            auto it = instructionMap.Find(reg);
+            if (it != instructionMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        [nodiscard]
+        public Result<bool> MapInstruction(int reg, ValueInstruction* inst)
+        {
+            Instruction* prev = GetInstruction(reg);
+            if (prev != null)
+            {
+                Context* context = Parent()->GetContext();
+                int errorId = Error("error mapping instruction " + ToString(reg) + ": register not unique", inst->Span(), prev->Span(), context);
+                return Result<bool>(ErrorId(errorId));
+            }
+            instructionMap[reg] = inst;
+            return Result<bool>(true);
+        }
+        public inline FunctionFlags Flags() const
+        {
+            return flags;
+        }
+        public inline bool GetFlag(FunctionFlags flag) const
+        {
+            return (flags & flag) != FunctionFlags.none;
+        }
+        public inline void SetFlag(FunctionFlags flag)
+        {
+            flags = cast<FunctionFlags>(flags | flag);
+        }
+        public inline void ResetFlag(FunctionFlags flag)
+        {
+            flags = cast<FunctionFlags>(flags & ~flag);
+        }
+        public inline bool IsInline() const
+        {
+            return GetFlag(FunctionFlags.inline_);
+        }
+        public inline void SetInline()
+        {
+            SetFlag(FunctionFlags.inline_);
+        }
+        public inline bool IsDefined() const
+        {
+            return GetFlag(FunctionFlags.defined);
+        }
+        public inline void SetDefined()
+        {
+            SetFlag(FunctionFlags.defined);
+        }
+        public inline bool IsExternal() const
+        {
+            return !IsDefined();
+        }
+        public inline int Arity() const
+        {
+            return type->Arity();
+        }
+        public inline int MdId() const
+        {
+            return mdId;
+        }
+        public inline void SetMdId(int mdId_)
+        {
+            mdId = mdId_;
+        }
+        public inline const string& Comment() const
+        {
+            return comment;
+        }
+        public void SetComment(const string& comment_)
+        {
+            comment = comment_;
+        }
+        public string ResolveFullName() const
+        {
+            if (metadataRef != null)
+            {
+                MetadataStruct* metadataStruct = metadataRef->GetMetadataStruct();
+                if (metadataStruct != null)
+                {
+                    MetadataItem* metadataItem = metadataStruct->GetItem("fullName");
+                    if (metadataItem != null)
+                    {
+                        if (metadataItem->IsMetadataString())
+                        {
+                            MetadataString* metadataString = cast<MetadataString*>(metadataItem);
+                            return metadataString->GetValue();
+                        }
+                    }
+                }
+            }
+            return string();
+        }
+        public inline int NextBBNumber()
+        {
+            return nextBBNumber++;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private FunctionFlags flags;
+        private string name;
+        private FunctionType* type;
+        private MetadataRef* metadataRef;
+        private List<Value*> params;
+        private string comment;
+        private ComponentContainer basicBlocks;
+        private int nextRegNumber;
+        private int nextBBNumber;
+        private UniquePtr<BasicBlock> entryBlock;
+        private Map<int, Instruction*> instructionMap;
+        private Map<int, BasicBlock*> basicBlockMap;
+        private List<UniquePtr<RegValue>> regValues;
+        private Map<int, RegValue*> regValueMap;
+        private int mdId;
+        private int errorId;
+    }
+
+    public class Code : Component
+    {
+        public Code(Context* context_) : base(ValueKind.code, System.Lex.Span(), null), context(context_), functions(this)
+        {
+        }
+        public inline Context* GetContext() const
+        {
+            return context;
+        }
+        [nodiscard]
+        public Result<bool> VisitFunctions(Visitor& visitor)
+        {
+            Function* function = FirstFunction();
+            while (function != null)
+            {
+                function->Accept(visitor);
+                if (visitor.Error()) return Result<bool>(ErrorId(visitor.GetErrorId()));
+                function = function->Next();
+            }
+            return Result<bool>(true);
+        }
+        public Function* FirstFunction() const
+        {
+            return cast<Function*>(functions.FirstChild());
+        }
+        public Function* LastFunction() const
+        {
+            return cast<Function*>(functions.LastChild());
+        }
+        public Function* GetFunction(const string& functionName) const
+        {
+            auto it = functionMap.Find(functionName);
+            if (it != functionMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Result<Function*> GetOrInsertFunction(const string& functionName, FunctionType* functionType)
+        {
+            auto it = functionMap.Find(functionName);
+            if (it != functionMap.End())
+            {
+                return Result<Function*>(it->second);
+            }
+            else
+            {
+                Function* function = new Function(context, &functions, System.Lex.Span(), functionType, functionName, false, null, false);
+                if (function->Error())
+                {
+                    return Result<Function*>(ErrorId(function->GetErrorId()));
+                }
+                functionMap[functionName] = function;
+                functions.AddChild(function);
+                return Result<Function*>(function);
+            }
+        }
+        public Result<Function*> AddFunctionDefinition(const System.Lex.Span& span, Type* type, const string& functionId, bool inline_, MetadataRef* metadataRef)
+        {
+            Function* prev = GetFunction(functionId);
+            if (prev != null)
+            {
+                if (prev->IsDefined())
+                {
+                    return Result<Function*>(ErrorId(Error("error adding function '" + functionId + "': function id not unique", span, prev->Span(), context)));
+                }
+                else
+                {
+                    if (prev->GetType() != type)
+                    {
+                        return Result<Function*>(ErrorId(Error("error adding function '" + functionId + "': type '" + type->Name() +
+                            "' conflicts with earlier declaration", span, prev->Span(), context)));
+                    }
+                    prev->SetDefined();
+                    if (inline_)
+                    {
+                        prev->SetInline();
+                    }
+                    return Result<Function*>(prev);
+                }
+            }
+            if (type->IsPointerType())
+            {
+                PointerType* pointerType = cast<PointerType*>(type);
+                type = pointerType->BaseType();
+            }
+            if (type->IsFunctionType())
+            {
+                FunctionType* functionType = cast<FunctionType*>(type);
+                Function* function = new Function(context, &functions, span, functionType, functionId, true, metadataRef, true);
+                if (function->Error()) return Result<Function*>(ErrorId(function->GetErrorId()));
+                if (inline_)
+                {
+                    function->SetInline();
+                }
+                functions.AddChild(function);
+                functionMap[function->Name()] = function;
+                return Result<Function*>(function);
+            }
+            else
+            {
+                int errorId = Error("error adding function '" + functionId + "': type is not a function type", span, context);
+                return Result<Function*>(ErrorId(errorId));
+            }
+        }
+        public Result<Function*> AddFunctionDeclaration(const System.Lex.Span& span, Type* type, const string& functionId)
+        {
+            Function* prev = GetFunction(functionId);
+            if (prev != null)
+            {
+                if (prev->GetType() != type)
+                {
+                    return Result<Function*>(ErrorId(Error("error adding function '" + functionId + "': type '" + type->Name() +
+                        "' conflicts with earlier declaration", span, prev->Span(), context)));
+                }
+                return Result<Function*>(prev);
+            }
+            if (type->IsFunctionType())
+            {
+                FunctionType* functionType = cast<FunctionType*>(type);
+                Function* function = new Function(context, &functions, span, functionType, functionId, false, null, true);
+                if (function->Error()) return Result<Function*>(ErrorId(function->GetErrorId()));
+                functions.AddChild(function);
+                functionMap[function->Name()] = function;
+                return Result<Function*>(function);
+            }
+            else
+            {
+                int errorId = Error("error adding function '" + functionId + "': type is not a function type", span, context);
+                return Result<Function*>(ErrorId(errorId));
+            }
+        }
+        private Context* context;
+        private ComponentContainer functions;
+        private Map<string, Function*> functionMap;
+    }
+}
+

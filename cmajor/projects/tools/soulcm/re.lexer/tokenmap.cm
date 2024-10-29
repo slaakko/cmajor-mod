@@ -1,0 +1,53 @@
+using System;
+using System.Collections;
+
+namespace re.token
+{
+    public class TokenMap
+    {
+        static TokenMap() : instance(new TokenMap())
+        {
+        }
+        public static TokenMap& Instance()
+        {
+            return *instance;
+        }
+        public string TokenName(long tokenId) const
+        {
+            auto it = tokenMap.Find(tokenId);
+            if (it != tokenMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return "unknown token id";
+            }
+        }
+        private TokenMap()
+        {
+            tokenMap[3317814746706608129] = "LPAREN";
+            tokenMap[3317814746706608130] = "RPAREN";
+            tokenMap[3317814746706608131] = "LBRACKET";
+            tokenMap[3317814746706608132] = "RBRACKET";
+            tokenMap[3317814746706608133] = "LBRACE";
+            tokenMap[3317814746706608134] = "RBRACE";
+            tokenMap[3317814746706608135] = "PIPE";
+            tokenMap[3317814746706608136] = "STAR";
+            tokenMap[3317814746706608137] = "PLUS";
+            tokenMap[3317814746706608138] = "QUEST";
+            tokenMap[3317814746706608139] = "DOT";
+            tokenMap[3317814746706608140] = "CARET";
+            tokenMap[3317814746706608141] = "MINUS";
+            tokenMap[3317814746706608142] = "ESCAPE";
+            tokenMap[3317814746706608143] = "CHARACTER";
+        }
+        private static UniquePtr<TokenMap> instance;
+        private Map<long, string> tokenMap;
+    }
+
+    public string TokenName(long tokenId)
+    {
+        return TokenMap.Instance().TokenName(tokenId);
+    }
+}

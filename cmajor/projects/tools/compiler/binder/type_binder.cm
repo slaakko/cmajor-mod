@@ -1,0 +1,1998 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+cdecl void Foo()
+{
+}
+
+namespace binder
+{
+    internal class UsingNodeAdder : Visitor
+    {
+        public UsingNodeAdder(BoundCompileUnit* boundCompileUnit_, ContainerScope* containerScope_) :
+            boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), context(boundCompileUnit->Context()), containerScope(containerScope_), errorId(0)
+        {
+        }
+        public override void Visit(NamespaceNode& namespaceNode)
+        {
+            ContainerScope* prevContainerScope = containerScope;
+            auto result = symbolTable->GetSymbol(&namespaceNode);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            Symbol* symbol = result.Value();
+            containerScope = symbol->GetContainerScope();
+            int n = cast<int>(namespaceNode.Members().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Node* member = namespaceNode.Members()[i];
+                member->Accept(*this);
+                if (Error()) return;
+            }
+            containerScope = prevContainerScope;
+        }
+        public override void Visit(AliasNode& aliasNode)
+        {
+            auto result = symbolTable->GetSymbol(&aliasNode);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            Symbol* symbol = result.Value();
+            #assert(symbol->IsAliasTypeSymbol());
+            AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+            boundCompileUnit->FirstFileScope()->InstallAlias(&aliasNode, aliasTypeSymbol->Type());
+        }
+        public override void Visit(NamespaceImportNode& namespaceImportNode)
+        {
+            auto installResult = boundCompileUnit->FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode);
+            if (installResult.Error())
+            {
+                errorId = installResult.GetErrorId();
+                return;
+            }
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private SymbolTable* symbolTable;
+        private SymbolsContext& context;
+        private ContainerScope* containerScope;
+        private int errorId;
+    }
+
+    public class TypeBinder : Visitor
+    {
+        public TypeBinder(BoundCompileUnit* boundCompileUnit_) :
+            boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), module(boundCompileUnit->GetModule()), context(boundCompileUnit->Context()),
+            containerScope(null), errorId(0), typeResolverFlags(TypeResolverFlags.none), currentClassTypeSymbol(null), currentFunctionSymbol(null), enumType(null)
+        {
+        }
+        public override void Visit(SourceFileNode& sourceFileNode)
+        {
+            boundCompileUnit->AddFileScope(new FileScope());
+            sourceFileNode.GlobalNs()->Accept(*this);
+        }
+        public override void Visit(NamespaceNode& namespaceNode)
+        {
+            ContainerScope* prevContainerScope = containerScope;
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&namespaceNode);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            auto result = symbol->ComputeMangledName();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            containerScope = symbol->GetContainerScope();
+            int n = cast<int>(namespaceNode.Members().Count());
+            Console.Out() << "MEMBERS: " << n << endl();
+            for (int i = 0; i < n; ++i)
+            {
+                Node* member = namespaceNode.Members()[i];
+                Console.Out() << "MEMBER: " << i << endl();
+                member->Accept(*this);
+                if (Error()) return;
+            }
+            containerScope = prevContainerScope;
+        }
+        public override void Visit(AliasNode& aliasNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&aliasNode);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsAliasTypeSymbol());
+            AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+            BindAlias(aliasTypeSymbol, &aliasNode, true);
+            boundCompileUnit->FirstFileScope()->InstallAlias(&aliasNode, aliasTypeSymbol->Type());
+            usingNodes.Add(&aliasNode);
+        }
+        public override void Visit(NamespaceImportNode& namespaceImportNode)
+        {
+            auto installResult = boundCompileUnit->FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode);
+            if (installResult.Error())
+            {
+                errorId = installResult.GetErrorId();
+                return;
+            }
+            usingNodes.Add(&namespaceImportNode);
+        }
+        public override void Visit(FunctionNode& functionNode)
+        {
+            ContainerScope* prevContainerScope = containerScope;
+            auto symbolResult = symbolTable->GetSymbol(&functionNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsFunctionSymbol());
+            FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(symbol);
+            if (functionSymbol->IsBound()) return;
+            functionSymbol->SetBound();
+            FunctionSymbol* prevFunctionSymbol = currentFunctionSymbol;
+            currentFunctionSymbol = functionSymbol;
+            if (functionSymbol->IsFunctionTemplate())
+            {
+                functionSymbol->CloneUsingNodes(usingNodes);
+                if (functionNode.WhereConstraint() != null)
+                {
+                    CloneContext cloneContext;
+                    functionSymbol->SetConstraint(cast<WhereConstraintNode*>(functionNode.WhereConstraint()->Clone(cloneContext)));
+                }
+            }
+            containerScope = functionSymbol->GetContainerScope();
+            Specifiers specifiers = functionNode.GetSpecifiers();
+            auto result = functionSymbol->SetSpecifiers(specifiers);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (GetGlobalFlag(GlobalFlags.release) && functionSymbol->IsInline())
+            {
+                functionSymbol->CloneUsingNodes(usingNodes);
+            }
+            int n = cast<int>(functionNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (Error()) return;
+                ParameterNode* parameterNode = functionNode.Parameters()[i];
+                auto resolveResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+                if (resolveResult.Error())
+                {
+                    errorId = resolveResult.GetErrorId();
+                    return;
+                }
+                TypeSymbol* parameterType = resolveResult.Value();
+                Result<Symbol*> symbolResult = symbolTable->GetSymbol(parameterNode);
+                if (symbolResult.Error())
+                {
+                    errorId = symbolResult.GetErrorId();
+                    return;
+                }
+                Symbol* symbol = symbolResult.Value();
+                #assert(symbol->IsParameterSymbol());
+                ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
+                parameterSymbol->SetType(parameterType);
+                // todo interface type
+            }
+            auto resolveResult = ResolveType(functionNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* returnType = resolveResult.Value();
+            functionSymbol->SetReturnType(returnType);
+            // todo interface type
+            if (functionSymbol->Constraint() == null && functionNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                functionSymbol->SetConstraint(cast<WhereConstraintNode*>(functionNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            result = functionSymbol->ComputeName(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            for (ParameterSymbol* parameterSymbol : functionSymbol->Parameters())
+            {
+                if (Error()) return;
+                result = parameterSymbol->ComputeMangledName();
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+            if (functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ParameterSymbol* returnParam = new ParameterSymbol(functionNode.ReturnTypeExpr()->GetSpan(), u"@return");
+                returnParam->SetParent(functionSymbol);
+                returnParam->SetType(returnType->AddPointer(context));
+                functionSymbol->SetReturnParam(returnParam);
+            }
+            if (functionNode.Body() != null && !functionSymbol->IsFunctionTemplate())
+            {
+                functionNode.Body()->Accept(*this);
+            }
+            else
+            {
+                if (!functionSymbol->IsExternal() && !functionSymbol->IsFunctionTemplate())
+                {
+                    errorId = MakeError("function has no body", functionNode.GetFullSpan());
+                    return;
+                }
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(functionNode.GetAttributes(), symbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            containerScope = prevContainerScope;
+            currentFunctionSymbol = prevFunctionSymbol;
+        }
+        public override void Visit(ClassNode& classNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&classNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsClassTypeSymbol());
+            ClassTypeSymbol* classTypeSymbol = cast<ClassTypeSymbol*>(symbol);
+            BindClass(classTypeSymbol, &classNode, true);
+        }
+        public override void Visit(StaticConstructorNode& staticConstructorNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&staticConstructorNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsStaticConstructorSymbol());
+            StaticConstructorSymbol* staticConstructorSymbol = cast<StaticConstructorSymbol*>(symbol);
+            if (staticConstructorSymbol->IsBound()) return;
+            staticConstructorSymbol->SetBound();
+            FunctionSymbol* prevFunctionSymbol = currentFunctionSymbol;
+            currentFunctionSymbol = staticConstructorSymbol;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = staticConstructorSymbol->GetContainerScope();
+            auto result = staticConstructorSymbol->SetSpecifiers(staticConstructorNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (staticConstructorSymbol->Parent()->IsClassTemplateSpecializationSymbol())
+            {
+                staticConstructorSymbol->SetTemplateSpecialization();
+            }
+            if (staticConstructorSymbol->Constraint() == null && staticConstructorNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                staticConstructorSymbol->SetConstraint(cast<WhereConstraintNode*>(staticConstructorNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            result = staticConstructorSymbol->ComputeName(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (staticConstructorNode.Body() != null)
+            {
+                staticConstructorNode.Body()->Accept(*this);
+            }
+            else
+            {
+                if (!staticConstructorSymbol->IsTemplateSpecialization())
+                {
+                    errorId = MakeError("static constructor has no body", staticConstructorNode.GetFullSpan());
+                    return;
+                }
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(staticConstructorNode.GetAttributes(), symbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            containerScope = prevContainerScope;
+            currentFunctionSymbol = prevFunctionSymbol;
+        }
+        public override void Visit(ConstructorNode& constructorNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&constructorNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsConstructorSymbol());
+            ConstructorSymbol* constructorSymbol = cast<ConstructorSymbol*>(symbol);
+            if (constructorSymbol->IsBound()) return;
+            constructorSymbol->SetBound();
+            FunctionSymbol* prevFunctionSymbol = currentFunctionSymbol;
+            currentFunctionSymbol = constructorSymbol;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = constructorSymbol->GetContainerScope();
+            auto result = constructorSymbol->SetSpecifiers(constructorNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (GetGlobalFlag(GlobalFlags.release) && constructorSymbol->IsInline())
+            {
+                constructorSymbol->CloneUsingNodes(usingNodes);
+            }
+            Symbol* parent = constructorSymbol->Parent();
+            if (parent->IsStatic())
+            {
+                errorId = MakeError("static class cannot contain instance constructors", constructorNode.GetFullSpan(), parent->FullSpan());
+                return;
+            }
+            if (parent->IsClassTemplateSpecializationSymbol())
+            {
+                constructorSymbol->SetTemplateSpecialization();
+            }
+            #assert(parent->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+            int n = cast<int>(constructorNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (Error()) return;
+                ParameterNode* parameterNode = constructorNode.Parameters()[i];
+                auto resolveResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+                if (resolveResult.Error())
+                {
+                    errorId = resolveResult.GetErrorId();
+                    return;
+                }
+                TypeSymbol* parameterType = resolveResult.Value();
+                Result<Symbol*> symbolResult = symbolTable->GetSymbol(parameterNode);
+                if (symbolResult.Error())
+                {
+                    errorId = symbolResult.GetErrorId();
+                    return;
+                }
+                Symbol* symbol = symbolResult.Value();
+                #assert(symbol->IsParameterSymbol());
+                ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
+                parameterSymbol->SetType(parameterType);
+                // todo interface type
+            }
+            if (constructorSymbol->Constraint() == null && constructorNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                constructorSymbol->SetConstraint(cast<WhereConstraintNode*>(constructorNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            result = constructorSymbol->ComputeName(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            for (ParameterSymbol* parameterSymbol : constructorSymbol->Parameters())
+            {
+                result = parameterSymbol->ComputeMangledName();
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+            if (constructorSymbol->IsDefaultConstructor(context))
+            {
+                classType->SetDefaultConstructor(constructorSymbol);
+            }
+            else if (constructorSymbol->IsCopyConstructor(context))
+            {
+                classType->SetCopyConstructor(constructorSymbol);
+            }
+            else if (constructorSymbol->IsMoveConstructor(context))
+            {
+                classType->SetMoveConstructor(constructorSymbol);
+            }
+            if (constructorSymbol->Arity() == 2 && !constructorSymbol->IsExplicit() && !constructorSymbol->IsGenerated())
+            {
+                constructorSymbol->SetImplicitConversion();
+                constructorSymbol->SetConversionSourceType(constructorSymbol->Parameters()[1]->Type()->PlainType(context));
+                constructorSymbol->SetConversionTargetType(constructorSymbol->Parameters()[0]->Type()->RemovePointer(context)->PlainType(context));
+                symbolTable->AddConversion(constructorSymbol);
+            }
+            if (constructorNode.Body() != null)
+            {
+                if ((constructorSymbol->IsDefault() || constructorSymbol->IsSuppressed()) && !constructorSymbol->HasArtificialBody())
+                {
+                    errorId = MakeError("default or suppressed constructor cannot have a body", constructorSymbol->FullSpan());
+                    return;
+                }
+                constructorNode.Body()->Accept(*this);
+            }
+            else
+            {
+                if (!constructorSymbol->IsDefault() && !constructorSymbol->IsSuppressed() && !constructorSymbol->IsTemplateSpecialization())
+                {
+                    errorId = MakeError("constructor has no body", constructorSymbol->FullSpan());
+                    return;
+                }
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(constructorNode.GetAttributes(), symbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            containerScope = prevContainerScope;
+            currentFunctionSymbol = prevFunctionSymbol;
+        }
+        public override void Visit(DestructorNode& destructorNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&destructorNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsDestructorSymbol());
+            DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(symbol);
+            if (destructorSymbol->IsBound()) return;
+            destructorSymbol->SetBound();
+            FunctionSymbol* prevFunctionSymbol = currentFunctionSymbol;
+            currentFunctionSymbol = destructorSymbol;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = destructorSymbol->GetContainerScope();
+            auto result = destructorSymbol->SetSpecifiers(destructorNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            Symbol* parent = destructorSymbol->Parent();
+            if (parent->IsStatic())
+            {
+                errorId = MakeError("static class cannot contain a destructor", destructorSymbol->FullSpan(), parent->FullSpan());
+                return;
+            }
+            if (parent->IsClassTemplateSpecializationSymbol())
+            {
+                destructorSymbol->SetTemplateSpecialization();
+            }
+            #assert(parent->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+            classType->SetDestructor(destructorSymbol);
+            if (destructorSymbol->Constraint() == null && destructorNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                destructorSymbol->SetConstraint(cast<WhereConstraintNode*>(destructorNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            result = destructorSymbol->ComputeName(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (destructorNode.Body() != null)
+            {
+                if (destructorSymbol->IsDefault() && !destructorSymbol->HasArtificialBody())
+                {
+                    errorId = MakeError("default destructor cannot have a body", destructorSymbol->FullSpan());
+                    return;
+                }
+                destructorNode.Body()->Accept(*this);
+            }
+            else
+            {
+                if (!destructorSymbol->IsDefault() && !destructorSymbol->IsTemplateSpecialization())
+                {
+                    errorId = MakeError("destructor has no body", destructorSymbol->FullSpan());
+                    return;
+                }
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(destructorNode.GetAttributes(), symbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            containerScope = prevContainerScope;
+            currentFunctionSymbol = prevFunctionSymbol;
+        }
+        public override void Visit(MemberFunctionNode& memberFunctionNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&memberFunctionNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsMemberFunctionSymbol());
+            MemberFunctionSymbol* memberFunctionSymbol = cast<MemberFunctionSymbol*>(symbol);
+            if (memberFunctionSymbol->IsBound()) return;
+            memberFunctionSymbol->SetBound();
+            FunctionSymbol* prevFunctionSymbol = currentFunctionSymbol;
+            currentFunctionSymbol = memberFunctionSymbol;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = memberFunctionSymbol->GetContainerScope();
+            auto result = memberFunctionSymbol->SetSpecifiers(memberFunctionNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (GetGlobalFlag(GlobalFlags.release) && memberFunctionSymbol->IsInline())
+            {
+                memberFunctionSymbol->CloneUsingNodes(usingNodes);
+            }
+            Symbol* parent = memberFunctionSymbol->Parent();
+            if (parent->IsStatic() && !memberFunctionSymbol->IsStatic())
+            {
+                errorId = MakeError("static class cannot contain nonstatic member functions", memberFunctionSymbol->FullSpan(), parent->FullSpan());
+                return;
+            }
+            if (parent->IsClassTemplateSpecializationSymbol())
+            {
+                memberFunctionSymbol->SetTemplateSpecialization();
+            }
+            int n = cast<int>(memberFunctionNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (Error()) return;
+                ParameterNode* parameterNode = memberFunctionNode.Parameters()[i];
+                Result<TypeSymbol*> resolveResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+                if (resolveResult.Error())
+                {
+                    errorId = resolveResult.GetErrorId();
+                    return;
+                }
+                TypeSymbol* parameterType = resolveResult.Value();
+                Result<Symbol*> symbolResult = symbolTable->GetSymbol(parameterNode);
+                if (symbolResult.Error())
+                {
+                    errorId = symbolResult.GetErrorId();
+                    return;
+                }
+                Symbol* symbol = symbolResult.Value();
+                #assert(symbol->IsParameterSymbol());
+                ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
+                parameterSymbol->SetType(parameterType);
+                // todo interface type
+            }
+            Result<TypeSymbol*> resolveResult = ResolveType(memberFunctionNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* returnType = resolveResult.Value();
+            memberFunctionSymbol->SetReturnType(returnType);
+            // todo interface type
+            if (memberFunctionSymbol->Constraint() == null && memberFunctionNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                memberFunctionSymbol->SetConstraint(cast<WhereConstraintNode*>(memberFunctionNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            result = memberFunctionSymbol->ComputeName(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            for (ParameterSymbol* parameterSymbol : memberFunctionSymbol->Parameters())
+            {
+                result = parameterSymbol->ComputeMangledName();
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+            if (memberFunctionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ParameterSymbol* returnParam = new ParameterSymbol(memberFunctionNode.ReturnTypeExpr()->GetSpan(), u"@return");
+                returnParam->SetParent(memberFunctionSymbol);
+                returnParam->SetType(returnType->AddPointer(context));
+                memberFunctionSymbol->SetReturnParam(returnParam);
+            }
+            if (parent->IsClassTypeSymbol())
+            {
+                ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(parent);
+                if (memberFunctionSymbol->IsCopyAssignment(context))
+                {
+                    classType->SetCopyAssignment(memberFunctionSymbol);
+                }
+                else if (memberFunctionSymbol->IsMoveAssignment(context))
+                {
+                    classType->SetMoveAssignment(memberFunctionSymbol);
+                }
+            }
+            if (memberFunctionNode.Body() != null)
+            {
+                if ((memberFunctionSymbol->IsDefault() || memberFunctionSymbol->IsSuppressed()) && !memberFunctionSymbol->HasArtificialBody())
+                {
+                    errorId = MakeError("default or suppressed member function cannot have a body", memberFunctionSymbol->FullSpan());
+                    return;
+                }
+                memberFunctionNode.Body()->Accept(*this);
+            }
+            else
+            {
+                if (!memberFunctionSymbol->Parent()->IsInterfaceTypeSymbol() &&
+                    !memberFunctionSymbol->IsAbstract() &&
+                    !memberFunctionSymbol->IsDefault() &&
+                    !memberFunctionSymbol->IsSuppressed() &&
+                    !memberFunctionSymbol->IsTemplateSpecialization())
+                {
+                    errorId = MakeError("member function has no body", memberFunctionSymbol->FullSpan());
+                    return;
+                }
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(memberFunctionNode.GetAttributes(), symbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            containerScope = prevContainerScope;
+            currentFunctionSymbol = prevFunctionSymbol;
+        }
+        public override void Visit(ConversionFunctionNode& conversionFunctionNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&conversionFunctionNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsConversionFunctionSymbol());
+            ConversionFunctionSymbol* conversionFunctionSymbol = cast<ConversionFunctionSymbol*>(symbol);
+            if (conversionFunctionSymbol->IsBound()) return;
+            conversionFunctionSymbol->SetBound();
+            FunctionSymbol* prevFunctionSymbol = currentFunctionSymbol;
+            currentFunctionSymbol = conversionFunctionSymbol;
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = conversionFunctionSymbol->GetContainerScope();
+            auto result = conversionFunctionSymbol->SetSpecifiers(conversionFunctionNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (GetGlobalFlag(GlobalFlags.release) && conversionFunctionSymbol->IsInline())
+            {
+                conversionFunctionSymbol->CloneUsingNodes(usingNodes);
+            }
+            Symbol* parent = conversionFunctionSymbol->Parent();
+            if (parent->IsStatic())
+            {
+                errorId = MakeError("static class cannot contain conversion functions", conversionFunctionSymbol->FullSpan(), parent->FullSpan());
+                return;
+            }
+            bool requireBody = true;
+            if (parent->IsClassTemplateSpecializationSymbol())
+            {
+                conversionFunctionSymbol->SetTemplateSpecialization();
+                requireBody = false;
+            }
+            Result<TypeSymbol*> resolveResult = ResolveType(conversionFunctionNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* returnType = resolveResult.Value();
+            conversionFunctionSymbol->SetReturnType(returnType);
+            TypeSymbol* parentTypeSymbol = cast<TypeSymbol*>(parent);
+            conversionFunctionSymbol->SetConversionSourceType(parentTypeSymbol->PlainType(context));
+            conversionFunctionSymbol->SetConversionTargetType(returnType->PlainType(context));
+            if (conversionFunctionSymbol->Constraint() == null && conversionFunctionNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                conversionFunctionSymbol->SetConstraint(cast<WhereConstraintNode*>(conversionFunctionNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            result = conversionFunctionSymbol->ComputeName(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (conversionFunctionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ParameterSymbol* returnParam = new ParameterSymbol(conversionFunctionNode.ReturnTypeExpr()->GetSpan(), u"@return");
+                returnParam->SetParent(conversionFunctionSymbol);
+                returnParam->SetType(returnType->AddPointer(context));
+                conversionFunctionSymbol->SetReturnParam(returnParam);
+            }
+            symbolTable->AddConversion(conversionFunctionSymbol);
+            if (conversionFunctionNode.Body() != null)
+            {
+                conversionFunctionNode.Body()->Accept(*this);
+            }
+            else
+            {
+                if (requireBody)
+                {
+                    errorId = MakeError("conversion function has no body", conversionFunctionSymbol->FullSpan());
+                    return;
+                }
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(conversionFunctionNode.GetAttributes(), symbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            containerScope = prevContainerScope;
+            currentFunctionSymbol = prevFunctionSymbol;
+        }
+        public override void Visit(MemberVariableNode& memberVariableNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&memberVariableNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsMemberVariableSymbol());
+            MemberVariableSymbol* memberVariableSymbol = cast<MemberVariableSymbol*>(symbol);
+            if (memberVariableSymbol->IsBound()) return;
+            memberVariableSymbol->SetBound();
+            auto result = memberVariableSymbol->SetSpecifiers(memberVariableNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = memberVariableSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            Symbol* parent = memberVariableSymbol->Parent();
+            if (parent->IsStatic() && !memberVariableSymbol->IsStatic())
+            {
+                errorId = MakeError("static class cannot contain instance variables", memberVariableSymbol->FullSpan(), parent->FullSpan());
+                return;
+            }
+            Result<TypeSymbol*> resolveResult = ResolveType(memberVariableNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* memberVariableType = resolveResult.Value();
+            memberVariableSymbol->SetType(memberVariableType);
+            if (memberVariableType->IsClassTypeSymbol() && memberVariableType->IsProject() && !memberVariableType->IsBound())
+            {
+                ClassTypeSymbol* memberVariableClassType = cast<ClassTypeSymbol*>(memberVariableType);
+                if (memberVariableClassType->IsClassTemplateSpecializationSymbol())
+                {
+                    result = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(cast<ClassTemplateSpecializationSymbol*>(memberVariableClassType),
+                        containerScope, &memberVariableNode);
+                    if (result.Error())
+                    {
+                        errorId = result.GetErrorId();
+                        return;
+                    }
+                }
+                Node* node = symbolTable->GetNode(memberVariableClassType);
+                #assert(node != null && node->IsClassNode());
+                ClassNode* classNode = cast<ClassNode*>(node);
+                BindClass(memberVariableClassType, classNode, false);
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(memberVariableNode.GetAttributes(), symbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(InterfaceNode& interfaceNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&interfaceNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsInterfaceTypeSymbol());
+            InterfaceTypeSymbol* interfaceTypeSymbol = cast<InterfaceTypeSymbol*>(symbol);
+            BindInterface(interfaceTypeSymbol, &interfaceNode, true);
+        }
+        public override void Visit(DelegateNode& delegateNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&delegateNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsDelegateTypeSymbol());
+            DelegateTypeSymbol* delegateTypeSymbol = cast<DelegateTypeSymbol*>(symbol);
+            auto result = delegateTypeSymbol->SetSpecifiers(delegateNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = delegateTypeSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            int n = delegateNode.Parameters().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (Error()) return;
+                ParameterNode* parameterNode = delegateNode.Parameters()[i];
+                Result<TypeSymbol*> resolveResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+                if (resolveResult.Error())
+                {
+                    errorId = resolveResult.GetErrorId();
+                    return;
+                }
+                TypeSymbol* parameterType = resolveResult.Value();
+                Result<Symbol*> symbolResult = symbolTable->GetSymbol(parameterNode);
+                if (symbolResult.Error())
+                {
+                    errorId = symbolResult.GetErrorId();
+                    return;
+                }
+                Symbol* symbol = symbolResult.Value();
+                #assert(symbol->IsParameterSymbol());
+                ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
+                parameterSymbol->SetType(parameterType);
+            }
+            Result<TypeSymbol*> resolveResult = ResolveType(delegateNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* returnType = resolveResult.Value();
+            delegateTypeSymbol->SetReturnType(returnType);
+            if (delegateTypeSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ParameterSymbol* returnParam = new ParameterSymbol(delegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
+                returnParam->SetParent(delegateTypeSymbol);
+                returnParam->SetType(returnType->AddPointer(context));
+                delegateTypeSymbol->SetReturnParam(returnParam);
+            }
+            for (ParameterSymbol* parameterSymbol : delegateTypeSymbol->Parameters())
+            {
+                result = parameterSymbol->ComputeMangledName();
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+            DelegateTypeDefaultConstructor* defaultConstructor = new DelegateTypeDefaultConstructor(context, delegateTypeSymbol);
+            if (defaultConstructor->Error())
+            {
+                SetErrorId(defaultConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(defaultConstructor);
+            result = delegateTypeSymbol->AddMember(defaultConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            DelegateTypeCopyConstructor* copyConstructor = new DelegateTypeCopyConstructor(context, delegateTypeSymbol);
+            if (copyConstructor->Error())
+            {
+                SetErrorId(copyConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyConstructor);
+            result = delegateTypeSymbol->AddMember(copyConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            DelegateTypeMoveConstructor* moveConstructor = new DelegateTypeMoveConstructor(context, delegateTypeSymbol);
+            if (moveConstructor->Error())
+            {
+                SetErrorId(moveConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveConstructor);
+            result = delegateTypeSymbol->AddMember(moveConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            DelegateTypeCopyAssignment* copyAssignment = new DelegateTypeCopyAssignment(context, delegateTypeSymbol);
+            if (copyAssignment->Error())
+            {
+                SetErrorId(copyAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyAssignment);
+            result = delegateTypeSymbol->AddMember(copyAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            DelegateTypeMoveAssignment* moveAssignment = new DelegateTypeMoveAssignment(context, delegateTypeSymbol);
+            if (moveAssignment->Error())
+            {
+                SetErrorId(moveAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveAssignment);
+            result = delegateTypeSymbol->AddMember(moveAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            DelegateTypeReturn* returnFn = new DelegateTypeReturn(context, delegateTypeSymbol);
+            if (returnFn->Error())
+            {
+                SetErrorId(returnFn->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(returnFn);
+            result = delegateTypeSymbol->AddMember(returnFn, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            DelegateTypeEquality* equality = new DelegateTypeEquality(context, delegateTypeSymbol);
+            if (equality->Error())
+            {
+                SetErrorId(equality->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(equality);
+            Result<NamespaceSymbol*> nsResult = delegateTypeSymbol->Ns();
+            if (nsResult.Error())
+            {
+                SetErrorId(nsResult.GetErrorId());
+                return;
+            }
+            NamespaceSymbol* ns = nsResult.Value();
+            result = ns->AddMember(equality, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(ClassDelegateNode& classDelegateNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&classDelegateNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsClassDelegateTypeSymbol());
+            ClassDelegateTypeSymbol* classDelegateTypeSymbol = cast<ClassDelegateTypeSymbol*>(symbol);
+            auto result = classDelegateTypeSymbol->SetSpecifiers(classDelegateNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = classDelegateTypeSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            DelegateTypeSymbol* memberDelegateType = new DelegateTypeSymbol(classDelegateNode.GetSpan(), u"delegate_type");
+            memberDelegateType->SetModule(module);
+            symbolTable->SetTypeIdFor(memberDelegateType);
+            ParameterSymbol* objectParam = new ParameterSymbol(classDelegateNode.GetSpan(), u"@obj");
+            Result<TypeSymbol*> voidTypeResult = symbolTable->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            TypeSymbol* voidPtrType = voidType->AddPointer(context);
+            objectParam->SetType(voidPtrType);
+            result = memberDelegateType->AddMember(objectParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            int n = classDelegateNode.Parameters().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (Error()) return;
+                ParameterNode* parameterNode = classDelegateNode.Parameters()[i];
+                Result<TypeSymbol*> resolveResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+                if (resolveResult.Error())
+                {
+                    errorId = resolveResult.GetErrorId();
+                    return;
+                }
+                TypeSymbol* parameterType = resolveResult.Value();
+                Result<Symbol*> symbolResult = symbolTable->GetSymbol(parameterNode);
+                if (symbolResult.Error())
+                {
+                    errorId = symbolResult.GetErrorId();
+                    return;
+                }
+                Symbol* symbol = symbolResult.Value();
+                #assert(symbol->IsParameterSymbol());
+                ParameterSymbol* parameterSymbol = cast<ParameterSymbol*>(symbol);
+                parameterSymbol->SetType(parameterType);
+                string paramName = "@p" + ToString(i);
+                Result<ustring> paramNameResult = ToUtf32(paramName);
+                if (paramNameResult.Error())
+                {
+                    SetErrorId(paramNameResult.GetErrorId());
+                    return;
+                }
+                ustring paramNameStr = Rvalue(paramNameResult.Value());
+                ParameterSymbol* memberParam = new ParameterSymbol(classDelegateNode.GetSpan(), paramNameStr);
+                memberParam->SetType(parameterType);
+                result = memberDelegateType->AddMember(memberParam, context);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            Result<TypeSymbol*> resolveResult = ResolveType(classDelegateNode.ReturnTypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* returnType = resolveResult.Value();
+            classDelegateTypeSymbol->SetReturnType(returnType);
+            if (classDelegateTypeSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ParameterSymbol* returnParam = new ParameterSymbol(classDelegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
+                returnParam->SetParent(classDelegateTypeSymbol);
+                returnParam->SetType(returnType->AddPointer(context));
+                classDelegateTypeSymbol->SetReturnParam(returnParam);
+                ParameterSymbol* memberReturnParam = new ParameterSymbol(classDelegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
+                memberReturnParam->SetParent(memberDelegateType);
+                memberReturnParam->SetType(returnType->AddPointer(context));
+                memberDelegateType->SetReturnParam(memberReturnParam);
+            }
+            memberDelegateType->SetReturnType(returnType);
+            for (ParameterSymbol* parameterSymbol : classDelegateTypeSymbol->Parameters())
+            {
+                result = parameterSymbol->ComputeMangledName();
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+            classDelegateTypeSymbol->AddMember(memberDelegateType, context);
+            ClassTypeSymbol* objectDelegatePairType = new ClassTypeSymbol(classDelegateNode.GetSpan(), u"@objectDelegatePairType");
+            objectDelegatePairType->SetAccess(SymbolAccess.public_);
+            objectDelegatePairType->SetGroupName(u"@objectDelegatePairType");
+            MemberVariableSymbol* objVar = new MemberVariableSymbol(classDelegateNode.GetSpan(), u"obj");
+            objVar->SetAccess(SymbolAccess.public_);
+            objVar->SetType(voidPtrType);
+            MemberVariableSymbol* dlgVar = new MemberVariableSymbol(classDelegateNode.GetSpan(), u"dlg");
+            dlgVar->SetAccess(SymbolAccess.public_);
+            dlgVar->SetType(memberDelegateType);
+            result = objectDelegatePairType->AddMember(objVar, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = objectDelegatePairType->AddMember(dlgVar, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            symbolTable->SetTypeIdFor(objectDelegatePairType);
+            result = objectDelegatePairType->InitVmt(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = objectDelegatePairType->InitImts();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = objectDelegatePairType->CreateLayouts(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            objectDelegatePairType->SetBound();
+            result = classDelegateTypeSymbol->AddMember(objectDelegatePairType, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            ClassDelegateTypeDefaultConstructor* defaultConstructor = new ClassDelegateTypeDefaultConstructor(context, classDelegateTypeSymbol);
+            if (defaultConstructor->Error())
+            {
+                SetErrorId(defaultConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(defaultConstructor);
+            result = classDelegateTypeSymbol->AddMember(defaultConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ClassDelegateTypeCopyConstructor* copyConstructor = new ClassDelegateTypeCopyConstructor(context, classDelegateTypeSymbol);
+            if (copyConstructor->Error())
+            {
+                SetErrorId(copyConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyConstructor);
+            result = classDelegateTypeSymbol->AddMember(copyConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ClassDelegateTypeMoveConstructor* moveConstructor = new ClassDelegateTypeMoveConstructor(context, classDelegateTypeSymbol);
+            if (moveConstructor->Error())
+            {
+                SetErrorId(moveConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveConstructor);
+            result = classDelegateTypeSymbol->AddMember(moveConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ClassDelegateTypeCopyAssignment* copyAssignment = new ClassDelegateTypeCopyAssignment(context, classDelegateTypeSymbol);
+            if (copyAssignment->Error())
+            {
+                SetErrorId(copyAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyAssignment);
+            result = classDelegateTypeSymbol->AddMember(copyAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ClassDelegateTypeMoveAssignment* moveAssignment = new ClassDelegateTypeMoveAssignment(context, classDelegateTypeSymbol);
+            if (moveAssignment->Error())
+            {
+                SetErrorId(moveAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveAssignment);
+            result = classDelegateTypeSymbol->AddMember(moveAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ClassDelegateTypeEquality* equality = new ClassDelegateTypeEquality(context, classDelegateTypeSymbol);
+            if (equality->Error())
+            {
+                SetErrorId(equality->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(equality);
+            Result<NamespaceSymbol*> nsResult = classDelegateTypeSymbol->Ns();
+            if (nsResult.Error())
+            {
+                SetErrorId(nsResult.GetErrorId());
+                return;
+            }
+            NamespaceSymbol* ns = nsResult.Value();
+            result = ns->AddMember(equality, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(ConceptNode& conceptNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&conceptNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsConceptSymbol());
+            ConceptSymbol* conceptSymbol = cast<ConceptSymbol*>(symbol);
+            BindConcept(conceptSymbol, &conceptNode);
+        }
+        public override void Visit(CompoundStatementNode& compoundStatementNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&compoundStatementNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsDeclarationBlockSymbol());
+            DeclarationBlockSymbol* declarationBlockSymbol = cast<DeclarationBlockSymbol*>(symbol);
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = declarationBlockSymbol->GetContainerScope();
+            int n = compoundStatementNode.Statements().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (Error()) return;
+                StatementNode* statementNode = compoundStatementNode.Statements()[i];
+                statementNode->Accept(*this);
+            }
+            containerScope = prevContainerScope;
+        }
+        public override void Visit(LabeledStatementNode& labeledStatementNode)
+        {
+            labeledStatementNode.Stmt()->Accept(*this);
+        }
+        public override void Visit(IfStatementNode& ifStatementNode)
+        {
+            ifStatementNode.ThenS()->Accept(*this);
+            if (ifStatementNode.ElseS() != null)
+            {
+                ifStatementNode.ElseS()->Accept(*this);
+            }
+        }
+        public override void Visit(WhileStatementNode& whileStatementNode)
+        {
+            whileStatementNode.Statement()->Accept(*this);
+        }
+        public override void Visit(DoStatementNode& doStatementNode)
+        {
+            doStatementNode.Statement()->Accept(*this);
+        }
+        public override void Visit(ForStatementNode& forStatementNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&forStatementNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsDeclarationBlockSymbol());
+            DeclarationBlockSymbol* declarationBlockSymbol = cast<DeclarationBlockSymbol*>(symbol);
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = declarationBlockSymbol->GetContainerScope();
+            forStatementNode.InitS()->Accept(*this);
+            forStatementNode.ActionS()->Accept(*this);
+            containerScope = prevContainerScope;
+        }
+        public override void Visit(ConstructionStatementNode& constructionStatementNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&constructionStatementNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsLocalVariableSymbol());
+            LocalVariableSymbol* localVariableSymbol= cast<LocalVariableSymbol*>(symbol);
+            Result<TypeSymbol*> resolveResult = ResolveType(constructionStatementNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* type = resolveResult.Value();
+            localVariableSymbol->SetType(type);
+        }
+        public override void Visit(SwitchStatementNode& switchStatementNode)
+        {
+            int n = cast<int>(switchStatementNode.Cases().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                CaseStatementNode* caseStatement = switchStatementNode.Cases()[i];
+                caseStatement->Accept(*this);
+            }
+            if (switchStatementNode.Default() != null)
+            {
+                switchStatementNode.Default()->Accept(*this);
+            }
+        }
+        public override void Visit(CaseStatementNode& caseStatementNode)
+        {
+            int n = cast<int>(caseStatementNode.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statementNode = caseStatementNode.Statements()[i];
+                statementNode->Accept(*this);
+            }
+        }
+        public override void Visit(DefaultStatementNode& defaultStatementNode)
+        {
+            int n = cast<int>(defaultStatementNode.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statementNode = defaultStatementNode.Statements()[i];
+                statementNode->Accept(*this);
+            }
+        }
+        public override void Visit(ConditionalCompilationPartNode& conditionalCompilationPartNode)
+        {
+            conditionalCompilationPartNode.Expr()->Accept(*this);
+        }
+        public override void Visit(ConditionalCompilationDisjunctionNode& conditionalCompilationDisjunctionNode)
+        {
+            conditionalCompilationDisjunctionNode.Left()->Accept(*this);
+            bool left = conditionalCompilationStack.Pop();
+            conditionalCompilationDisjunctionNode.Right()->Accept(*this);
+            bool right = conditionalCompilationStack.Pop();
+            conditionalCompilationStack.Push(left || right);
+        }
+        public override void Visit(ConditionalCompilationConjunctionNode& conditionalCompilationConjunctionNode)
+        {
+            conditionalCompilationConjunctionNode.Left()->Accept(*this);
+            bool left = conditionalCompilationStack.Pop();
+            conditionalCompilationConjunctionNode.Right()->Accept(*this);
+            bool right = conditionalCompilationStack.Pop();
+            conditionalCompilationStack.Push(left && right);
+        }
+        public override void Visit(ConditionalCompilationNotNode& conditionalCompilationNotNode)
+        {
+            conditionalCompilationNotNode.Expr()->Accept(*this);
+            bool operand = conditionalCompilationStack.Pop();
+            conditionalCompilationStack.Push(!operand);
+        }
+        public override void Visit(ConditionalCompilationPrimaryNode& conditionalCompilationPrimaryNode)
+        {
+            bool defined = module->IsSymbolDefined(conditionalCompilationPrimaryNode.Symbol());
+            conditionalCompilationStack.Push(defined);
+        }
+        public override void Visit(ConditionalCompilationStatementNode& conditionalCompilationStatementNode)
+        {
+            conditionalCompilationStatementNode.IfPart()->Accept(*this);
+            bool defined = conditionalCompilationStack.Pop();
+            if (defined)
+            {
+                int n = cast<int>(conditionalCompilationStatementNode.IfPart()->Statements().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    StatementNode* statement = conditionalCompilationStatementNode.IfPart()->Statements()[i];
+                    statement->Accept(*this);
+                }
+            }
+            else
+            {
+                bool executed = false;
+                int n = cast<int>(conditionalCompilationStatementNode.ElifParts().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    ConditionalCompilationPartNode* elifPart = conditionalCompilationStatementNode.ElifParts()[i];
+                    elifPart->Accept(*this);
+                    bool defined = conditionalCompilationStack.Pop();
+                    if (defined)
+                    {
+                        int n = cast<int>(elifPart->Statements().Count());
+                        for (int i = 0; i < n; ++i)
+                        {
+                            StatementNode* statement = elifPart->Statements()[i];
+                            statement->Accept(*this);
+                        }
+                        executed = true;
+                        break;
+                    }
+                }
+                if (!executed)
+                {
+                    ConditionalCompilationPartNode* elsePart = conditionalCompilationStatementNode.ElsePart();
+                    if (elsePart != null)
+                    {
+                        int n = cast<int>(elsePart->Statements().Count());
+                        for (int i = 0; i < n; ++i)
+                        {
+                            StatementNode* statement = elsePart->Statements()[i];
+                            statement->Accept(*this);
+                        }
+                    }
+                }
+            }
+        }
+        public override void Visit(TypedefNode& typedefNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&typedefNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsAliasTypeSymbol());
+            AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+            BindTypedef(aliasTypeSymbol, &typedefNode, true);
+        }
+        public override void Visit(ConstantNode& constantNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&constantNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsConstantSymbol());
+            ConstantSymbol* constantSymbol = cast<ConstantSymbol*>(symbol);
+            auto result = constantSymbol->SetSpecifiers(constantNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = constantSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            Result<TypeSymbol*> resolveResult = ResolveType(constantNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* type = resolveResult.Value();
+            constantSymbol->SetType(type);
+            constantSymbol->SetEvaluating();
+            Result<UniquePtr<Value>> valueResult = Evaluate(constantNode.Value(), type, containerScope, boundCompileUnit, null);
+            if (valueResult.Error())
+            {
+                SetErrorId(valueResult.GetErrorId());
+                return;
+            }
+            UniquePtr<Value> value = Rvalue(valueResult.Value());
+            Value* val = value.Get();
+            Result<TypeSymbol*> typeResult = value->Type(symbolTable, context);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+            constantSymbol->SetType(type);
+            constantSymbol->SetValue(value.Release());
+            constantSymbol->ResetEvaluating();
+            if (val->IsArrayValue())
+            {
+                boundCompileUnit->GetConstantArrayRepository()->AddConstantArray(constantSymbol);
+            }
+            else if (val->IsStructureValue())
+            {
+                boundCompileUnit->GetConstantStructureRepository()->AddConstantStructure(constantSymbol);
+            }
+        }
+        public override void Visit(EnumTypeNode& enumTypeNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&enumTypeNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsEnumTypeSymbol());
+            EnumTypeSymbol* enumTypeSymbol = cast<EnumTypeSymbol*>(symbol);
+            if (enumTypeSymbol->IsBound()) return;
+            enumTypeSymbol->SetBound();
+            EnumTypeSymbol* prevEnumType = enumType;
+            enumType = enumTypeSymbol;
+            auto result = enumTypeSymbol->SetSpecifiers(enumTypeNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = enumTypeSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            Result<TypeSymbol*> underlyingTypeResult = symbolTable->GetTypeByName(u"int");
+            if (underlyingTypeResult.Error())
+            {
+                errorId = underlyingTypeResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* underlyingType = underlyingTypeResult.Value();
+            if (enumTypeNode.GetUnderlyingType() != null)
+            {
+                 Result<TypeSymbol*> resolveResult = ResolveType(enumTypeNode.GetUnderlyingType(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+                 if (resolveResult.Error())
+                 {
+                     errorId = resolveResult.GetErrorId();
+                     return;
+                 }
+                 underlyingType = resolveResult.Value();
+            }
+            enumTypeSymbol->SetUnderlyingType(underlyingType);
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = enumTypeSymbol->GetContainerScope();
+            int n = cast<int>(enumTypeNode.Constants().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (Error()) return;
+                EnumConstantNode* enumConstantNode = enumTypeNode.Constants()[i];
+                enumConstantNode->Accept(*this);
+            }
+            AliasTypeSymbol* underlyingAliasType = new AliasTypeSymbol(enumTypeNode.GetSpan(), u"UnderlyingType");
+            underlyingAliasType->SetModule(module);
+            underlyingAliasType->SetAccess(SymbolAccess.public_);
+            underlyingAliasType->SetType(underlyingType);
+            underlyingAliasType->SetBound();
+            result = enumTypeSymbol->AddMember(underlyingAliasType, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            // todo member functions
+            containerScope = prevContainerScope;
+            enumType = prevEnumType;
+        }
+        public override void Visit(EnumConstantNode& enumConstantNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&enumConstantNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsEnumConstantSymbol());
+            EnumConstantSymbol* enumConstantSymbol = cast<EnumConstantSymbol*>(symbol);
+            if (enumConstantSymbol->IsBound()) return;
+            enumConstantSymbol->SetBound();
+            auto result = enumConstantSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            enumConstantSymbol->SetEvaluating();
+            Result<UniquePtr<Value>> evaluateResult = Evaluate(enumConstantNode.GetValue(), enumType->UnderlyingType(), containerScope, boundCompileUnit, null);
+            if (evaluateResult.Error())
+            {
+                SetErrorId(evaluateResult.GetErrorId());
+                return;
+            }
+            enumConstantSymbol->SetValue(evaluateResult.Value().Release());
+            if (enumConstantNode.StrValue().IsEmpty())
+            {
+                Result<string> strResult = enumConstantSymbol->GetValue()->ToString();
+                if (strResult.Error())
+                {
+                    SetErrorId(strResult.GetErrorId());
+                    return;
+                }
+                enumConstantSymbol->SetStrValue(strResult.Value());
+            }
+            else
+            {
+                Result<string> strResult = ToUtf8(enumConstantNode.StrValue());
+                if (strResult.Error())
+                {
+                    SetErrorId(strResult.GetErrorId());
+                    return;
+                }
+                enumConstantSymbol->SetStrValue(strResult.Value());
+            }
+            enumConstantSymbol->ResetEvaluating();
+        }
+        public override void Visit(GlobalVariableNode& globalVariableNode)
+        {
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(&globalVariableNode);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsGlobalVariableSymbol());
+            GlobalVariableSymbol* globalVariableSymbol = cast<GlobalVariableSymbol*>(symbol);
+            if (globalVariableSymbol->IsBound()) return;
+            globalVariableSymbol->SetBound();
+            auto result = globalVariableSymbol->SetSpecifiers(globalVariableNode.GetSpecifiers());
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = globalVariableSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = globalVariableSymbol->GetContainerScope();
+            Result<TypeSymbol*> resolveResult = ResolveType(globalVariableNode.TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (resolveResult.Error())
+            {
+                errorId = resolveResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* typeSymbol = resolveResult.Value();
+            globalVariableSymbol->SetType(typeSymbol);
+            if (globalVariableNode.Initializer() != null)
+            {
+                // evaluate
+            }
+            // boundGlobalVariable = new BoundGlobalVariable(globalVariableNode.GetSpan(), globalVariableSymbol); todo
+            // boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundGlobalVariable)); todo
+            containerScope = prevContainerScope;
+        }
+        public void BindAlias(AliasTypeSymbol* aliasTypeSymbol, AliasNode* aliasNode, bool fromOwnCompileUnit)
+        {
+            if (aliasTypeSymbol->IsBound()) return;
+            aliasTypeSymbol->SetBound();
+            auto result = aliasTypeSymbol->SetSpecifiers(aliasNode->GetSpecifiers());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = aliasTypeSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> typeResult = ResolveType(aliasNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* typeSymbol = typeResult.Value();
+            aliasTypeSymbol->SetType(typeSymbol);
+            if (!fromOwnCompileUnit)
+            {
+                AddUsingNodesToCurrentCompileUnit(aliasNode);
+                if (Error()) return;
+            }
+        }
+        public void BindTypedef(AliasTypeSymbol* aliasTypeSymbol, TypedefNode* typedefNode, bool fromOwnCompileUnit)
+        {
+            if (aliasTypeSymbol->IsBound()) return;
+            aliasTypeSymbol->SetBound();
+            auto result = aliasTypeSymbol->SetSpecifiers(typedefNode->GetSpecifiers());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = aliasTypeSymbol->ComputeMangledName();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> typeResult = ResolveType(typedefNode->TypeExpr(), boundCompileUnit, containerScope, typeResolverFlags, currentClassTypeSymbol);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* typeSymbol = typeResult.Value();
+            aliasTypeSymbol->SetType(typeSymbol);
+            if (!fromOwnCompileUnit)
+            {
+                AddUsingNodesToCurrentCompileUnit(typedefNode);
+                if (Error()) return;
+            }
+        }
+        public void BindClass(ClassTypeSymbol* classTypeSymbol, ClassNode* classNode, bool fromOwnCompileUnit)
+        {
+            if (classTypeSymbol->IsBound()) return;
+            classTypeSymbol->SetBound();
+            ClassTypeSymbol* prevClassTypeSymbol = currentClassTypeSymbol;
+            currentClassTypeSymbol = classTypeSymbol;
+            if (!fromOwnCompileUnit)
+            {
+                AddUsingNodesToCurrentCompileUnit(classNode);
+                if (Error()) return;
+            }
+            if (classTypeSymbol->IsClassTemplate())
+            {
+                BindClassTemplate(classTypeSymbol);
+                currentClassTypeSymbol = prevClassTypeSymbol;
+                return;
+            }
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = classTypeSymbol->GetContainerScope();
+            auto result = classTypeSymbol->SetSpecifiers(classNode->GetSpecifiers());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (classNode->WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                classTypeSymbol->SetConstraint(cast<ConstraintNode*>(classNode->WhereConstraint()->Clone(cloneContext)));
+            }
+            result = classTypeSymbol->ComputeName();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            int nb = cast<int>(classNode->BaseClassOrInterfaces().Count());
+            for (int i = 0; i < nb; ++i)
+            {
+                Node* baseOrInterfaceNode = classNode->BaseClassOrInterfaces()[i];
+                Result<TypeSymbol*> baseResult = ResolveType(baseOrInterfaceNode, boundCompileUnit, containerScope, typeResolverFlags, null);
+                if (baseResult.Error())
+                {
+                    SetErrorId(baseResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* baseOrInterfaceSymbol = baseResult.Value();
+                if (baseOrInterfaceSymbol->IsClassTypeSymbol())
+                {
+                    ClassTypeSymbol* baseClassSymbol = cast<ClassTypeSymbol*>(baseOrInterfaceSymbol);
+                    if (baseClassSymbol->IsProject())
+                    {
+                        Result<Node*> nodeResult = symbolTable->GetNode(baseClassSymbol);
+                        if (nodeResult.Error())
+                        {
+                            SetErrorId(nodeResult.GetErrorId());
+                            return;
+                        }
+                        Node* node = nodeResult.Value();
+                        #assert(node->IsClassNode());
+                        ClassNode* baseClassNode = cast<ClassNode*>(node);
+                        BindClass(baseClassSymbol, baseClassNode, false);
+                    }
+                    if (classTypeSymbol->BaseClass() != null)
+                    {
+                        errorId = MakeError("class type can have at most one base class", classTypeSymbol->FullSpan());
+                        return;
+                    }
+                    else if (baseClassSymbol == classTypeSymbol)
+                    {
+                        errorId = MakeError("class cannot derive from itself", classTypeSymbol->FullSpan());
+                        return;
+                    }
+                    else
+                    {
+                        classTypeSymbol->SetBaseClass(baseClassSymbol);
+                    }
+                }
+                else if (baseOrInterfaceSymbol->IsInterfaceTypeSymbol())
+                {
+                    // todo
+                }
+                if (Error()) return;
+            }
+            int nm = cast<int>(classNode->Members().Count());
+            for (int i = 0; i < nm; ++i)
+            {
+                Node* member = classNode->Members()[i];
+                member->Accept(*this);
+                if (Error()) return;
+            }
+            result = boundCompileUnit->GetAttributeBinder()->BindAttributes(classNode->GetAttributes(), classTypeSymbol, boundCompileUnit, containerScope);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = classTypeSymbol->InitVmt(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = classTypeSymbol->InitImts();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = classTypeSymbol->CreateLayouts(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (classTypeSymbol->IsPolymorphic() && !classTypeSymbol->IsPrototypeTemplateSpecialization())
+            {
+                result = symbolTable->AddPolymorphicClass(classTypeSymbol);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            if (classTypeSymbol->HasNontrivialDestructor())
+            {
+                result = classTypeSymbol->CreateDestructorSymbol(boundCompileUnit->Context());
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            containerScope = prevContainerScope;
+            currentClassTypeSymbol = prevClassTypeSymbol;
+        }
+        public void BindClassTemplate(ClassTypeSymbol* classTemplate)
+        {
+            classTemplate->CloneUsingNodes(usingNodes);
+        }
+        public void BindInterface(InterfaceTypeSymbol* interfaceTypeSymbol, InterfaceNode* interfaceNode, bool fromOwnCompileUnit)
+        {
+            // todo
+        }
+        public void BindConcept(ConceptSymbol* conceptSymbol, ConceptNode* conceptNode)
+        {
+            if (conceptSymbol->IsBound()) return;
+            conceptSymbol->SetBound();
+            ContainerScope* prevContainerScope = containerScope;
+            containerScope = conceptSymbol->GetContainerScope();
+            conceptSymbol->SetSpecifiers(conceptNode->GetSpecifiers());
+            Result<bool> result = conceptSymbol->ComputeName();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (conceptNode->Refinement() != null)
+            {
+                ConceptIdNode* refinedConceptIdNode = conceptNode->Refinement();
+                Result<ConceptSymbol*> refinedConceptSymbolResult = ResolveConceptId(refinedConceptIdNode, boundCompileUnit, containerScope);
+                if (refinedConceptSymbolResult.Error())
+                {
+                    SetErrorId(refinedConceptSymbolResult.GetErrorId());
+                    return;
+                }
+                ConceptSymbol* refinedConceptSymbol = refinedConceptSymbolResult.Value();
+                if (refinedConceptSymbol->IsProject())
+                {
+                    Node* node = symbolTable->GetNode(refinedConceptSymbol);
+                    #assert(node != null && node->IsConceptNode());
+                    ConceptNode* refinedConceptNode = cast<ConceptNode*>(node);
+                    BindConcept(refinedConceptSymbol, refinedConceptNode);
+                }
+                conceptSymbol->SetRefinedConcept(refinedConceptSymbol);
+            }
+            containerScope = prevContainerScope;
+        }
+        public void AddUsingNodesToCurrentCompileUnit(Node* node)
+        {
+            NamespaceNode* namespaceNode = null;
+            Node* parent = node->Parent();
+            while (parent != null)
+            {
+                if (parent->IsNamespaceNode())
+                {
+                    namespaceNode = cast<NamespaceNode*>(parent);
+                }
+                parent = parent->Parent();
+            }
+            if (namespaceNode == null)
+            {
+                int errorId = MakeError("global namespace parent not found for node", node->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            UsingNodeAdder usingNodeAdder(boundCompileUnit, containerScope);
+            namespaceNode->Accept(usingNodeAdder);
+            if (usingNodeAdder.Error())
+            {
+                SetErrorId(usingNodeAdder.GetErrorId());
+                return;
+            }
+        }
+        public inline ContainerScope* GetContainerScope() const
+        {
+            return containerScope;
+        }
+        public inline void SetContainerScope(ContainerScope* containerScope_)
+        {
+            containerScope = containerScope_;
+        }
+        public inline FunctionSymbol* CurrentFunctionSymbol() const
+        {
+            return currentFunctionSymbol;
+        }
+        public inline void SetCurrentFunctionSymbol(FunctionSymbol* currentFunctionSymbol_)
+        {
+            currentFunctionSymbol = currentFunctionSymbol_;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private SymbolTable* symbolTable;
+        private Module* module;
+        private SymbolsContext& context;
+        private ContainerScope* containerScope;
+        private int errorId;
+        private EnumTypeSymbol* enumType;
+        private List<Node*> usingNodes;
+        private TypeResolverFlags typeResolverFlags;
+        private ClassTypeSymbol* currentClassTypeSymbol;
+        private FunctionSymbol* currentFunctionSymbol;
+        private Stack<bool> conditionalCompilationStack;
+    }
+}
+

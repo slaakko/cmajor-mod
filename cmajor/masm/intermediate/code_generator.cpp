@@ -326,6 +326,10 @@ void EmitIntegerPtrOperand(int64_t size, Value* value, cmajor::masm::assembly::I
             instruction->AddOperand(operand);
         }
     }
+    else
+    {
+        codeGenerator.Error("error emitting ptr operand: invalid value kind");
+    }
 }
 
 void EmitFloatingPointPtrOperand(int64_t size, Value* value, cmajor::masm::assembly::Instruction* instruction, CodeGenerator& codeGenerator)
@@ -481,7 +485,6 @@ cmajor::masm::assembly::Register* MakeIntegerRegOperand(Value* value, cmajor::ma
     {
         cmajor::masm::assembly::Instruction* inst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::MOV);
         inst->AddOperand(reg);
-        codeGenerator.Emit(inst);
         cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
         switch (value->Kind())
         {
@@ -556,6 +559,8 @@ cmajor::masm::assembly::Register* MakeIntegerRegOperand(Value* value, cmajor::ma
                 break;
             }
         }
+        codeGenerator.Emit(inst);
+
     }
     return reg;
 }
@@ -597,7 +602,7 @@ cmajor::masm::assembly::Register* MakeFloatingPointRegOperand(Value* value, cmaj
                 {
                     cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
                     cmajor::masm::assembly::RegisterGroup* regGroup = assemblyContext->GetRegisterPool()->GetRegisterGroup(reg->Group(), true);
-                    EmitIntegerLoad(size, frameLocation, regGroup, codeGenerator);
+                    EmitFloatingPointLoad(size, frameLocation, regGroup, codeGenerator);
                 }
                 else
                 {
@@ -640,7 +645,6 @@ cmajor::masm::assembly::Register* MakeFloatingPointRegOperand(Value* value, cmaj
         }
         cmajor::masm::assembly::Instruction* inst = new cmajor::masm::assembly::Instruction(opCode);
         inst->AddOperand(reg);
-        codeGenerator.Emit(inst);
         cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
         switch (value->Kind())
         {
@@ -662,6 +666,7 @@ cmajor::masm::assembly::Register* MakeFloatingPointRegOperand(Value* value, cmaj
                 break;
             }
         }
+        codeGenerator.Emit(inst);
     }
     return reg;
 }
@@ -697,6 +702,10 @@ void EmitFloatingPointRet(RetInstruction& inst, CodeGenerator& codeGenerator)
         else if (size == 8)
         {
             opCode = cmajor::masm::assembly::OpCode::MOVSD;
+        }
+        else
+        {
+            codeGenerator.Error("error making floating point ret: invalid value size");
         }
         cmajor::masm::assembly::Instruction* movInst = new cmajor::masm::assembly::Instruction(opCode);
         movInst->AddOperand(assemblyContext->GetGlobalReg(16, cmajor::masm::assembly::RegisterGroupKind::xmm0));
@@ -1382,7 +1391,6 @@ void EmitFloatingPointEqual(EqualInstruction& inst, CodeGenerator& codeGenerator
     if (regGroup)
     {
         int64_t resultSize = 1;
-        int64_t size = inst.Left()->GetType()->Size();
         cmajor::masm::assembly::Register* resultReg = regGroup->GetReg(resultSize);
         cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::NOP;
         if (operandSize == 4)
@@ -1457,7 +1465,6 @@ void EmitFloatingPointLess(LessInstruction& inst, CodeGenerator& codeGenerator)
     if (regGroup)
     {
         int64_t resultSize = 1;
-        int64_t size = inst.Left()->GetType()->Size();
         cmajor::masm::assembly::Register* resultReg = regGroup->GetReg(resultSize);
         cmajor::masm::assembly::OpCode opCode = cmajor::masm::assembly::OpCode::NOP;
         if (operandSize == 4)
@@ -1837,6 +1844,10 @@ void EmitFloatingPointStore(StoreInstruction& inst, CodeGenerator& codeGenerator
         else if (size == 8)
         {
             opCode = cmajor::masm::assembly::OpCode::MOVSD;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting store: invalid size");
         }
         cmajor::masm::assembly::Context* assemblyContext = codeGenerator.Ctx()->AssemblyContext();
         cmajor::masm::assembly::Instruction* instruction = new cmajor::masm::assembly::Instruction(opCode);
@@ -2653,10 +2664,6 @@ void CodeGenerator::Visit(Function& function)
         std::string fullFunctionName = function.ResolveFullName();
         file.GetDeclarationSection().AddPublicDataDeclaration(new cmajor::masm::assembly::PublicDataDeclaration(function.Name()));
         currentFunction = &function;
-        if (function.Name() == "member_function_Copy_RedBlackTree_D8B03162B387C422E33E607BE35F6CD289D22DF7")
-        {
-            int x = 0;
-        }
         context->AssemblyContext()->ResetRegisterPool();
         assemblyFunction = file.GetCodeSection().CreateFunction(function.Name());
         if (!fullFunctionName.empty())
@@ -2680,6 +2687,10 @@ void CodeGenerator::Visit(BasicBlock& basicBlock)
     leader = true;
     while (inst)
     {
+        if (leader)
+        {
+            inst->SetLeader();
+        }
         currentInst = inst;
         if (inst->IsArgInstruction() || inst->IsProcedureCallInstruction() || inst->IsFunctionCallInstruction())
         {

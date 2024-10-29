@@ -767,7 +767,6 @@ public:
     SymbolAccess DeclaredAccess() const override { return SymbolAccess::public_; }
     void GenerateCall(cmajor::ir::Emitter& emitter, std::vector<cmajor::ir::GenObject*>& genObjects, cmajor::ir::OperationFlags flags) override;
     bool IsBasicTypeOperation() const override { return true; }
-    bool IsCompileTimePrimitiveFunction() const override { return true; }
     const char* ClassName() const override { return "BasicTypeCopyAssignment"; }
     std::u32string Info() const override { return std::u32string(); }
 };

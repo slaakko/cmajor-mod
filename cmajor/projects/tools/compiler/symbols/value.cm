@@ -1,0 +1,3445 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+
+namespace symbols
+{
+    public enum ValueKind : byte
+    {
+        none, boolValue, sbyteValue, byteValue, shortValue, ushortValue, intValue, uintValue,
+        longValue, ulongValue, floatValue, doubleValue, charValue, wcharValue, ucharValue,
+        stringValue, wstringValue, ustringValue, nullValue, pointerValue, arrayValue, structuredValue,
+        uuidValue, scopedValue, arrayReferenceValue, structureReferenceValue, functionGroupValue,
+        maxValue
+    }
+
+    public string ValueKindStr(ValueKind valueKind)
+    {
+        switch (valueKind)
+        {
+            case ValueKind.none: return "none";
+            case ValueKind.boolValue: return "bool";
+            case ValueKind.sbyteValue: return "sbyte";
+            case ValueKind.byteValue: return "byte";
+            case ValueKind.shortValue: return "short";
+            case ValueKind.ushortValue: return "ushort";
+            case ValueKind.intValue: return "int";
+            case ValueKind.uintValue: return "uint";
+            case ValueKind.longValue: return "long";
+            case ValueKind.ulongValue: return "ulong";
+            case ValueKind.floatValue: return "float";
+            case ValueKind.doubleValue: return "double";
+            case ValueKind.charValue: return "char";
+            case ValueKind.wcharValue: return "wchar";
+            case ValueKind.ucharValue: return "uchar";
+            case ValueKind.stringValue: return "string";
+            case ValueKind.wstringValue: return "wstring";
+            case ValueKind.ustringValue: return "ustring";
+            case ValueKind.nullValue: return "null";
+            case ValueKind.pointerValue: return "pointer";
+            case ValueKind.arrayValue: return "array";
+            case ValueKind.structuredValue: return "structure";
+            case ValueKind.uuidValue: return "uuid";
+            case ValueKind.scopedValue: return "scoped_value";
+            case ValueKind.arrayReferenceValue: return "array_reference";
+            case ValueKind.structureReferenceValue: return "structure_reference";
+        }
+        return "<unknown value kind>";
+    }
+
+    public Result<Value*> MakeCastError(ValueKind from, ValueKind to, Node* node)
+    {
+        System.Lex.FullSpan fullSpan;
+        if (node != null)
+        {
+            fullSpan = node->GetFullSpan();
+        }
+        return Result<Value*>(ErrorId(
+            MakeError("cannot convert " + ValueKindStr(from) + " to " + ValueKindStr(to) + " without a cast", fullSpan)));
+    }
+
+    public abstract class Value
+    {
+        public Value(const System.Lex.Span& span_, ValueKind kind_) : span(span_), kind(kind_)
+        {
+        }
+        public default virtual ~Value();
+        public inline const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline ValueKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsBoolValue() const
+        {
+            return kind == ValueKind.boolValue;
+        }
+        public inline bool IsLongValue() const
+        {
+            return kind == ValueKind.longValue;
+        }
+        public inline bool IsArrayValue() const
+        {
+            return kind == ValueKind.arrayValue;
+        }
+        public inline bool IsStructureValue() const
+        {
+            return kind == ValueKind.structuredValue;
+        }
+        public inline bool IsScopedValue() const
+        {
+            return kind == ValueKind.scopedValue;
+        }
+        public inline bool IsArrayReferenceValue() const
+        {
+            return kind == ValueKind.arrayReferenceValue;
+        }
+        public inline bool IsStructureReferenceValue() const
+        {
+            return kind == ValueKind.structureReferenceValue;
+        }
+        public inline bool IsFunctionGroupValue() const
+        {
+            return kind == ValueKind.functionGroupValue;
+        }
+        public abstract Value* Clone() const;
+        public virtual Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            System.Lex.FullSpan fullSpan;
+            if (node != null)
+            {
+                fullSpan = node->GetFullSpan();
+            }
+            return Result<Value*>(ErrorId(
+                MakeError("conversion from " + ValueKindStr(Kind()) + " to " + ValueKindStr(targetType->GetValueKind()) + " is not valid", fullSpan)));
+        }
+        public abstract Result<intermediate.Value*> IrValue(Emitter& emitter) const;
+        public abstract Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const;
+        public virtual Result<string> ToString() const
+        {
+            return Result<string>(string());
+        }
+        public virtual bool IsComplete() const
+        {
+            return true;
+        }
+        public virtual Value* Subject() const
+        {
+            return this;
+        }
+        private System.Lex.Span span;
+        private ValueKind kind;
+    }
+
+    public class BoolValue : Value
+    {
+        public using OperandType = bool;
+        public BoolValue(const System.Lex.Span& span_, bool value_) : base(span_, ValueKind.boolValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new BoolValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    return Result<Value*>(new BoolValue(Span(), value));
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new LongValue(Span(), cast<long>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new FloatValue(Span(), cast<float>(cast<int>(value))));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.doubleValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new DoubleValue(Span(), cast<double>(cast<int>(value))));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetBoolValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"bool");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline bool GetValue() const
+        {
+            return value;
+        }
+        private bool value;
+    }
+
+    public class SByteValue : Value
+    {
+        public using OperandType = sbyte;
+        public SByteValue(const System.Lex.Span& span_, sbyte value_) : base(span_, ValueKind.sbyteValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new SByteValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    return Result<Value*>(new SByteValue(Span(), value));
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    return Result<Value*>(new ShortValue(Span(), value));
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    return Result<Value*>(new IntValue(Span(), value));
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    return Result<Value*>(new LongValue(Span(), value));
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetSByteValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"sbyte");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline sbyte GetValue() const
+        {
+            return value;
+        }
+        private sbyte value;
+    }
+
+    public class ByteValue : Value
+    {
+        public using OperandType = byte;
+        public ByteValue(const System.Lex.Span& span_, byte value_) : base(span_, ValueKind.byteValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new ByteValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    return Result<Value*>(new ByteValue(Span(), value));
+                }
+                case ValueKind.shortValue:
+                {
+                    return Result<Value*>(new ShortValue(Span(), value));
+                }
+                case ValueKind.ushortValue:
+                {
+                    return Result<Value*>(new UShortValue(Span(), value));
+                }
+                case ValueKind.intValue:
+                {
+                    return Result<Value*>(new IntValue(Span(), value));
+                }
+                case ValueKind.uintValue:
+                {
+                    return Result<Value*>(new UIntValue(Span(), value));
+                }
+                case ValueKind.longValue:
+                {
+                    return Result<Value*>(new LongValue(Span(), value));
+                }
+                case ValueKind.ulongValue:
+                {
+                    return Result<Value*>(new ULongValue(Span(), value));
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetByteValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"byte");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline byte GetValue() const
+        {
+            return value;
+        }
+        private byte value;
+    }
+
+    public class ShortValue : Value
+    {
+        public using OperandType = short;
+        public ShortValue(const System.Lex.Span& span_, short value_) : base(span_, ValueKind.shortValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new ShortValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    return Result<Value*>(new ShortValue(Span(), value));
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    return Result<Value*>(new IntValue(Span(), value));
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    return Result<Value*>(new LongValue(Span(), value));
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetShortValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"short");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline short GetValue() const
+        {
+            return value;
+        }
+        private short value;
+    }
+
+    public class UShortValue : Value
+    {
+        public using OperandType = ushort;
+        public UShortValue(const System.Lex.Span& span_, ushort value_) : base(span_, ValueKind.ushortValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new UShortValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    return Result<Value*>(new UShortValue(Span(), value));
+                }
+                case ValueKind.intValue:
+                {
+                    return Result<Value*>(new IntValue(Span(), value));
+                }
+                case ValueKind.uintValue:
+                {
+                    return Result<Value*>(new UIntValue(Span(), value));
+                }
+                case ValueKind.longValue:
+                {
+                    return Result<Value*>(new LongValue(Span(), value));
+                }
+                case ValueKind.ulongValue:
+                {
+                    return Result<Value*>(new ULongValue(Span(), value));
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetUShortValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"ushort");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline ushort GetValue() const
+        {
+            return value;
+        }
+        private ushort value;
+    }
+
+    public class IntValue : Value
+    {
+        public using OperandType = int;
+        public IntValue(const System.Lex.Span& span_, int value_) : base(span_, ValueKind.intValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new IntValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    return Result<Value*>(new IntValue(Span(), value));
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    return Result<Value*>(new LongValue(Span(), value));
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetIntValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"int");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline int GetValue() const
+        {
+            return value;
+        }
+        private int value;
+    }
+
+    public class UIntValue : Value
+    {
+        public using OperandType = uint;
+        public UIntValue(const System.Lex.Span& span_, uint value_) : base(span_, ValueKind.uintValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new UIntValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    return Result<Value*>(new UIntValue(Span(), value));
+                }
+                case ValueKind.longValue:
+                {
+                    return Result<Value*>(new LongValue(Span(), value));
+                }
+                case ValueKind.ulongValue:
+                {
+                    return Result<Value*>(new ULongValue(Span(), value));
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetUIntValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"uint");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline uint GetValue() const
+        {
+            return value;
+        }
+        private uint value;
+    }
+
+    public class LongValue : Value
+    {
+        public using OperandType = long;
+        public LongValue(const System.Lex.Span& span_, long value_) : base(span_, ValueKind.longValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new LongValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    return Result<Value*>(new LongValue(Span(), value));
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetLongValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"long");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline long GetValue() const
+        {
+            return value;
+        }
+        private long value;
+    }
+
+    public class ULongValue : Value
+    {
+        public using OperandType = ulong;
+        public ULongValue(const System.Lex.Span& span_, ulong value_) : base(span_, ValueKind.ulongValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new ULongValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new LongValue(Span(), cast<long>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ulongValue:
+                {
+                    return Result<Value*>(new ULongValue(Span(), value));
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetULongValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"ulong");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline ulong GetValue() const
+        {
+            return value;
+        }
+        private ulong value;
+    }
+
+    public class FloatValue : Value
+    {
+        public using OperandType = float;
+        public FloatValue(const System.Lex.Span& span_, float value_) : base(span_, ValueKind.floatValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new FloatValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new LongValue(Span(), cast<long>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    return Result<Value*>(new FloatValue(Span(), value));
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetFloatValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"float");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline float GetValue() const
+        {
+            return value;
+        }
+        private float value;
+    }
+
+    public class DoubleValue : Value
+    {
+        public using OperandType = double;
+        public DoubleValue(const System.Lex.Span& span_, double value_) : base(span_, ValueKind.doubleValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new DoubleValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new LongValue(Span(), cast<long>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new FloatValue(Span(), cast<float>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.doubleValue:
+                {
+                    return Result<Value*>(new DoubleValue(Span(), value));
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UCharValue(Span(), cast<uchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetDoubleValue(value));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"double");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(ToString(value));
+        }
+        public inline double GetValue() const
+        {
+            return value;
+        }
+        private double value;
+    }
+
+    public class CharValue : Value
+    {
+        public using OperandType = char;
+        public CharValue(const System.Lex.Span& span_, char value_) : base(span_, ValueKind.charValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new CharValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new LongValue(Span(), cast<long>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new FloatValue(Span(), cast<float>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.doubleValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new DoubleValue(Span(), cast<double>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.charValue:
+                {
+                    return Result<Value*>(new CharValue(Span(), value));
+                }
+                case ValueKind.wcharValue:
+                {
+                    return Result<Value*>(new WCharValue(Span(), value));
+                }
+                case ValueKind.ucharValue:
+                {
+                    return Result<Value*>(new UCharValue(Span(), value));
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetByteValue(cast<byte>(value)));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"char");
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(string(value));
+        }
+        public inline char GetValue() const
+        {
+            return value;
+        }
+        private char value;
+    }
+
+    public class WCharValue : Value
+    {
+        public using OperandType = wchar;
+        public WCharValue(const System.Lex.Span& span_, wchar value_) : base(span_, ValueKind.wcharValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new WCharValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new LongValue(Span(), cast<long>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new FloatValue(Span(), cast<float>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.doubleValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new DoubleValue(Span(), cast<double>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    return Result<Value*>(new WCharValue(Span(), value));
+                }
+                case ValueKind.ucharValue:
+                {
+                    return Result<Value*>(new UCharValue(Span(), value));
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetUShortValue(cast<ushort>(value)));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"wchar");
+        }
+        public override Result<string> ToString() const
+        {
+            return ToString(value);
+        }
+        public inline wchar GetValue() const
+        {
+            return value;
+        }
+        private wchar value;
+    }
+
+    public class UCharValue : Value
+    {
+        public using OperandType = uchar;
+        public UCharValue(const System.Lex.Span& span_, uchar value_) : base(span_, ValueKind.ucharValue), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new UCharValue(Span(), value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.boolValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new BoolValue(Span(), cast<bool>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.sbyteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new SByteValue(Span(), cast<sbyte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.byteValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ByteValue(Span(), cast<byte>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.shortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ShortValue(Span(), cast<short>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ushortValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UShortValue(Span(), cast<ushort>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.intValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new IntValue(Span(), cast<int>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.uintValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new UIntValue(Span(), cast<uint>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.longValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new LongValue(Span(), cast<long>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ulongValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new ULongValue(Span(), cast<ulong>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.floatValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new FloatValue(Span(), cast<float>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.doubleValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new DoubleValue(Span(), cast<double>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.charValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new CharValue(Span(), cast<char>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.wcharValue:
+                {
+                    if (doCast)
+                    {
+                        return Result<Value*>(new WCharValue(Span(), cast<wchar>(value)));
+                    }
+                    else
+                    {
+                        return MakeCastError(Kind(), targetType->GetValueKind(), node);
+                    }
+                }
+                case ValueKind.ucharValue:
+                {
+                    return Result<Value*>(new UCharValue(Span(), value));
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetUIntValue(cast<uint>(value)));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"uchar");
+        }
+        public override Result<string> ToString() const
+        {
+            return ToString(value);
+        }
+        public inline uchar GetValue() const
+        {
+            return value;
+        }
+        private uchar value;
+    }
+
+    public class StringValue : Value
+    {
+        public using OperandType = string;
+        public StringValue(const System.Lex.Span& span_, int stringId_, const string& value_) : base(span_, ValueKind.stringValue), stringId(stringId_), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new StringValue(Span(), stringId, value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.stringValue:
+                {
+                    return new StringValue(Span(), stringId, value);
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            if (stringId == -1)
+            {
+                stringId = emitter.Install(value);
+            }
+            return Result<intermediate.Value*>(emitter.GetGlobalStringValue(stringId));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            Result<TypeSymbol*> charTypeResult = symbolTable->GetTypeByName(u"char");
+            if (charTypeResult.Error()) return charTypeResult;
+            TypeSymbol* charType = charTypeResult.Value();
+            return charType->AddPointer(context);
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(value);
+        }
+        public inline const string& GetValue() const
+        {
+            return value;
+        }
+        private int stringId;
+        private string value;
+    }
+
+    public class WStringValue : Value
+    {
+        public using OperandType = wstring;
+        public WStringValue(const System.Lex.Span& span_, int stringId_, const wstring& value_) : base(span_, ValueKind.wstringValue), stringId(stringId_), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new WStringValue(Span(), stringId, value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.wstringValue:
+                {
+                    return new WStringValue(Span(), stringId, value);
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            if (stringId == -1)
+            {
+                stringId = emitter.Install(value);
+            }
+            return emitter.GetGlobalWStringValue(stringId);
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            Result<TypeSymbol*> wcharTypeResult = symbolTable->GetTypeByName(u"wchar");
+            if (wcharTypeResult.Error()) return wcharTypeResult;
+            TypeSymbol* wcharType = wcharTypeResult.Value();
+            return wcharType->AddPointer(context);
+        }
+        public override Result<string> ToString() const
+        {
+            return ToUtf8(value);
+        }
+        public inline const wstring& GetValue() const
+        {
+            return value;
+        }
+        private int stringId;
+        private wstring value;
+    }
+
+    public class UStringValue : Value
+    {
+        public using OperandType = ustring;
+        public UStringValue(const System.Lex.Span& span_, int stringId_, const ustring& value_) : base(span_, ValueKind.ustringValue), stringId(stringId_), value(value_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new UStringValue(Span(), stringId, value);
+        }
+        public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
+        {
+            switch (targetType->GetValueKind())
+            {
+                case ValueKind.ustringValue:
+                {
+                    return new UStringValue(Span(), stringId, value);
+                }
+            }
+            return base->As(targetType, doCast, node);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            if (stringId == -1)
+            {
+                stringId = emitter.Install(value);
+            }
+            return emitter.GetGlobalUStringValue(stringId);
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            Result<TypeSymbol*> ucharTypeResult = symbolTable->GetTypeByName(u"uchar");
+            if (ucharTypeResult.Error()) return ucharTypeResult;
+            TypeSymbol* ucharType = ucharTypeResult.Value();
+            return ucharType->AddPointer(context);
+        }
+        public override Result<string> ToString() const
+        {
+            return ToUtf8(value);
+        }
+        public inline const ustring& GetValue() const
+        {
+            return value;
+        }
+        private int stringId;
+        private ustring value;
+    }
+
+    public class NullValue : Value
+    {
+        public NullValue(const System.Lex.Span& span_) : base(span_, ValueKind.nullValue)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new NullValue(Span());
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return symbolTable->GetTypeByName(u"@nullptr_type");
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            return Result<intermediate.Value*>(emitter.GetNullValue(emitter.GetVoidPtrType()));
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>(string("null"));
+        }
+    }
+
+    public class ArrayValue : Value
+    {
+        public ArrayValue(const System.Lex.Span& span_, TypeSymbol* type_, List<UniquePtr<Value>>&& elementValues_) :
+            base(span_, ValueKind.arrayValue), elementValues(elementValues_), type(type_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            List<UniquePtr<Value>> clonedElementValues;
+            long n = elementValues.Count();
+            for (long i = 0; i < n; ++i)
+            {
+                clonedElementValues.Add(UniquePtr<Value>(elementValues[i]->Clone()));
+            }
+            return new ArrayValue(Span(), type, Rvalue(clonedElementValues));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return Result<TypeSymbol*>(type);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            List<intermediate.Value*> elementConstants;
+            long n = elementValues.Count();
+            for (long i = 0; i < n; ++i)
+            {
+                Value* elementValue = elementValues[i].Get();
+                Result<intermediate.Value*> irValueResult = elementValue->IrValue(emitter);
+                if (irValueResult.Error()) return Result<intermediate.Value*>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                elementConstants.Add(irValue);
+            }
+            Result<intermediate.Type*> irTypeResult = type->IrType(emitter);
+            if (irTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            #assert(irType->IsArrayType());
+            intermediate.ArrayType* irArrayType = cast<intermediate.ArrayType*>(irType);
+            intermediate.Value* value = emitter.GetArrayValue(elementConstants, irArrayType);
+            return Result<intermediate.Value*>(value);
+        }
+        public inline const List<UniquePtr<Value>>& Elements() const
+        {
+            return elementValues;
+        }
+        private List<UniquePtr<Value>> elementValues;
+        private TypeSymbol* type;
+    }
+
+    public class StructureValue : Value
+    {
+        public StructureValue(const System.Lex.Span& span_, TypeSymbol* type_, List<UniquePtr<Value>>&& memberValues_) :
+            base(span_, ValueKind.structuredValue), memberValues(memberValues_), type(type_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            List<UniquePtr<Value>> clonedMemberValues;
+            long n = memberValues.Count();
+            for (long i = 0; i < n; ++i)
+            {
+                clonedMemberValues.Add(UniquePtr<Value>(memberValues[i]->Clone()));
+            }
+            return new StructureValue(Span(), type, Rvalue(clonedMemberValues));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return Result<TypeSymbol*>(type);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            List<intermediate.Value*> memberConstants;
+            long n = memberValues.Count();
+            for (long i = 0; i < n; ++i)
+            {
+                Value* memberValue = memberValues[i].Get();
+                Result<intermediate.Value*> irValueResult = memberValue->IrValue(emitter);
+                if (irValueResult.Error()) return Result<intermediate.Value*>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                memberConstants.Add(irValue);
+            }
+            Result<intermediate.Type*> irTypeResult = type->IrType(emitter);
+            if (irTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            #assert(irType->IsStructureType());
+            intermediate.StructureType* irStructureType = cast<intermediate.StructureType*>(irType);
+            intermediate.Value* value = emitter.GetStructureValue(memberConstants, irStructureType);
+            return Result<intermediate.Value*>(value);
+        }
+        private List<UniquePtr<Value>> memberValues;
+        private TypeSymbol* type;
+    }
+
+    public class ScopedValue : Value
+    {
+        public ScopedValue(const System.Lex.Span& span_, ContainerSymbol* containerSymbol_) : base(span_, ValueKind.scopedValue), containerSymbol(containerSymbol_)
+        {
+        }
+        public override bool IsComplete() const
+        {
+            return false;
+        }
+        public override Value* Clone() const
+        {
+            #assert(false);
+            return null;
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            int errorId = AllocateError("scoped value has no ir value");
+            return Result<intermediate.Value*>(ErrorId(errorId));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            if (type == null)
+            {
+                int errorId = AllocateError("type not set for scoped value");
+                return Result<TypeSymbol*>(ErrorId(errorId));
+            }
+            return Result<TypeSymbol*>(type);
+        }
+        public inline ContainerSymbol* GetContainerSymbol() const
+        {
+            return containerSymbol;
+        }
+        public inline void SetType(TypeSymbol* type_)
+        {
+            type = type_;
+        }
+        public override Value* Subject() const
+        {
+            return subject.Get();
+        }
+        public inline void SetSubject(Value* subject_)
+        {
+            subject.Reset(subject_);
+        }
+        private ContainerSymbol* containerSymbol;
+        private TypeSymbol* type;
+        private UniquePtr<Value> subject;
+    }
+
+    public class ArrayReferenceValue : Value
+    {
+        public ArrayReferenceValue(const System.Lex.Span& span_, ArrayValue* arrayValue_) : base(span_, ValueKind.arrayReferenceValue), arrayValue(arrayValue_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new ArrayReferenceValue(Span(), arrayValue);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            int errorId = AllocateError("array reference value has no ir value");
+            return Result<intermediate.Value*>(ErrorId(errorId));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return arrayValue->Type(symbolTable, context);
+        }
+        public inline ArrayValue* GetArrayValue() const
+        {
+            return arrayValue;
+        }
+        private ArrayValue* arrayValue;
+    }
+
+    public class StructureReferenceValue : Value
+    {
+        public StructureReferenceValue(const System.Lex.Span& span_, StructureValue* structureValue_) : base(span_, ValueKind.structureReferenceValue),
+            structureValue(structureValue_)
+        {
+        }
+        public override Value* Clone() const
+        {
+            return new StructureReferenceValue(Span(), structureValue);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            int errorId = AllocateError("structure reference value has no ir value");
+            return Result<intermediate.Value*>(ErrorId(errorId));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            return structureValue->Type(symbolTable, context);
+        }
+        public inline StructureValue* GetStructureValue() const
+        {
+            return structureValue;
+        }
+        private StructureValue* structureValue;
+    }
+
+    public class FunctionGroupValue : Value
+    {
+        public FunctionGroupValue(const System.Lex.Span& span_, FunctionGroupSymbol* functionGroup_, ContainerScope* qualifiedScope_) :
+            base(span_, ValueKind.functionGroupValue), functionGroup(functionGroup_), qualifiedScope(qualifiedScope_)
+        {
+        }
+        public override bool IsComplete() const
+        {
+            return false;
+        }
+        public override Value* Clone() const
+        {
+            return new FunctionGroupValue(Span(), functionGroup, qualifiedScope);
+        }
+        public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
+        {
+            int errorId = AllocateError("function group value has no ir value");
+            return Result<intermediate.Value*>(ErrorId(errorId));
+        }
+        public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
+        {
+            int errorId = AllocateError("function group value has no type");
+            return Result<TypeSymbol*>(ErrorId(errorId));
+        }
+        public inline FunctionGroupSymbol* FunctionGroup() const
+        {
+            return functionGroup;
+        }
+        public inline ContainerScope* QualifiedScope() const
+        {
+            return qualifiedScope;
+        }
+        public void SetTemplateTypeArguments(List<TypeSymbol*>&& templateTypeArguments_)
+        {
+            templateTypeArguments = templateTypeArguments_;
+        }
+        public inline const List<TypeSymbol*>& TemplateTypeArguments() const
+        {
+            return templateTypeArguments;
+        }
+        public inline Value* Receiver() const
+        {
+            return receiver.Get();
+        }
+        public inline void SetReceiver(Value* receiver_)
+        {
+            receiver.Reset(receiver_);
+        }
+        private FunctionGroupSymbol* functionGroup;
+        private ContainerScope* qualifiedScope;
+        private List<TypeSymbol*> templateTypeArguments;
+        private UniquePtr<Value> receiver;
+    }
+
+    public class IntegralValue
+    {
+        public IntegralValue(Value* value_) : value(value_)
+        {
+        }
+        public inline Value* GetValue() const
+        {
+            return value;
+        }
+        private Value* value;
+    }
+
+    public ulong GetHashCode(const IntegralValue& integralValue)
+    {
+        switch (integralValue.GetValue()->Kind())
+        {
+            case ValueKind.boolValue:
+            {
+                return cast<ulong>(cast<BoolValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.sbyteValue:
+            {
+                return cast<ulong>(cast<SByteValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.byteValue:
+            {
+                return cast<ulong>(cast<ByteValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.shortValue:
+            {
+                return cast<ulong>(cast<ShortValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.ushortValue:
+            {
+                return cast<ulong>(cast<UShortValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.intValue:
+            {
+                return cast<ulong>(cast<IntValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.uintValue:
+            {
+                return cast<ulong>(cast<UIntValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.longValue:
+            {
+                return cast<ulong>(cast<LongValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.ulongValue:
+            {
+                return cast<ULongValue*>(integralValue.GetValue())->GetValue();
+            }
+            case ValueKind.charValue:
+            {
+                return cast<ulong>(cast<CharValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.wcharValue:
+            {
+                return cast<ulong>(cast<WCharValue*>(integralValue.GetValue())->GetValue());
+            }
+            case ValueKind.ucharValue:
+            {
+                return cast<ulong>(cast<UCharValue*>(integralValue.GetValue())->GetValue());
+            }
+        }
+        return 0u;
+    }
+
+    public bool operator==(const IntegralValue& left, const IntegralValue& right)
+    {
+        ValueKind kind = left.GetValue()->Kind();
+        if (kind != right.GetValue()->Kind()) return false;
+        switch (kind)
+        {
+            case ValueKind.boolValue:
+            {
+                return cast<BoolValue*>(left.GetValue())->GetValue() == cast<BoolValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.sbyteValue:
+            {
+                return cast<SByteValue*>(left.GetValue())->GetValue() == cast<SByteValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.byteValue:
+            {
+                return cast<ByteValue*>(left.GetValue())->GetValue() == cast<ByteValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.shortValue:
+            {
+                return cast<ShortValue*>(left.GetValue())->GetValue() == cast<ShortValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.ushortValue:
+            {
+                return cast<UShortValue*>(left.GetValue())->GetValue() == cast<UShortValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.intValue:
+            {
+                return cast<IntValue*>(left.GetValue())->GetValue() == cast<IntValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.uintValue:
+            {
+                return cast<UIntValue*>(left.GetValue())->GetValue() == cast<UIntValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.longValue:
+            {
+                return cast<LongValue*>(left.GetValue())->GetValue() == cast<LongValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.ulongValue:
+            {
+                return cast<ULongValue*>(left.GetValue())->GetValue() == cast<ULongValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.charValue:
+            {
+                return cast<CharValue*>(left.GetValue())->GetValue() == cast<CharValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.wcharValue:
+            {
+                return cast<WCharValue*>(left.GetValue())->GetValue() == cast<WCharValue*>(right.GetValue())->GetValue();
+            }
+            case ValueKind.ucharValue:
+            {
+                return cast<UCharValue*>(left.GetValue())->GetValue() == cast<UCharValue*>(right.GetValue())->GetValue();
+            }
+        }
+        return false;
+    }
+
+    public ValueKind CommonValueKind(ValueKind left, ValueKind right)
+    {
+        switch (left)
+        {
+            case ValueKind.boolValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.boolValue:
+                    {
+                        return ValueKind.boolValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.sbyteValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return ValueKind.sbyteValue;
+                    }
+                    case ValueKind.byteValue:
+                    case ValueKind.shortValue:
+                    {
+                        return ValueKind.shortValue;
+                    }
+                    case ValueKind.ushortValue:
+                    case ValueKind.intValue:
+                    {
+                        return ValueKind.intValue;
+                    }
+                    case ValueKind.uintValue:
+                    case ValueKind.longValue:
+                    {
+                        return ValueKind.longValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.byteValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    {
+                        return ValueKind.shortValue;
+                    }
+                    case ValueKind.byteValue:
+                    {
+                        return ValueKind.byteValue;
+                    }
+                    case ValueKind.shortValue:
+                    {
+                        return ValueKind.shortValue;
+                    }
+                    case ValueKind.ushortValue:
+                    {
+                        return ValueKind.ushortValue;
+                    }
+                    case ValueKind.intValue:
+                    {
+                        return ValueKind.intValue;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return ValueKind.uintValue;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return ValueKind.longValue;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return ValueKind.ulongValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.shortValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    case ValueKind.byteValue:
+                    case ValueKind.shortValue:
+                    {
+                        return ValueKind.shortValue;
+                    }
+                    case ValueKind.ushortValue:
+                    case ValueKind.intValue:
+                    {
+                        return ValueKind.intValue;
+                    }
+                    case ValueKind.uintValue:
+                    case ValueKind.longValue:
+                    {
+                        return ValueKind.longValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.ushortValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    case ValueKind.shortValue:
+                    case ValueKind.intValue:
+                    {
+                        return ValueKind.intValue;
+                    }
+                    case ValueKind.byteValue:
+                    case ValueKind.ushortValue:
+                    {
+                        return ValueKind.ushortValue;
+                    }
+                    case ValueKind.uintValue:
+                    {
+                        return ValueKind.uintValue;
+                    }
+                    case ValueKind.longValue:
+                    {
+                        return ValueKind.longValue;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return ValueKind.ulongValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.intValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    case ValueKind.byteValue:
+                    case ValueKind.shortValue:
+                    case ValueKind.ushortValue:
+                    case ValueKind.intValue:
+                    {
+                        return ValueKind.intValue;
+                    }
+                    case ValueKind.uintValue:
+                    case ValueKind.longValue:
+                    {
+                        return ValueKind.longValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.uintValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    case ValueKind.shortValue:
+                    case ValueKind.intValue:
+                    case ValueKind.longValue:
+                    {
+                        return ValueKind.longValue;
+                    }
+                    case ValueKind.byteValue:
+                    case ValueKind.ushortValue:
+                    case ValueKind.uintValue:
+                    {
+                        return ValueKind.uintValue;
+                    }
+                    case ValueKind.ulongValue:
+                    {
+                        return ValueKind.ulongValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.longValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    case ValueKind.byteValue:
+                    case ValueKind.shortValue:
+                    case ValueKind.ushortValue:
+                    case ValueKind.intValue:
+                    case ValueKind.uintValue:
+                    case ValueKind.longValue:
+                    {
+                        return ValueKind.longValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.ulongValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.byteValue:
+                    case ValueKind.ushortValue:
+                    case ValueKind.uintValue:
+                    case ValueKind.ulongValue:
+                    {
+                        return ValueKind.ulongValue;
+                    }
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.floatValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    case ValueKind.byteValue:
+                    case ValueKind.shortValue:
+                    case ValueKind.ushortValue:
+                    case ValueKind.intValue:
+                    case ValueKind.uintValue:
+                    case ValueKind.longValue:
+                    case ValueKind.ulongValue:
+                    case ValueKind.floatValue:
+                    {
+                        return ValueKind.floatValue;
+                    }
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.doubleValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.sbyteValue:
+                    case ValueKind.byteValue:
+                    case ValueKind.shortValue:
+                    case ValueKind.ushortValue:
+                    case ValueKind.intValue:
+                    case ValueKind.uintValue:
+                    case ValueKind.longValue:
+                    case ValueKind.ulongValue:
+                    case ValueKind.floatValue:
+                    case ValueKind.doubleValue:
+                    {
+                        return ValueKind.doubleValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.charValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.charValue:
+                    {
+                        return ValueKind.charValue;
+                    }
+                    case ValueKind.wcharValue:
+                    {
+                        return ValueKind.wcharValue;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return ValueKind.ucharValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.wcharValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.charValue:
+                    case ValueKind.wcharValue:
+                    {
+                        return ValueKind.wcharValue;
+                    }
+                    case ValueKind.ucharValue:
+                    {
+                        return ValueKind.ucharValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.ucharValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.charValue:
+                    case ValueKind.wcharValue:
+                    case ValueKind.ucharValue:
+                    {
+                        return ValueKind.ucharValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.stringValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.stringValue:
+                    {
+                        return ValueKind.stringValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.wstringValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.wstringValue:
+                    {
+                        return ValueKind.wstringValue;
+                    }
+                }
+                break;
+            }
+            case ValueKind.ustringValue:
+            {
+                switch (right)
+                {
+                    case ValueKind.ustringValue:
+                    {
+                        return ValueKind.ustringValue;
+                    }
+                }
+                break;
+            }
+        }
+        return ValueKind.none;
+    }
+
+    public Result<TypeSymbol*> GetType(ValueKind valueKind, SymbolTable* symbolTable, Node* node)
+    {
+        switch (valueKind)
+        {
+            case ValueKind.boolValue:
+            {
+                return symbolTable->GetTypeByName(u"bool");
+            }
+            case ValueKind.sbyteValue:
+            {
+                return symbolTable->GetTypeByName(u"sbyte");
+            }
+            case ValueKind.byteValue:
+            {
+                return symbolTable->GetTypeByName(u"byte");
+            }
+            case ValueKind.shortValue:
+            {
+                return symbolTable->GetTypeByName(u"short");
+            }
+            case ValueKind.ushortValue:
+            {
+                return symbolTable->GetTypeByName(u"ushort");
+            }
+            case ValueKind.intValue:
+            {
+                return symbolTable->GetTypeByName(u"int");
+            }
+            case ValueKind.uintValue:
+            {
+                return symbolTable->GetTypeByName(u"uint");
+            }
+            case ValueKind.longValue:
+            {
+                return symbolTable->GetTypeByName(u"long");
+            }
+            case ValueKind.ulongValue:
+            {
+                return symbolTable->GetTypeByName(u"ulong");
+            }
+            case ValueKind.floatValue:
+            {
+                return symbolTable->GetTypeByName(u"float");
+            }
+            case ValueKind.doubleValue:
+            {
+                return symbolTable->GetTypeByName(u"double");
+            }
+            case ValueKind.charValue:
+            {
+                return symbolTable->GetTypeByName(u"char");
+            }
+            case ValueKind.wcharValue:
+            {
+                return symbolTable->GetTypeByName(u"wchar");
+            }
+            case ValueKind.ucharValue:
+            {
+                return symbolTable->GetTypeByName(u"uchar");
+            }
+            case ValueKind.nullValue:
+            {
+                return symbolTable->GetTypeByName(u"@nullptr_type");
+            }
+        }
+        int errorId = MakeError("type for value kind '" + ValueKindStr(valueKind) + "' not found", node->GetFullSpan());
+        return Result<TypeSymbol*>(ErrorId(errorId));
+    }
+}
+

@@ -1,0 +1,294 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using binder;
+using symbols;
+using cm.ast;
+
+namespace build
+{
+    public void Preprocess(Project* project)
+    {
+        for (auto& sourceFile : project->SourceFiles())
+        {
+            if (sourceFile->GlobalNs()->HasUnnamedNs())
+            {
+                AddNamespaceImportsForUnnamedNamespaces(*sourceFile);
+            }
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> CreateSymbols(SymbolsContext& context, SymbolTable* symbolTable, Project* project, bool& stop)
+    {
+        LockGuard<RecursiveMutex> lock(symbolTable->GetModule()->Lock());
+        for (const auto& sourceFile : project->SourceFiles())
+        {
+            if (stop)
+            {
+                return Result<bool>(false);
+            }
+            symbolTable->SetCurrentSourceFile(sourceFile.Get());
+            auto result = CreateSymbols(sourceFile.Get(), symbolTable, context);
+            if (result.Error())
+            {
+                stop = true;
+                return result;
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<UniquePtr<BoundCompileUnit>> BindTypes(SymbolsContext& context, Module* module, SourceFileNode* sourceFile, AttributeBinder* attributeBinder)
+    {
+        UniquePtr<BoundCompileUnit> boundCompileUnit(new BoundCompileUnit(context, module, sourceFile, attributeBinder));
+        boundCompileUnit->PushBindingTypes();
+        TypeBinder typeBinder(boundCompileUnit.Get());
+        Console.Out() << "> " << sourceFile->FilePath() << endl();
+        sourceFile->Accept(typeBinder);
+        if (typeBinder.Error())
+        {
+            return Result<UniquePtr<BoundCompileUnit>>(ErrorId(typeBinder.GetErrorId()));
+        }
+        boundCompileUnit->PopBindingTypes();
+        Console.Out() << "< " << sourceFile->FilePath() << endl();
+        return Result<UniquePtr<BoundCompileUnit>>(Rvalue(boundCompileUnit));
+    }
+
+    [nodiscard]
+    public Result<bool> BindTypes(SymbolsContext& context, Module* module, Project* project, AttributeBinder* attributeBinder,
+        List<UniquePtr<BoundCompileUnit>>& boundCompileUnits, bool& stop)
+    {
+        for (const UniquePtr<SourceFileNode>& sourceFile : project->SourceFiles())
+        {
+            if (stop)
+            {
+                return Result<bool>(false);
+            }
+            Result<UniquePtr<BoundCompileUnit>> bindingResult = BindTypes(context, module, sourceFile.Get(), attributeBinder);
+            if (bindingResult.Error())
+            {
+                stop = true;
+                return Result<bool>(ErrorId(bindingResult.GetErrorId()));
+            }
+            boundCompileUnits.Add(Rvalue(bindingResult.Value()));
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<bool> BindStatements(BoundCompileUnit* boundCompileUnit)
+    {
+        StatementBinder statementBinder(boundCompileUnit);
+        boundCompileUnit->SourceFile()->Accept(statementBinder);
+        if (statementBinder.Error())
+        {
+            return Result<bool>(ErrorId(statementBinder.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<bool> AnalyzeControlFlow(BoundCompileUnit* boundCompileUnit)
+    {
+        // todo
+        return Result<bool>(true);
+    }
+
+    public Result<bool> GenerateCode(BoundCompileUnit* boundCompileUnit)
+    {
+        return codegen.GenerateCode(boundCompileUnit);
+    }
+
+    public Result<bool> CompileSingleThreaded(Project* project, Module* module, List<UniquePtr<BoundCompileUnit>>& boundCompileUnits,
+        List<string>& objectFilePaths, List<string>& asmFilePaths, bool& stop)
+    {
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(project->LogStreamId(), "Compiling...");
+        }
+        for (UniquePtr<BoundCompileUnit>& boundCompileUnit : boundCompileUnits)
+        {
+            if (stop)
+            {
+                return Result<bool>(false);
+            }
+            if (GetGlobalFlag(GlobalFlags.verbose))
+            {
+                LogMessage(project->LogStreamId(), "> " + System.IO.Path.GetFileName(boundCompileUnit->SourceFile()->FilePath()));
+            }
+            Result<bool> result = BindStatements(boundCompileUnit.Get());
+            if (result.Error()) return result;
+            if (boundCompileUnit->HasGotos())
+            {
+                Result<bool> result = AnalyzeControlFlow(boundCompileUnit.Get());
+                if (result.Error()) return result;
+            }
+            result = GenerateCode(boundCompileUnit.Get());
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+
+    internal class CompileData
+    {
+        public CompileData(bool& stop_, const List<BoundCompileUnit*>& boundCompileUnits_) : stop(stop_), ready(false), boundCompileUnits(boundCompileUnits_)
+        {
+            results.Resize(boundCompileUnits.Count());
+        }
+        public bool& stop;
+        public bool ready;
+        public SynchronizedQueue<int> input;
+        public SynchronizedQueue<int> output;
+        public List<BoundCompileUnit*> boundCompileUnits;
+        public List<Result<bool>> results;
+    }
+
+    internal void CompileThreadFunction(void* data)
+    {
+        CompileData* compileData = cast<CompileData*>(data);
+        while (!compileData->stop && !compileData->ready)
+        {
+            Result<int> inputResult = compileData->input.Get();
+            if (inputResult.Error())
+            {
+                compileData->stop = true;
+                return;
+            }
+            int index = inputResult.Value();
+            if (index == 0)
+            {
+                compileData->ready = true;
+                return;
+            }
+            BoundCompileUnit* boundCompileUnit = compileData->boundCompileUnits[index - 1];
+            Result<bool> result = GenerateCode(boundCompileUnit);
+            if (result.Error())
+            {
+                compileData->results[index - 1] = result;
+                compileData->stop = true;
+                Result<bool> putResult = compileData->output.Put(index);
+                return;
+            }
+            else
+            {
+                compileData->results[index - 1] = result;
+                Result<bool> outputResult = compileData->output.Put(index);
+                if (outputResult.Error())
+                {
+                    compileData->results[index - 1] = outputResult;
+                    compileData->stop = true;
+                    return;
+                }
+            }
+        }
+    }
+
+    public Result<bool> CompileMultiThreaded(Project* project, Module* module, List<UniquePtr<BoundCompileUnit>>& boundCompileUnits,
+        List<string>& objectFilePaths, List<string>& asmFilePaths, bool& stop)
+    {
+        List<BoundCompileUnit*> compileUnits;
+        for (UniquePtr<BoundCompileUnit>& boundCompileUnit : boundCompileUnits)
+        {
+            compileUnits.Add(boundCompileUnit.Get());
+        }
+        CompileData compileData(stop, compileUnits);
+        List<Thread> threads;
+        int numThreads = Max(cast<int>(1), Min(HardwareConcurrency(), cast<int>(compileUnits.Count())));
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(project->LogStreamId(), "Compiling using " + ToString(numThreads) + " threads...");
+        }
+        for (int i = 0; i < numThreads; ++i)
+        {
+            threads.Add(Thread.StartFunction(CompileThreadFunction, &compileData));
+        }
+        Result<bool> result;
+        int n = cast<int>(compileUnits.Count());
+        for (int i = 0; i < n; ++i)
+        {
+            BoundCompileUnit* compileUnit = compileUnits[i];
+            if (GetGlobalFlag(GlobalFlags.verbose))
+            {
+                LogMessage(module->LogStreamId(), "> " + System.IO.Path.GetFileName(compileUnit->SourceFile()->FilePath()));
+            }
+            result = BindStatements(compileUnit);
+            if (result.Error())
+            {
+                stop = true;
+                break;
+            }
+            if (compileUnit->HasGotos())
+            {
+                result = AnalyzeControlFlow(compileUnit);
+                if (result.Error())
+                {
+                    stop = true;
+                    break;
+                }
+            }
+            result = compileData.input.Put(i + 1);
+            if (result.Error())
+            {
+                stop = true;
+                break;
+            }
+        }
+        if (result.Error())
+        {
+            stop = true;
+        }
+        int numOutputsReceived = 0;
+        while (numOutputsReceived < n && !stop)
+        {
+            Result<int> outputResult = compileData.output.Get();
+            if (outputResult.Error())
+            {
+                result = Result<bool>(ErrorId(outputResult.GetErrorId()));
+                stop = true;
+            }
+            else
+            {
+                int index = outputResult.Value();
+                if (index == 0)
+                {
+                    stop = true;
+                }
+                else
+                {
+                    ++numOutputsReceived;
+                }
+            }
+        }
+        compileData.ready = true;
+        Result<bool> exitResult = compileData.input.Exit();
+        for (int i = 0; i < numThreads; ++i)
+        {
+            threads[i].Join();
+        }
+        if (result.Error()) return result;
+        for (const auto& compileResult : compileData.results)
+        {
+            if (compileResult.Error()) return compileResult;
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<bool> Compile(Project* project, Module* module, List<UniquePtr<BoundCompileUnit>>& boundCompileUnits,
+        List<string>& objectFilePaths, List<string>& asmFilePaths, bool& stop)
+    {
+        if (GetGlobalFlag(GlobalFlags.singleThreadedCompile))
+        {
+            return CompileSingleThreaded(project, module, boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+        }
+        else
+        {
+            return CompileMultiThreaded(project, module, boundCompileUnits, objectFilePaths, asmFilePaths, stop);
+        }
+    }
+}
+

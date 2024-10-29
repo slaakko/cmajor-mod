@@ -1,0 +1,75 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace intermediate
+{
+    public abstract class Component : Value
+    {
+        public Component(ValueKind kind_, const System.Lex.Span& span_, Type* type_) : base(kind_, span_, type_), container(null), nextSibling(null), prevSibling(null)
+        {
+        }
+        public inline ComponentContainer* GetContainer() const
+        {
+            return container;
+        }
+        internal inline void SetContainer(ComponentContainer* container_)
+        {
+            container = container_;
+        }
+        public inline Component* NextSibling() const
+        {
+            return nextSibling;
+        }
+        internal inline void SetNextSibling(Component* nextSibling_)
+        {
+            nextSibling = nextSibling_;
+        }
+        public inline Component* PrevSibling() const
+        {
+            return prevSibling;
+        }
+        internal inline void SetPrevSibling(Component* prevSibling_)
+        {
+            prevSibling = prevSibling_;
+        }
+        internal void LinkBefore(Component* component)
+        {
+            if (prevSibling != null)
+            {
+                prevSibling->nextSibling = component;
+            }
+            component->prevSibling = prevSibling;
+            component->nextSibling = this;
+            prevSibling = component;
+        }
+        internal void LinkAfter(Component* component)
+        {
+            if (nextSibling != null)
+            {
+                nextSibling->prevSibling = component;
+            }
+            component->prevSibling = this;
+            component->nextSibling = nextSibling;
+            nextSibling = component;
+        }
+        internal void Unlink()
+        {
+            if (prevSibling != null)
+            {
+                prevSibling->nextSibling = nextSibling;
+            }
+            if (nextSibling != null)
+            {
+                nextSibling->prevSibling = prevSibling;
+            }
+        }
+        private ComponentContainer* container;
+        private Component* nextSibling;
+        private Component* prevSibling;
+    }
+}
+

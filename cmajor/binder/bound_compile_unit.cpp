@@ -262,7 +262,7 @@ BoundCompileUnit::BoundCompileUnit(cmajor::symbols::Module& module_, cmajor::ast
     immutable(false), nextExitEntryIndex(0),
     systemRuntimeUnwindInfoSymbol(nullptr), systemRuntimeAddCompileUnitFunctionSymbol(nullptr), pushCompileUnitUnwindInfoInitFunctionSymbol(nullptr),
     initUnwindInfoDelegateType(nullptr), globalInitFunctionSymbol(nullptr), latestIdentifierNode(nullptr), fileIndex(-1), moduleId(module.Id()),
-    traceEntryTypeSymbol(nullptr), traceGuardTypeSymbol(nullptr)
+    traceEntryTypeSymbol(nullptr), traceGuardTypeSymbol(nullptr), totalFunctions(0), functionsInlined(0)
 {
     if (compileUnitNode)
     {
@@ -504,14 +504,21 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                     }
                 }
             }
-            else if ((sourceType->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupTypeSymbol || sourceType->GetSymbolType() == cmajor::symbols::SymbolType::memberExpressionTypeSymbol) &&
+            else if ((sourceType->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupTypeSymbol || 
+                sourceType->GetSymbolType() == cmajor::symbols::SymbolType::memberExpressionTypeSymbol) &&
                 targetType->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol)
             {
+                std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
                 cmajor::symbols::FunctionGroupSymbol* functionGroupSymbol = nullptr;
                 BoundMemberExpression* boundMemberExpression = nullptr;
                 if (sourceType->GetSymbolType() == cmajor::symbols::SymbolType::functionGroupTypeSymbol)
                 {
                     cmajor::symbols::FunctionGroupTypeSymbol* functionGroupTypeSymbol = static_cast<cmajor::symbols::FunctionGroupTypeSymbol*>(sourceType);
+                    BoundFunctionGroupExpression* boundFunctionGroup = static_cast<BoundFunctionGroupExpression*>(functionGroupTypeSymbol->BoundFunctionGroup());
+                    if (boundFunctionGroup)
+                    {
+                        templateArgumentTypes = boundFunctionGroup->TemplateArgumentTypes();
+                    }
                     functionGroupSymbol = functionGroupTypeSymbol->FunctionGroup();
                 }
                 else if (sourceType->GetSymbolType() == cmajor::symbols::SymbolType::memberExpressionTypeSymbol)
@@ -521,6 +528,7 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                     if (boundMemberExpression->Member()->GetBoundNodeType() == BoundNodeType::boundFunctionGroupExpression)
                     {
                         BoundFunctionGroupExpression* boundFunctionGroupExpression = static_cast<BoundFunctionGroupExpression*>(boundMemberExpression->Member());
+                        templateArgumentTypes = boundFunctionGroupExpression->TemplateArgumentTypes();
                         functionGroupSymbol = boundFunctionGroupExpression->FunctionGroup();
                     }
                 }
@@ -533,6 +541,21 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                     for (cmajor::symbols::FunctionSymbol* viableFunction : viableFunctions.Get())
                     {
                         if (viableFunction->GetSymbolType() == cmajor::symbols::SymbolType::memberFunctionSymbol && !viableFunction->IsStatic()) continue;
+                        int na = viableFunction->TemplateArgumentTypes().size();
+                        if (na > 0)
+                        {
+                            if (na != templateArgumentTypes.size()) continue;
+                            bool found = true;
+                            for (int i = 0; i < na; ++i)
+                            {
+                                if (!cmajor::symbols::TypesEqual(viableFunction->TemplateArgumentTypes()[i], templateArgumentTypes[i]))
+                                {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            if (!found) continue;
+                        }
                         bool found = true;
                         for (int i = 0; i < arity; ++i)
                         {
@@ -574,19 +597,19 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                                     }
                                     else
                                     {
-                                        return nullptr;
+                                        continue;
                                     }
                                 }
                                 else
                                 {
-                                    return nullptr;
+                                    continue;
                                 }
                             }
                             std::unique_ptr<cmajor::symbols::FunctionSymbol> functionToDelegateConversion(new cmajor::symbols::FunctionToDelegateConversion(
                                 sourceType, delegateTypeSymbol, viableFunction));
                             functionToDelegateConversion->SetParent(&symbolTable.GlobalNs());
                             conversion = functionToDelegateConversion.get();
-                            conversionTable.AddConversion(conversion);
+                            // do not add entry to the conversion table
                             conversionTable.AddGeneratedConversion(std::move(functionToDelegateConversion));
                             return conversion;
                         }
@@ -642,7 +665,7 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
                             std::unique_ptr<cmajor::symbols::FunctionSymbol> memberFunctionToClassDelegateConversion(new cmajor::symbols::MemberFunctionToClassDelegateConversion(node->GetSpan(), sourceType, classDelegateType, viableFunction));
                             memberFunctionToClassDelegateConversion->SetParent(&symbolTable.GlobalNs());
                             conversion = memberFunctionToClassDelegateConversion.get();
-                            conversionTable.AddConversion(conversion);
+                            // do not add entry to the conversion table
                             conversionTable.AddGeneratedConversion(std::move(memberFunctionToClassDelegateConversion));
                             return conversion;
                         }
@@ -1049,16 +1072,6 @@ bool BoundCompileUnit::CanReuse(cmajor::symbols::FunctionSymbol* functionSymbol)
 void BoundCompileUnit::SetCanReuse(cmajor::symbols::FunctionSymbol* functionSymbol)
 {
     canReuse.insert(functionSymbol);
-}
-
-void BoundCompileUnit::AddDeferredFullInstantiationRequest(cmajor::ast::FullInstantiationRequestNode* fullInstantiationRequestNode)
-{
-    deferredFullInstantiationRequests.push_back(std::unique_ptr< cmajor::ast::FullInstantiationRequestNode>(fullInstantiationRequestNode));
-}
-
-std::vector<std::unique_ptr<cmajor::ast::FullInstantiationRequestNode>> BoundCompileUnit::GetDeferredInstantiationRequests()
-{
-    return std::move(deferredFullInstantiationRequests);
 }
 
 } // namespace cmajor::binder

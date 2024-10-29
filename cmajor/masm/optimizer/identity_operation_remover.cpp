@@ -12,6 +12,7 @@ namespace cmajor::masm::optimizer {
 
 bool IsIdentityOperation(cmajor::masm::intermediate::Function* function)
 {
+    bool isRvalue = function->Name().starts_with("function_Rvalue");
     cmajor::masm::intermediate::FunctionType* functionType = function->GetType();
     if (functionType->IsUnaryOperationType())
     {
@@ -54,16 +55,117 @@ bool IsIdentityOperation(cmajor::masm::intermediate::Function* function)
                                                     {
                                                         return true;
                                                     }
+                                                    else
+                                                    {
+                                                        if (isRvalue)
+                                                        {
+                                                            int x = 0;
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (isRvalue)
+                                                    {
+                                                        int x = 0;
+                                                    }
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                if (isRvalue)
+                                                {
+                                                    int x = 0;
                                                 }
                                             }
+
+                                        }
+                                        else
+                                        {
+                                            if (isRvalue)
+                                            {
+                                                int x = 0;
+                                            }
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        if (isRvalue)
+                                        {
+                                            int x = 0;
                                         }
                                     }
+
+                                }
+                                else
+                                {
+                                    if (isRvalue)
+                                    {
+                                        int x = 0;
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                if (isRvalue)
+                                {
+                                    int x = 0;
                                 }
                             }
+
+                        }
+                        else
+                        {
+                            if (isRvalue)
+                            {
+                                int x = 0;
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        if (isRvalue)
+                        {
+                            int x = 0;
                         }
                     }
+
+                }
+                else
+                {
+                    if (isRvalue)
+                    {
+                        int x = 0;
+                    }
+                }
+
+            }
+            else
+            {
+                if (isRvalue)
+                {
+                    int x = 0;
                 }
             }
+
+        }
+        else
+        {
+            if (isRvalue)
+            {
+                int x = 0;
+            }
+        }
+    }
+    else
+    {
+        if (isRvalue)
+        {
+            int x = 0;
         }
     }
     return false;

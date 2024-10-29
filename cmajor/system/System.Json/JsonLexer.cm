@@ -6,7 +6,7 @@ using JsonTokens;
 
 public class JsonLexer : System.Lex.Lexer
 {
-    public JsonLexer(const uchar* start_, const uchar* end_, const string& fileName_) : 
+    public JsonLexer(const uchar* start_, const uchar* end_, const string& fileName_) :
         base(start_, end_, fileName_, "JsonLexer.classmap")
     {
         auto classMapResult = System.Lex.GetClassMap(ClassMapName());
@@ -16,7 +16,6 @@ public class JsonLexer : System.Lex.Lexer
             return;
         }
         SetClassMap(classMapResult.Value());
-        SetKeywordMap(GetKeywordMap());
     }
     public override int NextState(int state, uchar c)
     {

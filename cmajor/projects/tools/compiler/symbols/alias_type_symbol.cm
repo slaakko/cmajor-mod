@@ -1,0 +1,147 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using cm.ast;
+
+namespace symbols
+{
+    public class AliasTypeSymbol : Symbol
+    {
+        public AliasTypeSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.aliasTypeSymbol, span_, name_), type()
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"aliasType";
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(type->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            auto typeSymbolResult = symbolTable->GetType(typeId);
+            if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
+            type = typeSymbolResult.Value();
+            return Result<bool>(true);
+        }
+        public inline TypeSymbol* Type() const
+        {
+            return type;
+        }
+        public inline void SetType(TypeSymbol* type_)
+        {
+            type = type_;
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = cast<Specifiers>(specifiers & Specifiers.access_);
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be nothrow", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be throw", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("alias type cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        private TypeSymbol* type;
+        private Uuid typeId;
+    }
+}
+

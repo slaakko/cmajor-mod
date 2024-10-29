@@ -8,7 +8,7 @@ namespace System.RegularExpressions
 {
     public class RegExLexer : System.Lex.Lexer
     {
-        public RegExLexer(const uchar* start_, const uchar* end_, const string& fileName_) : 
+        public RegExLexer(const uchar* start_, const uchar* end_, const string& fileName_) :
             base(start_, end_, fileName_, "System.RegularExpressions.RegExLexer.classmap")
         {
             auto classMapResult = System.Lex.GetClassMap(ClassMapName());
@@ -18,7 +18,6 @@ namespace System.RegularExpressions
                 return;
             }
             SetClassMap(classMapResult.Value());
-            SetKeywordMap(GetKeywordMap());
         }
         public override int NextState(int state, uchar c)
         {

@@ -1,0 +1,689 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+
+namespace symbols
+{
+    public class SymbolCreator : Visitor
+    {
+        public SymbolCreator(SymbolsContext& context_, SymbolTable* symbolTable_,
+            ClassNode* classInstanceNode_, ClassTemplateSpecializationSymbol* classTemplateSpecialization_, bool leaveFunction_) :
+            context(context_), symbolTable(symbolTable_), classInstanceNode(classInstanceNode_),
+            classTemplateSpecialization(classTemplateSpecialization_), leaveFunction(leaveFunction_), functionIndex(0), errorId(0)
+        {
+        }
+        public override void Visit(SourceFileNode& sourceFileNode)
+        {
+            sourceFileNode.GlobalNs()->Accept(*this);
+        }
+        public override void Visit(NamespaceNode& namespaceNode)
+        {
+            auto result = symbolTable->BeginNamespace(namespaceNode.Id()->Str(), namespaceNode.GetSpan(), namespaceNode.ModuleId(), namespaceNode.FileIndex(), context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            NamespaceSymbol* namespaceSymbol = result.Value();
+            symbolTable->MapNode(&namespaceNode, namespaceSymbol);
+            for (const auto& member : namespaceNode.Members())
+            {
+                member->Accept(*this);
+                if (Error()) return;
+            }
+            symbolTable->EndNamespace();
+        }
+        public override void Visit(AliasNode& aliasNode)
+        {
+            auto result = symbolTable->AddAliasType(aliasNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(FunctionNode& functionNode)
+        {
+            auto result = symbolTable->BeginFunction(functionNode, functionIndex++);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (functionNode.ReturnTypeExpr() != null)
+            {
+                functionNode.ReturnTypeExpr()->Accept(*this);
+                if (Error()) return;
+            }
+            int nt = cast<int>(functionNode.TemplateParameters().Count());
+            for (int i = 0; i < nt; ++i)
+            {
+                result = symbolTable->AddTemplateParameter(functionNode.TemplateParameters()[i], context);
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+                if (Error()) return;
+            }
+            int n = cast<int>(functionNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = functionNode.Parameters()[i];
+                parameterNode->Accept(*this);
+                if (Error()) return;
+            }
+            if (functionNode.WhereConstraint() != null)
+            {
+                functionNode.WhereConstraint()->Accept(*this);
+                if (Error()) return;
+            }
+            if (nt == 0)
+            {
+                if (functionNode.Body() != null)
+                {
+                    functionNode.Body()->Accept(*this);
+                    if (Error()) return;
+                }
+            }
+            result = symbolTable->EndFunction(!leaveFunction, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(ClassNode& classNode)
+        {
+            if (&classNode == classInstanceNode)
+            {
+                symbolTable->BeginClassTemplateSpecialization(*classInstanceNode, classTemplateSpecialization);
+            }
+            else
+            {
+                symbolTable->BeginClass(classNode);
+            }
+            int nt = cast<int>(classNode.TemplateParameters().Count());
+            for (int i = 0; i < nt; ++i)
+            {
+                auto result = symbolTable->AddTemplateParameter(classNode.TemplateParameters()[i], context);
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+                if (Error()) return;
+            }
+            int nb = cast<int>(classNode.BaseClassOrInterfaces().Count());
+            for (int i = 0; i < nb; ++i)
+            {
+                classNode.BaseClassOrInterfaces()[i]->Accept(*this);
+                if (Error()) return;
+            }
+            if (nt == 0)
+            {
+                int n = cast<int>(classNode.Members().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    Node* member = classNode.Members()[i];
+                    member->Accept(*this);
+                    if (Error()) return;
+                }
+            }
+            if (&classNode == classInstanceNode)
+            {
+                symbolTable->EndClassTemplateSpecialization();
+            }
+            else
+            {
+                auto result = symbolTable->EndClass(context);
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+        }
+        public override void Visit(ThisInitializerNode& thisInitializerNode)
+        {
+            int n = cast<int>(thisInitializerNode.Arguments().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                thisInitializerNode.Arguments()[i]->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BaseInitializerNode& baseInitializerNode)
+        {
+            int n = cast<int>(baseInitializerNode.Arguments().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                baseInitializerNode.Arguments()[i]->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(MemberInitializerNode& memberInitializerNode)
+        {
+            int n = cast<int>(memberInitializerNode.Arguments().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                memberInitializerNode.Arguments()[i]->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(StaticConstructorNode& staticConstructorNode)
+        {
+            symbolTable->BeginStaticConstructor(staticConstructorNode, functionIndex++);
+            int ni = cast<int>(staticConstructorNode.Initializers().Count());
+            for (int i = 0; i < ni; ++i)
+            {
+                staticConstructorNode.Initializers()[i]->Accept(*this);
+                if (Error()) return;
+            }
+            if (staticConstructorNode.WhereConstraint() != null)
+            {
+                staticConstructorNode.WhereConstraint()->Accept(*this);
+            }
+            if (staticConstructorNode.Body() != null)
+            {
+                staticConstructorNode.Body()->Accept(*this);
+            }
+            auto result = symbolTable->EndStaticConstructor(!leaveFunction, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(ConstructorNode& constructorNode)
+        {
+            auto result = symbolTable->BeginConstructor(context, constructorNode, functionIndex++);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            int ni = cast<int>(constructorNode.Initializers().Count());
+            for (int i = 0; i < ni; ++i)
+            {
+                constructorNode.Initializers()[i]->Accept(*this);
+                if (Error()) return;
+            }
+            if (constructorNode.WhereConstraint() != null)
+            {
+                constructorNode.WhereConstraint()->Accept(*this);
+                if (Error()) return;
+            }
+            int n = cast<int>(constructorNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = constructorNode.Parameters()[i];
+                parameterNode->Accept(*this);
+                if (Error()) return;
+            }
+            if (constructorNode.Body() != null)
+            {
+                constructorNode.Body()->Accept(*this);
+                if (Error()) return;
+            }
+            result = symbolTable->EndConstructor(!leaveFunction, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(DestructorNode& destructorNode)
+        {
+            auto result = symbolTable->BeginDestructor(context, destructorNode, functionIndex++);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (destructorNode.Body() != null)
+            {
+                destructorNode.Body()->Accept(*this);
+                if (Error()) return;
+            }
+            result = symbolTable->EndDestructor(!leaveFunction, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(MemberFunctionNode& memberFunctionNode)
+        {
+            auto result = symbolTable->BeginMemberFunction(context, memberFunctionNode, functionIndex++);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (memberFunctionNode.WhereConstraint() != null)
+            {
+                memberFunctionNode.WhereConstraint()->Accept(*this);
+                if (Error()) return;
+            }
+            if (memberFunctionNode.ReturnTypeExpr() != null)
+            {
+                memberFunctionNode.ReturnTypeExpr()->Accept(*this);
+                if (Error()) return;
+            }
+            int n = cast<int>(memberFunctionNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = memberFunctionNode.Parameters()[i];
+                parameterNode->Accept(*this);
+                if (Error()) return;
+            }
+            if (memberFunctionNode.Body() != null)
+            {
+                memberFunctionNode.Body()->Accept(*this);
+                if (Error()) return;
+            }
+            result = symbolTable->EndMemberFunction(!leaveFunction, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(ConversionFunctionNode& conversionFunctionNode)
+        {
+            auto result = symbolTable->BeginConversionFunction(context, conversionFunctionNode, functionIndex++);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            if (conversionFunctionNode.WhereConstraint() != null)
+            {
+                conversionFunctionNode.WhereConstraint()->Accept(*this);
+                if (Error()) return;
+            }
+            if (conversionFunctionNode.ReturnTypeExpr() != null)
+            {
+                conversionFunctionNode.ReturnTypeExpr()->Accept(*this);
+                if (Error()) return;
+            }
+            if (conversionFunctionNode.Body() != null)
+            {
+                conversionFunctionNode.Body()->Accept(*this);
+                if (Error()) return;
+            }
+            result = symbolTable->EndConversionFunction(!leaveFunction, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(MemberVariableNode& memberVariableNode)
+        {
+            auto result = symbolTable->AddMemberVariable(memberVariableNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            memberVariableNode.TypeExpr()->Accept(*this);
+        }
+        public override void Visit(DelegateNode& delegateNode)
+        {
+            auto result = symbolTable->BeginDelegate(delegateNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            delegateNode.ReturnTypeExpr()->Accept(*this);
+            int n = cast<int>(delegateNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = delegateNode.Parameters()[i];
+                parameterNode->Accept(*this);
+                if (Error()) return;
+            }
+            symbolTable->EndDelegate();
+        }
+        public override void Visit(ClassDelegateNode& classDelegateNode)
+        {
+            auto result = symbolTable->BeginClassDelegate(classDelegateNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            classDelegateNode.ReturnTypeExpr()->Accept(*this);
+            int n = cast<int>(classDelegateNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = classDelegateNode.Parameters()[i];
+                parameterNode->Accept(*this);
+                if (Error()) return;
+            }
+            symbolTable->EndClassDelegate();
+        }
+        public override void Visit(ConceptNode& conceptNode)
+        {
+            symbolTable->BeginConcept(conceptNode, true);
+            int n = cast<int>(conceptNode.TypeParameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                IdentifierNode* identifierNode = conceptNode.TypeParameters()[i];
+                auto result = symbolTable->AddTemplateParameter(identifierNode, context);
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+                if (Error()) return;
+            }
+            int na = cast<int>(conceptNode.Axioms().Count());
+            for (int i = 0; i < na; ++i)
+            {
+                conceptNode.Axioms()[i]->Accept(*this);
+                if (Error()) return;
+            }
+            auto result = symbolTable->EndConcept(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(AxiomNode& axiomNode)
+        {
+            auto result = symbolTable->BeginAxiom(axiomNode);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            result = symbolTable->EndAxiom(context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(CompoundStatementNode& compoundStatementNode)
+        {
+            auto result = symbolTable->BeginDeclarationBlock(compoundStatementNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            int n = cast<int>(compoundStatementNode.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statement = compoundStatementNode.Statements()[i];
+                statement->Accept(*this);
+                if (Error()) return;
+            }
+            symbolTable->EndDeclarationBlock();
+        }
+        public override void Visit(IfStatementNode& ifStatementNode)
+        {
+            ifStatementNode.ThenS()->Accept(*this);
+            if (ifStatementNode.ElseS() != null)
+            {
+                ifStatementNode.ElseS()->Accept(*this);
+            }
+        }
+        public override void Visit(WhileStatementNode& whileStatementNode)
+        {
+            whileStatementNode.Statement()->Accept(*this);
+        }
+        public override void Visit(DoStatementNode& doStatementNode)
+        {
+            doStatementNode.Statement()->Accept(*this);
+        }
+        public override void Visit(ForStatementNode& forStatementNode)
+        {
+            auto result = symbolTable->BeginDeclarationBlock(forStatementNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            forStatementNode.InitS()->Accept(*this);
+            forStatementNode.LoopS()->Accept(*this);
+            forStatementNode.ActionS()->Accept(*this);
+            symbolTable->EndDeclarationBlock();
+        }
+        public override void Visit(ConstructionStatementNode& constructionStatementNode)
+        {
+            auto result = symbolTable->AddLocalVariable(constructionStatementNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(SwitchStatementNode& switchStatementNode)
+        {
+            int n = cast<int>(switchStatementNode.Cases().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                CaseStatementNode* caseStatementNode = switchStatementNode.Cases()[i];
+                caseStatementNode->Accept(*this);
+                if (Error()) return;
+            }
+            if (switchStatementNode.Default() != null)
+            {
+                switchStatementNode.Default()->Accept(*this);
+            }
+        }
+        public override void Visit(CaseStatementNode& caseStatementNode)
+        {
+            int n = cast<int>(caseStatementNode.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statementNode = caseStatementNode.Statements()[i];
+                statementNode->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(DefaultStatementNode& defaultStatementNode)
+        {
+            int n = cast<int>(defaultStatementNode.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statementNode = defaultStatementNode.Statements()[i];
+                statementNode->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(ConditionalCompilationPartNode& conditionalCompilationPartNode)
+        {
+            conditionalCompilationPartNode.Expr()->Accept(*this);
+        }
+        public override void Visit(ConditionalCompilationDisjunctionNode& conditionalCompilationDisjunctionNode)
+        {
+            conditionalCompilationDisjunctionNode.Left()->Accept(*this);
+            bool left = conditionalCompilationStack.Pop();
+            conditionalCompilationDisjunctionNode.Right()->Accept(*this);
+            bool right = conditionalCompilationStack.Pop();
+            conditionalCompilationStack.Push(left || right);
+        }
+        public override void Visit(ConditionalCompilationConjunctionNode& conditionalCompilationConjunctionNode)
+        {
+            conditionalCompilationConjunctionNode.Left()->Accept(*this);
+            bool left = conditionalCompilationStack.Pop();
+            conditionalCompilationConjunctionNode.Right()->Accept(*this);
+            bool right = conditionalCompilationStack.Pop();
+            conditionalCompilationStack.Push(left && right);
+        }
+        public override void Visit(ConditionalCompilationNotNode& conditionalCompilationNotNode)
+        {
+            conditionalCompilationNotNode.Expr()->Accept(*this);
+            bool operand = conditionalCompilationStack.Pop();
+            conditionalCompilationStack.Push(!operand);
+        }
+        public override void Visit(ConditionalCompilationPrimaryNode& conditionalCompilationPrimaryNode)
+        {
+            bool defined = symbolTable->GetModule()->IsSymbolDefined(conditionalCompilationPrimaryNode.Symbol());
+            conditionalCompilationStack.Push(defined);
+        }
+        public override void Visit(ConditionalCompilationStatementNode& conditionalCompilationStatementNode)
+        {
+            conditionalCompilationStatementNode.IfPart()->Accept(*this);
+            bool defined = conditionalCompilationStack.Pop();
+            if (defined)
+            {
+                int n = cast<int>(conditionalCompilationStatementNode.IfPart()->Statements().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    StatementNode* statement = conditionalCompilationStatementNode.IfPart()->Statements()[i];
+                    statement->Accept(*this);
+                    if (Error()) return;
+                }
+            }
+            else
+            {
+                bool executed = false;
+                int ne = cast<int>(conditionalCompilationStatementNode.ElifParts().Count());
+                for (int i = 0; i < ne; ++i)
+                {
+                    ConditionalCompilationPartNode* elifPart = conditionalCompilationStatementNode.ElifParts()[i];
+                    elifPart->Accept(*this);
+                    bool defined = conditionalCompilationStack.Pop();
+                    if (defined)
+                    {
+                        int n = cast<int>(elifPart->Statements().Count());
+                        for (int i = 0; i < n; ++i)
+                        {
+                            StatementNode* statement = elifPart->Statements()[i];
+                            statement->Accept(*this);
+                            if (Error()) return;
+                        }
+                        executed = true;
+                        break;
+                    }
+                }
+                if (!executed)
+                {
+                    ConditionalCompilationPartNode* elsePart = conditionalCompilationStatementNode.ElsePart();
+                    if (elsePart != null)
+                    {
+                        int n = elsePart->Statements().Count();
+                        for (int i = 0; i < n; ++i)
+                        {
+                            StatementNode* statement = elsePart->Statements()[i];
+                            statement->Accept(*this);
+                            if (Error()) return;
+                        }
+                    }
+                }
+            }
+        }
+        public override void Visit(EnumTypeNode& enumTypeNode)
+        {
+            auto result = symbolTable->BeginEnumType(enumTypeNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+            int n = cast<int>(enumTypeNode.Constants().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                enumTypeNode.Constants()[i]->Accept(*this);
+                if (Error()) return;
+            }
+            symbolTable->EndEnumType();
+        }
+        public override void Visit(EnumConstantNode& enumConstantNode)
+        {
+            auto result = symbolTable->AddEnumConstant(enumConstantNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(ConstantNode& constantNode)
+        {
+            auto result = symbolTable->AddConstant(constantNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(TypedefNode& typedefNode)
+        {
+            auto result = symbolTable->AddAliasType(typedefNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
+            }
+        }
+        public override void Visit(ParameterNode& parameterNode)
+        {
+            switch (parameterNode.Parent()->GetNodeType())
+            {
+                case NodeType.functionNode:
+                case NodeType.constructorNode:
+                case NodeType.memberFunctionNode:
+                case NodeType.delegateNode:
+                case NodeType.classDelegateNode:
+                {
+                    auto result = symbolTable->AddParameter(parameterNode, context);
+                    if (result.Error())
+                    {
+                        errorId = result.GetErrorId();
+                        return;
+                    }
+                    break;
+                }
+            }
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private SymbolsContext& context;
+        private SymbolTable* symbolTable;
+        private ClassNode* classInstanceNode;
+        private ClassTemplateSpecializationSymbol* classTemplateSpecialization;
+        private int functionIndex;
+        private bool leaveFunction;
+        private Stack<bool> conditionalCompilationStack;
+        private int errorId;
+    }
+
+    [nodiscard]
+    public Result<bool> CreateSymbols(Node* node, SymbolTable* symbolTable, SymbolsContext& context,
+        ClassNode* classNode, ClassTemplateSpecializationSymbol* classTemplateSpecialization, bool leaveFunction)
+    {
+        SymbolCreator creator(context, symbolTable, classNode, classTemplateSpecialization, leaveFunction);
+        node->Accept(creator);
+        if (creator.Error())
+        {
+            return Result<bool>(ErrorId(creator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> CreateSymbols(Node* node, SymbolTable* symbolTable, SymbolsContext& context)
+    {
+        return CreateSymbols(node, symbolTable, context, null, null, false);
+    }
+}
+

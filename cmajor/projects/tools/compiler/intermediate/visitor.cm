@@ -1,0 +1,220 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace intermediate
+{
+    public class Visitor
+    {
+        public Visitor()
+        {
+        }
+        public default ~Visitor();
+        public virtual void Visit(StructureType& structureType)
+        {
+        }
+        public virtual void Visit(ArrayType& arrayType)
+        {
+        }
+        public virtual void Visit(FunctionType& functionType)
+        {
+        }
+        public virtual void Visit(BoolValue& boolValue)
+        {
+        }
+        public virtual void Visit(SByteValue& sbyteValue)
+        {
+        }
+        public virtual void Visit(ByteValue& byteValue)
+        {
+        }
+        public virtual void Visit(ShortValue& shortValue)
+        {
+        }
+        public virtual void Visit(UShortValue& ushortValue)
+        {
+        }
+        public virtual void Visit(IntValue& intValue)
+        {
+        }
+        public virtual void Visit(UIntValue& uintValue)
+        {
+        }
+        public virtual void Visit(LongValue& longValue)
+        {
+        }
+        public virtual void Visit(ULongValue& ulongValue)
+        {
+        }
+        public virtual void Visit(FloatValue& floatValue)
+        {
+        }
+        public virtual void Visit(DoubleValue& doubleValue)
+        {
+        }
+        public virtual void Visit(NullValue& nullValue)
+        {
+        }
+        public virtual void Visit(AddressValue& addressValue)
+        {
+        }
+        public virtual void Visit(ArrayValue& arrayValue)
+        {
+        }
+        public virtual void Visit(StructureValue& structureValue)
+        {
+        }
+        public virtual void Visit(StringValue& stringValue)
+        {
+        }
+        public virtual void Visit(StringArrayValue& stringArrayValue)
+        {
+        }
+        public virtual void Visit(ConversionValue& conversionValue)
+        {
+        }
+        public virtual void Visit(SymbolValue& symbolValue)
+        {
+        }
+        public virtual void Visit(GlobalVariable& globalVariable)
+        {
+        }
+        public virtual void Visit(StoreInstruction& inst)
+        {
+        }
+        public virtual void Visit(ArgInstruction& inst)
+        {
+        }
+        public virtual void Visit(JmpInstruction& inst)
+        {
+        }
+        public virtual void Visit(BranchInstruction& inst)
+        {
+        }
+        public virtual void Visit(ProcedureCallInstruction& inst)
+        {
+        }
+        public virtual void Visit(RetInstruction& inst)
+        {
+        }
+        public virtual void Visit(SwitchInstruction& inst)
+        {
+        }
+        public virtual void Visit(NotInstruction& inst)
+        {
+        }
+        public virtual void Visit(NegInstruction& inst)
+        {
+        }
+        public virtual void Visit(SignExtendInstruction& inst)
+        {
+        }
+        public virtual void Visit(ZeroExtendInstruction& inst)
+        {
+        }
+        public virtual void Visit(FloatingPointExtendInstruction& inst)
+        {
+        }
+        public virtual void Visit(TruncateInstruction& inst)
+        {
+        }
+        public virtual void Visit(BitcastInstruction& inst)
+        {
+        }
+        public virtual void Visit(IntToFloatInstruction& inst)
+        {
+        }
+        public virtual void Visit(FloatToIntInstruction& inst)
+        {
+        }
+        public virtual void Visit(IntToPtrInstruction& inst)
+        {
+        }
+        public virtual void Visit(PtrToIntInstruction& inst)
+        {
+        }
+        public virtual void Visit(AddInstruction& inst)
+        {
+        }
+        public virtual void Visit(SubInstruction& inst)
+        {
+        }
+        public virtual void Visit(MulInstruction& inst)
+        {
+        }
+        public virtual void Visit(DivInstruction& inst)
+        {
+        }
+        public virtual void Visit(ModInstruction& inst)
+        {
+        }
+        public virtual void Visit(AndInstruction& inst)
+        {
+        }
+        public virtual void Visit(OrInstruction& inst)
+        {
+        }
+        public virtual void Visit(XorInstruction& inst)
+        {
+        }
+        public virtual void Visit(ShlInstruction& inst)
+        {
+        }
+        public virtual void Visit(ShrInstruction& inst)
+        {
+        }
+        public virtual void Visit(EqualInstruction& inst)
+        {
+        }
+        public virtual void Visit(LessInstruction& inst)
+        {
+        }
+        public virtual void Visit(ParamInstruction& inst)
+        {
+        }
+        public virtual void Visit(LocalInstruction& inst)
+        {
+        }
+        public virtual void Visit(LoadInstruction& inst)
+        {
+        }
+        public virtual void Visit(ElemAddrInstruction& inst)
+        {
+        }
+        public virtual void Visit(PtrOffsetInstruction& inst)
+        {
+        }
+        public virtual void Visit(PtrDiffInstruction& inst)
+        {
+        }
+        public virtual void Visit(FunctionCallInstruction& inst)
+        {
+        }
+        public virtual void Visit(NoOperationInstruction& inst)
+        {
+        }
+        public virtual void Visit(BasicBlock& basicBlock)
+        {
+        }
+        public virtual void Visit(Function& function)
+        {
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private int errorId;
+    }
+}
+

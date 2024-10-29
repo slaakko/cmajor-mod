@@ -1,0 +1,19 @@
+public delegate int BinOp(int, int);
+
+public int Plus(int x, int y)
+{
+    return x + y;
+}
+
+public int Mul(int x, int y)
+{
+    return x * y;
+}
+
+public void main()
+{
+    BinOp op = Plus;
+    int r1 = op(2, 3);
+    op = Mul;
+    int r2 = op(2, 3);
+}

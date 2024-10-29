@@ -1,0 +1,280 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class InlineFunctionRepository
+    {
+        public InlineFunctionRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        {
+        }
+        public Result<FunctionSymbol*> Instantiate(FunctionSymbol* inlineFunction, ContainerScope* containerScope, Node* node)
+        {
+            Result<FunctionSymbol*> result = DoInstantiate(inlineFunction, containerScope, node);
+            if (result.Error())
+            {
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+                Result<string> fullNameResult = ToUtf8(inlineFunction->FullName());
+                if (fullNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(fullNameResult.GetErrorId()));
+                string fullName = Rvalue(fullNameResult.Value());
+                int errorId = MakeError("Could not instantiate inline function '" + fullName + "'. Reason:\n" + reasonMessage);
+                return Result<FunctionSymbol*>(ErrorId(errorId));
+            }
+            else
+            {
+                return result;
+            }
+        }
+        public Result<FunctionSymbol*> DoInstantiate(FunctionSymbol* inlineFunction, ContainerScope* containerScope, Node* node)
+        {
+            if (inlineFunction->SourceFile() == boundCompileUnit->SourceFile())
+            {
+                return GetCopy(inlineFunction);
+            }
+            while (inlineFunction->Master() != null)
+            {
+                inlineFunction = inlineFunction->Master();
+            }
+            FunctionSymbol* master = inlineFunction;
+            auto it = inlineFunctionMap.Find(inlineFunction);
+            if (it != inlineFunctionMap.End())
+            {
+                return GetCopy(it->second);
+            }
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            Node* inlineFunctionNode = symbolTable->GetNode(inlineFunction);
+            if (inlineFunctionNode == null)
+            {
+                inlineFunctionNode = inlineFunction->GetFunctionNode();
+                if (inlineFunctionNode == null)
+                {
+                    int errorId = MakeError("inline function node not found", node->GetFullSpan());
+                    return Result<FunctionSymbol*>(ErrorId(errorId));
+                }
+                symbolTable->MapNode(inlineFunctionNode, inlineFunction);
+            }
+            #assert(inlineFunctionNode->IsFunctionNode());
+            FunctionNode* functionNode = cast<FunctionNode*>(inlineFunctionNode);
+            UniquePtr<NamespaceNode> globalNs(new NamespaceNode(functionNode->GetSpan(), functionNode->FileIndex(),
+                new IdentifierNode(functionNode->GetSpan(), functionNode->FileIndex(), ustring())));
+            globalNs->SetModuleId(functionNode->ModuleId());
+            NamespaceNode* currentNs = globalNs.Get();
+            CloneContext cloneContext;
+            cloneContext.SetInstantiateFunctionNode();
+            Result<NamespaceSymbol*> nsResult = inlineFunction->Ns();
+            if (nsResult.Error()) return Result<FunctionSymbol*>(nsResult.GetErrorId());
+            NamespaceSymbol* ns = nsResult.Value();
+            bool fileScopeAdded = false;
+            int n = cast<int>(inlineFunction->UsingNodes().Count());
+            if (!ns->IsGlobalNamespace() || n > 0)
+            {
+                FileScope* primaryFileScope = new FileScope();
+                if (!ns->IsGlobalNamespace())
+                {
+                    primaryFileScope->AddContainerScope(ns->GetContainerScope());
+                }
+                for (int i = 0; i < n; ++i)
+                {
+                    Node* usingNode = inlineFunction->UsingNodes()[i];
+                    if (usingNode->IsNamespaceImportNode())
+                    {
+                        Result<bool> installResult = primaryFileScope->InstallNamespaceImport(containerScope, cast<NamespaceImportNode*>(usingNode));
+                        if (installResult.Error()) return Result<FunctionSymbol*>(ErrorId(installResult.GetErrorId()));
+                    }
+                    else if (usingNode->IsAliasNode())
+                    {
+                        AliasNode* aliasNode = cast<AliasNode*>(usingNode);
+                        Result<TypeSymbol*> typeResult = ResolveType(aliasNode, boundCompileUnit, containerScope);
+                        if (typeResult.Error()) return Result<FunctionSymbol*>(ErrorId(typeResult.GetErrorId()));
+                        TypeSymbol* type = typeResult.Value();
+                        primaryFileScope->InstallAlias(aliasNode, type);
+                    }
+                }
+                boundCompileUnit->AddFileScope(primaryFileScope);
+                fileScopeAdded = true;
+                ustring fullNameName = ns->FullName();
+                List<ustring> nsComponents = fullNameName.Split('.');
+                for (const ustring& nsComponent : nsComponents)
+                {
+                    NamespaceNode* nsNode = new NamespaceNode(functionNode->GetSpan(), functionNode->FileIndex(),
+                        new IdentifierNode(functionNode->GetSpan(), functionNode->FileIndex(), nsComponent));
+                    nsNode->SetModuleId(functionNode->ModuleId());
+                    currentNs->AddMember(nsNode);
+                    currentNs = nsNode;
+                }
+            }
+            FunctionNode* functionInstanceNode = cast<FunctionNode*>(functionNode->Clone(cloneContext));
+            if (inlineFunction->IsDefault())
+            {
+                functionInstanceNode->SetBody(new CompoundStatementNode(node->GetSpan(), node->FileIndex()));
+                inlineFunction->SetHasArtificialBody();
+            }
+            currentNs->AddMember(functionInstanceNode);
+            LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
+            symbolTable->SetCurrentSourceFile(boundCompileUnit->SourceFile());
+            InstantiationGuard instantiationGuard(symbolTable, inlineFunction->FileIndex(), inlineFunction->ModuleId());
+            Symbol* parent = inlineFunction->Parent();
+            if (parent->IsClassTypeSymbol() && !parent->IsClassTemplateSpecializationSymbol())
+            {
+                Result<bool> createResult = CreateSymbols(globalNs.Get(), symbolTable, boundCompileUnit->Context(), null, null, true);
+                if (createResult.Error()) return Result<FunctionSymbol*>(ErrorId(createResult.GetErrorId()));
+                UniquePtr<FunctionSymbol> functionSymbol(symbolTable->CreatedFunctionSymbol());
+                if (inlineFunction->IsDefault())
+                {
+                    functionSymbol->SetHasArtificialBody();
+                }
+                functionSymbol->SetParent(inlineFunction->Parent());
+                if (inlineFunction->IsSystemDefault())
+                {
+                    functionSymbol->SetSystemDefault();
+                }
+                TypeBinder typeBinder(boundCompileUnit);
+                typeBinder.SetContainerScope(functionSymbol->GetContainerScope());
+                typeBinder.SetCurrentFunctionSymbol(functionSymbol.Get());
+                functionInstanceNode->Accept(typeBinder);
+                StatementBinder statementBinder(boundCompileUnit);
+                UniquePtr<BoundFunction> boundFunction(new BoundFunction(functionInstanceNode->GetSpan(), functionSymbol.Get(),
+                    functionInstanceNode->ModuleId(), functionInstanceNode->FileIndex()));
+                boundFunction->SetNode(functionInstanceNode);
+                statementBinder.SetCurrentFunction(boundFunction.Get());
+                statementBinder.SetContainerScope(functionSymbol->GetContainerScope());
+                functionInstanceNode->Body()->Accept(statementBinder);
+                BoundStatement* boundStatement = statementBinder.ReleaseStatement();
+                #assert(boundStatement != null && boundStatement->IsBoundCompoundStatement());
+                BoundCompoundStatement* compoundStatement = cast<BoundCompoundStatement*>(boundStatement);
+                boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(compoundStatement));
+                boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundFunction.Release()));
+                if (fileScopeAdded)
+                {
+                    boundCompileUnit->RemoveLastFileScope();
+                }
+                FunctionSymbol* result = functionSymbol.Get();
+                boundCompileUnit->GetSymbolTable()->AddFunctionSymbol(Rvalue(functionSymbol));
+                boundCompileUnit->AddGlobalNs(Rvalue(globalNs));
+                Result<string> sourceFileIdResult = boundCompileUnit->SourceFile()->Id();
+                if (sourceFileIdResult.Error()) return Result<FunctionSymbol*>(ErrorId(sourceFileIdResult.GetErrorId()));
+                string sourceFileId = Rvalue(sourceFileIdResult.Value());
+                result->SetSourceFileId(sourceFileId);
+                result->SetFlag(FunctionSymbolFlags.dontReuse);
+                Result<bool> mangledNameResult = result->ComputeMangledName();
+                if (mangledNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangledNameResult.GetErrorId()));
+                master->SetInstantiatedName(result->MangledName());
+                boundCompileUnit->SetCanReuse(result);
+                inlineFunctionMap[inlineFunction] = result;
+                result->SetFunctionId(inlineFunction->FunctionId());
+                result->SetMaster(inlineFunction);
+                result->SetCopy();
+                copyMap[inlineFunction] = result;
+                return Result<FunctionSymbol*>(result);
+            }
+            else
+            {
+                ClassTypeSymbol* classTypeSymbol = cast<ClassTypeSymbol*>(inlineFunction->Parent());
+                symbolTable->SetCurrentClass(classTypeSymbol);
+                Result<bool> createResult = CreateSymbols(globalNs.Get(), symbolTable, boundCompileUnit->Context(), null, null, true);
+                UniquePtr<FunctionSymbol> functionSymbol(symbolTable->CreatedFunctionSymbol());
+                functionSymbol->SetVmtIndex(inlineFunction->VmtIndex());
+                functionSymbol->SetImtIndex(inlineFunction->ImtIndex());
+                if (inlineFunction->IsDefault())
+                {
+                    functionSymbol->SetHasArtificialBody();
+                }
+                functionSymbol->SetParent(classTypeSymbol);
+                if (inlineFunction->IsSystemDefault())
+                {
+                    functionSymbol->SetSystemDefault();
+                }
+                TypeBinder typeBinder(boundCompileUnit);
+                typeBinder.SetContainerScope(functionSymbol->GetContainerScope());
+                functionInstanceNode->Accept(typeBinder);
+                if (typeBinder.Error()) return Result<FunctionSymbol*>(ErrorId(typeBinder.GetErrorId()));
+                StatementBinder statementBinder(boundCompileUnit);
+                UniquePtr<BoundClass> boundClass(new BoundClass(functionInstanceNode->GetSpan(), classTypeSymbol,
+                    functionInstanceNode->ModuleId(), functionInstanceNode->FileIndex()));
+                boundClass->SetInlineFunctionContainer();
+                statementBinder.SetCurrentClass(boundClass.Get());
+                UniquePtr<BoundFunction> boundFunction(new BoundFunction(functionInstanceNode->GetSpan(), functionSymbol.Get(),
+                    functionInstanceNode->ModuleId(), functionInstanceNode->FileIndex()));
+                boundFunction->SetNode(functionInstanceNode);
+                statementBinder.SetCurrentFunction(boundFunction.Get());
+                statementBinder.SetContainerScope(functionSymbol->GetContainerScope());
+                if (functionSymbol->IsConstructorSymbol())
+                {
+                    ConstructorSymbol* constructorSymbol = cast<ConstructorSymbol*>(functionSymbol.Get());
+                    Node* node = symbolTable->GetNode(functionSymbol.Get());
+                    #assert(node != null && node->IsConstructorNode());
+                    ConstructorNode* constructorNode = cast<ConstructorNode*>(node);
+                    statementBinder.SetCurrentConstructor(constructorSymbol, constructorNode);
+                }
+                else if (functionSymbol->IsDestructorSymbol())
+                {
+                    DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(functionSymbol.Get());
+                    Node* node = symbolTable->GetNode(functionSymbol.Get());
+                    #assert(node != null && node->IsDestructorNode());
+                    DestructorNode* destructorNode = cast<DestructorNode*>(node);
+                    statementBinder.SetCurrentDestructor(destructorSymbol, destructorNode);
+                }
+                else if (functionSymbol->IsMemberFunctionSymbol())
+                {
+                    MemberFunctionSymbol* memberFunctionSymbol = cast<MemberFunctionSymbol*>(functionSymbol.Get());
+                    Node* node = symbolTable->GetNode(functionSymbol.Get());
+                    #assert(node != null && node->IsMemberFunctionNode());
+                    MemberFunctionNode* memberFunctionNode = cast<MemberFunctionNode*>(node);
+                    statementBinder.SetCurrentMemberFunction(memberFunctionSymbol, memberFunctionNode);
+                }
+                functionInstanceNode->Body()->Accept(statementBinder);
+                if (statementBinder.Error()) return Result<FunctionSymbol*>(ErrorId(statementBinder.GetErrorId()));
+                BoundStatement* boundStatement = statementBinder.ReleaseStatement();
+                #assert(boundStatement != null && boundStatement->IsBoundCompoundStatement());
+                BoundCompoundStatement* compoundStatement = cast<BoundCompoundStatement*>(boundStatement);
+                boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(compoundStatement));
+                boundClass->AddMember(UniquePtr<BoundNode>(boundFunction.Release()));
+                boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundClass.Release()));
+                FunctionSymbol* result = functionSymbol.Get();
+                boundCompileUnit->AddGlobalNs(Rvalue(globalNs));
+                boundCompileUnit->GetSymbolTable()->AddFunctionSymbol(Rvalue(functionSymbol));
+                if (fileScopeAdded)
+                {
+                    boundCompileUnit->RemoveLastFileScope();
+                }
+                Result<string> sourceFileIdResult = boundCompileUnit->SourceFile()->Id();
+                if (sourceFileIdResult.Error()) return Result<FunctionSymbol*>(ErrorId(sourceFileIdResult.GetErrorId()));
+                string sourceFileId = Rvalue(sourceFileIdResult.Value());
+                result->SetSourceFileId(sourceFileId);
+                result->SetFlag(FunctionSymbolFlags.dontReuse);
+                Result<bool> mangledNameResult = result->ComputeMangledName();
+                if (mangledNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangledNameResult.GetErrorId()));
+                master->SetInstantiatedName(result->MangledName());
+                boundCompileUnit->SetCanReuse(result);
+                inlineFunctionMap[inlineFunction] = result;
+                result->SetFunctionId(inlineFunction->FunctionId());
+                result->SetMaster(inlineFunction);
+                result->SetCopy();
+                copyMap[inlineFunction] = result;
+                return Result<FunctionSymbol*>(result);
+            }
+        }
+        private FunctionSymbol* GetCopy(FunctionSymbol* master) const
+        {
+            auto it = copyMap.Find(master);
+            if (it != copyMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return master;
+            }
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private Map<FunctionSymbol*, FunctionSymbol*> inlineFunctionMap;
+        private Map<FunctionSymbol*, FunctionSymbol*> copyMap;
+    }
+}
+

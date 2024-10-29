@@ -1349,12 +1349,14 @@ void SymbolTable::AddFunctionSymbolToGlobalScope(FunctionSymbol* functionSymbol)
 
 void SymbolTable::MapNode(cmajor::ast::Node* node, Symbol* symbol)
 {
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     nodeSymbolMap[node] = symbol;
     symbolNodeMap[symbol] = node;
 }
 
 Symbol* SymbolTable::GetSymbolNoThrow(cmajor::ast::Node* node) const
 {
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     auto it = nodeSymbolMap.find(node);
     if (it != nodeSymbolMap.cend())
     {
@@ -1381,6 +1383,7 @@ Symbol* SymbolTable::GetSymbol(cmajor::ast::Node* node) const
 
 cmajor::ast::Node* SymbolTable::GetNodeNoThrow(Symbol* symbol) const
 {
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     auto it = symbolNodeMap.find(symbol);
     if (it != symbolNodeMap.cend())
     {
@@ -1618,6 +1621,7 @@ TypeSymbol* SymbolTable::MakeDerivedType(TypeSymbol* baseType, const TypeDerivat
     {
         throw Exception("cannot have reference to void type", soul::ast::FullSpan());
     }
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     std::vector<DerivedTypeSymbol*>& mappedDerivedTypes = derivedTypeMap[baseType->TypeId()];
     int n = mappedDerivedTypes.size();
     for (int i = 0; i < n; ++i)
@@ -1671,6 +1675,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::MakeClassTemplateSpecialization(
         throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, classTemplate->GetFullSpan());
     }
 #endif
+    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     ClassTemplateSpecializationKey key(classTemplate, templateArgumentTypes);
     auto it = classTemplateSpecializationMap.find(key);
     if (it != classTemplateSpecializationMap.cend())
@@ -1701,6 +1706,7 @@ ClassTemplateSpecializationSymbol* SymbolTable::CopyClassTemplateSpecialization(
         throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, source->GetFullSpan());
     }
 #endif
+    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     ClassTypeSymbol* classTemplate = source->GetClassTemplate();
     if (classTemplate == nullptr)
     {
@@ -1813,6 +1819,7 @@ void SymbolTable::AddConversion(FunctionSymbol* conversion, Module* module)
         throw ModuleImmutableException(GetRootModuleForCurrentThread(), module, conversion->GetSpan(), soul::ast::Span());
     }
 #endif
+    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     conversionTable.AddConversion(conversion);
 }
 
@@ -1823,6 +1830,7 @@ void SymbolTable::AddConversion(FunctionSymbol* conversion)
 
 FunctionSymbol* SymbolTable::GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType) const
 {
+    std::lock_guard<std::recursive_mutex> lock(module->Lock());
     return conversionTable.GetConversion(sourceType, targetType);
 }
 
@@ -2040,6 +2048,7 @@ const util::uuid& SymbolTable::GetPositionId(int index) const
 
 void SymbolTable::AddFunctionSymbol(std::unique_ptr<FunctionSymbol>&& functionSymbol)
 {
+    std::lock_guard<std::recursive_mutex> lock(GetModule()->Lock());
     functionSymbols.push_back(std::move(functionSymbol));
 }
 

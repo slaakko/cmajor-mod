@@ -1,0 +1,169 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace assembly
+{
+    public class FunctionDeclaration : Declaration
+    {
+        public FunctionDeclaration(const string& name_) : base(name_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.WriteLine("EXTRN " + Name() + ":PROC");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public enum FunctionPart
+    {
+        prologue, body, epilogue
+    }
+
+    public class Function
+    {
+        public Function(const string& name_) : name(name_), activePart(FunctionPart.body)
+        {
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public inline int Index() const
+        {
+            return cast<int>(body.Count());
+        }
+        public inline void SetActivePart(FunctionPart activePart_)
+        {
+            activePart = activePart_;
+        }
+        public void AddInstruction(Instruction* inst)
+        {
+            switch (activePart)
+            {
+                case FunctionPart.prologue:
+                {
+                    prologue.Add(UniquePtr<Instruction>(inst));
+                    break;
+                }
+                case FunctionPart.body:
+                {
+                    body.Add(UniquePtr<Instruction>(inst));
+                    break;
+                }
+                case FunctionPart.epilogue:
+                {
+                    epilogue.Add(UniquePtr<Instruction>(inst));
+                    break;
+                }
+            }
+        }
+        public void InsertInstruction(int index, Instruction* inst)
+        {
+            body.Insert(body.Begin() + index, UniquePtr<Instruction>(inst));
+        }
+        public void AddMacro(Macro* macro)
+        {
+            macros.Add(macro);
+            macroMap[macro->Name()] = macro;
+        }
+        public Result<Macro*> GetMacro(const string& name) const
+        {
+            auto it = macroMap.Find(name);
+            if (it != macroMap.End())
+            {
+                return Result<Macro*>(it->second);
+            }
+            else
+            {
+                int errorId = AllocateError("macro '" + name + "' not found");
+                return Result<Macro*>(ErrorId(errorId));
+            }
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            for (Macro* macro : macros)
+            {
+                Result<bool> result = formatter.WriteLine(macro->ToString());
+                if (result.Error()) return result;
+            }
+            if (!macros.IsEmpty())
+            {
+                Result<bool> result = formatter.WriteLine();
+                if (result.Error()) return result;
+            }
+            if (!comment.IsEmpty())
+            {
+                List<string> commentLines;
+                while (comment.Length() > maxAssemblyLineLength - 2)
+                {
+                    int splitPos = maxAssemblyLineLength - 2;
+                    for (int i = splitPos; i >= 0; --i)
+                    {
+                        if (!IsAlphanumeric(comment[i]))
+                        {
+                            splitPos = i;
+                            break;
+                        }
+                    }
+                    commentLines.Add(comment.Substring(0, splitPos));
+                    comment = comment.Substring(splitPos);
+                }
+                if (!comment.IsEmpty())
+                {
+                    commentLines.Add(comment);
+                }
+                for (const auto& commentLine : commentLines)
+                {
+                    Result<bool> result = formatter.WriteLine("; " + commentLine);
+                    if (result.Error()) return result;
+                }
+                Result<bool> result = formatter.WriteLine();
+                if (result.Error()) return result;
+            }
+            Result<bool> result = formatter.WriteLine(name + " PROC");
+            if (result.Error()) return result;
+            formatter.IncIndent();
+            for (const auto& instruction : prologue)
+            {
+                result = instruction->Write(formatter);
+                if (result.Error()) return result;
+            }
+            for (const auto& instruction : body)
+            {
+                result = instruction->Write(formatter);
+                if (result.Error()) return result;
+            }
+            for (const auto& instruction : epilogue)
+            {
+                result = instruction->Write(formatter);
+                if (result.Error()) return result;
+            }
+            formatter.DecIndent();
+            result = formatter.WriteLine(name + " ENDP");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public void SetComment(const string& comment_)
+        {
+            comment = comment_;
+        }
+        private string name;
+        private FunctionPart activePart;
+        private List<UniquePtr<Instruction>> prologue;
+        private List<UniquePtr<Instruction>> body;
+        private List<UniquePtr<Instruction>> epilogue;
+        private List<Macro*> macros;
+        private Map<string, Macro*> macroMap;
+        private string comment;
+    }
+}
+

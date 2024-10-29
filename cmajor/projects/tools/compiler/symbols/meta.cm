@@ -1,0 +1,943 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace symbols
+{
+    public abstract class IntrinsicFunction
+    {
+        public IntrinsicFunction(const System.Lex.Span& span_) : span(span_)
+        {
+        }
+        public inline const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public default virtual ~IntrinsicFunction();
+        public abstract int Arity() const;
+        public abstract ustring GroupName() const;
+        public abstract Result<TypeSymbol*> ReturnType(IntrinsicTypes& intrinsicTypes) const;
+        public abstract int NumberOfTypeParameters() const;
+        public abstract UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const;
+        public Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            if (arguments.Count() != Arity())
+            {
+                Result<string> intrinsicFullNameResult = ToUtf8(GroupName());
+                if (intrinsicFullNameResult.Error()) return Result<UniquePtr<Value>>(ErrorId(intrinsicFullNameResult.GetErrorId()));
+                string intrinsicFullName = Rvalue(intrinsicFullNameResult.Value());
+                int errorId = MakeError("wrong number of parameters for intrinsic '" + intrinsicFullName + "'", node->GetFullSpan());
+                return Result<UniquePtr<Value>>(ErrorId(errorId));
+            }
+            if (templateArguments.Count() != NumberOfTypeParameters())
+            {
+                Result<string> intrinsicFullNameResult = ToUtf8(GroupName());
+                if (intrinsicFullNameResult.Error()) return Result<UniquePtr<Value>>(ErrorId(intrinsicFullNameResult.GetErrorId()));
+                string intrinsicFullName = Rvalue(intrinsicFullNameResult.Value());
+                int errorId = MakeError("wrong number of template type arguments for intrinsic '" + intrinsicFullName + "'", node->GetFullSpan());
+                return Result<UniquePtr<Value>>(ErrorId(errorId));
+            }
+            return DoEvaluate(arguments, templateArguments, node);
+        }
+        private System.Lex.Span span;
+    }
+
+    public enum IntrinsicTypeId : byte
+    {
+        boolTypeId, intTypeId, longTypeId
+    }
+
+    public class IntrinsicTypes
+    {
+        public IntrinsicTypes(SymbolTable* symbolTable) : errorId(0)
+        {
+            Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                errorId = boolTypeResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            typeMap[IntrinsicTypeId.boolTypeId] = boolType;
+            Result<TypeSymbol*> intTypeResult = symbolTable->GetTypeByName(u"int");
+            if (intTypeResult.Error())
+            {
+                errorId = intTypeResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* intType = intTypeResult.Value();
+            typeMap[IntrinsicTypeId.intTypeId] = intType;
+            Result<TypeSymbol*> longTypeResult = symbolTable->GetTypeByName(u"long");
+            if (longTypeResult.Error())
+            {
+                errorId = longTypeResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* longType = longTypeResult.Value();
+            typeMap[IntrinsicTypeId.longTypeId] = longType;
+        }
+        public Result<TypeSymbol*> GetType(IntrinsicTypeId typeId) const
+        {
+            auto it = typeMap.Find(typeId);
+            if (it != typeMap.End())
+            {
+                return Result<TypeSymbol*>(it->second);
+            }
+            else
+            {
+                int errorId = AllocateError("intrinsic type for type id " + ToString(cast<byte>(typeId)) + " not found");
+                return Result<TypeSymbol*>(ErrorId(errorId));
+            }
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private Map<IntrinsicTypeId, TypeSymbol*> typeMap;
+        private int errorId;
+    }
+
+    public abstract class TypePredicate : IntrinsicFunction
+    {
+        public TypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override int Arity() const
+        {
+            return 0;
+        }
+        public override Result<TypeSymbol*> ReturnType(IntrinsicTypes& intrinsicTypes) const
+        {
+            return intrinsicTypes.GetType(IntrinsicTypeId.boolTypeId);
+        }
+        public override int NumberOfTypeParameters() const
+        {
+            return 1;
+        }
+    }
+
+    public class IsIntegralTypePredicate : TypePredicate
+    {
+        public IsIntegralTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsIntegralType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsIntegralType()));
+        }
+    }
+
+    public class IsSignedTypePredicate : TypePredicate
+    {
+        public IsSignedTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsSignedType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsSignedType()));
+        }
+    }
+
+    public class IsUnsignedTypePredicate : TypePredicate
+    {
+        public IsUnsignedTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsUnsignedType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsUnsignedType()));
+        }
+    }
+
+    public class IsFloatingPointTypePredicate : TypePredicate
+    {
+        public IsFloatingPointTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsFloatingPointType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsFloatingPointType()));
+        }
+    }
+
+    public class IsBasicTypePredicate : TypePredicate
+    {
+        public IsBasicTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsBasicType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsBasicTypeSymbol()));
+        }
+    }
+
+    public class IsBoolTypePredicate : TypePredicate
+    {
+        public IsBoolTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsBoolType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsBoolTypeSymbol()));
+        }
+    }
+
+    public class IsSByteTypePredicate : TypePredicate
+    {
+        public IsSByteTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsSByteType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsSByteTypeSymbol()));
+        }
+    }
+
+    public class IsByteTypePredicate : TypePredicate
+    {
+        public IsByteTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsByteType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsByteTypeSymbol()));
+        }
+    }
+
+    public class IsShortTypePredicate : TypePredicate
+    {
+        public IsShortTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsShortType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsShortTypeSymbol()));
+        }
+    }
+
+    public class IsUShortTypePredicate : TypePredicate
+    {
+        public IsUShortTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsUShortType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsUShortTypeSymbol()));
+        }
+    }
+
+    public class IsIntTypePredicate : TypePredicate
+    {
+        public IsIntTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsIntType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsIntTypeSymbol()));
+        }
+    }
+
+    public class IsUIntTypePredicate : TypePredicate
+    {
+        public IsUIntTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsUIntType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsUIntTypeSymbol()));
+        }
+    }
+
+    public class IsLongTypePredicate : TypePredicate
+    {
+        public IsLongTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsLongType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsLongTypeSymbol()));
+        }
+    }
+
+    public class IsULongTypePredicate : TypePredicate
+    {
+        public IsULongTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsULongType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsULongTypeSymbol()));
+        }
+    }
+
+    public class IsFloatTypePredicate : TypePredicate
+    {
+        public IsFloatTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsFloatType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsFloatTypeSymbol()));
+        }
+    }
+
+    public class IsDoubleTypePredicate : TypePredicate
+    {
+        public IsDoubleTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsDoubleType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsDoubleTypeSymbol()));
+        }
+    }
+
+    public class IsCharTypePredicate : TypePredicate
+    {
+        public IsCharTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsCharType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsCharTypeSymbol()));
+        }
+    }
+
+    public class IsWCharTypePredicate : TypePredicate
+    {
+        public IsWCharTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsWCharType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsWCharTypeSymbol()));
+        }
+    }
+
+    public class IsUCharTypePredicate : TypePredicate
+    {
+        public IsUCharTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsUCharType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsUCharTypeSymbol()));
+        }
+    }
+
+    public class IsVoidTypePredicate : TypePredicate
+    {
+        public IsVoidTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsVoidType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsVoidTypeSymbol()));
+        }
+    }
+
+    public class IsClassTypePredicate : TypePredicate
+    {
+        public IsClassTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsClassType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsClassTypeSymbol()));
+        }
+    }
+
+    public class IsPolymorphicTypePredicate : TypePredicate
+    {
+        public IsPolymorphicTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsPolymorphicType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsPolymorphicType()));
+        }
+    }
+
+    public class IsInterfaceTypePredicate : TypePredicate
+    {
+        public IsInterfaceTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsInterfaceType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsInterfaceTypeSymbol()));
+        }
+    }
+
+    public class IsDelegateTypePredicate : TypePredicate
+    {
+        public IsDelegateTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsDelegateType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsDelegateTypeSymbol()));
+        }
+    }
+
+    public class IsClassDelegateTypePredicate : TypePredicate
+    {
+        public IsClassDelegateTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsClassDelegateType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsClassDelegateTypeSymbol()));
+        }
+    }
+
+    public class IsEnumeratedTypePredicate : TypePredicate
+    {
+        public IsEnumeratedTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsEnumeratedType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsEnumTypeSymbol()));
+        }
+    }
+
+    public class IsConstTypePredicate : TypePredicate
+    {
+        public IsConstTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsConstType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsConstType()));
+        }
+    }
+
+    public class IsReferenceTypePredicate : TypePredicate
+    {
+        public IsReferenceTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsReferenceType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsReferenceType()));
+        }
+    }
+
+    public class IsLvalueReferenceTypePredicate : TypePredicate
+    {
+        public IsLvalueReferenceTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsLvalueReferenceType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsLvalueReferenceType()));
+        }
+    }
+
+    public class IsRvalueReferenceTypePredicate : TypePredicate
+    {
+        public IsRvalueReferenceTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsRvalueReferenceType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsRvalueReferenceType()));
+        }
+    }
+
+    public class IsArrayTypePredicate : TypePredicate
+    {
+        public IsArrayTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsArrayType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsArrayTypeSymbol()));
+        }
+    }
+
+    public class IsPointerTypePredicate : TypePredicate
+    {
+        public IsPointerTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsPointerType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsPointerType()));
+        }
+    }
+
+    public class IsGenericPtrTypePredicate : TypePredicate
+    {
+        public IsGenericPtrTypePredicate(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override ustring GroupName() const
+        {
+            return u"IsGenericPtrType";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new BoolValue(node->GetSpan(), type->IsVoidPtrType()));
+        }
+    }
+
+    public class PointerCountIntrinsicFunction : IntrinsicFunction
+    {
+        public PointerCountIntrinsicFunction(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override int Arity() const
+        {
+            return 0;
+        }
+        public override Result<TypeSymbol*> ReturnType(IntrinsicTypes& intrinsicTypes) const
+        {
+            return intrinsicTypes.GetType(IntrinsicTypeId.intTypeId);
+        }
+        public override int NumberOfTypeParameters() const
+        {
+            return 1;
+        }
+        public override ustring GroupName() const
+        {
+            return u"PointerCount";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            return UniquePtr<Value>(new IntValue(node->GetSpan(), type->PointerCount()));
+        }
+    }
+
+    public class ArrayLengthIntrinsicFunction : IntrinsicFunction
+    {
+        public ArrayLengthIntrinsicFunction(const System.Lex.Span& span_) : base(span_)
+        {
+        }
+        public override int Arity() const
+        {
+            return 0;
+        }
+        public override Result<TypeSymbol*> ReturnType(IntrinsicTypes& intrinsicTypes) const
+        {
+            return intrinsicTypes.GetType(IntrinsicTypeId.longTypeId);
+        }
+        public override int NumberOfTypeParameters() const
+        {
+            return 1;
+        }
+        public override ustring GroupName() const
+        {
+            return u"ArrayLength";
+        }
+        public override UniquePtr<Value> DoEvaluate(const List<UniquePtr<Value>>& arguments, const List<TypeSymbol*>& templateArguments, Node* node) const
+        {
+            TypeSymbol* type = templateArguments.Front();
+            if (type->IsArrayTypeSymbol())
+            {
+                ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(type);
+                return UniquePtr<Value>(new LongValue(node->GetSpan(), arrayType->Size()));
+            }
+            return UniquePtr<Value>(new LongValue(node->GetSpan(), 0));
+        }
+    }
+
+    public Result<FunctionSymbol*> CreateIntrinsic(SymbolsContext& context, IntrinsicTypes& intrinsicTypes, IntrinsicFunction* intrinsic, SymbolTable* symbolTable,
+        ContainerSymbol* parent)
+    {
+        FunctionSymbol* fn = new FunctionSymbol(intrinsic->Span(), intrinsic->GroupName());
+        fn->SetModule(symbolTable->GetModule());
+        fn->SetGroupName(intrinsic->GroupName());
+        fn->SetIntrinsic(intrinsic);
+        fn->SetAccess(SymbolAccess.public_);
+        Result<TypeSymbol*> returnTypeResult = intrinsic->ReturnType(intrinsicTypes);
+        if (returnTypeResult.Error())
+        {
+            return Result<FunctionSymbol*>(ErrorId(returnTypeResult.GetErrorId()));
+        }
+        fn->SetReturnType(returnTypeResult.Value());
+        fn->SetParent(parent);
+        int n = intrinsic->NumberOfTypeParameters();
+        for (int i = 0; i < n; ++i)
+        {
+            ustring p = u"T";
+            if (i > 0)
+            {
+                string istr = ToString(i);
+                Result<ustring> uistrResult = ToUtf32(istr);
+                if (uistrResult.Error()) return Result<FunctionSymbol*>(ErrorId(uistrResult.GetErrorId()));
+                ustring uistr = Rvalue(uistrResult.Value());
+                p.Append(uistr);
+            }
+            TemplateParameterSymbol* s = new TemplateParameterSymbol(intrinsic->Span(), p);
+            symbolTable->SetTypeIdFor(s);
+            s->SetModule(symbolTable->GetModule());
+            Result<bool> result = fn->AddMember(s, context);
+            if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+        }
+        Result<bool> result = fn->ComputeName(context);
+        if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+        return Result<FunctionSymbol*>(fn);
+    }
+
+    [nodiscard]
+    public Result<bool> MetaInit(SymbolTable* symbolTable, const System.Lex.Span& rootSpan, SymbolsContext& context)
+    {
+        IntrinsicTypes intrinsicTypes(symbolTable);
+        if (intrinsicTypes.Error())
+        {
+            return Result<bool>(ErrorId(intrinsicTypes.GetErrorId()));
+        }
+        symbolTable->BeginNamespace(u"System.Meta", rootSpan, symbolTable->GlobalNs().ModuleId(), symbolTable->GlobalNs().FileIndex(), context);
+        Result<FunctionSymbol*> fnResult = CreateIntrinsic(context, intrinsicTypes, new IsIntegralTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        FunctionSymbol* fn = fnResult.Value();
+        Result<bool> result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsSignedTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsUnsignedTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsFloatingPointTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsBasicTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsBoolTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsSByteTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsByteTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsShortTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsUShortTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsIntTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsUIntTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsLongTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsULongTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsFloatTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsDoubleTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsCharTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsWCharTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsUCharTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsVoidTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsClassTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsPolymorphicTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsInterfaceTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsDelegateTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsClassDelegateTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsEnumeratedTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsConstTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsReferenceTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsLvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsRvalueReferenceTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsArrayTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsPointerTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new IsGenericPtrTypePredicate(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new PointerCountIntrinsicFunction(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        fnResult = CreateIntrinsic(context, intrinsicTypes, new ArrayLengthIntrinsicFunction(rootSpan), symbolTable, symbolTable->Container());
+        if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+        fn = fnResult.Value();
+        result = symbolTable->Container()->AddMember(fn, context);
+        if (result.Error()) return result;
+        symbolTable->EndNamespace();
+        return Result<bool>(true);
+    }
+}

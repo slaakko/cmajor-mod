@@ -910,7 +910,7 @@ std::unique_ptr<BoundFunctionCall> FailWithAmbiguousOverload(const std::u32strin
     for (int i = 1; i < n; ++i)
     {
         FunctionMatch match = std::move(functionMatches[i]);
-        if (!BetterFunctionMatch()(equalMatches[0], match))
+        if (!BetterFunctionMatch()(equalMatches[0], match) && !BetterFunctionMatch()(match, equalMatches[0]))
         {
             equalMatches.push_back(std::move(match));
         }
@@ -1017,7 +1017,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan());
                 constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                     new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer())));
-                if (conversionTargetType->IsClassTypeSymbol())
+                if (conversionTargetType->IsClassTypeSymbol() || conversionTargetType->IsClassTemplateSpecializationSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())
@@ -1063,7 +1063,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     conversionFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
                 }
                 BoundLocalVariable* conversionResult = new BoundLocalVariable(node->GetSpan(), temporary);
-                if (conversionTargetType->IsClassTypeSymbol())
+                if (conversionTargetType->IsClassTypeSymbol() || conversionTargetType->IsClassTemplateSpecializationSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())
@@ -1121,7 +1121,8 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 argument.reset(dereferenceExpression);
             }
         }
-        if (argument->GetType()->IsClassTypeSymbol() || argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol || 
+        if (argument->GetType()->IsClassTypeSymbol() || 
+            argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol || 
             argument->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::interfaceTypeSymbol)
         {
             if (argument->GetType()->IsClassTypeSymbol())
@@ -1182,7 +1183,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
         cmajor::symbols::DestructorSymbol* destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(functionSymbol);
         if (destructorSymbol->IsGeneratedFunction() && !GetGlobalFlag(cmajor::symbols::GlobalFlags::info))
         {
-            if (destructorSymbol->Parent()->IsClassTypeSymbol())
+            if (destructorSymbol->Parent()->IsClassTypeSymbol() || destructorSymbol->Parent()->IsClassTemplateSpecializationSymbol())
             {
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(destructorSymbol->Parent());
                 if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))
@@ -1506,7 +1507,7 @@ std::unique_ptr<BoundFunctionCall> SelectViableFunction(const cmajor::symbols::V
             {
                 singleBest = boundCompileUnit.InstantiateFunctionTemplate(singleBest, bestMatch.templateParameterMap, node);
             }
-            else
+            else 
             {
                 templateArgumentTypes.clear();
                 for (cmajor::symbols::TemplateParameterSymbol* templateParameter : singleBest->TemplateParameters())
@@ -1650,6 +1651,10 @@ std::unique_ptr<BoundFunctionCall> ResolveOverload(const std::u32string& groupNa
         if ((flags & OverloadResolutionFlags::noRvalueRef) != OverloadResolutionFlags::none)
         {
             collectFlags = collectFlags | CollectFlags::noRvalueRef;
+        }
+        if ((flags & OverloadResolutionFlags::dontInstantiate) != OverloadResolutionFlags::none)
+        {
+            collectFlags = collectFlags | CollectFlags::dontInstantiate;
         }
         boundCompileUnit.CollectViableFunctions(groupName, containerScope, arguments, currentFunction, viableFunctions, exception, node, collectFlags);
     }

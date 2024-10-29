@@ -7,7 +7,7 @@ module cmajor.masm.assembly.value;
 
 namespace cmajor::masm::assembly {
 
-Value::Value(const std::string& name_) : name(name_)
+Value::Value(ValueKind kind_, const std::string& name_) : kind(kind_), name(name_)
 {
 }
 

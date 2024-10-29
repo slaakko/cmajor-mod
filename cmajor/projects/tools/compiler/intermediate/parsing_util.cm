@@ -1,0 +1,94 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace intermediate
+{
+    public Result<sbyte> GetSByte(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<sbyte>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseSByte(str);
+    }
+
+    public Result<byte> GetByte(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<byte>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseByte(str);
+    }
+
+    public Result<short> GetShort(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<short>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseShort(str);
+    }
+
+    public Result<ushort> GetUShort(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<ushort>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseUShort(str);
+    }
+
+    public Result<int> GetInt(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<int>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseInt(str);
+    }
+
+    public Result<uint> GetUInt(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<uint>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseUInt(str);
+    }
+    
+    public Result<long> GetLong(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<long>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseLong(str);
+    }
+
+    public Result<ulong> GetULong(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<ulong>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseULong(str);
+    }
+
+    public Result<float> GetFloat(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<float>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseFloat(str);
+    }
+
+    public Result<double> GetDouble(const ustring& s)
+    {
+        Result<string> strResult = ToUtf8(s);
+        if (strResult.Error()) return Result<double>(ErrorId(strResult.GetErrorId()));
+        string str = Rvalue(strResult.Value());
+        return ParseDouble(str);
+    }
+    public Result<string> GetString(const ustring& s)
+    {
+        return ToUtf8(s);
+    }
+}
+

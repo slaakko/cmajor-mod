@@ -112,7 +112,7 @@ namespace scmpg
             }
             if (grammar.Id() == -1)
             {
-                long grammarId = cast<long>(GetHashCode(grammar.Name()) & 0x7FFFFFFFu);
+                long grammarId = cast<long>(System.Collections.GetHashCode(grammar.Name()) & 0x7FFFFFFFu);
                 grammar.SetId(grammarId);
             }
             if (stage == LinkingStage.addParsers)

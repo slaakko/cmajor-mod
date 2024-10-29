@@ -18,11 +18,11 @@ std::string regName[] =
     ""
 };
 
-Register::Register() : Value(std::string()), kind(), group(), size(0)
+Register::Register() : Value(ValueKind::reg, std::string()), kind(), group(), size(0)
 {
 }
 
-Register::Register(RegisterKind kind_, RegisterGroupKind group_, int size_) : Value(regName[int(kind_)]), kind(kind_), group(group_), size(size_)
+Register::Register(RegisterKind kind_, RegisterGroupKind group_, int size_) : Value(ValueKind::reg, regName[int(kind_)]), kind(kind_), group(group_), size(size_)
 {
 }
 

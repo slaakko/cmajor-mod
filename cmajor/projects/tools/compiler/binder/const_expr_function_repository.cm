@@ -1,0 +1,37 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class ConstExprFunctionRepository
+    {
+        public ConstExprFunctionRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        {
+        }
+        public Result<FunctionNode*> GetFunctionNode(FunctionSymbol* constExprFunctionSymbol, Node* node)
+        {
+            Node* node = boundCompileUnit->GetSymbolTable()->GetNode(constExprFunctionSymbol);
+            if (node == null)
+            {
+                node = constExprFunctionSymbol->GetFunctionNode();
+            }
+            if (node == null || !node->IsFunctionNode())
+            {
+                Result<string> constExprFunctionNameResult = ToUtf8(constExprFunctionSymbol->FullName());
+                if (constExprFunctionNameResult.Error()) return Result<FunctionNode*>(ErrorId(constExprFunctionNameResult.GetErrorId()));
+                string constExprFunctionName = Rvalue(constExprFunctionNameResult.Value());
+                int errorId = MakeError("function node for const expr function symbol '" + constExprFunctionName + "' not found", node->GetFullSpan());
+                return Result<FunctionNode*>(ErrorId(errorId));
+            }
+            FunctionNode* functionNode = cast<FunctionNode*>(node);
+            return Result<FunctionNode*>(functionNode);
+        }
+        private BoundCompileUnit* boundCompileUnit;
+    }
+}

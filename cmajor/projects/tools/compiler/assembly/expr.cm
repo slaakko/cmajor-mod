@@ -1,0 +1,104 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace assembly
+{
+    public enum Operator
+    {
+        add, sub, mul
+    }
+
+    public class UnaryExpr : Value
+    {
+        public UnaryExpr(ValueKind kind_, Value* value_, const string& str_) : base(kind_, str_), value(value_)
+        {
+        }
+        public inline Value* GetValue() const
+        {
+            return value;
+        }
+        private Value* value;
+    }
+
+    public string MakeBinaryExprStr(Value* left, Value* right, Operator op)
+    {
+        switch (op)
+        {
+            case Operator.add: return left->ToString() + "+" + right->ToString();
+            case Operator.sub: return left->ToString() + "-" + right->ToString();
+            case Operator.mul: return left->ToString() + "*" + right->ToString();
+        }
+        return string();
+    }
+
+    public class BinaryExpr : Value
+    {
+        public BinaryExpr(Value* left_, Value* right_, Operator op_) : base(ValueKind.binaryExpr, MakeBinaryExprStr(left_, right_, op_)), left(left_), right(right_), op(op_)
+        {
+        }
+        public override string ToString() const
+        {
+            return MakeBinaryExprStr(left, right, op);
+        }
+        public inline Value* Left() const
+        {
+            return left;
+        }
+        public inline Value* Right() const
+        {
+            return right;
+        }
+        public inline Operator Op() const
+        {
+            return op;
+        }
+        private Value* left;
+        private Value* right;
+        private Operator op;
+    }
+
+    public class Content : UnaryExpr
+    {
+        public Content(Value* value_) : base(ValueKind.content, value_, "[" + value_->ToString() + "]")
+        {
+        }
+        public override string ToString() const
+        {
+            return "[" + GetValue()->ToString() + "]";
+        }
+    }
+
+    public string SizePrefixStr(int size, Value* value)
+    {
+        switch (size)
+        {
+            case 1: return "byte ptr " + value->ToString();
+            case 2: return "word ptr " + value->ToString();
+            case 4: return "dword ptr " + value->ToString();
+            case 8: return "qword ptr " + value->ToString();
+            case 16: return "oword ptr " + value->ToString();
+        }
+        return string();
+    }
+    
+    public class SizePrefix : UnaryExpr
+    {
+        public SizePrefix(int size_, Value* value_) : base(ValueKind.sizePrefix, value_, SizePrefixStr(size_, value_)), size(size_)
+        {
+        }
+        public inline int Size() const
+        {
+            return size;
+        }
+        public override string ToString() const
+        {
+            return SizePrefixStr(size, GetValue());
+        }
+        private int size;
+    }
+}
+

@@ -201,6 +201,7 @@ public:
     bool IsMoveConstructor() const;
     bool IsCopyAssignment() const;
     bool IsMoveAssignment() const;
+    virtual bool CanInline() const { return true; }
     virtual int StartParamIndex() const { return 0; }
     const util::uuid& FunctionId() const { Assert(!functionId.is_nil(), "function id not initialized"); return functionId; }
     void SetFunctionId(const util::uuid& functionId_) { functionId = functionId_; }
@@ -390,6 +391,7 @@ public:
     std::u32string CodeName() const override;
     bool IsConstructorDestructorOrNonstaticMemberFunction() const override { return true; }
     bool IsGeneratedFunction() const override { return generated; }
+    bool CanInline() const { return false; }
     bool DontThrow() const override;
     void SetSpecifiers(cmajor::ast::Specifiers specifiers);
     void SetGenerated() { generated = true; }

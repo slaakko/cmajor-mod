@@ -1,0 +1,71 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Threading
+{
+    public abstract class SynchronizedQueueBase
+    {
+        public SynchronizedQueueBase()
+        {
+        }
+        public default virtual ~SynchronizedQueueBase();
+        public bool ItemAvailableOrExiting(void* arg)
+        {
+            return IsItemAvailableOrExiting();
+        }
+        public abstract bool IsItemAvailableOrExiting();
+    }
+
+    public class SynchronizedQueue<T> : SynchronizedQueueBase
+    {
+        public SynchronizedQueue() : base(), exiting(false)
+        {
+        }
+        public bool IsEmpty() const
+        {
+            LockGuard<RecursiveMutex> lock(mtx);
+            return queue.IsEmpty();
+        }
+        [nodiscard]
+        public Result<bool> Put(const T& item)
+        {
+            if (exiting) return Result<bool>(false);
+            LockGuard<RecursiveMutex> lock(mtx);
+            queue.Put(item);
+            auto result = itemAvailableOrExiting.NotifyOne();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<T> Get()
+        {
+            auto result = itemAvailableOrExiting.Wait(mtx, ItemAvailableOrExiting, null);
+            if (result.Error()) return Result<T>(ErrorId(result.GetErrorId()));
+            if (exiting) return Result<T>(T());
+            if (!queue.IsEmpty())
+            {
+                return Result<T>(queue.Get());
+            }
+            return Result<T>(T());
+        }
+        public Result<bool> Exit()
+        {
+            exiting = true;
+            auto result = itemAvailableOrExiting.NotifyAll();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override bool IsItemAvailableOrExiting()
+        {
+            return !queue.IsEmpty() || exiting;
+        }
+        private RecursiveMutex mtx;
+        private Queue<T> queue;
+        private ConditionVariable itemAvailableOrExiting;
+        private bool exiting;
+    }
+}

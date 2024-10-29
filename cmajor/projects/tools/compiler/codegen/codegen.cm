@@ -1,0 +1,2042 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using binder;
+using symbols;
+using cm.ast;
+
+namespace codegen
+{
+    public class CodeGenerator : BoundNodeVisitor
+    {
+        public CodeGenerator(SymbolsContext& context_) : context(context_), emitter(context, this), compileUnit(null), currentFunction(null), currentBlock(null),
+            trueBlock(null), falseBlock(null), breakTarget(null), breakTargetBlock(null), continueTarget(null), continueTargetBlock(null),
+            currentCaseMap(null), defaultDest(null),
+            destructorCallGenerated(false), lastInstructionWasRet(false), basicBlockOpen(false), isSystemRuntimeOrCoreModule(false), generateLineNumbers(false),
+            inSetLineOrEntryCode(false), prevLineNumber(0), errorId(0)
+        {
+        }
+        public override int Install(const string& str)
+        {
+            return compileUnit->Install(str);
+        }
+        public override int Install(const wstring& str)
+        {
+            return compileUnit->Install(str);
+        }
+        public override int Install(const ustring& str)
+        {
+            return compileUnit->Install(str);
+        }
+        public override intermediate.Value* GetGlobalStringValue(int stringId)
+        {
+            auto it = utf8stringMap.Find(stringId);
+            if (it != utf8stringMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                intermediate.Value* stringValue = emitter.CreateGlobalStringValue(compileUnit->GetUtf8String(stringId));
+                utf8stringMap[stringId] = stringValue;
+                return stringValue;
+            }
+        }
+        public override Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
+        {
+            auto it = utf16stringMap.Find(stringId);
+            if (it != utf16stringMap.End())
+            {
+                return Result<intermediate.Value*>(it->second);
+            }
+            else
+            {
+                Result<intermediate.Value*> stringValueResult = emitter.CreateGlobalWStringValue(compileUnit->GetUtf16String(stringId));
+                if (stringValueResult.Error()) return stringValueResult;
+                intermediate.Value* stringValue = stringValueResult.Value();
+                utf16stringMap[stringId] = stringValue;
+                return Result<intermediate.Value*>(stringValue);
+            }
+        }
+        public override Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
+        {
+            auto it = utf16stringMap.Find(stringId);
+            if (it != utf16stringMap.End())
+            {
+                return Result<intermediate.Value*>(it->second);
+            }
+            else
+            {
+                Result<intermediate.Value*> stringValueResult = emitter.CreateGlobalUStringValue(compileUnit->GetUtf32String(stringId));
+                if (stringValueResult.Error()) return stringValueResult;
+                intermediate.Value* stringValue = stringValueResult.Value();
+                utf32stringMap[stringId] = stringValue;
+                return Result<intermediate.Value*>(stringValue);
+            }
+        }
+        public override void Visit(BoundCompileUnit& boundCompileUnit)
+        {
+            compileUnit = &boundCompileUnit;
+            Result<string> compileUnitIdResult = compileUnit->SourceFile()->Id();
+            if (compileUnitIdResult.Error())
+            {
+                SetErrorId(compileUnitIdResult.GetErrorId());
+                return;
+            }
+            emitter.SetCompileUnitId(compileUnitIdResult.Value());
+            Module* module = boundCompileUnit.GetModule();
+            isSystemRuntimeOrCoreModule = module->Name() == "System.Runtime" || module->Name() == "System.Core";
+            string intermediateFilePath = System.IO.Path.ChangeExtension(boundCompileUnit.ObjectFilePath(), ".i");
+            string optimizedIntermediateFilePath = System.IO.Path.ChangeExtension(boundCompileUnit.ObjectFilePath(), ".opt.i");
+            emitter.SetFilePath(intermediateFilePath);
+            binder.ConstantArrayRepository* constantArrayRepository = boundCompileUnit.GetConstantArrayRepository();
+            for (ConstantSymbol* constantSymbol : constantArrayRepository->ConstantArrays())
+            {
+                Result<intermediate.Value*> result = constantSymbol->ArrayIrObject(emitter, true);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            binder.ConstantStructureRepository* constantStructureRepository = boundCompileUnit.GetConstantStructureRepository();
+            for (ConstantSymbol* constantSymbol : constantStructureRepository->ConstantStructures())
+            {
+                Result<intermediate.Value*> result = constantSymbol->StructureIrObject(emitter, true);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            generateLineNumbers = false;
+            int n = cast<int>(boundCompileUnit.BoundNodes().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundNode* boundNode = boundCompileUnit.BoundNodes()[i].Get();
+                boundNode->Accept(*this);
+                if (Error()) return;
+            }
+            Result<bool> result = emitter.WriteIntermediateCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            intermediate.Context intermediateContext;
+            intermediate.Context* finalContext = &intermediateContext;
+            result = intermediate.Parse(boundCompileUnit.GetModule()->LogStreamId(), intermediateFilePath, &intermediateContext, GetGlobalFlag(GlobalFlags.verbose));
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = intermediate.Verify(&intermediateContext);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UniquePtr<intermediate.CodeGenerator> codeGenerator;
+            if (GetGlobalFlag(GlobalFlags.release))
+            {
+                // todo
+            }
+            else
+            {
+                codeGenerator.Reset(new intermediate.CodeGenerator(finalContext, boundCompileUnit.AsmFilePath()));
+            }
+            result = intermediate.GenerateCode(finalContext, codeGenerator.Get());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundNamespace& boundNamespace)
+        {
+            int n = cast<int>(boundNamespace.Members().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundNode* node = boundNamespace.Members()[i].Get();
+                node->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundClass& boundClass)
+        {
+            ClassTypeSymbol* classType = boundClass.GetClassTypeSymbol();
+            if (classType->IsPolymorphic())
+            {
+                Result<intermediate.Value*> vmtResult = classType->VmtObject(emitter, true);
+                if (vmtResult.Error())
+                {
+                    SetErrorId(vmtResult.GetErrorId());
+                    return;
+                }
+            }
+            int n = cast<int>(boundClass.Members().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundNode* boundNode = boundClass.Members()[i].Get();
+                boundNode->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundFunction& boundFunction)
+        {
+            if (boundFunction.Body() == null) return;
+            currentFunction = &boundFunction;
+            FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
+            if (compileUnit->CodeGenerated(functionSymbol)) return;
+            compileUnit->SetCodeGenerated(functionSymbol);
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            labeledStatementMap.Clear();
+            latestRet = null;
+            if (functionSymbol->HasSource() && !GetGlobalFlag(GlobalFlags.release) && !isSystemRuntimeOrCoreModule)
+            {
+                generateLineNumbers = true;
+                fullSpan = functionSymbol->FullSpan();
+            }
+            else
+            {
+                generateLineNumbers = false;
+                fullSpan = System.Lex.FullSpan();
+            }
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(functionSymbol);
+            if (functionTypeResult.Error())
+            {
+                SetErrorId(functionTypeResult.GetErrorId());
+                return;
+            }
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            Result<string> functionNameResult = ToUtf8(functionSymbol->MangledName());
+            if (functionNameResult.Error())
+            {
+                SetErrorId(functionNameResult.GetErrorId());
+                return;
+            }
+            string functionName = Rvalue(functionNameResult.Value());
+            Result<intermediate.Function*> functionResult = emitter.GetOrInsertFunction(functionName, functionType);
+            if (functionResult.Error())
+            {
+                SetErrorId(functionResult.GetErrorId());
+                return;
+            }
+            intermediate.Function* function = functionResult.Value();
+            function->SetDefined();
+            if (GetGlobalFlag(GlobalFlags.release))
+            {
+                if (functionSymbol->IsInline() || functionSymbol->IsGenerated() && !functionSymbol->CannotInline())
+                {
+                    function->SetInline();
+                }
+            }
+            Result<intermediate.MetadataStruct*> mdStructResult = emitter.CreateMetadataStruct();
+            if (mdStructResult.Error())
+            {
+                SetErrorId(mdStructResult.GetErrorId());
+                return;
+            }
+            intermediate.MetadataStruct* mdStruct = mdStructResult.Value();
+            Result<string> fullFunctionNameResult = ToUtf8(functionSymbol->FullName());
+            if (fullFunctionNameResult.Error())
+            {
+                SetErrorId(fullFunctionNameResult.GetErrorId());
+                return;
+            }
+            string fullFunctionName = Rvalue(fullFunctionNameResult.Value());
+            intermediate.MetadataString* fullNameItem = emitter.CreateMetadataString(fullFunctionName);
+            mdStruct->AddItem("fullName", fullNameItem);
+            intermediate.MetadataRef* mdRef = emitter.CreateMetadataRef(mdStruct->Id());
+            function->SetMetadataRef(mdRef);
+            emitter.SetCurrentFunction(function);
+            intermediate.BasicBlock* entryBlock = emitter.CreateBasicBlock();
+            emitter.SetCurrentBasicBlock(entryBlock);
+            int np = cast<int>(functionSymbol->Parameters().Count());
+            for (int i = 0; i < np; ++i)
+            {
+                ParameterSymbol* parameter = functionSymbol->Parameters()[i];
+                Result<intermediate.Type*> irTypeResult = parameter->Type()->IrType(emitter);
+                if (irTypeResult.Error())
+                {
+                    SetErrorId(irTypeResult.GetErrorId());
+                    return;
+                }
+                intermediate.Type* irType = irTypeResult.Value();
+                Result<intermediate.Value*> localResult = emitter.CreateLocal(irType);
+                if (localResult.Error())
+                {
+                    SetErrorId(localResult.GetErrorId());
+                    return;
+                }
+                emitter.SetIrObject(parameter, localResult.Value());
+            }
+            if (functionSymbol->ReturnParam() != null)
+            {
+                ParameterSymbol* parameter = functionSymbol->ReturnParam();
+                Result<intermediate.Type*> irTypeResult = parameter->Type()->IrType(emitter);
+                if (irTypeResult.Error())
+                {
+                    SetErrorId(irTypeResult.GetErrorId());
+                    return;
+                }
+                intermediate.Type* irType = irTypeResult.Value();
+                Result<intermediate.Value*> localResult = emitter.CreateLocal(irType);
+                if (localResult.Error())
+                {
+                    SetErrorId(localResult.GetErrorId());
+                    return;
+                }
+                emitter.SetIrObject(parameter, localResult.Value());
+            }
+            int nlv = cast<int>(functionSymbol->LocalVariables().Count());
+            for (int i = 0; i < nlv; ++i)
+            {
+                LocalVariableSymbol* localVariable = functionSymbol->LocalVariables()[i];
+                Result<intermediate.Type*> irTypeResult = localVariable->Type()->IrType(emitter);
+                if (irTypeResult.Error())
+                {
+                    SetErrorId(irTypeResult.GetErrorId());
+                    return;
+                }
+                intermediate.Type* irType = irTypeResult.Value();
+                Result<intermediate.Value*> localResult = emitter.CreateLocal(irType);
+                if (localResult.Error())
+                {
+                    SetErrorId(localResult.GetErrorId());
+                    return;
+                }
+                emitter.SetIrObject(localVariable, localResult.Value());
+            }
+            for (int i = 0; i < np; ++i)
+            {
+                intermediate.Value* arg = function->Param(i);
+                ParameterSymbol* parameter = functionSymbol->Parameters()[i];
+                TypeSymbol* paramType = parameter->Type();
+                if (paramType->IsClassTypeSymbol()  || paramType->IsClassDelegateTypeSymbol() || paramType->IsInterfaceTypeSymbol())
+                {
+                    Result<bool> copyCtorResult = GenerateCopyConstructorCall(parameter, arg);
+                    if (copyCtorResult.Error())
+                    {
+                        SetErrorId(copyCtorResult.GetErrorId());
+                        return;
+                    }
+                }
+                else
+                {
+                    Result<intermediate.Value*> paramObjectResult = parameter->GetIrObject(emitter);
+                    if (paramObjectResult.Error())
+                    {
+                        SetErrorId(paramObjectResult.GetErrorId());
+                        return;
+                    }
+                    intermediate.Value* paramObject = paramObjectResult.Value();
+                    Result<bool> storeResult = emitter.CreateStore(arg, paramObject);
+                    if (storeResult.Error())
+                    {
+                        SetErrorId(storeResult.GetErrorId());
+                        return;
+                    }
+                }
+            }
+            if (functionSymbol->ReturnParam() != null)
+            {
+                intermediate.Value* arg = function->Param(np);
+                Result<intermediate.Value*> paramObjectResult = functionSymbol->ReturnParam()->GetIrObject(emitter);
+                if (paramObjectResult.Error())
+                {
+                    SetErrorId(paramObjectResult.GetErrorId());
+                    return;
+                }
+                intermediate.Value* paramObject = paramObjectResult.Value();
+                Result<bool> storeResult = emitter.CreateStore(arg, paramObject);
+                if (storeResult.Error())
+                {
+                    SetErrorId(storeResult.GetErrorId());
+                    return;
+                }
+            }
+            for (BoundStatement* labeledStatement : boundFunction.LabeledStatements())
+            {
+                intermediate.BasicBlock* target = emitter.CreateBasicBlock();
+                labeledStatementMap[labeledStatement] = target;
+            }
+            BoundCompoundStatement* body = boundFunction.Body();
+            body->Accept(*this);
+            if (Error()) return;
+            BoundStatement* lastStatement = null;
+            if (!body->Statements().IsEmpty())
+            {
+                lastStatement = body->Statements().Back().Get();
+            }
+            if (lastStatement == null || !lastStatement->IsBoundReturnStatement() || lastStatement->IsBoundReturnStatement() && destructorCallGenerated)
+            {
+                if (functionSymbol->ReturnType() != null && !functionSymbol->ReturnType()->IsVoidTypeSymbol() && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+                {
+                    Result<intermediate.Value*> defaultValueResult = functionSymbol->ReturnType()->CreateDefaultIrValue(emitter);
+                    if (defaultValueResult.Error())
+                    {
+                        string message = RtmGetErrorMessageWithoutStackTrace(defaultValueResult.GetErrorId());
+                        int errorId = MakeError("error creating default return: " + message, boundFunction.FullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
+                    intermediate.Value* defaultValue = defaultValueResult.Value();
+                    Result<intermediate.Value*> retResult = emitter.CreateRet(defaultValue);
+                    if (retResult.Error())
+                    {
+                        SetErrorId(retResult.GetErrorId());
+                        return;
+                    }
+                    lastInstructionWasRet = true;
+                }
+                else
+                {
+                    Result<intermediate.Value*> retResult = emitter.CreateRetVoid();
+                    if (retResult.Error())
+                    {
+                        SetErrorId(retResult.GetErrorId());
+                        return;
+                    }
+                    lastInstructionWasRet = true;
+                }
+            }
+        }
+        public override void Visit(BoundCompoundStatement& boundCompoundStatement)
+        {
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundCompoundStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            BoundCompoundStatement* prevBlock = currentBlock;
+            currentBlock = &boundCompoundStatement;
+            blockDestructionMap[currentBlock].Clear();
+            blocks.Add(currentBlock);
+            if (prevBlock == null)
+            {
+                GenerateEnterFunctionCode(currentFunction);
+            }
+            if (generateLineNumbers)
+            {
+                SetSpan(boundCompoundStatement.Span());
+            }
+            int n = cast<int>(boundCompoundStatement.Statements().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                BoundStatement* statement = boundCompoundStatement.Statements()[i].Get();
+                statement->Accept(*this);
+                if (Error()) return;
+            }
+            if (currentBlock->IsDestroyed() && n > 0 && boundCompoundStatement.Statements().Back()->IsBoundBreakStatement())
+            {
+                intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+                emitter.SetCurrentBasicBlock(nextBlock);
+                basicBlockOpen = true;
+            }
+            result = ExitBlocks(prevBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            blocks.RemoveLast();
+            currentBlock = prevBlock;
+        }
+        public override void Visit(BoundSequenceStatement& boundSequenceStatement)
+        {
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundSequenceStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            BoundStatement* prevSequence = sequenceSecond;
+            sequenceSecond = boundSequenceStatement.Second();
+            boundSequenceStatement.First()->Accept(*this);
+            if (Error()) return;
+            sequenceSecond = prevSequence;
+            if (!boundSequenceStatement.Second()->Generated())
+            {
+                boundSequenceStatement.Second()->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundReturnStatement& boundReturnStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundReturnStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            Result<bool> result = SetTarget(&boundReturnStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            BoundFunctionCall* returnFunctionCall = boundReturnStatement.ReturnFunctionCall();
+            if (returnFunctionCall != null)
+            {
+                boundReturnStatement.ReturnFunctionCall()->Accept(*this);
+                if (Error()) return;
+                intermediate.Value* returnValue = emitter.Stack().Pop();
+                if (sequenceSecond != null)
+                {
+                    sequenceSecond->SetGenerated();
+                    sequenceSecond->Accept(*this);
+                    if (Error()) return;
+                }
+                Result<bool> result = ExitBlocks(null);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                Result<intermediate.Value*> retResult = emitter.CreateRet(returnValue);
+                if (retResult.Error())
+                {
+                    SetErrorId(retResult.GetErrorId());
+                    return;
+                }
+                lastInstructionWasRet = true;
+            }
+            else
+            {
+                Result<bool> result = ExitBlocks(null);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                Result<intermediate.Value*> retResult = emitter.CreateRetVoid();
+                if (retResult.Error())
+                {
+                    SetErrorId(retResult.GetErrorId());
+                    return;
+                }
+                lastInstructionWasRet = true;
+            }
+            BoundCompoundStatement* body = currentFunction->Body();
+            BoundStatement* lastStatement = null;
+            if (!body->Statements().IsEmpty())
+            {
+                lastStatement = body->Statements().Back().Get();
+            }
+            if (lastStatement != null && lastStatement != &boundReturnStatement)
+            {
+                intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+                emitter.SetCurrentBasicBlock(nextBlock);
+                basicBlockOpen = true;
+                lastInstructionWasRet = false;
+            }
+            latestRet = &boundReturnStatement;
+        }
+        public override void Visit(BoundGotoCaseStatement& boundGotoCaseStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundGotoCaseStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundGotoCaseStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            #assert(breakTargetBlock != null);
+            #assert(currentCaseMap != null);
+            result = ExitBlocks(breakTargetBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            IntegralValue integralCaseValue(boundGotoCaseStatement.CaseValue());
+            auto it = currentCaseMap->Find(integralCaseValue);
+            if (it != currentCaseMap->End())
+            {
+                intermediate.BasicBlock* caseDest = it->second;
+                Result<bool> result = emitter.CreateJump(caseDest);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                int errorId = MakeError("case not found", boundGotoCaseStatement.FullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(BoundGotoDefaultStatement& boundGotoDefaultStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundGotoDefaultStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundGotoDefaultStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            #assert(breakTargetBlock != null);
+            result = ExitBlocks(breakTargetBlock);;
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (defaultDest != null)
+            {
+                Result<bool> result = emitter.CreateJump(defaultDest);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                int errorId = MakeError("no default destination", boundGotoDefaultStatement.FullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(BoundBreakStatement& boundBreakStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundBreakStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            Result<bool> result = SetTarget(&boundBreakStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            #assert(breakTarget != null);
+            #assert(breakTargetBlock != null);
+            result = ExitBlocks(breakTargetBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = emitter.CreateJump(breakTarget);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            //  if not in direct switch or last was unconditional return in its block:
+            Result<bool> inDirectSwitchStatementResult = InDirectSwitchStatement(&boundBreakStatement);
+            if (inDirectSwitchStatementResult.Error())
+            {
+                SetErrorId(inDirectSwitchStatementResult.GetErrorId());
+                return;
+            }
+            bool inDirectSwitchStatement = inDirectSwitchStatementResult.Value();
+            bool isConditionalStatementInBlock = false;
+            if (inDirectSwitchStatement)
+            {
+                if (latestRet != null)
+                {
+                    Result<BoundCompoundStatement*> latestRetBlockResult = latestRet->Block();
+                    if (latestRetBlockResult.Error())
+                    {
+                        SetErrorId(latestRetBlockResult.GetErrorId());
+                        return;
+                    }
+                    BoundCompoundStatement* latestRetBlock = latestRetBlockResult.Value();
+                    Result<bool> isConditionalStatementInBlockResult = latestRet->IsConditionalStatementInBlock(latestRetBlock);
+                    if (isConditionalStatementInBlockResult.Error())
+                    {
+                        SetErrorId(isConditionalStatementInBlockResult.GetErrorId());
+                        return;
+                    }
+                    isConditionalStatementInBlock = isConditionalStatementInBlockResult.Value();
+                }
+            }
+            if (!inDirectSwitchStatement || latestRet != null && !isConditionalStatementInBlock)
+            {
+                intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+                emitter.SetCurrentBasicBlock(nextBlock);
+                basicBlockOpen = true;
+            }
+        }
+        public override void Visit(BoundContinueStatement& boundContinueStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundContinueStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundContinueStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            #assert(continueTarget != null);
+            #assert(continueTargetBlock != null);
+            result = ExitBlocks(continueTargetBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = emitter.CreateJump(continueTarget);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+            emitter.SetCurrentBasicBlock(nextBlock);
+            basicBlockOpen = true;
+        }
+        public override void Visit(BoundGotoStatement& boundGotoStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundGotoStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundGotoStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ExitBlocks(boundGotoStatement.TargetBlock());
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            auto it = labeledStatementMap.Find(boundGotoStatement.TargetStatement());
+            if (it != labeledStatementMap.End())
+            {
+                intermediate.BasicBlock* target = it->second;
+                result = emitter.CreateJump(target);
+            }
+            else
+            {
+                int errorId = MakeError("goto target not found", boundGotoStatement.FullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+            emitter.SetCurrentBasicBlock(nextBlock);
+            basicBlockOpen = true;
+        }
+        public override void Visit(BoundIfStatement& boundIfStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundIfStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundIfStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            intermediate.BasicBlock* prevTrueBlock = trueBlock;
+            intermediate.BasicBlock* prevFalseBlock = falseBlock;
+            trueBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+            if (boundIfStatement.ElseS() != null)
+            {
+                falseBlock = emitter.CreateBasicBlock();
+            }
+            else
+            {
+                falseBlock = nextBlock;
+            }
+            bool prevGenJumpingBoolCode = genJumpingBoolCode;
+            genJumpingBoolCode = true;
+            boundIfStatement.Condition()->Accept(*this);
+            if (Error()) return;
+            genJumpingBoolCode = prevGenJumpingBoolCode;
+            emitter.SetCurrentBasicBlock(trueBlock);
+            boundIfStatement.ThenS()->Accept(*this);
+            if (Error()) return;
+            result = emitter.CreateJump(nextBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (boundIfStatement.ElseS() != null)
+            {
+                emitter.SetCurrentBasicBlock(falseBlock);
+                boundIfStatement.ElseS()->Accept(*this);
+                if (Error()) return;
+                result = emitter.CreateJump(nextBlock);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            trueBlock = prevTrueBlock;
+            falseBlock = prevFalseBlock;
+            emitter.SetCurrentBasicBlock(nextBlock);
+            basicBlockOpen = true;
+        }
+        public override void Visit(BoundWhileStatement& boundWhileStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundWhileStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundWhileStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            intermediate.BasicBlock* prevTrueBlock = trueBlock;
+            intermediate.BasicBlock* prevFalseBlock = falseBlock;
+            intermediate.BasicBlock* prevBreakTarget = breakTarget;
+            intermediate.BasicBlock* prevContinueTarget = continueTarget;
+            BoundCompoundStatement* prevBreakTargetBlock = breakTargetBlock;
+            BoundCompoundStatement* prevContinueTargetBlock = continueTargetBlock;
+            breakTargetBlock = currentBlock;
+            continueTargetBlock = currentBlock;
+            trueBlock = emitter.CreateBasicBlock();
+            falseBlock = emitter.CreateBasicBlock();
+            breakTarget = falseBlock;
+            intermediate.BasicBlock* condBlock = emitter.CreateBasicBlock();
+            result = emitter.CreateJump(condBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            emitter.SetCurrentBasicBlock(condBlock);
+            continueTarget = condBlock;
+            bool prevGenJumpingBoolCode = genJumpingBoolCode;
+            genJumpingBoolCode = true;
+            boundWhileStatement.Condition()->Accept(*this);
+            if (Error()) return;
+            genJumpingBoolCode = prevGenJumpingBoolCode;
+            emitter.SetCurrentBasicBlock(trueBlock);
+            boundWhileStatement.Statement()->Accept(*this);
+            if (Error()) return;
+            result = emitter.CreateJump(condBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            emitter.SetCurrentBasicBlock(falseBlock);
+            breakTargetBlock = prevBreakTargetBlock;
+            continueTargetBlock = prevContinueTargetBlock;
+            breakTarget = prevBreakTarget;
+            continueTarget = prevContinueTarget;
+            trueBlock = prevTrueBlock;
+            falseBlock = prevFalseBlock;
+        }
+        public override void Visit(BoundDoStatement& boundDoStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundDoStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundDoStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            intermediate.BasicBlock* prevTrueBlock = trueBlock;
+            intermediate.BasicBlock* prevFalseBlock = falseBlock;
+            intermediate.BasicBlock* prevBreakTarget = breakTarget;
+            intermediate.BasicBlock* prevContinueTarget = continueTarget;
+            intermediate.BasicBlock* doBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* condBlock = emitter.CreateBasicBlock();
+            BoundCompoundStatement* prevBreakTargetBlock = breakTargetBlock;
+            BoundCompoundStatement* prevContinueTargetBlock = continueTargetBlock;
+            breakTargetBlock = currentBlock;
+            continueTargetBlock = currentBlock;
+            trueBlock = doBlock;
+            falseBlock = emitter.CreateBasicBlock();
+            breakTarget = falseBlock;
+            continueTarget = condBlock;
+            result = emitter.CreateJump(doBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            emitter.SetCurrentBasicBlock(doBlock);
+            boundDoStatement.Statement()->Accept(*this);
+            if (Error()) return;
+            result = emitter.CreateJump(condBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            emitter.SetCurrentBasicBlock(condBlock);
+            bool prevGenJumpingBoolCode = genJumpingBoolCode;
+            genJumpingBoolCode = true;
+            boundDoStatement.Condition()->Accept(*this);
+            if (Error()) return;
+            genJumpingBoolCode = prevGenJumpingBoolCode;
+            emitter.SetCurrentBasicBlock(falseBlock);
+            basicBlockOpen = true;
+            breakTargetBlock = prevBreakTargetBlock;
+            continueTargetBlock = prevContinueTargetBlock;
+            breakTarget = prevBreakTarget;
+            continueTarget = prevContinueTarget;
+            trueBlock = prevTrueBlock;
+            falseBlock = prevFalseBlock;
+        }
+        public override void Visit(BoundForStatement& boundForStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundForStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundForStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            intermediate.BasicBlock* prevTrueBlock = trueBlock;
+            intermediate.BasicBlock* prevFalseBlock = falseBlock;
+            intermediate.BasicBlock* prevBreakTarget = breakTarget;
+            intermediate.BasicBlock* prevContinueTarget = continueTarget;
+            boundForStatement.InitS()->Accept(*this);
+            if (Error()) return;
+            intermediate.BasicBlock* condBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* actionBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* loopBlock = emitter.CreateBasicBlock();
+            trueBlock = actionBlock;
+            falseBlock = emitter.CreateBasicBlock();
+            breakTarget = falseBlock;
+            continueTarget = loopBlock;
+            BoundCompoundStatement* prevBreakTargetBlock = breakTargetBlock;
+            BoundCompoundStatement* prevContinueTargetBlock = continueTargetBlock;
+            breakTargetBlock = currentBlock;
+            continueTargetBlock = currentBlock;
+            result = emitter.CreateJump(condBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            emitter.SetCurrentBasicBlock(condBlock);
+            bool prevGenJumpingBoolCode = genJumpingBoolCode;
+            genJumpingBoolCode = true;
+            boundForStatement.Condition()->Accept(*this);
+            if (Error()) return;
+            genJumpingBoolCode = prevGenJumpingBoolCode;
+            emitter.SetCurrentBasicBlock(actionBlock);
+            boundForStatement.ActionS()->Accept(*this);
+            if (Error()) return;
+            result = emitter.CreateJump(loopBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            emitter.SetCurrentBasicBlock(loopBlock);
+            boundForStatement.LoopS()->Accept(*this);
+            if (Error()) return;
+            result = emitter.CreateJump(condBlock);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            emitter.SetCurrentBasicBlock(falseBlock);
+            basicBlockOpen = true;
+            breakTargetBlock = prevBreakTargetBlock;
+            continueTargetBlock = prevContinueTargetBlock;
+            breakTarget = prevBreakTarget;
+            continueTarget = prevContinueTarget;
+            trueBlock = prevTrueBlock;
+            falseBlock = prevFalseBlock;
+        }
+        public override void Visit(BoundSwitchStatement& boundSwitchStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundSwitchStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundSwitchStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            intermediate.BasicBlock* prevBreakTarget = breakTarget;
+            BoundCompoundStatement* prevBreakTargetBlock = breakTargetBlock;
+            breakTargetBlock = currentBlock;
+            boundSwitchStatement.Condition()->Accept(*this);
+            if (Error()) return;
+            intermediate.Value* condition = emitter.Stack().Pop();
+            intermediate.BasicBlock* prevDefaultDest = defaultDest;
+            intermediate.BasicBlock* next = null;
+            if (boundSwitchStatement.DefaultStatement() != null)
+            {
+                defaultDest = emitter.CreateBasicBlock();
+                next = emitter.CreateBasicBlock();
+            }
+            else
+            {
+                defaultDest = emitter.CreateBasicBlock();
+                next = defaultDest;
+            }
+            breakTarget = next;
+            int n = cast<int>(boundSwitchStatement.CaseStatements().Count());
+            Result<intermediate.SwitchInstruction*> switchResult = emitter.CreateSwitch(condition, defaultDest);
+            if (switchResult.Error())
+            {
+                SetErrorId(switchResult.GetErrorId());
+                return;
+            }
+            intermediate.SwitchInstruction* switchInst = switchResult.Value();
+            HashMap<IntegralValue, intermediate.BasicBlock*>* prevCaseMap = currentCaseMap;
+            HashMap<IntegralValue, intermediate.BasicBlock*> caseMap;
+            currentCaseMap = &caseMap;
+            for (int i = 0; i < n; ++i)
+            {
+                BoundCaseStatement* caseS = boundSwitchStatement.CaseStatements()[i].Get();
+                intermediate.BasicBlock* caseDest = emitter.CreateBasicBlock();
+                for (const UniquePtr<Value>& caseValue : caseS->CaseValues())
+                {
+                    IntegralValue integralCaseValue(caseValue.Get());
+                    caseMap[integralCaseValue] = caseDest;
+                    intermediate.CaseTarget caseTarget;
+                    Result<intermediate.Value*> irValueResult = caseValue->IrValue(emitter);
+                    if (irValueResult.Error())
+                    {
+                        SetErrorId(irValueResult.GetErrorId());
+                        return;
+                    }
+                    intermediate.Value* irValue = irValueResult.Value();
+                    caseTarget.caseValue = irValue;
+                    caseTarget.targetLabelId = caseDest->Id();
+                    caseTarget.targetBlock = caseDest;
+                    switchInst->AddCaseTarget(caseTarget);
+                }
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                BoundCaseStatement* caseS = boundSwitchStatement.CaseStatements()[i].Get();
+                caseS->Accept(*this);
+                if (Error()) return;
+                if (basicBlockOpen)
+                {
+                    Result<bool> result = emitter.CreateJump(next);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
+                    basicBlockOpen = false;
+                }
+            }
+            if (boundSwitchStatement.DefaultStatement() != null)
+            {
+                boundSwitchStatement.DefaultStatement()->Accept(*this);
+                if (Error()) return;
+                if (basicBlockOpen)
+                {
+                    Result<bool> result = emitter.CreateJump(next);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
+                    basicBlockOpen = false;
+                }
+            }
+            emitter.SetCurrentBasicBlock(next);
+            basicBlockOpen = true;
+            currentCaseMap = prevCaseMap;
+            defaultDest = prevDefaultDest;
+            breakTargetBlock = prevBreakTargetBlock;
+            breakTarget = prevBreakTarget;
+        }
+        public override void Visit(BoundCaseStatement& boundCaseStatement)
+        {
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundCaseStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (!boundCaseStatement.CaseValues().IsEmpty())
+            {
+                IntegralValue integralCaseValue(boundCaseStatement.CaseValues().Front().Get());
+                auto it = currentCaseMap->Find(integralCaseValue);
+                if (it != currentCaseMap->End())
+                {
+                    intermediate.BasicBlock* caseDest = it->second;
+                    emitter.SetCurrentBasicBlock(caseDest);
+                    if (generateLineNumbers)
+                    {
+                        SetSpan(boundCaseStatement.Span());
+                    }
+                    if (boundCaseStatement.CompoundStatement() != null)
+                    {
+                        boundCaseStatement.CompoundStatement()->Accept(*this);
+                        if (Error()) return;
+                    }
+                }
+                else
+                {
+                    int errorId = MakeError("case not found", boundCaseStatement.FullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            else
+            {
+                int errorId = MakeError("no cases", boundCaseStatement.FullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(BoundDefaultStatement& boundDefaultStatement)
+        {
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundDefaultStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            if (defaultDest != null)
+            {
+                emitter.SetCurrentBasicBlock(defaultDest);
+                if (generateLineNumbers)
+                {
+                    SetSpan(boundDefaultStatement.Span());
+                }
+                if (boundDefaultStatement.CompoundStatement() != null)
+                {
+                    boundDefaultStatement.CompoundStatement()->Accept(*this);
+                    if (Error()) return;
+                }
+            }
+            else
+            {
+                int errorId = MakeError("no default destination", boundDefaultStatement.FullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(BoundConstructionStatement& boundConstructionStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundConstructionStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            Result<bool> result = SetTarget(&boundConstructionStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            boundConstructionStatement.ConstructorCall()->Accept(*this);
+            if (Error()) return;
+            if (!boundConstructionStatement.ConstructorCall()->GetFunctionSymbol()->IsBasicTypeOperation())
+            {
+                int n = cast<int>(boundConstructionStatement.ConstructorCall()->Arguments().Count());
+                if (n > 0)
+                {
+                    BoundExpression* firstArgument = boundConstructionStatement.ConstructorCall()->Arguments()[0].Get();
+                    TypeSymbol* firstArgumentBaseType = firstArgument->Type()->BaseType();
+                    if (firstArgumentBaseType->IsClassTypeSymbol())
+                    {
+                        if (firstArgument->Type()->IsPointerType())
+                        {
+                            LockGuard<RecursiveMutex> lock(compileUnit->GetModule()->Lock());
+                            TypeSymbol* firstArgumentBaseType = firstArgument->Type()->RemovePointer(context);
+                            if (firstArgumentBaseType->IsClassTypeSymbol())
+                            {
+                                ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(firstArgumentBaseType);
+                                DestructorSymbol* destructor = classType->Destructor();
+                                if (destructor != null)
+                                {
+                                    if (destructor->IsGenerated() || destructor->IsTemplateSpecialization())
+                                    {
+                                        Result<FunctionSymbol*> copyResult = classType->Destructor()->Copy();
+                                        if (copyResult.Error())
+                                        {
+                                            SetErrorId(copyResult.GetErrorId());
+                                            return;
+                                        }
+                                        FunctionSymbol* copy = copyResult.Value();
+                                        destructor = cast<DestructorSymbol*>(copy);
+                                        compileUnit->GetSymbolTable()->AddFunctionSymbol(UniquePtr<FunctionSymbol>(destructor));
+                                        SourceFileNode* sourceFile = compileUnit->SourceFile();
+                                        Result<string> sourceFileIdResult = sourceFile->Id();
+                                        if (sourceFileIdResult.Error())
+                                        {
+                                            SetErrorId(sourceFileIdResult.GetErrorId());
+                                            return;
+                                        }
+                                        string sourceFileId = Rvalue(sourceFileIdResult.Value());
+                                        destructor->SetSourceFileId(sourceFileId);
+                                        Result<bool> result = destructor->ComputeMangledName();
+                                        if (result.Error())
+                                        {
+                                            SetErrorId(result.GetErrorId());
+                                            return;
+                                        }
+                                    }
+                                    UniquePtr<BoundExpression> classPtrArgument(firstArgument->Clone());
+                                    UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(currentBlock->EndSpan(), destructor));
+                                    destructorCall->AddArgument(Rvalue(classPtrArgument));
+                                    #assert(currentBlock != null);
+                                    auto it = blockDestructionMap.Find(currentBlock);
+                                    if (it != blockDestructionMap.End())
+                                    {
+                                        List<UniquePtr<BoundFunctionCall>>& destructorCallList = it->second;
+                                        destructorCallList.Add(Rvalue(destructorCall));
+                                    }
+                                    else
+                                    {
+                                        int errorId = MakeError("block destruction not found", boundConstructionStatement.FullSpan());
+                                        SetErrorId(errorId);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public override void Visit(BoundAssignmentStatement& boundAssignmentStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundAssignmentStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundAssignmentStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            boundAssignmentStatement.AssignmentCall()->Accept(*this);
+        }
+        public override void Visit(BoundExpressionStatement& boundExpressionStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundExpressionStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            Result<bool> result = SetTarget(&boundExpressionStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            boundExpressionStatement.Expression()->Accept(*this);
+            if (Error()) return;
+            if (boundExpressionStatement.Expression()->HasValue())
+            {
+                emitter.Stack().Pop();
+            }
+        }
+        public override void Visit(BoundInitializationStatement& boundInitializationStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundInitializationStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            Result<bool> result = SetTarget(&boundInitializationStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            boundInitializationStatement.InitializationExpression()->Accept(*this);
+            if (Error()) return;
+            if (boundInitializationStatement.InitializationExpression()->HasValue())
+            {
+                emitter.Stack().Pop();
+            }
+        }
+        public override void Visit(BoundEmptyStatement& boundEmptyStatement)
+        {
+            if (generateLineNumbers)
+            {
+                SetSpan(boundEmptyStatement.Span());
+            }
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            latestRet = null;
+            Result<bool> result = SetTarget(&boundEmptyStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = emitter.CreateNop();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = emitter.CreateNop();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundSetVmtPtrStatement& boundSetVmtPtrStatement)
+        {
+            destructorCallGenerated = false;
+            lastInstructionWasRet = false;
+            basicBlockOpen = false;
+            Result<bool> result = SetTarget(&boundSetVmtPtrStatement);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            BoundExpression* classPtr = boundSetVmtPtrStatement.ClassPtr();
+            TypeSymbol* type = classPtr->Type()->BaseType();
+            #assert(type->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type);
+            int vmtPtrIndex = classType->VmtPtrIndex();
+            #assert(vmtPtrIndex != -1);
+            classPtr->Accept(*this);
+            if (Error()) return;
+            intermediate.Value* classPtrValue = emitter.Stack().Pop();
+            Result<intermediate.Value*> ptrResult = emitter.GetMemberVariablePtr(classPtrValue, vmtPtrIndex);
+            if (ptrResult.Error())
+            {
+                SetErrorId(ptrResult.GetErrorId());
+                return;
+            }
+            intermediate.Value* ptr = ptrResult.Value();
+            Result<intermediate.Value*> vmtObjectResult = boundSetVmtPtrStatement.ClassType()->VmtObject(emitter, false);
+            if (vmtObjectResult.Error())
+            {
+                SetErrorId(vmtObjectResult.GetErrorId());
+                return;
+            }
+            intermediate.Value* vmtObject = vmtObjectResult.Value();
+            Result<intermediate.Value*> vmtPtrResult = emitter.CreateBitcast(vmtObject, emitter.GetVoidPtrType());
+            if (vmtPtrResult.Error())
+            {
+                SetErrorId(vmtPtrResult.GetErrorId());
+                return;
+            }
+            intermediate.Value* vmtPtr = vmtPtrResult.Value();
+            result = emitter.CreateStore(vmtPtr, ptr);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundParameter& boundParameter)
+        {
+            Result<bool> result = boundParameter.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundLocalVariable& boundLocalVariable)
+        {
+            Result<bool> result = boundLocalVariable.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundMemberVariable& boundMemberVariable)
+        {
+            Result<bool> result = boundMemberVariable.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundConstant& boundConstant)
+        {
+            Result<bool> result = boundConstant.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundEnumConstant& boundEnumConstant)
+        {
+            Result<bool> result = boundEnumConstant.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundLiteral& boundLiteral)
+        {
+            Result<bool> result = boundLiteral.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundTemporary& boundTemporary)
+        {
+            Result<bool> result = boundTemporary.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundSizeOfExpression& boundSizeOfExpression)
+        {
+            Result<bool> result = boundSizeOfExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundAddressOfExpression& boundAddressOfExpression)
+        {
+            Result<bool> result = boundAddressOfExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundDereferenceExpression& boundDereferenceExpression)
+        {
+            Result<bool> result = boundDereferenceExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundReferenceToPointerExpression& boundReferenceToPointerExpression)
+        {
+            Result<bool> result = boundReferenceToPointerExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundFunctionCall& boundFunctionCall)
+        {
+            Result<bool> result = boundFunctionCall.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundDelegateCall& boundDelegateCall)
+        {
+            Result<bool> result = boundDelegateCall.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundClassDelegateCall& boundClassDelegateCall)
+        {
+            Result<bool> result = boundClassDelegateCall.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundConversion& boundConversion)
+        {
+            Result<bool> result = boundConversion.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundConstructExpression& boundConstructExpression)
+        {
+            Result<bool> result = boundConstructExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundConstructAndReturnTemporaryExpression& boundConstructAndReturnTemporaryExpression)
+        {
+            Result<bool> result = boundConstructAndReturnTemporaryExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundClassOrClassDelegateConversionResult& boundClassOrClassDelegateConversionResult)
+        {
+            Result<bool> result = boundClassOrClassDelegateConversionResult.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundIsExpression& boundIsExpression)
+        {
+            Result<bool> result = boundIsExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = GenJumpingBoolCode();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundAsExpression& boundAsExpression)
+        {
+            Result<bool> result = boundAsExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundTypeNameExpression& boundTypeNameExpression)
+        {
+            Result<bool> result = boundTypeNameExpression.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundBitcast& boundBitcast)
+        {
+            Result<bool> result = boundBitcast.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundFunctionPtr& boundFunctionPtr)
+        {
+            Result<bool> result = boundFunctionPtr.Load(emitter, OperationFlags.none);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoundDisjunction& boundDisjunction)
+        {
+            if (genJumpingBoolCode)
+            {
+                #assert(trueBlock != null);
+                #assert(falseBlock != null);
+                intermediate.BasicBlock* rightBlock = emitter.CreateBasicBlock();
+                intermediate.BasicBlock* prevFalseBlock = falseBlock;
+                falseBlock = rightBlock;
+                boundDisjunction.Left()->Accept(*this);
+                if (Error()) return;
+                emitter.SetCurrentBasicBlock(rightBlock);
+                falseBlock = prevFalseBlock;
+                boundDisjunction.Right()->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundConjunction& boundConjunction)
+        {
+            if (genJumpingBoolCode)
+            {
+                #assert(trueBlock != null);
+                #assert(falseBlock != null);
+                intermediate.BasicBlock* rightBlock = emitter.CreateBasicBlock();
+                intermediate.BasicBlock* prevTrueBlock = trueBlock;
+                trueBlock = rightBlock;
+                boundConjunction.Left()->Accept(*this);
+                if (Error()) return;
+                emitter.SetCurrentBasicBlock(rightBlock);
+                trueBlock = prevTrueBlock;
+                boundConjunction.Right()->Accept(*this);
+                if (Error()) return;
+            }
+        }
+        public override void Visit(BoundGlobalVariable& boundGlobalVariable)
+        {
+            GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
+            Result<bool> result = globalVariableSymbol->CreateIrObject(emitter);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        private void GenerateEnterFunctionCode(BoundFunction* currentFunction)
+        {
+            // todo
+        }
+        [nodiscard]
+        private Result<bool> GenJumpingBoolCode()
+        {
+            if (!genJumpingBoolCode) return Result<bool>(false);
+            #assert(trueBlock != null);
+            #assert(falseBlock != null);
+            intermediate.Value* cond = emitter.Stack().Pop();
+            if (sequenceSecond != null)
+            {
+                genJumpingBoolCode = false;
+                sequenceSecond->SetGenerated();
+                sequenceSecond->Accept(*this);
+                if (Error()) return Result<bool>(ErrorId(GetErrorId()));
+                genJumpingBoolCode = true;
+            }
+            Result<bool> branchResult = emitter.CreateBranch(cond, trueBlock, falseBlock);
+            if (branchResult.Error()) return branchResult;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> ExitBlocks(BoundCompoundStatement* targetBlock)
+        {
+            bool createBasicBlock = false;
+            BoundStatement* lastStatement = null;
+            if (!currentFunction->Body()->Statements().IsEmpty())
+            {
+                lastStatement = currentFunction->Body()->Statements().Back().Get();
+            }
+            BoundStatement* currentBlockLastStatement = null;
+            if (currentBlock != null && !currentBlock->Statements().IsEmpty())
+            {
+                currentBlockLastStatement = currentBlock->Statements().Back().Get();
+            }
+            if (lastStatement != null && currentBlockLastStatement != null && lastStatement == currentBlockLastStatement && currentBlockLastStatement->IsBoundReturnStatement())
+            {
+                createBasicBlock = true;
+            }
+            int n = cast<int>(blocks.Count());
+            for (int i = n - 1; i >= 0; --i)
+            {
+                BoundCompoundStatement* block = blocks[i];
+                if (block == targetBlock)
+                {
+                    break;
+                }
+                auto it = blockDestructionMap.Find(block);
+                if (it != blockDestructionMap.End())
+                {
+                    List<UniquePtr<BoundFunctionCall>>& destructorCallList = it->second;
+                    int nd = cast<int>(destructorCallList.Count());
+                    for (int i = nd - 1; i >= 0; --i)
+                    {
+                        block->SetDestroyed();
+                        UniquePtr<BoundFunctionCall>& destructorCall = destructorCallList[i];
+                        if (!destructorCall.IsNull())
+                        {
+                            if (createBasicBlock)
+                            {
+                                intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+                                if (!lastInstructionWasRet)
+                                {
+                                    Result<bool> jumpResult = emitter.CreateJump(nextBlock);
+                                    if (jumpResult.Error()) return jumpResult;
+                                }
+                                emitter.SetCurrentBasicBlock(nextBlock);
+                                createBasicBlock = false;
+                            }
+                            bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+                            inSetLineOrEntryCode = true;
+                            destructorCall->Accept(*this);
+                            if (Error()) return Result<bool>(ErrorId(GetErrorId()));
+                            inSetLineOrEntryCode = prevSetLineOrEntryCode;
+                            destructorCallGenerated = true;
+                        }
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> SetTarget(BoundStatement* labeledStatement)
+        {
+            if (labeledStatement->Label().IsEmpty()) return Result<bool>(false);
+            auto it = labeledStatementMap.Find(labeledStatement);
+            if (it != labeledStatementMap.End())
+            {
+                intermediate.BasicBlock* target = it->second;
+                Result<bool> result = emitter.CreateJump(target);
+                if (result.Error()) return result;
+                emitter.SetCurrentBasicBlock(target);
+            }
+            else
+            {
+                int errorId = MakeError("target for labeled statement not found", labeledStatement->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        private void SetSpan(const System.Lex.Span& span)
+        {
+            if (!span.IsValid()) return;
+            if (inSetLineOrEntryCode) return;
+            fullSpan.span = span;
+            int lineNumber = GetLineNumber(fullSpan);
+            if (lineNumber != 0)
+            {
+                SetLineNumber(lineNumber);
+            }
+        }
+        private void SetLineNumber(int lineNumber)
+        {
+            if (prevLineNumber == lineNumber) return;
+            emitter.SetCurrentLineNumber(lineNumber);
+            prevLineNumber = lineNumber;
+            // todo: execute set line number statement
+        }
+        private int GetLineNumber(const System.Lex.FullSpan& fullSpan)
+        {
+            Module* module = GetModuleById(fullSpan.moduleId);
+            if (module != null)
+            {
+                int fileIndex = fullSpan.fileIndex;
+                const System.Lex.FileMap& fileMap = module->GetFileMap();
+                System.Lex.SourceFile* sourceFile = fileMap.GetSourceFile(fileIndex);
+                if (sourceFile != null)
+                {
+                    System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(fullSpan.span, sourceFile->LineStartIndeces());
+                    if (lineColLen.IsValid())
+                    {
+                        return lineColLen.line;
+                    }
+                }
+            }
+            return 0;
+        }
+        private Result<bool> GenerateCopyConstructorCall(ParameterSymbol* parameter, intermediate.Value* arg)
+        {
+            TypeSymbol* paramType = parameter->Type();
+            if (paramType->IsClassTypeSymbol())
+            {
+                ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(paramType);
+                Result<FunctionSymbol*> copyCtorResult = compileUnit->GetOperationRepository()->GetClassCopyConstructor(classType, currentFunction);
+                if (copyCtorResult.Error()) return Result<bool>(ErrorId(copyCtorResult.GetErrorId()));
+                FunctionSymbol* copyCtor = copyCtorResult.Value();
+                Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(copyCtor);
+                if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
+                intermediate.FunctionType* functionType = functionTypeResult.Value();
+                Result<string> mangledNameResult = ToUtf8(copyCtor->MangledName());
+                if (mangledNameResult.Error()) return Result<bool>(ErrorId(mangledNameResult.GetErrorId()));
+                string mangledName = Rvalue(mangledNameResult.Value());
+                Result<intermediate.Function*> functionResult = emitter.GetOrInsertFunction(mangledName, functionType);
+                if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
+                intermediate.Function* fn = functionResult.Value();
+                intermediate.Value* callee = emitter.MakeSymbolValue(functionType, fn->ToString());
+                List<intermediate.Value*> args;
+                Result<intermediate.Value*> paramObjectResult = parameter->GetIrObject(emitter);
+                if (paramObjectResult.Error()) return Result<bool>(ErrorId(paramObjectResult.GetErrorId()));
+                intermediate.Value* paramObject = paramObjectResult.Value();
+                args.Add(paramObject);
+                args.Add(arg);
+                Result<intermediate.Value*> result = emitter.CreateCall(functionType, callee, args);
+                if (result.Error()) return Result<bool>(result.GetErrorId());
+                return Result<bool>(true);
+            }
+            else if (paramType->IsClassDelegateTypeSymbol())
+            {
+                ClassDelegateTypeSymbol* classDelegateType = cast<ClassDelegateTypeSymbol*>(paramType);
+                FunctionSymbol* copyConstructor = classDelegateType->CopyConstructor();
+                #assert(copyConstructor != null);
+                List<IrObject*> copyCtorArgs;
+                Result<intermediate.Value*> paramObjectResult = parameter->GetIrObject(emitter);
+                if (paramObjectResult.Error()) return Result<bool>(ErrorId(paramObjectResult.GetErrorId()));
+                intermediate.Value* paramObject = paramObjectResult.Value();
+                NativeValue paramValue(paramObject);
+                copyCtorArgs.Add(&paramValue);
+                NativeValue argumentValue(arg);
+                copyCtorArgs.Add(&argumentValue);
+                Result<bool> result = copyConstructor->GenerateCall(emitter, copyCtorArgs, OperationFlags.none);
+                return result;
+            }
+            else if (paramType->IsInterfaceTypeSymbol())
+            {
+                // todo
+            }
+            return Result<bool>(false);
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private SymbolsContext& context;
+        private Emitter emitter;
+        private BoundCompileUnit* compileUnit;
+        private BoundFunction* currentFunction;
+        private BoundCompoundStatement* currentBlock;
+        private BoundCompoundStatement* breakTargetBlock;
+        private BoundCompoundStatement* continueTargetBlock;
+        private BoundReturnStatement* latestRet;
+        private Map<BoundCompoundStatement*, List<UniquePtr<BoundFunctionCall>>> blockDestructionMap;
+        private HashMap<IntegralValue, intermediate.BasicBlock*>* currentCaseMap;
+        private intermediate.BasicBlock* defaultDest;
+        private Map<BoundStatement*, intermediate.BasicBlock*> labeledStatementMap;
+        private List<BoundCompoundStatement*> blocks;
+        private Map<int, intermediate.Value*> utf8stringMap;
+        private Map<int, intermediate.Value*> utf16stringMap;
+        private Map<int, intermediate.Value*> utf32stringMap;
+        private intermediate.BasicBlock* trueBlock;
+        private intermediate.BasicBlock* falseBlock;
+        private intermediate.BasicBlock* breakTarget;
+        private intermediate.BasicBlock* continueTarget;
+        private bool destructorCallGenerated;
+        private bool lastInstructionWasRet;
+        private bool basicBlockOpen;
+        private bool generateLineNumbers;
+        private bool isSystemRuntimeOrCoreModule;
+        private bool inSetLineOrEntryCode;
+        private bool genJumpingBoolCode;
+        private BoundStatement* sequenceSecond;
+        private System.Lex.FullSpan fullSpan;
+        private int prevLineNumber;
+        private int errorId;
+    }
+
+    public Result<bool> GenerateCode(BoundCompileUnit* boundCompileUnit)
+    {
+        CodeGenerator codeGenerator(boundCompileUnit->Context());
+        boundCompileUnit->Accept(codeGenerator);
+        if (codeGenerator.Error())
+        {
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        else
+        {
+            return Result<bool>(true);
+        }
+    }
+}
+

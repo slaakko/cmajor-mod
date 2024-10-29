@@ -1,0 +1,46 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+using cm.ast;
+
+namespace symbols
+{
+    public class SymbolWriter
+    {
+        public SymbolWriter(SymbolsContext& context_, const string& fileName_) : context(context_), astWriter(fileName_)
+        {
+        }
+        public inline AstWriter& GetAstWriter()
+        {
+            return astWriter;
+        }
+        public inline BinaryWriter& GetBinaryWriter()
+        {
+            return astWriter.GetBinaryWriter();
+        }
+        public inline SymbolsContext& Context()
+        {
+            return context;
+        }
+        [nodiscard]
+        public Result<bool> Write(Symbol* symbol)
+        {
+            #assert(symbol != null);
+            auto result = GetBinaryWriter().Write(cast<byte>(symbol->Kind()));
+            if (result.Error()) return result;
+            result = GetAstWriter().Write(symbol->Span());
+            if (result.Error()) return result;
+            result = GetBinaryWriter().Write(symbol->Name());
+            if (result.Error()) return result;
+            result = symbol->Write(*this);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private AstWriter astWriter;
+        private SymbolsContext& context;
+    }
+}

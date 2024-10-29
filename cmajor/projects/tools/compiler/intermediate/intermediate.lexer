@@ -1,0 +1,36 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using intermediate.token;
+using intermediate.keyword;
+using intermediate.expr;
+
+lexer intermediate_lexer
+{
+    rules
+    {
+        "{separators}" {}
+        "{clsid}"  { return CLSID; }
+        "{id}" { long kw = GetKeywordToken(token.match); if (kw == INVALID_TOKEN) return ID; else return kw; }
+        "{typeidentifier}" { return TYPEID; }
+        "{string}" { return STRING; }
+        "{number}" { return NUMBER; }
+        "{hexnum}" { return HEXNUM; }
+        "\(" { return LPAREN; }
+        "\)" { return RPAREN; }
+        "," { return COMMA; }
+        "\{" { return LBRACE; }
+        "\}" { return RBRACE; }
+        "\*" { return AST; }
+        ":" { return COLON; }
+        ";" { return SEMICOLON; }
+        "\[" { return LBRACKET; }
+        "\]" { return RBRACKET; }
+        "=" { return ASSIGN; }
+        "@" { return AT; }
+        "$" { return DOLLAR; }
+        "!" { return EXCLAMATION; }
+    }
+}

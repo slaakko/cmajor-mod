@@ -1,0 +1,429 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public enum Derivations : byte
+    {
+        none = 0u,
+        constDerivation = 1u << 0u,
+        lvalueRefDerivation = 1u << 1u,
+        rvalueRefDerivation = 1u << 2u,
+        refMask = lvalueRefDerivation | rvalueRefDerivation,
+        constRefMask = 0x0Fu,
+        pointerMask = 0xF0u
+    }
+
+    public const byte numDerivations = 15u;
+
+    public int DerivationId(Derivations derivations)
+    {
+        int derivationId = (derivations & Derivations.constRefMask);
+        if ((derivations & Derivations.pointerMask) != Derivations.none)
+        {
+            ++derivationId;
+        }
+        return derivationId;
+    }
+
+    public int PositionId(Derivations derivations)
+    {
+        int positionId = PointerCount(derivations);
+        return positionId;
+    }
+
+    public inline bool HasFrontConstDerivation(Derivations derivations)
+    {
+        return (derivations & Derivations.constDerivation) != Derivations.none;
+    }
+
+    public inline bool HasReferenceDerivation(Derivations derivations)
+    {
+        return (derivations & Derivations.refMask) != Derivations.none;
+    }
+
+    public inline bool HasLvalueReferenceDerivation(Derivations derivations)
+    {
+        return (derivations & Derivations.lvalueRefDerivation) != Derivations.none;
+    }
+
+    public inline bool HasRvalueReferenceDerivation(Derivations derivations)
+    {
+        return (derivations & Derivations.rvalueRefDerivation) != Derivations.none;
+    }
+
+    public inline bool HasReferenceOrConstDerivation(Derivations derivations)
+    {
+        return (derivations & Derivations.constRefMask) != Derivations.none;
+    }
+
+    public const byte pointerShift = 4u;
+
+    public inline Derivations SetPointerDerivations(int pointerCount)
+    {
+        #assert(pointerCount < 15);
+        return cast<Derivations>(cast<byte>(pointerCount) << pointerShift);
+    }
+
+    public inline int PointerCount(Derivations derivations)
+    {
+        return (derivations & Derivations.pointerMask) >> pointerShift;
+    }
+
+    public inline bool HasPointerDerivation(Derivations derivations)
+    {
+        return (derivations & Derivations.pointerMask) != Derivations.none;
+    }
+
+    public inline Derivations MakePlainDerivations(Derivations derivations)
+    {
+        return cast<Derivations>(derivations & Derivations.pointerMask);
+    }
+
+    public inline Derivations RemoveReferenceDerivation(Derivations derivations)
+    {
+        return cast<Derivations>(derivations & (Derivations.constDerivation | Derivations.pointerMask));
+    }
+
+    public inline Derivations RemovePointerDerivation(Derivations derivations)
+    {
+        return cast<Derivations>((derivations & Derivations.constRefMask) | SetPointerDerivations(Max(cast<int>(0), PointerCount(derivations) - 1)));
+    }
+
+    public inline Derivations RemoveConstDerivation(Derivations derivations)
+    {
+        return cast<Derivations>(derivations & ~Derivations.constDerivation);
+    }
+
+    public inline Derivations AddConstDerivation(Derivations derivations)
+    {
+        return cast<Derivations>(derivations | Derivations.constDerivation);
+    }
+
+    public inline Derivations AddLvalueReferenceDerivation(Derivations derivations)
+    {
+        return cast<Derivations>(derivations | Derivations.lvalueRefDerivation);
+    }
+
+    public inline Derivations AddRvalueReferenceDerivation(Derivations derivations)
+    {
+        return cast<Derivations>(derivations | Derivations.rvalueRefDerivation);
+    }
+
+    public inline Derivations AddPointerDerivation(Derivations derivations)
+    {
+        return cast<Derivations>((derivations & Derivations.constRefMask) | SetPointerDerivations(PointerCount(derivations) + 1));
+    }
+
+    public Derivations UnifyDerivations(Derivations left, Derivations right)
+    {
+        Derivations result = Derivations.none;
+        if (HasFrontConstDerivation(left) || HasFrontConstDerivation(right))
+        {
+            result = cast<Derivations>(result | Derivations.constDerivation);
+        }
+        int pointerCount = PointerCount(left) + PointerCount(right);
+        result = cast<Derivations>(result | SetPointerDerivations(pointerCount));
+        if (HasLvalueReferenceDerivation(left))
+        {
+            result = cast<Derivations>(result | Derivations.lvalueRefDerivation);
+        }
+        else if (HasRvalueReferenceDerivation(left))
+        {
+            result = cast<Derivations>(result | Derivations.rvalueRefDerivation);
+        }
+        else if (HasLvalueReferenceDerivation(right))
+        {
+            result = cast<Derivations>(result | Derivations.lvalueRefDerivation);
+        }
+        else if (HasRvalueReferenceDerivation(right))
+        {
+            result = cast<Derivations>(result | Derivations.rvalueRefDerivation);
+        }
+        return result;
+    }
+
+    public ustring MakeDerivedTypeName(TypeSymbol* baseType, Derivations derivations)
+    {
+        ustring derivedTypeName;
+        bool constAdded = false;
+        if (HasFrontConstDerivation(derivations))
+        {
+            derivedTypeName.Append(u"const");
+            constAdded = true;
+        }
+        if (!derivedTypeName.IsEmpty())
+        {
+            derivedTypeName.Append(' ');
+        }
+        derivedTypeName.Append(baseType->Name());
+        if (HasLvalueReferenceDerivation(derivations))
+        {
+            derivedTypeName.Append('&');
+        }
+        else if (HasRvalueReferenceDerivation(derivations))
+        {
+            derivedTypeName.Append(u"&&");
+        }
+        int n = PointerCount(derivations);
+        for (int i = 0; i < n; ++i)
+        {
+            derivedTypeName.Append('*');
+        }
+        return derivedTypeName;
+    }
+
+    public class DerivedTypeSymbol : TypeSymbol
+    {
+        public DerivedTypeSymbol(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.derivedTypeSymbol, span_, name_), baseType(null), derivations(Derivations.none)
+        {
+        }
+        public DerivedTypeSymbol(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* baseType_, Derivations derivations_) :
+            base(SymbolKind.derivedTypeSymbol, span_, name_), baseType(baseType_), derivations(derivations_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"derived_type";
+        }
+        public override TypeSymbol* BaseType() const
+        {
+            return baseType;
+        }
+        public override bool IsConstType() const
+        {
+            return HasFrontConstDerivation(derivations);
+        }
+        public override bool IsReferenceType() const
+        {
+            return HasReferenceDerivation(derivations);
+        }
+        public override bool IsLvalueReferenceType() const
+        {
+            return HasLvalueReferenceDerivation(derivations);
+        }
+        public override bool IsRvalueReferenceType() const
+        {
+            return HasRvalueReferenceDerivation(derivations);
+        }
+        public override bool IsPointerType() const
+        {
+            return HasPointerDerivation(derivations);
+        }
+        public override bool IsCharacterPointerType() const
+        {
+            return baseType->IsCharacterType() && PointerCount() == 1;
+        }
+        public override int PointerCount() const
+        {
+            return PointerCount(derivations);
+        }
+        public override Derivations GetDerivations() const
+        {
+            return derivations;
+        }
+        public override TypeSymbol* PlainType(SymbolsContext& context) const
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, MakePlainDerivations(derivations));
+        }
+        public override TypeSymbol* RemoveConst(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, RemoveConstDerivation(derivations));
+        }
+        public override TypeSymbol* RemoveReference(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, RemoveReferenceDerivation(derivations));
+        }
+        public override TypeSymbol* RemovePointer(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, RemovePointerDerivation(derivations));
+        }
+        public override TypeSymbol* RemovePtrOrRef(SymbolsContext& context)
+        {
+            if (IsReferenceType())
+            {
+                return RemoveReference(context);
+            }
+            else if (IsPointerType())
+            {
+                return RemovePointer(context);
+            }
+            else
+            {
+                return this;
+            }
+        }
+        public override TypeSymbol* AddConst(SymbolsContext& context)
+        {
+            if (IsConstType())
+            {
+                return this;
+            }
+            else
+            {
+                return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, AddConstDerivation(derivations));
+            }
+        }
+        public override TypeSymbol* AddLvalueReference(SymbolsContext& context)
+        {
+            if (IsLvalueReferenceType())
+            {
+                return this;
+            }
+            else
+            {
+                return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, AddLvalueReferenceDerivation(derivations));
+            }
+        }
+        public override TypeSymbol* AddRvalueReference(SymbolsContext& context)
+        {
+            if (IsRvalueReferenceType())
+            {
+                return this;
+            }
+            else
+            {
+                return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, AddRvalueReferenceDerivation(derivations));
+            }
+        }
+        public override bool IsRecursive(TypeSymbol* type, HashSet<Uuid>& tested)
+        {
+            if (tested.Find(TypeId()) != tested.End())
+            {
+                return TypesEqual(type, this);
+            }
+            tested.Insert(TypeId());
+            return base->IsRecursive(type, tested) || baseType->IsRecursive(type, tested);
+        }
+        public override TypeSymbol* AddPointer(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, AddPointerDerivation(derivations));
+        }
+        public override TypeSymbol* RemoveDerivations(Derivations sourceDerivations, SymbolsContext& context) const
+        {
+            Derivations result = Derivations.none;
+            if (!HasFrontConstDerivation(sourceDerivations) && HasFrontConstDerivation(derivations))
+            {
+                result = cast<Derivations>(result | Derivations.constDerivation);
+            }
+            int pointerDiff = PointerCount(derivations) - PointerCount(sourceDerivations);
+            if (pointerDiff != 0)
+            {
+                for (int i = 0; i < pointerDiff; ++i)
+                {
+                    result = AddPointerDerivation(derivations);
+                }
+            }
+            if (!HasLvalueReferenceDerivation(sourceDerivations) && HasLvalueReferenceDerivation(derivations))
+            {
+                result = cast<Derivations>(result | Derivations.lvalueRefDerivation);
+            }
+            else if (!HasRvalueReferenceDerivation(sourceDerivations) && HasRvalueReferenceDerivation(derivations))
+            {
+                result = cast<Derivations>(result | Derivations.rvalueRefDerivation);
+            }
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, result);
+        }
+        public override TypeSymbol* Unify(TypeSymbol* that, SymbolsContext& context)
+        {
+            TypeSymbol* newBaseType = baseType->Unify(that->BaseType(), context);
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, newBaseType, UnifyDerivations(derivations, that->GetDerivations()));
+        }
+        public void ComputeTypeId(SymbolsContext& context)
+        {
+            Module* coreModule = context.CoreModule();
+            SymbolTable* coreSymbolTable = coreModule->GetSymbolTable();
+            Uuid typeId = baseType->TypeId();
+            Uuid derivationId = coreSymbolTable->GetDerivationId(derivations);
+            Uuid positionId = coreSymbolTable->GetPositionId(derivations);
+            for (int k = 0; k < Uuid.size; ++k)
+            {
+                typeId.data[k] = typeId.data[k] ^ derivationId.data[k] ^ positionId.data[k];
+            }
+            SetTypeId(typeId);
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            intermediate.Type* irType = emitter.GetIrTypeByTypeId(TypeId());
+            if (irType == null)
+            {
+                Result<intermediate.Type*> baseIrTypeResult = baseType->IrType(emitter);
+                if (baseIrTypeResult.Error()) return baseIrTypeResult;
+                irType = baseIrTypeResult.Value();
+                int numPointers = 0;
+                if (HasReferenceDerivation(derivations))
+                {
+                    ++numPointers;
+                }
+                numPointers = numPointers + PointerCount(derivations);
+                for (int i = 0; i < numPointers; ++i)
+                {
+                    Result<intermediate.Type*> ptrIrTypeResult = emitter.GetPointerType(irType);
+                    if (ptrIrTypeResult.Error()) return ptrIrTypeResult;
+                    irType = ptrIrTypeResult.Value();
+                }
+                emitter.SetIrTypeByTypeId(TypeId(), irType);
+            }
+            return Result<intermediate.Type*>(cast<intermediate.Type*>(irType));
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(baseType->TypeId());
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(cast<byte>(derivations));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> baseTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (baseTypeIdResult.Error()) return Result<bool>(ErrorId(baseTypeIdResult.GetErrorId()));
+            baseTypeId = baseTypeIdResult.Value();
+            Result<byte> derivationsResult = reader.GetBinaryReader().ReadByte();
+            if (derivationsResult.Error()) return Result<bool>(ErrorId(derivationsResult.GetErrorId()));
+            derivations = cast<Derivations>(derivationsResult.Value());
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            auto result = symbolTable->GetType(baseTypeId);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            baseType = result.Value();
+            symbolTable->MapType(this, true);
+            return Result<bool>(true);
+        }
+        private TypeSymbol* baseType;
+        private Uuid baseTypeId;
+        private Derivations derivations;
+    }
+
+    public class NullPtrTypeSymbol : TypeSymbol
+    {
+        public NullPtrTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.nullPtrTypeSymbol, span_, u"@nullptr_type")
+        {
+        }
+        public override bool IsNullPtrType() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            return Result<intermediate.Type*>(emitter.GetVoidPtrType());
+        }
+    }
+}
+

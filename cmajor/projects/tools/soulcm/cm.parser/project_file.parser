@@ -15,15 +15,15 @@ parser cm.parser.ProjectFileParser
     using cm.parser.ContainerFileParser.FilePath;
     using cm.parser.ContainerFileParser.ProjectKeyword;
 
-    ProjectFile(var UniquePtr<cm.ast.Project> projectFile) : cm.ast.Project*
-        ::= 
+    ProjectFile(const string& config, cm.ast.BackEnd backend, const string& toolChain, var UniquePtr<cm.ast.Project> projectFile) : cm.ast.Project*
+        ::=
         (
             empty{ lexer.vars.matchFilePath = true; }
             ProjectKeyword:projectKeyword
             QualifiedId:projectName
             SEMICOLON
             {
-                projectFile.Reset(new cm.ast.Project(projectName, lexer.FileName(), "debug", cm.ast.BackEnd.masm, "gcc"));
+                projectFile.Reset(new cm.ast.Project(projectName, lexer.FileName(), config, backend, toolChain));
             }
             (
                 Declaration:declaration{ projectFile->AddDeclaration(declaration); }
@@ -45,7 +45,7 @@ parser cm.parser.ProjectFileParser
         ;
 
     ReferenceDeclaration : cm.ast.ProjectDeclaration*
-        ::= 
+        ::=
         (
             ReferenceKeyword:referenceKeyword
             FilePath:filePath
@@ -57,7 +57,7 @@ parser cm.parser.ProjectFileParser
         ;
 
     SourceFileDeclaration : cm.ast.ProjectDeclaration*
-        ::= 
+        ::=
         (
             SourceKeyword:sourceKeyword
             FilePath:filePath
@@ -105,7 +105,7 @@ parser cm.parser.ProjectFileParser
         ;
 
     ActionFileDeclaration : cm.ast.ProjectDeclaration*
-        ::= 
+        ::=
         (
             ActionKeyword:actionKeyword
             FilePath:filePath

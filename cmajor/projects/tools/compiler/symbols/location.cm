@@ -1,0 +1,35 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public void GetLineNumberAndSourceFilePath(const System.Lex.FullSpan& location, int& lineNumber, string& sourceFilePath)
+    {
+        lineNumber = 0;
+        sourceFilePath = string();
+        if (location.span.IsValid())
+        {
+            Module* module = GetModuleById(location.moduleId);
+            if (module != null)
+            {
+                int fileIndex = location.fileIndex;
+                const System.Lex.FileMap& fileMap = module->GetFileMap();
+                if (fileMap.HasFileName(fileIndex))
+                {
+                    sourceFilePath = fileMap.GetFileName(fileIndex);
+                }
+                System.Lex.SourceFile* sourceFile = fileMap.GetSourceFile(fileIndex);
+                if (sourceFile != null)
+                {
+                    System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(location.span, sourceFile->LineStartIndeces());
+                    lineNumber = lineColLen.line;
+                }
+            }
+        }
+    }
+}
+

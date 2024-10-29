@@ -1,0 +1,161 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using cm.ast;
+
+namespace symbols
+{
+    public class ModuleCache
+    {
+        static ModuleCache() : instance(new ModuleCache())
+        {
+        }
+        public static ModuleCache& Instance()
+        {
+            return *instance;
+        }
+        public void MapModule(Module* module)
+        {
+            moduleIdMap[module->Id()] = module;
+        }
+        public Module* GetModule(const Uuid& moduleId) const
+        {
+            auto it = moduleIdMap.Find(moduleId);
+            if (it != moduleIdMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Module* GetModule(const string& moduleFilePath)
+        {
+            auto it = moduleMap.Find(moduleFilePath);
+            if (it != moduleMap.End())
+            {
+                int moduleIndex = it->second;
+                return modules[moduleIndex].Get();
+            }
+            else
+            {
+                UniquePtr<Module> module(new Module());
+                int moduleIndex = cast<int>(modules.Count());
+                module->SetIndex(moduleIndex);
+                Module* m = module.Get();
+                modules.Add(Rvalue(module));
+                moduleMap[moduleFilePath] = moduleIndex;
+                return m;
+            }
+        }
+        public Module* ResetModule(const string& moduleFilePath)
+        {
+            auto it = moduleMap.Find(moduleFilePath);
+            if (it != moduleMap.End())
+            {
+                int moduleIndex = it->second;
+                modules[moduleIndex].Reset(new Module());
+                modules[moduleIndex]->SetIndex(moduleIndex);
+                return modules[moduleIndex].Get();
+            }
+            else
+            {
+                return GetModule(moduleFilePath);
+            }
+        }
+        public void PutModule(UniquePtr<Module>&& module)
+        {
+            auto it = moduleMap.Find(module->OriginalFilePath());
+            if (it != moduleMap.End())
+            {
+                int moduleIndex = it->second;
+                module->SetFlag(ModuleFlags.readFromModuleFile); // reread
+                modules[moduleIndex] = module;
+            }
+            else
+            {
+                int moduleIndex = cast<int>(modules.Count());
+                moduleMap[module->OriginalFilePath()] = moduleIndex;
+                if (!module->FilePathReadFrom().IsEmpty())
+                {
+                    moduleMap[module->FilePathReadFrom()] = moduleIndex;
+                }
+                module->SetIndex(moduleIndex);
+                module->SetFlag(ModuleFlags.readFromModuleFile);
+                modules.Add(module);
+            }
+        }
+        public void Reset()
+        {
+            moduleIdMap.Clear();
+            moduleMap.Clear();
+            modules.Clear();
+        }
+        public RecursiveMutex& GetMutex()
+        {
+            return mtx;
+        }
+        private ModuleCache() : mtx(), moduleIdMap()
+        {
+        }
+        private static UniquePtr<ModuleCache> instance;
+        private RecursiveMutex mtx;
+        private Map<Uuid, Module*> moduleIdMap;
+        private Map<string, int> moduleMap;
+        private List<UniquePtr<Module>> modules;
+    }
+
+    [nodiscard]
+    public Result<bool> PrepareModuleForCompilation(SymbolsContext& context, Module* rootModule, const List<string>& references, Target target,
+        const System.Lex.Span& rootSpan, int rootFileIndex, SourceFileNode* rootSourceFile)
+    {
+        LockGuard<RecursiveMutex> lock(ModuleCache.Instance().GetMutex());
+        Result<bool> result = rootModule->PrepareForCompilation(context, references, target, rootSpan, rootFileIndex, rootSourceFile);
+        if (result.Error()) return result;
+        result = MetaInit(rootModule->GetSymbolTable(), rootSpan, context);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    public void MapModule(Module* module)
+    {
+        LockGuard<RecursiveMutex> lock(ModuleCache.Instance().GetMutex());
+        ModuleCache.Instance().MapModule(module);
+    }
+
+    public Module* GetModuleById(const Uuid& moduleId)
+    {
+        return ModuleCache.Instance().GetModule(moduleId);
+    }
+
+    public Module* GetModuleFromModuleCache(const string& moduleFilePath)
+    {
+        LockGuard<RecursiveMutex> lock(ModuleCache.Instance().GetMutex());
+        return ModuleCache.Instance().GetModule(moduleFilePath);
+    }
+
+    public Module* ResetCachedModule(const string& moduleFilePath)
+    {
+        LockGuard<RecursiveMutex> lock(ModuleCache.Instance().GetMutex());
+        return ModuleCache.Instance().ResetModule(moduleFilePath);
+    }
+
+    public void PutModuleToModuleCache(UniquePtr<Module>&& module)
+    {
+        LockGuard<RecursiveMutex> lock(ModuleCache.Instance().GetMutex());
+        ModuleCache.Instance().PutModule(module);
+    }
+
+    public void ResetModuleCache()
+    {
+        LockGuard<RecursiveMutex> lock(ModuleCache.Instance().GetMutex());
+        ModuleCache.Instance().Reset();
+    }
+}
+

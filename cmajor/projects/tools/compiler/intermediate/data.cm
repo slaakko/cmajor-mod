@@ -1,0 +1,1207 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public enum ValueKind : byte
+    {
+        boolValue, sbyteValue, byteValue, shortValue, ushortValue, intValue, uintValue, longValue, ulongValue, floatValue, doubleValue, nullValue, addressValue,
+        arrayValue, structureValue, stringValue, stringArrayValue, conversionValue, symbolValue, globalVariable, regValue, instruction, basic_block, function, code
+    }
+
+    public string ValueKindStr(ValueKind kind)
+    {
+        switch (kind)
+        {
+            case ValueKind.boolValue: return "boolValue";
+            case ValueKind.sbyteValue: return "sbyteValue";
+            case ValueKind.shortValue: return "shortValue";
+            case ValueKind.ushortValue: return "ushortValue";
+            case ValueKind.intValue: return "intValue";
+            case ValueKind.uintValue: return "uintValue";
+            case ValueKind.longValue: return "longValue";
+            case ValueKind.ulongValue: return "ulongValue";
+            case ValueKind.floatValue: return "floatValue";
+            case ValueKind.doubleValue: return "doubleValue";
+            case ValueKind.nullValue: return "nullValue";
+            case ValueKind.addressValue: return "addressValue";
+            case ValueKind.arrayValue: return "arrayValue";
+            case ValueKind.structureValue: return "structureValue";
+            case ValueKind.stringValue: return "stringValue";
+            case ValueKind.conversionValue: return "conversionValue";
+            case ValueKind.symbolValue: return "symbolValue";
+            case ValueKind.globalVariable: return "globalVariable";
+            case ValueKind.regValue: return "regValue";
+            case ValueKind.instruction: return "instruction";
+            case ValueKind.basic_block: return "basic_block";
+            case ValueKind.function: return "function";
+        }
+        return string();
+    }
+
+    public abstract class Value
+    {
+        public Value(ValueKind kind_, const System.Lex.Span& span_, Type* type_) : kind(kind_), span(span_), type(type_)
+        {
+        }
+        public default virtual ~Value();
+        public virtual void Accept(Visitor& visitor)
+        {
+        }
+        public virtual string ToString() const
+        {
+            return string();
+        }
+        public inline const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline ValueKind Kind() const
+        {
+            return kind;
+        }
+        public bool IsIntegerValue() const
+        {
+            switch (kind)
+            {
+                case ValueKind.sbyteValue:
+                case ValueKind.byteValue:
+                case ValueKind.shortValue:
+                case ValueKind.ushortValue:
+                case ValueKind.intValue:
+                case ValueKind.uintValue:
+                case ValueKind.longValue:
+                case ValueKind.ulongValue:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public long GetIntegerValue() const
+        {
+            switch (kind)
+            {
+                case ValueKind.sbyteValue:
+                {
+                    SByteValue* sbyteValue = cast<SByteValue*>(this);
+                    return sbyteValue->GetValue();
+                }
+                case ValueKind.byteValue:
+                {
+                    ByteValue* byteValue = cast<ByteValue*>(this);
+                    return byteValue->GetValue();
+                }
+                case ValueKind.shortValue:
+                {
+                    ShortValue* shortValue = cast<ShortValue*>(this);
+                    return shortValue->GetValue();
+                }
+                case ValueKind.ushortValue:
+                {
+                    UShortValue* ushortValue = cast<UShortValue*>(this);
+                    return ushortValue->GetValue();
+                }
+                case ValueKind.intValue:
+                {
+                    IntValue* intValue = cast<IntValue*>(this);
+                    return intValue->GetValue();
+                }
+                case ValueKind.uintValue:
+                {
+                    UIntValue* uintValue = cast<UIntValue*>(this);
+                    return uintValue->GetValue();
+                }
+                case ValueKind.longValue:
+                {
+                    LongValue* longValue = cast<LongValue*>(this);
+                    return longValue->GetValue();
+                }
+                case ValueKind.ulongValue:
+                {
+                    ULongValue* ulongValue = cast<ULongValue*>(this);
+                    return cast<long>(ulongValue->GetValue());
+                }
+            }
+            return -1;
+        }
+        public inline bool IsBoolValue() const
+        {
+            return kind == ValueKind.boolValue;
+        }
+        public inline bool IsSByteValue() const
+        {
+            return kind == ValueKind.sbyteValue;
+        }
+        public inline bool IsByteValue() const
+        {
+            return kind == ValueKind.byteValue;
+        }
+        public inline bool IsShortValue() const
+        {
+            return kind == ValueKind.shortValue;
+        }
+        public inline bool IsUShortValue() const
+        {
+            return kind == ValueKind.ushortValue;
+        }
+        public inline bool IsIntValue() const
+        {
+            return kind == ValueKind.intValue;
+        }
+        public inline bool IsUIntValue() const
+        {
+            return kind == ValueKind.uintValue;
+        }
+        public inline bool IsLongValue() const
+        {
+            return kind == ValueKind.longValue;
+        }
+        public inline bool IsULongValue() const
+        {
+            return kind == ValueKind.ulongValue;
+        }
+        public inline bool IsFloatValue() const
+        {
+            return kind == ValueKind.floatValue;
+        }
+        public inline bool IsDoubleValue() const
+        {
+            return kind == ValueKind.doubleValue;
+        }
+        public inline bool IsNullValue() const
+        {
+            return kind == ValueKind.nullValue;
+        }
+        public inline bool IsAddressValue() const
+        {
+            return kind == ValueKind.addressValue;
+        }
+        public inline bool IsArrayValue() const
+        {
+            return kind == ValueKind.arrayValue;
+        }
+        public inline bool IsStructureValue() const
+        {
+            return kind == ValueKind.structureValue;
+        }
+        public inline bool IsAggregateValue() const
+        {
+            return IsArrayValue() || IsStructureValue();
+        }
+        public inline bool IsStringValue() const
+        {
+            return kind == ValueKind.stringValue;
+        }
+        public inline bool IsStringArrayValue() const
+        {
+            return kind == ValueKind.stringArrayValue;
+        }
+        public inline bool IsConversionValue() const
+        {
+            return kind == ValueKind.conversionValue;
+        }
+        public inline bool IsSymbolValue() const
+        {
+            return kind == ValueKind.symbolValue;
+        }
+        public inline bool IsGlobalVariable() const
+        {
+            return kind == ValueKind.globalVariable;
+        }
+        public inline bool IsRegValue() const
+        {
+            return kind == ValueKind.regValue;
+        }
+        public inline bool IsInstruction() const
+        {
+            return kind == ValueKind.instruction;
+        }
+        public inline bool IsBasicBlock() const
+        {
+            return kind == ValueKind.basic_block;
+        }
+        public inline bool IsFunction() const
+        {
+            return kind == ValueKind.function;
+        }
+        public inline Type* GetType() const
+        {
+            return type;
+        }
+        public inline void SetType(Type* type_)
+        {
+            type = type_;
+        }
+        private ValueKind kind;
+        private System.Lex.Span span;
+        private Type* type;
+    }
+
+    public class BoolValue : Value
+    {
+        public BoolValue(bool value_, Type* type_) : base(ValueKind.boolValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline bool GetValue() const
+        {
+            return value;
+        }
+        public long ToInteger() const
+        {
+            if (value) return 1; else return 0;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private bool value;
+    }
+
+    public class SByteValue : Value
+    {
+        public SByteValue(sbyte value_, Type* type_) : base(ValueKind.sbyteValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline sbyte GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private sbyte value;
+    }
+
+    public class ByteValue : Value
+    {
+        public ByteValue(byte value_, Type* type_) : base(ValueKind.byteValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline byte GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private byte value;
+    }
+
+    public class ShortValue : Value
+    {
+        public ShortValue(short value_, Type* type_) : base(ValueKind.shortValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline short GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private short value;
+    }
+
+    public class UShortValue : Value
+    {
+        public UShortValue(ushort value_, Type* type_) : base(ValueKind.ushortValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline ushort GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private ushort value;
+    }
+
+    public class IntValue : Value
+    {
+        public IntValue(int value_, Type* type_) : base(ValueKind.intValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline int GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private int value;
+    }
+
+    public class UIntValue : Value
+    {
+        public UIntValue(uint value_, Type* type_) : base(ValueKind.uintValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline uint GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private uint value;
+    }
+
+    public class LongValue : Value
+    {
+        public LongValue(long value_, Type* type_) : base(ValueKind.longValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline long GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private long value;
+    }
+
+    public class ULongValue : Value
+    {
+        public ULongValue(ulong value_, Type* type_) : base(ValueKind.ulongValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline ulong GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private ulong value;
+    }
+
+    public class FloatValue : Value
+    {
+        public FloatValue(float value_, Type* type_) : base(ValueKind.floatValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline float GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private float value;
+    }
+
+    public class DoubleValue : Value
+    {
+        public DoubleValue(double value_, Type* type_) : base(ValueKind.doubleValue, System.Lex.Span(), type_), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline double GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            return ToString(value);
+        }
+        private double value;
+    }
+
+    public class NullValue : Value
+    {
+        public NullValue(const System.Lex.Span& span_, Type* type_) : base(ValueKind.nullValue, span_, type_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string ToString() const
+        {
+            return "null";
+        }
+    }
+
+    public class AddressValue : Value
+    {
+        public AddressValue(const System.Lex.Span& span_, GlobalVariable* globalVariable_, Type* type_) :
+            base(ValueKind.addressValue, span_, type_), id(), globalVariable(globalVariable_)
+        {
+        }
+        public AddressValue(const System.Lex.Span& span_, const string& id_, Type* type_) :
+            base(ValueKind.addressValue, span_, type_), id(id_), globalVariable(null)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline const string& Id() const
+        {
+            return id;
+        }
+        public inline GlobalVariable* GetValue() const
+        {
+            return globalVariable;
+        }
+        public inline void SetValue(GlobalVariable* globalVariable_)
+        {
+            globalVariable = globalVariable_;
+        }
+        public override string ToString() const
+        {
+            return globalVariable->Name();
+        }
+        private GlobalVariable* globalVariable;
+        private string id;
+    }
+
+    public class ArrayValue : Value
+    {
+        public ArrayValue(const System.Lex.Span& span_, const List<Value*>& elements_, ArrayType* arrayType_) :
+            base(ValueKind.arrayValue, span_, arrayType_), elements(elements_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string ToString() const
+        {
+            string s = "[ ";
+            bool first = true;
+            for (Value* element : elements)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    s.Append(", ");
+                }
+                if (element->IsAggregateValue())
+                {
+                    s.Append(element->ToString());
+                }
+                else
+                {
+                    s.Append(element->GetType()->Name()).Append(" ").Append(element->ToString());
+                }
+            }
+            s.Append(" ]");
+            return s;
+        }
+        public inline const List<Value*>& Elements() const
+        {
+            return elements;
+        }
+        private List<Value*> elements;
+    }
+
+    public class StructureValue : Value
+    {
+        public StructureValue(const System.Lex.Span& span_, const List<Value*>& fieldValues_, StructureType* type_) :
+            base(ValueKind.structureValue, span_, type_), fieldValues(fieldValues_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string ToString() const
+        {
+            string s = "{ ";
+            bool first = true;
+            for (Value* field : fieldValues)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    s.Append(", ");
+                }
+                if (field->IsAggregateValue())
+                {
+                    s.Append(field->ToString());
+                }
+                else
+                {
+                    s.Append(field->GetType()->Name()).Append(" ").Append(field->ToString());
+                }
+            }
+            s.Append(" }");
+            return s;
+        }
+        public inline const List<Value*>& FieldValues() const
+        {
+            return fieldValues;
+        }
+        private List<Value*> fieldValues;
+    }
+
+    public class StringValue : Value
+    {
+        public StringValue(const System.Lex.Span& span_, const string& value_) : base(ValueKind.stringValue, span_, null), value(value_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline const string& GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            string s('"');
+            s.Append(value);
+            s.Append('"');
+            return s;
+        }
+        private string value;
+    }
+
+    public class StringArrayValue : Value
+    {
+        public StringArrayValue(const System.Lex.Span& span_, char prefix_, const List<Value*>& strings_) : base(ValueKind.stringArrayValue, span_, null)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline char Prefix() const
+        {
+            return prefix;
+        }
+        public inline const List<Value*>& Strings() const
+        {
+            return strings;
+        }
+        public override string ToString() const
+        {
+            string s(prefix);
+            s.Append("[ ");
+            bool first = true;
+            for (Value* string : strings)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    s.Append(", ");
+                }
+                s.Append(string->GetType()->Name()).Append(" ").Append(string->ToString());
+            }
+            s.Append(" ]");
+            return s;
+        }
+        private char prefix;
+        private List<Value*> strings;
+    }
+
+    public class ConversionValue : Value
+    {
+        public ConversionValue(const System.Lex.Span& span_, Type* type_, Value* from_) : base(ValueKind.conversionValue, span_, type_), from(from_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline Value* From() const
+        {
+            return from;
+        }
+        public override string ToString() const
+        {
+            string s("conv(");
+            s.Append(from->GetType()->Name()).Append(' ').Append(from->ToString()).Append(')');
+            return s;
+        }
+        private Value* from;
+    }
+
+    public class SymbolValue : Value
+    {
+        public SymbolValue(const System.Lex.Span& span_, Type* type_, const string& symbol_) :
+            base(ValueKind.symbolValue, span_, type_), symbol(symbol_), function(null), globalVariable(null)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline const string& Symbol() const
+        {
+            return symbol;
+        }
+        public inline Function* GetFunction() const
+        {
+            return function;
+        }
+        public inline void SetFunction(Function* function_)
+        {
+            function = function_;
+        }
+        public inline GlobalVariable* GetGlobalVariable() const
+        {
+            return globalVariable;
+        }
+        public inline void SetGlobalVariable(GlobalVariable* globalVariable_)
+        {
+            globalVariable = globalVariable_;
+        }
+        public override string ToString() const
+        {
+            return "@" + symbol;
+        }
+        private string symbol;
+        private Function* function;
+        private GlobalVariable* globalVariable;
+    }
+
+    public class GlobalVariable : Value
+    {
+        public GlobalVariable(const System.Lex.Span& span_, Type* type_, const string& name_, Value* initializer_) :
+            base(ValueKind.globalVariable, span_, type_), name(name_), initializer(initializer_)
+        {
+            if (initializer != null)
+            {
+                initializer->SetType(GetType());
+            }
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public inline Value* Initializer() const
+        {
+            return initializer;
+        }
+        public inline void SetInitializer(Value* initializer_)
+        {
+            initializer = initializer_;
+        }
+        public override string ToString() const
+        {
+            return name;
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            auto result = formatter.Write(GetType()->Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" ");
+            if (result.Error()) return result;
+            result = formatter.Write(name);
+            if (result.Error()) return result;
+            if (initializer != null)
+            {
+                result = formatter.Write(" = ");
+                if (result.Error()) return result;
+                if (initializer->IsAggregateValue() || initializer->IsStringValue() || initializer->IsStringArrayValue())
+                {
+                    result = formatter.Write(initializer->ToString());
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    result = formatter.Write(initializer->GetType()->Name());
+                    if (result.Error()) return result;
+                    result = formatter.Write(" ");
+                    if (result.Error()) return result;
+                    result = formatter.Write(initializer->ToString());
+                    if (result.Error()) return result;
+                }
+            }
+            else
+            {
+                result = formatter.Write(";");
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private string name;
+        private Value* initializer;
+    }
+
+    public class Data
+    {
+        public Data(Context* context_) : context(context_), trueValue(true, context->GetTypes()->GetBoolType()), falseValue(false, context->GetTypes()->GetBoolType()),
+            nextStringId(0)
+        {
+        }
+        [nodiscard]
+        public Result<bool> ResolveAddressValues()
+        {
+            for (AddressValue* addressValue : addressValues)
+            {
+                auto it = globalVariableMap.Find(addressValue->Id());
+                if (it != globalVariableMap.End())
+                {
+                    GlobalVariable* globalVariable = it->second;
+                    addressValue->SetValue(globalVariable);
+                }
+                else
+                {
+                    return Result<bool>(ErrorId(Error("error resolving address literal: global variable id '" + addressValue->Id() + "' not found", addressValue->Span(), context)));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (globalVariables.IsEmpty()) return Result<bool>(false);
+            Result<bool> result = formatter.WriteLine("data");
+            if (result.Error()) return result;
+            result = formatter.WriteLine("{");
+            if (result.Error()) return result;
+            formatter.IncIndent();
+            for (GlobalVariable* globalVariable : globalVariables)
+            {
+                result = globalVariable->Write(formatter);
+                if (result.Error()) return result;
+                result = formatter.WriteLine();
+                if (result.Error()) return result;
+            }
+            formatter.DecIndent();
+            result = formatter.WriteLine("}");
+            if (result.Error()) return result;
+            result = formatter.WriteLine();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Value* GetBoolValue(bool value)
+        {
+            if (value)
+            {
+                return &trueValue;
+            }
+            else
+            {
+                return &falseValue;
+            }
+        }
+        public Value* GetSByteValue(sbyte value)
+        {
+            return sbyteValueMap.Get(value, this);
+        }
+        public Value* GetByteValue(byte value)
+        {
+            return byteValueMap.Get(value, this);
+        }
+        public Value* GetShortValue(short value)
+        {
+            return shortValueMap.Get(value, this);
+        }
+        public Value* GetUShortValue(ushort value)
+        {
+            return ushortValueMap.Get(value, this);
+        }
+        public Value* GetIntValue(int value)
+        {
+            return intValueMap.Get(value, this);
+        }
+        public Value* GetUIntValue(uint value)
+        {
+            return uintValueMap.Get(value, this);
+        }
+        public Value* GetLongValue(long value)
+        {
+            return longValueMap.Get(value, this);
+        }
+        public Value* GetULongValue(ulong value)
+        {
+            return ulongValueMap.Get(value, this);
+        }
+        public Value* GetFloatValue(float value)
+        {
+            return floatValueMap.Get(value, this);
+        }
+        public Value* GetDoubleValue(double value)
+        {
+            return doubleValueMap.Get(value, this);
+        }
+        public Value* GetNullValue(const System.Lex.Span& span, Type* type)
+        {
+            NullValue* nullValue = new NullValue(span, type);
+            values.Add(UniquePtr<Value>(nullValue));
+            return nullValue;
+        }
+        public Value* MakeValue(sbyte value)
+        {
+            SByteValue* val = new SByteValue(value, context->GetTypes()->GetSByteType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(byte value)
+        {
+            ByteValue* val = new ByteValue(value, context->GetTypes()->GetByteType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(short value)
+        {
+            ShortValue* val = new ShortValue(value, context->GetTypes()->GetShortType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(ushort value)
+        {
+            UShortValue* val = new UShortValue(value, context->GetTypes()->GetUShortType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(int value)
+        {
+            IntValue* val = new IntValue(value, context->GetTypes()->GetIntType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(uint value)
+        {
+            UIntValue* val = new UIntValue(value, context->GetTypes()->GetUIntType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(long value)
+        {
+            LongValue* val = new LongValue(value, context->GetTypes()->GetLongType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(ulong value)
+        {
+            ULongValue* val = new ULongValue(value, context->GetTypes()->GetULongType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(float value)
+        {
+            FloatValue* val = new FloatValue(value, context->GetTypes()->GetFloatType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeValue(double value)
+        {
+            DoubleValue* val = new DoubleValue(value, context->GetTypes()->GetDoubleType());
+            values.Add(UniquePtr<Value>(val));
+            return val;
+        }
+        public Value* MakeArrayValue(const System.Lex.Span& span, const List<Value*>& elements, ArrayType* arrayType)
+        {
+            ArrayValue* arrayValue = new ArrayValue(span, elements, arrayType);
+            values.Add(UniquePtr<Value>(arrayValue));
+            return arrayValue;
+        }
+        public Value* MakeStructureValue(const System.Lex.Span& span, const List<Value*>& fieldValues, StructureType* structureType)
+        {
+            StructureValue* structureValue = new StructureValue(span, fieldValues, structureType);
+            values.Add(UniquePtr<Value>(structureValue));
+            return structureValue;
+        }
+        public Value* MakeStringValue(const System.Lex.Span& span, const string& value)
+        {
+            StringValue* stringValue = new StringValue(span, value);
+            values.Add(UniquePtr<Value>(stringValue));
+            return stringValue;
+        }
+        public Value* MakeStringArrayValue(const System.Lex.Span& span, char prefix, const List<Value*>& strings)
+        {
+            StringArrayValue* stringArrayValue = new StringArrayValue(span, prefix, strings);
+            values.Add(UniquePtr<Value>(stringArrayValue));
+            return stringArrayValue;
+        }
+        public Value* MakeConversionValue(Type* targetType, Value* from)
+        {
+            ConversionValue* conversionValue = new ConversionValue(System.Lex.Span(), targetType, from);
+            values.Add(UniquePtr<Value>(conversionValue));
+            return conversionValue;
+        }
+        public GlobalVariable* GetOrInsertGlobal(const string& name, Type* type)
+        {
+            auto it = globalVariableMap.Find(name);
+            if (it != globalVariableMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                GlobalVariable* globalVariable = new GlobalVariable(System.Lex.Span(), type, name, null);
+                values.Add(UniquePtr<Value>(globalVariable));
+                globalVariables.Add(globalVariable);
+                globalVariableMap[name] = globalVariable;
+                return globalVariable;
+            }
+        }
+        public void AddGlobalVariable(const System.Lex.Span& span, Type* type, const string& name, Value* initializer)
+        {
+            GlobalVariable* globalVariable = new GlobalVariable(span, type, name, initializer);
+            values.Add(UniquePtr<Value>(globalVariable));
+            globalVariables.Add(globalVariable);
+        }
+        public GlobalVariable* CreateGlobalStringValue(const string& stringValue)
+        {
+            GlobalVariable* globalVariable = GetOrInsertGlobal("string" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetByteType());
+            globalVariable->SetInitializer(MakeStringValue(System.Lex.Span(), stringValue));
+            return globalVariable;
+        }
+        public Result<GlobalVariable*> CreateGlobalWStringValue(const wstring& wstringValue)
+        {
+            List<Value*> elementValues;
+            for (wchar c : wstringValue)
+            {
+                ushort x = cast<ushort>(c);
+                Value* v = GetUShortValue(x);
+                elementValues.Add(v);
+            }
+            Value* z = GetUShortValue(0u);
+            elementValues.Add(z);
+            Result<ArrayType*> arrayTypeResult = context->GetTypes()->GetArrayType(System.Lex.Span(), context->GetTypes()->GetUShortType(), elementValues.Count());
+            if (arrayTypeResult.Error()) return Result<GlobalVariable*>(ErrorId(arrayTypeResult.GetErrorId()));
+            ArrayType* arrayType = arrayTypeResult.Value();
+            Value* initializer = MakeArrayValue(System.Lex.Span(), elementValues, arrayType);
+            GlobalVariable* globalVariable = GetOrInsertGlobal("wstring" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetUShortType());
+            globalVariable->SetInitializer(initializer);
+            return Result<GlobalVariable*>(globalVariable);
+        }
+        public Result<GlobalVariable*> CreateGlobalUStringValue(const ustring& ustringValue)
+        {
+            List<Value*> elementValues;
+            for (uchar c : ustringValue)
+            {
+                uint x = cast<uint>(c);
+                Value* v = GetUIntValue(x);
+                elementValues.Add(v);
+            }
+            Value* z = GetUIntValue(0u);
+            elementValues.Add(z);
+            Result<ArrayType*> arrayTypeResult = context->GetTypes()->GetArrayType(System.Lex.Span(), context->GetTypes()->GetUIntType(), elementValues.Count());
+            if (arrayTypeResult.Error()) return Result<GlobalVariable*>(ErrorId(arrayTypeResult.GetErrorId()));
+            ArrayType* arrayType = arrayTypeResult.Value();
+            Value* initializer = MakeArrayValue(System.Lex.Span(), elementValues, arrayType);
+            GlobalVariable* globalVariable = GetOrInsertGlobal("ustring" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetUIntType());
+            globalVariable->SetInitializer(initializer);
+            return Result<GlobalVariable*>(globalVariable);
+        }
+        public Value* MakeAddressValue(const System.Lex.Span& span, Type* type, const string& id)
+        {
+            AddressValue* addressValue = new AddressValue(span, id, type);
+            values.Add(UniquePtr<Value>(addressValue));
+            addressValues.Add(addressValue);
+            return addressValue;
+        }
+        public Value* MakeConversionValue(const System.Lex.Span& span, Type* type, Value* from)
+        {
+            ConversionValue* conversionValue = new ConversionValue(span, type, from);
+            values.Add(UniquePtr<Value>(conversionValue));
+            return conversionValue;
+        }
+        public Value* MakeSymbolValue(const System.Lex.Span& span, Type* type, const string& symbol)
+        {
+            SymbolValue* symbolValue = new SymbolValue(span, type, symbol);
+            values.Add(UniquePtr<Value>(symbolValue));
+            return symbolValue;
+        }
+        public Result<Value*> MakeNumericLiteral(const System.Lex.Span& span, Type* type, const string& str)
+        {
+            switch (type->Id())
+            {
+                case sbyteTypeId:
+                {
+                    Result<sbyte> result = ParseSByte(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    sbyte value = result.Value();
+                    return Result<Value*>(GetSByteValue(value));
+                }
+                case byteTypeId:
+                {
+                    Result<byte> result = ParseByte(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    byte value = result.Value();
+                    return Result<Value*>(GetByteValue(value));
+                }
+                case shortTypeId:
+                {
+                    Result<short> result = ParseShort(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    short value = result.Value();
+                    return Result<Value*>(GetShortValue(value));
+                }
+                case ushortTypeId:
+                {
+                    Result<ushort> result = ParseUShort(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    ushort value = result.Value();
+                    return Result<Value*>(GetUShortValue(value));
+                }
+                case intTypeId:
+                {
+                    Result<int> result = ParseInt(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    int value = result.Value();
+                    return Result<Value*>(GetIntValue(value));
+                }
+                case uintTypeId:
+                {
+                    Result<uint> result = ParseUInt(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    uint value = result.Value();
+                    return Result<Value*>(GetUIntValue(value));
+                }
+                case longTypeId:
+                {
+                    Result<long> result = ParseLong(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    long value = result.Value();
+                    return Result<Value*>(GetLongValue(value));
+                }
+                case ulongTypeId:
+                {
+                    Result<ulong> result = ParseULong(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    ulong value = result.Value();
+                    return Result<Value*>(GetULongValue(value));
+                }
+                case floatTypeId:
+                {
+                    Result<float> result = ParseFloat(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    float value = result.Value();
+                    return Result<Value*>(GetFloatValue(value));
+                }
+                case doubleTypeId:
+                {
+                    Result<double> result = ParseDouble(str);
+                    if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+                    double value = result.Value();
+                    return Result<Value*>(GetDoubleValue(value));
+                }
+            }
+            int errorId = Error("invalid numeric type", span, context);
+            return Result<Value*>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public Result<bool> VisitGlobalVariables(Visitor& visitor)
+        {
+            for (GlobalVariable* globalVariable : globalVariables)
+            {
+                globalVariable->Accept(visitor);
+                if (visitor.Error()) return Result<bool>(ErrorId(visitor.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        private Context* context;
+        private List<UniquePtr<Value>> values;
+        private List<GlobalVariable*> globalVariables;
+        private BoolValue trueValue;
+        private BoolValue falseValue;
+        private ValueMap<sbyte> sbyteValueMap;
+        private ValueMap<byte> byteValueMap;
+        private ValueMap<short> shortValueMap;
+        private ValueMap<ushort> ushortValueMap;
+        private ValueMap<int> intValueMap;
+        private ValueMap<uint> uintValueMap;
+        private ValueMap<long> longValueMap;
+        private ValueMap<ulong> ulongValueMap;
+        private ValueMap<float> floatValueMap;
+        private ValueMap<double> doubleValueMap;
+        private List<AddressValue*> addressValues;
+        private Map<string, GlobalVariable*> globalVariableMap;
+        private int nextStringId;
+    }
+
+    internal class ValueMap<T>
+    {
+        public ValueMap() : m()
+        {
+        }
+        public Value* Get(const T& value, Data* data) const
+        {
+            auto it = m.Find(value);
+            if (it != m.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                Value* val = data->MakeValue(value);
+                m[value] = val;
+                return val;
+            }
+        }
+        private Map<T, Value*> m;
+    }
+}

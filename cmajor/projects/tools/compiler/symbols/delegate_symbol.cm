@@ -1,0 +1,1611 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+
+namespace symbols
+{
+    public class DelegateTypeSymbol : TypeSymbol
+    {
+        public DelegateTypeSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeSymbol, span_, name_), returnType(null), parameters()
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"delegate";
+        }
+        [nodiscard]
+        public override Result<bool> AddMember(Symbol* member, SymbolsContext& context)
+        {
+            auto result = base->AddMember(member, context);
+            if (result.Error()) return result;
+            if (member->IsParameterSymbol())
+            {
+                parameters.Add(cast<ParameterSymbol*>(member));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(returnType->TypeId());
+            if (result.Error()) return result;
+            bool hasReturnParam = !returnParam.IsNull();
+            result = writer.GetBinaryWriter().Write(hasReturnParam);
+            if (result.Error()) return result;
+            if (hasReturnParam)
+            {
+                result = writer.Write(returnParam.Get());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> returnTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (returnTypeIdResult.Error()) return Result<bool>(ErrorId(returnTypeIdResult.GetErrorId()));
+            returnTypeId = returnTypeIdResult.Value();
+            Result<bool> hasReturnParamResult = reader.GetBinaryReader().ReadBool();
+            if (hasReturnParamResult.Error()) return hasReturnParamResult;
+            bool hasReturnParam = hasReturnParamResult.Value();
+            if (hasReturnParam)
+            {
+                Result<ParameterSymbol*> parameterResult = reader.ReadParameterSymbol(this);
+                if (parameterResult.Error()) return Result<bool>(ErrorId(parameterResult.GetErrorId()));
+                returnParam.Reset(parameterResult.Value());
+            }
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(returnTypeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            returnType = typeResult.Value();
+            return Result<bool>(true);
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(this);
+            if (functionTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(functionTypeResult.GetErrorId()));
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            Result<intermediate.Type*> functionPointerTypeResult = emitter.GetPointerType(functionType);
+            if (functionPointerTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(functionPointerTypeResult.GetErrorId()));
+            intermediate.Type* functionPointerType = functionPointerTypeResult.Value();
+            return Result<intermediate.Type*>(functionPointerType);
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            Result<intermediate.Type*> irTypeResult = IrType(emitter);
+            if (irTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            #assert(irType->IsPointerType());
+            intermediate.PointerType* pointerType = cast<intermediate.PointerType*>(irType);
+            return Result<intermediate.Value*>(emitter.GetNullValue(pointerType));
+        }
+        public inline const List<ParameterSymbol*>& Parameters() const
+        {
+            return parameters;
+        }
+        public inline void SetReturnType(TypeSymbol* returnType_)
+        {
+            returnType = returnType_;
+        }
+        public inline TypeSymbol* ReturnType() const
+        {
+            return returnType;
+        }
+        public bool ReturnsClassInterfaceOrClassDelegateByValue() const
+        {
+            return returnType->IsClassTypeSymbol() || returnType->IsClassDelegateTypeSymbol() || returnType->IsInterfaceTypeSymbol();
+        }
+        public inline int Arity() const
+        {
+            return cast<int>(parameters.Count());
+        }
+        public inline void SetReturnParam(ParameterSymbol* returnParam_)
+        {
+            returnParam.Reset(returnParam_);
+        }
+        public inline ParameterSymbol* ReturnParam() const
+        {
+            return returnParam.Get();
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("delegate cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* callee = null;
+            int na = cast<int>(irObjects.Count());
+            for (int i = 0; i < na; ++i)
+            {
+                IrObject* irObject = irObjects[i];
+                Result<bool> loadResult = irObject->Load(emitter, cast<OperationFlags>(flags & OperationFlags.functionCallFlags));
+                if (loadResult.Error()) return loadResult;
+                if (i == 0)
+                {
+                    callee = emitter.Stack().Pop();
+                }
+            }
+            List<intermediate.Value*> args;
+            int n = cast<int>(parameters.Count());
+            if (ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ++n;
+            }
+            args.Resize(n);
+            for (int i = 0; i < n; ++i)
+            {
+                intermediate.Value* arg = emitter.Stack().Pop();
+                args[n - i - 1] = arg;
+            }
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(this);
+            if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            Result<intermediate.Value*> result = emitter.CreateCall(functionType, callee, args);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            intermediate.Value* returnValue = result.Value();
+            emitter.Stack().Push(returnValue);
+            return Result<bool>(true);
+        }
+        private TypeSymbol* returnType;
+        private Uuid returnTypeId;
+        private List<ParameterSymbol*> parameters;
+        private UniquePtr<ParameterSymbol> returnParam;
+    }
+
+    public class DelegateTypeDefaultConstructor : FunctionSymbol
+    {
+        public DelegateTypeDefaultConstructor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeDefaultConstructor, span_, name_)
+        {
+        }
+        public DelegateTypeDefaultConstructor(SymbolsContext& context, DelegateTypeSymbol* delegateType_) :
+            base(SymbolKind.delegateTypeDefaultConstructor, delegateType_->Span(), u"@constructor"), delegateType(delegateType_)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(delegateType->Span(), u"this");
+            thisParam->SetType(delegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(delegateType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> delegateTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (delegateTypeIdResult.Error()) return Result<bool>(ErrorId(delegateTypeIdResult.GetErrorId()));
+            delegateTypeId = delegateTypeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(delegateTypeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            #assert(typeResult.Value()->IsDelegateTypeSymbol());
+            delegateType = cast<DelegateTypeSymbol*>(typeResult.Value());
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            Result<intermediate.Value*> defaultIrValueResult = delegateType->CreateDefaultIrValue(emitter);
+            if (defaultIrValueResult.Error()) return Result<bool>(ErrorId(defaultIrValueResult.GetErrorId()));
+            emitter.Stack().Push(defaultIrValueResult.Value());
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private DelegateTypeSymbol* delegateType;
+        private Uuid delegateTypeId;
+    }
+
+    public class DelegateTypeCopyConstructor : FunctionSymbol
+    {
+        public DelegateTypeCopyConstructor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeCopyConstructor, span_, name_)
+        {
+        }
+        public DelegateTypeCopyConstructor(SymbolsContext& context, DelegateTypeSymbol* delegateType) :
+            base(SymbolKind.delegateTypeCopyConstructor, delegateType->Span(), u"@constructor")
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(delegateType->Span(), u"this");
+            thisParam->SetType(delegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(delegateType->Span(), u"that");
+            thatParam->SetType(delegateType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
+            IrObject* object0 = irObjects[0];
+            result = object0->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class DelegateTypeMoveConstructor : FunctionSymbol
+    {
+        public DelegateTypeMoveConstructor(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeMoveConstructor, span_, name_)
+        {
+        }
+        public DelegateTypeMoveConstructor(SymbolsContext& context, DelegateTypeSymbol* delegateType) :
+            base(SymbolKind.delegateTypeMoveConstructor, delegateType->Span(), u"@constructor")
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(delegateType->Span(), u"this");
+            thisParam->SetType(delegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(delegateType->Span(), u"that");
+            thatParam->SetType(delegateType->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
+            IrObject* object0 = irObjects[0];
+            intermediate.Value* rvalueRefValue = emitter.Stack().Pop();
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(rvalueRefValue);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* loadedValue = loadResult.Value();
+            emitter.Stack().Push(loadedValue);
+            result = object0->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class DelegateTypeCopyAssignment : FunctionSymbol
+    {
+        public DelegateTypeCopyAssignment(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeCopyAssignment, span_, name_)
+        {
+        }
+        public DelegateTypeCopyAssignment(SymbolsContext& context, DelegateTypeSymbol* delegateType) :
+            base(SymbolKind.delegateTypeCopyAssignment, delegateType->Span(), u"operator=")
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(delegateType->Span(), u"this");
+            thisParam->SetType(delegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(delegateType->Span(), u"that");
+            thatParam->SetType(delegateType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
+            IrObject* object0 = irObjects[0];
+            result = object0->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class DelegateTypeMoveAssignment : FunctionSymbol
+    {
+        public DelegateTypeMoveAssignment(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeMoveAssignment, span_, name_)
+        {
+        }
+        public DelegateTypeMoveAssignment(SymbolsContext& context, DelegateTypeSymbol* delegateType) :
+            base(SymbolKind.delegateTypeMoveAssignment, delegateType->Span(), u"operator=")
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(delegateType->Span(), u"this");
+            thisParam->SetType(delegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(delegateType->Span(), u"that");
+            thatParam->SetType(delegateType->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            if ((flags & OperationFlags.leaveFirstArg) != OperationFlags.none)
+            {
+                emitter.Stack().Dup();
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.SaveObjectPointer(ptr);
+            }
+            IrObject* object0 = irObjects[0];
+            intermediate.Value* rvalueRefValue = emitter.Stack().Pop();
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(rvalueRefValue);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* loadedValue = loadResult.Value();
+            emitter.Stack().Push(loadedValue);
+            result = object0->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class DelegateTypeReturn : FunctionSymbol
+    {
+        public DelegateTypeReturn(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeReturn, span_, name_)
+        {
+        }
+        public DelegateTypeReturn(SymbolsContext& context, DelegateTypeSymbol* delegateType) : base(SymbolKind.delegateTypeReturn, delegateType->Span(), u"@return")
+        {
+            SetGroupName(u"@return");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* valueParam = new ParameterSymbol(delegateType->Span(), u"value");
+            valueParam->SetType(delegateType);
+            Result<bool> result = AddMember(valueParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(delegateType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class DelegateTypeEquality : FunctionSymbol
+    {
+        public DelegateTypeEquality(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.delegateTypeEquality, span_, name_)
+        {
+        }
+        public DelegateTypeEquality(SymbolsContext& context, DelegateTypeSymbol* delegateType) :
+            base(SymbolKind.delegateTypeEquality, delegateType->Span(), u"operator==")
+        {
+            SetGroupName(u"operator==");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* leftParam = new ParameterSymbol(delegateType->Span(), u"left");
+            leftParam->SetType(delegateType);
+            Result<bool> result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(delegateType->Span(), u"right");
+            rightParam->SetType(delegateType);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> boolTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* left = emitter.Stack().Pop();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* right = emitter.Stack().Pop();
+            Result<intermediate.Value*> equalResult = emitter.CreateEqual(left, right);
+            if (equalResult.Error()) return Result<bool>(ErrorId(equalResult.GetErrorId()));
+            return Result<bool>(true);
+        }
+    }
+
+    public class FunctionToDelegateConversion : FunctionSymbol
+    {
+        public FunctionToDelegateConversion(SymbolsContext& context, TypeSymbol* sourceType_, TypeSymbol* targetType_, FunctionSymbol* function_) :
+            base(SymbolKind.functionToDelegateSymbol, function_->Span(), u"@conversion"), sourceType(sourceType_), targetType(targetType_), function(function_)
+        {
+            SetImplicitConversion();
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionDistance(1u);
+            SetConversionSourceType(sourceType->PlainType(context));
+            SetConversionTargetType(targetType->PlainType(context));
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            emitter.Stack().Pop();
+            Result<string> mangledNameResult = ToUtf8(function->MangledName());
+            if (mangledNameResult.Error()) return Result<bool>(ErrorId(mangledNameResult.GetErrorId()));
+            string mangledName = Rvalue(mangledNameResult.Value());
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(function);
+            if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            Result<intermediate.Function*> fnResult = emitter.GetOrInsertFunction(mangledName, functionType);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            intermediate.Value* fn = fnResult.Value();
+            intermediate.Value* symbolValue = emitter.MakeSymbolValue(functionType, fn->ToString());
+            emitter.Stack().Push(symbolValue);
+            return Result<bool>(true);
+        }
+        private TypeSymbol* sourceType;
+        private TypeSymbol* targetType;
+        private FunctionSymbol* function;
+    }
+
+    public class DelegateToVoidPtrConversion : FunctionSymbol
+    {
+        public DelegateToVoidPtrConversion(SymbolsContext& context, TypeSymbol* delegateType) : base(delegateType->Span(), u"@dlg2voidptr")
+        {
+            SetExplicitConversion();
+            SetBasicTypeOperation();
+            SetGroupName(u"@conversion");
+            SetAccess(SymbolAccess.public_);
+            SetConversionSourceType(delegateType);
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            TypeSymbol* voidPtrType = voidType->AddPointer(context);
+            SetConversionTargetType(voidPtrType);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Value*> result = emitter.CreateBitcast(value, emitter.GetVoidPtrType());
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            return Result<bool>(true);
+        }
+    }
+
+    public class VoidPtrToDelegateConversion : FunctionSymbol
+    {
+        public VoidPtrToDelegateConversion(SymbolsContext& context, DelegateTypeSymbol* delegateType_) : base(delegateType_->Span(), u"@voidptr2dlg"), delegateType(delegateType_)
+        {
+            SetExplicitConversion();
+            SetBasicTypeOperation();
+            SetGroupName(u"@conversion");
+            SetAccess(SymbolAccess.public_);
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            TypeSymbol* voidPtrType = voidType->AddPointer(context);
+            SetConversionSourceType(voidPtrType);
+            SetConversionTargetType(delegateType);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Value*> ptrToIntResult = emitter.CreatePtrToInt(value, emitter.GetULongType());
+            if (ptrToIntResult.Error()) return Result<bool>(ErrorId(ptrToIntResult.GetErrorId()));
+            intermediate.Value* ulongValue = ptrToIntResult.Value();
+            Result<intermediate.Type*> irTypeResult = delegateType->IrType(emitter);
+            if (irTypeResult.Error()) return Result<bool>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            Result<intermediate.Value*> intToPtrResult = emitter.CreateIntToPtr(ulongValue, irType);
+            if (intToPtrResult.Error()) return Result<bool>(ErrorId(intToPtrResult.GetErrorId()));
+            return Result<bool>(true);
+        }
+        private DelegateTypeSymbol* delegateType;
+    }
+
+    public class ClassDelegateTypeSymbol : TypeSymbol
+    {
+        public ClassDelegateTypeSymbol(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.classDelegateTypeSymbol, span_, name_), returnType(null), parameters()
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"class_delegate";
+        }
+        public override Result<bool> AddMember(Symbol* member, SymbolsContext& context)
+        {
+            auto result = base->AddMember(member, context);
+            if (result.Error()) return result;
+            if (member->IsParameterSymbol())
+            {
+                parameters.Add(cast<ParameterSymbol*>(member));
+            }
+            else if (member->IsDelegateTypeSymbol())
+            {
+                delegateType = cast<DelegateTypeSymbol*>(member);
+            }
+            else if (member->IsClassTypeSymbol())
+            {
+                objectDelegatePairType = cast<ClassTypeSymbol*>(member);
+            }
+            else if (member->IsClassDelegateCopyConstructor())
+            {
+               copyConstructor = cast<FunctionSymbol*>(member);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(returnType->TypeId());
+            if (result.Error()) return result;
+            bool hasReturnParam = !returnParam.IsNull();
+            result = writer.GetBinaryWriter().Write(hasReturnParam);
+            if (result.Error()) return result;
+            if (hasReturnParam)
+            {
+                result = writer.Write(returnParam.Get());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> returnTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (returnTypeIdResult.Error()) return Result<bool>(ErrorId(returnTypeIdResult.GetErrorId()));
+            returnTypeId = returnTypeIdResult.Value();
+            Result<bool> hasReturnParamResult = reader.GetBinaryReader().ReadBool();
+            if (hasReturnParamResult.Error()) return hasReturnParamResult;
+            bool hasReturnParam = hasReturnParamResult.Value();
+            if (hasReturnParam)
+            {
+                Result<ParameterSymbol*> parameterResult = reader.ReadParameterSymbol(this);
+                if (parameterResult.Error()) return Result<bool>(ErrorId(parameterResult.GetErrorId()));
+                returnParam.Reset(parameterResult.Value());
+            }
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(returnTypeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            returnType = typeResult.Value();
+            return Result<bool>(true);
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            Result<intermediate.StructureType*> structureTypeResult =  emitter.GetClassDelegateType(this);
+            if (structureTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(structureTypeResult.GetErrorId()));
+            return Result<intermediate.Type*>(structureTypeResult.Value());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            List<intermediate.Value*> constants;
+            constants.Add(emitter.GetNullValue(emitter.GetVoidPtrType()));
+            Result<intermediate.Value*> delegateValueResult = delegateType->CreateDefaultIrValue(emitter);
+            if (delegateValueResult.Error()) return delegateValueResult;
+            constants.Add(delegateValueResult.Value());
+            Result<intermediate.Type*> typeResult = IrType(emitter);
+            if (typeResult.Error()) return Result<intermediate.Value*>(ErrorId(typeResult.GetErrorId()));
+            intermediate.Type* type = typeResult.Value();
+            #assert(type->IsStructureType());
+            intermediate.StructureType* structureType = cast<intermediate.StructureType*>(type);
+            return Result<intermediate.Value*>(emitter.GetStructureValue(constants, structureType));
+        }
+        public inline void SetReturnType(TypeSymbol* returnType_)
+        {
+            returnType = returnType_;
+        }
+        public inline TypeSymbol* ReturnType() const
+        {
+            return returnType;
+        }
+        public inline const List<ParameterSymbol*>& Parameters() const
+        {
+            return parameters;
+        }
+        public inline int Arity() const
+        {
+            return cast<int>(parameters.Count());
+        }
+        public bool ReturnsClassInterfaceOrClassDelegateByValue() const
+        {
+            return returnType->IsClassTypeSymbol() || returnType->IsClassDelegateTypeSymbol() || returnType->IsInterfaceTypeSymbol();
+        }
+        public inline void SetReturnParam(ParameterSymbol* returnParam_)
+        {
+            returnParam.Reset(returnParam_);
+        }
+        public inline ParameterSymbol* ReturnParam() const
+        {
+            return returnParam.Get();
+        }
+        public inline DelegateTypeSymbol* DelegateType() const
+        {
+            return delegateType;
+        }
+        public inline ClassTypeSymbol* ObjectDelegatePairType() const
+        {
+            return objectDelegatePairType;
+        }
+        public inline FunctionSymbol* CopyConstructor() const
+        {
+            return copyConstructor;
+        }
+        [nodiscard]
+        public Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(!irObjects.IsEmpty());
+            IrObject* first = irObjects[0];
+            Result<bool> loadResult = first->Load(emitter, flags);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* classDelegatePtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> delegateResult = emitter.GetDelegateFromClassDelegate(classDelegatePtr);
+            if (delegateResult.Error()) return Result<bool>(ErrorId(delegateResult.GetErrorId()));
+            intermediate.Value* delegatePtr = delegateResult.Value();
+            Result<intermediate.Value*> calleeResult = emitter.CreateLoad(delegatePtr);
+            if (calleeResult.Error()) return Result<bool>(ErrorId(calleeResult.GetErrorId()));
+            intermediate.Value* callee = calleeResult.Value();
+            NativeValue calleeValue(callee);
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromClassDelegate(classDelegatePtr);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            Result<intermediate.Value*> objectResult = emitter.CreateLoad(objectPtr);
+            if (objectResult.Error()) return Result<bool>(ErrorId(objectResult.GetErrorId()));
+            intermediate.Value* object = objectResult.Value();
+            NativeValue objectValue(object);
+            List<IrObject*> classDelegateCallObjects;
+            classDelegateCallObjects.Add(&calleeValue);
+            classDelegateCallObjects.Add(&objectValue);
+            int na = cast<int>(irObjects.Count());
+            for (int i = 1; i < na; ++i)
+            {
+                IrObject* irObject = irObjects[i];
+                classDelegateCallObjects.Add(irObject);
+            }
+            auto result = delegateType->GenerateCall(emitter, classDelegateCallObjects, flags);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("class delegate cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        private TypeSymbol* returnType;
+        private Uuid returnTypeId;
+        private List<ParameterSymbol*> parameters;
+        private UniquePtr<ParameterSymbol> returnParam;
+        private DelegateTypeSymbol* delegateType;
+        private ClassTypeSymbol* objectDelegatePairType;
+        private FunctionSymbol* copyConstructor;
+    }
+
+    public class ClassDelegateTypeDefaultConstructor : FunctionSymbol
+    {
+        public ClassDelegateTypeDefaultConstructor(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.classDelegateTypeDefaultConstructor, span_, name_), classDelegateType(null)
+        {
+        }
+        public ClassDelegateTypeDefaultConstructor(SymbolsContext& context, ClassDelegateTypeSymbol* classDelegateType_) :
+            base(SymbolKind.classDelegateTypeDefaultConstructor, classDelegateType_->Span(), u"@constructor"), classDelegateType(classDelegateType_)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->Span(), u"this");
+            thisParam->SetType(classDelegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(classDelegateType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> classDelegateTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (classDelegateTypeIdResult.Error()) return Result<bool>(ErrorId(classDelegateTypeIdResult.GetErrorId()));
+            classDelegateTypeId = classDelegateTypeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(classDelegateTypeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            #assert(typeResult.Value()->IsClassDelegateTypeSymbol());
+            classDelegateType = cast<ClassDelegateTypeSymbol*>(typeResult.Value());
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            Result<intermediate.Type*> classDelegateIrTypeResult = classDelegateType->IrType(emitter);
+            if (classDelegateIrTypeResult.Error()) return Result<bool>(ErrorId(classDelegateIrTypeResult.GetErrorId()));
+            intermediate.Type* classDelegateIrType = classDelegateIrTypeResult.Value();
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* ptr = emitter.Stack().Pop();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromClassDelegate(ptr);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            intermediate.Value* nullValue = emitter.GetNullValue(emitter.GetVoidPtrType());
+            result = emitter.CreateStore(nullValue, objectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> defaultDelegateResult = classDelegateType->DelegateType()->CreateDefaultIrValue(emitter);
+            if (defaultDelegateResult.Error()) return Result<bool>(ErrorId(defaultDelegateResult.GetErrorId()));
+            intermediate.Value* defaultDelegateValue = defaultDelegateResult.Value();
+            Result<intermediate.Value*> delegatePtrResult = emitter.GetDelegateFromClassDelegate(ptr);
+            if (delegatePtrResult.Error()) return Result<bool>(ErrorId(delegatePtrResult.GetErrorId()));
+            intermediate.Value* delegatePtr = delegatePtrResult.Value();
+            result = emitter.CreateStore(defaultDelegateValue, delegatePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private ClassDelegateTypeSymbol* classDelegateType;
+        private Uuid classDelegateTypeId;
+    }
+
+    public class ClassDelegateTypeCopyConstructor : FunctionSymbol
+    {
+        public ClassDelegateTypeCopyConstructor(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.classDelegateTypeCopyConstructor, span_, name_)
+        {
+        }
+        public ClassDelegateTypeCopyConstructor(SymbolsContext& context, ClassDelegateTypeSymbol* classDelegateType) :
+            base(SymbolKind.classDelegateTypeCopyConstructor, classDelegateType->Span(), u"@constructor")
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->Span(), u"this");
+            thisParam->SetType(classDelegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->Span(), u"that");
+            thatParam->SetType(classDelegateType->AddConst(context)->AddLvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromClassDelegate(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(thatObjectPtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* objectValue = loadResult.Value();
+            OperationFlags loadFlags = OperationFlags.none;
+            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            {
+                loadFlags = cast<OperationFlags>(loadFlags | OperationFlags.leaveFirstArg);
+            }
+            result = object0->Load(emitter, loadFlags);
+            if (result.Error()) return result;
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thisObjectPtrResult = emitter.GetObjectFromClassDelegate(thisPtr);
+            if (thisObjectPtrResult.Error()) return Result<bool>(ErrorId(thisObjectPtrResult.GetErrorId()));
+            intermediate.Value* thisObjectPtr = thisObjectPtrResult.Value();
+            result = emitter.CreateStore(objectValue, thisObjectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thatPtr);
+            if (thatDelegatePtrResult.Error()) return Result<bool>(ErrorId(thatDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
+            loadResult = emitter.CreateLoad(thatDelegatePtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            return Result<bool>(true);
+            intermediate.Value* thatDelegateValue = loadResult.Value();
+            Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
+            if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thisDelegatePtr = thisDelegatePtrResult.Value();
+            result = emitter.CreateStore(thatDelegateValue, thisDelegatePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ClassDelegateTypeMoveConstructor : FunctionSymbol
+    {
+        public ClassDelegateTypeMoveConstructor(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.classDelegateTypeMoveConstructor, span_, name_)
+        {
+        }
+        public ClassDelegateTypeMoveConstructor(SymbolsContext& context, ClassDelegateTypeSymbol* classDelegateType) :
+            base(SymbolKind.classDelegateTypeMoveConstructor, classDelegateType->Span(), u"@constructor")
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->Span(), u"this");
+            thisParam->SetType(classDelegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->Span(), u"that");
+            thatParam->SetType(classDelegateType->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromClassDelegate(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(thatObjectPtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* objectValue = loadResult.Value();
+            OperationFlags loadFlags = OperationFlags.none;
+            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            {
+                loadFlags = cast<OperationFlags>(loadFlags | OperationFlags.leaveFirstArg);
+            }
+            result = object0->Load(emitter, loadFlags);
+            if (result.Error()) return result;
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thisObjectPtrResult = emitter.GetObjectFromClassDelegate(thisPtr);
+            if (thisObjectPtrResult.Error()) return Result<bool>(ErrorId(thisObjectPtrResult.GetErrorId()));
+            intermediate.Value* thisObjectPtr = thisObjectPtrResult.Value();
+            result = emitter.CreateStore(objectValue, thisObjectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thatPtr);
+            if (thatDelegatePtrResult.Error()) return Result<bool>(ErrorId(thatDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
+            loadResult = emitter.CreateLoad(thatDelegatePtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            return Result<bool>(true);
+            intermediate.Value* thatDelegateValue = loadResult.Value();
+            Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
+            if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thisDelegatePtr = thisDelegatePtrResult.Value();
+            result = emitter.CreateStore(thatDelegateValue, thisDelegatePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ClassDelegateTypeCopyAssignment : FunctionSymbol
+    {
+        public ClassDelegateTypeCopyAssignment(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.classDelegateTypeCopyAssignment, span_, name_)
+        {
+        }
+        public ClassDelegateTypeCopyAssignment(SymbolsContext& context, ClassDelegateTypeSymbol* classDelegateType) :
+            base(SymbolKind.classDelegateTypeCopyAssignment, classDelegateType->Span(), u"operator=")
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->Span(), u"this");
+            thisParam->SetType(classDelegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->Span(), u"that");
+            thatParam->SetType(classDelegateType->AddConst(context)->AddLvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromClassDelegate(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(thatObjectPtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* objectValue = loadResult.Value();
+            OperationFlags loadFlags = OperationFlags.none;
+            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            {
+                loadFlags = cast<OperationFlags>(loadFlags | OperationFlags.leaveFirstArg);
+            }
+            result = object0->Load(emitter, loadFlags);
+            if (result.Error()) return result;
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thisObjectPtrResult = emitter.GetObjectFromClassDelegate(thisPtr);
+            if (thisObjectPtrResult.Error()) return Result<bool>(ErrorId(thisObjectPtrResult.GetErrorId()));
+            intermediate.Value* thisObjectPtr = thisObjectPtrResult.Value();
+            result = emitter.CreateStore(objectValue, thisObjectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thatPtr);
+            if (thatDelegatePtrResult.Error()) return Result<bool>(ErrorId(thatDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
+            loadResult = emitter.CreateLoad(thatDelegatePtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            return Result<bool>(true);
+            intermediate.Value* thatDelegateValue = loadResult.Value();
+            Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
+            if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thisDelegatePtr = thisDelegatePtrResult.Value();
+            result = emitter.CreateStore(thatDelegateValue, thisDelegatePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ClassDelegateTypeMoveAssignment : FunctionSymbol
+    {
+        public ClassDelegateTypeMoveAssignment(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.classDelegateTypeMoveAssignment, span_, name_)
+        {
+        }
+        public ClassDelegateTypeMoveAssignment(SymbolsContext& context, ClassDelegateTypeSymbol* classDelegateType) :
+            base(SymbolKind.classDelegateTypeMoveAssignment, classDelegateType->Span(), u"operator=")
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(classDelegateType->Span(), u"this");
+            thisParam->SetType(classDelegateType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(classDelegateType->Span(), u"that");
+            thatParam->SetType(classDelegateType->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object1 = irObjects[1];
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* thatPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thatObjectPtrResult = emitter.GetObjectFromClassDelegate(thatPtr);
+            if (thatObjectPtrResult.Error()) return Result<bool>(ErrorId(thatObjectPtrResult.GetErrorId()));
+            intermediate.Value* thatObjectPtr = thatObjectPtrResult.Value();
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(thatObjectPtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* objectValue = loadResult.Value();
+            OperationFlags loadFlags = OperationFlags.none;
+            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            {
+                loadFlags = cast<OperationFlags>(loadFlags | OperationFlags.leaveFirstArg);
+            }
+            result = object0->Load(emitter, loadFlags);
+            if (result.Error()) return result;
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> thisObjectPtrResult = emitter.GetObjectFromClassDelegate(thisPtr);
+            if (thisObjectPtrResult.Error()) return Result<bool>(ErrorId(thisObjectPtrResult.GetErrorId()));
+            intermediate.Value* thisObjectPtr = thisObjectPtrResult.Value();
+            result = emitter.CreateStore(objectValue, thisObjectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> thatDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thatPtr);
+            if (thatDelegatePtrResult.Error()) return Result<bool>(ErrorId(thatDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thatDelegatePtr = thatDelegatePtrResult.Value();
+            loadResult = emitter.CreateLoad(thatDelegatePtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            return Result<bool>(true);
+            intermediate.Value* thatDelegateValue = loadResult.Value();
+            Result<intermediate.Value*> thisDelegatePtrResult = emitter.GetDelegateFromClassDelegate(thisPtr);
+            if (thisDelegatePtrResult.Error()) return Result<bool>(ErrorId(thisDelegatePtrResult.GetErrorId()));
+            intermediate.Value* thisDelegatePtr = thisDelegatePtrResult.Value();
+            result = emitter.CreateStore(thatDelegateValue, thisDelegatePtr);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+    }
+
+    public class ClassDelegateTypeEquality : FunctionSymbol
+    {
+        public ClassDelegateTypeEquality(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.classDelegateTypeEquality, span_, name_)
+        {
+        }
+        public ClassDelegateTypeEquality(SymbolsContext& context, ClassDelegateTypeSymbol* classDelegateType) :
+            base(SymbolKind.classDelegateTypeEquality, classDelegateType->Span(), u"operator==")
+        {
+            SetGroupName(u"operator==");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* leftParam = new ParameterSymbol(classDelegateType->Span(), u"left");
+            leftParam->SetType(classDelegateType->AddConst(context)->AddLvalueReference(context));
+            Result<bool> result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(classDelegateType->Span(), u"right");
+            rightParam->SetType(classDelegateType->AddConst(context)->AddLvalueReference(context));
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> boolTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* object0 = irObjects[0];
+            IrObject* object1 = irObjects[1];
+            Result<bool> result = object0->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* leftPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> leftObjectPtrResult = emitter.GetObjectFromClassDelegate(leftPtr);
+            if (leftObjectPtrResult.Error()) return Result<bool>(ErrorId(leftObjectPtrResult.GetErrorId()));
+            intermediate.Value* leftObjectPtr = leftObjectPtrResult.Value();
+            Result<intermediate.Value*> leftObjectValueResult = emitter.CreateLoad(leftObjectPtr);
+            if (leftObjectValueResult.Error()) return Result<bool>(ErrorId(leftObjectValueResult.GetErrorId()));
+            intermediate.Value* leftObjectValue = leftObjectValueResult.Value();
+            result = object1->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* rightPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> rightObjectPtrResult = emitter.GetObjectFromClassDelegate(rightPtr);
+            if (rightObjectPtrResult.Error()) return Result<bool>(ErrorId(rightObjectPtrResult.GetErrorId()));
+            intermediate.Value* rightObjectPtr = rightObjectPtrResult.Value();
+            Result<intermediate.Value*> rightObjectValueResult = emitter.CreateLoad(rightObjectPtr);
+            if (rightObjectValueResult.Error()) return Result<bool>(ErrorId(rightObjectValueResult.GetErrorId()));
+            intermediate.Value* rightObjectValue = rightObjectValueResult.Value();
+            Result<intermediate.Value*> objectsEqualResult = emitter.CreateEqual(leftObjectValue, rightObjectValue);
+            if (objectsEqualResult.Error()) return Result<bool>(ErrorId(objectsEqualResult.GetErrorId()));
+            intermediate.Value* objectsEqual = objectsEqualResult.Value();
+            Result<intermediate.Value*> leftDelegatePtrResult = emitter.GetDelegateFromClassDelegate(leftPtr);
+            if (leftDelegatePtrResult.Error()) return Result<bool>(ErrorId(leftDelegatePtrResult.GetErrorId()));
+            intermediate.Value* leftDelegatePtr = leftDelegatePtrResult.Value();
+            Result<intermediate.Value*> leftDelegateValueResult = emitter.CreateLoad(leftDelegatePtr);
+            if (leftDelegateValueResult.Error()) return Result<bool>(ErrorId(leftDelegateValueResult.GetErrorId()));
+            intermediate.Value* leftDelegateValue = leftDelegateValueResult.Value();
+            Result<intermediate.Value*> rightDelegatePtrResult = emitter.GetDelegateFromClassDelegate(rightPtr);
+            if (rightDelegatePtrResult.Error()) return Result<bool>(ErrorId(rightDelegatePtrResult.GetErrorId()));
+            intermediate.Value* rightDelegatePtr = rightDelegatePtrResult.Value();
+            Result<intermediate.Value*> rightDelegateValueResult = emitter.CreateLoad(rightDelegatePtr);
+            if (rightDelegateValueResult.Error()) return Result<bool>(ErrorId(rightDelegateValueResult.GetErrorId()));
+            intermediate.Value* rightDelegateValue = rightDelegateValueResult.Value();
+            Result<intermediate.Value*> delegatesEqualResult = emitter.CreateEqual(leftDelegateValue, rightDelegateValue);
+            if (delegatesEqualResult.Error()) return Result<bool>(ErrorId(delegatesEqualResult.GetErrorId()));
+            intermediate.Value* delegatesEqual = delegatesEqualResult.Value();
+            Result<intermediate.Value*> equalResult = emitter.CreateAnd(objectsEqual, delegatesEqual);
+            if (equalResult.Error()) return Result<bool>(ErrorId(equalResult.GetErrorId()));
+            intermediate.Value* equal = equalResult.Value();
+            emitter.Stack().Push(equal);
+            return Result<bool>(true);
+        }
+    }
+
+    public class MemberFunctionToClassDelegateConversion : FunctionSymbol
+    {
+        public MemberFunctionToClassDelegateConversion(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.memberFunctionToClassDelegateSymbol, span_, name_)
+        {
+        }
+        public MemberFunctionToClassDelegateConversion(SymbolsContext& context, const System.Lex.Span& span_,
+            TypeSymbol* sourceType, ClassDelegateTypeSymbol* targetType, FunctionSymbol* function_) :
+            base(SymbolKind.memberFunctionToClassDelegateSymbol, span_, u"@conversion"), classDelegateType(targetType), function(function_)
+        {
+            SetImplicitConversion();
+            SetBasicTypeOperation();
+            SetAccess(SymbolAccess.public_);
+            SetConversionDistance(1u);
+            SetConversionSourceType(sourceType->PlainType(context));
+            SetConversionTargetType(targetType->PlainType(context));
+        }
+        public override Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            List<LocalVariableSymbol*> temporaries;
+            Result<LocalVariableSymbol*> objectDelegatePairVarResult = currentFunction->CreateTemporary(classDelegateType->Span(), classDelegateType->ObjectDelegatePairType(),
+                context);
+            if (objectDelegatePairVarResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(objectDelegatePairVarResult.GetErrorId()));
+            temporaries.Add(objectDelegatePairVarResult.Value());
+            return Result<List<LocalVariableSymbol*>>(temporaries);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            intermediate.Value* objectValue = emitter.Stack().Pop();
+            #assert(objectValue != null);
+            Result<intermediate.Value*> objectValueAsVoidPtrResult = emitter.CreateBitcast(objectValue, emitter.GetVoidPtrType());
+            if (objectValueAsVoidPtrResult.Error()) return Result<bool>(ErrorId(objectValueAsVoidPtrResult.GetErrorId()));
+            intermediate.Value* objectValueAsVoidPtr = objectValueAsVoidPtrResult.Value();
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(function);
+            if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            Result<string> mangledNameResult = ToUtf8(function->MangledName());
+            if (mangledNameResult.Error()) return Result<bool>(ErrorId(mangledNameResult.GetErrorId()));
+            string mangledName = Rvalue(mangledNameResult.Value());
+            Result<intermediate.Function*> memFunPtrResult = emitter.GetOrInsertFunction(mangledName, functionType);
+            if (memFunPtrResult.Error()) return Result<bool>(ErrorId(memFunPtrResult.GetErrorId()));
+            intermediate.Function* memFunPtr = memFunPtrResult.Value();
+            Result<bool> result = object0->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* ptr = emitter.Stack().Pop();
+            Result<intermediate.Value*> objectPtrResult = emitter.GetObjectFromClassDelegate(ptr);
+            if (objectPtrResult.Error()) return Result<bool>(ErrorId(objectPtrResult.GetErrorId()));
+            intermediate.Value* objectPtr = objectPtrResult.Value();
+            result = emitter.CreateStore(objectValueAsVoidPtr, objectPtr);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> delegatePtrResult = emitter.GetDelegateFromClassDelegate(ptr);
+            if (delegatePtrResult.Error()) return Result<bool>(ErrorId(delegatePtrResult.GetErrorId()));
+            intermediate.Value* delegatePtr = delegatePtrResult.Value();
+            Result<intermediate.Type*> delegateIrTypeResult = classDelegateType->DelegateType()->IrType(emitter);
+            if (delegateIrTypeResult.Error()) return Result<bool>(ErrorId(delegateIrTypeResult.GetErrorId()));
+            intermediate.Type* delegateIrType = delegateIrTypeResult.Value();
+            intermediate.Value* symbolValue = emitter.MakeSymbolValue(delegateIrType, memFunPtr->ToString());
+            Result<intermediate.Value*> delegateValueResult = emitter.CreateBitcast(symbolValue, delegateIrType);
+            if (delegateValueResult.Error()) return Result<bool>(ErrorId(delegateValueResult.GetErrorId()));
+            intermediate.Value* delegateValue = delegateValueResult.Value();
+            result = emitter.CreateStore(delegateValue, delegatePtr);
+            if (result.Error()) return result;
+            emitter.Stack().Push(ptr);
+            return Result<bool>(true);
+        }
+        private ClassDelegateTypeSymbol* classDelegateType;
+        private FunctionSymbol* function;
+    }
+}
+

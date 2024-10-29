@@ -96,7 +96,7 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
         std::vector<std::u32string> nsComponents = util::Split(fullNsName, '.');
         for (const std::u32string& nsComponent : nsComponents)
         {
-            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(functionNode->GetSpan(), 
+            cmajor::ast::NamespaceNode* nsNode = new cmajor::ast::NamespaceNode(functionNode->GetSpan(),
                 new cmajor::ast::IdentifierNode(functionNode->GetSpan(), nsComponent));
             nsNode->SetFileIndex(functionNode->FileIndex());
             nsNode->SetModuleId(functionNode->ModuleId());
@@ -114,6 +114,10 @@ cmajor::symbols::FunctionSymbol* FunctionTemplateRepository::Instantiate(cmajor:
     cmajor::symbols::Symbol* symbol = symbolTable.GetSymbol(functionInstanceNode);
     Assert(symbol->GetSymbolType() == cmajor::symbols::SymbolType::functionSymbol, "function symbol expected");
     cmajor::symbols::FunctionSymbol* functionSymbol = static_cast<cmajor::symbols::FunctionSymbol*>(symbol);
+    if (functionSymbol->GroupName() == U"EvaluateShiftLeft")
+    {
+        int x = 0;
+    }
     functionSymbol->SetLinkOnceOdrLinkage();
     functionSymbol->SetTemplateSpecialization();
     functionSymbol->SetFunctionTemplate(functionTemplate);

@@ -26,7 +26,7 @@ public:
     cmajor::masm::assembly::Function* AssemblyFunction() const { return assemblyFunction; }
     Function* CurrentFunction() const { return currentFunction; }
     const soul::ast::Span& Span() const;
-    void Emit(cmajor::masm::assembly::Instruction* assemblyInstruction);
+    virtual void Emit(cmajor::masm::assembly::Instruction* assemblyInstruction);
     void EmitDataValue(std::unique_ptr<cmajor::masm::assembly::Value>&& dataValue, cmajor::masm::assembly::OpCode dataOpCode);
     void Visit(GlobalVariable& globalVariable) override;
     void Visit(Function& function) override;

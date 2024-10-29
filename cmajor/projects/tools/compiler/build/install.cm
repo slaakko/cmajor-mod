@@ -1,0 +1,72 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace build
+{
+    [nodiscard]
+    public Result<bool> InstallSystemLibraries(Module* systemInstallModule)
+    {
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(systemInstallModule->LogStreamId(), "Installing system libraries...");
+        }
+        auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm");
+        if (systemLibDirResult.Error()) return Result<bool>(ErrorId(systemLibDirResult.GetErrorId()));
+        string systemLibDir = Rvalue(systemLibDirResult.Value());
+        System.IO.Directory.CreateDirectories(systemLibDir);
+        for (Module* systemModule : systemInstallModule->AllReferencedModules())
+        {
+            string from = systemModule->OriginalFilePath();
+            string to = System.IO.Path.Combine(systemLibDir, System.IO.Path.GetFileName(from));
+            auto existsResult = System.IO.File.Exists(to);
+            if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+            bool exists = existsResult.Value();
+            if (exists)
+            {
+                auto removeResult = File.Remove(to);
+                if (removeResult.Error()) return removeResult;
+            }
+            auto copyResult = System.IO.File.Copy(from, to);
+            if (copyResult.Error()) return copyResult;
+            if (GetGlobalFlag(GlobalFlags.verbose))
+            {
+                LogMessage(systemInstallModule->LogStreamId(), from + " -> " + to);
+            }
+/*            
+            if (!systemModule->LibraryFilePath().IsEmpty())
+            {
+                from = systemModule->LibraryFilePath();
+                to = systemLibDir / from.filename();
+                if (std::filesystem::exists(to))
+                {
+                    std::filesystem::remove(to);
+                }
+                std::filesystem::copy(from, to);
+                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                {
+                    util::LogMessage(systemInstallModule->LogStreamId(), from.generic_string() + " -> " + to.generic_string());
+                }
+            }
+*/            
+        }
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(systemInstallModule->LogStreamId(), "System libraries installed.");
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> InstallSystemWindowsLibraries(Module* systemInstallModule)
+    {
+        // todo
+        return Result<bool>(true);
+    }
+}

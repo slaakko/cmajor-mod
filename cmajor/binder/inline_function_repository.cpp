@@ -238,8 +238,8 @@ cmajor::symbols::FunctionSymbol* InlineFunctionRepository::Instantiate(cmajor::s
                 master->SetInstantiatedName(result->MangledName());
                 boundCompileUnit.SetCanReuse(result);
             }
-        }
         inlineFunctionMap[inlineFunction] = result;
+        }
         result->SetFunctionId(inlineFunction->FunctionId());
         result->SetMaster(inlineFunction);
         result->SetCopy();

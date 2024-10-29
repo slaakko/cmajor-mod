@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace assembly
+{
+    public class Macro : Value
+    {
+        public Macro(const string& name_) : base(ValueKind.macro, name_)
+        {
+        }
+        public inline void SetValue(Value* value_)
+        {
+            value = value_;
+        }
+        public inline Value* GetValue() const
+        {
+            return value;
+        }
+        public override string ToString() const
+        {
+            string s(Name());
+            s.Append(" = ").Append(value->ToString());
+            return s;
+        }
+        private Value* value;
+    }
+}
+

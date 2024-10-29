@@ -230,7 +230,7 @@ void VerifierVisitor::CheckRegValue(Value* value, const soul::ast::Span& span)
             }
             else
             {
-                Error("code verification error: instruction '" + std::to_string(regValue->Reg()) + " not found from function '" + currentFunction->Name() + "'",
+                Error("code verification error: instruction " + std::to_string(regValue->Reg()) + " not found from function '" + currentFunction->Name() + "'",
                     span, GetContext());
             }
         }

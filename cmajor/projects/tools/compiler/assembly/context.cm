@@ -1,0 +1,165 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace assembly
+{
+    public bool InvalidSize(long size)
+    {
+        if (size != 1 && size != 2 && size != 4 && size != 8 && size != highByteRegSize && size != 16)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public class AssemblyContext
+    {
+        public AssemblyContext() : registers(), file(null), registerPool(new RegisterPool(registers)), currentFunction(null), floatingLiteralCounter(0), jumpTabLabelCounter(0)
+        {
+        }
+        public inline void SetFile(File* file_)
+        {
+            file = file_;
+        }
+        public inline File* GetFile() const
+        {
+            return file;
+        }
+        public inline RegisterPool* GetRegisterPool() const
+        {
+            return registerPool.Get();
+        }
+        public void ResetRegisterPool()
+        {
+            registerPool.Reset(new RegisterPool(registers));
+        }
+        public inline void SetCurrentFunction(Function* currentFunction_)
+        {
+            currentFunction = currentFunction_;
+        }
+        public Result<Register*> GetLocalReg(long size)
+        {
+            if (InvalidSize(size))
+            {
+                return Result<Register*>(ErrorId(AllocateError("invalid size " + ToString(size))));
+            }
+            Result<RegisterGroup*> regGroupResult = registerPool->GetLocalRegisterGroup();
+            if (regGroupResult.Error()) return Result<Register*>(ErrorId(regGroupResult.GetErrorId()));
+            RegisterGroup* regGroup = regGroupResult.Value();
+            return Result<Register*>(regGroup->GetReg(cast<int>(size)));
+        }
+        public Result<Register*> GetGlobalReg(long size, RegisterGroupKind regGroupKind)
+        {
+            return GetGlobalReg(size, regGroupKind, true);
+        }
+        public Result<Register*> GetGlobalReg(long size, RegisterGroupKind regGroupKind, bool used)
+        {
+            if (InvalidSize(size))
+            {
+                return Result<Register*>(ErrorId(AllocateError("invalid size " + ToString(size))));
+            }
+            RegisterGroup* regGroup = registerPool->GetRegisterGroup(regGroupKind, used);
+            if (regGroup->IsLocal())
+            {
+                return Result<Register*>(ErrorId(AllocateError("global reg group kind expected")));
+            }
+            return Result<Register*>(regGroup->GetReg(cast<int>(size)));
+        }
+        public Result<IntegerLiteral*> MakeIntegerLiteral(long value, int size)
+        {
+            IntegerLiteral* literal = new IntegerLiteral(value, size);
+            if (literal->Error()) return Result<IntegerLiteral*>(ErrorId(literal->GetErrorId()));
+            values.Add(UniquePtr<Value>(literal));
+            return Result<IntegerLiteral*>(literal);
+        }
+        public Result<Value*> MakeFloatLiteralSymbol(float value)
+        {
+            FloatLiteral* literal = new FloatLiteral(value);
+            values.Add(UniquePtr<Value>(literal));
+            Symbol* symbol = MakeSymbol("floating_" + ToString(floatingLiteralCounter++));
+            Result<Value*> exprResult = MakeSizePrefix(4, MakeContent(symbol));
+            if (exprResult.Error()) return Result<Value*>(ErrorId(exprResult.GetErrorId()));
+            Value* expr = exprResult.Value();
+            Data* data = new Data();
+            Instruction* inst = new Instruction(OpCode.REAL4);
+            inst->SetNoColon();
+            inst->SetLabel(symbol->Name());
+            inst->AddOperand(literal);
+            data->AddInstruction(UniquePtr<Instruction>(inst));
+            file->GetDataSection()->AddData(data);
+            return Result<Value*>(expr);
+        }
+        public Result<Value*> MakeDoubleLiteralSymbol(double value)
+        {
+            DoubleLiteral* literal = new DoubleLiteral(value);
+            values.Add(UniquePtr<Value>(literal));
+            Symbol* symbol = MakeSymbol("floating_" + ToString(floatingLiteralCounter++));
+            Result<Value*> exprResult = MakeSizePrefix(8, MakeContent(symbol));
+            if (exprResult.Error()) return Result<Value*>(ErrorId(exprResult.GetErrorId()));
+            Value* expr = exprResult.Value();
+            Data* data = new Data();
+            Instruction* inst = new Instruction(OpCode.REAL8);
+            inst->SetNoColon();
+            inst->SetLabel(symbol->Name());
+            inst->AddOperand(literal);
+            data->AddInstruction(UniquePtr<Instruction>(inst));
+            file->GetDataSection()->AddData(data);
+            return Result<Value*>(expr);
+        }
+        public Symbol* MakeSymbol(const string& symbolName)
+        {
+            Symbol* symbol = new Symbol(symbolName);
+            values.Add(UniquePtr<Value>(symbol));
+            return symbol;
+        }
+        public Macro* MakeMacro(const string& name)
+        {
+            Macro* macro = new Macro(name);
+            values.Add(UniquePtr<Value>(macro));
+            if (currentFunction != null)
+            {
+                currentFunction->AddMacro(macro);
+            }
+            return macro;
+        }
+        public Value* MakeContent(Value* value)
+        {
+            Value* content = new Content(value);
+            values.Add(UniquePtr<Value>(content));
+            return content;
+        }
+        public Result<Value*> MakeSizePrefix(long size, Value* value)
+        {
+            if (InvalidSize(size))
+            {
+                return Result<Value*>(ErrorId(AllocateError("invalid size " + ToString(size))));
+            }
+            Value* sizePrefix = new SizePrefix(cast<int>(size), value);
+            values.Add(UniquePtr<Value>(sizePrefix));
+            return Result<Value*>(sizePrefix);
+        }
+        public Value* MakeBinaryExpr(Value* left, Value* right, Operator op)
+        {
+            Value* value = new BinaryExpr(left, right, op);
+            values.Add(UniquePtr<Value>(value));
+            return value;
+        }
+        public int GetNextJumpTabLabelId()
+        {
+            return jumpTabLabelCounter++;
+        }
+        private Registers registers;
+        private File* file;
+        private UniquePtr<RegisterPool> registerPool;
+        private List<UniquePtr<Value>> values;
+        private Function* currentFunction;
+        private int floatingLiteralCounter;
+        private int jumpTabLabelCounter;
+    }
+}
+

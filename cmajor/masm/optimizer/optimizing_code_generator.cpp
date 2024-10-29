@@ -133,6 +133,119 @@ OptimizingCodeGenerator::OptimizingCodeGenerator(cmajor::masm::intermediate::Con
 {
 }
 
+void OptimizingCodeGenerator::Emit(cmajor::masm::assembly::Instruction* assemblyInstruction)
+{
+    std::unique_ptr< cmajor::masm::assembly::Instruction> inst(assemblyInstruction);
+    switch (inst->GetOpCode())
+    {
+        case cmajor::masm::assembly::OpCode::MOV:
+        {
+            if (inst->Operands().size() == 2)
+            {
+                cmajor::masm::assembly::Value* operand1 = inst->Operands()[0];
+                cmajor::masm::assembly::Value* operand2 = inst->Operands()[1];
+                if (operand2->IsIntegerLiteral())
+                {
+                    cmajor::masm::assembly::IntegerLiteral* integerLiteral = static_cast<cmajor::masm::assembly::IntegerLiteral*>(operand2);
+                    if (integerLiteral->GetValue() == 0)
+                    {
+                        if (operand1->IsRegister())
+                        {
+                            cmajor::masm::assembly::Register* reg = static_cast<cmajor::masm::assembly::Register*>(operand1);
+                            switch (reg->RegKind())
+                            {
+                                case cmajor::masm::assembly::RegisterKind::al:
+                                case cmajor::masm::assembly::RegisterKind::bl:
+                                case cmajor::masm::assembly::RegisterKind::cl:
+                                case cmajor::masm::assembly::RegisterKind::dl:
+                                case cmajor::masm::assembly::RegisterKind::sil:
+                                case cmajor::masm::assembly::RegisterKind::dil:
+                                case cmajor::masm::assembly::RegisterKind::bpl:
+                                case cmajor::masm::assembly::RegisterKind::spl:
+                                case cmajor::masm::assembly::RegisterKind::r8b:
+                                case cmajor::masm::assembly::RegisterKind::r9b:
+                                case cmajor::masm::assembly::RegisterKind::r10b:
+                                case cmajor::masm::assembly::RegisterKind::r11b:
+                                case cmajor::masm::assembly::RegisterKind::r12b:
+                                case cmajor::masm::assembly::RegisterKind::r13b:
+                                case cmajor::masm::assembly::RegisterKind::r14b:
+                                case cmajor::masm::assembly::RegisterKind::r15b:
+                                case cmajor::masm::assembly::RegisterKind::ax:
+                                case cmajor::masm::assembly::RegisterKind::bx:
+                                case cmajor::masm::assembly::RegisterKind::cx:
+                                case cmajor::masm::assembly::RegisterKind::dx:
+                                case cmajor::masm::assembly::RegisterKind::si:
+                                case cmajor::masm::assembly::RegisterKind::di:
+                                case cmajor::masm::assembly::RegisterKind::bp:
+                                case cmajor::masm::assembly::RegisterKind::sp:
+                                case cmajor::masm::assembly::RegisterKind::r8w:
+                                case cmajor::masm::assembly::RegisterKind::r9w:
+                                case cmajor::masm::assembly::RegisterKind::r10w:
+                                case cmajor::masm::assembly::RegisterKind::r11w:
+                                case cmajor::masm::assembly::RegisterKind::r12w:
+                                case cmajor::masm::assembly::RegisterKind::r13w:
+                                case cmajor::masm::assembly::RegisterKind::r14w:
+                                case cmajor::masm::assembly::RegisterKind::r15w:
+                                case cmajor::masm::assembly::RegisterKind::eax:
+                                case cmajor::masm::assembly::RegisterKind::ebx:
+                                case cmajor::masm::assembly::RegisterKind::ecx:
+                                case cmajor::masm::assembly::RegisterKind::edx:
+                                case cmajor::masm::assembly::RegisterKind::esi:
+                                case cmajor::masm::assembly::RegisterKind::edi:
+                                case cmajor::masm::assembly::RegisterKind::ebp:
+                                case cmajor::masm::assembly::RegisterKind::esp:
+                                case cmajor::masm::assembly::RegisterKind::r8d:
+                                case cmajor::masm::assembly::RegisterKind::r9d:
+                                case cmajor::masm::assembly::RegisterKind::r10d:
+                                case cmajor::masm::assembly::RegisterKind::r11d:
+                                case cmajor::masm::assembly::RegisterKind::r12d:
+                                case cmajor::masm::assembly::RegisterKind::r13d:
+                                case cmajor::masm::assembly::RegisterKind::r14d:
+                                case cmajor::masm::assembly::RegisterKind::r15d:
+                                case cmajor::masm::assembly::RegisterKind::rax:
+                                case cmajor::masm::assembly::RegisterKind::rbx:
+                                case cmajor::masm::assembly::RegisterKind::rcx:
+                                case cmajor::masm::assembly::RegisterKind::rdx:
+                                case cmajor::masm::assembly::RegisterKind::rsi:
+                                case cmajor::masm::assembly::RegisterKind::rdi:
+                                case cmajor::masm::assembly::RegisterKind::rbp:
+                                case cmajor::masm::assembly::RegisterKind::rsp:
+                                case cmajor::masm::assembly::RegisterKind::r8:
+                                case cmajor::masm::assembly::RegisterKind::r9:
+                                case cmajor::masm::assembly::RegisterKind::r10:
+                                case cmajor::masm::assembly::RegisterKind::r11:
+                                case cmajor::masm::assembly::RegisterKind::r12:
+                                case cmajor::masm::assembly::RegisterKind::r13:
+                                case cmajor::masm::assembly::RegisterKind::r14:
+                                case cmajor::masm::assembly::RegisterKind::r15:
+                                case cmajor::masm::assembly::RegisterKind::ah:
+                                case cmajor::masm::assembly::RegisterKind::bh:
+                                case cmajor::masm::assembly::RegisterKind::ch:
+                                case cmajor::masm::assembly::RegisterKind::dh:
+                                {
+                                    EmitXorInst(inst->Label(), reg);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+    cmajor::masm::intermediate::CodeGenerator::Emit(inst.release());
+}
+
+void OptimizingCodeGenerator::EmitXorInst(const std::string& label,  cmajor::masm::assembly::Register* reg)
+{
+    cmajor::masm::assembly::Instruction* xorInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::XOR);
+    xorInst->SetLabel(label);
+    xorInst->AddOperand(reg);
+    xorInst->AddOperand(reg);
+    Emit(xorInst);
+}
+
 void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::SwitchInstruction& inst)
 {
     inst.SetAssemblyIndex(AssemblyFunction()->Index());
@@ -144,6 +257,31 @@ void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::SwitchInstructio
     {
         EmitJumpTableSwitch(inst, *this);
     }
+}
+
+void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::JmpInstruction& inst)
+{
+    if (!inst.IsLeader())
+    {
+        intermediate::BasicBlock* next = inst.Parent()->Next();
+        if (next)
+        {
+            if (inst.TargetBasicBlock() == next)
+            {
+                return;
+            }
+        }
+    }
+    CodeGenerator::Visit(inst);
+}
+
+void OptimizingCodeGenerator::Visit(cmajor::masm::intermediate::NoOperationInstruction& inst)
+{
+    if (!inst.IsLeader())
+    {
+        return;
+    }
+    CodeGenerator::Visit(inst);
 }
 
 } // cmajor::masm::optimizer

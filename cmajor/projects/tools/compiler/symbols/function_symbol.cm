@@ -1,0 +1,2051 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using cm.ast;
+
+namespace symbols
+{
+    public const int typeIdVmtIndexOffset = 0;
+    public const int methodVmtIndexOffset = 3;
+
+    public enum ConversionType : byte
+    {
+        none, implicit, explicit_
+    }
+
+    public class OperatorMangleMap
+    {
+        static OperatorMangleMap() : instance(new OperatorMangleMap())
+        {
+        }
+        private OperatorMangleMap()
+        {
+            mangleMap[u"operator<<"] = u"op_shl";
+            mangleMap[u"operator>>"] = u"op_shr";
+            mangleMap[u"operator=="] = u"op_eq";
+            mangleMap[u"operator="] = u"op_assign";
+            mangleMap[u"operator<"] = u"op_less";
+            mangleMap[u"operator->"] = u"op_arrow";
+            mangleMap[u"operator++"] = u"op_plusplus";
+            mangleMap[u"operator--"] = u"op_minusminus";
+            mangleMap[u"operator+"] = u"op_plus";
+            mangleMap[u"operator-"] = u"op_minus";
+            mangleMap[u"operator*"] = u"op_star";
+            mangleMap[u"operator/"] = u"op_div";
+            mangleMap[u"operator%"] = u"op_rem";
+            mangleMap[u"operator&"] = u"op_and";
+            mangleMap[u"operator|"] = u"op_or";
+            mangleMap[u"operator^"] = u"op_xor";
+            mangleMap[u"operator!"] = u"op_not";
+            mangleMap[u"operator~"] = u"op_cpl";
+            mangleMap[u"operator[]"] = u"op_index";
+            mangleMap[u"operator()"] = u"op_apply";
+        }
+        public static OperatorMangleMap& Instance()
+        {
+            return *instance;
+        }
+        public ustring Mangle(const ustring& groupName)
+        {
+            auto it = mangleMap.Find(groupName);
+            if (it != mangleMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return u"operator";
+            }
+        }
+        private static UniquePtr<OperatorMangleMap> instance;
+        private Map<ustring, ustring> mangleMap;
+    }
+
+    public class FunctionGroupSymbol : Symbol
+    {
+        public FunctionGroupSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.functionGroupSymbol, span_, name_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"function_group";
+        }
+        public override bool IsExportSymbol() const
+        {
+            return false;
+        }
+        public void AddFunction(FunctionSymbol* function)
+        {
+            if (function->IsProgramMain()) return;
+            int arity = function->Arity();
+            List<FunctionSymbol*>& functionList = arityFunctionListMap[arity];
+            functionList.Add(function);
+            function->SetFunctionGroup(this);
+        }
+        [nodiscard]
+        public Result<bool> CollectViableFunctions(int arity, ViableFunctionSet& viableFunctions)
+        {
+            bool result = false;
+            auto it = arityFunctionListMap.Find(arity);
+            if (it != arityFunctionListMap.End())
+            {
+                const List<FunctionSymbol*>& functionList = it->second;
+                for (FunctionSymbol* function : functionList)
+                {
+                    viableFunctions.Add(function);
+                    result = true;
+                }
+            }
+            return Result<bool>(result);
+        }
+        [nodiscard]
+        public Result<bool> CheckDuplicateFunctionSymbols()
+        {
+            // todo
+            return Result<bool>(true);
+        }
+        private Map<int, List<FunctionSymbol*>> arityFunctionListMap;
+    }
+
+    public enum FunctionSymbolFlags : uint
+    {
+        none = 0u,
+        inline_ = 1u << 0u,
+        constExpr = 1u << 1u,
+        cdecl_ = 1u << 2u,
+        suppress_ = 1u << 3u,
+        default_ = 1u << 4u,
+        explicit_ = 1u << 5u,
+        virtual_ = 1u << 6u,
+        override_ = 1u << 7u,
+        abstract_ = 1u << 8u,
+        new_ = 1u << 9u,
+        const_ = 1u << 10u,
+        templateSpecialization = 1u << 11u,
+        hasSource = 1u << 12u,
+        includeConstraint = 1u << 13u,
+        copy = 1u << 14u,
+        varArg = 1u << 15u,
+        winapi_ = 1u << 16u,
+        dontReuse = 1u << 17u,
+        hasArtificialBody = 1u << 18u,
+        systemDefault = 1u << 19u,
+        programMain = 1u << 20u,
+        basicTypeOperation = 1u << 21u,
+        implicitConversion = 1u << 22u,
+        explicitConversion = 1u << 23u,
+        generated = 1u << 24u,
+        cannotInline = 1u << 25u,
+        lvalueReferenceCopyAssignment = 1u << 26u,
+        compileTimePrimitiveFunction = 1u << 27u
+    }
+
+    public class FunctionSymbol : ContainerSymbol
+    {
+        public FunctionSymbol(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.functionSymbol, span_, name_), conversionDistance(0u), functionGroup(null), nextTemporaryIndex(0), master(null)
+        {
+        }
+        public FunctionSymbol(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) :
+            base(kind_, span_, name_), conversionDistance(0u), functionGroup(null), nextTemporaryIndex(0), master(null)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"function";
+        }
+        public inline const Uuid& FunctionId() const
+        {
+            return functionId;
+        }
+        public void SetFunctionId(const Uuid& functionId_)
+        {
+            functionId = functionId_;
+        }
+        public inline const ustring& GroupName() const
+        {
+            return groupName;
+        }
+        public void SetGroupName(const ustring& groupName_)
+        {
+            groupName = groupName_;
+        }
+        public inline void SetFunctionGroup(FunctionGroupSymbol* functionGroup_)
+        {
+            functionGroup = functionGroup_;
+        }
+        public inline FunctionGroupSymbol* GetFunctionGroup() const
+        {
+            return functionGroup;
+        }
+        public inline bool IsFunctionTemplate() const
+        {
+            return !templateParameters.IsEmpty();
+        }
+        public override bool IsFunctionSymbol() const
+        {
+            return true;
+        }
+        public override bool IsExportSymbol() const
+        {
+            if (IsTemplateSpecialization() && !Parent()->IsClassTemplateSpecializationSymbol()) return false;
+            if (IsGenerated()) return false;
+            if (!intrinsic.IsNull()) return false;
+            if (IsCopy()) return false;
+            return base->IsExportSymbol();
+        }
+        public bool IsDefaultConstructor(SymbolsContext& context) const
+        {
+            return parameters.Count() == 1 && groupName == u"@constructor" && parameters[0]->Type()->PointerCount() == 1 &&
+                parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol();
+        }
+        public bool IsCopyConstructor(SymbolsContext& context) const
+        {
+            return parameters.Count() == 2 && groupName == u"@constructor" && parameters[0]->Type()->PointerCount() == 1 &&
+                parameters[0]->Type()->BaseType()->IsClassTypeSymbol() &&
+                TypesEqual(parameters[0]->Type()->BaseType()->AddConst(context)->AddLvalueReference(context), parameters[1]->Type());
+        }
+        public bool IsMoveConstructor(SymbolsContext& context) const
+        {
+            if (parameters[0]->Type()->PointerCount() == 1)
+            {
+                return false;
+            }
+            return parameters.Count() == 2 && groupName == u"@constructor" &&
+            parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol() &&
+            TypesEqual(parameters[0]->Type()->BaseType()->AddRvalueReference(context), parameters[1]->Type());
+        }
+        public bool IsCopyAssignment(SymbolsContext& context) const
+        {
+            return parameters.Count() == 2 && groupName == u"operator=" &&
+                parameters[0]->Type()->PointerCount() == 1 &&
+                parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol() &&
+                TypesEqual(parameters[0]->Type()->BaseType()->AddConst(context)->AddLvalueReference(context), parameters[1]->Type());
+        }
+        public bool IsMoveAssignment(SymbolsContext& context) const
+        {
+            return parameters.Count() == 2 && groupName == u"operator=" &&
+                parameters[0]->Type()->PointerCount() == 1 &&
+                parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol() &&
+                TypesEqual(parameters[0]->Type()->BaseType()->AddRvalueReference(context), parameters[1]->Type());
+        }
+        public virtual bool IsArrayElementAccess() const
+        {
+            return false;
+        }
+        public virtual bool IsClassToInterfaceTypeConversion() const
+        {
+            return false;
+        }
+        public virtual bool IsMemberFunctionToClassDelegateConversion() const
+        {
+            return false;
+        }
+        public virtual bool IsConstructorDestructorOrNonstaticMemberFunction() const
+        {
+            return false;
+        }
+        [nodiscard]
+        public override Result<bool> CopyFrom(const Symbol* that)
+        {
+            Result<bool> result = base->CopyFrom(that);
+            if (result.Error()) return result;
+            FunctionSymbol* thatFunctionSymbol = cast<FunctionSymbol*>(that);
+            functionId = thatFunctionSymbol->functionId;
+            groupName = thatFunctionSymbol->groupName;
+            templateParameters = thatFunctionSymbol->templateParameters;
+            parameters = thatFunctionSymbol->parameters;
+            if (!thatFunctionSymbol->returnParam.IsNull())
+            {
+                SetReturnParam(thatFunctionSymbol->returnParam->Clone());
+            }
+            localVariables = thatFunctionSymbol->localVariables;
+            returnType = thatFunctionSymbol->returnType;
+            flags = thatFunctionSymbol->flags;
+            index = thatFunctionSymbol->index;
+            vmtIndex = thatFunctionSymbol->vmtIndex;
+            imtIndex = thatFunctionSymbol->imtIndex;
+            functionGroup = thatFunctionSymbol->functionGroup;
+            conversionSourceType = thatFunctionSymbol->conversionSourceType;
+            conversionTargetType = thatFunctionSymbol->conversionTargetType;
+            return Result<bool>(true);
+        }
+        public virtual Result<FunctionSymbol*> Copy() const
+        {
+            FunctionSymbol* copy = new FunctionSymbol(Span(), Name());
+            Result<bool> result = copy->CopyFrom(this);
+            if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            return Result<FunctionSymbol*>(copy);
+        }
+        [nodiscard]
+        public override Result<bool> AddMember(Symbol* member, SymbolsContext& context)
+        {
+            auto result = base->AddMember(member, context);
+            if (result.Error()) return result;
+            if (member->IsTemplateParameterSymbol())
+            {
+                templateParameters.Add(cast<TemplateParameterSymbol*>(member));
+            }
+            else if (member->IsParameterSymbol())
+            {
+                parameters.Add(cast<ParameterSymbol*>(member));
+            }
+            return Result<bool>(true);
+        }
+        public void CloneUsingNodes(const List<Node*>& usingNodes_)
+        {
+            CloneContext cloneContext;
+            for (Node* usingNode : usingNodes_)
+            {
+                usingNodes.Add(usingNode->Clone(cloneContext));
+            }
+        }
+        public inline const ustring& InstantiatedName() const
+        {
+            if (instantiatedName.IsEmpty()) return MangledName(); else return instantiatedName;
+        }
+        public void SetInstantiatedName(const ustring& instantiatedName_)
+        {
+            instantiatedName = instantiatedName_;
+        }
+        public Result<LocalVariableSymbol*> CreateTemporary(const System.Lex.Span& span, TypeSymbol* type, SymbolsContext& context)
+        {
+            Result<ustring> tempIndexStrResult = ToUtf32(ToString(nextTemporaryIndex++));
+            if (tempIndexStrResult.Error())
+            {
+                return Result<LocalVariableSymbol*>(ErrorId(tempIndexStrResult.GetErrorId()));
+            }
+            ustring tempIndexStr = Rvalue(tempIndexStrResult.Value());
+            LocalVariableSymbol* temporary = new LocalVariableSymbol(span, u"@t" + tempIndexStr);
+            temporary->SetType(type);
+            Result<bool> result = AddMember(temporary, context);
+            if (result.Error()) return Result<LocalVariableSymbol*>(ErrorId(result.GetErrorId()));
+            AddLocalVariable(temporary);
+            return Result<LocalVariableSymbol*>(temporary);
+        }
+        [nodiscard]
+        public virtual Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.virtualCall))
+            {
+                return GenerateVirtualCall(emitter, irObjects, flags);
+            }
+            Result<string> instantiatedNameResult = ToUtf8(InstantiatedName());
+            if (instantiatedNameResult.Error()) return Result<bool>(ErrorId(instantiatedNameResult.GetErrorId()));
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(this);
+            if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            Result<intermediate.Function*> calleeResult = emitter.GetOrInsertFunction(instantiatedNameResult.Value(), functionType);
+            if (calleeResult.Error()) return Result<bool>(ErrorId(calleeResult.GetErrorId()));
+            intermediate.Function* fn = calleeResult.Value();
+            intermediate.Value* callee = emitter.MakeSymbolValue(functionType, fn->ToString());
+            int na = cast<int>(irObjects.Count());
+            for (int i = 0; i < na; ++i)
+            {
+                IrObject* irObject = irObjects[i];
+                Result<bool> loadResult = irObject->Load(emitter, cast<OperationFlags>(flags & OperationFlags.functionCallFlags));
+                if (loadResult.Error()) return loadResult;
+            }
+            List<intermediate.Value*> args;
+            int n = cast<int>(parameters.Count());
+            if (ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ++n;
+            }
+            args.Resize(n);
+            for (int i = 0; i < n; ++i)
+            {
+                intermediate.Value* arg = emitter.Stack().Pop();
+                args[n - i - 1] = arg;
+            }
+            Result<intermediate.Value*> result = emitter.CreateCall(functionType, callee, args);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            intermediate.Value* returnValue = result.Value();
+            emitter.Stack().Push(returnValue);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> GenerateVirtualCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            intermediate.Value* callee = null;
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(this);
+            if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            int na = cast<int>(irObjects.Count());
+            #assert(na > 0);
+            #assert(vmtIndex != -1);
+            IrObject* classPtrArg = irObjects[0];
+            TypeSymbol* type = classPtrArg->Type();
+            #assert(type != null);
+            #assert(type->BaseType()->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type->BaseType());
+            Result<ClassTypeSymbol*> vmtPtrHolderClassResult = classType->VmtPtrHolderClass();
+            if (vmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
+            for (int i = 0; i < na; ++i)
+            {
+                IrObject* irObject = irObjects[i];
+                Result<bool> loadResult = irObject->Load(emitter, OperationFlags.none);
+                if (loadResult.Error()) return loadResult;
+                if (i == 0)
+                {
+                    emitter.Stack().Dup();
+                    intermediate.Value* thisPtr = emitter.Stack().Pop();
+                    if (classType != vmtPtrHolderClass)
+                    {
+                        LockGuard<RecursiveMutex> lock(emitter.GetSymbolsContext().RootModule()->Lock());
+                        Result<intermediate.Type*> vmtPtrHolderClassPtrIrTypeResult = vmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+                        if (vmtPtrHolderClassPtrIrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassPtrIrTypeResult.GetErrorId()));
+                        intermediate.Type* vmtPtrHolderClassPtrIrType = vmtPtrHolderClassPtrIrTypeResult.Value();
+                        Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(thisPtr, vmtPtrHolderClassPtrIrType);
+                        if (bitcastResult.Error()) return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+                        thisPtr = bitcastResult.Value();
+                    }
+                    Result<intermediate.Type*> vmtPtrTypeResult = classType->VmtPtrType(emitter);
+                    if (vmtPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrTypeResult.GetErrorId()));
+                    intermediate.Type* vmtPtrType = vmtPtrTypeResult.Value();
+                    Result<intermediate.Value*> vmtPtrResult = emitter.GetVmtPtr(thisPtr, vmtPtrHolderClass->VmtPtrIndex(), vmtPtrType);
+                    if (vmtPtrResult.Error()) return Result<bool>(ErrorId(vmtPtrResult.GetErrorId()));
+                    intermediate.Value* vmtPtr = vmtPtrResult.Value();
+                    Result<intermediate.Value*> methodPtrResult = emitter.GetMethodPtr(vmtPtr, vmtIndex + methodVmtIndexOffset);
+                    if (methodPtrResult.Error()) return Result<bool>(ErrorId(methodPtrResult.GetErrorId()));
+                    intermediate.Value* methodPtr = methodPtrResult.Value();
+                    Result<intermediate.Type*> methodPtrTypeResult = emitter.GetPointerType(functionType);
+                    if (methodPtrTypeResult.Error()) return Result<bool>(ErrorId(methodPtrTypeResult.GetErrorId()));
+                    intermediate.Type* methodPtrType = methodPtrTypeResult.Value();
+                    Result<intermediate.Value*> calleeResult = emitter.CreateBitcast(methodPtr, methodPtrType);
+                    if (calleeResult.Error()) return Result<bool>(ErrorId(calleeResult.GetErrorId()));
+                    callee = calleeResult.Value();
+                }
+            }
+            List<intermediate.Value*> args;
+            int n = cast<int>(parameters.Count());
+            if (ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                ++n;
+            }
+            args.Resize(n);
+            for (int i = 0; i < n; ++i)
+            {
+                intermediate.Value* arg = emitter.Stack().Pop();
+                args[n - i - 1] = arg;
+            }
+            Result<intermediate.Value*> result = emitter.CreateCall(functionType, callee, args);
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            intermediate.Value* returnValue = result.Value();
+            emitter.Stack().Push(returnValue);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> ComputeName(SymbolsContext& context)
+        {
+            ustring name;
+            name.Append(groupName);
+            if (!templateArgumentTypes.IsEmpty())
+            {
+                name.Append('<');
+                bool first = true;
+                for (TypeSymbol* type : templateArgumentTypes)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        name.Append(u", ");
+                    }
+                    name.Append(type->FullName());
+                }
+                name.Append('>');
+            }
+            name.Append('(');
+            int n = cast<int>(parameters.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    name.Append(u", ");
+                }
+                ParameterSymbol* parameter = parameters[i];
+                name.Append(parameter->Type()->FullName());
+                name.Append(' ');
+                name.Append(parameter->Name());
+            }
+            name.Append(')');
+            SetName(name);
+            if (!IsBasicTypeOperation())
+            {
+                auto result = ComputeMangledName();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> ComputeMangledName()
+        {
+            if (IsCDecl())
+            {
+                SetMangledName(GroupName());
+                return Result<bool>(true);
+            }
+            ustring mangledName = TypeString();
+            if (groupName.Find(u"operator") != -1)
+            {
+                mangledName.Append('_').Append(OperatorMangleMap.Instance().Mangle(groupName));
+            }
+            else if (groupName.Find('@') == -1)
+            {
+                mangledName.Append('_').Append(groupName);
+            }
+            string parentClassStr;
+            switch (Kind())
+            {
+                case SymbolKind.staticConstructorSymbol:
+                case SymbolKind.constructorSymbol:
+                case SymbolKind.destructorSymbol:
+                case SymbolKind.memberFunctionSymbol:
+                {
+                    Symbol* parentClass = Parent();
+                    mangledName.Append('_').Append(parentClass->SimpleName());
+                    Result<string> mangledNameResult = ToUtf8(parentClass->MangledName());
+                    if (mangledNameResult.Error())
+                    {
+                        return Result<bool>(ErrorId(mangledNameResult.GetErrorId()));
+                    }
+                    parentClassStr.Append('.').Append(Rvalue(mangledNameResult.Value()));
+                    break;
+                }
+            }
+            string digestSource;
+            Result<ustring> ufnspResult = FullNameWithSpecifiers();
+            if (ufnspResult.Error()) return Result<bool>(ErrorId(ufnspResult.GetErrorId()));
+            ustring ufnsp = Rvalue(ufnspResult.Value());
+            Result<string> fnspResult = ToUtf8(ufnsp);
+            if (fnspResult.Error()) return Result<bool>(ErrorId(fnspResult.GetErrorId()));
+            string fnsp = Rvalue(fnspResult.Value());
+            digestSource.Append(fnsp).Append(sourceFileId);
+            if (!constraint.IsNull())
+            {
+                Result<string> constraintStrResult = constraint->ToString();
+                if (constraintStrResult.Error()) return Result<bool>(ErrorId(constraintStrResult.GetErrorId()));
+                digestSource.Append(constraintStrResult.Value());
+            }
+            digestSource.Append(parentClassStr);
+            for (TypeSymbol* templateArgumentType : TemplateArgumentTypes())
+            {
+                Result<string> fullNameResult = ToUtf8(templateArgumentType->BaseType()->FullName());
+                if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
+                digestSource.Append('.').Append(fullNameResult.Value());
+                fullNameResult = ToUtf8(templateArgumentType->FullName());
+                if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
+                digestSource.Append('.').Append(fullNameResult.Value());
+            }
+            Result<string> digestResult = System.Security.GetSha1MessageDigest(digestSource);
+            if (digestResult.Error()) return Result<bool>(ErrorId(digestResult.GetErrorId()));
+            string digest = Rvalue(digestResult.Value());
+            Result<ustring> udigestResult = ToUtf32(digest);
+            if (udigestResult.Error()) return Result<bool>(ErrorId(udigestResult.GetErrorId()));
+            mangledName.Append('_').Append(udigestResult.Value());
+            SetMangledName(mangledName);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("only member function can be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("only member function can be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("only member function can be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("only member function can be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                SetInline();
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("only constructor can be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                SetExternal();
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("only special member functions can be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("only special member functions can be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                SetConstExpr();
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                SetCDecl();
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("only member functions can be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("only member functions can be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("function cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        public inline void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public inline int VmtIndex() const
+        {
+            return vmtIndex;
+        }
+        public inline void SetVmtIndex(int vmtIndex_)
+        {
+            vmtIndex = vmtIndex_;
+        }
+        public inline int ImtIndex() const
+        {
+            return imtIndex;
+        }
+        public inline void SetImtIndex(int imtIndex_)
+        {
+            imtIndex = imtIndex_;
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(functionId != Uuid());
+            result = writer.GetBinaryWriter().Write(functionId);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(groupName);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(cast<uint>(flags));
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(index);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(vmtIndex);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(imtIndex);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(instantiatedName);
+            if (result.Error()) return result;
+            returnTypeId = Uuid();
+            if (returnType != null)
+            {
+                returnTypeId = returnType->TypeId();
+            }
+            result = writer.GetBinaryWriter().Write(returnTypeId);
+            if (result.Error()) return result;
+            bool hasReturnParam = !returnParam.IsNull();
+            result = writer.GetBinaryWriter().Write(hasReturnParam);
+            if (hasReturnParam)
+            {
+                result = writer.Write(returnParam.Get());
+                if (result.Error()) return result;
+            }
+            if (!constraint.IsNull())
+            {
+                result = writer.GetBinaryWriter().Write(true);
+                if (result.Error()) return result;
+                result = writer.GetAstWriter().Write(constraint.Get());
+                if (result.Error()) return result;
+            }
+            else
+            {
+                result = writer.GetBinaryWriter().Write(false);
+                if (result.Error()) return result;
+            }
+            Uuid functionTemplateId;
+            if (functionTemplate != null)
+            {
+                functionTemplateId = functionTemplate->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(functionTemplateId);
+            if (result.Error()) return result;
+            int n = cast<int>(templateArgumentTypes.Count());
+            result = writer.GetBinaryWriter().Write(n);
+            if (result.Error()) return result;
+            for (int i = 0; i < n; ++i)
+            {
+                TypeSymbol* templateArgumentType = templateArgumentTypes[i];
+                result = writer.GetBinaryWriter().Write(templateArgumentType->TypeId());
+                if (result.Error()) return result;
+            }
+            if (IsFunctionTemplate() || (GetGlobalFlag(GlobalFlags.release) && IsInline()) || IsConstExpr())
+            {
+                result = usingNodes.Write(writer.GetAstWriter());
+                if (result.Error()) return result;
+                Node* node = writer.Context().RootModule()->GetSymbolTable()->GetNode(this);
+                if (node != null)
+                {
+                    result = writer.GetAstWriter().Write(node);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    Result<string> fullNameResult = ToUtf8(FullName());
+                    if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
+                    string fullName = Rvalue(fullNameResult.Value());
+                    int errorId = MakeError("node for function '" + fullName + "' not found", FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            if (IsConversion())
+            {
+                result = writer.GetBinaryWriter().Write(conversionSourceType->TypeId());
+                if (result.Error()) return result;
+                result = writer.GetBinaryWriter().Write(conversionTargetType->TypeId());
+                if (result.Error()) return result;
+                result = writer.GetBinaryWriter().Write(conversionDistance);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> functionIdResult = reader.GetBinaryReader().ReadUuid();
+            if (functionIdResult.Error()) return Result<bool>(ErrorId(functionIdResult.GetErrorId()));
+            functionId = functionIdResult.Value();
+            Result<ustring> groupNameResult = reader.GetBinaryReader().ReadUString();
+            if (groupNameResult.Error()) return Result<bool>(ErrorId(groupNameResult.GetErrorId()));
+            groupName = Rvalue(groupNameResult.Value());
+            Result<uint> flagsResult = reader.GetBinaryReader().ReadUInt();
+            if (flagsResult.Error()) return Result<bool>(ErrorId(flagsResult.GetErrorId()));
+            flags = cast<FunctionSymbolFlags>(flagsResult.Value());
+            Result<int> indexResult = reader.GetBinaryReader().ReadInt();
+            if (indexResult.Error()) return Result<bool>(ErrorId(indexResult.GetErrorId()));
+            index = indexResult.Value();
+            Result<int> vmtIndexResult = reader.GetBinaryReader().ReadInt();
+            if (vmtIndexResult.Error()) return Result<bool>(ErrorId(vmtIndexResult.GetErrorId()));
+            vmtIndex = vmtIndexResult.Value();
+            Result<int> imtIndexResult = reader.GetBinaryReader().ReadInt();
+            if (imtIndexResult.Error()) return Result<bool>(ErrorId(imtIndexResult.GetErrorId()));
+            imtIndex = imtIndexResult.Value();
+            Result<ustring> instantiatedNameResult = reader.GetBinaryReader().ReadUString();
+            if (instantiatedNameResult.Error()) return Result<bool>(ErrorId(instantiatedNameResult.GetErrorId()));
+            instantiatedName = Rvalue(instantiatedNameResult.Value());
+            Result<Uuid> returnTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (returnTypeIdResult.Error()) return Result<bool>(ErrorId(returnTypeIdResult.GetErrorId()));
+            returnTypeId = returnTypeIdResult.Value();
+            Result<bool> hasReturnParamResult = reader.GetBinaryReader().ReadBool();
+            if (hasReturnParamResult.Error()) return Result<bool>(ErrorId(hasReturnParamResult.GetErrorId()));
+            bool hasReturnParam = hasReturnParamResult.Value();
+            if (hasReturnParam)
+            {
+                Result<ParameterSymbol*> returnParamResult = reader.ReadParameterSymbol(this);
+                if (returnParamResult.Error()) return Result<bool>(ErrorId(returnParamResult.GetErrorId()));
+                returnParam.Reset(returnParamResult.Value());
+            }
+            Result<bool> hasConstraintResult = reader.GetBinaryReader().ReadBool();
+            if (hasConstraintResult.Error()) return Result<bool>(ErrorId(hasConstraintResult.GetErrorId()));
+            bool hasConstraint = hasConstraintResult.Value();
+            if (hasConstraint)
+            {
+                Result<ConstraintNode*> constraintResult = reader.GetAstReader().ReadConstraintNode();
+                if (constraintResult.Error()) return Result<bool>(ErrorId(constraintResult.GetErrorId()));
+                constraint.Reset(constraintResult.Value());
+            }
+            Result<Uuid> functionTemplateIdResult = reader.GetBinaryReader().ReadUuid();
+            if (functionTemplateIdResult.Error()) return Result<bool>(ErrorId(functionTemplateIdResult.GetErrorId()));
+            functionTemplateId = functionTemplateIdResult.Value();
+            Result<int> nResult = reader.GetBinaryReader().ReadInt();
+            if (nResult.Error()) return Result<bool>(ErrorId(nResult.GetErrorId()));
+            int n = nResult.Value();
+            for (int i = 0; i < n; ++i)
+            {
+                Result<Uuid> templateArgumentTypeIdResult = reader.GetBinaryReader().ReadUuid();
+                if (templateArgumentTypeIdResult.Error()) return Result<bool>(ErrorId(templateArgumentTypeIdResult.GetErrorId()));
+                templateArgumentTypeIds.Add(templateArgumentTypeIdResult.Value());
+            }
+            if (IsFunctionTemplate() || (GetGlobalFlag(GlobalFlags.release) && IsInline()) || IsConstExpr())
+            {
+                Result<bool> usingResult = usingNodes.Read(reader.GetAstReader());
+                if (usingResult.Error()) return usingResult;
+                Result<Node*> nodeResult = reader.GetAstReader().ReadNode();
+                if (nodeResult.Error()) return Result<bool>(ErrorId(nodeResult.GetErrorId()));
+                Node* node = nodeResult.Value();
+                #assert(node->IsFunctionNode());
+                FunctionNode* fnNode = cast<FunctionNode*>(node);
+                functionNode.Reset(fnNode);
+            }
+            if (IsConversion())
+            {
+                Result<Uuid> conversionSourceTypeIdResult = reader.GetBinaryReader().ReadUuid();
+                if (conversionSourceTypeIdResult.Error()) return Result<bool>(ErrorId(conversionSourceTypeIdResult.GetErrorId()));
+                conversionSourceTypeId = conversionSourceTypeIdResult.Value();
+                Result<Uuid> conversionTargetTypeIdResult = reader.GetBinaryReader().ReadUuid();
+                if (conversionTargetTypeIdResult.Error()) return Result<bool>(ErrorId(conversionTargetTypeIdResult.GetErrorId()));
+                conversionTargetTypeId = conversionTargetTypeIdResult.Value();
+                Result<byte> conversionDistanceResult = reader.GetBinaryReader().ReadByte();
+                if (conversionDistanceResult.Error()) return Result<bool>(ErrorId(conversionDistanceResult.GetErrorId()));
+                conversionDistance = conversionDistanceResult.Value();
+            }
+            if (returnTypeId != Uuid() || functionTemplateId != Uuid() || !templateArgumentTypeIds.IsEmpty() || IsConversion())
+            {
+                reader.AddToResolutionList(this);
+            }
+            reader.GetSymbolTable()->MapFunction(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            if (returnTypeId != Uuid())
+            {
+                auto typeSymbolResult = symbolTable->GetType(returnTypeId);
+                if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
+                returnType = typeSymbolResult.Value();
+            }
+            if (functionTemplateId != Uuid())
+            {
+                Result<FunctionSymbol*> functionSymbolResult = symbolTable->GetFunction(functionTemplateId);
+                if (functionSymbolResult.Error()) return Result<bool>(ErrorId(functionSymbolResult.GetErrorId()));
+                functionTemplate = functionSymbolResult.Value();
+            }
+            int n = cast<int>(templateArgumentTypeIds.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Result<TypeSymbol*> templateArgumentTypeResult = symbolTable->GetType(templateArgumentTypeIds[i]);
+                if (templateArgumentTypeResult.Error()) return Result<bool>(ErrorId(templateArgumentTypeResult.GetErrorId()));
+                templateArgumentTypes.Add(templateArgumentTypeResult.Value());
+            }
+            if (IsConversion())
+            {
+                auto typeSymbolResult = symbolTable->GetType(conversionSourceTypeId);
+                if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
+                conversionSourceType = typeSymbolResult.Value();
+                typeSymbolResult = symbolTable->GetType(conversionTargetTypeId);
+                if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
+                conversionTargetType = typeSymbolResult.Value();
+                symbolTable->AddConversion(this);
+            }
+            return Result<bool>(true);
+        }
+        public inline bool GetFlag(FunctionSymbolFlags flag) const
+        {
+            return (flags & flag) != FunctionSymbolFlags.none;
+        }
+        public inline void SetFlag(FunctionSymbolFlags flag)
+        {
+            flags = cast<FunctionSymbolFlags>(flags | flag);
+        }
+        public inline void ResetFlag(FunctionSymbolFlags flag)
+        {
+            flags = cast<FunctionSymbolFlags>(flags & ~flag);
+        }
+        public inline bool IsInline() const
+        {
+            return GetFlag(FunctionSymbolFlags.inline_);
+        }
+        public inline void SetInline()
+        {
+            SetFlag(FunctionSymbolFlags.inline_);
+        }
+        public inline bool IsConst() const
+        {
+            return GetFlag(FunctionSymbolFlags.const_);
+        }
+        public inline void SetConst()
+        {
+            SetFlag(FunctionSymbolFlags.const_);
+        }
+        public inline bool IsNew() const
+        {
+            return GetFlag(FunctionSymbolFlags.new_);
+        }
+        public inline void SetNew()
+        {
+            SetFlag(FunctionSymbolFlags.new_);
+        }
+        public inline bool IsVirtualAbstractOrOverride() const
+        {
+            return GetFlag(cast<FunctionSymbolFlags>(FunctionSymbolFlags.virtual_ | FunctionSymbolFlags.abstract_ | FunctionSymbolFlags.override_));
+        }
+        public inline bool IsConversion() const
+        {
+            return GetFlag(cast<FunctionSymbolFlags>(FunctionSymbolFlags.implicitConversion | FunctionSymbolFlags.explicitConversion));
+        }
+        public inline bool IsImplicitConversion() const
+        {
+            return GetFlag(FunctionSymbolFlags.implicitConversion);
+        }
+        public inline void SetImplicitConversion()
+        {
+            SetFlag(FunctionSymbolFlags.implicitConversion);
+        }
+        public inline bool IsExplicitConversion() const
+        {
+            return GetFlag(FunctionSymbolFlags.explicitConversion);
+        }
+        public inline void SetExplicitConversion()
+        {
+            SetFlag(FunctionSymbolFlags.explicitConversion);
+        }
+        public inline bool IsGenerated() const
+        {
+            return GetFlag(FunctionSymbolFlags.generated);
+        }
+        public inline void SetGenerated()
+        {
+            SetFlag(FunctionSymbolFlags.generated);
+        }
+        public inline bool CannotInline() const
+        {
+            return GetFlag(FunctionSymbolFlags.cannotInline);
+        }
+        public inline void SetCannotInline()
+        {
+            SetFlag(FunctionSymbolFlags.cannotInline);
+        }
+        public inline bool IsTemplateSpecialization() const
+        {
+            return GetFlag(FunctionSymbolFlags.templateSpecialization);
+        }
+        public inline void SetTemplateSpecialization()
+        {
+            SetFlag(FunctionSymbolFlags.templateSpecialization);
+        }
+        public inline bool IsDefault() const
+        {
+            return GetFlag(FunctionSymbolFlags.default_);
+        }
+        public inline void SetDefault()
+        {
+            SetFlag(FunctionSymbolFlags.default_);
+        }
+        public inline bool IsSuppressed() const
+        {
+            return GetFlag(FunctionSymbolFlags.suppress_);
+        }
+        public inline void SetSuppressed()
+        {
+            SetFlag(FunctionSymbolFlags.suppress_);
+        }
+        public inline bool IsExplicit() const
+        {
+            return GetFlag(FunctionSymbolFlags.explicit_);
+        }
+        public inline void SetExplicit()
+        {
+            SetFlag(FunctionSymbolFlags.explicit_);
+        }
+        public inline bool IsVirtual() const
+        {
+            return GetFlag(FunctionSymbolFlags.virtual_);
+        }
+        public inline void SetVirtual()
+        {
+            SetFlag(FunctionSymbolFlags.virtual_);
+        }
+        public inline bool IsOverride() const
+        {
+            return GetFlag(FunctionSymbolFlags.override_);
+        }
+        public inline void SetOverride()
+        {
+            SetFlag(FunctionSymbolFlags.override_);
+        }
+        public inline bool IsAbstract() const
+        {
+            return GetFlag(FunctionSymbolFlags.abstract_);
+        }
+        public inline void SetAbstract()
+        {
+            SetFlag(FunctionSymbolFlags.abstract_);
+        }
+        public inline bool IsCopy() const
+        {
+            return GetFlag(FunctionSymbolFlags.copy);
+        }
+        public inline void SetCopy()
+        {
+            SetFlag(FunctionSymbolFlags.copy);
+        }
+        public inline bool IsBasicTypeOperation() const
+        {
+            return GetFlag(FunctionSymbolFlags.basicTypeOperation);
+        }
+        public inline void SetBasicTypeOperation()
+        {
+            SetFlag(FunctionSymbolFlags.basicTypeOperation);
+        }
+        public inline bool HasArtificialBody() const
+        {
+            return GetFlag(FunctionSymbolFlags.hasArtificialBody);
+        }
+        public inline void SetHasArtificialBody()
+        {
+            SetFlag(FunctionSymbolFlags.hasArtificialBody);
+        }
+        public inline bool IsProgramMain() const
+        {
+            return GetFlag(FunctionSymbolFlags.programMain);
+        }
+        public inline void SetProgramMain()
+        {
+            SetFlag(FunctionSymbolFlags.programMain);
+        }
+        public inline bool IsConstExpr() const
+        {
+            return GetFlag(FunctionSymbolFlags.constExpr);
+        }
+        public inline void SetConstExpr()
+        {
+            SetFlag(FunctionSymbolFlags.constExpr);
+        }
+        public inline bool HasSource() const
+        {
+            return GetFlag(FunctionSymbolFlags.hasSource);
+        }
+        public inline void SetHasSource()
+        {
+            SetFlag(FunctionSymbolFlags.hasSource);
+        }
+        public inline bool IsCDecl() const
+        {
+            return GetFlag(FunctionSymbolFlags.cdecl_);
+        }
+        public inline void SetCDecl()
+        {
+            SetFlag(FunctionSymbolFlags.cdecl_);
+        }
+        public inline bool DontReuse() const
+        {
+            return GetFlag(FunctionSymbolFlags.dontReuse);
+        }
+        public inline void SetDontReuse()
+        {
+            SetFlag(FunctionSymbolFlags.dontReuse);
+        }
+        public inline bool IsSystemDefault() const
+        {
+            return GetFlag(FunctionSymbolFlags.systemDefault);
+        }
+        public inline void SetSystemDefault()
+        {
+            SetFlag(FunctionSymbolFlags.systemDefault);
+        }
+        public inline bool IsLvalueReferenceCopyAssignment() const
+        {
+            return GetFlag(FunctionSymbolFlags.lvalueReferenceCopyAssignment);
+        }
+        public inline void SetLvalueReferenceCopyAssignment()
+        {
+            SetFlag(FunctionSymbolFlags.lvalueReferenceCopyAssignment);
+        }
+        public inline bool IsCompileTimePrimitiveFunction() const
+        {
+            return GetFlag(FunctionSymbolFlags.compileTimePrimitiveFunction);
+        }
+        public inline void SetCompileTimePrimitiveFunction()
+        {
+            SetFlag(FunctionSymbolFlags.compileTimePrimitiveFunction);
+        }
+        public inline TypeSymbol* ReturnType() const
+        {
+            return returnType;
+        }
+        public inline void SetReturnType(TypeSymbol* returnType_)
+        {
+            returnType = returnType_;
+        }
+        public inline ParameterSymbol* ReturnParam() const
+        {
+            return returnParam.Get();
+        }
+        public inline void SetReturnParam(ParameterSymbol* returnParam_)
+        {
+            returnParam.Reset(returnParam_);
+        }
+        public bool ReturnsClassInterfaceOrClassDelegateByValue() const
+        {
+            return returnType != null &&
+                (returnType->IsClassTypeSymbol() || returnType->IsClassDelegateTypeSymbol() || returnType->IsInterfaceTypeSymbol());
+        }
+        public inline int Arity() const
+        {
+            return cast<int>(parameters.Count());
+        }
+        public inline const List<LocalVariableSymbol*>& LocalVariables() const
+        {
+            return localVariables;
+        }
+        public void AddLocalVariable(LocalVariableSymbol* localVariable)
+        {
+            localVariables.Add(localVariable);
+        }
+        public inline TypeSymbol* ConversionSourceType() const
+        {
+            return conversionSourceType;
+        }
+        public inline void SetConversionSourceType(TypeSymbol* conversionSourceType_)
+        {
+            conversionSourceType = conversionSourceType_;
+        }
+        public inline TypeSymbol* ConversionTargetType() const
+        {
+            return conversionTargetType;
+        }
+        public inline void SetConversionTargetType(TypeSymbol* conversionTargetType_)
+        {
+            conversionTargetType = conversionTargetType_;
+        }
+        public inline ConversionType GetConversionType() const
+        {
+            if (IsImplicitConversion())
+            {
+                return ConversionType.implicit;
+            }
+            else if (IsExplicitConversion())
+            {
+                return ConversionType.explicit_;
+            }
+            else
+            {
+                return ConversionType.none;
+            }
+        }
+        public inline byte ConversionDistance() const
+        {
+            return conversionDistance;
+        }
+        public inline void SetConversionDistance(byte conversionDistance_)
+        {
+            conversionDistance = conversionDistance_;
+        }
+        public inline const List<ParameterSymbol*>& Parameters() const
+        {
+            return parameters;
+        }
+        public inline const List<TemplateParameterSymbol*>& TemplateParameters() const
+        {
+            return templateParameters;
+        }
+        public virtual int StartParamIndex() const
+        {
+            return 0;
+        }
+        public virtual ParameterSymbol* GetThisParam() const
+        {
+            return null;
+        }
+        public IntrinsicFunction* GetIntrinsic() const
+        {
+            return intrinsic.Get();
+        }
+        public void SetIntrinsic(IntrinsicFunction* intrinsic_)
+        {
+            intrinsic.Reset(intrinsic_);
+        }
+        public virtual Result<UniquePtr<Value>> Evaluate(const List<UniquePtr<Value>>& argumentValues, Value* receiver, Node* node)
+        {
+            int errorId = MakeError("cannot evaluate statically", node->GetFullSpan());
+            return Result<UniquePtr<Value>>(ErrorId(errorId));
+        }
+        public virtual Result<UniquePtr<Value>> ConvertValue(Value* value, Node* node)
+        {
+            int errorId = MakeError("cannot convert value", node->GetFullSpan());
+            return Result<UniquePtr<Value>>(ErrorId(errorId));
+        }
+        public inline const NodeList<Node>& UsingNodes() const
+        {
+            return usingNodes;
+        }
+        public inline FunctionNode* GetFunctionNode() const
+        {
+            return functionNode.Get();
+        }
+        public void SetConstraint(ConstraintNode* constraint_)
+        {
+            constraint.Reset(constraint_);
+        }
+        public inline ConstraintNode* Constraint() const
+        {
+            return constraint.Get();
+        }
+        public inline const string& SourceFileId() const
+        {
+            return sourceFileId;
+        }
+        public void SetSourceFileId(const string& sourceFileId_)
+        {
+            sourceFileId = sourceFileId_;
+        }
+        public inline FunctionSymbol* FunctionTemplate() const
+        {
+            return functionTemplate;
+        }
+        public inline void SetFunctionTemplate(FunctionSymbol* functionTemplate_)
+        {
+            functionTemplate = functionTemplate_;
+        }
+        public inline const List<TypeSymbol*>& TemplateArgumentTypes() const
+        {
+            return templateArgumentTypes;
+        }
+        public void SetTemplateArgumentTypes(List<TypeSymbol*>&& templateArgumentTypes_)
+        {
+            templateArgumentTypes = templateArgumentTypes_;
+        }
+        public virtual Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            return Result<List<LocalVariableSymbol*>>();
+        }
+        public inline FunctionSymbol* Master() const
+        {
+            return master;
+        }
+        public inline void SetMaster(FunctionSymbol* master_)
+        {
+            master = master_;
+        }
+        private Uuid functionId;
+        private ustring groupName;
+        private List<TemplateParameterSymbol*> templateParameters;
+        private FunctionSymbolFlags flags;
+        private int index;
+        private int vmtIndex;
+        private int imtIndex;
+        private ustring instantiatedName;
+        private TypeSymbol* returnType;
+        private Uuid returnTypeId;
+        private List<ParameterSymbol*> parameters;
+        private UniquePtr<ParameterSymbol> returnParam;
+        private List<LocalVariableSymbol*> localVariables;
+        private TypeSymbol* conversionSourceType;
+        private TypeSymbol* conversionTargetType;
+        private Uuid conversionSourceTypeId;
+        private Uuid conversionTargetTypeId;
+        private byte conversionDistance;
+        private FunctionGroupSymbol* functionGroup;
+        private UniquePtr<IntrinsicFunction> intrinsic;
+        private UniquePtr<FunctionNode> functionNode;
+        private UniquePtr<ConstraintNode> constraint;
+        private NodeList<Node> usingNodes;
+        private int nextTemporaryIndex;
+        private string sourceFileId;
+        private FunctionSymbol* functionTemplate;
+        private Uuid functionTemplateId;
+        private List<TypeSymbol*> templateArgumentTypes;
+        private List<Uuid> templateArgumentTypeIds;
+        private FunctionSymbol* master;
+    }
+
+    public class StaticConstructorSymbol : FunctionSymbol
+    {
+        public StaticConstructorSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.staticConstructorSymbol, span_, name_)
+        {
+            SetGroupName(u"@static_constructor");
+        }
+        public override ustring TypeString() const
+        {
+             return u"static_constructor";
+        }
+        public override int StartParamIndex() const
+        {
+            return 0;
+        }
+        public override Result<FunctionSymbol*> Copy() const
+        {
+            StaticConstructorSymbol* copy = new StaticConstructorSymbol(Span(), Name());
+            Result<bool> result = copy->CopyFrom(this);
+            if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            return Result<FunctionSymbol*>(copy);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            SetStatic();
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    public class ConstructorSymbol : FunctionSymbol
+    {
+        public ConstructorSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.constructorSymbol, span_, name_)
+        {
+            SetGroupName(u"@constructor");
+        }
+        public override ustring TypeString() const
+        {
+             return u"constructor";
+        }
+        public override ParameterSymbol* GetThisParam() const
+        {
+            return Parameters()[0];
+        }
+        public override bool IsConstructorDestructorOrNonstaticMemberFunction() const
+        {
+            return true;
+        }
+        public override int StartParamIndex() const
+        {
+            return 1;
+        }
+        public override Result<FunctionSymbol*> Copy() const
+        {
+            ConstructorSymbol* copy = new ConstructorSymbol(Span(), Name());
+            Result<bool> result = copy->CopyFrom(this);
+            if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            return Result<FunctionSymbol*>(copy);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("ordinary constructor cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                SetInline();
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                SetExplicit();
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                SetSuppressed();
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                SetDefault();
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                SetConstExpr();
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    public class DestructorSymbol : FunctionSymbol
+    {
+        public DestructorSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.destructorSymbol, span_, name_)
+        {
+            SetGroupName(u"@destructor");
+        }
+        public override ustring TypeString() const
+        {
+             return u"destructor";
+        }
+        public override ParameterSymbol* GetThisParam() const
+        {
+            return Parameters()[0];
+        }
+        public override bool IsConstructorDestructorOrNonstaticMemberFunction() const
+        {
+            return true;
+        }
+        public override int StartParamIndex() const
+        {
+            return 1;
+        }
+        public override Result<FunctionSymbol*> Copy() const
+        {
+            DestructorSymbol* copy = new DestructorSymbol(Span(), Name());
+            Result<bool> result = copy->CopyFrom(this);
+            if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            return Result<FunctionSymbol*>(copy);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            if (accessSpecifiers != Specifiers.public_)
+            {
+                int errorId = MakeError("destructor must be public", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                SetVirtual();
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                SetOverride();
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                SetDefault();
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("destructor cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    public class MemberFunctionSymbol : FunctionSymbol
+    {
+        public MemberFunctionSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.memberFunctionSymbol, span_, name_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"member_function";
+        }
+        public override ParameterSymbol* GetThisParam() const
+        {
+            if (IsStatic()) return null; else return Parameters()[0];
+        }
+        public override bool IsConstructorDestructorOrNonstaticMemberFunction() const
+        {
+            return !IsStatic();
+        }
+        public override int StartParamIndex() const
+        {
+            if (IsStatic())
+            {
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        public override Result<FunctionSymbol*> Copy() const
+        {
+            MemberFunctionSymbol* copy = new MemberFunctionSymbol(Span(), Name());
+            Result<bool> result = copy->CopyFrom(this);
+            if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            return Result<FunctionSymbol*>(copy);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                SetStatic();
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                SetVirtual();
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                SetOverride();
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                SetAbstract();
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                SetInline();
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("member function cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("member function cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                if (GroupName() == u"operator=")
+                {
+                    SetSuppressed();
+                }
+                else
+                {
+                    int errorId = MakeError("only special member functions can be suppressed", FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                if (GroupName() == u"operator=")
+                {
+                    SetDefault();
+                }
+                else
+                {
+                    int errorId = MakeError("only special member functions can be default", FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                SetConstExpr();
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("member function cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                SetNew();
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                SetConst();
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("constructor cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    public class ConversionFunctionSymbol : FunctionSymbol
+    {
+        public ConversionFunctionSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.conversionFunctionSymbol, span_, name_)
+        {
+            SetImplicitConversion();
+            SetConversionDistance(255u);
+        }
+        public override ustring TypeString() const
+        {
+             return u"conversion_function";
+        }
+        public override ParameterSymbol* GetThisParam() const
+        {
+            return Parameters()[0];
+        }
+        public override bool IsConstructorDestructorOrNonstaticMemberFunction() const
+        {
+            return true;
+        }
+        public override int StartParamIndex() const
+        {
+            return 0;
+        }
+        public override Result<FunctionSymbol*> Copy() const
+        {
+            ConversionFunctionSymbol* copy = new ConversionFunctionSymbol(Span(), Name());
+            Result<bool> result = copy->CopyFrom(this);
+            if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            return Result<FunctionSymbol*>(copy);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                SetInline();
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                SetConstExpr();
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                // no effect
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("static constructor cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("conversion function cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+    }
+
+    public class FunctionGroupTypeSymbol : TypeSymbol
+    {
+        public FunctionGroupTypeSymbol(const System.Lex.Span& span_, FunctionGroupSymbol* functionGroup_) :
+            base(SymbolKind.functionGroupTypeSymbol, span_, functionGroup_->Name()), functionGroup(functionGroup_), boundFunctionGroup(null)
+        {
+        }
+        public override bool IsExportSymbol() const
+        {
+            return false;
+        }
+        public inline FunctionGroupSymbol* FunctionGroup() const
+        {
+            return functionGroup;
+        }
+        public inline void* GetBoundFunctionGroup() const
+        {
+            return boundFunctionGroup;
+        }
+        public inline void SetBoundFunctionGroup(void* boundFunctionGroup_)
+        {
+            boundFunctionGroup = boundFunctionGroup_;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            #assert(false);
+            return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
+        }
+        public FunctionGroupTypeSymbol* Clone() const
+        {
+            FunctionGroupTypeSymbol* clone = new FunctionGroupTypeSymbol(Span(), functionGroup);
+            clone->SetBoundFunctionGroup(GetBoundFunctionGroup());
+            return clone;
+        }
+        private FunctionGroupSymbol* functionGroup;
+        private void* boundFunctionGroup;
+    }
+
+    public class MemberExpressionTypeSymbol : TypeSymbol
+    {
+        public MemberExpressionTypeSymbol(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.memberExpressionTypeSymbol, span_, name_), boundMemberExpression(null)
+        {
+        }
+        public override bool IsExportSymbol() const
+        {
+            return false;
+        }
+        public inline void SetBoundMemberExpression(void* boundMemberExpression_)
+        {
+            boundMemberExpression = boundMemberExpression_;
+        }
+        public inline void* GetBoundMemberExpression() const
+        {
+            return boundMemberExpression;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            #assert(false);
+            return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
+        }
+        public MemberExpressionTypeSymbol* Clone() const
+        {
+            MemberExpressionTypeSymbol* clone = new MemberExpressionTypeSymbol(Span(), Name());
+            clone->SetBoundMemberExpression(boundMemberExpression);
+            return clone;
+        }
+        private void* boundMemberExpression;
+    }
+
+    public bool FunctionSymbolsEqual(FunctionSymbol* left, FunctionSymbol* right)
+    {
+        if (left->Parent()->IsClassTemplateSpecializationSymbol() && right->Parent()->IsClassTemplateSpecializationSymbol())
+        {
+            ClassTemplateSpecializationSymbol* leftSpecialization = cast<ClassTemplateSpecializationSymbol*>(left->Parent());
+            ClassTemplateSpecializationSymbol* rightSpecialization = cast<ClassTemplateSpecializationSymbol*>(right->Parent());
+            if (TypesEqual(leftSpecialization, rightSpecialization))
+            {
+                int leftIndex = left->Index();
+                int rightIndex = right->Index();
+                if (leftIndex == -1 || rightIndex == -1)
+                {
+                    return left == right;
+                }
+                else
+                {
+                    return leftIndex == rightIndex;
+                }
+            }
+        }
+        else if (left->IsTemplateSpecialization() && right->IsTemplateSpecialization())
+        {
+            if (left->FunctionTemplate() == right->FunctionTemplate())
+            {
+                int n = cast<int>(left->TemplateArgumentTypes().Count());
+                if (right->TemplateArgumentTypes().Count() == n)
+                {
+                    bool equal = true;
+                    for (int i = 0; i < n; ++i)
+                    {
+                        if (!TypesEqual(left->TemplateArgumentTypes()[i], right->TemplateArgumentTypes()[i]))
+                        {
+                            equal = false;
+                            break;
+                        }
+                    }
+                    return equal;
+                }
+            }
+        }
+        else if (GetGlobalFlag(GlobalFlags.release) && !left->IsGenerated() && left->IsInline() && !right->IsGenerated() && right->IsInline())
+        {
+            return left->FunctionId() == right->FunctionId();
+        }
+        return left == right;
+    }
+
+    public class FunctionSymbolEqual : Rel<FunctionSymbol*>
+    {
+        public inline bool operator()(FunctionSymbol* left, FunctionSymbol* right) const
+        {
+            return FunctionSymbolsEqual(left, right);
+        }
+    }
+
+    public class FunctionSymbolHash : UnaryFun<FunctionSymbol*, ulong>
+    {
+        public ulong operator()(FunctionSymbol* fn) const
+        {
+            if (fn->Parent()->IsClassTemplateSpecializationSymbol())
+            {
+                ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(fn->Parent());
+                return GetHashCode(specialization->TypeId()) ^ cast<ulong>(fn->Index());
+            }
+            else if (fn->IsTemplateSpecialization())
+            {
+                ulong hashCode = GetHashCode(fn->FunctionTemplate()->FunctionId());
+                int n = cast<int>(fn->TemplateArgumentTypes().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    TypeSymbol* templateArg = fn->TemplateArgumentTypes()[i];
+                    hashCode = hashCode ^ GetHashCode(templateArg->TypeId());
+                }
+                return hashCode;
+            }
+            else if (GetGlobalFlag(GlobalFlags.release) && !fn->IsGenerated() && fn->IsInline())
+            {
+                return GetHashCode(fn->FunctionId());
+            }
+            else
+            {
+                return GetHashCode(fn);
+            }
+        }
+    }
+
+    public class ViableFunctionSet
+    {
+        public void Add(FunctionSymbol* fn)
+        {
+            auto it = set.Find(fn);
+            if (it != set.End())
+            {
+                set.Remove(it);
+            }
+            set.Insert(fn);
+        }
+        public inline const HashSet<FunctionSymbol*, FunctionSymbolHash, FunctionSymbolEqual>& Get() const
+        {
+            return set;
+        }
+        public inline bool IsEmpty() const
+        {
+            return set.IsEmpty();
+        }
+        public inline int Count() const
+        {
+            return cast<int>(set.Count());
+        }
+        private HashSet<FunctionSymbol*, FunctionSymbolHash, FunctionSymbolEqual> set;
+    }
+}
+

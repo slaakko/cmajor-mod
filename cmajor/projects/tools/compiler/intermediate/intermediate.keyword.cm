@@ -1,0 +1,99 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/projects/tools/compiler/intermediate/intermediate.keyword' using SoulCm lexer generator scmlg version 5.0.0
+
+using System;
+using System.Collections;
+using intermediate.token;
+
+namespace intermediate.keyword
+{
+    public class Keywords
+    {
+        static Keywords() : instance(new Keywords())
+        {
+        }
+        public static Keywords& Instance()
+        {
+            return *instance;
+        }
+        public System.Lex.KeywordMap* GetKeywords() const
+        {
+            return &keywordMap;
+        }
+        private Keywords()
+        {
+            keywords.Add(System.Lex.Keyword(u"types", TYPES));
+            keywords.Add(System.Lex.Keyword(u"data", DATA));
+            keywords.Add(System.Lex.Keyword(u"function", FUNCTION));
+            keywords.Add(System.Lex.Keyword(u"extern", EXTERN));
+            keywords.Add(System.Lex.Keyword(u"inline", INLINE));
+            keywords.Add(System.Lex.Keyword(u"metadata", METADATA));
+            keywords.Add(System.Lex.Keyword(u"store", STORE));
+            keywords.Add(System.Lex.Keyword(u"arg", ARG));
+            keywords.Add(System.Lex.Keyword(u"jmp", JMP));
+            keywords.Add(System.Lex.Keyword(u"branch", BRANCH));
+            keywords.Add(System.Lex.Keyword(u"call", CALL));
+            keywords.Add(System.Lex.Keyword(u"ret", RET));
+            keywords.Add(System.Lex.Keyword(u"switch", SWITCH));
+            keywords.Add(System.Lex.Keyword(u"nop", NOP));
+            keywords.Add(System.Lex.Keyword(u"not", NOT));
+            keywords.Add(System.Lex.Keyword(u"neg", NEG));
+            keywords.Add(System.Lex.Keyword(u"signextend", SIGNEXTEND));
+            keywords.Add(System.Lex.Keyword(u"zeroextend", ZEROEXTEND));
+            keywords.Add(System.Lex.Keyword(u"fpextend", FPEXTEND));
+            keywords.Add(System.Lex.Keyword(u"truncate", TRUNCATE));
+            keywords.Add(System.Lex.Keyword(u"bitcast", BITCAST));
+            keywords.Add(System.Lex.Keyword(u"inttofloat", INTTOFLOAT));
+            keywords.Add(System.Lex.Keyword(u"floattoint", FLOATTOINT));
+            keywords.Add(System.Lex.Keyword(u"inttoptr", INTTOPTR));
+            keywords.Add(System.Lex.Keyword(u"ptrtoint", PTRTOINT));
+            keywords.Add(System.Lex.Keyword(u"add", ADD));
+            keywords.Add(System.Lex.Keyword(u"sub", SUB));
+            keywords.Add(System.Lex.Keyword(u"mul", MUL));
+            keywords.Add(System.Lex.Keyword(u"div", DIV));
+            keywords.Add(System.Lex.Keyword(u"mod", MOD));
+            keywords.Add(System.Lex.Keyword(u"and", AND));
+            keywords.Add(System.Lex.Keyword(u"or", OR));
+            keywords.Add(System.Lex.Keyword(u"xor", XOR));
+            keywords.Add(System.Lex.Keyword(u"shl", SHL));
+            keywords.Add(System.Lex.Keyword(u"shr", SHR));
+            keywords.Add(System.Lex.Keyword(u"equal", EQUAL));
+            keywords.Add(System.Lex.Keyword(u"less", LESS));
+            keywords.Add(System.Lex.Keyword(u"param", PARAM));
+            keywords.Add(System.Lex.Keyword(u"local", LOCAL));
+            keywords.Add(System.Lex.Keyword(u"load", LOAD));
+            keywords.Add(System.Lex.Keyword(u"elemaddr", ELEMADDR));
+            keywords.Add(System.Lex.Keyword(u"ptroffset", PTROFFSET));
+            keywords.Add(System.Lex.Keyword(u"ptrdiff", PTRDIFF));
+            keywords.Add(System.Lex.Keyword(u"type", TYPE));
+            keywords.Add(System.Lex.Keyword(u"offset", OFFSET));
+            keywords.Add(System.Lex.Keyword(u"size", SIZE));
+            keywords.Add(System.Lex.Keyword(u"alignment", ALIGNMENT));
+            keywords.Add(System.Lex.Keyword(u"void", VOID));
+            keywords.Add(System.Lex.Keyword(u"bool", BOOL));
+            keywords.Add(System.Lex.Keyword(u"sbyte", SBYTE));
+            keywords.Add(System.Lex.Keyword(u"byte", BYTE));
+            keywords.Add(System.Lex.Keyword(u"short", SHORT));
+            keywords.Add(System.Lex.Keyword(u"ushort", USHORT));
+            keywords.Add(System.Lex.Keyword(u"int", INT));
+            keywords.Add(System.Lex.Keyword(u"uint", UINT));
+            keywords.Add(System.Lex.Keyword(u"long", LONG));
+            keywords.Add(System.Lex.Keyword(u"ulong", ULONG));
+            keywords.Add(System.Lex.Keyword(u"float", FLOAT));
+            keywords.Add(System.Lex.Keyword(u"double", DOUBLE));
+            keywords.Add(System.Lex.Keyword(u"true", TRUE));
+            keywords.Add(System.Lex.Keyword(u"false", FALSE));
+            keywords.Add(System.Lex.Keyword(u"null", NULL_TOKEN));
+            keywords.Add(System.Lex.Keyword(u"conv", CONV));
+            keywordMap.SetKeywords(keywords);
+        }
+        private List<System.Lex.Keyword> keywords;
+        private System.Lex.KeywordMap keywordMap;
+        private static UniquePtr<Keywords> instance;
+    }
+
+    public System.Lex.KeywordMap* GetKeywords()
+    {
+        return Keywords.Instance().GetKeywords();
+    }
+
+} // intermediate.keyword

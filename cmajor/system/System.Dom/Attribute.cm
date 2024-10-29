@@ -101,7 +101,7 @@ namespace System.Xml
         }
         return Result<string>(result);
     }
-
+ 
     [nodiscard]
     public Result<string> MakeXmlAttrValue(const string& value)
     {

@@ -61,7 +61,8 @@ void ClassTemplateRepository::ResolveDefaultTemplateArguments(std::vector<cmajor
             else if (usingNode->GetNodeType() == cmajor::ast::NodeType::aliasNode)
             {
                 cmajor::ast::AliasNode* aliasNode = static_cast<cmajor::ast::AliasNode*>(usingNode);
-
+                cmajor::symbols::TypeSymbol* type = ResolveType(aliasNode->TypeExpr(), boundCompileUnit, containerScope);
+                fileScope->InstallAlias(aliasNode, type);
             }
         }
         boundCompileUnit.AddFileScope(fileScope);
@@ -429,6 +430,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
             statementBinder.SetCurrentMemberFunction(memberFunctionSymbol, memberFunctionNode);
         }
         functionInstanceNode->Body()->Accept(statementBinder);
+        CheckFunctionReturnPaths(memberFunction, functionInstanceNode->Body(), node, containerScope, boundCompileUnit);
         BoundStatement* boundStatement = statementBinder.ReleaseStatement();
         Assert(boundStatement->GetBoundNodeType() == BoundNodeType::boundCompoundStatement, "bound compound statement expected"); 
         BoundCompoundStatement* compoundStatement = static_cast<BoundCompoundStatement*>(boundStatement);

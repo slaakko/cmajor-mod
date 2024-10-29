@@ -1,0 +1,1967 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public Result<ConceptSymbol*> ResolveConceptId(ConceptIdNode* conceptIdNode, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+    {
+        ConceptIdResolver conceptIdResolver(boundCompileUnit, containerScope);
+        conceptIdNode->Accept(conceptIdResolver);
+        if (conceptIdResolver.Error()) return Result<ConceptSymbol*>(ErrorId(conceptIdResolver.GetErrorId()));
+        ConceptSymbol* conceptSymbol = conceptIdResolver.GetConcept();
+        return Result<ConceptSymbol*>(conceptSymbol);
+    }
+
+    public class ConceptIdResolver : Visitor
+    {
+        public ConceptIdResolver(BoundCompileUnit* boundCompileUnit_, ContainerScope* containerScope_) :
+            boundCompileUnit(boundCompileUnit_), containerScope(containerScope_), errorId(0)
+        {
+        }
+        public override void Visit(ConceptIdNode& conceptIdNode)
+        {
+            conceptIdNode.Id()->Accept(*this);
+            if (Error()) return;
+            if (conceptGroup != null)
+            {
+                int arity = conceptIdNode.Arity();
+                Result<ConceptSymbol*> result = conceptGroup->GetConcept(arity);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                conceptSymbol = result.Value();
+            }
+            else
+            {
+                Result<string> nameResult = ToUtf8(conceptIdNode.Id()->Str());
+                if (nameResult.Error())
+                {
+                    SetErrorId(nameResult.GetErrorId());
+                    return;
+                }
+                string name = Rvalue(nameResult.Value());
+                int errorId = MakeError("concept symbol '" + name + "' not found", conceptIdNode.Id()->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(IdentifierNode& identifierNode)
+        {
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol == null)
+            {
+                for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
+                {
+                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    if (symbolResult.Error())
+                    {
+                        SetErrorId(symbolResult.GetErrorId());
+                        return;
+                    }
+                    symbol = symbolResult.Value();
+                    if (symbol != null) break;
+                }
+            }
+            if (symbol != null)
+            {
+                if (symbol->IsConceptGroupSymbol())
+                {
+                    conceptGroup = cast<ConceptGroupSymbol*>(symbol);
+                }
+                else if (symbol->IsNamespaceSymbol())
+                {
+                    ns = cast<NamespaceSymbol*>(symbol);
+                }
+                else
+                {
+                    Result<string> nameResult = ToUtf8(identifierNode.Str());
+                    if (nameResult.Error())
+                    {
+                        SetErrorId(nameResult.GetErrorId());
+                        return;
+                    }
+                    string name = Rvalue(nameResult.Value());
+                    int errorId = MakeError("symbol '" + name + "' does not denote a concept", identifierNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            else
+            {
+                Result<string> nameResult = ToUtf8(identifierNode.Str());
+                if (nameResult.Error())
+                {
+                    SetErrorId(nameResult.GetErrorId());
+                    return;
+                }
+                string name = Rvalue(nameResult.Value());
+                int errorId = MakeError("concept symbol '" + name + "' not found", identifierNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(DotNode& dotNode)
+        {
+            dotNode.Subject()->Accept(*this);
+            if (Error()) return;
+            if (ns == null)
+            {
+                Result<string> conceptNameResult = dotNode.ToString();
+                if (conceptNameResult.Error())
+                {
+                    SetErrorId(conceptNameResult.GetErrorId());
+                    return;
+                }
+                string conceptName = Rvalue(conceptNameResult.Value());
+                int errorId = MakeError("concept symbol '" + conceptName + "' not found", dotNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            ContainerScope* containerScope = ns->GetContainerScope();
+            ustring name = dotNode.MemberId()->Str();
+            Result<Symbol*> symbolResult = containerScope->Lookup(name, ScopeLookup.this_);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol != null)
+            {
+                if (symbol->IsConceptGroupSymbol())
+                {
+                    conceptGroup = cast<ConceptGroupSymbol*>(symbol);
+                }
+                else if (symbol->IsNamespaceSymbol())
+                {
+                    ns = cast<NamespaceSymbol*>(symbol);
+                }
+                else
+                {
+                    Result<string> nameResult = ToUtf8(name);
+                    if (nameResult.Error())
+                    {
+                        SetErrorId(nameResult.GetErrorId());
+                        return;
+                    }
+                    int errorId = MakeError("symbol '" + nameResult.Value() + "' does not denote a concept", dotNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+            }
+            else
+            {
+                Result<string> nameResult = ToUtf8(name);
+                if (nameResult.Error())
+                {
+                    SetErrorId(nameResult.GetErrorId());
+                    return;
+                }
+                int errorId = MakeError("concept symbol '" + nameResult.Value() + "' not found", dotNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public inline ConceptSymbol* GetConcept() const
+        {
+            return conceptSymbol;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private ContainerScope* containerScope;
+        private ConceptSymbol* conceptSymbol;
+        private ConceptGroupSymbol* conceptGroup;
+        private NamespaceSymbol* ns;
+        private int errorId;
+    }
+
+    public Result<bool> CheckConstraint(ConstraintNode* constraint, const NodeList<Node>& usingNodes, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope,
+        BoundFunction* currentFunction, const List<TemplateParameterSymbol*>& templateParameters, const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap,
+        UniquePtr<BoundConstraint>& boundConstraint, Node* node, FunctionSymbol* viableFunction)
+    {
+        Result<bool> result = DoCheckConstraint(constraint, usingNodes, boundCompileUnit, containerScope, currentFunction, templateParameters, templateParameterMap,
+            boundConstraint, node, viableFunction);
+        if (result.Error())
+        {
+            string message = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+            int errorId = MakeError("Constraint check failed. Reason:\n" + message, node->GetFullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        else
+        {
+            return result;
+        }
+    }
+
+    public Result<bool> DoCheckConstraint(ConstraintNode* constraint, const NodeList<Node>& usingNodes, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope,
+        BoundFunction* currentFunction, const List<TemplateParameterSymbol*>& templateParameters, const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap,
+        UniquePtr<BoundConstraint>& boundConstraint, Node* node, FunctionSymbol* viableFunction)
+    {
+        UniquePtr<FileScope> fileScope(new FileScope());
+        int nu = cast<int>(usingNodes.Count());
+        for (int i = 0; i < nu; ++i)
+        {
+            Node* usingNode = usingNodes[i];
+            if (usingNode->IsAliasNode())
+            {
+                AliasNode* aliasNode = cast<AliasNode*>(usingNode);
+                Result<TypeSymbol*> typeResult = ResolveType(aliasNode, boundCompileUnit, containerScope);
+                if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                TypeSymbol* type = typeResult.Value();
+                fileScope->InstallAlias(aliasNode, type);
+            }
+            else if (usingNode->IsNamespaceImportNode())
+            {
+                NamespaceImportNode* importNode = cast<NamespaceImportNode*>(usingNode);
+                Result<bool> result = fileScope->InstallNamespaceImport(containerScope, importNode);
+                if (result.Error()) return result;
+            }
+        }
+        ContainerScope constraintCheckScope;
+        constraintCheckScope.SetContainer(containerScope->Container());
+        List<UniquePtr<BoundTemplateParameterSymbol>> boundTemplateParameters;
+        TypeSymbol* firstTypeArgument = null;
+        TypeSymbol* secondTypeArgument = null;
+        int n = cast<int>(templateParameters.Count());
+        for (int i = 0; i < n; ++i)
+        {
+            TemplateParameterSymbol* templateParameterSymbol = templateParameters[i];
+            auto it = templateParameterMap.Find(templateParameterSymbol);
+            if (it != templateParameterMap.End())
+            {
+                TypeSymbol* templateArgumentType = it->second;
+                if (i == 0)
+                {
+                    firstTypeArgument = templateArgumentType;
+                }
+                else if (i == 1)
+                {
+                    secondTypeArgument = templateArgumentType;
+                }
+                BoundTemplateParameterSymbol* boundTemplateParameterSymbol = new BoundTemplateParameterSymbol(templateParameterSymbol->Span(), templateParameterSymbol->Name());
+                boundTemplateParameterSymbol->SetType(templateArgumentType);
+                boundTemplateParameters.Add(UniquePtr<BoundTemplateParameterSymbol>(boundTemplateParameterSymbol));
+                Result<bool> result = constraintCheckScope.Install(boundTemplateParameterSymbol);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                Result<string> templateParameterSymbolNameResult = ToUtf8(templateParameterSymbol->Name());
+                if (templateParameterSymbolNameResult.Error()) return Result<bool>(ErrorId(templateParameterSymbolNameResult.GetErrorId()));
+                string templateParameterSymbolName = Rvalue(templateParameterSymbolNameResult.Value());
+                int errorId = MakeError("template parameter symbol '" + templateParameterSymbolName + "' not found from template parameter map",
+                    node->GetFullSpan(), viableFunction->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+        }
+        boundCompileUnit->AddFileScope(fileScope.Release());
+        ConstraintChecker constraintChecker(firstTypeArgument, secondTypeArgument, boundCompileUnit, &constraintCheckScope, currentFunction, node);
+        constraint->Accept(constraintChecker);
+        boundCompileUnit->RemoveLastFileScope();
+        if (constraintChecker.Error()) return Result<bool>(ErrorId(constraintChecker.GetErrorId()));
+        bool result = constraintChecker.GetResult();
+        boundConstraint.Reset(constraintChecker.GetBoundConstraint());
+        return Result<bool>(result);
+    }
+
+    public class ConstraintChecker : Visitor
+    {
+        public ConstraintChecker(TypeSymbol* firstTypeArgument_, TypeSymbol* secondTypeArgument_, BoundCompileUnit* boundCompileUnit_, ContainerScope* containerScope_,
+            BoundFunction* currentFunction_, Node* node_) :
+            firstTypeArgument(firstTypeArgument_), secondTypeArgument(secondTypeArgument_), boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()),
+            context(boundCompileUnit->Context()),
+            containerScope(containerScope_), currentFunction(currentFunction_), node(node_), type(null), derivations(Derivations.none), conceptGroup(null), result(false),
+            boundConstraint(), fileScopesAdded(0), errorId(0)
+        {
+        }
+        public inline bool GetResult() const
+        {
+            if (Error())
+            {
+                return false;
+            }
+            return result;
+        }
+        public BoundConstraint* GetBoundConstraint()
+        {
+            if (boundConstraint.IsNull())
+            {
+                boundConstraint.Reset(new BoundAtomicConstraint(node->GetSpan(), false));
+            }
+            return boundConstraint.Release();
+        }
+        public TypeSymbol* GetType() const
+        {
+            if (type != null)
+            {
+                if (type->IsClassGroupSymbol())
+                {
+                    ClassGroupSymbol* classGroup = cast<ClassGroupSymbol*>(type);
+                    type = classGroup->GetClass(0);
+                }
+            }
+            if (type != null)
+            {
+                Derivations unifiedDerivations = UnifyDerivations(derivations, type->GetDerivations());
+                if (unifiedDerivations != Derivations.none)
+                {
+                    type = symbolTable->MakeDerivedType(context, type->BaseType(), unifiedDerivations);
+                }
+            }
+            return type;
+        }
+        public void Reset()
+        {
+            type = null;
+            Derivations d;
+            derivations = d;
+            conceptGroup = null;
+            errorId = 0;
+        }
+        public override void Visit(AutoNode& autoNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"auto");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(BoolNode& boolNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"bool");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(SByteNode& sbyteNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"sbyte");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(ByteNode& byteNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"byte");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(ShortNode& shortNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"short");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(UShortNode& ushortNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"ushort");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(IntNode& intNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"int");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(UIntNode& uintNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"uint");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(LongNode& longNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"long");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(ULongNode& ulongNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"ulong");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(FloatNode& floatNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"float");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(DoubleNode& doubleNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"double");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(CharNode& charNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"char");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(WCharNode& wcharNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"wchar");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(UCharNode& ucharNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"uchar");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(VoidNode& voidNode)
+        {
+            Result<TypeSymbol*> result = symbolTable->GetTypeByName(u"void");
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+        }
+        public override void Visit(ConstNode& constNode)
+        {
+            derivations = cast<Derivations>(derivations | Derivations.constDerivation);
+            constNode.Subject()->Accept(*this);
+        }
+        public override void Visit(LValueRefNode& lvalueRefNode)
+        {
+            lvalueRefNode.Subject()->Accept(*this);
+            derivations = cast<Derivations>(derivations | Derivations.lvalueRefDerivation);
+        }
+        public override void Visit(RValueRefNode& rvalueRefNode)
+        {
+            rvalueRefNode.Subject()->Accept(*this);
+            derivations = cast<Derivations>(derivations | Derivations.rvalueRefDerivation);
+        }
+        public override void Visit(PointerNode& pointerNode)
+        {
+            pointerNode.Subject()->Accept(*this);
+            derivations = SetPointerDerivations(PointerCount(derivations) + 1);
+        }
+        public override void Visit(ArrayNode& arrayNode)
+        {
+            arrayNode.Subject()->Accept(*this);
+            // todo: evaluate size
+        }
+        public override void Visit(IdentifierNode& identifierNode)
+        {
+            Reset();
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol == null)
+            {
+                for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
+                {
+                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    if (symbolResult.Error())
+                    {
+                        SetErrorId(symbolResult.GetErrorId());
+                        return;
+                    }
+                    symbol = symbolResult.Value();
+                    if (symbol != null) break;
+                }
+            }
+            if (symbol != null)
+            {
+                if (symbol->IsTypeSymbol())
+                {
+                    type = cast<TypeSymbol*>(symbol);
+                }
+                else
+                {
+                    switch (symbol->Kind())
+                    {
+                        case SymbolKind.aliasTypeSymbol:
+                        {
+                            AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+                            type = aliasTypeSymbol->Type();
+                            break;
+                        }
+                        case SymbolKind.boundTemplateParameterSymbol:
+                        {
+                            BoundTemplateParameterSymbol* boundTemplateParameterSymbol = cast<BoundTemplateParameterSymbol*>(symbol);
+                            type = boundTemplateParameterSymbol->Type();
+                            break;
+                        }
+                        case SymbolKind.conceptGroupSymbol:
+                        {
+                            conceptGroup = cast<ConceptGroupSymbol*>(symbol);
+                            break;
+                        }
+                        case SymbolKind.namespaceSymbol:
+                        {
+                            NamespaceSymbol* ns = cast<NamespaceSymbol*>(symbol);
+                            NamespaceTypeSymbol* namespaceTypeSymbol = new NamespaceTypeSymbol(symbol->Span(), ns);
+                            symbolTable->SetTypeIdFor(namespaceTypeSymbol);
+                            namespaceTypeSymbols.Add(UniquePtr<NamespaceTypeSymbol>(namespaceTypeSymbol));
+                            type = namespaceTypeSymbol;
+                            FileScope* fileScope = new FileScope();
+                            NamespaceImportNode importNode(node->GetSpan(), node->FileIndex(), new IdentifierNode(node->GetSpan(), node->FileIndex(), ns->FullName()));
+                            Result<bool> result = fileScope->InstallNamespaceImport(containerScope, &importNode);
+                            if (result.Error())
+                            {
+                                SetErrorId(result.GetErrorId());
+                                return;
+                            }
+                            boundCompileUnit->AddFileScope(fileScope);
+                            ++fileScopesAdded;
+                            break;
+                        }
+                        default:
+                        {
+                            Result<string> symbolNameResult = ToUtf8(symbol->FullName());
+                            if (symbolNameResult.Error())
+                            {
+                                SetErrorId(symbolNameResult.GetErrorId());
+                                return;
+                            }
+                            string symbolName = Rvalue(symbolNameResult.Value());
+                            int errorId = MakeError("symbol '" + symbolName + "' does not denote a type or a concept", symbol->FullSpan(), node->GetFullSpan());
+                            SetErrorId(errorId);
+                            return;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Result<string> symbolNameResult = ToUtf8(identifierNode.Str());
+                if (symbolNameResult.Error())
+                {
+                    SetErrorId(symbolNameResult.GetErrorId());
+                    return;
+                }
+                string symbolName = Rvalue(symbolNameResult.Value());
+                int errorId = MakeError("type or concept symbol '" + symbolName + "' not found", identifierNode.GetFullSpan(), node->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(TemplateIdNode& templateIdNode)
+        {
+            Result<TypeSymbol*> typeResult = ResolveType(&templateIdNode, boundCompileUnit, containerScope);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(DotNode& dotNode)
+        {
+            Reset();
+            dotNode.Subject()->Accept(*this);
+            if (Error()) return;
+            TypeSymbol* subjectType = GetType();
+            if (subjectType == null)
+            {
+                Result<string> subjectResult = dotNode.Subject()->ToString();
+                if (subjectResult.Error())
+                {
+                    SetErrorId(subjectResult.GetErrorId());
+                    return;
+                }
+                int errorId = MakeError("symbol '" + subjectResult.Value() + "' does not denote a type", dotNode.Subject()->GetFullSpan(), node->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            Scope* typeContainerScope = null;
+            if (subjectType->IsPointerType())
+            {
+                typeContainerScope = subjectType->GetContainerScope();
+            }
+            else
+            {
+                typeContainerScope = subjectType->BaseType()->GetContainerScope();
+            }
+            if (subjectType->IsNamespaceTypeSymbol())
+            {
+                NamespaceTypeSymbol* nsTypeSymbol = cast<NamespaceTypeSymbol*>(subjectType);
+                typeContainerScope = nsTypeSymbol->Ns()->GetContainerScope();
+            }
+            Reset();
+            ustring name = dotNode.MemberId()->Str();
+            Result<Symbol*> symbolResult = typeContainerScope->Lookup(name, ScopeLookup.this_and_base);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol != null)
+            {
+                switch (symbol->Kind())
+                {
+                    case SymbolKind.aliasTypeSymbol:
+                    {
+                        AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+                        type = aliasTypeSymbol->Type();
+                        break;
+                    }
+                    case SymbolKind.boundTemplateParameterSymbol:
+                    {
+                        BoundTemplateParameterSymbol* boundTemplateParameterSymbol = cast<BoundTemplateParameterSymbol*>(symbol);
+                        type = boundTemplateParameterSymbol->Type();
+                        break;
+                    }
+                    case SymbolKind.conceptGroupSymbol:
+                    {
+                        conceptGroup = cast<ConceptGroupSymbol*>(symbol);
+                        break;
+                    }
+                    case SymbolKind.classGroupSymbol:
+                    {
+                        ClassGroupSymbol* classGroup = cast<ClassGroupSymbol*>(symbol);
+                        type = classGroup->GetClass(0);
+                        break;
+                    }
+                    case SymbolKind.namespaceSymbol:
+                    {
+                        NamespaceSymbol* ns = cast<NamespaceSymbol*>(symbol);
+                        NamespaceTypeSymbol* namespaceTypeSymbol = new NamespaceTypeSymbol(dotNode.GetSpan(), ns);
+                        symbolTable->SetTypeIdFor(namespaceTypeSymbol);
+                        namespaceTypeSymbols.Add(UniquePtr<NamespaceTypeSymbol>(namespaceTypeSymbol));
+                        type = namespaceTypeSymbol;
+                        FileScope* fileScope = new FileScope();
+                        NamespaceImportNode importNode(node->GetSpan(), node->FileIndex(), new IdentifierNode(node->GetSpan(), node->FileIndex(), ns->FullName()));
+                        Result<bool> result = fileScope->InstallNamespaceImport(containerScope, &importNode);
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
+                        boundCompileUnit->AddFileScope(fileScope);
+                        ++fileScopesAdded;
+                        break;
+                    }
+                    default:
+                    {
+                        Result<string> symbolFullNameResult = ToUtf8(symbol->FullName());
+                        if (symbolFullNameResult.Error())
+                        {
+                            SetErrorId(symbolFullNameResult.GetErrorId());
+                            return;
+                        }
+                        string symbolFullName = Rvalue(symbolFullNameResult.Value());
+                        int errorId = MakeError("symbol '" + symbolFullName + "' does not denote a type or a concept", symbol->FullSpan(), node->GetFullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                Result<string> nameResult = ToUtf8(name);
+                if (nameResult.Error())
+                {
+                    SetErrorId(nameResult.GetErrorId());
+                    return;
+                }
+                int errorId = MakeError("type or concept symbol '" + nameResult.Value() + "' not found", dotNode.GetFullSpan(), node->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(ParenthesizedConstraintNode& parenthesizedConstraintNode)
+        {
+            Reset();
+            parenthesizedConstraintNode.Constraint()->Accept(*this);
+        }
+        public override void Visit(DisjunctiveConstraintNode& disjunctiveConstraintNode)
+        {
+            bool left = false;
+            bool right = false;
+            int leftErrorId = 0;
+            int rightErrorId = 0;
+            UniquePtr<BoundConstraint> leftBoundConstraint;
+            UniquePtr<BoundConstraint> rightBoundConstraint;
+            Reset();
+            disjunctiveConstraintNode.Left()->Accept(*this);
+            if (Error())
+            {
+                left = false;
+                leftBoundConstraint.Reset(new BoundAtomicConstraint(node->GetSpan(), false));
+                leftErrorId = errorId;
+            }
+            else
+            {
+                left = result;
+                leftBoundConstraint = Rvalue(boundConstraint);
+            }
+            Reset();
+            disjunctiveConstraintNode.Right()->Accept(*this);
+            if (Error())
+            {
+                right = false;
+                rightBoundConstraint.Reset(new BoundAtomicConstraint(node->GetSpan(), false));
+                rightErrorId = errorId;
+            }
+            else
+            {
+                right = result;
+                rightBoundConstraint = Rvalue(boundConstraint);
+            }
+            result = left || right;
+            boundConstraint.Reset(new BoundDisjunctiveConstraint(node->GetSpan(), leftBoundConstraint.Release(), rightBoundConstraint.Release()));
+            if (!result)
+            {
+                if (leftErrorId != 0)
+                {
+                    errorId = leftErrorId;
+                }
+                else if (rightErrorId != 0)
+                {
+                    errorId = rightErrorId;
+                }
+            }
+            else
+            {
+                errorId = 0;
+            }
+        }
+        public override void Visit(ConjunctiveConstraintNode& conjunctiveConstraintNode)
+        {
+            bool left = false;
+            bool right = false;
+            int leftErrorId = 0;
+            int rightErrorId = 0;
+            UniquePtr<BoundConstraint> leftBoundConstraint;
+            UniquePtr<BoundConstraint> rightBoundConstraint;
+            Reset();
+            conjunctiveConstraintNode.Left()->Accept(*this);
+            if (Error())
+            {
+                left = false;
+                leftBoundConstraint.Reset(new BoundAtomicConstraint(node->GetSpan(), false));
+                leftErrorId = errorId;
+            }
+            else
+            {
+                left = result;
+                leftBoundConstraint = Rvalue(boundConstraint);
+            }
+            Reset();
+            conjunctiveConstraintNode.Right()->Accept(*this);
+            if (Error())
+            {
+                right = false;
+                rightBoundConstraint.Reset(new BoundAtomicConstraint(node->GetSpan(), false));
+                rightErrorId = errorId;
+            }
+            else
+            {
+                right = result;
+                rightBoundConstraint = Rvalue(boundConstraint);
+            }
+            result = left && right;
+            boundConstraint.Reset(new BoundConjunctiveConstraint(node->GetSpan(), leftBoundConstraint.Release(), rightBoundConstraint.Release()));
+            if (!result)
+            {
+                if (leftErrorId != 0)
+                {
+                    errorId = leftErrorId;
+                }
+                else if (rightErrorId != 0)
+                {
+                    errorId = rightErrorId;
+                }
+            }
+            else
+            {
+                errorId = 0;
+            }
+        }
+        public override void Visit(WhereConstraintNode& whereConstraintNode)
+        {
+            Reset();
+            whereConstraintNode.Constraint()->Accept(*this);
+        }
+        public override void Visit(PredicateConstraintNode& predicateConstraintNode)
+        {
+            Reset();
+            Node* invokeExprNode = predicateConstraintNode.InvokeExpr();
+            // todo
+        }
+        public override void Visit(IsConstraintNode& isConstraintNode)
+        {
+            Reset();
+            isConstraintNode.TypeExpr()->Accept(*this);
+            TypeSymbol* leftType = GetType();
+            if (leftType == null)
+            {
+                int errorId = MakeError("left operand of 'is' must be a type", isConstraintNode.TypeExpr()->GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            Reset();
+            isConstraintNode.ConceptOrTypeName()->Accept(*this);
+            TypeSymbol* rightType = GetType();
+            if (rightType != null)
+            {
+                TypeSymbol* leftPlainType = leftType->PlainType(context);
+                TypeSymbol* rightPlainType = rightType->PlainType(context);
+                if (TypesEqual(leftPlainType, rightPlainType))
+                {
+                    result = true;
+                    boundConstraint.Reset(new BoundAtomicConstraint(isConstraintNode.GetSpan(), true));
+                }
+                else
+                {
+                    result = false;
+                    boundConstraint.Reset(new BoundAtomicConstraint(isConstraintNode.GetSpan(), false));
+                }
+            }
+            else if (conceptGroup != null)
+            {
+                Result<ConceptSymbol*> conceptSymbolResult = conceptGroup->GetConcept(1);
+                if (conceptSymbolResult.Error())
+                {
+                    SetErrorId(conceptSymbolResult.GetErrorId());
+                    return;
+                }
+                ConceptSymbol* conceptSymbol = conceptSymbolResult.Value();
+                List<TypeSymbol*> typeArguments;
+                typeArguments.Add(leftType);
+                BoundConceptKey key(conceptSymbol, typeArguments);
+                BoundConcept* boundConcept = boundCompileUnit->GetConceptRepository()->GetBoundConcept(key);
+                if (boundConcept != null)
+                {
+                    result = true;
+                    boundConstraint.Reset(boundConcept->GetBoundConstraint()->Clone());
+                    if (boundConcept->CommonType() != null)
+                    {
+                        BoundTemplateParameterSymbol* boundCommonTypeSymbol = new BoundTemplateParameterSymbol(isConstraintNode.GetSpan(), u"CommonType");
+                        boundCommonTypeSymbol->SetType(boundConcept->CommonType());
+                        Result<bool> result = containerScope->Install(boundCommonTypeSymbol);
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
+                        boundConcept->AddBoundTemplateParameter(UniquePtr<BoundTemplateParameterSymbol>(boundCommonTypeSymbol));
+                    }
+                }
+                else
+                {
+                    UniquePtr<BoundConstraint> constraint;
+                    Result<UniquePtr<BoundConcept>> boundConceptResult = Instantiate(conceptSymbol, typeArguments, boundCompileUnit, containerScope, currentFunction,
+                        constraint, &isConstraintNode);
+                    if (boundConceptResult.Error())
+                    {
+                        result = false;
+                        boundConstraint.Reset(new BoundAtomicConstraint(isConstraintNode.GetSpan(), false));
+                        SetErrorId(boundConceptResult.GetErrorId());
+                        return;
+                    }
+                    else
+                    {
+                        result = true;
+                        boundConstraint.Reset(constraint.Release());
+                        boundCompileUnit->GetConceptRepository()->AddBoundConcept(key, Rvalue(boundConceptResult.Value()));
+                    }
+                }
+            }
+        }
+        public override void Visit(MultiParamConstraintNode& multiParamConstraintNode)
+        {
+            Reset();
+            multiParamConstraintNode.ConceptId()->Accept(*this);
+            if (Error()) return;
+            if (conceptGroup != null)
+            {
+                int n = cast<int>(multiParamConstraintNode.TypeExprs().Count());
+                Result<ConceptSymbol*> conceptSymbolResult = conceptGroup->GetConcept(n);
+                if (conceptSymbolResult.Error())
+                {
+                    SetErrorId(conceptSymbolResult.GetErrorId());
+                    return;
+                }
+                ConceptSymbol* conceptSymbol = conceptSymbolResult.Value();
+                List<TypeSymbol*> typeArguments;
+                for (int i = 0; i < n; ++i)
+                {
+                    Node* typeExprNode = multiParamConstraintNode.TypeExprs()[i];
+                    Reset();
+                    typeExprNode->Accept(*this);
+                    if (Error()) return;
+                    TypeSymbol* resolvedType = GetType();
+                    if (resolvedType != null)
+                    {
+                        typeArguments.Add(resolvedType);
+                    }
+                    else
+                    {
+                        Result<string> typeExprResult = typeExprNode->ToString();
+                        if (typeExprResult.Error())
+                        {
+                            SetErrorId(typeExprResult.GetErrorId());
+                            return;
+                        }
+                        int errorId = MakeError("type parameter '" + typeExprResult.Value() + "' is not bound to a type", multiParamConstraintNode.GetFullSpan(),
+                            typeExprNode->GetFullSpan());
+                        SetErrorId(errorId);
+                        return;
+                    }
+                }
+                BoundConceptKey key(conceptSymbol, typeArguments);
+                BoundConcept* boundConcept = boundCompileUnit->GetConceptRepository()->GetBoundConcept(key);
+                if (boundConcept != null)
+                {
+                    result = true;
+                    boundConstraint.Reset(boundConcept->GetBoundConstraint()->Clone());
+                    if (boundConcept->CommonType() != null)
+                    {
+                        BoundTemplateParameterSymbol* boundCommonTypeSymbol = new BoundTemplateParameterSymbol(multiParamConstraintNode.GetSpan(), u"CommonType");
+                        boundCommonTypeSymbol->SetType(boundConcept->CommonType());
+                        Result<bool> result = containerScope->Install(boundCommonTypeSymbol);
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
+                        boundConcept->AddBoundTemplateParameter(UniquePtr<BoundTemplateParameterSymbol>(boundCommonTypeSymbol));
+                    }
+                }
+                else
+                {
+                    UniquePtr<BoundConstraint> constraint;
+                    Result<UniquePtr<BoundConcept>> boundConceptResult = Instantiate(conceptSymbol, typeArguments, boundCompileUnit, containerScope, currentFunction,
+                        constraint, &multiParamConstraintNode);
+                    if (boundConceptResult.Error())
+                    {
+                        result = false;
+                        boundConstraint.Reset(new BoundAtomicConstraint(multiParamConstraintNode.GetSpan(), false));
+                        SetErrorId(boundConceptResult.GetErrorId());
+                        return;
+                    }
+                    else
+                    {
+                        result = true;
+                        boundConstraint.Reset(constraint.Release());
+                        boundCompileUnit->GetConceptRepository()->AddBoundConcept(key, Rvalue(boundConceptResult.Value()));
+                    }
+                }
+            }
+        }
+        public override void Visit(TypeNameConstraintNode& typeNameConstraintNode)
+        {
+            Reset();
+            typeNameConstraintNode.TypeId()->Accept(*this);
+            TypeSymbol* resolvedType = GetType();
+            result = resolvedType != null;
+            boundConstraint.Reset(new BoundAtomicConstraint(typeNameConstraintNode.GetSpan(), result));
+        }
+        public override void Visit(ConstructorConstraintNode& constructorConstraintNode)
+        {
+            List<UniquePtr<BoundExpression>> arguments;
+            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(constructorConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
+            List<TypeSymbol*> parameterTypes;
+            int n = cast<int>(constructorConstraintNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = constructorConstraintNode.Parameters()[i];
+                Result<TypeSymbol*> parameterTypeResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope);
+                if (parameterTypeResult.Error())
+                {
+                    SetErrorId(parameterTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* parameterType = parameterTypeResult.Value();
+                parameterTypes.Add(parameterType);
+                arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(constructorConstraintNode.GetSpan(), parameterType)));
+            }
+            List<FunctionScopeLookup> lookups;
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+            if (scopeResult.Error())
+            {
+                SetErrorId(scopeResult.GetErrorId());
+                return;
+            }
+            ContainerScope* scope = scopeResult.Value();
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments, boundCompileUnit,
+                currentFunction, &constructorConstraintNode, OverloadResolutionFlags.dontInstantiate, templateArgumentTypes);
+            if (constructorCallResult.Error())
+            {
+                Result<string> fullNameResult = ToUtf8(firstTypeArgument->FullName());
+                if (fullNameResult.Error())
+                {
+                    SetErrorId(fullNameResult.GetErrorId());
+                    return;
+                }
+                string fullName = Rvalue(fullNameResult.Value());
+                Result<string> nameResult = ToUtf8(firstTypeArgument->Name());
+                if (nameResult.Error())
+                {
+                    SetErrorId(nameResult.GetErrorId());
+                    return;
+                }
+                string name = Rvalue(nameResult.Value());
+                string signature;
+                signature.Append(fullName).Append('.').Append(name).Append('(');
+                bool first = true;
+                for (TypeSymbol* parameterType : parameterTypes)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        signature.Append(", ");
+                    }
+                    Result<string> parameterTypeFullNameResult = ToUtf8(parameterType->FullName());
+                    if (parameterTypeFullNameResult.Error())
+                    {
+                        SetErrorId(parameterTypeFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string parameterTypeFullName = Rvalue(parameterTypeFullNameResult.Value());
+                    signature.Append(parameterTypeFullName);
+                }
+                signature.Append(')');
+                string message = "constructor signature '" + signature + "' not found:\n";
+                string resolveMessage = RtmGetErrorMessageWithoutStackTrace(constructorCallResult.GetErrorId());
+                message.Append(resolveMessage);
+                SetErrorId(MakeError(message, constructorConstraintNode.GetFullSpan()));
+            }
+            else
+            {
+                result = true;
+                boundConstraint.Reset(new BoundAtomicConstraint(constructorConstraintNode.GetSpan(), true));
+            }
+        }
+        public override void Visit(DestructorConstraintNode& destructorConstraintNode)
+        {
+            result = true;
+            boundConstraint.Reset(new BoundAtomicConstraint(destructorConstraintNode.GetSpan(), true));
+        }
+        public override void Visit(MemberFunctionConstraintNode& memberFunctionConstraintNode)
+        {
+            Reset();
+            memberFunctionConstraintNode.TypeParamId()->Accept(*this);
+            if (Error()) return;
+            TypeSymbol* firstType = GetType();
+            List<UniquePtr<BoundExpression>> arguments;
+            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(memberFunctionConstraintNode.GetSpan(), firstType->AddPointer(context))));
+            List<TypeSymbol*> parameterTypes;
+            int n = cast<int>(memberFunctionConstraintNode.Parameters().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = memberFunctionConstraintNode.Parameters()[i];
+                Result<TypeSymbol*> parameterTypeResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope);
+                if (parameterTypeResult.Error())
+                {
+                    SetErrorId(parameterTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* parameterType = parameterTypeResult.Value();
+                parameterTypes.Add(parameterType);
+                arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(memberFunctionConstraintNode.GetSpan(), parameterType)));
+            }
+            List<FunctionScopeLookup> lookups;
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+            if (scopeResult.Error())
+            {
+                SetErrorId(scopeResult.GetErrorId());
+                return;
+            }
+            ContainerScope* scope = scopeResult.Value();
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> memberFunctionCallResult = ResolveOverload(memberFunctionConstraintNode.GroupId(), containerScope, lookups, arguments,
+                boundCompileUnit, currentFunction, &memberFunctionConstraintNode,
+                cast<OverloadResolutionFlags>(OverloadResolutionFlags.dontInstantiate | OverloadResolutionFlags.noTemplates), templateArgumentTypes);
+            if (memberFunctionCallResult.Error())
+            {
+                Result<string> fullNameResult = ToUtf8(firstTypeArgument->FullName());
+                if (fullNameResult.Error())
+                {
+                    SetErrorId(fullNameResult.GetErrorId());
+                    return;
+                }
+                string fullName = Rvalue(fullNameResult.Value());
+                Result<string> groupIdResult = ToUtf8(memberFunctionConstraintNode.GroupId());
+                if (groupIdResult.Error())
+                {
+                    SetErrorId(groupIdResult.GetErrorId());
+                    return;
+                }
+                string groupId = Rvalue(groupIdResult.Value());
+                string signature;
+                signature.Append(fullName).Append('.').Append(groupId).Append('(');
+                bool first = true;
+                for (TypeSymbol* parameterType : parameterTypes)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        signature.Append(", ");
+                    }
+                    Result<string> parameterTypeFullNameResult = ToUtf8(parameterType->FullName());
+                    if (parameterTypeFullNameResult.Error())
+                    {
+                        SetErrorId(parameterTypeFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string parameterTypeFullName = Rvalue(parameterTypeFullNameResult.Value());
+                    signature.Append(parameterTypeFullName);
+                }
+                signature.Append(')');
+                string message = "member function signature '" + signature + "' not found:\n";
+                string resolveMessage = RtmGetErrorMessageWithoutStackTrace(memberFunctionCallResult.GetErrorId());
+                message.Append(resolveMessage);
+                SetErrorId(MakeError(message, memberFunctionConstraintNode.GetFullSpan()));
+            }
+            else
+            {
+                result = true;
+                boundConstraint.Reset(new BoundAtomicConstraint(memberFunctionConstraintNode.GetSpan(), true));
+            }
+        }
+        public override void Visit(FunctionConstraintNode& functionConstraintNode)
+        {
+            List<UniquePtr<BoundExpression>> arguments;
+            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
+            List<TypeSymbol*> parameterTypes;
+            List<FunctionScopeLookup> lookups;
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+            if (scopeResult.Error())
+            {
+                SetErrorId(scopeResult.GetErrorId());
+                return;
+            }
+            ContainerScope* scope = scopeResult.Value();
+            lookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
+            int n = cast<int>(functionConstraintNode.Parameters().Count());
+            if (firstTypeArgument->IsPointerType() &&
+                ((n == 0 &&
+                    (functionConstraintNode.GroupId() == u"operator*" ||
+                        functionConstraintNode.GroupId() == u"operator++" ||
+                        functionConstraintNode.GroupId() == u"operator--")) ||
+                    (n == 1 &&
+                        functionConstraintNode.GroupId() == u"operator[]")))
+            {
+                result = true;
+                boundConstraint.Reset(new BoundAtomicConstraint(functionConstraintNode.GetSpan(), true));
+                return;
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                ParameterNode* parameterNode = functionConstraintNode.Parameters()[i];
+                Result<TypeSymbol*> parameterTypeResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope);
+                if (parameterTypeResult.Error())
+                {
+                    SetErrorId(parameterTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* parameterType = parameterTypeResult.Value();
+                arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), parameterType)));
+            }
+            List<TypeSymbol*> templateArgumentTypes;
+            Result<UniquePtr<BoundFunctionCall>> functionCallResult = ResolveOverload(functionConstraintNode.GroupId(), containerScope, lookups, arguments,
+                boundCompileUnit, currentFunction, &functionConstraintNode, OverloadResolutionFlags.dontInstantiate, templateArgumentTypes);
+            if (functionCallResult.Error())
+            {
+                arguments.Clear();
+                parameterTypes.Clear();
+                arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
+                int n = cast<int>(functionConstraintNode.Parameters().Count());
+                for (int i = 1; i < n; ++i)
+                {
+                    ParameterNode* parameterNode = functionConstraintNode.Parameters()[i];
+                    Result<TypeSymbol*> parameterTypeResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope);
+                    if (parameterTypeResult.Error())
+                    {
+                        SetErrorId(parameterTypeResult.GetErrorId());
+                        return;
+                    }
+                    TypeSymbol* parameterType = parameterTypeResult.Value();
+                    arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), parameterType)));
+                }
+                functionCallResult = ResolveOverload(functionConstraintNode.GroupId(), containerScope, lookups, arguments,
+                    boundCompileUnit, currentFunction, &functionConstraintNode, OverloadResolutionFlags.dontInstantiate, templateArgumentTypes);
+                if (functionCallResult.Error())
+                {
+                    arguments.Clear();
+                    parameterTypes.Clear();
+                    lookups.Clear();
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    int n = cast<int>(functionConstraintNode.Parameters().Count());
+                    for (int i = 0; i < n; ++i)
+                    {
+                        ParameterNode* parameterNode = functionConstraintNode.Parameters()[i];
+                        Result<TypeSymbol*> parameterTypeResult = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope);
+                        if (parameterTypeResult.Error())
+                        {
+                            SetErrorId(parameterTypeResult.GetErrorId());
+                            return;
+                        }
+                        TypeSymbol* parameterType = parameterTypeResult.Value();
+                        Result<ContainerScope*> scopeResult = parameterType->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                        if (scopeResult.Error())
+                        {
+                            SetErrorId(scopeResult.GetErrorId());
+                            return;
+                        }
+                        ContainerScope* scope = scopeResult.Value();
+                        lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, scope));
+                        parameterTypes.Add(parameterType);
+                        arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), parameterType)));
+                    }
+                    functionCallResult = ResolveOverload(functionConstraintNode.GroupId(), containerScope, lookups, arguments,
+                        boundCompileUnit, currentFunction, &functionConstraintNode, OverloadResolutionFlags.dontInstantiate, templateArgumentTypes);
+                    if (functionCallResult.Error())
+                    {
+                        string signature;
+                        Result<string> groupIdResult = ToUtf8(functionConstraintNode.GroupId());
+                        if (groupIdResult.Error())
+                        {
+                            SetErrorId(groupIdResult.GetErrorId());
+                            return;
+                        }
+                        string groupId = Rvalue(groupIdResult.Value());
+                        signature.Append(groupId).Append('(');
+                        bool first = true;
+                        for (TypeSymbol* parameterType : parameterTypes)
+                        {
+                            if (first)
+                            {
+                                first = false;
+                            }
+                            else
+                            {
+                                signature.Append(", ");
+                            }
+                            Result<string> parameterTypeFullNameResult = ToUtf8(parameterType->FullName());
+                            if (parameterTypeFullNameResult.Error())
+                            {
+                                SetErrorId(parameterTypeFullNameResult.GetErrorId());
+                                return;
+                            }
+                            string parameterTypeFullName = Rvalue(parameterTypeFullNameResult.Value());
+                            signature.Append(parameterTypeFullName);
+                        }
+                        signature.Append(')');
+                        string message = "function signature '" + signature + "' not found:\n";
+                        string resolutionMessage = RtmGetErrorMessageWithoutStackTrace(functionCallResult.GetErrorId());
+                        message.Append(resolutionMessage);
+                        SetErrorId(MakeError(message, functionConstraintNode.GetFullSpan()));
+                    }
+                    else
+                    {
+                        result = true;
+                        boundConstraint.Reset(new BoundAtomicConstraint(functionConstraintNode.GetSpan(), true));
+                        return;
+                    }
+                }
+                else
+                {
+                    result = true;
+                    boundConstraint.Reset(new BoundAtomicConstraint(functionConstraintNode.GetSpan(), true));
+                    return;
+                }
+            }
+            else
+            {
+                result = true;
+                boundConstraint.Reset(new BoundAtomicConstraint(functionConstraintNode.GetSpan(), true));
+                return;
+            }
+        }
+        public override void Visit(ConceptIdNode& conceptIdNode)
+        {
+            Reset();
+            conceptIdNode.Id()->Accept(*this);
+            if (Error()) return;
+            if (conceptGroup != null)
+            {
+                int n = conceptIdNode.Arity();
+                Result<ConceptSymbol*> conceptSymbolResult = conceptGroup->GetConcept(n);
+                if (conceptSymbolResult.Error())
+                {
+                    SetErrorId(conceptSymbolResult.GetErrorId());
+                    return;
+                }
+                ConceptSymbol* conceptSymbol = conceptSymbolResult.Value();
+                List<TypeSymbol*> typeArguments;
+                for (int i = 0; i < n; ++i)
+                {
+                    Node* typeParameterNode = conceptIdNode.TypeParameters()[i];
+                    Reset();
+                    typeParameterNode->Accept(*this);
+                    if (Error()) return;
+                    TypeSymbol* resolvedType = GetType();
+                    if (resolvedType != null)
+                    {
+                        typeArguments.Add(resolvedType);
+                    }
+                    else
+                    {
+                        int errorId = MakeError("type parameter " + ToString(i) + " does not denote a type", typeParameterNode->GetFullSpan(), conceptIdNode.GetFullSpan());
+                        SetErrorId(errorId);
+                    }
+                }
+                BoundConceptKey key(conceptSymbol, typeArguments);
+                BoundConcept* boundConcept = boundCompileUnit->GetConceptRepository()->GetBoundConcept(key);
+                if (boundConcept != null)
+                {
+                    result = true;
+                    boundConstraint = UniquePtr<BoundConstraint>(boundConcept->GetBoundConstraint()->Clone());
+                    if (boundConcept->CommonType() != null)
+                    {
+                        BoundTemplateParameterSymbol* boundCommonTypeSymbol = new BoundTemplateParameterSymbol(conceptIdNode.GetSpan(), u"CommonType");
+                        boundCommonTypeSymbol->SetType(boundConcept->CommonType());
+                        Result<bool> result = containerScope->Install(boundCommonTypeSymbol);
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
+                        boundConcept->AddBoundTemplateParameter(UniquePtr<BoundTemplateParameterSymbol>(boundCommonTypeSymbol));
+                    }
+                }
+                else
+                {
+                    UniquePtr<BoundConstraint> constraint;
+                    Result<UniquePtr<BoundConcept>> boundConceptResult = Instantiate(conceptSymbol, typeArguments, boundCompileUnit, containerScope, currentFunction, constraint,
+                        &conceptIdNode);
+                    if (boundConceptResult.Error())
+                    {
+                        result = false;
+                        boundConstraint.Reset(new BoundAtomicConstraint(conceptIdNode.GetSpan(), false));
+                        SetErrorId(boundConceptResult.GetErrorId());
+                    }
+                    else
+                    {
+                        result = true;
+                        boundConstraint.Reset(constraint.Release());
+                        boundCompileUnit->GetConceptRepository()->AddBoundConcept(key, Rvalue(boundConceptResult.Value()));
+                    }
+                }
+            }
+            else
+            {
+                Result<string> idResult = conceptIdNode.Id()->ToString();
+                int errorId = MakeError("identifier '" + idResult.Value() + "' does not denote a concept", conceptIdNode.Id()->GetFullSpan(), conceptIdNode.GetFullSpan());
+                SetErrorId(errorId);
+            }
+        }
+        public override void Visit(ConceptNode& conceptNode)
+        {
+            Reset();
+            conceptNode.Id()->Accept(*this);
+            if (Error()) return;
+            if (conceptGroup == null)
+            {
+                Result<string> idResult = conceptNode.Id()->ToString();
+                int errorId = MakeError("identifier '" + idResult.Value() + "' does not denote a concept", conceptNode.Id()->GetFullSpan(), conceptNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+            int arity = conceptNode.Arity();
+            Result<ConceptSymbol*> conceptSymbolResult = conceptGroup->GetConcept(arity);
+            if (conceptSymbolResult.Error())
+            {
+                SetErrorId(conceptSymbolResult.GetErrorId());
+                return;
+            }
+            ConceptSymbol* conceptSymbol = conceptSymbolResult.Value();
+            if (conceptNode.Refinement() != null)
+            {
+                Reset();
+                conceptNode.Refinement()->Accept(*this);
+                if (Error()) return;
+            }
+            int n = cast<int>(conceptNode.Constraints().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                ConstraintNode* constraintNode = conceptNode.Constraints()[i];
+                Reset();
+                constraintNode->Accept(*this);
+                if (Error()) return;
+            }
+            result = true;
+            BoundAtomicConstraint* atomicConstraint = new BoundAtomicConstraint(conceptNode.GetSpan(), true);
+            atomicConstraint->SetConcept(conceptSymbol);
+            boundConstraint.Reset(atomicConstraint);
+        }
+        public override void Visit(SameConstraintNode& sameConstraintNode)
+        {
+            if (firstTypeArgument != null && secondTypeArgument != null)
+            {
+                bool same = TypesEqual(firstTypeArgument, secondTypeArgument);
+                if (!same)
+                {
+                    Result<string> firstTypeArgumentFullNameResult = ToUtf8(firstTypeArgument->FullName());
+                    if (firstTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(firstTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string firstTypeArgumentFullName = Rvalue(firstTypeArgumentFullNameResult.Value());
+                    Result<string> secondTypeArgumentFullNameResult = ToUtf8(secondTypeArgument->FullName());
+                    if (secondTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(secondTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string secondTypeArgumentFullName = Rvalue(secondTypeArgumentFullNameResult.Value());
+                    int errorId = MakeError("type '" + firstTypeArgumentFullName + "' is not same as '" + secondTypeArgumentFullName + "'", sameConstraintNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+                else
+                {
+                    result = true;
+                    boundConstraint.Reset(new BoundAtomicConstraint(sameConstraintNode.GetSpan(), true));
+                }
+            }
+            else
+            {
+                int errorId = MakeError("the same type constraint needs two type arguments", sameConstraintNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
+        public override void Visit(DerivedConstraintNode& derivedConstraintNode)
+        {
+            if (firstTypeArgument != null && secondTypeArgument != null)
+            {
+                bool derived = false;
+                if (firstTypeArgument->IsClassTypeSymbol() && secondTypeArgument->IsClassTypeSymbol())
+                {
+                    ClassTypeSymbol* firstClassType = cast<ClassTypeSymbol*>(firstTypeArgument);
+                    ClassTypeSymbol* secondClassType = cast<ClassTypeSymbol*>(secondTypeArgument);
+                    derived = firstClassType->HasBaseClass(secondClassType);
+                }
+                if (!derived)
+                {
+                    Result<string> firstTypeArgumentFullNameResult = ToUtf8(firstTypeArgument->FullName());
+                    if (firstTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(firstTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string firstTypeArgumentFullName = Rvalue(firstTypeArgumentFullNameResult.Value());
+                    Result<string> secondTypeArgumentFullNameResult = ToUtf8(secondTypeArgument->FullName());
+                    if (secondTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(secondTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string secondTypeArgumentFullName = Rvalue(secondTypeArgumentFullNameResult.Value());
+                    int errorId = MakeError("type '" + firstTypeArgumentFullName + "' is not derived from '" + secondTypeArgumentFullName + "'",
+                        derivedConstraintNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+                else
+                {
+                    result = true;
+                    boundConstraint.Reset(new BoundAtomicConstraint(derivedConstraintNode.GetSpan(), true));
+                }
+            }
+            else
+            {
+                int errorId = MakeError("the derived type constraint needs two type arguments", derivedConstraintNode.GetFullSpan());
+                SetErrorId(errorId);
+            }
+        }
+        public override void Visit(ConvertibleConstraintNode& convertibleConstraintNode)
+        {
+            if (firstTypeArgument != null && secondTypeArgument != null)
+            {
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> conversionResult = GetConversion(firstTypeArgument, secondTypeArgument, containerScope, boundCompileUnit, currentFunction,
+                    argumentMatch, &convertibleConstraintNode);
+                bool error = conversionResult.Error();
+                if (!error)
+                {
+                    FunctionSymbol* conversionFunction = conversionResult.Value();
+                    if (conversionFunction->IsExplicitConversion())
+                    {
+                        error = true;
+                    }
+                }
+                if (error)
+                {
+                    Result<string> firstTypeArgumentFullNameResult = ToUtf8(firstTypeArgument->FullName());
+                    if (firstTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(firstTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string firstTypeArgumentFullName = Rvalue(firstTypeArgumentFullNameResult.Value());
+                    Result<string> secondTypeArgumentFullNameResult = ToUtf8(secondTypeArgument->FullName());
+                    if (secondTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(secondTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string secondTypeArgumentFullName = Rvalue(secondTypeArgumentFullNameResult.Value());
+                    int errorId = MakeError("type '" + firstTypeArgumentFullName + "' is not implicitly convertible to '" + secondTypeArgumentFullName + "'",
+                        convertibleConstraintNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+                else
+                {
+                    result = true;
+                    boundConstraint.Reset(new BoundAtomicConstraint(convertibleConstraintNode.GetSpan(), true));
+                }
+            }
+            else
+            {
+                int errorId = MakeError("the convertible constraint needs two type arguments", convertibleConstraintNode.GetFullSpan());
+                SetErrorId(errorId);
+            }
+        }
+        public override void Visit(ExplicitlyConvertibleConstraintNode& explicitlyConvertibleConstraintNode)
+        {
+            if (firstTypeArgument != null && secondTypeArgument != null)
+            {
+                ArgumentMatch argumentMatch;
+                Result<FunctionSymbol*> conversionResult = GetConversion(firstTypeArgument, secondTypeArgument, containerScope, boundCompileUnit, currentFunction,
+                    argumentMatch, &explicitlyConvertibleConstraintNode);
+                bool error = conversionResult.Error();
+                if (!error)
+                {
+                    FunctionSymbol* conversion = conversionResult.Value();
+                    if (!conversion->IsExplicitConversion())
+                    {
+                        error = true;
+                    }
+                }
+                if (error)
+                {
+                    Result<string> firstTypeArgumentFullNameResult = ToUtf8(firstTypeArgument->FullName());
+                    if (firstTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(firstTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string firstTypeArgumentFullName = Rvalue(firstTypeArgumentFullNameResult.Value());
+                    Result<string> secondTypeArgumentFullNameResult = ToUtf8(secondTypeArgument->FullName());
+                    if (secondTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(secondTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string secondTypeArgumentFullName = Rvalue(secondTypeArgumentFullNameResult.Value());
+                    int errorId = MakeError("type '" + firstTypeArgumentFullName + "' is not explicitly convertible to '" + secondTypeArgumentFullName + "'",
+                        explicitlyConvertibleConstraintNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+                else
+                {
+                    result = true;
+                    boundConstraint.Reset(new BoundAtomicConstraint(explicitlyConvertibleConstraintNode.GetSpan(), true));
+                }
+            }
+            else
+            {
+                int errorId = MakeError("the explicitly convertible constraint needs two type arguments", explicitlyConvertibleConstraintNode.GetFullSpan());
+                SetErrorId(errorId);
+            }
+        }
+        public override void Visit(CommonConstraintNode& commonConstraintNode)
+        {
+            if (firstTypeArgument != null && secondTypeArgument != null)
+            {
+                BoundTemplateParameterSymbol* commonType = new BoundTemplateParameterSymbol(commonConstraintNode.GetSpan(), u"CommonType");
+                bool same = TypesEqual(firstTypeArgument, secondTypeArgument);
+                if (same)
+                {
+                    commonType->SetType(firstTypeArgument);
+                }
+                else
+                {
+                    ArgumentMatch argumentMatch;
+                    Result<FunctionSymbol*> firstToSecondConversionResult = GetConversion(firstTypeArgument, secondTypeArgument, containerScope,
+                        boundCompileUnit, currentFunction, argumentMatch, &commonConstraintNode);
+                    bool error = firstToSecondConversionResult.Error();
+                    if (!error)
+                    {
+                        FunctionSymbol* conversion = firstToSecondConversionResult.Value();
+                        if (!conversion->IsImplicitConversion())
+                        {
+                            error = true;
+                        }
+                    }
+                    if (!error)
+                    {
+                        commonType->SetType(secondTypeArgument);
+                    }
+                    else
+                    {
+                        ArgumentMatch argumentMatch;
+                        Result<FunctionSymbol*> secondToFirstConversionResult = GetConversion(secondTypeArgument, firstTypeArgument, containerScope,
+                            boundCompileUnit, currentFunction, argumentMatch, &commonConstraintNode);
+                        bool error = secondToFirstConversionResult.Error();
+                        if (!error)
+                        {
+                            FunctionSymbol* conversion = secondToFirstConversionResult.Value();
+                            if (!conversion->IsImplicitConversion())
+                            {
+                                error = true;
+                            }
+                        }
+                        if (!error)
+                        {
+                            commonType->SetType(firstTypeArgument);
+                        }
+                        else
+                        {
+                            Result<string> firstTypeArgumentFullNameResult = ToUtf8(firstTypeArgument->FullName());
+                            if (firstTypeArgumentFullNameResult.Error())
+                            {
+                                SetErrorId(firstTypeArgumentFullNameResult.GetErrorId());
+                                return;
+                            }
+                            string firstTypeArgumentFullName = Rvalue(firstTypeArgumentFullNameResult.Value());
+                            Result<string> secondTypeArgumentFullNameResult = ToUtf8(secondTypeArgument->FullName());
+                            if (secondTypeArgumentFullNameResult.Error())
+                            {
+                                SetErrorId(secondTypeArgumentFullNameResult.GetErrorId());
+                                return;
+                            }
+                            string secondTypeArgumentFullName = Rvalue(secondTypeArgumentFullNameResult.Value());
+                            int errorId = MakeError("type '" + firstTypeArgumentFullName + "' is not same or convertible to type '" +
+                                secondTypeArgumentFullName + "' or vice versa", commonConstraintNode.GetFullSpan());
+                            SetErrorId(errorId);
+                            return;
+                        }
+                    }
+                }
+                Result<bool> installResult = containerScope->Install(commonType);
+                if (installResult.Error())
+                {
+                    SetErrorId(installResult.GetErrorId());
+                    return;
+                }
+                boundTemplateParameters.Add(UniquePtr<BoundTemplateParameterSymbol>(commonType));
+                result = true;
+                boundConstraint.Reset(new BoundAtomicConstraint(commonConstraintNode.GetSpan(), true));
+            }
+            else
+            {
+                int errorId = MakeError("the common constraint needs two type arguments", commonConstraintNode.GetFullSpan());
+                SetErrorId(errorId);
+            }
+        }
+        public override void Visit(NonreferenceTypeConstraintNode& nonreferenceTypeConstraintNode)
+        {
+            if (firstTypeArgument != null)
+            {
+                bool referenceType = firstTypeArgument->IsReferenceType();
+                if (referenceType)
+                {
+                    Result<string> firstTypeArgumentFullNameResult = ToUtf8(firstTypeArgument->FullName());
+                    if (firstTypeArgumentFullNameResult.Error())
+                    {
+                        SetErrorId(firstTypeArgumentFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string firstTypeArgumentFullName = Rvalue(firstTypeArgumentFullNameResult.Value());
+                    int errorId = MakeError("type '" + firstTypeArgumentFullName + "' is a reference type", nonreferenceTypeConstraintNode.GetFullSpan());
+                    SetErrorId(errorId);
+                    return;
+                }
+                else
+                {
+                    result = true;
+                    boundConstraint.Reset(new BoundAtomicConstraint(nonreferenceTypeConstraintNode.GetSpan(), true));
+                }
+            }
+            else
+            {
+                int errorId = MakeError("the nonreference type constraint needs one type argument", nonreferenceTypeConstraintNode.GetFullSpan());
+                SetErrorId(errorId);
+            }
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+            if (errorId != 0)
+            {
+                result = false;
+            }
+        }
+        private TypeSymbol* firstTypeArgument;
+        private TypeSymbol* secondTypeArgument;
+        private BoundCompileUnit* boundCompileUnit;
+        private SymbolTable* symbolTable;
+        private SymbolsContext& context;
+        private ContainerScope* containerScope;
+        private BoundFunction* currentFunction;
+        private Node* node;
+        private TypeSymbol* type;
+        private Derivations derivations;
+        private ConceptGroupSymbol* conceptGroup;
+        private bool result;
+        private UniquePtr<BoundConstraint> boundConstraint;
+        private int fileScopesAdded;
+        private List<UniquePtr<NamespaceTypeSymbol>> namespaceTypeSymbols;
+        private List<UniquePtr<BoundTemplateParameterSymbol>> boundTemplateParameters;
+        private int errorId;
+    }
+
+    public Result<UniquePtr<BoundConcept>> Instantiate(ConceptSymbol* conceptSymbol, const List<TypeSymbol*>& typeArguments, BoundCompileUnit* boundCompileUnit,
+        ContainerScope* containerScope, BoundFunction* currentFunction, UniquePtr<BoundConstraint>& boundConstraint, Node* node)
+    {
+        SymbolsContext& context = boundCompileUnit->Context();
+        TypeSymbol* firstTypeArgument = null;
+        TypeSymbol* secondTypeArgument = null;
+        int n = conceptSymbol->Arity();
+        if (n != typeArguments.Count())
+        {
+            int errorId = MakeError("number of type arguments (" + ToString(typeArguments.Count()) +
+                ") does not match number of template parameters (" + ToString(n) + ") of concept symbol", node->GetFullSpan(), conceptSymbol->FullSpan());
+            return Result<UniquePtr<BoundConcept>>(ErrorId(errorId));
+        }
+        ContainerScope instantiationScope;
+        instantiationScope.SetContainer(containerScope->Container());
+        List<UniquePtr<BoundTemplateParameterSymbol>> boundTemplateParameters;
+        for (int i = 0; i < n; ++i)
+        {
+            TemplateParameterSymbol* templateParameterSymbol = conceptSymbol->TemplateParameters()[i];
+            TypeSymbol* typeArgument = typeArguments[i];
+            if (typeArgument->RemoveConst(context)->IsBasicTypeSymbol())
+            {
+                typeArgument = typeArgument->RemoveConst(context);
+            }
+            if (i == 0)
+            {
+                firstTypeArgument = typeArgument;
+            }
+            else if (i == 1)
+            {
+                secondTypeArgument = typeArgument;
+            }
+            BoundTemplateParameterSymbol* boundTemplateParameter = new BoundTemplateParameterSymbol(templateParameterSymbol->Span(), templateParameterSymbol->Name());
+            boundTemplateParameter->SetType(typeArgument);
+            boundTemplateParameters.Add(UniquePtr<BoundTemplateParameterSymbol>(boundTemplateParameter));
+            Result<bool> result = instantiationScope.Install(boundTemplateParameter);
+            if (result.Error())
+            {
+                return Result<UniquePtr<BoundConcept>>(ErrorId(result.GetErrorId()));
+            }
+        }
+        Result<UniquePtr<BoundConcept>> boundConceptResult = DoInstantiate(conceptSymbol, typeArguments, boundCompileUnit, containerScope, &instantiationScope, currentFunction,
+            boundConstraint, node, boundTemplateParameters, firstTypeArgument, secondTypeArgument);
+        if (boundConceptResult.Error())
+        {
+            string message;
+            if (typeArguments.Count() == 1)
+            {
+                Result<string> firstTypeArgumentFullNameResult = ToUtf8(firstTypeArgument->FullName());
+                if (firstTypeArgumentFullNameResult.Error())
+                {
+                    return Result<UniquePtr<BoundConcept>>(ErrorId(firstTypeArgumentFullNameResult.GetErrorId()));
+                }
+                string firstTypeArgumentFullName = Rvalue(firstTypeArgumentFullNameResult.Value());
+                message.Append("type '" + firstTypeArgumentFullName + "' does not fulfill the requirements of concept '");
+            }
+            else
+            {
+                message.Append("types (");
+                bool first = true;
+                for (TypeSymbol* typeArgument : typeArguments)
+                {
+                    Result<string> typeArgumentFullNameResult = ToUtf8(typeArgument->FullName());
+                    if (typeArgumentFullNameResult.Error())
+                    {
+                        return Result<UniquePtr<BoundConcept>>(ErrorId(typeArgumentFullNameResult.GetErrorId()));
+                    }
+                    string typeArgumentFullName = Rvalue(typeArgumentFullNameResult.Value());
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        message.Append(", ");
+                    }
+                    message.Append("'" + typeArgumentFullName + "'");
+                }
+                message.Append(") do not fulfill the requirements of concept '");
+            }
+            Result<string> conceptSymbolFullNameResult = ToUtf8(conceptSymbol->FullName());
+            if (conceptSymbolFullNameResult.Error())
+            {
+                return Result<UniquePtr<BoundConcept>>(ErrorId(conceptSymbolFullNameResult.GetErrorId()));
+            }
+            string conceptSymbolFullName = Rvalue(conceptSymbolFullNameResult.Value());
+            string reasonMessage = RtmGetErrorMessageWithoutStackTrace(boundConceptResult.GetErrorId());
+            message.Append(conceptSymbolFullName).Append("' because:\n").Append(reasonMessage);
+            int errorId = MakeError(message, conceptSymbol->FullSpan(), node->GetFullSpan());
+            return Result<UniquePtr<BoundConcept>>(ErrorId(errorId));
+        }
+        else
+        {
+            return boundConceptResult;
+        }
+    }
+
+    public Result<UniquePtr<BoundConcept>> DoInstantiate(ConceptSymbol* conceptSymbol, const List<TypeSymbol*>& typeArguments, BoundCompileUnit* boundCompileUnit,
+        ContainerScope* containerScope, ContainerScope* instantiationScope, BoundFunction* currentFunction, UniquePtr<BoundConstraint>& boundConstraint, Node* node,
+        const List<UniquePtr<BoundTemplateParameterSymbol>>& boundTemplateParameters, TypeSymbol* firstTypeArgument, TypeSymbol* secondTypeArgument)
+    {
+        ConceptNode* conceptNode = conceptSymbol->GetConceptNode();
+        if (conceptNode == null)
+        {
+            Node* node = boundCompileUnit->GetSymbolTable()->GetNode(conceptSymbol);
+            #assert(node != null && node->IsConceptNode());
+            conceptNode = cast<ConceptNode*>(node);
+        }
+        ConstraintChecker checker(firstTypeArgument, secondTypeArgument, boundCompileUnit, instantiationScope, currentFunction, node);
+        conceptNode->Accept(checker);
+        int errorId = checker.GetErrorId();
+        bool result = checker.GetResult();
+        boundConstraint.Reset(checker.GetBoundConstraint());
+        if (result)
+        {
+            BoundConcept* boundConcept = new BoundConcept(node->GetSpan(), conceptSymbol, typeArguments);
+            boundConcept->SetBoundConstraint(boundConstraint->Clone());
+            Result<Symbol*> commonTypeResult = instantiationScope->Lookup(u"CommonType");
+            if (commonTypeResult.Error())
+            {
+                return Result<UniquePtr<BoundConcept>>(ErrorId(commonTypeResult.GetErrorId()));
+            }
+            Symbol* commonTypeSymbol = commonTypeResult.Value();
+            if (commonTypeSymbol != null)
+            {
+                if (!commonTypeSymbol->IsBoundTemplateParameterSymbol())
+                {
+                    int errorId = MakeError("'CommonType' symbol found from concept instantiation scope is not bound template parameter",
+                        node->GetFullSpan(), commonTypeSymbol->FullSpan());
+                    return Result<UniquePtr<BoundConcept>>(ErrorId(errorId));
+                }
+                BoundTemplateParameterSymbol* commonType = cast<BoundTemplateParameterSymbol*>(commonTypeSymbol);
+                BoundTemplateParameterSymbol* commonTypeClone = new BoundTemplateParameterSymbol(node->GetSpan(), u"CommonType");
+                commonTypeClone->SetType(commonType->Type());
+                boundConcept->AddBoundTemplateParameter(UniquePtr<BoundTemplateParameterSymbol>(commonTypeClone));
+                Result<bool> installResult = containerScope->Install(commonTypeClone);
+                if (installResult.Error())
+                {
+                    return Result<UniquePtr<BoundConcept>>(ErrorId(installResult.GetErrorId()));
+                }
+                boundConcept->SetCommonType(commonType->Type());
+            }
+            return UniquePtr<BoundConcept>(boundConcept);
+        }
+        else
+        {
+            return Result<UniquePtr<BoundConcept>>(ErrorId(errorId));
+        }
+    }
+}
+

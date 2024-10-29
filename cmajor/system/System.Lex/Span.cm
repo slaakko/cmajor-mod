@@ -20,9 +20,9 @@ namespace System.Lex
         {
             return pos != -1;
         }
-        public inline bool Contains(int pos_) const 
-        { 
-            return pos_ >= pos && pos_ < pos + len; 
+        public inline bool Contains(int pos_) const
+        {
+            return pos_ >= pos && pos_ < pos + len;
         }
         public inline void Union(const Span& that)
         {
@@ -49,9 +49,9 @@ namespace System.Lex
         public inline LineColLen(int line_, int col_, int len_) : line(line_), col(col_), len(len_)
         {
         }
-        public inline bool IsValid() const 
-        { 
-            return line != 0; 
+        public inline bool IsValid() const
+        {
+            return line != 0;
         }
         public int line;
         public int col;
@@ -90,7 +90,7 @@ namespace System.Lex
                 ++line;
             }
             return LineColLen(line, col, len);
-        }    
+        }
     }
 
     public int LineColLenToPos(const LineColLen& lineColLen, const List<int>& lineStarts)

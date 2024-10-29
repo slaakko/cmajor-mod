@@ -1,0 +1,27 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace binder
+{
+    public class ConstantArrayRepository
+    {
+        public ConstantArrayRepository()
+        {
+        }
+        public void AddConstantArray(symbols.ConstantSymbol* constantArraySymbol)
+        {
+            constantArrays.Add(constantArraySymbol);
+        }
+        public inline const List<symbols.ConstantSymbol*>& ConstantArrays() const
+        {
+            return constantArrays;
+        }
+        private List<symbols.ConstantSymbol*> constantArrays;
+    }
+}
+

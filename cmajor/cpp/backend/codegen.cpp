@@ -1184,6 +1184,7 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
             cmajor::symbols::TypeSymbol* firstArgumentBaseType = firstArgument->GetType()->BaseType();
             if (firstArgumentBaseType->IsClassTypeSymbol())
             {
+                std::lock_guard<std::recursive_mutex> lock(compileUnit->GetModule().Lock());
                 if (firstArgument->GetType()->IsPointerType() && firstArgument->GetType()->RemovePointer()->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(firstArgumentBaseType);

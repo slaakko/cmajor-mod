@@ -1,0 +1,133 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Concepts;
+using System.IO;
+
+namespace System.Collections
+{
+    public class HashMap<K, T, H = Hasher<K>, C = EqualTo<K>>
+        where K is Semiregular and T is Semiregular and HashFunction<H, K> and C is Relation and C.Domain is K
+    {
+        public typedef K KeyType;
+        public typedef T MappedType;
+        public typedef Pair<KeyType, MappedType> ValueType;
+        public typedef H HashFun;
+        public typedef C Compare;
+        public typedef TableType.ConstIterator ConstIterator;
+        public typedef TableType.Iterator Iterator;
+        private typedef HashMap<KeyType, MappedType, HashFun, Compare> Self;
+        private typedef Hashtable<KeyType, ValueType, SelectFirst<KeyType, MappedType>, HashFun, Compare> TableType;
+
+        public inline Iterator Begin()
+        {
+            return table.Begin();
+        }
+        public inline ConstIterator Begin() const
+        {
+            return table.CBegin();
+        }
+        public inline ConstIterator CBegin() const
+        {
+            return table.CBegin();
+        }
+        public inline Iterator End()
+        {
+            return table.End();
+        }
+        public inline ConstIterator End() const
+        {
+            return table.CEnd();
+        }
+        public inline ConstIterator CEnd() const
+        {
+            return table.CEnd();
+        }
+        public inline long Count() const
+        {
+            return table.Count();
+        }
+        public inline bool IsEmpty() const
+        {
+            return table.IsEmpty();
+        }
+        public inline void Clear()
+        {
+            table.Clear();
+        }
+        public inline Iterator Find(const KeyType& key) 
+        {
+            return table.Find(key);
+        }
+        public inline ConstIterator Find(const KeyType& key) const
+        {
+            return table.CFind(key);
+        }
+        public inline ConstIterator CFind(const KeyType& key) const
+        {
+            return table.CFind(key);
+        }
+        public inline MappedType& operator[](const KeyType& key)
+        {
+            KeyType keyType(key);
+            Pair<Iterator, bool> ib = Insert(ValueType(Rvalue(keyType), Rvalue(MappedType())));
+            Iterator i = ib.first;
+            return i->second;
+        }
+        public inline Pair<Iterator, bool> Insert(const ValueType& value)
+        {
+            return table.Insert(value);
+        }
+        public inline Pair<Iterator, bool> Insert(ValueType&& value)
+        {
+            return table.Insert(Rvalue(value));
+        }
+        public inline void Remove(const KeyType& key)
+        {
+            table.Remove(key);
+        }
+        public inline void Remove(Iterator pos)
+        {
+            table.Remove(pos);
+        }
+        private TableType table;
+    }
+
+    public bool operator==<K, T, H, C>(const HashMap<K, T, H, C>& left, const HashMap<K, T, H, C>& right) 
+        where K is Semiregular and T is Semiregular and HashFunction<H, K> and C is Relation and C.Domain is K
+    {
+        if (left.Count() != right.Count()) return false;
+        for (const Pair<K, T>& p : left)
+        {
+            auto i = right.CFind(p.first);
+            if (i == right.CEnd()) return false;
+            if (i->second != p.second) return false;
+        }
+        return true;
+    }
+
+    [system_default]
+    public TextWriter& operator<<<K, T, H, C>(TextWriter& writer, const HashMap<K, T, H, C>& hashMap)
+    {
+        if (writer.Error()) return writer;
+        writer << "{";
+        bool first = true;
+        for (const Pair<K, T>& element : hashMap)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                writer << ", ";
+            }
+            writer << element;
+        }
+        writer << "}";
+        return writer;
+    }        
+}

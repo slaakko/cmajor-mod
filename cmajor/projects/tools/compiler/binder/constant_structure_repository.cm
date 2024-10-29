@@ -1,0 +1,28 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace binder
+{
+    public class ConstantStructureRepository
+    {
+        public ConstantStructureRepository()
+        {
+        }
+        public void AddConstantStructure(symbols.ConstantSymbol* constantStructureSymbol)
+        {
+            constantStructures.Add(constantStructureSymbol);
+        }
+        public inline const List<symbols.ConstantSymbol*>& ConstantStructures() const
+        {
+            return constantStructures;
+        }
+        private List<symbols.ConstantSymbol*> constantStructures;
+    }
+}
+
+

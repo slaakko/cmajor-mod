@@ -1,0 +1,439 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public Result<Symbol*> CreateSymbol(SymbolKind kind, const System.Lex.Span& span, const ustring& name)
+    {
+        switch (kind)
+        {
+            case SymbolKind.boolTypeSymbol:
+            {
+                return Result<Symbol*>(new BoolTypeSymbol(span));
+            }
+            case SymbolKind.sbyteTypeSymbol:
+            {
+                return Result<Symbol*>(new SByteTypeSymbol(span));
+            }
+            case SymbolKind.byteTypeSymbol:
+            {
+                return Result<Symbol*>(new ByteTypeSymbol(span));
+            }
+            case SymbolKind.shortTypeSymbol:
+            {
+                return Result<Symbol*>(new ShortTypeSymbol(span));
+            }
+            case SymbolKind.ushortTypeSymbol:
+            {
+                return Result<Symbol*>(new UShortTypeSymbol(span));
+            }
+            case SymbolKind.intTypeSymbol:
+            {
+                return Result<Symbol*>(new IntTypeSymbol(span));
+            }
+            case SymbolKind.uintTypeSymbol:
+            {
+                return Result<Symbol*>(new UIntTypeSymbol(span));
+            }
+            case SymbolKind.longTypeSymbol:
+            {
+                return Result<Symbol*>(new LongTypeSymbol(span));
+            }
+            case SymbolKind.ulongTypeSymbol:
+            {
+                return Result<Symbol*>(new ULongTypeSymbol(span));
+            }
+            case SymbolKind.floatTypeSymbol:
+            {
+                return Result<Symbol*>(new FloatTypeSymbol(span));
+            }
+            case SymbolKind.doubleTypeSymbol:
+            {
+                return Result<Symbol*>(new DoubleTypeSymbol(span));
+            }
+            case SymbolKind.charTypeSymbol:
+            {
+                return Result<Symbol*>(new CharTypeSymbol(span));
+            }
+            case SymbolKind.wcharTypeSymbol:
+            {
+                return Result<Symbol*>(new WCharTypeSymbol(span));
+            }
+            case SymbolKind.ucharTypeSymbol:
+            {
+                return Result<Symbol*>(new UCharTypeSymbol(span));
+            }
+            case SymbolKind.voidTypeSymbol:
+            {
+                return Result<Symbol*>(new VoidTypeSymbol(span));
+            }
+            case SymbolKind.autoTypeSymbol:
+            {
+                return Result<Symbol*>(new AutoTypeSymbol(span));
+            }
+            case SymbolKind.defaultBool:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultBoolOperation(span));
+            }
+            case SymbolKind.defaultSByte:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultSByteOperation(span));
+            }
+            case SymbolKind.defaultByte:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultByteOperation(span));
+            }
+            case SymbolKind.defaultShort:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultShortOperation(span));
+            }
+            case SymbolKind.defaultUShort:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultUShortOperation(span));
+            }
+            case SymbolKind.defaultInt:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultIntOperation(span));
+            }
+            case SymbolKind.defaultUInt:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultUIntOperation(span));
+            }
+            case SymbolKind.defaultLong:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultLongOperation(span));
+            }
+            case SymbolKind.defaultULong:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultULongOperation(span));
+            }
+            case SymbolKind.defaultFloat:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultFloatOperation(span));
+            }
+            case SymbolKind.defaultDouble:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultDoubleOperation(span));
+            }
+            case SymbolKind.defaultChar:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultCharOperation(span));
+            }
+            case SymbolKind.defaultWChar:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultWCharOperation(span));
+            }
+            case SymbolKind.defaultUChar:
+            {
+                return Result<Symbol*>(new BasicTypeDefaultUCharOperation(span));
+            }
+            case SymbolKind.basicTypeCopyCtor:
+            {
+                return Result<Symbol*>(new BasicTypeCopyCtor(span, name));
+            }
+            case SymbolKind.basicTypeMoveCtor:
+            {
+                return Result<Symbol*>(new BasicTypeMoveCtor(span, name));
+            }
+            case SymbolKind.basicTypeCopyAssignment:
+            {
+                return Result<Symbol*>(new BasicTypeCopyAssignment(span, name));
+            }
+            case SymbolKind.basicTypeMoveAssignment:
+            {
+                return Result<Symbol*>(new BasicTypeMoveAssignment(span, name));
+            }
+            case SymbolKind.basicTypeReturn:
+            {
+                return Result<Symbol*>(new BasicTypeReturn(span, name));
+            }
+            case SymbolKind.basicTypeUnaryPlus:
+            {
+                return Result<Symbol*>(new BasicTypeUnaryPlusOperation(span, name));
+            }
+            case SymbolKind.basicTypeUnaryMinus:
+            {
+                return Result<Symbol*>(new BasicTypeUnaryMinusOperation(span, name));
+            }
+            case SymbolKind.basicTypeComplement:
+            {
+                return Result<Symbol*>(new BasicTypeComplementOperation(span, name));
+            }
+            case SymbolKind.basicTypeAdd:
+            {
+                return Result<Symbol*>(new BasicTypeAddOperation(span, name));
+            }
+            case SymbolKind.basicTypeSub:
+            {
+                return Result<Symbol*>(new BasicTypeSubOperation(span, name));
+            }
+            case SymbolKind.basicTypeMul:
+            {
+                return Result<Symbol*>(new BasicTypeMulOperation(span, name));
+            }
+            case SymbolKind.basicTypeDiv:
+            {
+                return Result<Symbol*>(new BasicTypeDivOperation(span, name));
+            }
+            case SymbolKind.basicTypeMod:
+            {
+                return Result<Symbol*>(new BasicTypeModOperation(span, name));
+            }
+            case SymbolKind.basicTypeAnd:
+            {
+                return Result<Symbol*>(new BasicTypeAndOperation(span, name));
+            }
+            case SymbolKind.basicTypeOr:
+            {
+                return Result<Symbol*>(new BasicTypeOrOperation(span, name));
+            }
+            case SymbolKind.basicTypeXor:
+            {
+                return Result<Symbol*>(new BasicTypeXorOperation(span, name));
+            }
+            case SymbolKind.basicTypeShl:
+            {
+                return Result<Symbol*>(new BasicTypeShlOperation(span, name));
+            }
+            case SymbolKind.basicTypeShr:
+            {
+                return Result<Symbol*>(new BasicTypeShrOperation(span, name));
+            }
+            case SymbolKind.basicTypeNot:
+            {
+                return Result<Symbol*>(new BasicTypeNotOperation(span, name));
+            }
+            case SymbolKind.basicTypeEqual:
+            {
+                return Result<Symbol*>(new BasicTypeEqualOperation(span, name));
+            }
+            case SymbolKind.basicTypeLess:
+            {
+                return Result<Symbol*>(new BasicTypeLessOperation(span, name));
+            }
+            case SymbolKind.basicTypeImplicitSignExtension:
+            {
+                return Result<Symbol*>(new BasicTypeImplicitSignExtensionOperation(span, name));
+            }
+            case SymbolKind.basicTypeImplicitZeroExtension:
+            {
+                return Result<Symbol*>(new BasicTypeImplicitZeroExtensionOperation(span, name));
+            }
+            case SymbolKind.basicTypeExplicitSignExtension:
+            {
+                return Result<Symbol*>(new BasicTypeExplicitSignExtensionOperation(span, name));
+            }
+            case SymbolKind.basicTypeExplicitZeroExtension:
+            {
+                return Result<Symbol*>(new BasicTypeExplicitZeroExtensionOperation(span, name));
+            }
+            case SymbolKind.basicTypeTruncation:
+            {
+                return Result<Symbol*>(new BasicTypeTruncationOperation(span, name));
+            }
+            case SymbolKind.basicTypeBitcast:
+            {
+                return Result<Symbol*>(new BasicTypeBitcastOperation(span, name));
+            }
+            case SymbolKind.basicTypeImplicitIntToFloating:
+            {
+                return Result<Symbol*>(new BasicTypeImplicitIntToFloatingOperation(span, name));
+            }
+            case SymbolKind.basicTypeFloatingToInt:
+            {
+                return Result<Symbol*>(new BasicTypeFloatingToIntOperation(span, name));
+            }
+            case SymbolKind.basicTypeFloatingExtension:
+            {
+                return Result<Symbol*>(new BasicTypeImplicitFloatingExtensionOperation(span, name));
+            }
+            case SymbolKind.nullPtrTypeSymbol:
+            {
+                return Result<Symbol*>(new NullPtrTypeSymbol(span));
+            }
+            case SymbolKind.parameterSymbol:
+            {
+                return Result<Symbol*>(new ParameterSymbol(span, name));
+            }
+            case SymbolKind.memberVariableSymbol:
+            {
+                return Result<Symbol*>(new MemberVariableSymbol(span, name));
+            }
+            case SymbolKind.globalVariableSymbol:
+            {
+                return Result<Symbol*>(new GlobalVariableSymbol(span, name));
+            }
+            case SymbolKind.functionSymbol:
+            {
+                return Result<Symbol*>(new FunctionSymbol(span, name));
+            }
+            case SymbolKind.functionGroupSymbol:
+            {
+                return Result<Symbol*>(new FunctionGroupSymbol(span, name));
+            }
+            case SymbolKind.staticConstructorSymbol:
+            {
+                return Result<Symbol*>(new StaticConstructorSymbol(span, name));
+            }
+            case SymbolKind.constructorSymbol:
+            {
+                return Result<Symbol*>(new ConstructorSymbol(span, name));
+            }
+            case SymbolKind.destructorSymbol:
+            {
+                return Result<Symbol*>(new DestructorSymbol(span, name));
+            }
+            case SymbolKind.memberFunctionSymbol:
+            {
+                return Result<Symbol*>(new MemberFunctionSymbol(span, name));
+            }
+            case SymbolKind.conversionFunctionSymbol:
+            {
+                return Result<Symbol*>(new ConversionFunctionSymbol(span, name));
+            }
+            case SymbolKind.classTypeSymbol:
+            {
+                return Result<Symbol*>(new ClassTypeSymbol(span, name));
+            }
+            case SymbolKind.classTemplateSpecializationSymbol:
+            {
+                return Result<Symbol*>(new ClassTemplateSpecializationSymbol(span, name));
+            }
+            case SymbolKind.interfaceTypeSymbol:
+            {
+                return Result<Symbol*>(new InterfaceTypeSymbol(span, name));
+            }
+            case SymbolKind.delegateTypeSymbol:
+            {
+                return Result<Symbol*>(new DelegateTypeSymbol(span, name));
+            }
+            case SymbolKind.delegateTypeDefaultConstructor:
+            {
+                return Result<Symbol*>(new DelegateTypeDefaultConstructor(span, name));
+            }
+            case SymbolKind.delegateTypeCopyConstructor:
+            {
+                return Result<Symbol*>(new DelegateTypeCopyConstructor(span, name));
+            }
+            case SymbolKind.delegateTypeMoveConstructor:
+            {
+                return Result<Symbol*>(new DelegateTypeMoveConstructor(span, name));
+            }
+            case SymbolKind.delegateTypeCopyAssignment:
+            {
+                return Result<Symbol*>(new DelegateTypeCopyAssignment(span, name));
+            }
+            case SymbolKind.delegateTypeMoveAssignment:
+            {
+                return Result<Symbol*>(new DelegateTypeMoveAssignment(span, name));
+            }
+            case SymbolKind.delegateTypeReturn:
+            {
+                return Result<Symbol*>(new DelegateTypeReturn(span, name));
+            }
+            case SymbolKind.delegateTypeEquality:
+            {
+                return Result<Symbol*>(new DelegateTypeEquality(span, name));
+            }
+            case SymbolKind.classDelegateTypeSymbol:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeSymbol(span, name));
+            }
+            case SymbolKind.classDelegateTypeDefaultConstructor:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeDefaultConstructor(span, name));
+            }
+            case SymbolKind.classDelegateTypeCopyConstructor:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeCopyConstructor(span, name));
+            }
+            case SymbolKind.classDelegateTypeMoveConstructor:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeMoveConstructor(span, name));
+            }
+            case SymbolKind.classDelegateTypeCopyAssignment:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeCopyAssignment(span, name));
+            }
+            case SymbolKind.classDelegateTypeMoveAssignment:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeMoveAssignment(span, name));
+            }
+            case SymbolKind.classDelegateTypeEquality:
+            {
+                return Result<Symbol*>(new ClassDelegateTypeEquality(span, name));
+            }
+            case SymbolKind.derivedTypeSymbol:
+            {
+                return Result<Symbol*>(new DerivedTypeSymbol(span, name));
+            }
+            case SymbolKind.aliasTypeSymbol:
+            {
+                return Result<Symbol*>(new AliasTypeSymbol(span, name));
+            }
+            case SymbolKind.templateParameterSymbol:
+            {
+                return Result<Symbol*>(new TemplateParameterSymbol(span, name));
+            }
+            case SymbolKind.boundTemplateParameterSymbol:
+            {
+                return Result<Symbol*>(new BoundTemplateParameterSymbol(span, name));
+            }
+            case SymbolKind.conceptSymbol:
+            {
+                return Result<Symbol*>(new ConceptSymbol(span, name));
+            }
+            case SymbolKind.axiomSymbol:
+            {
+                return Result<Symbol*>(new AxiomSymbol(span, name));
+            }
+            case SymbolKind.declarationBlockSymbol:
+            {
+                return Result<Symbol*>(new DeclarationBlockSymbol(span, name));
+            }
+            case SymbolKind.enumTypeSymbol:
+            {
+                return Result<Symbol*>(new EnumTypeSymbol(span, name));
+            }
+            case SymbolKind.enumConstantSymbol:
+            {
+                return Result<Symbol*>(new EnumConstantSymbol(span, name));
+            }
+            case SymbolKind.constantSymbol:
+            {
+                return Result<Symbol*>(new ConstantSymbol(span, name));
+            }
+            case SymbolKind.namespaceSymbol:
+            {
+                return Result<Symbol*>(new NamespaceSymbol(span, name));
+            }
+            case SymbolKind.arrayLengthFunctionSymbol:
+            {
+                return Result<Symbol*>(new ArrayLengthFunction(span, name));
+            }
+            case SymbolKind.arrayBeginFunctionSymbol:
+            {
+                return Result<Symbol*>(new ArrayBeginFunction(span, name));
+            }
+            case SymbolKind.arrayEndFunctionSymbol:
+            {
+                return Result<Symbol*>(new ArrayEndFunction(span, name));
+            }
+            case SymbolKind.arrayCBeginFunctionSymbol:
+            {
+                return Result<Symbol*>(new ArrayCBeginFunction(span, name));
+            }
+            case SymbolKind.arrayCEndFunctionSymbol:
+            {
+                return Result<Symbol*>(new ArrayCEndFunction(span, name));
+            }
+        }
+        int errorId = AllocateError("no case to create symbol '" + SymbolKindStr(kind) + "'");
+        return Result<Symbol*>(ErrorId(errorId));
+    }
+}
+

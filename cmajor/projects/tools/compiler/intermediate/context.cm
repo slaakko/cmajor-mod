@@ -1,0 +1,497 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public class Context
+    {
+        public Context() :
+            compileUnit(this), types(this), data(this), code(this), metadata(this), currentFunction(null), currentBasicBlock(null), currentSourceLineNumber(0), fileIndex(-1)
+        {
+        }
+        public inline CompileUnit* GetCompileUnit() const
+        {
+            return &compileUnit;
+        }
+        public inline Types* GetTypes() const
+        {
+            return &types;
+        }
+        public inline Data* GetData() const
+        {
+            return &data;
+        }
+        public inline Code* GetCode() const
+        {
+            return &code;
+        }
+        public inline Metadata* GetMetadata() const
+        {
+            return &metadata;
+        }
+        public inline void AddStructureType(const System.Lex.Span& span, int typeId, const List<TypeRef>& fieldTypeRefs)
+        {
+            types.AddStructureType(span, typeId, fieldTypeRefs);
+        }
+        public inline void AddArrayType(const System.Lex.Span& span, int typeId, long size, const TypeRef& elementTypeRef)
+        {
+            types.AddArrayType(span, typeId, size, elementTypeRef);
+        }
+        public inline void AddFunctionType(const System.Lex.Span& span, int typeId, const TypeRef& returnTypeRef, const List<TypeRef>& paramTypeRefs)
+        {
+            types.AddFunctionType(span, typeId, returnTypeRef, paramTypeRefs);
+        }
+        public inline void AddGlobalVariable(const System.Lex.Span& span, Type* type, const string& name, Value* initializer)
+        {
+            data.AddGlobalVariable(span, type, name, initializer);
+        }
+        public inline Value* GetDefaultBool()
+        {
+            return types.GetBoolType()->DefaultValue();
+        }
+        public inline Value* GetDefaultSByte()
+        {
+            return types.GetSByteType()->DefaultValue();
+        }
+        public inline Value* GetDefaultByte()
+        {
+            return types.GetByteType()->DefaultValue();
+        }
+        public inline Value* GetDefaultShort()
+        {
+            return types.GetShortType()->DefaultValue();
+        }
+        public inline Value* GetDefaultUShort()
+        {
+            return types.GetUShortType()->DefaultValue();
+        }
+        public inline Value* GetDefaultInt()
+        {
+            return types.GetIntType()->DefaultValue();
+        }
+        public inline Value* GetDefaultUInt()
+        {
+            return types.GetUIntType()->DefaultValue();
+        }
+        public inline Value* GetDefaultLong()
+        {
+            return types.GetLongType()->DefaultValue();
+        }
+        public inline Value* GetDefaultULong()
+        {
+            return types.GetULongType()->DefaultValue();
+        }
+        public inline Value* GetDefaultFloat()
+        {
+            return types.GetFloatType()->DefaultValue();
+        }
+        public inline Value* GetDefaultDouble()
+        {
+            return types.GetDoubleType()->DefaultValue();
+        }
+        public Result<Value*> CreateLocal(Type* type)
+        {
+            Result<Type*> ptrTypeResult = type->AddPointer(this);
+            if (ptrTypeResult.Error()) return Result<Value*>(ErrorId(ptrTypeResult.GetErrorId()));
+            Type* ptrType = ptrTypeResult.Value();
+            Instruction* inst = new LocalInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(ptrType), type);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateLoad(Value* ptr)
+        {
+            Result<Type*> typeResult = ptr->GetType()->RemovePointer(this);
+            if (typeResult.Error()) return Result<Value*>(ErrorId(typeResult.GetErrorId()));
+            Type* type = typeResult.Value();
+            Instruction* inst = new LoadInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(type), ptr);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<bool> CreateStore(Value* value, Value* ptr)
+        {
+            Instruction* inst = new StoreInstruction(System.Lex.Span(), value, ptr);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<Value*> CreateRet(Value* value)
+        {
+            Instruction* inst = new RetInstruction(System.Lex.Span(), value);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));;
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateElemAddr(Value* ptr, Value* index)
+        {
+            Result<Type*> typeResult = ptr->GetType()->RemovePointer(this);
+            if (typeResult.Error()) return Result<Value*>(ErrorId(typeResult.GetErrorId()));
+            Type* type = typeResult.Value();
+            if (type->IsStructureType())
+            {
+                StructureType* structureType = cast<StructureType*>(type);
+                long idx = 0;
+                if (index->IsLongValue())
+                {
+                    LongValue* idxValue = cast<LongValue*>(index);
+                    idx = idxValue->GetValue();
+                }
+                else
+                {
+                    int errorId = AllocateError("long value expected");
+                    return Result<Value*>(ErrorId(errorId));
+                }
+                Type* fieldType = structureType->FieldType(idx);
+                Result<Type*> ptrTypeResult = fieldType->AddPointer(this);
+                if (ptrTypeResult.Error()) return Result<Value*>(ErrorId(ptrTypeResult.GetErrorId()));
+                type = ptrTypeResult.Value();
+            }
+            else if (type->IsArrayType())
+            {
+                ArrayType* arrayType = cast<ArrayType*>(type);
+                Type* elementType = arrayType->ElementType();
+                Result<Type*> ptrTypeResult = elementType->AddPointer(this);
+                if (ptrTypeResult.Error()) return Result<Value*>(ErrorId(ptrTypeResult.GetErrorId()));
+                type = ptrTypeResult.Value();
+            }
+            else
+            {
+                int errorId = AllocateError("structure or array type expected");
+                return Result<Value*>(ErrorId(errorId));
+            }
+            Instruction* inst = new ElemAddrInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(type), ptr, index);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateSignExtension(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new SignExtendInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateZeroExtension(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new ZeroExtendInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateFloatingPointExtension(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new FloatingPointExtendInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateTruncation(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new TruncateInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateBitcast(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new BitcastInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateIntToFloat(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new IntToFloatInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateFloatToInt(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new FloatToIntInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateIntToPtr(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new IntToPtrInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreatePtrToInt(Value* operand, Type* destinationType)
+        {
+            Instruction* inst = new PtrToIntInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(destinationType), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreatePtrOffset(Value* ptr, Value* offset)
+        {
+            Instruction* inst = new PtrOffsetInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(ptr->GetType()), ptr, offset);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreatePtrDiff(Value* left, Value* right)
+        {
+            Instruction* inst = new PtrDiffInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(types.GetLongType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateNot(Value* operand)
+        {
+            Instruction* inst = new NotInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(operand->GetType()), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateNeg(Value* operand)
+        {
+            Instruction* inst = new NegInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(operand->GetType()), operand);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateAdd(Value* left, Value* right)
+        {
+            Instruction* inst = new AddInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateSub(Value* left, Value* right)
+        {
+            Instruction* inst = new SubInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateMul(Value* left, Value* right)
+        {
+            Instruction* inst = new MulInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateDiv(Value* left, Value* right)
+        {
+            Instruction* inst = new DivInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateMod(Value* left, Value* right)
+        {
+            Instruction* inst = new ModInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateAnd(Value* left, Value* right)
+        {
+            Instruction* inst = new AndInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateOr(Value* left, Value* right)
+        {
+            Instruction* inst = new OrInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateXor(Value* left, Value* right)
+        {
+            Instruction* inst = new XorInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateShl(Value* left, Value* right)
+        {
+            Instruction* inst = new ShlInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateShr(Value* left, Value* right)
+        {
+            Instruction* inst = new ShrInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(left->GetType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateEqual(Value* left, Value* right)
+        {
+            Instruction* inst = new EqualInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(types.GetBoolType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateLess(Value* left, Value* right)
+        {
+            Instruction* inst = new LessInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(types.GetBoolType()), left, right);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateArg(Value* arg)
+        {
+            Instruction* inst = new ArgInstruction(System.Lex.Span(), arg);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<Value*> CreateCall(FunctionType* functionType, Value* callee, const List<Value*>& args)
+        {
+            for (Value* arg : args)
+            {
+                Result<Value*> argResult = CreateArg(arg);
+                if (argResult.Error()) return argResult;
+            }
+            Instruction* inst = null;
+            if (functionType->ReturnType() == types.GetVoidType())
+            {
+                inst = new ProcedureCallInstruction(System.Lex.Span(), callee);
+            }
+            else
+            {
+                RegValue* regResult = currentFunction->MakeNextRegValue(functionType->ReturnType());
+                inst = new FunctionCallInstruction(System.Lex.Span(), regResult, callee);
+            }
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(inst);
+        }
+        public Result<bool> CreateBranch(Value* cond, BasicBlock* trueBlock, BasicBlock* falseBlock)
+        {
+            BranchInstruction* inst = new BranchInstruction(System.Lex.Span(), cond, trueBlock->Id(), falseBlock->Id());
+            inst->SetTrueTargetBasicBlock(trueBlock);
+            inst->SetFalseTargetBasicBlock(falseBlock);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<bool> CreateJump(BasicBlock* dest)
+        {
+            JmpInstruction* inst = new JmpInstruction(System.Lex.Span(), dest->Id());
+            inst->SetTargetBasicBlock(dest);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<SwitchInstruction*> CreateSwitch(Value* condition, BasicBlock* defaultDest)
+        {
+            SwitchInstruction* inst = new SwitchInstruction(System.Lex.Span(), condition, defaultDest->Id());
+            inst->SetDefaultTargetBlock(defaultDest);
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return Result<SwitchInstruction*>(ErrorId(result.GetErrorId()));
+            return Result<SwitchInstruction*>(inst);
+        }
+        public Result<bool> CreateNop()
+        {
+            NoOperationInstruction* inst = new NoOperationInstruction(System.Lex.Span());
+            inst->SetSourceLineNumber(currentSourceLineNumber);
+            auto result = currentBasicBlock->AddInstruction(inst);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline void SetCurrentFunction(Function* currentFunction_)
+        {
+            currentFunction = currentFunction_;
+        }
+        public inline Function* CurrentFunction() const
+        {
+            return currentFunction;
+        }
+        public inline void SetCurrentBasicBlock(BasicBlock* currentBasicBlock_)
+        {
+            currentBasicBlock = currentBasicBlock_;
+        }
+        public inline BasicBlock* CreateBasicBlock()
+        {
+            return currentFunction->CreateBasicBlock();
+        }
+        public inline BasicBlock* CurrentBasicBlock() const
+        {
+            return currentBasicBlock;
+        }
+        public inline void SetCurrentSourceLineNumber(int sourceLineNumber)
+        {
+            currentSourceLineNumber = sourceLineNumber;
+        }
+        public inline System.Lex.FileMap& FileMap()
+        {
+            return fileMap;
+        }
+        public inline int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public inline void SetFileIndex(int fileIndex_)
+        {
+            fileIndex = fileIndex_;
+        }
+        public inline assembly.AssemblyContext* GetAssemblyContext() const
+        {
+            return &assemblyContext;
+        }
+        private CompileUnit compileUnit;
+        private Types types;
+        private Data data;
+        private Code code;
+        private Metadata metadata;
+        private Function* currentFunction;
+        private BasicBlock* currentBasicBlock;
+        private int currentSourceLineNumber;
+        private System.Lex.FileMap fileMap;
+        private int fileIndex;
+        private assembly.AssemblyContext assemblyContext;
+    }
+}
+

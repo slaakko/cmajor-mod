@@ -1,0 +1,261 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public abstract class ContainerSymbol : Symbol
+    {
+        public ContainerSymbol(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) : base(kind_, span_, name_)
+        {
+            containerScope.SetContainer(this);
+        }
+        public override bool IsContainerSymbol() const
+        {
+            return true;
+        }
+        public inline const List<UniquePtr<Symbol>>& Members() const
+        {
+            return members;
+        }
+        [nodiscard]
+        public override Result<bool> CopyFrom(const Symbol* that)
+        {
+            Result<bool> result = base->CopyFrom(that);
+            if (result.Error()) return result;
+            ContainerSymbol* thatContainer = cast<ContainerSymbol*>(that);
+            for (const Pair<ustring, Symbol*>& p : thatContainer->containerScope.SymbolMap())
+            {
+                result = containerScope.Install(p.second);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> AddMember(Symbol* member, SymbolsContext& context)
+        {
+            if (GetModule() != null)
+            {
+                member->SetModule(GetModule());
+            }
+            member->SetParent(this);
+            members.Add(UniquePtr<Symbol>(member));
+            if (member->IsFunctionSymbol())
+            {
+                FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(member);
+                Result<FunctionGroupSymbol*> functionGroupResult = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->Span(), context);
+                if (functionGroupResult.Error()) return Result<bool>(ErrorId(functionGroupResult.GetErrorId()));
+                FunctionGroupSymbol* functionGroupSymbol = functionGroupResult.Value();
+                functionGroupSymbol->AddFunction(functionSymbol);
+                functionIndexMap[functionSymbol->Index()] = functionSymbol;
+            }
+            else if (member->IsConceptSymbol())
+            {
+                // todo
+            }
+            else if (member->IsClassTypeSymbol())
+            {
+                ClassTypeSymbol* classTypeSymbol = cast<ClassTypeSymbol*>(member);
+                Result<ClassGroupSymbol*> classGroupResult = MakeClassGroupSymbol(classTypeSymbol->GroupName(), classTypeSymbol->Span(), context);
+                if (classGroupResult.Error()) return Result<bool>(ErrorId(classGroupResult.GetErrorId()));
+                ClassGroupSymbol* classGroupSymbol = classGroupResult.Value();
+                Result<bool> result = classGroupSymbol->AddClass(classTypeSymbol);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                auto result = containerScope.Install(member);
+                if (result.Error()) return result;
+            }
+            if (GetModule() != null)
+            {
+                if (member->IsTypeSymbol())
+                {
+                    TypeSymbol* typeSymbol = cast<TypeSymbol*>(member);
+                    GetModule()->GetSymbolTable()->MapType(typeSymbol, true);
+                }
+                else if (member->IsFunctionSymbol())
+                {
+                    FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(member);
+                    GetModule()->GetSymbolTable()->MapFunction(functionSymbol);
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddOwnedMember(Symbol* ownedMember, SymbolsContext& context)
+        {
+            if (ownedMember->IsFunctionSymbol())
+            {
+                FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(ownedMember);
+                Result<FunctionGroupSymbol*> functionGroupResult = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->Span(), context);
+                if (functionGroupResult.Error()) return Result<bool>(ErrorId(functionGroupResult.GetErrorId()));
+                FunctionGroupSymbol* functionGroupSymbol = functionGroupResult.Value();
+                functionGroupSymbol->AddFunction(functionSymbol);
+                functionIndexMap[functionSymbol->Index()] = functionSymbol;
+            }
+            else if (ownedMember->IsConceptSymbol())
+            {
+                // todo
+            }
+            else if (ownedMember->IsClassTypeSymbol())
+            {
+                ClassTypeSymbol* classTypeSymbol = cast<ClassTypeSymbol*>(ownedMember);
+                Result<ClassGroupSymbol*> classGroupResult = MakeClassGroupSymbol(classTypeSymbol->GroupName(), classTypeSymbol->Span(), context);
+                if (classGroupResult.Error()) return Result<bool>(ErrorId(classGroupResult.GetErrorId()));
+                ClassGroupSymbol* classGroupSymbol = classGroupResult.Value();
+                Result<bool> result = classGroupSymbol->AddClass(classTypeSymbol);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                auto result = containerScope.Install(ownedMember);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public override ContainerScope* GetContainerScope() const
+        {
+            return &containerScope;
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            List<Symbol*> exportSymbols;
+            for (const auto& member : members)
+            {
+                if (member->IsExportSymbol())
+                {
+                    exportSymbols.Add(member.Get());
+                }
+            }
+            int n = cast<int>(exportSymbols.Count());
+            result = writer.GetBinaryWriter().Write(n);
+            if (result.Error()) return result;
+            for (int i = 0; i < n; ++i)
+            {
+                Symbol* exportSymbol = exportSymbols[i];
+                result = writer.Write(exportSymbol);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<int> countResult = reader.GetBinaryReader().ReadInt();
+            if (countResult.Error()) return Result<bool>(ErrorId(countResult.GetErrorId()));
+            int n = countResult.Value();
+            for (int i = 0; i < n; ++i)
+            {
+                Result<Symbol*> symbolResult = reader.ReadSymbol(this);
+                if (symbolResult.Error()) return Result<bool>(ErrorId(symbolResult.GetErrorId()));
+                Symbol* symbol = symbolResult.Value();
+                result = AddMember(symbol, *reader.Context());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public FunctionSymbol* GetFunctionByIndex(int functionIndex) const
+        {
+            auto it = functionIndexMap.Find(functionIndex);
+            if (it != functionIndexMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private Result<FunctionGroupSymbol*> MakeFunctionGroupSymbol(const ustring& groupName, const System.Lex.Span& span, SymbolsContext& context)
+        {
+            Result<Symbol*> symbolResult = containerScope.Lookup(groupName);
+            if (symbolResult.Error()) return Result<FunctionGroupSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol == null)
+            {
+                FunctionGroupSymbol* functionGroupSymbol = new FunctionGroupSymbol(span, groupName);
+                Result<bool> result = AddMember(functionGroupSymbol, context);
+                if (result.Error()) return Result<FunctionGroupSymbol*>(ErrorId(result.GetErrorId()));
+                return Result<FunctionGroupSymbol*>(functionGroupSymbol);
+            }
+            if (symbol->IsFunctionGroupSymbol())
+            {
+                return Result<FunctionGroupSymbol*>(cast<FunctionGroupSymbol*>(symbol));
+            }
+            else
+            {
+                auto symbolFullNameResult = ToUtf8(symbol->FullName());
+                if (symbolFullNameResult.Error()) return Result<FunctionGroupSymbol*>(ErrorId(symbolFullNameResult.GetErrorId()));
+                string symbolFullNameStr = Rvalue(symbolFullNameResult.Value());
+                auto groupNameResult = ToUtf8(groupName);
+                if (groupNameResult.Error()) return Result<FunctionGroupSymbol*>(ErrorId(groupNameResult.GetErrorId()));
+                string groupNameStr = Rvalue(groupNameResult.Value());
+                int errorId = MakeError("name of symbol '" + symbolFullNameStr + "' conflicts with a function group '" + groupNameStr + "'", symbol->FullSpan(), FullSpan());
+                return Result<FunctionGroupSymbol*>(ErrorId(errorId));
+            }
+        }
+        private Result<ClassGroupSymbol*> MakeClassGroupSymbol(const ustring& groupName, const System.Lex.Span& span, SymbolsContext& context)
+        {
+            Result<Symbol*> symbolResult = containerScope.Lookup(groupName);
+            if (symbolResult.Error()) return Result<ClassGroupSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol == null)
+            {
+                ClassGroupSymbol* classGroupSymbol = new ClassGroupSymbol(span, groupName);
+                context.RootModule()->GetSymbolTable()->SetTypeIdFor(classGroupSymbol);
+                Result<bool> result = AddMember(classGroupSymbol, context);
+                if (result.Error()) return Result<ClassGroupSymbol*>(ErrorId(result.GetErrorId()));
+                return Result<ClassGroupSymbol*>(classGroupSymbol);
+            }
+            if (symbol->IsClassGroupSymbol())
+            {
+                return Result<ClassGroupSymbol*>(cast<ClassGroupSymbol*>(symbol));
+            }
+            else
+            {
+                auto symbolFullNameResult = ToUtf8(symbol->FullName());
+                if (symbolFullNameResult.Error()) return Result<ClassGroupSymbol*>(ErrorId(symbolFullNameResult.GetErrorId()));
+                string symbolFullNameStr = Rvalue(symbolFullNameResult.Value());
+                auto groupNameResult = ToUtf8(groupName);
+                if (groupNameResult.Error()) return Result<ClassGroupSymbol*>(ErrorId(groupNameResult.GetErrorId()));
+                string groupNameStr = Rvalue(groupNameResult.Value());
+                int errorId = MakeError("name of symbol '" + symbolFullNameStr + "' conflicts with a class group '" + groupNameStr + "'", symbol->FullSpan(), FullSpan());
+                return Result<ClassGroupSymbol*>(ErrorId(errorId));
+            }
+        }
+        private List<UniquePtr<Symbol>> members;
+        private ContainerScope containerScope;
+        private Map<int, FunctionSymbol*> functionIndexMap;
+    }
+
+    public class DeclarationBlockSymbol : ContainerSymbol
+    {
+        public DeclarationBlockSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.declarationBlockSymbol, span_, name_)
+        {
+        }
+        public override Result<bool> AddMember(Symbol* member, SymbolsContext& context)
+        {
+            auto result = base->AddMember(member, context);
+            if (result.Error()) return result;
+            if (member->IsLocalVariableSymbol())
+            {
+                Result<FunctionSymbol*> fnResult = Function();
+                if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+                FunctionSymbol* fn = fnResult.Value();
+                fn->AddLocalVariable(cast<LocalVariableSymbol*>(member));
+            }
+            return Result<bool>(true);
+        }
+    }
+}
+

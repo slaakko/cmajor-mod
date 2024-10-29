@@ -78,6 +78,7 @@ public:
     void Check() override;
     std::string GetSymbolCategoryStr() const override { return "CL"; }
     std::string GetSymbolCategoryDescription() const override { return "class"; }
+    void ComputeMangledName() override;
 private:
     ClassTypeSymbol* classTemplate;
     std::vector<TypeSymbol*> templateArgumentTypes;

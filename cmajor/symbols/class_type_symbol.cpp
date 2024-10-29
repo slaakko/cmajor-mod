@@ -1,5 +1,4 @@
 // =================================
-// =================================
 // Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
@@ -1362,6 +1361,8 @@ bool Implements(MemberFunctionSymbol* classMemFun, MemberFunctionSymbol* intfMem
 {
     if (classMemFun->GroupName() != intfMemFun->GroupName()) return false;
     if (!classMemFun->ReturnType() || !intfMemFun->ReturnType()) return false;
+
+
     if (!TypesEqual(classMemFun->ReturnType(), intfMemFun->ReturnType())) return false;
     int n = classMemFun->Parameters().size();
     if (n != intfMemFun->Parameters().size()) return false;
@@ -1520,7 +1521,6 @@ void* ClassTypeSymbol::IrType(cmajor::ir::Emitter& emitter)
         }
         else
         {
-
             void* forwardDeclaredType = emitter.CreateFwdIrTypeForClassType();
             localIrType = forwardDeclaredType;
             emitter.SetIrTypeByTypeId(TypeId(), localIrType);

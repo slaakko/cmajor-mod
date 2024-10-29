@@ -1,0 +1,368 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+
+namespace binder
+{
+    public abstract class BoundConstraint : BoundNode
+    {
+        public BoundConstraint(const System.Lex.Span& span_, BoundNodeKind kind_) : base(span_, kind_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load constraint", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store constraint", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public abstract BoundConstraint* Clone() const;
+        public abstract bool Subsume(BoundConstraint* that) const;
+    }
+
+    public class BoundAtomicConstraint : BoundConstraint
+    {
+        public BoundAtomicConstraint(const System.Lex.Span& span_, bool satisfied_) :
+            base(span_, BoundNodeKind.boundAtomicConstraint), satisfied(satisfied_), conceptSymbol(null)
+        {
+        }
+        public inline bool Satisfied() const
+        {
+            return satisfied;
+        }
+        public inline void SetConcept(ConceptSymbol* conceptSymbol_)
+        {
+            conceptSymbol = conceptSymbol_;
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundConstraint* Clone() const
+        {
+            return new BoundAtomicConstraint(*this);
+        }
+        public override bool Subsume(BoundConstraint* that) const
+        {
+            if (that->IsBoundBinaryConstraint())
+            {
+                BoundBinaryConstraint* thatBinaryConstraint = cast<BoundBinaryConstraint*>(that);
+                BoundConstraint* thatLeft = thatBinaryConstraint->Left();
+                BoundConstraint* thatRight = thatBinaryConstraint->Right();
+                bool subsumeLeft = Subsume(thatLeft);
+                bool subsumeRight = Subsume(thatRight);
+                if (that->IsBoundConjunctiveConstraint())
+                {
+                    return subsumeLeft && subsumeRight;
+                }
+                else if (that->IsBoundDisjunctiveConstraint())
+                {
+                    return subsumeLeft || subsumeRight;
+                }
+            }
+            else if (that->IsBoundAtomicConstraint())
+            {
+                BoundAtomicConstraint* thatAtomic = cast<BoundAtomicConstraint*>(that);
+                if (satisfied && !thatAtomic->Satisfied())
+                {
+                    return true;
+                }
+                else if (!satisfied && thatAtomic->Satisfied())
+                {
+                    return false;
+                }
+                else
+                {
+                    if (conceptSymbol != null && thatAtomic->conceptSymbol == null)
+                    {
+                        return true;
+                    }
+                    else if (conceptSymbol == null && thatAtomic->conceptSymbol != null)
+                    {
+                        return false;
+                    }
+                    else if (conceptSymbol == null && thatAtomic->conceptSymbol == null)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        if (conceptSymbol == thatAtomic->conceptSymbol)
+                        {
+                            return true;
+                        }
+                        ConceptSymbol* refinedConcept = conceptSymbol->RefinedConcept();
+                        while (refinedConcept != null)
+                        {
+                            if (refinedConcept == thatAtomic->conceptSymbol)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                refinedConcept = refinedConcept->RefinedConcept();
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return false;
+        }
+        private bool satisfied;
+        private ConceptSymbol* conceptSymbol;
+    }
+
+    public abstract class BoundBinaryConstraint : BoundConstraint
+    {
+        public BoundBinaryConstraint(const System.Lex.Span& span_, BoundNodeKind kind_, BoundConstraint* left_, BoundConstraint* right_) :
+            base(span_, kind_), left(left_), right(right_)
+        {
+        }
+        public inline BoundConstraint* Left() const
+        {
+            return left.Get();
+        }
+        public inline BoundConstraint* Right() const
+        {
+            return right.Get();
+        }
+        private UniquePtr<BoundConstraint> left;
+        private UniquePtr<BoundConstraint> right;
+    }
+
+    public class BoundDisjunctiveConstraint : BoundBinaryConstraint
+    {
+        public BoundDisjunctiveConstraint(const System.Lex.Span& span_, BoundConstraint* left_, BoundConstraint* right_) :
+            base(span_, BoundNodeKind.boundDisjunctiveConstraint, left_, right_)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundConstraint* Clone() const
+        {
+            return new BoundDisjunctiveConstraint(Span(), Left()->Clone(), Right()->Clone());
+        }
+        public override bool Subsume(BoundConstraint* that) const
+        {
+            BoundConstraint* left = Left();
+            BoundConstraint* right = Right();
+            if (that->IsBoundBinaryConstraint())
+            {
+                BoundBinaryConstraint* thatBinaryConstraint = cast<BoundBinaryConstraint*>(that);
+                BoundConstraint* thatLeft = thatBinaryConstraint->Left();
+                BoundConstraint* thatRight = thatBinaryConstraint->Right();
+                bool leftSubsumeThatLeft = left->Subsume(thatLeft);
+                bool rightSubsumeThatLeft = right->Subsume(thatLeft);
+                bool leftSubsumeThatRight = left->Subsume(thatRight);
+                bool rightSubsumeThatRight = right->Subsume(thatRight);
+                bool leftSubsumeThatLeftOrThatRight = leftSubsumeThatLeft || leftSubsumeThatRight;
+                bool rightSubsumeThatLeftOrThatRight = rightSubsumeThatLeft || rightSubsumeThatRight;
+                if (that->IsBoundConjunctiveConstraint())
+                {
+                    return leftSubsumeThatLeftOrThatRight && rightSubsumeThatLeftOrThatRight;
+                }
+                else if (that->IsBoundDisjunctiveConstraint())
+                {
+                    return leftSubsumeThatLeftOrThatRight || rightSubsumeThatLeftOrThatRight;
+                }
+            }
+            else
+            {
+                bool leftSubsumeThat = left->Subsume(that);
+                bool rightSubsumeThat = right->Subsume(that);
+                return leftSubsumeThat && rightSubsumeThat;
+            }
+        }
+    }
+
+    public class BoundConjunctiveConstraint : BoundBinaryConstraint
+    {
+        BoundConjunctiveConstraint(const System.Lex.Span& span_, BoundConstraint* left_, BoundConstraint* right_) :
+            base(span_, BoundNodeKind.boundConjunctiveConstraint, left_, right_)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundConstraint* Clone() const
+        {
+            return new BoundConjunctiveConstraint(Span(), Left()->Clone(), Right()->Clone());
+        }
+        public override bool Subsume(BoundConstraint* that) const
+        {
+            BoundConstraint* left = Left();
+            BoundConstraint* right = Right();
+            if (that->IsBoundBinaryConstraint())
+            {
+                BoundBinaryConstraint* thatBinaryConstraint = cast<BoundBinaryConstraint*>(that);
+                BoundConstraint* thatLeft = thatBinaryConstraint->Left();
+                BoundConstraint* thatRight = thatBinaryConstraint->Right();
+                bool leftSubsumeThatLeft = left->Subsume(thatLeft);
+                bool rightSubsumeThatLeft = right->Subsume(thatLeft);
+                bool leftSubsumeThatRight = left->Subsume(thatRight);
+                bool rightSubsumeThatRight = right->Subsume(thatRight);
+                bool leftOrRightSubsumeThatLeft = leftSubsumeThatLeft || rightSubsumeThatLeft;
+                bool leftOrRightSubsumeThatRight = leftSubsumeThatRight || rightSubsumeThatRight;
+                if (that->IsBoundConjunctiveConstraint())
+                {
+                    return leftOrRightSubsumeThatLeft && leftOrRightSubsumeThatRight;
+                }
+                else if (that->IsBoundDisjunctiveConstraint())
+                {
+                    return leftOrRightSubsumeThatLeft || leftOrRightSubsumeThatRight;
+                }
+            }
+            else
+            {
+                bool leftSubsumeThat = left->Subsume(that);
+                bool righSubsumeThat = right->Subsume(that);
+                return leftSubsumeThat || righSubsumeThat;
+            }
+        }
+    }
+
+    public ustring MakeBoundConceptName(ConceptSymbol* conceptSymbol, const List<TypeSymbol*>& typeArguments)
+    {
+        ustring s = conceptSymbol->GroupName();
+        s.Append('<');
+        int n = cast<int>(typeArguments.Count());
+        for (int i = 0; i < n; ++i)
+        {
+            if (i > 0)
+            {
+                s.Append(u", ");
+            }
+            TypeSymbol* typeSymbol = typeArguments[i];
+            s.Append(typeSymbol->FullName());
+        }
+        s.Append('>');
+        return s;
+    }
+
+    public class BoundConcept : BoundNode
+    {
+        public BoundConcept(const System.Lex.Span& span_, ConceptSymbol* conceptSymbol_, const List<TypeSymbol*>& typeArguments_) :
+            base(span_, BoundNodeKind.boundConcept), name(MakeBoundConceptName(conceptSymbol_, typeArguments_)),
+            conceptSymbol(conceptSymbol_), typeArguments(typeArguments_), commonType(null), boundConstraint(), boundTemplateParameters()
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load concept", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store concept", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public inline const ustring& Name() const
+        {
+            return name;
+        }
+        public inline ConceptSymbol* Concept() const
+        {
+            return conceptSymbol;
+        }
+        public inline const List<TypeSymbol*>& TypeArguments() const
+        {
+            return typeArguments;
+        }
+        public inline int Arity() const
+        {
+            return cast<int>(typeArguments.Count());
+        }
+        public inline TypeSymbol* CommonType() const
+        {
+            return commonType;
+        }
+        public inline void SetCommonType(TypeSymbol* commonType_)
+        {
+            commonType = commonType_;
+        }
+        public void SetBoundConstraint(BoundConstraint* boundConstraint_)
+        {
+            boundConstraint.Reset(boundConstraint_);
+        }
+        public inline BoundConstraint* GetBoundConstraint()
+        {
+            return boundConstraint.Get();
+        }
+        public void AddBoundTemplateParameter(UniquePtr<BoundTemplateParameterSymbol>&& boundTemplateParameter)
+        {
+            boundTemplateParameters.Add(boundTemplateParameter);
+        }
+        private ustring name;
+        private ConceptSymbol* conceptSymbol;
+        private List<TypeSymbol*> typeArguments;
+        private TypeSymbol* commonType;
+        private UniquePtr<BoundConstraint> boundConstraint;
+        private List<UniquePtr<BoundTemplateParameterSymbol>> boundTemplateParameters;
+    }
+
+    public class BoundConceptKey
+    {
+        public BoundConceptKey(ConceptSymbol* conceptSymbol_, const List<TypeSymbol*>& typeArguments_) : conceptSymbol(conceptSymbol_), typeArguments(typeArguments_)
+        {
+        }
+        public inline int Arity() const
+        {
+            return cast<int>(typeArguments.Count());
+        }
+        public inline ConceptSymbol* Concept() const
+        {
+            return conceptSymbol;
+        }
+        public inline const List<TypeSymbol*>& TypeArguments() const
+        {
+            return typeArguments;
+        }
+        private ConceptSymbol* conceptSymbol;
+        private List<TypeSymbol*> typeArguments;
+    }
+
+    public bool operator==(const BoundConceptKey& left, const BoundConceptKey& right)
+    {
+        if (left.Concept() != right.Concept()) return false;
+        if (left.Arity() != right.Arity()) return false;
+        int n = left.Arity();
+        for (int i = 0; i < n; ++i)
+        {
+            if (!TypesEqual(left.TypeArguments()[i], right.TypeArguments()[i])) return false;
+        }
+        return true;
+    }
+
+    public ulong GetHashCode(const BoundConceptKey& key)
+    {
+        ulong x = GetHashCode(key.Concept()->TypeId());
+        int n = key.Arity();
+        for (int i = 0; i < n; ++i)
+        {
+            TypeSymbol* type = key.TypeArguments()[i];
+            x = x ^ GetHashCode(type->TypeId());
+        }
+        return x;
+    }
+}
+

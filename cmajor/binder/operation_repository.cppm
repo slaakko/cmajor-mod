@@ -13,6 +13,8 @@ import util;
 
 export namespace cmajor::binder {
 
+const int maxGeneratedInlineFunctionMembers = 4;
+
 class BoundCompileUnit;
 class BoundClass;
 class BoundExpression;
@@ -22,7 +24,7 @@ class StatementBinder;
 
 enum class CollectFlags : int
 {
-    none = 0, noRvalueRef = 1 << 0
+    none = 0, noRvalueRef = 1 << 0, dontInstantiate = 1 << 1
 };
 
 inline CollectFlags operator|(CollectFlags left, CollectFlags right)

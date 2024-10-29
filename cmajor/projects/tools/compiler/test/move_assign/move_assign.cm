@@ -1,0 +1,16 @@
+class Bar
+{
+    suppress Bar(const Bar&);
+    suppress void operator=(const Bar&);
+}
+
+class Foo
+{
+    private Bar x;
+}
+
+void main()
+{
+    Foo x;
+    Foo y = x;
+}

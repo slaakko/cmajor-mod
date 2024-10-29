@@ -1,0 +1,154 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using cm.ast;
+
+namespace symbols
+{
+    public class SymbolReader
+    {
+        public SymbolReader(const string& fileName_) : astReader(fileName_)
+        {
+        }
+        public inline AstReader& GetAstReader()
+        {
+            return astReader;
+        }
+        public inline BinaryReader& GetBinaryReader()
+        {
+            return astReader.GetBinaryReader();
+        }
+        public inline Module* GetModule() const
+        {
+            return module;
+        }
+        public inline void SetModule(Module* module_)
+        {
+            module = module_;
+        }
+        public inline Module* RootModule() const
+        {
+            return rootModule;
+        }
+        public inline void SetRootModule(Module* rootModule_)
+        {
+            rootModule = rootModule_;
+        }
+        public inline SymbolTable* GetSymbolTable() const
+        {
+            return symbolTable;
+        }
+        public inline void SetSymbolTable(SymbolTable* symbolTable_)
+        {
+            symbolTable = symbolTable_;
+        }
+        public inline SymbolsContext* Context() const
+        {
+            return context;
+        }
+        public inline void SetContext(SymbolsContext* context_)
+        {
+            context = context_;
+        }
+        public Result<Symbol*> ReadSymbol(Symbol* parent)
+        {
+            Result<byte> kindResult = GetBinaryReader().ReadByte();
+            if (kindResult.Error()) return Result<Symbol*>(ErrorId(kindResult.GetErrorId()));
+            SymbolKind kind = cast<SymbolKind>(kindResult.Value());
+            Result<System.Lex.Span> spanResult = GetAstReader().ReadSpan();
+            if (spanResult.Error()) return Result<Symbol*>(ErrorId(spanResult.GetErrorId()));
+            System.Lex.Span span = spanResult.Value();
+            Result<ustring> nameResult = GetBinaryReader().ReadUString();
+            if (nameResult.Error()) return Result<Symbol*>(ErrorId(nameResult.GetErrorId()));
+            ustring name = Rvalue(nameResult.Value());
+            Result<Symbol*> symbolResult = CreateSymbol(kind, span, name);
+            if (symbolResult.Error()) return Result<Symbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            symbol->SetModule(module);
+            symbol->SetParent(parent);
+            auto result = symbol->Read(*this);
+            if (result.Error()) return Result<Symbol*>(ErrorId(result.GetErrorId()));
+            return Result<Symbol*>(symbol);
+        }
+        public Result<ParameterSymbol*> ReadParameterSymbol(Symbol* parent)
+        {
+            Result<Symbol*> symbolResult = ReadSymbol(parent);
+            if (symbolResult.Error()) return Result<ParameterSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol->IsParameterSymbol())
+            {
+                return Result<ParameterSymbol*>(cast<ParameterSymbol*>(symbol));
+            }
+            else
+            {
+                int errorId = MakeError("parameter symbol expected", symbol->FullSpan());
+                return Result<ParameterSymbol*>(ErrorId(errorId));
+            }
+        }
+        public Result<ArrayTypeSymbol*> ReadArrayTypeSymbol(Symbol* parent)
+        {
+            Result<Symbol*> symbolResult = ReadSymbol(parent);
+            if (symbolResult.Error()) return Result<ArrayTypeSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol->IsArrayTypeSymbol())
+            {
+                return Result<ArrayTypeSymbol*>(cast<ArrayTypeSymbol*>(symbol));
+            }
+            else
+            {
+                int errorId = MakeError("array type symbol expected", symbol->FullSpan());
+                return Result<ArrayTypeSymbol*>(ErrorId(errorId));
+            }
+        }
+        public Result<DerivedTypeSymbol*> ReadDerivedTypeSymbol(Symbol* parent)
+        {
+            Result<Symbol*> symbolResult = ReadSymbol(parent);
+            if (symbolResult.Error()) return Result<DerivedTypeSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol->IsDerivedTypeSymbol())
+            {
+                return Result<DerivedTypeSymbol*>(cast<DerivedTypeSymbol*>(symbol));
+            }
+            else
+            {
+                int errorId = MakeError("derived type symbol expected", symbol->FullSpan());
+                return Result<DerivedTypeSymbol*>(ErrorId(errorId));
+            }
+        }
+        public Result<ClassTemplateSpecializationSymbol*> ReadClassTemplateSpecializationSymbol(Symbol* parent)
+        {
+            Result<Symbol*> symbolResult = ReadSymbol(parent);
+            if (symbolResult.Error()) return Result<ClassTemplateSpecializationSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol->IsClassTemplateSpecializationSymbol())
+            {
+                return Result<ClassTemplateSpecializationSymbol*>(cast<ClassTemplateSpecializationSymbol*>(symbol));
+            }
+            else
+            {
+                int errorId = MakeError("class template specialization symbol expected", symbol->FullSpan());
+                return Result<ClassTemplateSpecializationSymbol*>(ErrorId(errorId));
+            }
+        }
+        public void AddToResolutionList(Symbol* symbol)
+        {
+            resolutionList.Add(symbol);
+        }
+        public const List<Symbol*>& ResolutionList() const
+        {
+            return resolutionList;
+        }
+        private AstReader astReader;
+        private Module* module;
+        private Module* rootModule;
+        private SymbolTable* symbolTable;
+        private SymbolsContext* context;
+        private List<Symbol*> resolutionList;
+    }
+}
+

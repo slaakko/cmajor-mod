@@ -1,0 +1,212 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class FunctionTemplateKey
+    {
+        public FunctionTemplateKey(FunctionSymbol* functionTemplate_, const List<TypeSymbol*>& templateArgumentTypes_) :
+            functionTemplate(functionTemplate_), templateArgumentTypes(templateArgumentTypes_)
+        {
+        }
+        public inline FunctionSymbol* FunctionTemplate() const
+        {
+            return functionTemplate;
+        }
+        public inline const List<TypeSymbol*>& TemplateArgumentTypes() const
+        {
+            return templateArgumentTypes;
+        }
+        private FunctionSymbol* functionTemplate;
+        private List<TypeSymbol*> templateArgumentTypes;
+    }
+
+    public bool operator==(const FunctionTemplateKey& left, const FunctionTemplateKey& right)
+    {
+        if (left.FunctionTemplate() != right.FunctionTemplate()) return false;
+        if (left.TemplateArgumentTypes().Count() != right.TemplateArgumentTypes().Count()) return false;
+        int n = cast<int>(left.TemplateArgumentTypes().Count());
+        for (int i = 0; i < n; ++i)
+        {
+            TypeSymbol* leftTypeArg = left.TemplateArgumentTypes()[i];
+            TypeSymbol* rightTypeArg = right.TemplateArgumentTypes()[i];
+            if (!TypesEqual(leftTypeArg, rightTypeArg)) return false;
+        }
+        return true;
+    }
+
+    public ulong GetHashCode(const FunctionTemplateKey& key)
+    {
+        ulong x = GetHashCode(key.FunctionTemplate());
+        int n = cast<int>(key.TemplateArgumentTypes().Count());
+        for (int i = 0; i < n; ++i)
+        {
+            TypeSymbol* typeArg = key.TemplateArgumentTypes()[i];
+            x = x ^ GetHashCode(typeArg->TypeId());
+        }
+        return x;
+    }
+
+    public class FunctionTemplateRepository
+    {
+        public FunctionTemplateRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        {
+        }
+        public Result<FunctionSymbol*> Instantiate(FunctionSymbol* functionTemplate, const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMapping, Node* node)
+        {
+            Result<FunctionSymbol*> result = DoInstantiate(functionTemplate, templateParameterMapping, node);
+            if (result.Error())
+            {
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+                Result<string> fullNameResult = ToUtf8(functionTemplate->FullName());
+                if (fullNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(fullNameResult.GetErrorId()));
+                string fullName = Rvalue(fullNameResult.Value());
+                int errorId = MakeError("Could not instantiate function template '" + fullName + "'. Reason:\n" + reasonMessage);
+                return Result<FunctionSymbol*>(ErrorId(errorId));
+            }
+            else
+            {
+                return result;
+            }
+        }
+        public Result<FunctionSymbol*> DoInstantiate(FunctionSymbol* functionTemplate, const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMapping, Node* node)
+        {
+            SymbolsContext& context = boundCompileUnit->Context();
+            List<TypeSymbol*> templateArgumentTypes;
+            for (TemplateParameterSymbol* templateParameter : functionTemplate->TemplateParameters())
+            {
+                auto it = templateParameterMapping.Find(templateParameter);
+                if (it != templateParameterMapping.End())
+                {
+                    TypeSymbol* templateArgumentType = it->second;
+                    templateArgumentTypes.Add(templateArgumentType);
+                }
+                else
+                {
+                    int errorId = MakeError("template parameter type not found", node->GetFullSpan());
+                    return Result<FunctionSymbol*>(ErrorId(errorId));
+                }
+            }
+            FunctionTemplateKey key(functionTemplate, templateArgumentTypes);
+            auto it = functionTemplateMap.Find(key);
+            if (it != functionTemplateMap.End())
+            {
+                FunctionSymbol* fn = it->second;
+                return fn;
+            }
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            Node* functionTemplateNode = symbolTable->GetNode(functionTemplate);
+            if (functionTemplateNode == null)
+            {
+                functionTemplateNode = functionTemplate->GetFunctionNode();
+                if (functionTemplateNode == null)
+                {
+                    int errorId = MakeError("function template node not found", node->GetFullSpan());
+                    return Result<FunctionSymbol*>(ErrorId(errorId));
+                }
+            }
+            symbolTable->MapNode(functionTemplateNode, functionTemplate);
+            #assert(functionTemplateNode->IsFunctionNode());
+            FunctionNode* functionNode = cast<FunctionNode*>(functionTemplateNode);
+            UniquePtr<NamespaceNode> globalNs(new NamespaceNode(functionNode->GetSpan(), functionNode->FileIndex(),
+                new IdentifierNode(functionNode->GetSpan(), functionNode->FileIndex(), ustring())));
+            globalNs->SetModuleId(functionNode->ModuleId());
+            NamespaceNode* currentNs = globalNs.Get();
+            CloneContext cloneContext;
+            cloneContext.SetInstantiateFunctionNode();
+            int n = cast<int>(functionTemplate->UsingNodes().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                Node* usingNode = functionTemplate->UsingNodes()[i];
+                globalNs->AddMember(usingNode->Clone(cloneContext));
+            }
+            bool fileScopeAdded = false;
+            Result<NamespaceSymbol*> nsResult = functionTemplate->Ns();
+            if (nsResult.Error()) return Result<FunctionSymbol*>(ErrorId(nsResult.GetErrorId()));
+            NamespaceSymbol* ns = nsResult.Value();
+            if (!ns->IsGlobalNamespace())
+            {
+                FileScope* primaryFileScope = new FileScope();
+                primaryFileScope->AddContainerScope(ns->GetContainerScope());
+                boundCompileUnit->AddFileScope(primaryFileScope);
+                fileScopeAdded = true;
+                ustring fullNameName = ns->FullName();
+                List<ustring> nsComponents = fullNameName.Split('.');
+                for (const ustring& nsComponent : nsComponents)
+                {
+                    NamespaceNode* nsNode = new NamespaceNode(functionNode->GetSpan(), functionNode->FileIndex(),
+                        new IdentifierNode(functionNode->GetSpan(), functionNode->FileIndex(), nsComponent));
+                    nsNode->SetModuleId(functionNode->ModuleId());
+                    currentNs->AddMember(nsNode);
+                    currentNs = nsNode;
+                }
+            }
+            FunctionNode* functionInstanceNode = cast<FunctionNode*>(functionNode->Clone(cloneContext));
+            currentNs->AddMember(functionInstanceNode);
+            LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
+            symbolTable->SetCurrentSourceFile(boundCompileUnit->SourceFile());
+            InstantiationGuard instantiationGuard(symbolTable, functionTemplate->FileIndex(), functionTemplate->ModuleId());
+            Result<bool> createResult = CreateSymbols(globalNs.Get(), symbolTable, boundCompileUnit->Context());
+            if (createResult.Error()) return Result<FunctionSymbol*>(ErrorId(createResult.GetErrorId()));
+            Result<Symbol*> symbolResult = symbolTable->GetSymbol(functionInstanceNode);
+            if (symbolResult.Error()) return Result<FunctionSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            #assert(symbol->IsFunctionSymbol());
+            FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(symbol);
+            functionSymbol->SetTemplateSpecialization();
+            functionSymbol->SetFunctionTemplate(functionTemplate);
+            functionSymbol->SetTemplateArgumentTypes(templateArgumentTypes);
+            Result<string> sourceFileIdResult = boundCompileUnit->SourceFile()->Id();
+            if (sourceFileIdResult.Error()) return Result<FunctionSymbol*>(ErrorId(sourceFileIdResult.GetErrorId()));
+            string sourceFileId = Rvalue(sourceFileIdResult.Value());
+            functionSymbol->SetSourceFileId(sourceFileId);
+            functionTemplateMap[key] = functionSymbol;
+            for (TemplateParameterSymbol* templateParameter : functionTemplate->TemplateParameters())
+            {
+                auto it = templateParameterMapping.Find(templateParameter);
+                if (it != templateParameterMapping.End())
+                {
+                    TypeSymbol* boundType = it->second;
+                    BoundTemplateParameterSymbol* boundTemplateParameter = new BoundTemplateParameterSymbol(templateParameter->Span(), templateParameter->Name());
+                    boundTemplateParameter->SetType(boundType);
+                    Result<bool> result = functionSymbol->AddMember(boundTemplateParameter, context);
+                    if (result.Error()) return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+                }
+                else
+                {
+                    int errorId = MakeError("template parameter type not found", node->GetFullSpan());
+                    return Result<FunctionSymbol*>(ErrorId(errorId));
+                }
+            }
+            TypeBinder typeBinder(boundCompileUnit);
+            globalNs->Accept(typeBinder);
+            if (typeBinder.Error()) return Result<FunctionSymbol*>(ErrorId(typeBinder.GetErrorId()));
+            StatementBinder statementBinder(boundCompileUnit);
+            globalNs->Accept(statementBinder);
+            if (statementBinder.Error()) return Result<FunctionSymbol*>(ErrorId(statementBinder.GetErrorId()));
+            if (fileScopeAdded)
+            {
+                boundCompileUnit->RemoveLastFileScope();
+            }
+            boundCompileUnit->AddGlobalNs(Rvalue(globalNs));
+            functionSymbol->SetFlag(FunctionSymbolFlags.dontReuse);
+            if (functionTemplate->IsSystemDefault())
+            {
+                functionSymbol->SetSystemDefault();
+            }
+            boundCompileUnit->SetCanReuse(functionSymbol);
+            return Result<FunctionSymbol*>(functionSymbol);
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private HashMap<FunctionTemplateKey, FunctionSymbol*> functionTemplateMap;
+    }
+}
+

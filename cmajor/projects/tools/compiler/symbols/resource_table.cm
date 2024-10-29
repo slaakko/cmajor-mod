@@ -1,0 +1,128 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using cm.ast;
+
+namespace symbols
+{
+    public enum ResourceKind : byte
+    {
+        cursor = 0u, icon = 1u, bitmap = 2u, rcdata = 3u
+    }
+
+    public class Resource
+    {
+        public Resource() : name(), kind(), filePath()
+        {
+        }
+        public Resource(const string& name_, ResourceKind kind_, const string& filePath_) : name(name_), kind(kind_), filePath(filePath_)
+        {
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public inline ResourceKind Kind() const
+        {
+            return kind;
+        }
+        public inline const string& FilePath() const
+        {
+            return filePath;
+        }
+        [nodiscard]
+        public Result<bool> Write(System.IO.BinaryWriter& writer)
+        {
+            auto result = writer.Write(name);
+            if (result.Error()) return result;
+            result = writer.Write(cast<byte>(kind));
+            if (result.Error()) return result;
+            Result<string> cmajorRootRelativeFilePathResult = MakeCmajorRootRelativeFilePath(filePath);
+            if (cmajorRootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(cmajorRootRelativeFilePathResult.GetErrorId()));
+            string filePath = Rvalue(cmajorRootRelativeFilePathResult.Value());
+            result = writer.Write(filePath);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Read(System.IO.BinaryReader& reader)
+        {
+            Result<string> nameResult = reader.ReadString();
+            if (nameResult.Error()) return Result<bool>(ErrorId(nameResult.GetErrorId()));
+            name = Rvalue(nameResult.Value());
+            Result<byte> kindResult = reader.ReadByte();
+            if (kindResult.Error()) return Result<bool>(ErrorId(kindResult.GetErrorId()));
+            kind = cast<ResourceKind>(kindResult.Value());
+            Result<string> filePathResult = reader.ReadString();
+            if (filePathResult.Error()) return Result<bool>(ErrorId(filePathResult.GetErrorId()));
+            Result<string> expandResult = ExpandCmajorRootRelativeFilePath(filePathResult.Value());
+            if (expandResult.Error()) return Result<bool>(ErrorId(expandResult.GetErrorId()));
+            filePath = Rvalue(expandResult.Value());
+            return Result<bool>(true);
+        }
+        private string name;
+        private ResourceKind kind;
+        private string filePath;
+    }
+
+    public class ResourceTable
+    {
+        public bool Contains(const string& resourceName) const
+        {
+            auto it = resourceNameSet.Find(resourceName);
+            if (it != resourceNameSet.End())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public void AddResource(const Resource& resource)
+        {
+            resourceNameSet.Insert(resource.Name());
+            resources.Add(resource);
+        }
+        public inline const List<Resource>& Resources() const
+        {
+            return resources;
+        }
+        [nodiscard]
+        public Result<bool> Write(System.IO.BinaryWriter& writer)
+        {
+            int n = cast<int>(resources.Count());
+            auto result = writer.Write(n);
+            if (result.Error()) return result;
+            for (int i = 0; i < n; ++i)
+            {
+                const Resource& resource = resources[i];
+                result = resource.Write(writer);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Read(System.IO.BinaryReader& reader)
+        {
+            Result<int> nr = reader.ReadInt();
+            if (nr.Error()) return Result<bool>(ErrorId(nr.GetErrorId()));
+            int n = nr.Value();
+            for (int i = 0; i < n; ++i)
+            {
+                Resource resource;
+                auto result = resource.Read(reader);
+                if (result.Error()) return result;
+                resources.Add(resource);
+            }
+            return Result<bool>(true);
+        }
+        private List<Resource> resources;
+        private Set<string> resourceNameSet;
+    }
+}
+

@@ -7,7 +7,7 @@ module cmajor.masm.assembly.symbol;
 
 namespace cmajor::masm::assembly {
 
-Symbol::Symbol(const std::string& name_) : Value(name_)
+Symbol::Symbol(const std::string& name_) : Value(ValueKind::symbol, name_)
 {
 }
 

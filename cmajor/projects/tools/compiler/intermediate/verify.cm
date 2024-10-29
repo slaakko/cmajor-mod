@@ -1,0 +1,1043 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public class VerifierVisitor : Visitor
+    {
+        public VerifierVisitor(Context* context_) : context(context_)
+        {
+        }
+        public override void Visit(Function& function)
+        {
+            if (!function.IsDefined()) return;
+            index = 0;
+            numParams = 0;
+            regNumber = 0;
+            currentFunction = &function;
+            BasicBlock* basicBlock = function.FirstBasicBlock();
+            while (basicBlock != null)
+            {
+                basicBlock->Accept(*this);
+                if (Error()) return;
+                basicBlock = basicBlock->Next();
+            }
+            if (numParams != function.Arity())
+            {
+                SetErrorId(Error("code verification error: function '" + function.Name() + "' has wrong number of parameters: (" + ToString(numParams) + "), function arity=" +
+                    ToString(function.Arity()), function.Span(), context));
+            }
+        }
+        public override void Visit(BasicBlock& basicBlock)
+        {
+            currentBasicBlock = &basicBlock;
+            if (basicBlock.IsEmpty())
+            {
+                SetErrorId(Error("code verification error: basic block " + ToString(basicBlock.Id()) + " is empty", basicBlock.Span(), context));
+                return;
+            }
+            if (!basicBlock.LastInstruction()->IsTerminator())
+            {
+                SetErrorId(Error("code verification error: the last instruction of basic block " + ToString(basicBlock.Id()) + " is not a terminator",
+                    basicBlock.LastInstruction()->Span(), context));
+                return;
+            }
+            Instruction* inst = basicBlock.FirstInstruction();
+            while (inst != null)
+            {
+                inst->Accept(*this);
+                if (Error()) return;
+                inst = inst->Next();
+            }
+        }
+        public override void Visit(StoreInstruction& inst)
+        {
+            CheckArithmeticPointerFunctionOrBooleanType(inst.GetValue()->GetType(), "type of value", inst.Span());
+            if (Error()) return;
+            Result<Type*> pointerTypeResult = inst.GetValue()->GetType()->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            Type* pointerType = pointerTypeResult.Value();
+            CheckType(inst.GetValue()->GetType(), pointerType, inst.Ptr()->GetType(), "type of value", "pointer type", inst.Span());
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ArgInstruction& inst)
+        {
+            CheckArithmeticPointerOrBooleanType(inst.Arg()->GetType(), "type of argument", inst.Span());
+            if (Error()) return;
+            arguments.Add(inst.Arg());
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(JmpInstruction& inst)
+        {
+            int target = inst.TargetLabelId();
+            BasicBlock* basicBlock = inst.Parent();
+            Function* function = basicBlock->Parent();
+            BasicBlock* targetBasicBlock = function->GetBasicBlock(target);
+            if (targetBasicBlock == null)
+            {
+                SetErrorId(Error("code verification error: jump target basic block " + ToString(target) + " not found from function '" + function->Name() + "'",
+                    inst.Span(), context));
+                return;
+            }
+            inst.SetTargetBasicBlock(targetBasicBlock);
+            Instruction* jmpInst = &inst;
+            if (jmpInst != basicBlock->LastInstruction())
+            {
+                SetErrorId(Error("code verification error: terminator in the middle of basic block " + ToString(basicBlock->Id()), inst.Span(), context));
+                return;
+            }
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(BranchInstruction& inst)
+        {
+            CheckSameType(inst.Cond()->GetType(), context->GetTypes()->GetBoolType(), "condition type", "Boolean type", inst.Span());
+            if (Error()) return;
+            int trueTarget = inst.TrueTargetLabelId();
+            BasicBlock* trueBasicBlock = inst.Parent();
+            Function* trueFunction = trueBasicBlock->Parent();
+            BasicBlock* trueTargetBasicBlock = trueFunction->GetBasicBlock(trueTarget);
+            if (trueTargetBasicBlock == null)
+            {
+                SetErrorId(Error("code verification error: branch true target basic block " + ToString(trueTarget) + " not found from function '" + trueFunction->Name() + "'",
+                    inst.Span(), context));
+                return;
+            }
+            inst.SetTrueTargetBasicBlock(trueTargetBasicBlock);
+            int falseTarget = inst.FalseTargetLabelId();
+            BasicBlock* falseBasicBlock = inst.Parent();
+            Function* falseFunction = falseBasicBlock->Parent();
+            BasicBlock* falseTargetBasicBlock = falseFunction->GetBasicBlock(falseTarget);
+            if (falseTargetBasicBlock == null)
+            {
+                SetErrorId(Error("code verification error: branch false target basic block " + ToString(falseTarget) + " not found from function '" + falseFunction->Name() + "'",
+                    inst.Span(), context));
+                return;
+            }
+            inst.SetFalseTargetBasicBlock(falseTargetBasicBlock);
+            Instruction* branchInst = &inst;
+            if (branchInst != inst.Parent()->LastInstruction())
+            {
+                SetErrorId(Error("code verification error: terminator in the middle of basic block " + ToString(inst.Parent()->Id()), inst.Span(), context));
+                return;
+            }
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ProcedureCallInstruction& inst)
+        {
+            Type* calleeType = inst.Callee()->GetType();
+            if (calleeType->IsPointerType())
+            {
+                Result<Type*> typeResult = calleeType->RemovePointer(context);
+                if (typeResult.Error())
+                {
+                    SetErrorId(typeResult.GetErrorId());
+                    return;
+                }
+                calleeType = typeResult.Value();
+            }
+            if (calleeType->IsFunctionType())
+            {
+                FunctionType* functionType = cast<FunctionType*>(calleeType);
+                if (functionType->Arity() != arguments.Count())
+                {
+                    SetErrorId(Error("code verification error: function call has wrong number of arguments: " + ToString(functionType->Arity()) + " arguments expected: note: " +
+                        ToString(arguments.Count()) + " arguments passed", inst.Span(), context));
+                    return;
+                }
+                if (inst.Callee()->IsSymbolValue())
+                {
+                    SymbolValue* calleeSymbolValue = cast<SymbolValue*>(inst.Callee());
+                    Result<Function*> functionResult = context->GetCode()->AddFunctionDeclaration(inst.Span(), calleeType, calleeSymbolValue->Symbol());
+                    if (functionResult.Error())
+                    {
+                        SetErrorId(functionResult.GetErrorId());
+                        return;
+                    }
+                    Function* function = functionResult.Value();
+                    calleeSymbolValue->SetFunction(function);
+                }
+            }
+            else
+            {
+                SetErrorId(Error("type check error: callee in function call has invalid type: function type or function pointer type expected: note: type is " +
+                    inst.Callee()->GetType()->Name(), inst.Span(), context));
+                return;
+            }
+            inst.SetArgs(Rvalue(arguments));
+            arguments.Clear();
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(RetInstruction& inst)
+        {
+            Type* type = currentFunction->GetType();
+            if (type == null || !type->IsFunctionType())
+            {
+                SetErrorId(Error("type check error: current function '" + currentFunction->Name() + "' has invalid type (not a function type)", currentFunction->Span(), context));
+                return;
+            }
+            FunctionType* functionType = cast<FunctionType*>(type);
+            if (inst.ReturnValue() != null)
+            {
+                Type* returnValueType = inst.ReturnValue()->GetType();
+                CheckSameType(returnValueType, functionType->ReturnType(), "instruction return type", "function return type", inst.Span());
+                if (Error()) return;
+                CheckArithmeticPointerOrBooleanType(returnValueType, "instruction return type", inst.Span());
+                if (Error()) return;
+            }
+            else
+            {
+                Type* returnValueType = context->GetTypes()->GetVoidType();
+                CheckSameType(returnValueType, functionType->ReturnType(), "instruction return type", "function return type", inst.Span());
+                if (Error()) return;
+            }
+            Instruction* retInst = &inst;
+            if (retInst != inst.Parent()->LastInstruction())
+            {
+                SetErrorId(Error("code verification error: terminator in the middle of basic block " + ToString(inst.Parent()->Id()), inst.Span(), context));
+                return;
+            }
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(SwitchInstruction& inst)
+        {
+            CheckIntegerOrBooleanType(inst.Cond()->GetType(), "condition type", inst.Span());
+            if (Error()) return;
+            Instruction* switchInst = &inst;
+            if (switchInst != inst.Parent()->LastInstruction())
+            {
+                SetErrorId(Error("code verification error: terminator in the middle of basic block " + ToString(inst.Parent()->Id()), inst.Span(), context));
+                return;
+            }
+            int defaultTarget = inst.DefaultTargetLabelId();
+            BasicBlock* parent = inst.Parent();
+            Function* function = parent->Parent();
+            BasicBlock* defaultTargetBlock = function->GetBasicBlock(defaultTarget);
+            if (defaultTargetBlock == null)
+            {
+                SetErrorId(Error("code verification error: switch default target basic block " + ToString(defaultTarget) +
+                    " not found from function '" + function->Name() + "'", inst.Span(), context));
+                return;
+            }
+            inst.SetDefaultTargetBlock(defaultTargetBlock);
+            for (CaseTarget& caseTarget : inst.CaseTargets())
+            {
+                BasicBlock* caseTargetBlock = function->GetBasicBlock(caseTarget.targetLabelId);
+                if (caseTargetBlock == null)
+                {
+                    SetErrorId(Error("code verification error: switch case target basic block " + ToString(caseTarget.targetLabelId) +
+                        " not found from function '" + function->Name() + "'", inst.Span(), context));
+                    return;
+                }
+                caseTarget.targetBlock = caseTargetBlock;
+            }
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(NotInstruction& inst)
+        {
+            CheckIntegerOrBooleanType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckIntegerOrBooleanType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(NegInstruction& inst)
+        {
+            CheckSameType(inst.GetResult()->GetType(), inst.Operand()->GetType(), "result type", "operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(SignExtendInstruction& inst)
+        {
+            CheckArithmeticType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            if (inst.GetResult()->GetType()->Size() <= inst.Operand()->GetType()->Size())
+            {
+                SetErrorId(Error("code verification error: result type width expected to be greater than operand type width", inst.Span(), context));
+                return;
+            }
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ZeroExtendInstruction& inst)
+        {
+            CheckArithmeticOrBooleanType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            if (!inst.Operand()->GetType()->IsBooleanType() && inst.GetResult()->GetType()->Size() <= inst.Operand()->GetType()->Size())
+            {
+                SetErrorId(Error("code verification error: result type width expected to be greater than operand type width", inst.Span(), context));
+                return;
+            }
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(FloatingPointExtendInstruction& inst)
+        {
+            CheckFloatType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckDoubleType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(TruncateInstruction& inst)
+        {
+            CheckArithmeticType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticOrBooleanType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            if (inst.GetResult()->GetType()->Size() >= inst.Operand()->GetType()->Size() && !inst.GetResult()->GetType()->IsBooleanType())
+            {
+                SetErrorId(Error("code verification error: result type width expected to be less than operand type width", inst.Span(), context));
+                return;
+            }
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(BitcastInstruction& inst)
+        {
+            CheckArithmeticPointerFunctionOrBooleanType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticPointerFunctionOrBooleanType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            if (inst.GetResult()->GetType()->Size() != inst.Operand()->GetType()->Size())
+            {
+                SetErrorId(Error("code verification error: result type width expected to be same as operand type width", inst.Span(), context));
+                return;
+            }
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(IntToFloatInstruction& inst)
+        {
+            CheckIntegerType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckFloatingPointType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(FloatToIntInstruction& inst)
+        {
+            CheckFloatingPointType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(IntToPtrInstruction& inst)
+        {
+            CheckIntegerType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckPointerType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(PtrToIntInstruction& inst)
+        {
+            CheckPointerType(inst.Operand()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckUnaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(AddInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(SubInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(MulInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(DivInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckArithmeticType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ModInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(AndInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(OrInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(XorInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ShlInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ShrInstruction& inst)
+        {
+            CheckBinaryInstructionTypes(&inst);
+            if (Error()) return;
+            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(EqualInstruction& inst)
+        {
+            CheckBooleanInstructionTypes(&inst);
+            if (Error()) return;
+            CheckArithmeticPointerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticPointerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(LessInstruction& inst)
+        {
+            CheckBooleanInstructionTypes(&inst);
+            if (Error()) return;
+            CheckArithmeticPointerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticPointerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.Span());
+            if (Error()) return;
+            CheckBinaryInstuction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ParamInstruction& inst)
+        {
+            CheckArithmeticPointerOrBooleanType(inst.GetResult()->GetType(), "parameter type", inst.Span());
+            if (Error()) return;
+            CheckValueInstruction(&inst);
+            if (Error()) return;
+            ++numParams;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(LocalInstruction& inst)
+        {
+            Result<Type*> pointerResult = inst.LocalType()->AddPointer(context);
+            if (pointerResult.Error())
+            {
+                SetErrorId(pointerResult.GetErrorId());
+                return;
+            }
+            Type* pointerType = pointerResult.Value();
+            CheckType(inst.LocalType(), pointerType, inst.GetResult()->GetType(), "type of local", "instruction result type", inst.Span());
+            if (Error()) return;
+            CheckValueInstruction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(LoadInstruction& inst)
+        {
+            CheckPointerType(inst.Ptr()->GetType(), "operand type", inst.Span());
+            if (Error()) return;
+            Result<Type*> pointerTypeResult = inst.GetResult()->GetType()->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            Type* pointerType = pointerTypeResult.Value();
+            CheckType(inst.GetResult()->GetType(), inst.Ptr()->GetType(), pointerType, "result type", "pointer to result type", inst.Span());
+            if (Error()) return;
+            CheckArithmeticPointerOrBooleanType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckValueInstruction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(ElemAddrInstruction& inst)
+        {
+            Type* ptrType = inst.Ptr()->GetType();
+            CheckPointerType(ptrType, "pointer type", inst.Span());
+            if (Error()) return;
+            PointerType* pointerType = cast<PointerType*>(ptrType);
+            Type* baseType = pointerType->BaseType();
+            if (baseType->IsStructureType())
+            {
+                StructureType* structureType = cast<StructureType*>(baseType);
+                CheckIntegerType(inst.IndexValue()->GetType(), "integer type index", inst.Span());
+                if (Error()) return;
+                CheckValueInstruction(&inst);
+                if (Error()) return;
+                if (inst.IndexValue()->IsIntegerValue())
+                {
+                    long index = inst.IndexValue()->GetIntegerValue();
+                    if (index < 0 || index >= structureType->FieldCount())
+                    {
+                        SetErrorId(Error("code verification error: invalid index", inst.Span(), context));
+                        return;
+                    }
+                }
+            }
+            else if (baseType->IsArrayType())
+            {
+                ArrayType* arrayType = cast<ArrayType*>(baseType);
+                CheckIntegerType(inst.IndexValue()->GetType(), "integer type index", inst.Span());
+                if (Error()) return;
+                CheckValueInstruction(&inst);
+                if (Error()) return;
+                if (inst.IndexValue()->IsIntegerValue())
+                {
+                    long index = inst.IndexValue()->GetIntegerValue();
+                    if (index < 0 || index > arrayType->ElementCount())
+                    {
+                        SetErrorId(Error("code verification error: invalid index", inst.Span(), context));
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                SetErrorId(Error("type check error: pointer to structure or array type expected", inst.Span(), context));
+                return;
+            }
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(PtrOffsetInstruction& inst)
+        {
+            CheckPointerType(inst.Ptr()->GetType(), "pointer operand type", inst.Span());
+            if (Error()) return;
+            CheckIntegerType(inst.Offset()->GetType(), "offset type", inst.Span());
+            if (Error()) return;
+            CheckValueInstruction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(PtrDiffInstruction& inst)
+        {
+            CheckIntegerType(inst.GetResult()->GetType(), "result type", inst.Span());
+            if (Error()) return;
+            CheckPointerType(inst.LeftPtr()->GetType(), "left pointer operand type", inst.Span());
+            if (Error()) return;
+            CheckPointerType(inst.RightPtr()->GetType(), "right pointer operand type", inst.Span());
+            if (Error()) return;
+            CheckSameType(inst.LeftPtr()->GetType(), inst.RightPtr()->GetType(), "left pointer operand type", "right pointer operand type", inst.Span());
+            if (Error()) return;
+            CheckValueInstruction(&inst);
+            if (Error()) return;
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(FunctionCallInstruction& inst)
+        {
+            Type* calleeType = inst.Callee()->GetType();
+            if (calleeType->IsPointerType())
+            {
+                Result<Type*> typeResult = calleeType->RemovePointer(context);
+                if (typeResult.Error())
+                {
+                    SetErrorId(typeResult.GetErrorId());
+                    return;
+                }
+                calleeType = typeResult.Value();
+            }
+            if (calleeType->IsFunctionType())
+            {
+                FunctionType* functionType = cast<FunctionType*>(calleeType);
+                if (functionType->Arity() != arguments.Count())
+                {
+                    SetErrorId(Error("code verification error: function call has wrong number of arguments: " + ToString(functionType->Arity()) +
+                        " arguments expected: note: " +
+                        ToString(arguments.Count()) + " arguments passed", inst.Span(), context));
+                    return;
+                }
+                if (inst.Callee()->IsSymbolValue())
+                {
+                    SymbolValue* calleeSymbolValue = cast<SymbolValue*>(inst.Callee());
+                    Result<Function*> functionResult = context->GetCode()->AddFunctionDeclaration(inst.Span(), calleeType, calleeSymbolValue->Symbol());
+                    if (functionResult.Error())
+                    {
+                        SetErrorId(functionResult.GetErrorId());
+                        return;
+                    }
+                    Function* function = functionResult.Value();
+                    calleeSymbolValue->SetFunction(function);
+                }
+            }
+            else
+            {
+                SetErrorId(Error("type check error: callee in function call has invalid type: function type or function pointer type expected: note: type is " +
+                    inst.Callee()->GetType()->Name(), inst.Span(), context));
+                return;
+            }
+            CheckValueInstruction(&inst);
+            if (Error()) return;
+            inst.SetArgs(Rvalue(arguments));
+            arguments.Clear();
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public override void Visit(NoOperationInstruction& inst)
+        {
+            inst.AddToUses();
+            inst.SetIndex(index++);
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private void CheckSameType(Type* type, Type* expected, const string& typeDescription, const string& expectedTypeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: type is null",
+                    span, context));
+                return;
+            }
+            if (expected == null)
+            {
+                SetErrorId(Error("type check error: expected type is null",
+                    span, context));
+                return;
+            }
+            if (type != expected)
+            {
+                SetErrorId(Error("type check error: " + expectedTypeDescription + " '" + expected->Name() + "' expected but " +
+                    typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckType(Type* type, Type* asserted, Type* expected, const string& typeDescription, const string& expectedTypeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: type is null",
+                    span, context));
+                return;
+            }
+            if (asserted == null)
+            {
+                SetErrorId(Error("type check error: asserted type is null",
+                    span, context));
+                return;
+            }
+            if (expected == null)
+            {
+                SetErrorId(Error("type check error: expected type is null",
+                    span, context));
+                return;
+            }
+            if (asserted != expected)
+            {
+                SetErrorId(Error("type check error: " + expectedTypeDescription + "'" + expected->Name() + "' expected but " + typeDescription + " '" + type->Name() +
+                    "' and '" + asserted->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckBinaryInstructionTypes(BinaryInstruction* inst)
+        {
+            if (inst->GetResult()->GetType() == null)
+            {
+                SetErrorId(Error("type check error: result type is null",
+                    inst->Span(), context));
+                return;
+            }
+            if (inst->Left()->GetType() == null)
+            {
+                SetErrorId(Error("type check error: left type is null",
+                    inst->Span(), context));
+                return;
+            }
+            if (inst->Right()->GetType() == null)
+            {
+                SetErrorId(Error("type check error: right type is null",
+                    inst->Span(), context));
+                return;
+            }
+            if (inst->GetResult()->GetType() != inst->Left()->GetType() || inst->GetResult()->GetType() != inst->Right()->GetType())
+            {
+                SetErrorId(Error("type check error: equal types expected but types '" + inst->GetResult()->GetType()->Name() + "', " + inst->Left()->GetType()->Name() + "' and '" +
+                    inst->Right()->GetType()->Name() + "' seen", inst->Span(), context));
+            }
+        }
+        private void CheckBooleanInstructionTypes(BinaryInstruction* inst)
+        {
+            CheckSameType(inst->GetResult()->GetType(), context->GetTypes()->GetBoolType(), "result type", "Boolean type", inst->Span());
+            if (Error()) return;
+            if (inst->Left()->GetType() != inst->Right()->GetType())
+            {
+                SetErrorId(Error("type check error: operand types '" + inst->Left()->GetType()->Name() + "' and '" + inst->Right()->GetType()->Name() + "' differ",
+                    inst->Span(), context));
+            }
+        }
+        private void CheckArithmeticType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: arithmetic type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsArithmeticType())
+            {
+                SetErrorId(Error("type check error: arithmetic type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckArithmeticOrBooleanType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: arithmetic or Boolean type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsArithmeticType() && !type->IsBooleanType())
+            {
+                SetErrorId(Error("type check error: arithmetic or Boolean type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckArithmeticOrPointerType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: arithmetic or pointer type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsArithmeticType() && !type->IsPointerType())
+            {
+                SetErrorId(Error("type check error: arithmetic or pointer type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckIntegerType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: integer type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsIntegerType())
+            {
+                SetErrorId(Error("type check error: integer type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckIntegerOrBooleanType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: integer or Boolean type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsIntegerType() && !type->IsBooleanType())
+            {
+                SetErrorId(Error("type check error: integer or Boolean type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckFloatingPointType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: floating-point type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsFloatingPointType())
+            {
+                SetErrorId(Error("type check error: floating-point type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckFloatType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: float type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsFloatType())
+            {
+                SetErrorId(Error("type check error: float type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckDoubleType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: double type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsDoubleType())
+            {
+                SetErrorId(Error("type check error: double type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckPointerType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: pointer type expected but but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsPointerType())
+            {
+                SetErrorId(Error("type check error: pointer type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckArithmeticPointerOrBooleanType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: arithmetic, pointer or Boolean type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsBooleanType() && !type->IsArithmeticType() && !type->IsPointerType())
+            {
+                SetErrorId(Error("type check error: arithmetic, pointer or Boolean type expected but " + typeDescription + " '" + type->Name() + "' seen", span, context));
+            }
+        }
+        private void CheckArithmeticPointerFunctionOrBooleanType(Type* type, const string& typeDescription, const System.Lex.Span& span)
+        {
+            if (type == null)
+            {
+                SetErrorId(Error("type check error: arithmetic, pointer, function or Boolean type expected but type is null",
+                    span, context));
+                return;
+            }
+            if (!type->IsBooleanType() && !type->IsArithmeticType() && !type->IsPointerType() && !type->IsFunctionType())
+            {
+                SetErrorId(Error("type check error: arithmetic, pointer, function or Boolean type expected but " + typeDescription + " '" + type->Name() + "' seen",
+                    span, context));
+            }
+        }
+        private void CheckRegValue(Value* value, const System.Lex.Span& span)
+        {
+            if (value->IsRegValue())
+            {
+                RegValue* regValue = cast<RegValue*>(value);
+                if (regValue->Reg() >= 0 && regValue->Reg() < regNumber)
+                {
+                    Instruction* inst = currentFunction->GetInstruction(regValue->Reg());
+                    if (inst != null)
+                    {
+                        regValue->SetInst(inst);
+                        inst->SetRegValueIndex(regValue->Reg());
+                    }
+                    else
+                    {
+                        SetErrorId(Error("code verification error: instruction " + ToString(regValue->Reg()) + " not found from function '" + currentFunction->Name() + "'",
+                            span, context));
+                    }
+                }
+                else
+                {
+                    SetErrorId(Error("code verification error: invalid register value " + ToString(regValue->Reg()) +
+                        ": note value must be greater than or equal to zero and less than " + ToString(regNumber), span, context));
+                }
+            }
+        }
+        private void CheckValueInstruction(ValueInstruction* valueInstruction)
+        {
+            RegValue* regValue = valueInstruction->GetResult();
+            if (regValue->Reg() == regNumber)
+            {
+                regValue->SetInst(valueInstruction);
+                valueInstruction->SetRegValueIndex(regValue->Reg());
+                ++regNumber;
+            }
+            else
+            {
+                SetErrorId(Error("code verification error: register value " + ToString(regNumber) + " expected", valueInstruction->Span(), context));
+            }
+        }
+        private void CheckUnaryInstuction(UnaryInstruction* unaryInstruction)
+        {
+            CheckValueInstruction(unaryInstruction);
+            if (Error()) return;
+            CheckRegValue(unaryInstruction->Operand(), unaryInstruction->Span());
+        }
+        private void CheckBinaryInstuction(BinaryInstruction* binaryInstruction)
+        {
+            CheckValueInstruction(binaryInstruction);
+            if (Error()) return;
+            CheckRegValue(binaryInstruction->Left(), binaryInstruction->Span());
+            if (Error()) return;
+            CheckRegValue(binaryInstruction->Right(), binaryInstruction->Span());
+        }
+        private Context* context;
+        private Function* currentFunction;
+        private BasicBlock* currentBasicBlock;
+        private int numParams;
+        private List<Value*> arguments;
+        private int regNumber;
+        private int index;
+        private int errorId;
+    }
+
+    [nodiscard]
+    public Result<bool> Verify(Context* context)
+    {
+        VerifierVisitor visitor(context);
+        Function* function = context->GetCode()->FirstFunction();
+        while (function != null)
+        {
+            function->Accept(visitor);
+            if (visitor.Error())
+            {
+                return Result<bool>(ErrorId(visitor.GetErrorId()));
+            }
+            function = function->Next();
+        }
+        return Result<bool>(true);
+    }
+}
+

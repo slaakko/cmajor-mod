@@ -110,6 +110,11 @@ namespace scmlg
                 return Result<bool>(ErrorId(result.GetErrorId()));
             }
         }
+        Result<bool> tokenMapResult = GenerateTokenMapFile(scmlgFile, scmlgVersion, verbose);
+        if (tokenMapResult.Error())
+        {
+            return tokenMapResult;
+        }
         if (verbose)
         {
             Console.Out() << "lexers for project '" << scmlgFile->ProjectName() << "' generated" << endl();

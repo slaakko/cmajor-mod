@@ -1,0 +1,952 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public class CodeGenerator : Visitor
+    {
+        public CodeGenerator(Context* context_, const string& assemblyFilePath_) :
+            base(), context(context_), file(assemblyFilePath_), currentFunction(null), currentInst(null), assemblyFunction(null),
+            leader(false), registerAllocator(null), data(null), label(), dataInstruction(), prevDataOpCode(assembly.OpCode.DB),
+            currentOffset(0)
+        {
+            if (file.Error())
+            {
+                SetErrorId(file.GetErrorId());
+                return;
+            }
+            context->GetAssemblyContext()->SetFile(&file);
+        }
+        public inline Context* GetContext() const
+        {
+            return context;
+        }
+        public inline assembly.AssemblyContext* GetAssemblyContext() const
+        {
+            return context->GetAssemblyContext();
+        }
+        public inline RegisterAllocator* RegAllocator() const
+        {
+            return registerAllocator;
+        }
+        public int ExitLabelId() const
+        {
+            return currentInst->Parent()->Parent()->LastBasicBlock()->Id() + 1;
+        }
+        public inline assembly.Function* AssemblyFunction() const
+        {
+            return assemblyFunction;
+        }
+        public inline Function* CurrentFunction() const
+        {
+            return currentFunction;
+        }
+        public inline System.Lex.Span Span() const
+        {
+            if (currentInst != null)
+            {
+                return currentInst->Span();
+            }
+            else
+            {
+                return System.Lex.Span();
+            }
+        }
+        [nodiscard]
+        public virtual Result<bool> Emit(assembly.Instruction* assemblyInstruction)
+        {
+            if (leader)
+            {
+                leader = false;
+                assemblyInstruction->SetLabel("@" + ToString(currentInst->Parent()->Id()));
+            }
+            assemblyFunction->AddInstruction(assemblyInstruction);
+            if (Error()) return Result<bool>(ErrorId(GetErrorId()));
+            return Result<bool>(true);
+        }
+        public void EmitDataValue(UniquePtr<assembly.Value>&& dataValue, assembly.OpCode dataOpCode)
+        {
+            if (prevDataOpCode != dataOpCode)
+            {
+                if (!dataInstruction.IsNull())
+                {
+                    data->AddInstruction(Rvalue(dataInstruction));
+                    dataInstruction.Reset();
+                }
+            }
+            if (dataInstruction.IsNull())
+            {
+                dataInstruction.Reset(new assembly.Instruction(dataOpCode));
+                dataInstruction->SetNoColon();
+            }
+            if (leader)
+            {
+                leader = false;
+                if (!dataInstruction->Label().IsEmpty())
+                {
+                    data->AddInstruction(Rvalue(dataInstruction));
+                    dataInstruction.Reset(new assembly.Instruction(dataOpCode));
+                    dataInstruction->SetNoColon();
+                }
+                dataInstruction->SetLabel(label);
+                label.Clear();
+            }
+            while (dataInstruction->Length() + dataValue->Length() > assembly.maxAssemblyLineLength && dataValue->CanSplit())
+            {
+                UniquePtr<assembly.Value> next(dataValue->Split(assembly.maxAssemblyLineLength - dataInstruction->Length()));
+                dataInstruction->AddOperand(dataValue.Release());
+                data->AddInstruction(Rvalue(dataInstruction));
+                dataInstruction.Reset(new assembly.Instruction(dataOpCode));
+                dataInstruction->SetNoColon();
+                dataValue.Reset(next.Release());
+            }
+            dataInstruction->AddOperand(dataValue.Release());
+            data->AddInstruction(Rvalue(dataInstruction));
+            dataInstruction.Reset(new assembly.Instruction(dataOpCode));
+            dataInstruction->SetNoColon();
+            prevDataOpCode = dataOpCode;
+        }
+        [nodiscard]
+        public Result<bool> WriteOutputFile()
+        {
+            if (data != null && !dataInstruction.IsNull())
+            {
+                data->AddInstruction(Rvalue(dataInstruction));
+            }
+            Result<bool> result = file.Write();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override void Visit(GlobalVariable& globalVariable)
+        {
+            if (data != null && !dataInstruction.IsNull())
+            {
+                data->AddInstruction(Rvalue(dataInstruction));
+                dataInstruction.Reset();
+            }
+            if (globalVariable.Initializer() != null)
+            {
+                file.GetDeclarationSection()->AddPublicDataDeclaration(new assembly.PublicDataDeclaration(globalVariable.Name()));
+                label = globalVariable.Name();
+                data = new assembly.Data();
+                file.GetDataSection()->AddData(data);
+                leader = true;
+                currentOffset = 0;
+                globalVariable.Initializer()->Accept(*this);
+                if (Error()) return;
+                ByteType* byteType = context->GetTypes()->GetByteType();
+                while ((currentOffset & 7) != 0)
+                {
+                    ByteValue value(0u, byteType);
+                    Visit(value);
+                    if (Error()) return;
+                }
+            }
+            else
+            {
+                file.GetDeclarationSection()->AddExternalDataDeclaration(new assembly.ExternalDataDeclaration(globalVariable.Name()));
+            }
+        }
+        public override void Visit(Function& function)
+        {
+            if (!function.IsDefined())
+            {
+                file.GetDeclarationSection()->AddFunctionDeclaration(new assembly.FunctionDeclaration(function.Name()));
+            }
+            else
+            {
+                string fullFunctionName = function.ResolveFullName();
+                file.GetDeclarationSection()->AddPublicDataDeclaration(new assembly.PublicDataDeclaration(function.Name()));
+                currentFunction = &function;
+                context->GetAssemblyContext()->ResetRegisterPool();
+                assemblyFunction = file.GetCodeSection()->CreateFunction(function.Name());
+                if (!fullFunctionName.IsEmpty())
+                {
+                    assemblyFunction->SetComment(fullFunctionName);
+                }
+                context->GetAssemblyContext()->SetCurrentFunction(assemblyFunction);
+                UniquePtr<RegisterAllocator> linearScanRregisterAllocator(new LinearScanRegisterAllocator(function, context));
+                registerAllocator = linearScanRregisterAllocator.Get();
+                Result<bool> result = function.VisitBasicBlocks(*this);
+                if (result.Error()) return;
+                assemblyFunction->SetActivePart(assembly.FunctionPart.prologue);
+                result = EmitPrologue(*this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                assemblyFunction->SetActivePart(assembly.FunctionPart.epilogue);
+                result = EmitEpilogue(*this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(BasicBlock& basicBlock)
+        {
+            Instruction* inst = basicBlock.FirstInstruction();
+            leader = true;
+            while (inst != null)
+            {
+                if (leader)
+                {
+                    inst->SetLeader();
+                }
+                currentInst = inst;
+                if (inst->IsArgInstruction() || inst->IsProcedureCallInstruction() || inst->IsFunctionCallInstruction())
+                {
+                    inst->Accept(*this);
+                    if (Error()) return;
+                }
+                else
+                {
+                    Result<RegisterAllocationAction> actionResult = registerAllocator->Run(inst);
+                    if (actionResult.Error())
+                    {
+                        SetErrorId(actionResult.GetErrorId());
+                        return;
+                    }
+                    RegisterAllocationAction action = actionResult.Value();
+                    if (action == RegisterAllocationAction.spill)
+                    {
+                        for (const SpillData& spillData : registerAllocator->GetSpillData())
+                        {
+                            assembly.Instruction* storeInst = null;
+                            if (spillData.RegisterGroupToSpill()->IsFloatingPointReg())
+                            {
+                                Result<assembly.Instruction*> storeInstResult =EmitFloatingPointStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), *this);
+                                if (storeInstResult.Error())
+                                {
+                                    SetErrorId(storeInstResult.GetErrorId());
+                                    return;
+                                }
+                                storeInst = storeInstResult.Value();
+                            }
+                            else
+                            {
+                                Result<assembly.Instruction*> storeInstResult = EmitIntegerStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), *this);
+                                if (storeInstResult.Error())
+                                {
+                                    SetErrorId(storeInstResult.GetErrorId());
+                                    return;
+                                }
+                                storeInst = storeInstResult.Value();
+                            }
+                            Instruction* instToSpill = spillData.InstToSpill();
+                            Instruction* next = instToSpill->Next();
+                            if (next != null)
+                            {
+                                int assemblyIndex = next->AssemblyIndex();
+                                if (assemblyIndex != -1)
+                                {
+                                    assemblyFunction->InsertInstruction(assemblyIndex, storeInst->Clone());
+                                }
+                            }
+                            registerAllocator->RemoveFromRegisterGroups(instToSpill);
+                        }
+                    }
+                    inst->Accept(*this);
+                    if (Error()) return;
+                }
+                inst = inst->Next();
+            }
+        }
+        public override void Visit(RetInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.IsFloatingPointInstruction())
+            {
+                Result<bool> result = EmitFloatingPointRet(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerRet(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(SignExtendInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitSignExtend(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(ZeroExtendInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitZeroExtend(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(FloatingPointExtendInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitFloatingPointExtend(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(ParamInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.IsFloatingPointInstruction())
+            {
+                Result<bool> result = EmitFloatingPointParam(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerParam(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(LoadInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.IsFloatingPointInstruction())
+            {
+                Result<bool> result = EmitFloatingPointLoad(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerLoad(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(StoreInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.IsFloatingPointInstruction())
+            {
+                Result<bool> result = EmitFloatingPointStore(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerStore(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(ArgInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            args.Add(&inst);
+        }
+        public override void Visit(ProcedureCallInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitProcedureCall(inst, args, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            args.Clear();
+        }
+        public override void Visit(FunctionCallInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitFunctionCall(inst, args, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            args.Clear();
+        }
+        public override void Visit(ElemAddrInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitElemAddr(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(PtrOffsetInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitPtrOffset(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(PtrDiffInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitPtrDiff(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(TruncateInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.GetType()->IsIntegerType() || inst.GetType()->IsBooleanType())
+            {
+                Result<bool> result = EmitIntegerTruncate(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else if (inst.GetType()->IsFloatingPointType())
+            {
+                Result<bool> result = EmitFloatingPointTruncate(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(AddInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.GetType()->IsIntegerType())
+            {
+                Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else if (inst.GetType()->IsFloatingPointType())
+            {
+                Result<bool> result = EmitFloatingPointBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(SubInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.GetType()->IsIntegerType())
+            {
+                Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else if (inst.GetType()->IsFloatingPointType())
+            {
+                Result<bool> result = EmitFloatingPointBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(MulInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.GetType()->IsIntegerType())
+            {
+                Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else if (inst.GetType()->IsFloatingPointType())
+            {
+                Result<bool> result = EmitFloatingPointBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(DivInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.GetType()->IsIntegerType())
+            {
+                Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else if (inst.GetType()->IsFloatingPointType())
+            {
+                Result<bool> result = EmitFloatingPointBinOpInst(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(ModInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(AndInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(OrInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(XorInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(ShlInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(ShrInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntegerBinOpInst(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BitcastInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitBitcast(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(IntToFloatInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntToFloat(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(FloatToIntInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitFloatToInt(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(IntToPtrInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitIntToPtr(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(PtrToIntInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitPtrToInt(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(EqualInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.Left()->GetType()->IsFloatingPointType())
+            {
+                Result<bool> result = EmitFloatingPointEqual(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerEqual(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(LessInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.Left()->GetType()->IsFloatingPointType())
+            {
+                Result<bool> result = EmitFloatingPointLess(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerLess(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(JmpInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitJmp(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BranchInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitBranch(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(NotInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitNot(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(NegInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            if (inst.IsFloatingPointInstruction())
+            {
+                Result<bool> result = EmitFloatingPointNeg(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerNeg(inst, *this);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+        }
+        public override void Visit(NoOperationInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitNop(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(SwitchInstruction& inst)
+        {
+            inst.SetAssemblyIndex(assemblyFunction->Index());
+            Result<bool> result = EmitSwitch(inst, *this);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override void Visit(BoolValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.ToInteger(), 1)), assembly.OpCode.DB);
+            currentOffset = currentOffset + 1;
+        }
+        public override void Visit(SByteValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.GetValue(), 1)), assembly.OpCode.DB);
+            currentOffset = currentOffset + 1;
+        }
+        public override void Visit(ByteValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.GetValue(), 1)), assembly.OpCode.DB);
+            currentOffset = currentOffset + 1;
+        }
+        public override void Visit(ShortValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.GetValue(), 2)), assembly.OpCode.DW);
+            currentOffset = currentOffset + 2;
+        }
+        public override void Visit(UShortValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.GetValue(), 2)), assembly.OpCode.DW);
+            currentOffset = currentOffset + 2;
+        }
+        public override void Visit(IntValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.GetValue(), 4)), assembly.OpCode.DD);
+            currentOffset = currentOffset + 4;
+        }
+        public override void Visit(UIntValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.GetValue(), 4)), assembly.OpCode.DD);
+            currentOffset = currentOffset + 4;
+        }
+        public override void Visit(LongValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value.GetValue(), 8)), assembly.OpCode.DQ);
+            currentOffset = currentOffset + 8;
+        }
+        public override void Visit(ULongValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(cast<long>(value.GetValue()), 8)), assembly.OpCode.DQ);
+            currentOffset = currentOffset + 8;
+        }
+        public override void Visit(FloatValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.FloatLiteral(value.GetValue())), assembly.OpCode.REAL4);
+            currentOffset = currentOffset + 4;
+        }
+        public override void Visit(DoubleValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.DoubleLiteral(value.GetValue())), assembly.OpCode.REAL8);
+            currentOffset = currentOffset + 8;
+        }
+        public override void Visit(NullValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(0, 8)), assembly.OpCode.DQ);
+            currentOffset = currentOffset + 8;
+        }
+        public override void Visit(AddressValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.Symbol(value.GetValue()->Name())), assembly.OpCode.DQ);
+            currentOffset = currentOffset + 8;
+        }
+        public override void Visit(ArrayValue& value)
+        {
+            for (Value* x : value.Elements())
+            {
+                x->Accept(*this);
+            }
+        }
+        public override void Visit(StructureValue& value)
+        {
+            for (Value* x : value.FieldValues())
+            {
+                x->Accept(*this);
+            }
+        }
+        public override void Visit(StringValue& value)
+        {
+            string hexByteStr;
+            string stringValue;
+            int state = 0;
+            for (char c : value.GetValue())
+            {
+                switch (state)
+                {
+                    case 0:
+                    {
+                        if (c == '\\')
+                        {
+                            if (!stringValue.IsEmpty())
+                            {
+                                EmitDataValue(UniquePtr<assembly.Value>(new assembly.StringLiteral(stringValue)), assembly.OpCode.DB);
+                                stringValue.Clear();
+                            }
+                            state = 1;
+                        }
+                        else
+                        {
+                            stringValue.Append(c);
+                            currentOffset = currentOffset + 1;
+                        }
+                        break;
+                    }
+                    case 1:
+                    {
+                        hexByteStr.Append(c);
+                        state = 2;
+                        break;
+                    }
+                    case 2:
+                    {
+                        hexByteStr.Append(c);
+                        Result<byte> valueResult = ParseHexByte(hexByteStr);
+                        if (valueResult.Error())
+                        {
+                            SetErrorId(valueResult.GetErrorId());
+                            return;
+                        }
+                        byte value = valueResult.Value();
+                        EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value, 1)), assembly.OpCode.DB);
+                        break;
+                    }
+                }
+            }
+            if (!stringValue.IsEmpty())
+            {
+                EmitDataValue(UniquePtr<assembly.Value>(new assembly.StringLiteral(stringValue)), assembly.OpCode.DB);
+                stringValue.Clear();
+            }
+        }
+        public override void Visit(StringArrayValue& value)
+        {
+            for (Value* x : value.Strings())
+            {
+                x->Accept(*this);
+            }
+        }
+        public override void Visit(ConversionValue& value)
+        {
+            value.From()->Accept(*this);
+        }
+        public override void Visit(SymbolValue& value)
+        {
+            EmitDataValue(UniquePtr<assembly.Value>(new assembly.Symbol(value.Symbol())), assembly.OpCode.DQ);
+            currentOffset = currentOffset + 8;
+        }
+        public void Error(const string& message)
+        {
+            SetErrorId(intermediate.Error(message, Span(), context));
+        }
+        private Context* context;
+        private assembly.File file;
+        private Function* currentFunction;
+        private Instruction* currentInst;
+        private assembly.Function* assemblyFunction;
+        private RegisterAllocator* registerAllocator;
+        private List<ArgInstruction*> args;
+        private bool leader;
+        private assembly.Data* data;
+        private string label;
+        private UniquePtr<assembly.Instruction> dataInstruction;
+        private assembly.OpCode prevDataOpCode;
+        private long currentOffset;
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateCode(Context* context, CodeGenerator* codeGenerator)
+    {
+        Result<bool> result = context->GetData()->VisitGlobalVariables(*codeGenerator);
+        if (result.Error()) return result;
+        result = context->GetCode()->VisitFunctions(*codeGenerator);
+        if (result.Error()) return result;
+        result = codeGenerator->WriteOutputFile();
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+}

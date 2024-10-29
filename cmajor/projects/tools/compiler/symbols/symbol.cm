@@ -1,0 +1,1106 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using cm.ast;
+
+namespace symbols
+{
+    public enum SymbolKind : byte
+    {
+        boolTypeSymbol, sbyteTypeSymbol, byteTypeSymbol, shortTypeSymbol, ushortTypeSymbol, intTypeSymbol, uintTypeSymbol, longTypeSymbol, ulongTypeSymbol,
+        floatTypeSymbol, doubleTypeSymbol, charTypeSymbol, wcharTypeSymbol, ucharTypeSymbol, voidTypeSymbol,
+        nullPtrTypeSymbol, arrayTypeSymbol, derivedTypeSymbol,
+        namespaceSymbol, functionSymbol, staticConstructorSymbol, constructorSymbol, destructorSymbol, memberFunctionSymbol, conversionFunctionSymbol, functionGroupSymbol,
+        classGroupSymbol, classTypeSymbol, classTemplateSpecializationSymbol, interfaceTypeSymbol, conceptGroupSymbol, conceptSymbol,
+        delegateTypeSymbol, classDelegateTypeSymbol, declarationBlockSymbol, aliasTypeSymbol, constantSymbol, enumTypeSymbol, enumConstantSymbol,
+        templateParameterSymbol, boundTemplateParameterSymbol, parameterSymbol, localVariableSymbol, memberVariableSymbol,
+        basicTypeUnaryPlus, basicTypeUnaryMinus, basicTypeComplement, basicTypeAdd, basicTypeSub,
+        basicTypeMul, basicTypeDiv, basicTypeMod, basicTypeAnd, basicTypeOr, basicTypeXor,
+        basicTypeShl, basicTypeShr, basicTypeNot, basicTypeEqual, basicTypeLess,
+        defaultBool, defaultSByte, defaultByte, defaultShort, defaultUShort, defaultInt, defaultUInt, defaultLong, defaultULong,
+        defaultChar, defaultWChar, defaultUChar, defaultFloat, defaultDouble, basicTypeCopyCtor, basicTypeMoveCtor, basicTypeCopyAssignment, basicTypeMoveAssignment,
+        basicTypeReturn,
+        basicTypeImplicitSignExtension, basicTypeImplicitZeroExtension, basicTypeExplicitSignExtension, basicTypeExplicitZeroExtension, basicTypeTruncation,
+        basicTypeBitcast, basicTypeImplicitIntToFloating, basicTypeFloatingToInt, basicTypeFloatingExtension,
+        enumTypeDefaultConstructor, enumTypeCopyConstructor, enumTypeMoveConstructor, enumTypeCopyAssignment, enumTypeMoveAssignment, enumTypeReturn, enumTypeEquality,
+        enumTypeToUnderlyingType, underlyingToEnumType,
+        delegateTypeDefaultConstructor, delegateTypeCopyConstructor, delegateTypeMoveConstructor, delegateTypeCopyAssignment, delegateTypeMoveAssignment,
+        delegateTypeReturn, delegateTypeEquality, functionToDelegateSymbol,
+        classDelegateTypeDefaultConstructor, classDelegateTypeCopyConstructor, classDelegateTypeMoveConstructor, classDelegateTypeCopyAssignment,
+        classDelegateTypeMoveAssignment, classDelegateTypeEquality, memberFunctionToClassDelegateSymbol,
+        arrayLengthFunctionSymbol, arrayBeginFunctionSymbol, arrayEndFunctionSymbol, arrayCBeginFunctionSymbol, arrayCEndFunctionSymbol,
+        arrayDefaultConstructorSymbol, arrayCopyConstructorSymbol, arrayMoveConstructorSymbol, arrayCopyAssignmentSymbol, arrayMoveAssignmentSymbol, arrayElementAccessSymbol,
+        interfaceTypeDefaultCtor, interfaceTypeCopyCtor, interfaceTypeMoveCtor, interfaceTypeCopyAssignment, interfaceTypeMoveAssignment,
+        classToInterfaceConversion, getObjectPtrFromInterfaceSymbol, namespaceTypeSymbol, functionGroupTypeSymbol, memberExpressionTypeSymbol, variableValueSymbol,
+        globalVariableSymbol, globalVariableGroupSymbol, stringFunctionContainerSymbol, stringLengthFunctionSymbol, axiomSymbol, keywordSymbol, autoTypeSymbol,
+        maxSymbol
+    }
+
+    public string SymbolKindStr(SymbolKind symbolKind)
+    {
+        switch (symbolKind)
+        {
+            case SymbolKind.boolTypeSymbol: return "boolTypeSymbol";
+            case SymbolKind.sbyteTypeSymbol: return "sbyteTypeSymbol";
+            case SymbolKind.byteTypeSymbol: return "byteTypeSymbol";
+            case SymbolKind.shortTypeSymbol: return "shortTypeSymbol";
+            case SymbolKind.ushortTypeSymbol: return "ushortTypeSymbol";
+            case SymbolKind.intTypeSymbol: return "intTypeSymbol";
+            case SymbolKind.uintTypeSymbol: return "uintTypeSymbol";
+            case SymbolKind.longTypeSymbol: return "longTypeSymbol";
+            case SymbolKind.ulongTypeSymbol: return "ulongTypeSymbol";
+            case SymbolKind.floatTypeSymbol: return "floatTypeSymbol";
+            case SymbolKind.doubleTypeSymbol: return "doubleTypeSymbol";
+            case SymbolKind.charTypeSymbol: return "charTypeSymbol";
+            case SymbolKind.wcharTypeSymbol: return "wcharTypeSymbol";
+            case SymbolKind.ucharTypeSymbol: return "ucharTypeSymbol";
+            case SymbolKind.voidTypeSymbol: return "voidTypeSymbol";
+            case SymbolKind.nullPtrTypeSymbol: return "nullPtrTypeSymbol";
+            case SymbolKind.arrayTypeSymbol: return "arrayTypeSymbol";
+            case SymbolKind.derivedTypeSymbol: return "derivedTypeSymbol";
+            case SymbolKind.namespaceSymbol: return "namespaceSymbol";
+            case SymbolKind.functionSymbol: return "functionSymbol";
+            case SymbolKind.staticConstructorSymbol: return "staticConstructorSymbol";
+            case SymbolKind.constructorSymbol: return "constructorSymbol";
+            case SymbolKind.destructorSymbol: return "destructorSymbol";
+            case SymbolKind.memberFunctionSymbol: return "memberFunctionSymbol";
+            case SymbolKind.conversionFunctionSymbol: return "conversionFunctionSymbol";
+            case SymbolKind.functionGroupSymbol: return "functionGroupSymbol";
+            case SymbolKind.classGroupSymbol: return "classGroupSymbol";
+            case SymbolKind.classTypeSymbol: return "classTypeSymbol";
+            case SymbolKind.classTemplateSpecializationSymbol: return "classTemplateSpecializationSymbol";
+            case SymbolKind.interfaceTypeSymbol: return "interfaceTypeSymbol";
+            case SymbolKind.conceptGroupSymbol: return "conceptGroupSymbol";
+            case SymbolKind.conceptSymbol: return "conceptSymbol";
+            case SymbolKind.delegateTypeSymbol: return "delegateTypeSymbol";
+            case SymbolKind.classDelegateTypeSymbol: return "classDelegateTypeSymbol";
+            case SymbolKind.declarationBlockSymbol: return "declarationBlockSymbol";
+            case SymbolKind.aliasTypeSymbol: return "aliasTypeSymbol";
+            case SymbolKind.constantSymbol: return "constantSymbol";
+            case SymbolKind.enumTypeSymbol: return "enumTypeSymbol";
+            case SymbolKind.enumConstantSymbol: return "enumConstantSymbol";
+            case SymbolKind.templateParameterSymbol: return "templateParameterSymbol";
+            case SymbolKind.boundTemplateParameterSymbol: return "boundTemplateParameterSymbol";
+            case SymbolKind.parameterSymbol: return "parameterSymbol";
+            case SymbolKind.localVariableSymbol: return "localVariableSymbol";
+            case SymbolKind.memberVariableSymbol: return "memberVariableSymbol";
+            case SymbolKind.basicTypeUnaryPlus: return "basicTypeUnaryPlus";
+            case SymbolKind.basicTypeUnaryMinus: return "basicTypeUnaryMinus";
+            case SymbolKind.basicTypeComplement: return "basicTypeComplement";
+            case SymbolKind.basicTypeAdd: return "basicTypeAdd";
+            case SymbolKind.basicTypeSub: return "basicTypeSub";
+            case SymbolKind.basicTypeMul: return "basicTypeMul";
+            case SymbolKind.basicTypeDiv: return "basicTypeDiv";
+            case SymbolKind.basicTypeMod: return "basicTypeMod";
+            case SymbolKind.basicTypeAnd: return "basicTypeAnd";
+            case SymbolKind.basicTypeOr: return "basicTypeOr";
+            case SymbolKind.basicTypeXor: return "basicTypeXor";
+            case SymbolKind.basicTypeShl: return "basicTypeShl";
+            case SymbolKind.basicTypeShr: return "basicTypeShr";
+            case SymbolKind.basicTypeNot: return "basicTypeNot";
+            case SymbolKind.basicTypeEqual: return "basicTypeEqual";
+            case SymbolKind.basicTypeLess: return "basicTypeLess";
+            case SymbolKind.defaultBool: return "defaultBool";
+            case SymbolKind.defaultSByte: return "defaultSByte";
+            case SymbolKind.defaultByte: return "defaultByte";
+            case SymbolKind.defaultShort: return "defaultShort";
+            case SymbolKind.defaultUShort: return "defaultUShort";
+            case SymbolKind.defaultInt: return "defaultInt";
+            case SymbolKind.defaultUInt: return "defaultUInt";
+            case SymbolKind.defaultLong: return "defaultLong";
+            case SymbolKind.defaultULong: return "defaultULong";
+            case SymbolKind.defaultChar: return "defaultChar";
+            case SymbolKind.defaultWChar: return "defaultWChar";
+            case SymbolKind.defaultUChar: return "defaultUChar";
+            case SymbolKind.defaultFloat: return "defaultFloat";
+            case SymbolKind.defaultDouble: return "defaultDouble";
+            case SymbolKind.basicTypeCopyCtor: return "basicTypeCopyCtor";
+            case SymbolKind.basicTypeMoveCtor: return "basicTypeMoveCtor";
+            case SymbolKind.basicTypeCopyAssignment: return "basicTypeCopyAssignment";
+            case SymbolKind.basicTypeMoveAssignment: return "basicTypeMoveAssignment";
+            case SymbolKind.basicTypeReturn: return "basicTypeReturn";
+            case SymbolKind.basicTypeImplicitSignExtension: return "basicTypeImplicitSignExtension";
+            case SymbolKind.basicTypeImplicitZeroExtension: return "basicTypeImplicitZeroExtension";
+            case SymbolKind.basicTypeExplicitSignExtension: return "basicTypeExplicitSignExtension";
+            case SymbolKind.basicTypeExplicitZeroExtension: return "basicTypeExplicitZeroExtension";
+            case SymbolKind.basicTypeTruncation: return "basicTypeTruncation";
+            case SymbolKind.basicTypeBitcast: return "basicTypeBitcast";
+            case SymbolKind.basicTypeImplicitIntToFloating: return "basicTypeImplicitIntToFloating";
+            case SymbolKind.basicTypeFloatingToInt: return "basicTypeFloatingToInt";
+            case SymbolKind.basicTypeFloatingExtension: return "basicTypeFloatingExtension";
+            case SymbolKind.enumTypeDefaultConstructor: return "enumTypeDefaultConstructor";
+            case SymbolKind.enumTypeCopyConstructor: return "enumTypeCopyConstructor";
+            case SymbolKind.enumTypeMoveConstructor: return "enumTypeMoveConstructor";
+            case SymbolKind.enumTypeCopyAssignment: return "enumTypeCopyAssignment";
+            case SymbolKind.enumTypeMoveAssignment: return "enumTypeMoveAssignment";
+            case SymbolKind.enumTypeReturn: return "enumTypeReturn";
+            case SymbolKind.enumTypeEquality: return "enumTypeEquality";
+            case SymbolKind.enumTypeToUnderlyingType: return "enumTypeToUnderlyingType";
+            case SymbolKind.underlyingToEnumType: return "underlyingToEnumType";
+            case SymbolKind.delegateTypeDefaultConstructor: return "delegateTypeDefaultConstructor";
+            case SymbolKind.delegateTypeCopyConstructor: return "delegateTypeCopyConstructor";
+            case SymbolKind.delegateTypeMoveConstructor: return "delegateTypeMoveConstructor";
+            case SymbolKind.delegateTypeCopyAssignment: return "delegateTypeCopyAssignment";
+            case SymbolKind.delegateTypeMoveAssignment: return "delegateTypeMoveAssignment";
+            case SymbolKind.delegateTypeReturn: return "delegateTypeReturn";
+            case SymbolKind.delegateTypeEquality: return "delegateTypeEquality";
+            case SymbolKind.functionToDelegateSymbol: return "functionToDelegateSymbol";
+            case SymbolKind.classDelegateTypeDefaultConstructor: return "classDelegateTypeDefaultConstructor";
+            case SymbolKind.classDelegateTypeCopyConstructor: return "classDelegateTypeCopyConstructor";
+            case SymbolKind.classDelegateTypeMoveConstructor: return "classDelegateTypeMoveConstructor";
+            case SymbolKind.classDelegateTypeCopyAssignment: return "classDelegateTypeCopyAssignment";
+            case SymbolKind.classDelegateTypeMoveAssignment: return "classDelegateTypeMoveAssignment";
+            case SymbolKind.classDelegateTypeEquality: return "classDelegateTypeEquality";
+            case SymbolKind.memberFunctionToClassDelegateSymbol: return "memberFunctionToClassDelegateSymbol";
+            case SymbolKind.arrayLengthFunctionSymbol: return "arrayLengthFunctionSymbol";
+            case SymbolKind.arrayBeginFunctionSymbol: return "arrayBeginFunctionSymbol";
+            case SymbolKind.arrayEndFunctionSymbol: return "arrayEndFunctionSymbol";
+            case SymbolKind.arrayCBeginFunctionSymbol: return "arrayCBeginFunctionSymbol";
+            case SymbolKind.arrayCEndFunctionSymbol: return "arrayCEndFunctionSymbol";
+            case SymbolKind.arrayDefaultConstructorSymbol: return "arrayDefaultConstructorSymbol";
+            case SymbolKind.arrayCopyConstructorSymbol: return "arrayCopyConstructorSymbol";
+            case SymbolKind.arrayMoveConstructorSymbol: return "arrayMoveConstructorSymbol";
+            case SymbolKind.arrayCopyAssignmentSymbol: return "arrayCopyAssignmentSymbol";
+            case SymbolKind.arrayMoveAssignmentSymbol: return "arrayMoveAssignmentSymbol";
+            case SymbolKind.arrayElementAccessSymbol: return "arrayElementAccessSymbol";
+            case SymbolKind.interfaceTypeDefaultCtor: return "interfaceTypeDefaultCtor";
+            case SymbolKind.interfaceTypeCopyCtor: return "interfaceTypeCopyCtor";
+            case SymbolKind.interfaceTypeMoveCtor: return "interfaceTypeMoveCtor";
+            case SymbolKind.interfaceTypeCopyAssignment: return "interfaceTypeCopyAssignment";
+            case SymbolKind.interfaceTypeMoveAssignment: return "interfaceTypeMoveAssignment";
+            case SymbolKind.classToInterfaceConversion: return "classToInterfaceConversion";
+            case SymbolKind.getObjectPtrFromInterfaceSymbol: return "getObjectPtrFromInterfaceSymbol";
+            case SymbolKind.namespaceTypeSymbol: return "namespaceTypeSymbol";
+            case SymbolKind.functionGroupTypeSymbol: return "functionGroupTypeSymbol";
+            case SymbolKind.memberExpressionTypeSymbol: return "memberExpressionTypeSymbol";
+            case SymbolKind.variableValueSymbol: return "variableValueSymbol";
+            case SymbolKind.globalVariableSymbol: return "globalVariableSymbol";
+            case SymbolKind.globalVariableGroupSymbol: return "globalVariableGroupSymbol";
+            case SymbolKind.stringFunctionContainerSymbol: return "stringFunctionContainerSymbol";
+            case SymbolKind.stringLengthFunctionSymbol: return "stringLengthFunctionSymbol";
+            case SymbolKind.axiomSymbol: return "axiomSymbol";
+            case SymbolKind.keywordSymbol: return "keywordSymbol";
+            case SymbolKind.autoTypeSymbol: return "autoTypeSymbol";
+        }
+        return "<unknown symbol kind>";
+    }
+
+    public enum SymbolAccess : byte
+    {
+        private_ = 0u, protected_ = 1u, internal_ = 2u, public_ = 3u
+    }
+
+    public enum SymbolFlags : byte
+    {
+        none = 0u,
+        access = (1u << 0u) | (1u << 1u),
+        static_ = 1u << 2u,
+        external = 1u << 3u,
+        project = 1u << 4u,
+        bound = 1u << 5u,
+        installed = 1u << 6u,
+        basicTypeSymbol = 1u << 7u
+    }
+
+    public string SymbolFlagStr(SymbolFlags flags)
+    {
+        string s;
+        SymbolAccess access = cast<SymbolAccess>(flags & SymbolFlags.access);
+        switch (access)
+        {
+            case SymbolAccess.private_:
+            {
+                s.Append("private");
+                break;
+            }
+            case SymbolAccess.protected_:
+            {
+                s.Append("protected");
+                break;
+            }
+            case SymbolAccess.internal_:
+            {
+                s.Append("internal");
+                break;
+            }
+            case SymbolAccess.public_:
+            {
+                s.Append("public");
+                break;
+            }
+        }
+        if ((flags & SymbolFlags.static_) != SymbolFlags.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("static");
+        }
+        if ((flags & SymbolFlags.external) != SymbolFlags.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("extern");
+        }
+        if ((flags & SymbolFlags.project) != SymbolFlags.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("project");
+        }
+        if ((flags & SymbolFlags.bound) != SymbolFlags.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("bound");
+        }
+        if ((flags & SymbolFlags.installed) != SymbolFlags.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("installed");
+        }
+        return s;
+    }
+
+    public inline SymbolFlags GetStableSymbolFlags(SymbolFlags flags)
+    {
+        return cast<SymbolFlags>(flags & ~(SymbolFlags.project | SymbolFlags.bound | SymbolFlags.installed));
+    }
+
+    public abstract class Symbol
+    {
+        public Symbol(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) :
+            kind(kind_), span(span_), fileIndex(-1), moduleId(Uuid()), name(name_), flags(SymbolFlags.project), mangledName(), parent(null), module(null), attributes(),
+            errorId(0)
+        {
+        }
+        public default virtual ~Symbol();
+        public inline SymbolKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsBoolTypeSymbol() const
+        {
+            return kind == SymbolKind.boolTypeSymbol;
+        }
+        public inline bool IsSByteTypeSymbol() const
+        {
+            return kind == SymbolKind.sbyteTypeSymbol;
+        }
+        public inline bool IsByteTypeSymbol() const
+        {
+            return kind == SymbolKind.byteTypeSymbol;
+        }
+        public inline bool IsShortTypeSymbol() const
+        {
+            return kind == SymbolKind.shortTypeSymbol;
+        }
+        public inline bool IsUShortTypeSymbol() const
+        {
+            return kind == SymbolKind.ushortTypeSymbol;
+        }
+        public inline bool IsIntTypeSymbol() const
+        {
+            return kind == SymbolKind.intTypeSymbol;
+        }
+        public inline bool IsUIntTypeSymbol() const
+        {
+            return kind == SymbolKind.uintTypeSymbol;
+        }
+        public inline bool IsLongTypeSymbol() const
+        {
+            return kind == SymbolKind.longTypeSymbol;
+        }
+        public inline bool IsULongTypeSymbol() const
+        {
+            return kind == SymbolKind.ulongTypeSymbol;
+        }
+        public inline bool IsFloatTypeSymbol() const
+        {
+            return kind == SymbolKind.floatTypeSymbol;
+        }
+        public inline bool IsDoubleTypeSymbol() const
+        {
+            return kind == SymbolKind.doubleTypeSymbol;
+        }
+        public inline bool IsCharTypeSymbol() const
+        {
+            return kind == SymbolKind.charTypeSymbol;
+        }
+        public inline bool IsWCharTypeSymbol() const
+        {
+            return kind == SymbolKind.wcharTypeSymbol;
+        }
+        public inline bool IsUCharTypeSymbol() const
+        {
+            return kind == SymbolKind.ucharTypeSymbol;
+        }
+        public inline bool IsVoidTypeSymbol() const
+        {
+            return kind == SymbolKind.voidTypeSymbol;
+        }
+        public inline bool IsAutoTypeSymbol() const
+        {
+            return kind == SymbolKind.autoTypeSymbol;
+        }
+        public inline bool IsAliasTypeSymbol() const
+        {
+            return kind == SymbolKind.aliasTypeSymbol;
+        }
+        public inline bool IsParameterSymbol() const
+        {
+            return kind == SymbolKind.parameterSymbol;
+        }
+        public inline bool IsTemplateParameterSymbol() const
+        {
+            return kind == SymbolKind.templateParameterSymbol;
+        }
+        public inline bool IsBoundTemplateParameterSymbol() const
+        {
+            return kind == SymbolKind.boundTemplateParameterSymbol;
+        }
+        public inline bool IsMemberVariableSymbol() const
+        {
+            return kind == SymbolKind.memberVariableSymbol;
+        }
+        public inline bool IsClassGroupSymbol() const
+        {
+            return kind == SymbolKind.classGroupSymbol;
+        }
+        public inline bool IsClassTypeSymbol() const
+        {
+            return kind == SymbolKind.classTypeSymbol || kind == SymbolKind.classTemplateSpecializationSymbol;
+        }
+        public inline bool IsDelegateTypeSymbol() const
+        {
+            return kind == SymbolKind.delegateTypeSymbol;
+        }
+        public inline bool IsClassDelegateTypeSymbol() const
+        {
+            return kind == SymbolKind.classDelegateTypeSymbol;
+        }
+        public inline bool IsClassTemplateSpecializationSymbol() const
+        {
+            return kind == SymbolKind.classTemplateSpecializationSymbol;
+        }
+        public inline bool IsInterfaceTypeSymbol() const
+        {
+            return kind == SymbolKind.interfaceTypeSymbol;
+        }
+        public inline bool IsArrayTypeSymbol() const
+        {
+            return kind == SymbolKind.arrayTypeSymbol;
+        }
+        public inline bool IsConceptSymbol() const
+        {
+            return kind == SymbolKind.conceptSymbol;
+        }
+        public inline bool IsFunctionGroupSymbol() const
+        {
+            return kind == SymbolKind.functionGroupSymbol;
+        }
+        public inline bool IsDerivedTypeSymbol() const
+        {
+            return kind == SymbolKind.derivedTypeSymbol;
+        }
+        public inline bool IsNamespaceSymbol() const
+        {
+            return kind == SymbolKind.namespaceSymbol;
+        }
+        public inline bool IsLocalVariableSymbol() const
+        {
+            return kind == SymbolKind.localVariableSymbol;
+        }
+        public inline bool IsGlobalVariableSymbol() const
+        {
+            return kind == SymbolKind.globalVariableSymbol;
+        }
+        public inline bool IsConstructorSymbol() const
+        {
+            return kind == SymbolKind.constructorSymbol;
+        }
+        public inline bool IsDestructorSymbol() const
+        {
+            return kind == SymbolKind.destructorSymbol;
+        }
+        public inline bool IsMemberFunctionSymbol() const
+        {
+            return kind == SymbolKind.memberFunctionSymbol;
+        }
+        public inline bool IsConversionFunctionSymbol() const
+        {
+            return kind == SymbolKind.conversionFunctionSymbol;
+        }
+        public inline bool IsStaticConstructorSymbol() const
+        {
+            return kind == SymbolKind.staticConstructorSymbol;
+        }
+        public inline bool IsDeclarationBlockSymbol() const
+        {
+            return kind == SymbolKind.declarationBlockSymbol;
+        }
+        public inline bool IsConstantSymbol() const
+        {
+            return kind == SymbolKind.constantSymbol;
+        }
+        public inline bool IsEnumTypeSymbol() const
+        {
+            return kind == SymbolKind.enumTypeSymbol;
+        }
+        public inline bool IsEnumConstantSymbol() const
+        {
+            return kind == SymbolKind.enumConstantSymbol;
+        }
+        public inline bool IsMemberExpressionTypeSymbol() const
+        {
+            return kind == SymbolKind.memberExpressionTypeSymbol;
+        }
+        public inline bool IsClassDelegateCopyConstructor() const
+        {
+            return kind == SymbolKind.classDelegateTypeCopyConstructor;
+        }
+        public inline bool IsFunctionGroupTypeSymbol() const
+        {
+            return kind == SymbolKind.functionGroupTypeSymbol;
+        }
+        public inline bool IsConceptGroupSymbol() const
+        {
+            return kind == SymbolKind.conceptGroupSymbol;
+        }
+        public inline bool IsNamespaceTypeSymbol() const
+        {
+            return kind == SymbolKind.namespaceTypeSymbol;
+        }
+        public inline bool IsVariableValueSymbol() const
+        {
+            return kind == SymbolKind.variableValueSymbol;
+        }
+        public inline bool NameMustBeUnique() const
+        {
+            switch (kind)
+            {
+                case SymbolKind.namespaceSymbol:
+                case SymbolKind.declarationBlockSymbol:
+                case SymbolKind.aliasTypeSymbol:
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public bool IsGroupSymbol() const
+        {
+            switch (kind)
+            {
+                case SymbolKind.functionGroupSymbol:
+                case SymbolKind.conceptGroupSymbol:
+                case SymbolKind.classGroupSymbol:
+                case SymbolKind.globalVariableGroupSymbol:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public virtual bool IsTypeSymbol() const
+        {
+            return false;
+        }
+        public virtual bool IsFunctionSymbol() const
+        {
+            return false;
+        }
+        public virtual bool IsContainerSymbol() const
+        {
+            return false;
+        }
+        public inline System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline void SetSpan(const System.Lex.Span& span_)
+        {
+            span = span_;
+        }
+        public inline int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public inline void SetFileIndex(int fileIndex_)
+        {
+            fileIndex = fileIndex_;
+        }
+        public virtual const Uuid& ModuleId() const
+        {
+            return moduleId;
+        }
+        public void SetModuleId(const Uuid& moduleId_)
+        {
+            moduleId = moduleId_;
+        }
+        public System.Lex.FullSpan FullSpan() const
+        {
+            return System.Lex.FullSpan(ModuleId(), FileIndex(), Span());
+        }
+        public inline const ustring& Name() const
+        {
+            return name;
+        }
+        public void SetName(const ustring& name_)
+        {
+            name = name_;
+        }
+        public virtual ustring FullName() const
+        {
+            ustring fullName;
+            if (parent != null)
+            {
+                fullName.Append(parent->FullName());
+            }
+            if (!fullName.IsEmpty())
+            {
+                fullName.Append('.');
+            }
+            fullName.Append(Name());
+            return fullName;
+        }
+        public virtual Result<ustring> FullNameWithSpecifiers() const
+        {
+            string flagStr = SymbolFlagStr(GetStableSymbolFlags(flags));
+            auto utf32Result = ToUtf32(flagStr);
+            if (utf32Result.Error()) return Result<ustring>(ErrorId(utf32Result.GetErrorId()));
+            ustring fullNameWithSpecifiers = Rvalue(utf32Result.Value());
+            if (!fullNameWithSpecifiers.IsEmpty())
+            {
+                fullNameWithSpecifiers.Append(' ');
+            }
+            fullNameWithSpecifiers.Append(FullName());
+            return Result<ustring>(fullNameWithSpecifiers);
+        }
+        public virtual ustring SimpleName() const
+        {
+            return Name();
+        }
+        public virtual ustring TypeString() const
+        {
+            return u"symbol";
+        }
+        public virtual ContainerScope* GetContainerScope() const
+        {
+            if (parent != null)
+            {
+                return parent->GetContainerScope();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public inline SymbolFlags Flags() const
+        {
+            return flags;
+        }
+        public inline SymbolAccess Access() const
+        {
+            return SymbolAccess(cast<SymbolAccess>(flags & SymbolFlags.access));
+        }
+        public inline void SetAccess(SymbolAccess access)
+        {
+            flags = cast<SymbolFlags>(flags | cast<byte>(access));
+        }
+        [nodiscard]
+        public Result<bool> SetAccess(Specifiers accessSpecifiers)
+        {
+            ContainerSymbol* cls = ContainingClass();
+            SymbolAccess access = SymbolAccess.private_;
+            bool classMember = true;
+            if (cls == null)
+            {
+                access = SymbolAccess.internal_;
+                classMember = false;
+                // todo interface
+            }
+            if (accessSpecifiers == Specifiers.public_)
+            {
+                access = SymbolAccess.public_;
+            }
+            else if (accessSpecifiers == Specifiers.protected_)
+            {
+                if (classMember)
+                {
+                    access = SymbolAccess.protected_;
+                }
+                else
+                {
+                    int errorId = MakeError("only class members can have protected access", FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else if (accessSpecifiers == Specifiers.internal_)
+            {
+                access = SymbolAccess.internal_;
+            }
+            else if (accessSpecifiers == Specifiers.private_)
+            {
+                if (classMember)
+                {
+                    access = SymbolAccess.private_;
+                }
+                else
+                {
+                    int errorId = MakeError("only class members can have private access", FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else if (accessSpecifiers != Specifiers.none)
+            {
+                int errorId = MakeError("invalid combination of access specifiers: " + SpecifierStr(accessSpecifiers), FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            SetAccess(access);
+            return Result<bool>(true);
+        }
+        public inline bool GetFlag(SymbolFlags flag) const
+        {
+            return (flags & flag) != SymbolFlags.none;
+        }
+        public inline void SetFlag(SymbolFlags flag)
+        {
+            flags = cast<SymbolFlags>(flags | flag);
+        }
+        public inline void ResetFlag(SymbolFlags flag)
+        {
+            flags = cast<SymbolFlags>(flags & ~flag);
+        }
+        public inline bool IsStatic() const
+        {
+            return GetFlag(SymbolFlags.static_);
+        }
+        public inline void SetStatic()
+        {
+            SetFlag(SymbolFlags.static_);
+        }
+        public inline bool IsExternal() const
+        {
+            return GetFlag(SymbolFlags.external);
+        }
+        public inline void SetExternal()
+        {
+            SetFlag(SymbolFlags.external);
+        }
+        public inline bool IsProject() const
+        {
+            return GetFlag(SymbolFlags.project);
+        }
+        public inline void SetProject()
+        {
+            SetFlag(SymbolFlags.project);
+        }
+        public inline bool IsBasicTypeSymbol() const
+        {
+            return GetFlag(SymbolFlags.basicTypeSymbol);
+        }
+        public inline void SetBasicTypeSymbol()
+        {
+            SetFlag(SymbolFlags.basicTypeSymbol);
+        }
+        public inline bool IsBound() const
+        {
+            return GetFlag(SymbolFlags.bound);
+        }
+        public inline void SetBound()
+        {
+            SetFlag(SymbolFlags.bound);
+        }
+        public virtual bool IsExportSymbol() const
+        {
+            return IsProject();
+        }
+        public inline const ustring& MangledName() const
+        {
+            return mangledName;
+        }
+        public void SetMangledName(const ustring& mangledName_)
+        {
+            mangledName = mangledName_;
+        }
+        [nodiscard]
+        public virtual Result<bool> CopyFrom(const Symbol* that)
+        {
+            kind = that->kind;
+            span = that->span;
+            fileIndex = that->fileIndex;
+            moduleId = that->moduleId;
+            name = that->name;
+            flags = that->flags;
+            mangledName = that->mangledName;
+            parent = that->parent;
+            module = that->module;
+            sourceFile = that->sourceFile;
+            if (that->attributes != null)
+            {
+                CloneContext cloneContext;
+                attributes.Reset(cast<AttributesNode*>(that->attributes->Clone(cloneContext)));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> ComputeMangledName()
+        {
+            mangledName = TypeString();
+            mangledName.Append('_').Append(SimpleName());
+            Result<ustring> ufnspResult = FullNameWithSpecifiers();
+            if (ufnspResult.Error()) return Result<bool>(ErrorId(ufnspResult.GetErrorId()));
+            ustring ufnsp = Rvalue(ufnspResult.Value());
+            Result<string> fnspResult = ToUtf8(ufnsp);
+            if (fnspResult.Error()) return Result<bool>(ErrorId(fnspResult.GetErrorId()));
+            string fnsp = Rvalue(fnspResult.Value());
+            Result<string> digestResult = System.Security.GetSha1MessageDigest(fnsp);
+            if (digestResult.Error()) return Result<bool>(ErrorId(digestResult.GetErrorId()));
+            string digest = Rvalue(digestResult.Value());
+            Result<ustring> messageDigestResult = ToUtf32(digest);
+            if (messageDigestResult.Error()) return Result<bool>(ErrorId(messageDigestResult.GetErrorId()));
+            ustring messageDigest = Rvalue(messageDigestResult.Value());
+            mangledName.Append('_').Append(messageDigest);
+            return Result<bool>(true);
+        }
+        public inline Symbol* Parent() const
+        {
+            return parent;
+        }
+        public inline void SetParent(Symbol* parent_)
+        {
+            parent = parent_;
+        }
+        public inline Module* GetModule() const
+        {
+            return module;
+        }
+        public inline void SetModule(Module* module_)
+        {
+            module = module_;
+        }
+        public inline SourceFileNode* SourceFile() const
+        {
+            return sourceFile;
+        }
+        public inline void SetSourceFile(SourceFileNode* sourceFile_)
+        {
+            sourceFile = sourceFile_;
+        }
+        public bool IsSameParentOrAncestorOf(const Symbol* that) const
+        {
+            if (that == null)
+            {
+                return false;
+            }
+            else if (this == that)
+            {
+                return true;
+            }
+            else if (this->IsTypeSymbol() && that->IsTypeSymbol() && TypesEqual(cast<TypeSymbol*>(this), cast<TypeSymbol*>(that)))
+            {
+                return true;
+            }
+            else if (that->parent != null)
+            {
+                return IsSameParentOrAncestorOf(that->parent);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public FunctionSymbol* ContainingFunction() const
+        {
+            if (parent != null)
+            {
+                Result<FunctionSymbol*> fnResult = parent->Function();
+                if (!fnResult.Error())
+                {
+                    FunctionSymbol* fn = fnResult.Value();
+                    return fn;
+                }
+                else
+                {
+                    RtmDisposeError(fnResult.GetErrorId());
+                }
+            }
+            return null;
+        }
+        public ClassTypeSymbol* ContainingClass() const
+        {
+            if (parent != null)
+            {
+                Result<ClassTypeSymbol*> classResult = parent->Class();
+                if (!classResult.Error())
+                {
+                    ClassTypeSymbol* cls = classResult.Value();
+                    return cls;
+                }
+                else
+                {
+                    RtmDisposeError(classResult.GetErrorId());
+                }
+            }
+            return null;
+        }
+        public Result<NamespaceSymbol*> Ns() const
+        {
+            if (IsNamespaceSymbol())
+            {
+                return Result<NamespaceSymbol*>(cast<NamespaceSymbol*>(this));
+            }
+            else
+            {
+                if (parent != null)
+                {
+                    return parent->Ns();
+                }
+                else
+                {
+                    int errorId = MakeError("namespace symbol not found", FullSpan());
+                    return Result<NamespaceSymbol*>(ErrorId(errorId));
+                }
+            }
+        }
+        public Result<ClassTypeSymbol*> Class() const
+        {
+            if (IsClassTypeSymbol())
+            {
+                return Result<ClassTypeSymbol*>(cast<ClassTypeSymbol*>(this));
+            }
+            else
+            {
+                if (parent != null)
+                {
+                    return parent->Class();
+                }
+                else
+                {
+                    int errorId = MakeError("class type symbol not found", FullSpan());
+                    return Result<ClassTypeSymbol*>(ErrorId(errorId));
+                }
+            }
+        }
+        public Result<ContainerSymbol*> ClassInterfaceEnumDelegateOrNs() const
+        {
+            switch (kind)
+            {
+                case SymbolKind.namespaceSymbol:
+                case SymbolKind.classTypeSymbol:
+                case SymbolKind.interfaceTypeSymbol:
+                case SymbolKind.enumTypeSymbol:
+                case SymbolKind.delegateTypeSymbol:
+                case SymbolKind.classDelegateTypeSymbol:
+                {
+                    return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
+                }
+                default:
+                {
+                    if (parent != null)
+                    {
+                        return parent->ClassInterfaceEnumDelegateOrNs();
+                    }
+                    else
+                    {
+                        int errorId = MakeError("class, interface, enumeration, delegate, class delegate or namespace symbol not found", FullSpan());
+                        return Result<ContainerSymbol*>(ErrorId(errorId));
+                    }
+                }
+            }
+            return Result<ContainerSymbol*>(cast<ContainerSymbol*>(null));
+        }
+        public Result<ContainerScope*> ClassInterfaceEnumDelegateOrNsScope() const
+        {
+            Result<ContainerSymbol*> containerSymbolResult = ClassInterfaceEnumDelegateOrNs();
+            if (containerSymbolResult.Error()) return Result<ContainerScope*>(ErrorId(containerSymbolResult.GetErrorId()));
+            ContainerSymbol* containerSymbol = containerSymbolResult.Value();
+            return Result<ContainerScope*>(containerSymbol->GetContainerScope());
+        }
+        public Result<ContainerSymbol*> ClassInterfaceOrNs() const
+        {
+            switch (kind)
+            {
+                case SymbolKind.namespaceSymbol:
+                case SymbolKind.classTypeSymbol:
+                case SymbolKind.interfaceTypeSymbol:
+                {
+                    return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
+                }
+                default:
+                {
+                    if (parent != null)
+                    {
+                        return parent->ClassInterfaceOrNs();
+                    }
+                    else
+                    {
+                        int errorId = MakeError("class, interface, or namespace symbol not found", FullSpan());
+                        return Result<ContainerSymbol*>(ErrorId(errorId));
+                    }
+                }
+            }
+            return Result<ContainerSymbol*>(cast<ContainerSymbol*>(null));
+        }
+        public Result<ContainerScope*> ClassInterfaceOrNsScope() const
+        {
+            Result<ContainerSymbol*> containerSymbolResult = ClassInterfaceOrNs();
+            if (containerSymbolResult.Error()) return Result<ContainerScope*>(ErrorId(containerSymbolResult.GetErrorId()));
+            ContainerSymbol* containerSymbol = containerSymbolResult.Value();
+            return Result<ContainerScope*>(containerSymbol->GetContainerScope());
+        }
+        public Result<ContainerSymbol*> ClassOrNs() const
+        {
+            switch (kind)
+            {
+                case SymbolKind.namespaceSymbol:
+                case SymbolKind.classTypeSymbol:
+                {
+                    return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
+                }
+                default:
+                {
+                    if (parent != null)
+                    {
+                        return parent->ClassOrNs();
+                    }
+                    else
+                    {
+                        int errorId = MakeError("class or namespace symbol not found", FullSpan());
+                        return Result<ContainerSymbol*>(ErrorId(errorId));
+                    }
+                }
+            }
+            return Result<ContainerSymbol*>(cast<ContainerSymbol*>(null));
+        }
+        public Result<ContainerScope*> ClassOrNsScope() const
+        {
+            Result<ContainerSymbol*> containerSymbolResult = ClassOrNs();
+            if (containerSymbolResult.Error()) return Result<ContainerScope*>(ErrorId(containerSymbolResult.GetErrorId()));
+            ContainerSymbol* containerSymbol = containerSymbolResult.Value();
+            return Result<ContainerScope*>(containerSymbol->GetContainerScope());
+        }
+        public Result<FunctionSymbol*> Function() const
+        {
+            if (IsFunctionSymbol())
+            {
+                return Result<FunctionSymbol*>(cast<FunctionSymbol*>(this));
+            }
+            else
+            {
+                if (parent != null)
+                {
+                    return parent->Function();
+                }
+                else
+                {
+                    int errorId = MakeError("function symbol not found", FullSpan());
+                    return Result<FunctionSymbol*>(ErrorId(errorId));
+                }
+            }
+        }
+        public inline AttributesNode* Attributes() const
+        {
+            return attributes.Get();
+        }
+        public void SetAttributes(UniquePtr<AttributesNode>&& attributes_)
+        {
+            attributes = attributes_;
+        }
+        [nodiscard]
+        public virtual Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = writer.GetBinaryWriter().Write(fileIndex);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(moduleId);
+            if (result.Error()) return result;
+            SymbolFlags f = cast<SymbolFlags>(flags & ~(SymbolFlags.project | SymbolFlags.installed));
+            result = writer.GetBinaryWriter().Write(cast<byte>(f));
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(mangledName);
+            if (result.Error()) return result;
+            bool hasAttributes = !attributes.IsNull();
+            result = writer.GetBinaryWriter().Write(hasAttributes);
+            if (result.Error()) return result;
+            if (hasAttributes)
+            {
+                result = writer.GetAstWriter().Write(attributes.Get());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> Read(SymbolReader& reader)
+        {
+            Result<int> result = reader.GetBinaryReader().ReadInt();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            fileIndex = result.Value();
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            moduleId = uuidResult.Value();
+            Result<byte> flagsResult = reader.GetBinaryReader().ReadByte();
+            if (flagsResult.Error()) return Result<bool>(ErrorId(flagsResult.GetErrorId()));
+            flags = cast<SymbolFlags>(flagsResult.Value());
+            Result<ustring> mangledNameResult = reader.GetBinaryReader().ReadUString();
+            if (mangledNameResult.Error()) return Result<bool>(ErrorId(mangledNameResult.GetErrorId()));
+            mangledName = Rvalue(mangledNameResult.Value());
+            Result<bool> hasAttributesResult = reader.GetBinaryReader().ReadBool();
+            if (hasAttributesResult.Error()) return Result<bool>(ErrorId(hasAttributesResult.GetErrorId()));
+            bool hasAttributes = hasAttributesResult.Value();
+            if (hasAttributes)
+            {
+                Result<AttributesNode*> attributesResult = reader.GetAstReader().ReadAttributesNode();
+                if (attributesResult.Error()) return Result<bool>(ErrorId(attributesResult.GetErrorId()));
+                attributes.Reset(attributesResult.Value());
+            }
+            return Result<bool>(true);
+        }
+        public virtual Result<intermediate.Value*> GetIrObject(Emitter& emitter) const
+        {
+            return emitter.GetIrObject(this);
+        }
+        [nodiscard]
+        public virtual Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            return Result<bool>(true);
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        private SymbolKind kind;
+        private System.Lex.Span span;
+        private int fileIndex;
+        private Uuid moduleId;
+        private ustring name;
+        private SymbolFlags flags;
+        private ustring mangledName;
+        private Symbol* parent;
+        private Module* module;
+        private SourceFileNode* sourceFile;
+        private UniquePtr<AttributesNode> attributes;
+        private int errorId;
+    }
+}

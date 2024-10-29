@@ -7,7 +7,7 @@ module cmajor.masm.assembly.macro;
 
 namespace cmajor::masm::assembly {
 
-Macro::Macro(const std::string& name_) : Value(name_), value(nullptr)
+Macro::Macro(const std::string& name_) : Value(ValueKind::macro, name_), value(nullptr)
 {
 }
 

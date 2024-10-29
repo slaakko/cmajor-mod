@@ -1,0 +1,36 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    [nodiscard]
+    public Result<bool> Parse(int logStreamId, const string& filePath, Context* context, bool verbose)
+    {
+        if (verbose)
+        {
+            LogMessage(logStreamId, "> " + filePath);
+        }
+        int fileIndex = context->FileMap().MapFileName(filePath);
+        context->SetFileIndex(fileIndex);
+        Result<string> contentResult = System.IO.File.ReadAllText(filePath);
+        if (contentResult.Error()) return Result<bool>(ErrorId(contentResult.GetErrorId()));
+        Result<ustring> ucontentResult = ToUtf32(contentResult.Value());
+        if (ucontentResult.Error()) return Result<bool>(ErrorId(ucontentResult.GetErrorId()));
+        ustring content = Rvalue(ucontentResult.Value());
+        List<int> lineStartIndeces = System.Lex.ComputeLineStartIndeces(content);
+        context->FileMap().AddSourceFile(fileIndex, Rvalue(content), lineStartIndeces);
+        System.Lex.SourceFile* sourceFile = context->FileMap().GetSourceFile(fileIndex);
+        uchar* begin = sourceFile->Begin();
+        uchar* end = sourceFile->End();
+        intermediate_lexer lexer(begin, end, filePath);
+        Result<bool> parseResult = intermediate.parser.intermediate_parser<intermediate_lexer>.Parse(lexer, context);
+        if (parseResult.Error()) return parseResult;
+        return Result<bool>(true);
+    }
+}
+

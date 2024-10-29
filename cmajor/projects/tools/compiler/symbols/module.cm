@@ -1,0 +1,1112 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using cm.ast;
+
+namespace symbols
+{
+    public enum ModuleFlags : byte
+    {
+        none = 0u,
+        system = 1u << 0u,
+        core = 1u << 1u,
+        root = 1u << 2u,
+        readFromModuleFile = 1u << 3u,
+        headerRead = 1u << 4u
+    }
+
+    public ModuleFlags GetStableModuleFlags(ModuleFlags flags)
+    {
+        return cast<ModuleFlags>(flags & ~(ModuleFlags.root | ModuleFlags.readFromModuleFile | ModuleFlags.headerRead));
+    }
+
+    public class ModuleTag
+    {
+        public ModuleTag()
+        {
+            bytes[0] = cast<byte>('C');
+            bytes[1] = cast<byte>('M');
+            bytes[2] = cast<byte>('M');
+            bytes[3] = currentModuleFormat;
+        }
+        [nodiscard]
+        public Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = writer.GetBinaryWriter().Write(bytes[0]);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(bytes[1]);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(bytes[2]);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(bytes[3]);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = reader.GetBinaryReader().ReadByte();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            bytes[0] = result.Value();
+            result = reader.GetBinaryReader().ReadByte();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            bytes[1] = result.Value();
+            result = reader.GetBinaryReader().ReadByte();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            bytes[2] = result.Value();
+            result = reader.GetBinaryReader().ReadByte();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            bytes[3] = result.Value();
+            return Result<bool>(true);
+        }
+        public byte[4] bytes;
+    }
+
+    const byte moduleFormat_21 = cast<byte>('L');
+    const byte currentModuleFormat = moduleFormat_21;
+
+    internal class SystemModuleSet
+    {
+        static SystemModuleSet() : instance(new SystemModuleSet())
+        {
+        }
+        public static SystemModuleSet& Instance()
+        {
+            return *instance;
+        }
+        public bool IsSystemModuleName(const string& moduleName) const
+        {
+            auto it = systemModuleNames.Find(moduleName);
+            return it != systemModuleNames.End();
+        }
+        private SystemModuleSet()
+        {
+            systemModuleNames.Insert("System.Core");
+            systemModuleNames.Insert("System.Runtime");
+            systemModuleNames.Insert("System.Base");
+            systemModuleNames.Insert("System.Lex");
+            systemModuleNames.Insert("System.Parsing");
+            systemModuleNames.Insert("System.Net.Sockets");
+            systemModuleNames.Insert("System.Json");
+            systemModuleNames.Insert("System.Xml");
+            systemModuleNames.Insert("System.Dom");
+            systemModuleNames.Insert("System.Xml.Serialization");
+            systemModuleNames.Insert("System.IO.Compression");
+            systemModuleNames.Insert("System.RegularExpressions");
+            systemModuleNames.Insert("System.XPath");
+            systemModuleNames.Insert("System");
+            systemModuleNames.Insert("System.Install");
+            systemModuleNames.Insert("System.Windows");
+            systemModuleNames.Insert("System.Windows.Install");
+        }
+        private static UniquePtr<SystemModuleSet> instance;
+        private Set<string> systemModuleNames;
+    }
+
+    public bool IsSystemModule(const string& moduleName)
+    {
+        return SystemModuleSet.Instance().IsSystemModuleName(moduleName);
+    }
+
+    [nodiscard]
+    public Result<bool> WriteFileMap(const System.Lex.FileMap& fileMap, System.IO.BinaryWriter& writer)
+    {
+        int n = cast<int>(fileMap.FileNames().Count());
+        auto result = writer.Write(n);
+        if (result.Error()) return result;
+        for (int i = 0; i < n; ++i)
+        {
+            const string& fileName = fileMap.GetFileName(i);
+            Result<string> cmajorRootRelativeFilePathResult = MakeCmajorRootRelativeFilePath(fileName);
+            if (cmajorRootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(cmajorRootRelativeFilePathResult.GetErrorId()));
+            string cmajorRootRelativeFilePath = Rvalue(cmajorRootRelativeFilePathResult.Value());
+            result = writer.Write(cmajorRootRelativeFilePath);
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> ReadFileMap(System.Lex.FileMap& fileMap, System.IO.BinaryReader& reader)
+    {
+        Result<int> nr = reader.ReadInt();
+        if (nr.Error()) return Result<bool>(ErrorId(nr.GetErrorId()));
+        int n = nr.Value();
+        for (int i = 0; i < n; ++i)
+        {
+            Result<string> cmajorRootRelativeFilePathResult = reader.ReadString();
+            if (cmajorRootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(cmajorRootRelativeFilePathResult.GetErrorId()));
+            Result<string> expandResult = ExpandCmajorRootRelativeFilePath(cmajorRootRelativeFilePathResult.Value());
+            if (expandResult.Error()) return Result<bool>(ErrorId(expandResult.GetErrorId()));
+            string fileName = Rvalue(expandResult.Value());
+            fileMap.MapFileName(fileName);
+        }
+        return Result<bool>(true);
+    }
+
+    public class ModuleDependency
+    {
+        public ModuleDependency(Module* module_) : module(module_)
+        {
+        }
+        public inline Module* GetModule() const
+        {
+            return module;
+        }
+        public void AddReferencedModule(Module* referencedModule)
+        {
+            if (Find(referencedModules.Begin(), referencedModules.End(), referencedModule) == referencedModules.End())
+            {
+                referencedModules.Add(referencedModule);
+            }
+        }
+        public inline const List<Module*>& ReferencedModules() const
+        {
+            return referencedModules;
+        }
+        private Module* module;
+        private List<Module*> referencedModules;
+    }
+
+    public class SourceFileInfo
+    {
+        public SourceFileInfo() : sourceFileId(-1), sourceFilePath()
+        {
+        }
+        public SourceFileInfo(int sourceFileId_, const string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
+        {
+        }
+        public inline int SourceFileId() const
+        {
+            return sourceFileId;
+        }
+        public inline const string& SourceFilePath() const
+        {
+            return sourceFilePath;
+        }
+        public Result<bool> Write(BinaryWriter& writer)
+        {
+            auto result = writer.Write(sourceFileId);
+            if (result.Error()) return result;
+            result = writer.Write(sourceFilePath);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<bool> Read(BinaryReader& reader)
+        {
+            auto sourceFileIdResult = reader.ReadInt();
+            if (sourceFileIdResult.Error()) return Result<bool>(ErrorId(sourceFileIdResult.GetErrorId()));
+            sourceFileId = sourceFileIdResult.Value();
+            auto sourceFilePathResult = reader.ReadString();
+            if (sourceFilePathResult.Error()) return Result<bool>(ErrorId(sourceFilePathResult.GetErrorId()));
+            sourceFilePath = Rvalue(sourceFilePathResult.Value());
+            return Result<bool>(true);
+        }
+        private int sourceFileId;
+        private string sourceFilePath;
+    }
+
+    public class FunctionTraceInfo
+    {
+        public FunctionTraceInfo() : functionId(-1), functionFullName(), sourceFileId(-1)
+        {
+        }
+        public FunctionTraceInfo(int functionId_, const string& functionFullName_, int sourceFileId_) :
+            functionId(functionId_), functionFullName(functionFullName_), sourceFileId(sourceFileId_)
+        {
+        }
+        public inline int FunctionId() const
+        {
+            return functionId;
+        }
+        public inline const string& FunctionFullName() const
+        {
+            return functionFullName;
+        }
+        public inline int SourceFileId() const
+        {
+            return sourceFileId;
+        }
+        public Result<bool> Write(BinaryWriter& writer)
+        {
+            auto result = writer.Write(functionId);
+            if (result.Error()) return result;
+            result = writer.Write(functionFullName);
+            if (result.Error()) return result;
+            result = writer.Write(sourceFileId);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<bool> Read(BinaryReader& reader)
+        {
+            Result<int> functionIdResult = reader.ReadInt();
+            if (functionIdResult.Error()) return Result<bool>(ErrorId(functionIdResult.GetErrorId()));
+            functionId = functionIdResult.Value();
+            Result<string> functionFullNameResult = reader.ReadString();
+            if (functionFullNameResult.Error()) return Result<bool>(ErrorId(functionFullNameResult.GetErrorId()));
+            functionFullName = Rvalue(functionFullNameResult.Value());
+            Result<int> sourceFileIdResult = reader.ReadInt();
+            if (sourceFileIdResult.Error()) return Result<bool>(ErrorId(sourceFileIdResult.GetErrorId()));
+            sourceFileId = sourceFileIdResult.Value();
+            return Result<bool>(true);
+        }
+        private int functionId;
+        private string functionFullName;
+        private int sourceFileId;
+    }
+
+    public class Module
+    {
+        public Module() :
+            format(currentModuleFormat),
+            flags(ModuleFlags.none),
+            name(),
+            id(Uuid.Random()),
+            config(cm.ast.Config.debug),
+            symbolTablePos(0),
+            symbolTable(null),
+            logStreamId(-1),
+            moduleDependency(this),
+            index(-1)
+        {
+        }
+        public Module(const string& name_, const string& filePath_) :
+            format(currentModuleFormat),
+            flags(ModuleFlags.none),
+            name(name_),
+            id(Uuid.Random()),
+            config(cm.ast.Config.debug),
+            originalFilePath(filePath_),
+            symbolTablePos(0),
+            symbolTable(new SymbolTable(this)),
+            logStreamId(-1),
+            moduleDependency(this),
+            index(-1)
+        {
+            if (IsSystemModule(name))
+            {
+                SetSystemModule();
+            }
+            if (name == "System.Core")
+            {
+                SetCore();
+            }
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public inline const Uuid& Id() const
+        {
+            return id;
+        }
+        public inline int SymbolTablePos() const
+        {
+            return symbolTablePos;
+        }
+        public inline bool GetFlag(ModuleFlags flag) const
+        {
+            return (flags & flag) != ModuleFlags.none;
+        }
+        public inline void SetFlag(ModuleFlags flag)
+        {
+            flags = cast<ModuleFlags>(flags | flag);
+        }
+        public inline void ResetFlag(ModuleFlags flag)
+        {
+            flags = cast<ModuleFlags>(flags & ~flag);
+        }
+        public inline const System.Lex.FileMap& GetFileMap() const
+        {
+            return fileMap;
+        }
+        public inline System.Lex.FileMap& GetFileMap()
+        {
+            return fileMap;
+        }
+        public void SetSystemModule()
+        {
+            flags = cast<ModuleFlags>(flags | ModuleFlags.system);
+        }
+        public inline bool IsSystemModule() const
+        {
+            return (flags & ModuleFlags.system) != ModuleFlags.none;
+        }
+        public void SetRootModule()
+        {
+            flags = cast<ModuleFlags>(flags | ModuleFlags.root);
+        }
+        public inline bool IsRootModule() const
+        {
+            return (flags & ModuleFlags.root) != ModuleFlags.none;
+        }
+        public void SetCore()
+        {
+            flags = cast<ModuleFlags>(flags | ModuleFlags.core);
+        }
+        public inline bool IsCore() const
+        {
+            return (flags & ModuleFlags.core) != ModuleFlags.none;
+        }
+        public inline bool IsHeaderRead() const
+        {
+            return (flags & ModuleFlags.headerRead) != ModuleFlags.none;
+        }
+        public inline void SetHeaderRead()
+        {
+            flags = cast<ModuleFlags>(flags | ModuleFlags.headerRead);
+        }
+        public void SetLogStreamId(int logStreamId_)
+        {
+            logStreamId = logStreamId_;
+        }
+        public inline int LogStreamId() const
+        {
+            return logStreamId;
+        }
+        public inline SymbolTable* GetSymbolTable()
+        {
+            return symbolTable.Get();
+        }
+        [nodiscard]
+        public Result<bool> PrepareForCompilation(SymbolsContext& context, const List<string>& references, Target target, const System.Lex.Span& rootSpan,
+            int rootFileIndex, SourceFileNode* rootSourceFile)
+        {
+            MapModule(this);
+            string configStr = GetConfig();
+            if (configStr == "debug")
+            {
+                config = Config.debug;
+            }
+            else if (configStr == "release")
+            {
+                config = Config.release;
+            }
+            else if (configStr == "profile")
+            {
+                config = Config.profile;
+            }
+            else if (configStr == "trace")
+            {
+                config = Config.trace;
+            }
+            string moduleDirectory = System.IO.Path.GetDirectoryName(originalFilePath);
+            auto moduleDirectoryResult = GetFullPath(moduleDirectory);
+            if (moduleDirectoryResult.Error()) return Result<bool>(ErrorId(moduleDirectoryResult.GetErrorId()));
+            string fpModuleDirectory = Rvalue(moduleDirectoryResult.Value());
+            System.IO.Directory.CreateDirectories(fpModuleDirectory);
+            SetDirectoryPath(fpModuleDirectory);
+            SetObjectFileDirectoryPath(fpModuleDirectory);
+            symbolTable->GlobalNs().SetSpan(rootSpan);
+            symbolTable->GlobalNs().SetFileIndex(rootFileIndex);
+            if (name == "System.Core")
+            {
+                context.SetCoreModule(this);
+                auto initResult = InitCoreSymbolTable(context, symbolTable.Get(), rootSpan, rootSourceFile);
+                if (initResult.Error()) return initResult;
+            }
+            Set<string> importSet;
+            Module* rootModule = this;
+            Map<string, ModuleDependency*> moduleDependencyMap;
+            Map<string, Module*> readMap;
+            List<Module*> modules;
+            bool first = true;
+            auto result = ImportModulesWithReferences(target, rootModule, rootModule, references, importSet, modules, moduleDependencyMap, readMap, first);
+            if (result.Error()) return result;
+            modules.Add(this);
+            moduleDependencyMap[originalFilePath] = &moduleDependency;
+            Map<Module*, ModuleDependency*> dependencyMap;
+            for (const auto& p : moduleDependencyMap)
+            {
+                dependencyMap[p.second->GetModule()] = p.second;
+            }
+            Result<List<Module*>> finishReadOrderResult = CreateFinishReadOrder(modules, dependencyMap, rootModule);
+            if (finishReadOrderResult.Error()) return Result<bool>(ErrorId(finishReadOrderResult.GetErrorId()));
+            const List<Module*>& finishReadOrder = finishReadOrderResult.Value();
+            result = FinishReads(context, rootModule, finishReadOrder, false, false);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public void SetDirectoryPath(const string& directoryPath_)
+        {
+            directoryPath = directoryPath_;
+        }
+        public void SetObjectFileDirectoryPath(const string& objectFileDirectoryPath_)
+        {
+            objectFileDirectoryPath = objectFileDirectoryPath_;
+        }
+        public inline const string& ObjectFileDirectory() const
+        {
+            return objectFileDirectoryPath;
+        }
+        public inline const string& OriginalFilePath() const
+        {
+            return originalFilePath;
+        }
+        public inline const string& FilePathReadFrom() const
+        {
+            return filePathReadFrom;
+        }
+        [nodiscard]
+        public Result<bool> ReadHeader(Target target, SymbolReader& reader, Module* rootModule, Set<string>& importSet, List<Module*>& modules,
+            Map<string, ModuleDependency*>& dependencyMap, Map<string, Module*>& readMap, bool& first)
+        {
+            if (IsHeaderRead())
+            {
+                int nres = cast<int>(resourceTable.Resources().Count());
+                for (int i = 0; i < nres; ++i)
+                {
+                    Resource resource = resourceTable.Resources()[i];
+                    if (!rootModule->globalResourceTable.Contains(resource.Name()))
+                    {
+                        rootModule->globalResourceTable.AddResource(resource);
+                    }
+                }
+                int nrc = cast<int>(resourceScriptFilePaths.Count());
+                for (int i = 0; i < nrc; ++i)
+                {
+                    const string& resourceScriptFilePath = resourceScriptFilePaths[i];
+                    if (Find(allResourceScriptFilePaths.Begin(), allResourceScriptFilePaths.End(), resourceScriptFilePath) == allResourceScriptFilePaths.End())
+                    {
+                        allResourceScriptFilePaths.Add(resourceScriptFilePath);
+                    }
+                }
+                if (dependencyMap.Find(originalFilePath) == dependencyMap.End())
+                {
+                    modules.Add(this);
+                    dependencyMap[originalFilePath] = &moduleDependency;
+                }
+                auto result = ImportModules(target, rootModule, this, importSet, modules, dependencyMap, readMap, first);
+                if (result.Error()) return result;
+                return Result<bool>(true);
+            }
+            SetHeaderRead();
+            ModuleTag expectedTag;
+            ModuleTag tag;
+            auto result = tag.Read(reader);
+            if (result.Error()) return result;
+            for (int i = 0; i < 3; ++i)
+            {
+                if (tag.bytes[i] != expectedTag.bytes[i])
+                {
+                    int errorId = AllocateError("invalid module tag read from file '" + reader.GetAstReader().FileName() + "', please rebuild module from sources");
+                    return Result<bool>(ErrorId(errorId));
+                }
+                if (tag.bytes[3] != expectedTag.bytes[3])
+                {
+                    int errorId = AllocateError("module format version mismatch reading from file '" + reader.GetAstReader().FileName() +
+                        "': format " + string(cast<char>(expectedTag.bytes[3])) + " expected, format " + string(cast<char>(tag.bytes[3])) +
+                        " read, please rebuild module from sources");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            auto flagsResult = reader.GetBinaryReader().ReadByte();
+            if (flagsResult.Error()) return Result<bool>(ErrorId(flagsResult.GetErrorId()));
+            flags = cast<ModuleFlags>(flagsResult.Value());
+            auto nameResult = reader.GetBinaryReader().ReadString();
+            if (nameResult.Error()) return Result<bool>(ErrorId(nameResult.GetErrorId()));
+            name = Rvalue(nameResult.Value());
+            auto idResult = reader.GetBinaryReader().ReadUuid();
+            if (idResult.Error()) return Result<bool>(ErrorId(idResult.GetErrorId()));
+            id = idResult.Value();
+            MapModule(this);
+            auto configResult = reader.GetBinaryReader().ReadByte();
+            if (configResult.Error()) return Result<bool>(ErrorId(configResult.GetErrorId()));
+            config = cast<Config>(configResult.Value());
+            auto rootRelativeFilePathResult = reader.GetBinaryReader().ReadString();
+            if (rootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(rootRelativeFilePathResult.GetErrorId()));
+            string rootRelativeFilePath = Rvalue(rootRelativeFilePathResult.Value());
+            auto expandResult = ExpandCmajorRootRelativeFilePath(rootRelativeFilePath);
+            if (expandResult.Error()) return Result<bool>(ErrorId(expandResult.GetErrorId()));
+            originalFilePath = Rvalue(expandResult.Value());
+            if (dependencyMap.Find(originalFilePath) == dependencyMap.End())
+            {
+                modules.Add(this);
+                dependencyMap[originalFilePath] = &moduleDependency;
+            }
+            auto fullPathResult = GetFullPath(reader.GetAstReader().FileName());
+            if (fullPathResult.Error()) return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
+            filePathReadFrom = Rvalue(fullPathResult.Value());
+            referenceFilePaths.Clear();
+            auto referenceCountResult = reader.GetBinaryReader().ReadInt();
+            if (referenceCountResult.Error()) return Result<bool>(ErrorId(referenceCountResult.GetErrorId()));
+            int nr = referenceCountResult.Value();
+            for (int i = 0; i < nr; ++i)
+            {
+                rootRelativeFilePathResult = reader.GetBinaryReader().ReadString();
+                if (rootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(rootRelativeFilePathResult.GetErrorId()));
+                rootRelativeFilePath = Rvalue(rootRelativeFilePathResult.Value());
+                expandResult = ExpandCmajorRootRelativeFilePath(rootRelativeFilePath);
+                if (expandResult.Error()) return Result<bool>(ErrorId(expandResult.GetErrorId()));
+                string referenceFilePath = Rvalue(expandResult.Value());
+                referenceFilePaths.Add(Rvalue(referenceFilePath));
+            }
+            result = ReadFileMap(fileMap, reader.GetBinaryReader());
+            if (result.Error()) return result;
+            result = resourceTable.Read(reader.GetBinaryReader());
+            if (result.Error()) return result;
+            int nres = cast<int>(resourceTable.Resources().Count());
+            for (int i = 0; i < nres; ++i)
+            {
+                Resource resource = resourceTable.Resources()[i];
+                if (!rootModule->globalResourceTable.Contains(resource.Name()))
+                {
+                    rootModule->globalResourceTable.AddResource(resource);
+                }
+            }
+            Result<int> nrcResult = reader.GetBinaryReader().ReadInt();
+            if (nrcResult.Error()) return Result<bool>(ErrorId(nrcResult.GetErrorId()));
+            int nrc = nrcResult.Value();
+            for (int i = 0; i < nrc; ++i)
+            {
+                rootRelativeFilePathResult = reader.GetBinaryReader().ReadString();
+                if (rootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(rootRelativeFilePathResult.GetErrorId()));
+                rootRelativeFilePath = Rvalue(rootRelativeFilePathResult.Value());
+                expandResult = ExpandCmajorRootRelativeFilePath(rootRelativeFilePath);
+                if (expandResult.Error()) return Result<bool>(ErrorId(expandResult.GetErrorId()));
+                string resourceScriptFilePath = Rvalue(expandResult.Value());
+                resourceScriptFilePaths.Add(resourceScriptFilePath);
+                if (Find(allResourceScriptFilePaths.Begin(), allResourceScriptFilePaths.End(), resourceScriptFilePath) == allResourceScriptFilePaths.End())
+                {
+                    allResourceScriptFilePaths.Add(resourceScriptFilePath);
+                }
+            }
+            Result<long> symbolTablePosResult = reader.GetBinaryReader().GetStream()->Tell();
+            if (symbolTablePosResult.Error()) return Result<bool>(ErrorId(symbolTablePosResult.GetErrorId()));
+            symbolTablePos = cast<int>(symbolTablePosResult.Value());
+            result = ImportModules(target, rootModule, this, importSet, modules, dependencyMap, readMap, first);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Write(SymbolWriter& writer)
+        {
+            ModuleTag tag;
+            auto result = tag.Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(cast<byte>(GetStableModuleFlags(flags)));
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(name);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(id);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(cast<byte>(config));
+            if (result.Error()) return result;
+            Result<string> cmajorRootRelativeFilePathResult = MakeCmajorRootRelativeFilePath(originalFilePath);
+            if (cmajorRootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(cmajorRootRelativeFilePathResult.GetErrorId()));
+            string cmajorRootRelativeFilePath = Rvalue(cmajorRootRelativeFilePathResult.Value());
+            result = writer.GetBinaryWriter().Write(cmajorRootRelativeFilePath);
+            if (result.Error()) return result;
+            int nr = cast<int>(referencedModules.Count());
+            result = writer.GetBinaryWriter().Write(nr);
+            if (result.Error()) return result;
+            for (int i = 0; i < nr; ++i)
+            {
+                Module* referencedModule = referencedModules[i];
+                cmajorRootRelativeFilePathResult = MakeCmajorRootRelativeFilePath(referencedModule->OriginalFilePath());
+                if (cmajorRootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(cmajorRootRelativeFilePathResult.GetErrorId()));
+                cmajorRootRelativeFilePath = Rvalue(cmajorRootRelativeFilePathResult.Value());
+                result = writer.GetBinaryWriter().Write(cmajorRootRelativeFilePath);
+                if (result.Error()) return result;
+            }
+            result = WriteFileMap(fileMap, writer.GetBinaryWriter());
+            if (result.Error()) return result;
+            result = resourceTable.Write(writer.GetBinaryWriter());
+            if (result.Error()) return result;
+            int nrc = cast<int>(resourceScriptFilePaths.Count());
+            result = writer.GetBinaryWriter().Write(nrc);
+            if (result.Error()) return result;
+            for (const auto& resourceScriptFilePath : resourceScriptFilePaths)
+            {
+                auto fpResult = System.IO.GetFullPath(resourceScriptFilePath);
+                if (fpResult.Error()) return Result<bool>(ErrorId(fpResult.GetErrorId()));
+                Result<string> cmajorRootRelativeFilePathResult = MakeCmajorRootRelativeFilePath(fpResult.Value());
+                if (cmajorRootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(cmajorRootRelativeFilePathResult.GetErrorId()));
+                string cmajorRootRelativeFilePath = Rvalue(cmajorRootRelativeFilePathResult.Value());
+                result = writer.GetBinaryWriter().Write(cmajorRootRelativeFilePath);
+                if (result.Error()) return result;
+            }
+            result = symbolTable->Write(writer);
+            if (result.Error()) return result;
+            result = WriteFunctionTraceData(writer.GetBinaryWriter());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private Result<bool> WriteFunctionTraceData(System.IO.BinaryWriter& writer)
+        {
+            if (IsCore() || name == "System.Runtime")
+            {
+                return Result<bool>(true);
+            }
+            if (GetGlobalFlag(GlobalFlags.release)) return Result<bool>(true);
+            int ns = cast<int>(sourceFileInfoList.Count());
+            auto result = writer.Write(ns);
+            if (result.Error()) return result;
+            for (const auto& sourceFileInfo : sourceFileInfoList)
+            {
+                result = sourceFileInfo->Write(writer);
+                if (result.Error()) return result;
+            }
+            int ntr = cast<int>(traceInfoList.Count());
+            result = writer.Write(ntr);
+            if (result.Error()) return result;
+            for (const auto& traceInfo : traceInfoList)
+            {
+                result = traceInfo->Write(writer);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public Result<bool> ReadFunctionTraceData(System.IO.BinaryReader& reader)
+        {
+            if (IsCore() || name == "System.Runtime")
+            {
+                return Result<bool>(true);
+            }
+            if (GetGlobalFlag(GlobalFlags.release)) return Result<bool>(true);
+            Result<int> nsResult = reader.ReadInt();
+            if (nsResult.Error()) return Result<bool>(ErrorId(nsResult.GetErrorId()));
+            int ns = nsResult.Value();
+            for (int i = 0; i < ns; ++i)
+            {
+                UniquePtr<SourceFileInfo> sourceFileInfo(new SourceFileInfo());
+                auto result = sourceFileInfo->Read(reader);
+                if (result.Error()) return result;
+                sourceFileInfoList.Add(Rvalue(sourceFileInfo));
+            }
+            Result<int> ntrResult = reader.ReadInt();
+            if (ntrResult.Error()) return Result<bool>(ErrorId(ntrResult.GetErrorId()));
+            int ntr = ntrResult.Value();
+            for (int i = 0; i < ntr; ++i)
+            {
+                UniquePtr<FunctionTraceInfo> traceInfo(new FunctionTraceInfo());
+                auto result = traceInfo->Read(reader);
+                if (result.Error()) return result;
+                traceInfoList.Add(Rvalue(traceInfo));
+            }
+            for (const auto& sourceFileInfo : sourceFileInfoList)
+            {
+                sourceFileInfoMap[sourceFileInfo->SourceFilePath()] = sourceFileInfo.Get();
+            }
+            for (const auto& functionTraceInfo : traceInfoList)
+            {
+                traceInfoMap[functionTraceInfo->FunctionFullName()] = functionTraceInfo.Get();
+            }
+            return Result<bool>(true);
+        }
+        public inline const List<string>& ReferenceFilePaths() const
+        {
+            return referenceFilePaths;
+        }
+        public inline const List<Module*>& ReferencedModules() const
+        {
+            return referencedModules;
+        }
+        public inline const List<Module*>& AllReferencedModules() const
+        {
+            return allRefModules;
+        }
+        public inline List<Module*>& AllRefModules()
+        {
+            return allRefModules;
+        }
+        public void AddReferencedModule(Module* referencedModule)
+        {
+            moduleDependency.AddReferencedModule(referencedModule);
+            if (Find(referencedModules.Begin(), referencedModules.End(), referencedModule) == referencedModules.End())
+            {
+                referencedModules.Add(referencedModule);
+            }
+        }
+        public ModuleDependency& GetModuleDependency()
+        {
+            return moduleDependency;
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        public inline void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public inline ResourceTable& GetResourceTable()
+        {
+            return resourceTable;
+        }
+        public inline ResourceTable& GetGlobalResourceTable()
+        {
+            return globalResourceTable;
+        }
+        public void ImportTraceData(Module* module)
+        {
+            // todo
+        }
+        [nodiscard]
+        public Result<bool> AddResourceScriptFilePath(const string& resourceScriptFilePath)
+        {
+            auto fullPathResult = System.IO.GetFullPath(resourceScriptFilePath);
+            if (fullPathResult.Error()) return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
+            string fullResourceScriptFilePath = Rvalue(fullPathResult.Value());
+            resourceScriptFilePaths.Add(fullResourceScriptFilePath);
+            if (Find(allResourceScriptFilePaths.Begin(), allResourceScriptFilePaths.End(), fullResourceScriptFilePath) == allResourceScriptFilePaths.End())
+            {
+                allResourceScriptFilePaths.Add(fullResourceScriptFilePath);
+            }
+            return Result<bool>(true);
+        }
+        public void ImportResourceScriptFilePaths(Module* module)
+        {
+            for (const auto& resourceScriptFilePath : module->allResourceScriptFilePaths)
+            {
+                if (Find(allResourceScriptFilePaths.Begin(), allResourceScriptFilePaths.End(), resourceScriptFilePath) == allResourceScriptFilePaths.End())
+                {
+                    allResourceScriptFilePaths.Add(resourceScriptFilePath);
+                }
+            }
+        }
+        public inline const List<string>& ResourceScriptFilePaths() const
+        {
+            return resourceScriptFilePaths;
+        }
+        public inline const List<string>& AllResourceScriptFilePaths() const
+        {
+            return allResourceScriptFilePaths;
+        }
+        public inline bool HasSymbolTable() const
+        {
+            return !symbolTable.IsNull();
+        }
+        public void CreateSymbolTable()
+        {
+            symbolTable.Reset(new SymbolTable(this));
+        }
+        public void ClearDefines()
+        {
+            if (IsRootModule())
+            {
+                defines = GetCommandLineDefines();
+            }
+        }
+        public void DefineSymbol(const ustring& symbol)
+        {
+            defines.Insert(symbol);
+        }
+        public bool IsSymbolDefined(const ustring& symbol)
+        {
+            auto it = defines.Find(symbol);
+            if (it != defines.End())
+            {
+                return true;
+            }
+            return false;
+        }
+        public CompileWarningCollection& WarningCollection()
+        {
+            return warningCollection;
+        }
+        public RecursiveMutex& Lock()
+        {
+            return lock;
+        }
+        private byte format;
+        private ModuleFlags flags;
+        private string name;
+        private Uuid id;
+        private Config config;
+        private string originalFilePath;
+        private string filePathReadFrom;
+        private string libraryFilePath;
+        private List<string> resourceFilePaths;
+        private List<string> referenceFilePaths;
+        private ResourceTable resourceTable;
+        private ResourceTable globalResourceTable;
+        private List<string> resourceScriptFilePaths;
+        private List<string> allResourceScriptFilePaths;
+        private int symbolTablePos;
+        private UniquePtr<SymbolTable> symbolTable;
+        private System.Lex.FileMap fileMap;
+        private int logStreamId;
+        private string directoryPath;
+        private string objectFileDirectoryPath;
+        private List<Module*> referencedModules;
+        private List<Module*> allRefModules;
+        private ModuleDependency moduleDependency;
+        private int index;
+        private List<UniquePtr<SourceFileInfo>> sourceFileInfoList;
+        private List<SourceFileInfo*> allSourceFileInfoList;
+        private Map<string, SourceFileInfo*> sourceFileInfoMap;
+        private List<UniquePtr<FunctionTraceInfo>> traceInfoList;
+        private List<FunctionTraceInfo*> allTraceInfoList;
+        private Map<string, FunctionTraceInfo*> traceInfoMap;
+        private Set<ustring> traceDataImported;
+        private Set<ustring> defines;
+        private CompileWarningCollection warningCollection;
+        private RecursiveMutex lock;
+    }
+
+    [nodiscard]
+    internal Result<bool> ImportModules(Target target, Module* rootModule, Module* module, Set<string>& importSet, List<Module*>& modules,
+        Map<string, ModuleDependency*>& dependencyMap, Map<string, Module*>& readMap, bool& first)
+    {
+        return ImportModulesWithReferences(target, rootModule, module, module->ReferenceFilePaths(), importSet, modules, dependencyMap, readMap, first);
+    }
+
+    [nodiscard]
+    internal Result<bool> Import(Target target, Module* rootModule, Module* module, const List<string>& references, Set<string>& importSet,
+        List<Module*>& modules, Map<string, ModuleDependency*>& moduleDependencyMap, Map<string, Module*>& readMap, bool& first)
+    {
+        for (const auto& reference : references)
+        {
+            if (importSet.Find(reference) == importSet.End())
+            {
+                importSet.Insert(reference);
+                string config = GetConfig();
+                string moduleFileName = System.IO.Path.GetFileName(reference);
+                string moduleFilePath;
+                if (!rootModule->IsSystemModule())
+                {
+                    auto libDirResult = CmajorSystemLibDir(config, BackEnd.cm, "cm");
+                    if (libDirResult.Error()) return Result<bool>(ErrorId(libDirResult.GetErrorId()));
+                    string cmajorSystemLibDir = Rvalue(libDirResult.Value());
+                    moduleFilePath = System.IO.Path.Combine(cmajorSystemLibDir, moduleFileName);
+                    Result<bool> existsResult = System.IO.File.Exists(moduleFilePath);
+                    if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                    bool exists = existsResult.Value();
+                    if (!exists)
+                    {
+                        int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                else
+                {
+                    moduleFilePath = reference;
+                    Result<bool> existsResult = System.IO.File.Exists(moduleFilePath);
+                    if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                    bool exists = existsResult.Value();
+                    if (!exists)
+                    {
+                        int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                Result<string> fullModuleFilePathResult = System.IO.GetFullPath(moduleFilePath);
+                if (fullModuleFilePathResult.Error()) return Result<bool>(ErrorId(fullModuleFilePathResult.GetErrorId()));
+                string fullModuleFilePath = Rvalue(fullModuleFilePathResult.Value());
+                if (readMap.Find(fullModuleFilePath) == readMap.End())
+                {
+                    Module* referencedModule = GetModuleFromModuleCache(fullModuleFilePath);
+                    if (referencedModule->GetFlag(ModuleFlags.readFromModuleFile))
+                    {
+                        referencedModule->ResetFlag(ModuleFlags.readFromModuleFile);
+                        referencedModule = ResetCachedModule(fullModuleFilePath);
+                    }
+                    rootModule->AllRefModules().Add(referencedModule);
+                    readMap[fullModuleFilePath] = referencedModule;
+                    importSet.Insert(fullModuleFilePath);
+                    SymbolReader reader(fullModuleFilePath);
+                    auto result = referencedModule->ReadHeader(target, reader, rootModule, importSet, modules, moduleDependencyMap, readMap, first);
+                    if (result.Error()) return result;
+                    module->AddReferencedModule(referencedModule);
+                    result = Import(target, rootModule, module, referencedModule->ReferenceFilePaths(), importSet, modules, moduleDependencyMap, readMap, first);
+                    if (result.Error()) return result;
+                }
+            }
+            else
+            {
+                string config = GetConfig();
+                string moduleFileName = System.IO.Path.GetFileName(reference);
+                string moduleFilePath;
+                if (!rootModule->IsSystemModule())
+                {
+                    auto libDirResult = CmajorSystemLibDir(config, BackEnd.cm, "cm");
+                    if (libDirResult.Error()) return Result<bool>(ErrorId(libDirResult.GetErrorId()));
+                    string cmajorSystemLibDir = Rvalue(libDirResult.Value());
+                    moduleFilePath = System.IO.Path.Combine(cmajorSystemLibDir, moduleFileName);
+                    Result<bool> existsResult = System.IO.File.Exists(moduleFilePath);
+                    if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                    bool exists = existsResult.Value();
+                    if (!exists)
+                    {
+                        int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                else
+                {
+                    moduleFilePath = reference;
+                    Result<bool> existsResult = System.IO.File.Exists(moduleFilePath);
+                    if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                    bool exists = existsResult.Value();
+                    if (!exists)
+                    {
+                        int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                auto it = readMap.Find(moduleFilePath);
+                if (it != readMap.End())
+                {
+                    Module* referencedModule = it->second;
+                    if (rootModule->IsSystemModule() ||
+                        ((target == Target.program || target == Target.library || target == Target.unitTest) && referencedModule->Name() != "System" ||
+                        (target == Target.winguiapp || target == Target.winapp || target == Target.winlib) && referencedModule->Name() != "System.Windows"))
+                    {
+                        module->AddReferencedModule(referencedModule);
+                    }
+                }
+                else
+                {
+                    int errorId = AllocateError("module file path '" + moduleFilePath + "' not found from read map for module '" + rootModule->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    internal Result<bool> ImportModulesWithReferences(Target target, Module* rootModule, Module* module, const List<string>& references, Set<string>& importSet,
+        List<Module*>& modules, Map<string, ModuleDependency*>& moduleDependencyMap, Map<string, Module*>& readMap, bool& first)
+    {
+        List<string> allReferences = references;
+        if (!rootModule->IsSystemModule())
+        {
+            if (first)
+            {
+                first = false;
+                if (target == Target.winguiapp || target == Target.winapp || target == Target.winlib)
+                {
+                    auto result = CmajorSystemWindowsModuleFilePath(GetConfig(), BackEnd.cm, "cm");
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    allReferences.Add(result.Value());
+                }
+                else
+                {
+                    auto result = CmajorSystemModuleFilePath(GetConfig(), BackEnd.cm, "cm");
+                    if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                    allReferences.Add(result.Value());
+                }
+            }
+        }
+        auto result = Import(target, rootModule, module, allReferences, importSet, modules, moduleDependencyMap, readMap, first);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    internal Result<bool> Visit(List<Module*>& finishReadOrder, Module* module, Set<Module*>& visited, Set<Module*>& tempVisit,
+        Map<Module*, ModuleDependency*>& dependencyMap, const Module* rootModule)
+    {
+        if (tempVisit.Find(module) == tempVisit.End())
+        {
+            if (visited.Find(module) == visited.End())
+            {
+                tempVisit.Insert(module);
+                auto i = dependencyMap.Find(module);
+                if (i != dependencyMap.End())
+                {
+                    ModuleDependency* dependency = i->second;
+                    for (Module* dependentAssembly : dependency->ReferencedModules())
+                    {
+                        auto result = Visit(finishReadOrder, dependentAssembly, visited, tempVisit, dependencyMap, rootModule);
+                        if (result.Error()) return result;
+                    }
+                    tempVisit.Remove(module);
+                    visited.Insert(module);
+                    finishReadOrder.Add(module);
+                }
+                else
+                {
+                    int errorId = AllocateError("module '" + module->Name() + "' not found in dependencies of module '" + rootModule->Name() + "'");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+        }
+        else
+        {
+            int errorId = AllocateError("circular module dependency '" + module->Name() + "' detected in dependencies of module '" + rootModule->Name() + "'");
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    internal Result<List<Module*>> CreateFinishReadOrder(const List<Module*>& modules, Map<Module*, ModuleDependency*>& dependencyMap, Module* rootModule)
+    {
+        List<Module*> finishReadOrder;
+        Set<Module*> visited;
+        Set<Module*> tempVisit;
+        for (Module* module : modules)
+        {
+            if (visited.Find(module) == visited.End())
+            {
+                auto result = Visit(finishReadOrder, module, visited, tempVisit, dependencyMap, rootModule);
+                if (result.Error()) return Result<List<Module*>>(ErrorId(result.GetErrorId()));
+            }
+        }
+        return Result<List<Module*>>(finishReadOrder);
+    }
+
+    [nodiscard]
+    internal Result<bool> FinishReads(SymbolsContext& context, Module* rootModule, const List<Module*>& finishReadOrder, bool all, bool readRoot)
+    {
+        int n = cast<int>(finishReadOrder.Count() - 1);
+        if (all)
+        {
+            n = cast<int>(finishReadOrder.Count());
+        }
+        for (int i = 0; i < n; ++i)
+        {
+            Module* module = finishReadOrder[i];
+            if (module->IsCore())
+            {
+                context.SetCoreModule(module);
+            }
+            if (!module->HasSymbolTable() || (module == rootModule && all && readRoot))
+            {
+                module->CreateSymbolTable();
+                SymbolReader reader(module->FilePathReadFrom());
+                reader.SetContext(&context);
+                reader.SetModule(module);
+                auto result = reader.GetBinaryReader().GetStream()->Seek(module->SymbolTablePos(), System.IO.Origin.seekSet);
+                if (result.Error()) return result;
+                reader.SetRootModule(rootModule);
+                result = module->GetSymbolTable()->Read(reader);
+                if (result.Error()) return result;
+                result = module->ReadFunctionTraceData(reader.GetBinaryReader());
+                if (result.Error()) return result;
+                for (Module* referencedModule : module->ReferencedModules())
+                {
+                    result = module->GetSymbolTable()->Import(referencedModule->GetSymbolTable(), context);
+                    if (result.Error()) return result;
+                    rootModule->ImportTraceData(referencedModule);
+                    rootModule->ImportResourceScriptFilePaths(referencedModule);
+                }
+                result = module->GetSymbolTable()->Resolve(reader.ResolutionList());
+                if (result.Error()) return result;
+                if (rootModule == module)
+                {
+                    continue;
+                }
+                result = rootModule->GetSymbolTable()->Import(module->GetSymbolTable(), context);
+                if (result.Error()) return result;
+                rootModule->ImportTraceData(module);
+                rootModule->ImportResourceScriptFilePaths(module);
+            }
+            else
+            {
+                auto result = rootModule->GetSymbolTable()->Import(module->GetSymbolTable(), context);
+                if (result.Error()) return result;
+                rootModule->ImportTraceData(module);
+                rootModule->ImportResourceScriptFilePaths(module);
+            }
+        }
+        return Result<bool>(true);
+    }
+}

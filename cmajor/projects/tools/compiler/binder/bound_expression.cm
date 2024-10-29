@@ -1,0 +1,2496 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public enum BoundExpressionFlags : byte
+    {
+        none = 0u,
+        argIsExplicitThisOrBasePtr = 1u << 0u,
+        bindToRvalueReference = 1u << 1u,
+        virtualCall = 1u << 2u,
+        deref = 1u << 3u
+    }
+
+    public abstract class BoundExpression : BoundNode
+    {
+        public BoundExpression(const System.Lex.Span& span_, BoundNodeKind kind_, TypeSymbol* type_) : base(span_, kind_), type(type_), flags(BoundExpressionFlags.none)
+        {
+        }
+        public abstract BoundExpression* Clone() const;
+        public virtual bool IsComplete() const
+        {
+            return true;
+        }
+        public virtual bool IsLvalueExpression() const
+        {
+            return false;
+        }
+        public virtual bool HasValue() const
+        {
+            return false;
+        }
+        public virtual FunctionSymbol* GetFunctionSymbol() const
+        {
+            return null;
+        }
+        public inline TypeSymbol* Type() const
+        {
+            return type;
+        }
+        public virtual string TypeString() const
+        {
+            return "expression";
+        }
+        public inline BoundExpressionFlags Flags() const
+        {
+            return flags;
+        }
+        public inline bool GetFlag(BoundExpressionFlags flag) const
+        {
+            return cast<BoundExpressionFlags>(flags & flag) != BoundExpressionFlags.none;
+        }
+        public inline void SetFlag(BoundExpressionFlags flag)
+        {
+            flags = cast<BoundExpressionFlags>(flags | flag);
+        }
+        public virtual Result<UniquePtr<Value>> ToValue(Node* node) const
+        {
+            int errorId = MakeError("cannot convert argument to value", node->GetFullSpan());
+            return Result<UniquePtr<Value>>(ErrorId(errorId));
+        }
+        private TypeSymbol* type;
+        private BoundExpressionFlags flags;
+    }
+
+    public class BoundParameter : BoundExpression
+    {
+        public BoundParameter(const System.Lex.Span& span_, ParameterSymbol* parameterSymbol_ ) :
+            base(span_, BoundNodeKind.boundParameter, parameterSymbol_->Type()), parameterSymbol(parameterSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "parameter";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundParameter(Span(), parameterSymbol);
+        }
+        public inline ParameterSymbol* GetParameterSymbol() const
+        {
+            return parameterSymbol;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                Result<intermediate.Value*> irObjectResult = parameterSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                emitter.Stack().Push(irObjectResult.Value());
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                Result<intermediate.Value*> irObjectResult = parameterSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                byte n = GetDerefCount(flags);
+                for (byte i = 0u; i < n; ++i)
+                {
+                    loadResult = emitter.CreateLoad(value);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    value = loadResult.Value();
+                }
+                emitter.Stack().Push(value);
+            }
+            else
+            {
+                Result<intermediate.Value*> irObjectResult = parameterSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot store to the address of a parameter", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                Result<intermediate.Value*> irObjectResult = parameterSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* ptr = loadResult.Value();
+                byte n = GetDerefCount(flags);
+                for (byte i = 1u; i < n; ++i)
+                {
+                    loadResult = emitter.CreateLoad(ptr);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    ptr = loadResult.Value();
+                }
+                Result<bool> result = emitter.CreateStore(value, ptr);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                Result<intermediate.Value*> irObjectResult = parameterSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                intermediate.Value* ptr = irObjectResult.Value();
+                Result<bool> result = emitter.CreateStore(value, ptr);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        private ParameterSymbol* parameterSymbol;
+    }
+
+    public class BoundLocalVariable : BoundExpression
+    {
+        public BoundLocalVariable(const System.Lex.Span& span_, LocalVariableSymbol* localVariableSymbol_) :
+            base(span_, BoundNodeKind.boundLocalVariable, localVariableSymbol_->Type()), localVariableSymbol(localVariableSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "local variable";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundLocalVariable(Span(), localVariableSymbol);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                emitter.Stack().Push(irObjectResult.Value());
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                byte n = GetDerefCount(flags);
+                for (byte i = 0u; i < n; ++i)
+                {
+                    loadResult = emitter.CreateLoad(value);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    value = loadResult.Value();
+                }
+                emitter.Stack().Push(value);
+            }
+            else
+            {
+                Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot store to the address of a local variable", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* ptr = loadResult.Value();
+                byte n = GetDerefCount(flags);
+                for (byte i = 1u; i < n; ++i)
+                {
+                    loadResult = emitter.CreateLoad(ptr);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    ptr = loadResult.Value();
+                }
+                Result<bool> result = emitter.CreateStore(value, ptr);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                intermediate.Value* ptr = irObjectResult.Value();
+                Result<bool> result = emitter.CreateStore(value, ptr);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        private LocalVariableSymbol* localVariableSymbol;
+    }
+
+    public class BoundMemberVariable : BoundExpression
+    {
+        public BoundMemberVariable(const System.Lex.Span& span_, MemberVariableSymbol* memberVariableSymbol_) :
+            base(span_, BoundNodeKind.boundMemberVariable, memberVariableSymbol_->Type()), memberVariableSymbol(memberVariableSymbol_), classPtr(), staticInitNeeded(false)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "member variable";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            BoundMemberVariable* clone = new BoundMemberVariable(Span(), memberVariableSymbol);
+            if (!classPtr.IsNull())
+            {
+                clone->SetClassPtr(UniquePtr<BoundExpression>(classPtr->Clone()));
+            }
+            if (staticInitNeeded)
+            {
+                clone->SetStaticInitNeeded();
+            }
+            return clone;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            #assert(memberVariableSymbol->LayoutIndex() != -1);
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(memberVariableSymbol->Parent());
+            if (memberVariableSymbol->IsStatic())
+            {
+                if (staticInitNeeded)
+                {
+                    if (classType->StaticConstructor() != null)
+                    {
+                        BoundFunctionCall staticConstructorCall(classType->StaticConstructor()->Span(), classType->StaticConstructor());
+                        Result<bool> loadResult = staticConstructorCall.Load(emitter, OperationFlags.none);
+                        if (loadResult.Error()) return loadResult;
+                    }
+                }
+                emitter.Stack().Push(classType->StaticObject(emitter, false));
+            }
+            else
+            {
+                #assert(!classPtr.IsNull());
+                Result<bool> loadResult = classPtr->Load(emitter, OperationFlags.none);
+                if (loadResult.Error()) return loadResult;
+            }
+            intermediate.Value* ptr = emitter.Stack().Pop();
+            Result<intermediate.Value*> memberVariablePtrResult = emitter.GetMemberVariablePtr(ptr, memberVariableSymbol->LayoutIndex());
+            if (memberVariablePtrResult.Error()) return Result<bool>(ErrorId(memberVariablePtrResult.GetErrorId()));
+            intermediate.Value* memberVariablePtr = memberVariablePtrResult.Value();
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                emitter.Stack().Push(memberVariablePtr);
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(memberVariablePtr);
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                byte n = GetDerefCount(flags);
+                for (byte i = 0u; i < n; ++i)
+                {
+                    loadResult = emitter.CreateLoad(value);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    value = loadResult.Value();
+                }
+                emitter.Stack().Push(value);
+            }
+            else
+            {
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(memberVariablePtr);
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot store to the address of a member variable", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                #assert(memberVariableSymbol->LayoutIndex() != -1);
+                ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(memberVariableSymbol->Parent());
+                if (memberVariableSymbol->IsStatic())
+                {
+                    if (staticInitNeeded)
+                    {
+                        if (classType->StaticConstructor() != null)
+                        {
+                            BoundFunctionCall staticConstructorCall(classType->StaticConstructor()->Span(), classType->StaticConstructor());
+                            Result<bool> loadResult = staticConstructorCall.Load(emitter, OperationFlags.none);
+                            if (loadResult.Error()) return loadResult;
+                        }
+                    }
+                    emitter.Stack().Push(classType->StaticObject(emitter, false));
+                }
+                else
+                {
+                    #assert(!classPtr.IsNull());
+                    Result<bool> loadResult = classPtr->Load(emitter, OperationFlags.none);
+                    if (loadResult.Error()) return loadResult;
+                }
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                Result<intermediate.Value*> memberVariablePtrResult = emitter.GetMemberVariablePtr(ptr, memberVariableSymbol->LayoutIndex());
+                if (memberVariablePtrResult.Error()) return Result<bool>(ErrorId(memberVariablePtrResult.GetErrorId()));
+                intermediate.Value* memberVariablePtr = memberVariablePtrResult.Value();
+                if (GetFlag(flags, OperationFlags.deref))
+                {
+                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(memberVariablePtr);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    intermediate.Value* ptr = loadResult.Value();
+                    byte n = GetDerefCount(flags);
+                    for (byte i = 1u; i < n; ++i)
+                    {
+                        loadResult = emitter.CreateLoad(ptr);
+                        if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                        ptr = loadResult.Value();
+                    }
+                    Result<bool> result = emitter.CreateStore(value, ptr);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    intermediate.Value* ptr = memberVariablePtr;
+                    Result<bool> result = emitter.CreateStore(value, ptr);
+                    if (result.Error()) return result;
+                }
+                return Result<bool>(true);
+            }
+            return Result<bool>(true);
+        }
+        public inline MemberVariableSymbol* GetMemberVariableSymbol() const
+        {
+            return memberVariableSymbol;
+        }
+        public void SetClassPtr(UniquePtr<BoundExpression>&& classPtr_)
+        {
+            classPtr = classPtr_;
+        }
+        public inline void SetStaticInitNeeded()
+        {
+            staticInitNeeded = true;
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        private MemberVariableSymbol* memberVariableSymbol;
+        private UniquePtr<BoundExpression> classPtr;
+        private bool staticInitNeeded;
+    }
+
+    public class BoundGlobalVariable : BoundExpression
+    {
+        public BoundGlobalVariable(const System.Lex.Span& span_, GlobalVariableSymbol* globalVariableSymbol_) :
+            base(span_, BoundNodeKind.boundGlobalVariable, globalVariableSymbol_->Type()), globalVariableSymbol(globalVariableSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "global variable";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundGlobalVariable(Span(), globalVariableSymbol);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<intermediate.Value*> irObjectResult = globalVariableSymbol->GetIrObject(emitter);
+            if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+            intermediate.Value* globalVariablePtr = irObjectResult.Value();
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                emitter.Stack().Push(globalVariablePtr);
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(globalVariablePtr);
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                byte n = GetDerefCount(flags);
+                for (byte i = 0u; i < n; ++i)
+                {
+                    loadResult = emitter.CreateLoad(value);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    value = loadResult.Value();
+                }
+                emitter.Stack().Push(value);
+            }
+            else
+            {
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(globalVariablePtr);
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* value = loadResult.Value();
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            intermediate.Value* value = emitter.Stack().Pop();
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot store to the address of a global variable", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                Result<intermediate.Value*> irObjectResult = globalVariableSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
+                if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                intermediate.Value* ptr = loadResult.Value();
+                byte n = GetDerefCount(flags);
+                for (byte i = 1u; i < n; ++i)
+                {
+                    loadResult = emitter.CreateLoad(ptr);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    ptr = loadResult.Value();
+                }
+                Result<bool> result = emitter.CreateStore(value, ptr);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                Result<intermediate.Value*> irObjectResult = globalVariableSymbol->GetIrObject(emitter);
+                if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+                intermediate.Value* ptr = irObjectResult.Value();
+                Result<bool> result = emitter.CreateStore(value, ptr);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        public inline GlobalVariableSymbol* GetGlobalVariableSymbol() const
+        {
+            return globalVariableSymbol;
+        }
+        private GlobalVariableSymbol* globalVariableSymbol;
+    }
+
+    public class BoundConstant : BoundExpression
+    {
+        public BoundConstant(const System.Lex.Span& span_, ConstantSymbol* constantSymbol_) :
+            base(span_, BoundNodeKind.boundConstant, constantSymbol_->Type()), constantSymbol(constantSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "constant";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundConstant(Span(), constantSymbol);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of a constant", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                int errorId = MakeError("cannot dereference a constant", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                Result<intermediate.Value*> irValueResult = constantSymbol->GetValue()->IrValue(emitter);
+                if (irValueResult.Error()) return Result<bool>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                emitter.Stack().Push(irValue);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a constant", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override Result<UniquePtr<Value>> ToValue(Node* node) const
+        {
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(constantSymbol->GetValue()->Clone()));
+        }
+        private ConstantSymbol* constantSymbol;
+    }
+
+    public class BoundEnumConstant : BoundExpression
+    {
+        public BoundEnumConstant(const System.Lex.Span& span_, EnumConstantSymbol* enumConstantSymbol_) :
+            base(span_, BoundNodeKind.boundEnumConstant, enumConstantSymbol_->Type()), enumConstantSymbol(enumConstantSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "enumeration constant";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundEnumConstant(Span(), enumConstantSymbol);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of an enumeration constant", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                int errorId = MakeError("cannot dereference an enumeration constant", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                Result<intermediate.Value*> irValueResult = enumConstantSymbol->GetValue()->IrValue(emitter);
+                if (irValueResult.Error()) return Result<bool>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                emitter.Stack().Push(irValue);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to an enumeration constant", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        private EnumConstantSymbol* enumConstantSymbol;
+    }
+
+    public class BoundLiteral : BoundExpression
+    {
+        public BoundLiteral(const System.Lex.Span& span_, UniquePtr<Value>&& value_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundLiteral, type_), value(value_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "literal";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundLiteral(Span(), UniquePtr<Value>(value->Clone()), Type());
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of a literal", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                int errorId = MakeError("cannot dereference a literal", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                Result<intermediate.Value*> irValueResult = value->IrValue(emitter);
+                if (irValueResult.Error()) return Result<bool>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                emitter.Stack().Push(irValue);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a literal", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override Result<UniquePtr<Value>> ToValue(Node* node) const
+        {
+            return Result<UniquePtr<Value>>(value->Clone());
+        }
+        private UniquePtr<Value> value;
+    }
+
+    public class BoundTemporary : BoundExpression
+    {
+        public BoundTemporary(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& rvalueExpr_, UniquePtr<BoundLocalVariable>&& backingStore_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundTemporary, type_), rvalueExpr(rvalueExpr_), backingStore(backingStore_)
+        {
+            rvalueExpr->SetParent(this);
+            backingStore->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "temporary";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundTemporary(Span(), UniquePtr<BoundExpression>(rvalueExpr->Clone()),
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(backingStore->Clone())),
+                Type());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return rvalueExpr->GetFunctionSymbol();
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = rvalueExpr->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            Result<bool> storeResult = backingStore->Store(emitter, OperationFlags.none);
+            if (storeResult.Error()) return storeResult;
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                loadResult = backingStore->Load(emitter, OperationFlags.addr);
+                if (loadResult.Error()) return loadResult;
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                loadResult = backingStore->Load(emitter, SetDerefCount(OperationFlags.deref, GetDerefCount(flags) + 1u));
+                if (loadResult.Error()) return loadResult;
+            }
+            else
+            {
+                loadResult = backingStore->Load(emitter, OperationFlags.none);
+                if (loadResult.Error()) return loadResult;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a temporary", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        public override Result<UniquePtr<Value>> ToValue(Node* node) const
+        {
+            return rvalueExpr->ToValue(node);
+        }
+        private UniquePtr<BoundExpression> rvalueExpr;
+        private UniquePtr<BoundLocalVariable> backingStore;
+    }
+
+    public class BoundSizeOfExpression : BoundExpression
+    {
+        public BoundSizeOfExpression(const System.Lex.Span& span_, TypeSymbol* resultType_, TypeSymbol* pointerType_) :
+            base(span_, BoundNodeKind.boundSizeOfExpression, resultType_), pointerType(pointerType_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "size-of expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundSizeOfExpression(Span(), Type(), pointerType);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of a size-of expression", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else if (GetFlag(flags, OperationFlags.deref))
+            {
+                int errorId = MakeError("cannot dereference a size-of expression", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                Result<intermediate.Type*> pointerIrTypeResult = pointerType->IrType(emitter);
+                if (pointerIrTypeResult.Error()) return Result<bool>(ErrorId(pointerIrTypeResult.GetErrorId()));
+                intermediate.Type* pointerIrType = pointerIrTypeResult.Value();
+                Result<intermediate.Value*> sizeOfResult = emitter.SizeOf(cast<intermediate.PointerType*>(pointerIrType));
+                if (sizeOfResult.Error()) return Result<bool>(ErrorId(sizeOfResult.GetErrorId()));
+                intermediate.Value* value = sizeOfResult.Value();
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a size-of expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        private TypeSymbol* pointerType;
+    }
+
+    public class BoundAddressOfExpression : BoundExpression
+    {
+        public BoundAddressOfExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& subject_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundAddressOfExpression, type_), subject(subject_)
+        {
+            subject->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "address-of expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundAddressOfExpression(Span(), UniquePtr<BoundExpression>(subject->Clone()), Type());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return subject->GetFunctionSymbol();
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (!subject->IsDerefenceExpression())
+            {
+                Result<bool> loadResult = subject->Load(emitter, OperationFlags.addr);
+                if (loadResult.Error()) return loadResult;
+            }
+            else
+            {
+                BoundDereferenceExpression* derefExpr = cast<BoundDereferenceExpression*>(subject.Get());
+                Result<bool> loadResult = derefExpr->Subject()->Load(emitter, flags);
+                if (loadResult.Error()) return loadResult;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            if (!subject->IsDerefenceExpression())
+            {
+                Result<bool> storeResult = subject->Store(emitter, flags);
+                if (storeResult.Error()) return storeResult;
+            }
+            else
+            {
+                BoundDereferenceExpression* derefExpr = cast<BoundDereferenceExpression*>(subject.Get());
+                Result<bool> storeResult = derefExpr->Subject()->Store(emitter, flags);
+                if (storeResult.Error()) return storeResult;
+            }
+            return Result<bool>(true);
+        }
+        public inline BoundExpression* Subject() const
+        {
+            return subject.Get();
+        }
+        public BoundExpression* ReleaseSubject()
+        {
+            return subject.Release();
+        }
+        public override Result<UniquePtr<Value>> ToValue(Node* node) const
+        {
+            return subject->ToValue(node);
+        }
+        private UniquePtr<BoundExpression> subject;
+    }
+
+    public class BoundDereferenceExpression : BoundExpression
+    {
+        public BoundDereferenceExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& subject_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundDereferenceExpression, type_), subject(subject_)
+        {
+            subject->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "derefeence expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundDereferenceExpression(Span(), UniquePtr<BoundExpression>(subject->Clone()), Type());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return subject->GetFunctionSymbol();
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (!subject->IsAddressOfExpression())
+            {
+                if (GetDerefCount(flags) == 0u && GetFlag(flags, OperationFlags.addr))
+                {
+                    Result<bool> loadResult = subject->Load(emitter, OperationFlags.none);
+                    if (loadResult.Error()) return loadResult;
+                }
+                else
+                {
+                    Result<bool> loadResult = subject->Load(emitter, SetDerefCount(OperationFlags.deref, GetDerefCount(flags) + 1u));
+                    if (loadResult.Error()) return loadResult;
+                }
+            }
+            else
+            {
+                BoundAddressOfExpression* addressOfExpr = cast<BoundAddressOfExpression*>(subject.Get());
+                Result<bool> loadResult = addressOfExpr->Subject()->Load(emitter, flags);
+                if (loadResult.Error()) return loadResult;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            if (!subject->IsAddressOfExpression())
+            {
+                Result<bool> storeResult = subject->Store(emitter, SetDerefCount(OperationFlags.deref, GetDerefCount(flags) + 1u));
+                if (storeResult.Error()) return storeResult;
+            }
+            else
+            {
+                BoundAddressOfExpression* addressOfExpr = cast<BoundAddressOfExpression*>(subject.Get());
+                Result<bool> storeResult = addressOfExpr->Subject()->Store(emitter, flags);
+                if (storeResult.Error()) return storeResult;
+            }
+            return Result<bool>(true);
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        public inline BoundExpression* Subject() const
+        {
+            return subject.Get();
+        }
+        public inline BoundExpression* ReleaseSubject()
+        {
+            return subject.Release();
+        }
+        private UniquePtr<BoundExpression> subject;
+    }
+
+    public class BoundReferenceToPointerExpression : BoundExpression
+    {
+        public BoundReferenceToPointerExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& subject_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundReferenceToPointerExpression, type_), subject(subject_)
+        {
+            subject->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "reference-to-pointer expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundReferenceToPointerExpression(Span(), UniquePtr<BoundExpression>(subject->Clone()), Type());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return subject->GetFunctionSymbol();
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            return subject->Load(emitter, flags);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            return subject->Store(emitter, flags);
+        }
+        private UniquePtr<BoundExpression> subject;
+    }
+
+    public class BoundFunctionCall : BoundExpression
+    {
+        public BoundFunctionCall(const System.Lex.Span& span_, FunctionSymbol* functionSymbol_) :
+            base(span_, BoundNodeKind.boundFunctionCall, functionSymbol_->ReturnType()), functionSymbol(functionSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "function call";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            BoundFunctionCall* clone = new BoundFunctionCall(Span(), functionSymbol);
+            for (const auto& argument : arguments)
+            {
+                clone->AddArgument(UniquePtr<BoundExpression>(argument->Clone()));
+            }
+            for (const auto& temporary : temporaries)
+            {
+                clone->AddTemporary(UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(temporary->Clone())));
+            }
+            return clone;
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return functionSymbol;
+        }
+        public inline void SetFunctionSymbol(FunctionSymbol* functionSymbol_)
+        {
+            functionSymbol = functionSymbol_;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            List<IrObject*> args;
+            for (const auto& arg : arguments)
+            {
+                IrObject* irArg = arg.Get();
+                irArg->SetType(arg->Type());
+                args.Add(irArg);
+            }
+            for (const auto& temporary : temporaries)
+            {
+                IrObject* irTemporary = temporary.Get();
+                irTemporary->SetType(temporary->Type());
+                args.Add(irTemporary);
+            }
+            OperationFlags callFlags = cast<OperationFlags>(flags & OperationFlags.functionCallFlags);
+            if (GetFlag(BoundExpressionFlags.virtualCall))
+            {
+                callFlags = cast<OperationFlags>(callFlags | OperationFlags.virtualCall);
+            }
+            Result<bool> callResult = functionSymbol->GenerateCall(emitter, args, callFlags);
+            if (callResult.Error()) return callResult;
+            if (GetFlag(flags, OperationFlags.deref))
+            {
+                intermediate.Value* value = emitter.Stack().Pop();
+                byte n = GetDerefCount(flags);
+                for (byte i = 0u; i < n; ++i)
+                {
+                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(value);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    value = loadResult.Value();
+                }
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of a function call", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            intermediate.Value* value = emitter.Stack().Pop();
+            List<IrObject*> args;
+            for (const auto& arg : arguments)
+            {
+                IrObject* irArg = arg.Get();
+                irArg->SetType(arg->Type());
+                args.Add(irArg);
+            }
+            OperationFlags callFlags = OperationFlags.none;
+            if (GetFlag(BoundExpressionFlags.virtualCall))
+            {
+                callFlags = cast<OperationFlags>(callFlags | OperationFlags.virtualCall);
+            }
+            Result<bool> callResult = functionSymbol->GenerateCall(emitter, args, callFlags);
+            if (callResult.Error()) return Result<bool>(ErrorId(callResult.GetErrorId()));
+            intermediate.Value* ptr = emitter.Stack().Pop();
+            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            {
+                emitter.SaveObjectPointer(ptr);
+            }
+            if (GetFlag(flags, OperationFlags.deref) || GetFlag(BoundExpressionFlags.deref))
+            {
+                byte n = GetDerefCount(flags);
+                for (byte i = 1u; i < n; ++i)
+                {
+                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(ptr);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));;
+                    ptr = loadResult.Value();
+                }
+                Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                if (storeResult.Error()) return storeResult;
+            }
+            else
+            {
+                Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                if (storeResult.Error()) return storeResult;
+            }
+            return Result<bool>(true);
+        }
+        public void AddArgument(UniquePtr<BoundExpression>&& argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        public void SetArguments(List<UniquePtr<BoundExpression>>&& arguments_)
+        {
+            arguments = arguments_;
+            for (auto& arg : arguments)
+            {
+                arg->SetParent(this);
+            }
+        }
+        public inline const List<UniquePtr<BoundExpression>>& Arguments() const
+        {
+            return arguments;
+        }
+        public override bool HasValue() const
+        {
+            TypeSymbol* returnType = functionSymbol->ReturnType();
+            return returnType != null && !returnType->IsVoidTypeSymbol();
+        }
+        public override bool IsLvalueExpression() const
+        {
+            TypeSymbol* returnType = functionSymbol->ReturnType();
+            if (returnType != null && !returnType->IsVoidTypeSymbol())
+            {
+                return !returnType->IsConstType() && returnType->IsLvalueReferenceType();
+            }
+            return false;
+        }
+        public void AddTemporary(UniquePtr<BoundLocalVariable>&& temporary)
+        {
+            temporary->SetParent(this);
+            temporaries.Add(temporary);
+        }
+        public List<UniquePtr<IrObject>> ReleaseTemporaries()
+        {
+            List<UniquePtr<IrObject>> temporaryIrObjects;
+            for (UniquePtr<BoundLocalVariable>& temporary : temporaries)
+            {
+                temporaryIrObjects.Add(UniquePtr<IrObject>(temporary.Release()));
+            }
+            return temporaryIrObjects;
+        }
+        private FunctionSymbol* functionSymbol;
+        private List<UniquePtr<BoundExpression>> arguments;
+        private List<UniquePtr<BoundLocalVariable>> temporaries;
+    }
+
+    public class BoundDelegateCall : BoundExpression
+    {
+        public BoundDelegateCall(const System.Lex.Span& span_, DelegateTypeSymbol* delegateTypeSymbol_) :
+            base(span_, BoundNodeKind.boundDelegateCall, delegateTypeSymbol_->ReturnType()), delegateTypeSymbol(delegateTypeSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "delegate call";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            BoundDelegateCall* clone = new BoundDelegateCall(Span(), delegateTypeSymbol);
+            for (const auto& argument : arguments)
+            {
+                clone->AddArgument(UniquePtr<BoundExpression>(argument->Clone()));
+            }
+            return clone;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            List<IrObject*> args;
+            for (const auto& arg : arguments)
+            {
+                IrObject* irArg = arg.Get();
+                irArg->SetType(arg->Type());
+                args.Add(irArg);
+            }
+            OperationFlags callFlags = cast<OperationFlags>(flags & OperationFlags.functionCallFlags);
+            Result<bool> callResult = delegateTypeSymbol->GenerateCall(emitter, args, callFlags);
+            if (callResult.Error()) return callResult;
+            if (GetFlag(flags, OperationFlags.deref))
+            {
+                intermediate.Value* value = emitter.Stack().Pop();
+                byte n = GetDerefCount(flags);
+                for (byte i = 0u; i < n; ++i)
+                {
+                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(value);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    value = loadResult.Value();
+                }
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of a delegate call", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            intermediate.Value* value = emitter.Stack().Pop();
+            List<IrObject*> args;
+            for (const auto& arg : arguments)
+            {
+                IrObject* irArg = arg.Get();
+                irArg->SetType(arg->Type());
+                args.Add(irArg);
+            }
+            Result<bool> callResult = delegateTypeSymbol->GenerateCall(emitter, args, OperationFlags.none);
+            if (callResult.Error()) return callResult;
+            intermediate.Value* ptr = emitter.Stack().Pop();
+            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            {
+                emitter.SaveObjectPointer(ptr);
+            }
+            if (GetFlag(flags, OperationFlags.deref) || GetFlag(BoundExpressionFlags.deref))
+            {
+                byte n = GetDerefCount(flags);
+                for (byte i = 1u; i < n; ++i)
+                {
+                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(ptr);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));;
+                    ptr = loadResult.Value();
+                }
+                Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                if (storeResult.Error()) return storeResult;
+            }
+            else
+            {
+                Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                if (storeResult.Error()) return storeResult;
+            }
+            return Result<bool>(true);
+        }
+        public void AddArgument(UniquePtr<BoundExpression>&& argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        public inline const List<UniquePtr<BoundExpression>>& Arguments() const
+        {
+            return arguments;
+        }
+        public override bool HasValue() const
+        {
+            return !delegateTypeSymbol->ReturnType()->IsVoidTypeSymbol();
+        }
+        public override bool IsLvalueExpression() const
+        {
+            TypeSymbol* returnType = delegateTypeSymbol->ReturnType();
+            return !returnType->IsVoidTypeSymbol() && !returnType->IsConstType() && returnType->IsLvalueReferenceType();
+        }
+        private DelegateTypeSymbol* delegateTypeSymbol;
+        private List<UniquePtr<BoundExpression>> arguments;
+    }
+
+    public class BoundClassDelegateCall : BoundExpression
+    {
+        public BoundClassDelegateCall(const System.Lex.Span& span_, ClassDelegateTypeSymbol* classDelegateTypeSymbol_) :
+            base(span_, BoundNodeKind.boundClassDelegateCall, classDelegateTypeSymbol_->ReturnType()), classDelegateTypeSymbol(classDelegateTypeSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "class delegate call";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            BoundClassDelegateCall* clone = new BoundClassDelegateCall(Span(), classDelegateTypeSymbol);
+            for (const auto& argument : arguments)
+            {
+                clone->AddArgument(UniquePtr<BoundExpression>(argument->Clone()));
+            }
+            return clone;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            List<IrObject*> args;
+            for (const auto& arg : arguments)
+            {
+                IrObject* irArg = arg.Get();
+                irArg->SetType(arg->Type());
+                args.Add(irArg);
+            }
+            OperationFlags callFlags = cast<OperationFlags>(flags & OperationFlags.functionCallFlags);
+            Result<bool> callResult = classDelegateTypeSymbol->GenerateCall(emitter, args, callFlags);
+            if (callResult.Error()) return callResult;
+            if (GetFlag(flags, OperationFlags.deref))
+            {
+                intermediate.Value* value = emitter.Stack().Pop();
+                byte n = GetDerefCount(flags);
+                for (byte i = 0u; i < n; ++i)
+                {
+                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(value);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+                    value = loadResult.Value();
+                }
+                emitter.Stack().Push(value);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of a class delegate call", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            intermediate.Value* value = emitter.Stack().Pop();
+            List<IrObject*> args;
+            for (const auto& arg : arguments)
+            {
+                IrObject* irArg = arg.Get();
+                irArg->SetType(arg->Type());
+                args.Add(irArg);
+            }
+            Result<bool> callResult = classDelegateTypeSymbol->GenerateCall(emitter, args, OperationFlags.none);
+            if (callResult.Error()) return callResult;
+            intermediate.Value* ptr = emitter.Stack().Pop();
+            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            {
+                emitter.SaveObjectPointer(ptr);
+            }
+            if (GetFlag(flags, OperationFlags.deref) || GetFlag(BoundExpressionFlags.deref))
+            {
+                byte n = GetDerefCount(flags);
+                for (byte i = 1u; i < n; ++i)
+                {
+                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(ptr);
+                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));;
+                    ptr = loadResult.Value();
+                }
+                Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                if (storeResult.Error()) return storeResult;
+            }
+            else
+            {
+                Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                if (storeResult.Error()) return storeResult;
+            }
+            return Result<bool>(true);
+        }
+        public void AddArgument(UniquePtr<BoundExpression>&& argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        public inline const List<UniquePtr<BoundExpression>>& Arguments() const
+        {
+            return arguments;
+        }
+        public override bool HasValue() const
+        {
+            return !classDelegateTypeSymbol->ReturnType()->IsVoidTypeSymbol();
+        }
+        public override bool IsLvalueExpression() const
+        {
+            TypeSymbol* returnType = classDelegateTypeSymbol->ReturnType();
+            return !returnType->IsVoidTypeSymbol() && !returnType->IsConstType() && returnType->IsLvalueReferenceType();
+        }
+        private ClassDelegateTypeSymbol* classDelegateTypeSymbol;
+        private List<UniquePtr<BoundExpression>> arguments;
+    }
+
+    public class BoundConstructExpression : BoundExpression
+    {
+        public BoundConstructExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& constructorCall_, TypeSymbol* resultType_) :
+            base(span_, BoundNodeKind.boundConstructExpression, resultType_), constructorCall(constructorCall_)
+        {
+            constructorCall->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "construct expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundConstructExpression(Span(), UniquePtr<BoundExpression>(constructorCall->Clone()), Type());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return constructorCall->GetFunctionSymbol();
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                int errorId = MakeError("cannot take address of a construct expression", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            intermediate.Value* prevObjectPointer = emitter.ObjectPointer();
+            emitter.SetObjectPointer(null);
+            Result<bool> loadResult = constructorCall->Load(emitter, OperationFlags.leaveFirstArg);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* objectPointer = emitter.ObjectPointer();
+            if (objectPointer == null)
+            {
+                int errorId = MakeError("do not have object pointer", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                emitter.Stack().Push(objectPointer);
+            }
+            emitter.SetObjectPointer(prevObjectPointer);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to construct expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        private UniquePtr<BoundExpression> constructorCall;
+    }
+
+    public class BoundConstructAndReturnTemporaryExpression : BoundExpression
+    {
+        public BoundConstructAndReturnTemporaryExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& constructorCall_,
+            UniquePtr<BoundExpression>&& boundTemporary_) :
+            base(span_, BoundNodeKind.boundConstructAndReturnTemporary, boundTemporary_->Type()), constructorCall(constructorCall_), boundTemporary(boundTemporary_)
+        {
+            constructorCall->SetParent(this);
+            boundTemporary->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "construct-and-return-temporary expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundConstructAndReturnTemporaryExpression(Span(), UniquePtr<BoundExpression>(constructorCall->Clone()),
+                UniquePtr<BoundExpression>(boundTemporary->Clone()));
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return constructorCall->GetFunctionSymbol();
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = constructorCall->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            TypeSymbol* type = boundTemporary->Type();
+            if (type->IsClassTypeSymbol() || type->IsClassDelegateTypeSymbol())
+            {
+                flags = cast<OperationFlags>(flags | OperationFlags.addr);
+            }
+            loadResult = boundTemporary->Load(emitter, flags);
+            if (loadResult.Error()) return loadResult;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to construct and return temporary expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        private UniquePtr<BoundExpression> constructorCall;
+        private UniquePtr<BoundExpression> boundTemporary;
+    }
+
+    public class BoundClassOrClassDelegateConversionResult : BoundExpression
+    {
+        public BoundClassOrClassDelegateConversionResult(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& conversionResult_,
+            UniquePtr<BoundFunctionCall>&& conversionFunctionCall_) :
+            base(span_, BoundNodeKind.boundClassOrClassDelegateConversionResult, conversionResult_->Type()), conversionResult(conversionResult_),
+                conversionFunctionCall(conversionFunctionCall_)
+        {
+            conversionResult->SetParent(this);
+            conversionFunctionCall->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "class conversion result";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundClassOrClassDelegateConversionResult(Span(), UniquePtr<BoundExpression>(conversionResult->Clone()),
+                UniquePtr<BoundFunctionCall>(cast<BoundFunctionCall*>(conversionFunctionCall->Clone())));
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = conversionFunctionCall->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            loadResult = conversionResult->Load(emitter, flags);
+            if (loadResult.Error()) return loadResult;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to class conversion result", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            return true;
+        }
+        private UniquePtr<BoundExpression> conversionResult;
+        private UniquePtr<BoundFunctionCall> conversionFunctionCall;
+    }
+
+    public class BoundConversion : BoundExpression
+    {
+        public BoundConversion(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& sourceExpr_, FunctionSymbol* conversionFn_) :
+            base(span_, BoundNodeKind.boundConversion, conversionFn_->ConversionTargetType()), sourceExpr(sourceExpr_), conversionFn(conversionFn_)
+        {
+            sourceExpr->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "conversion";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundConversion(Span(), UniquePtr<BoundExpression>(sourceExpr->Clone()), conversionFn);
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return sourceExpr->GetFunctionSymbol();
+        }
+        public void AddTemporary(UniquePtr<BoundLocalVariable>&& temporary)
+        {
+            temporaries.Add(temporary);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = sourceExpr->Load(emitter, flags);
+            if (loadResult.Error()) return loadResult;
+            List<IrObject*> irObjects;
+            for (const UniquePtr<BoundLocalVariable>& temporary : temporaries)
+            {
+                irObjects.Add(temporary.Get());
+                IrObject* irObject = irObjects.Back();
+                irObject->SetType(temporary->Type());
+            }
+            Result<bool> callResult = conversionFn->GenerateCall(emitter, irObjects, OperationFlags.none);
+            if (callResult.Error()) return callResult;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to conversion", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public override bool IsLvalueExpression() const
+        {
+            if (conversionFn->IsConversionFunctionSymbol()) return true;
+            if (conversionFn->IsClassToInterfaceTypeConversion()) return true;
+            if (conversionFn->IsMemberFunctionToClassDelegateConversion()) return true;
+            return false;
+        }
+        public override Result<UniquePtr<Value>> ToValue(Node* node) const
+        {
+            Result<UniquePtr<Value>> valueResult = sourceExpr->ToValue(node);
+            if (valueResult.Error()) return valueResult;
+            Value*value = valueResult.Value().Get();
+            return conversionFn->ConvertValue(value, node);
+        }
+        private UniquePtr<BoundExpression> sourceExpr;
+        private FunctionSymbol* conversionFn;
+        private List<UniquePtr<BoundLocalVariable>> temporaries;
+    }
+
+    public class BoundIsExpression : BoundExpression
+    {
+        public BoundIsExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& expr_, ClassTypeSymbol* rightClassType_,
+            UniquePtr<BoundLocalVariable>&& leftClassIdVar_, UniquePtr<BoundLocalVariable>&& rightClassIdVar_, FunctionSymbol* rtmIsFunctionSymbol_) :
+            base(span_, BoundNodeKind.boundIsExpression, rtmIsFunctionSymbol_->ReturnType()), expr(expr_), rightClassType(rightClassType_),
+                leftClassIdVar(leftClassIdVar_), rightClassIdVar(rightClassIdVar_), rtmIsFunctionSymbol(rtmIsFunctionSymbol_)
+        {
+            expr->SetParent(this);
+            leftClassIdVar->SetParent(this);
+            rightClassIdVar->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "is-expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundIsExpression(Span(), UniquePtr<BoundExpression>(expr->Clone()), rightClassType,
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(leftClassIdVar->Clone())),
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(rightClassIdVar->Clone())),
+                rtmIsFunctionSymbol);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = expr->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            TypeSymbol* exprType = expr->Type();
+            #assert(exprType->IsPointerType());
+            TypeSymbol* leftType = exprType->RemovePointer(emitter.GetSymbolsContext());
+            #assert(leftType->IsClassTypeSymbol());
+            ClassTypeSymbol* leftClassType = cast<ClassTypeSymbol*>(leftType);
+            Result<ClassTypeSymbol*> leftVmtPtrHolderClassResult = leftClassType->VmtPtrHolderClass();
+            if (leftVmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(leftVmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* leftVmtPtrHolderClass = leftVmtPtrHolderClassResult.Value();
+            if (leftClassType != leftVmtPtrHolderClass)
+            {
+                TypeSymbol* leftVmtPtrType = leftVmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext());
+                Result<intermediate.Type*> leftVmtPtrIrTypeResult = leftVmtPtrType->IrType(emitter);
+                if (leftVmtPtrIrTypeResult.Error()) return Result<bool>(ErrorId(leftVmtPtrIrTypeResult.GetErrorId()));
+                intermediate.Type* leftVmtPtrIrType = leftVmtPtrIrTypeResult.Value();
+                Result<intermediate.Value*> castResult = emitter.CreateBitcast(thisPtr, leftVmtPtrIrType);
+                if (castResult.Error()) return Result<bool>(ErrorId(castResult.GetErrorId()));
+                thisPtr = castResult.Value();
+            }
+            Result<intermediate.Type*> vmtPtrTypeResult = leftClassType->VmtPtrType(emitter);
+            if (vmtPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrTypeResult.GetErrorId()));
+            intermediate.Type* vmtPtrType = vmtPtrTypeResult.Value();
+            Result<intermediate.Value*> vmtPtrResult = emitter.GetVmtPtr(thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), vmtPtrType);
+            if (vmtPtrResult.Error()) return Result<bool>(ErrorId(vmtPtrResult.GetErrorId()));
+            intermediate.Value* vmtPtr = vmtPtrResult.Value();
+            Result<intermediate.Value*> leftClassIdPtrResult = emitter.GetClassIdPtr(vmtPtr);
+            if (leftClassIdPtrResult.Error()) return Result<bool>(ErrorId(leftClassIdPtrResult.GetErrorId()));
+            intermediate.Value* leftClassIdPtr = leftClassIdPtrResult.Value();
+            Result<intermediate.Value*> vmtObjectResult = rightClassType->VmtObject(emitter, false);
+            if (vmtObjectResult.Error()) return Result<bool>(ErrorId(vmtObjectResult.GetErrorId()));
+            intermediate.Value* rightClassTypeVmtObject = vmtObjectResult.Value();
+            Result<intermediate.Value*> rightClassIdPtrResult = emitter.GetClassIdPtr(rightClassTypeVmtObject);
+            if (rightClassIdPtrResult.Error()) return Result<bool>(ErrorId(rightClassIdPtrResult.GetErrorId()));
+            intermediate.Value* rightClassIdPtr = rightClassIdPtrResult.Value();
+            Result<intermediate.FunctionType*> isFunctionTypeResult = emitter.GetFunctionType(rtmIsFunctionSymbol);
+            if (isFunctionTypeResult.Error()) return Result<bool>(ErrorId(isFunctionTypeResult.GetErrorId()));
+            intermediate.FunctionType* isFunctionType = isFunctionTypeResult.Value();
+            Result<intermediate.Function*> isFunctionResult = emitter.GetOrInsertFunction("RtmIs", isFunctionType);
+            if (isFunctionResult.Error()) return Result<bool>(ErrorId(isFunctionResult.GetErrorId()));
+            intermediate.Function* isFunction = isFunctionResult.Value();
+            intermediate.Value* callee = emitter.MakeSymbolValue(isFunctionType, isFunction->ToString());
+            List<intermediate.Value*> args;
+            Result<intermediate.Value*> leftResult = emitter.CreateBitcast(leftClassIdPtr, emitter.GetVoidPtrType());
+            if (leftResult.Error()) return Result<bool>(ErrorId(leftResult.GetErrorId()));
+            args.Add(leftResult.Value());
+            Result<intermediate.Value*> rightResult = emitter.CreateBitcast(rightClassIdPtr, emitter.GetVoidPtrType());
+            if (rightResult.Error()) return Result<bool>(ErrorId(rightResult.GetErrorId()));
+            args.Add(rightResult.Value());
+            Result<intermediate.Value*> callResult = emitter.CreateCall(isFunctionType, callee, args);
+            if (callResult.Error()) return Result<bool>(ErrorId(callResult.GetErrorId()));
+            emitter.Stack().Push(callResult.Value());
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to an 'is' expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        private UniquePtr<BoundExpression> expr;
+        private ClassTypeSymbol* rightClassType;
+        private UniquePtr<BoundLocalVariable> leftClassIdVar;
+        private UniquePtr<BoundLocalVariable> rightClassIdVar;
+        private FunctionSymbol* rtmIsFunctionSymbol;
+    }
+
+    public class BoundAsExpression : BoundExpression
+    {
+        public BoundAsExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& expr_, ClassTypeSymbol* rightClassType_,
+            UniquePtr<BoundLocalVariable>&& variable_, UniquePtr<BoundLocalVariable>&& leftClassIdVar_,
+            UniquePtr<BoundLocalVariable>&& rightClassIdVar_, FunctionSymbol* rtmIsFunctionSymbol_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundAsExpression, type_), expr(expr_), rightClassType(rightClassType_), variable(variable_),
+            leftClassIdVar(leftClassIdVar_), rightClassIdVar(rightClassIdVar_), rtmIsFunctionSymbol(rtmIsFunctionSymbol_)
+        {
+            expr->SetParent(this);
+            variable->SetParent(this);
+            leftClassIdVar->SetParent(this);
+            rightClassIdVar->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "as-expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundAsExpression(Span(), UniquePtr<BoundExpression>(expr->Clone()), rightClassType,
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(variable->Clone())),
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(leftClassIdVar->Clone())),
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(rightClassIdVar->Clone())),
+                rtmIsFunctionSymbol, Type());
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = expr->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            TypeSymbol* exprType = expr->Type();
+            #assert(exprType->IsPointerType());
+            TypeSymbol* leftType = exprType->RemovePointer(emitter.GetSymbolsContext());
+            #assert(leftType->IsClassTypeSymbol());
+            ClassTypeSymbol* leftClassType = cast<ClassTypeSymbol*>(leftType);
+            Result<ClassTypeSymbol*> leftVmtPtrHolderClassResult = leftClassType->VmtPtrHolderClass();
+            if (leftVmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(leftVmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* leftVmtPtrHolderClass = leftVmtPtrHolderClassResult.Value();
+            if (leftClassType != leftVmtPtrHolderClass)
+            {
+                Result<intermediate.Type*> leftVmtPtrHolderClassIrTypeResult = leftVmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+                if (leftVmtPtrHolderClassIrTypeResult.Error()) return Result<bool>(ErrorId(leftVmtPtrHolderClassIrTypeResult.GetErrorId()));
+                intermediate.Type* leftVmtPtrHolderClassIrType = leftVmtPtrHolderClassIrTypeResult.Value();
+                Result<intermediate.Value*> castResult = emitter.CreateBitcast(thisPtr, leftVmtPtrHolderClassIrType);
+                if (castResult.Error()) return Result<bool>(ErrorId(castResult.GetErrorId()));
+                thisPtr = castResult.Value();
+            }
+            Result<intermediate.Type*> vmtPtrTypeResult = leftClassType->VmtPtrType(emitter);
+            if (vmtPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrTypeResult.GetErrorId()));
+            intermediate.Type* vmtPtrType = vmtPtrTypeResult.Value();
+            Result<intermediate.Value*> vmtPtrResult = emitter.GetVmtPtr(thisPtr, leftVmtPtrHolderClass->VmtPtrIndex(), vmtPtrType);
+            if (vmtPtrResult.Error()) return Result<bool>(ErrorId(vmtPtrResult.GetErrorId()));
+            intermediate.Value* vmtPtr = vmtPtrResult.Value();
+            Result<intermediate.Value*> leftClassIdPtrResult = emitter.GetClassIdPtr(vmtPtr);
+            if (leftClassIdPtrResult.Error()) return Result<bool>(ErrorId(leftClassIdPtrResult.GetErrorId()));
+            intermediate.Value* leftClassIdPtr = leftClassIdPtrResult.Value();
+            Result<intermediate.Value*> vmtObjectResult = rightClassType->VmtObject(emitter, false);
+            if (vmtObjectResult.Error()) return Result<bool>(ErrorId(vmtObjectResult.GetErrorId()));
+            intermediate.Value* rightClassTypeVmtObject = vmtObjectResult.Value();
+            Result<intermediate.Value*> rightClassIdPtrResult = emitter.GetClassIdPtr(rightClassTypeVmtObject);
+            if (rightClassIdPtrResult.Error()) return Result<bool>(ErrorId(rightClassIdPtrResult.GetErrorId()));
+            intermediate.Value* rightClassIdPtr = rightClassIdPtrResult.Value();
+            Result<intermediate.FunctionType*> isFunctionTypeResult = emitter.GetFunctionType(rtmIsFunctionSymbol);
+            if (isFunctionTypeResult.Error()) return Result<bool>(ErrorId(isFunctionTypeResult.GetErrorId()));
+            intermediate.FunctionType* isFunctionType = isFunctionTypeResult.Value();
+            Result<intermediate.Function*> isFunctionResult = emitter.GetOrInsertFunction("RtmIs", isFunctionType);
+            if (isFunctionResult.Error()) return Result<bool>(ErrorId(isFunctionResult.GetErrorId()));
+            intermediate.Function* isFunction = isFunctionResult.Value();
+            intermediate.Value* callee = emitter.MakeSymbolValue(isFunctionType, isFunction->ToString());
+            List<intermediate.Value*> args;
+            Result<intermediate.Value*> leftResult = emitter.CreateBitcast(leftClassIdPtr, emitter.GetVoidPtrType());
+            if (leftResult.Error()) return Result<bool>(ErrorId(leftResult.GetErrorId()));
+            args.Add(leftResult.Value());
+            Result<intermediate.Value*> rightResult = emitter.CreateBitcast(rightClassIdPtr, emitter.GetVoidPtrType());
+            if (rightResult.Error()) return Result<bool>(ErrorId(rightResult.GetErrorId()));
+            args.Add(rightResult.Value());
+            Result<intermediate.Value*> callResult = emitter.CreateCall(isFunctionType, callee, args);
+            if (callResult.Error()) return Result<bool>(ErrorId(callResult.GetErrorId()));
+            intermediate.Value* isResult = callResult.Value();
+            intermediate.BasicBlock* trueBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* falseBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* continueBlock = emitter.CreateBasicBlock();
+            Result<bool> branchResult = emitter.CreateBranch(isResult, trueBlock, falseBlock);
+            if (branchResult.Error()) return branchResult;
+            emitter.SetCurrentBasicBlock(trueBlock);
+            Result<intermediate.Type*> rightClassTypeIrTypeResult = rightClassType->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+            if (rightClassTypeIrTypeResult.Error()) return Result<bool>(ErrorId(rightClassTypeIrTypeResult.GetErrorId()));
+            intermediate.Type* rightClassTypeIrType = rightClassTypeIrTypeResult.Value();
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(thisPtr, rightClassTypeIrType);
+            if (bitcastResult.Error()) return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            emitter.Stack().Push(bitcastResult.Value());
+            Result<bool> storeResult = variable->Store(emitter, OperationFlags.none);
+            if (storeResult.Error()) return storeResult;
+            Result<bool> jumpResult = emitter.CreateJump(continueBlock);
+            if (jumpResult.Error()) return jumpResult;
+            emitter.SetCurrentBasicBlock(falseBlock);
+            intermediate.Value* nullValue = emitter.GetNullValue(cast<intermediate.PointerType*>(rightClassTypeIrType));
+            emitter.Stack().Push(nullValue);
+            storeResult = variable->Store(emitter, OperationFlags.none);
+            if (storeResult.Error()) return storeResult;
+            jumpResult = emitter.CreateJump(continueBlock);
+            if (jumpResult.Error()) return jumpResult;
+            emitter.SetCurrentBasicBlock(continueBlock);
+            Result<bool> varLoadResult = variable->Load(emitter, OperationFlags.none);
+            if (varLoadResult.Error()) return varLoadResult;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to an 'as' expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        private UniquePtr<BoundExpression> expr;
+        private ClassTypeSymbol* rightClassType;
+        private UniquePtr<BoundLocalVariable> variable;
+        private UniquePtr<BoundLocalVariable> leftClassIdVar;
+        private UniquePtr<BoundLocalVariable> rightClassIdVar;
+        private FunctionSymbol* rtmIsFunctionSymbol;
+    }
+
+    public class BoundTypeNameExpression : BoundExpression
+    {
+        public BoundTypeNameExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& classPtr_, FunctionSymbol* rtmClassNameFunctionSymbol_) :
+            base(span_, BoundNodeKind.boundTypeNameExpression, rtmClassNameFunctionSymbol_->ReturnType()), classPtr(classPtr_),
+            rtmClassNameFunctionSymbol(rtmClassNameFunctionSymbol_)
+        {
+            classPtr->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "type name expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundTypeNameExpression(Span(), UniquePtr<BoundExpression>(classPtr->Clone()), rtmClassNameFunctionSymbol);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = classPtr->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* thisPtr = emitter.Stack().Pop();
+            TypeSymbol* classPtrType = classPtr->Type();
+            #assert(classPtrType->IsPointerType());
+            TypeSymbol* type = classPtrType->RemovePointer(emitter.GetSymbolsContext());
+            #assert(type->IsClassTypeSymbol());
+            ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type);
+            Result<ClassTypeSymbol*> vmtPtrHolderClassResult = classType->VmtPtrHolderClass();
+            if (vmtPtrHolderClassResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassResult.GetErrorId()));
+            ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
+            if (classType != vmtPtrHolderClass)
+            {
+                Result<intermediate.Type*> vmtPtrHolderClassIrTypeResult = vmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+                if (vmtPtrHolderClassIrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassIrTypeResult.GetErrorId()));
+                intermediate.Type* vmtPtrHolderClassIrType = vmtPtrHolderClassIrTypeResult.Value();
+                Result<intermediate.Value*> castResult = emitter.CreateBitcast(thisPtr, vmtPtrHolderClassIrType);
+                if (castResult.Error()) return Result<bool>(ErrorId(castResult.GetErrorId()));
+                thisPtr = castResult.Value();
+            }
+            Result<intermediate.Type*> vmtPtrTypeResult = classType->VmtPtrType(emitter);
+            if (vmtPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrTypeResult.GetErrorId()));
+            intermediate.Type* vmtPtrType = vmtPtrTypeResult.Value();
+            Result<intermediate.Value*> vmtPtrResult = emitter.GetVmtPtr(thisPtr, vmtPtrHolderClass->VmtPtrIndex(), vmtPtrType);
+            if (vmtPtrResult.Error()) return Result<bool>(ErrorId(vmtPtrResult.GetErrorId()));
+            intermediate.Value* vmtPtr = vmtPtrResult.Value();
+            Result<intermediate.Value*> classIdPtrResult = emitter.GetClassIdPtr(vmtPtr);
+            if (classIdPtrResult.Error()) return Result<bool>(ErrorId(classIdPtrResult.GetErrorId()));
+            intermediate.Value* classIdPtr = classIdPtrResult.Value();
+            Result<intermediate.FunctionType*> classNameFunctionTypeResult = emitter.GetFunctionType(rtmClassNameFunctionSymbol);
+            if (classNameFunctionTypeResult.Error()) return Result<bool>(ErrorId(classNameFunctionTypeResult.GetErrorId()));
+            intermediate.FunctionType* classNameFunctionType = classNameFunctionTypeResult.Value();
+            Result<intermediate.Function*> classNameFunctionResult = emitter.GetOrInsertFunction("RtmClassName", classNameFunctionType);
+            if (classNameFunctionResult.Error()) return Result<bool>(ErrorId(classNameFunctionResult.GetErrorId()));
+            intermediate.Function* classNameFunction = classNameFunctionResult.Value();
+            intermediate.Value* callee = emitter.MakeSymbolValue(classNameFunctionType, classNameFunction->ToString());
+            List<intermediate.Value*> args;
+            Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(classIdPtr, emitter.GetVoidPtrType());
+            if (bitcastResult.Error()) return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
+            args.Add(bitcastResult.Value());
+            Result<intermediate.Value*> callResult = emitter.CreateCall(classNameFunctionType, callee, args);
+            if (callResult.Error()) return Result<bool>(ErrorId(callResult.GetErrorId()));
+            intermediate.Value* className = callResult.Value();
+            emitter.Stack().Push(className);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a 'typename' expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        private UniquePtr<BoundExpression> classPtr;
+        private FunctionSymbol* rtmClassNameFunctionSymbol;
+    }
+
+    public class BoundBitcast : BoundExpression
+    {
+        public BoundBitcast(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& expr_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundBitcast, type_), expr(expr_)
+        {
+            expr->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "bitcast expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundBitcast(Span(), UniquePtr<BoundExpression>(expr->Clone()), Type());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return expr->GetFunctionSymbol();
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = expr->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* value = emitter.Stack().Pop();
+            Result<intermediate.Type*> irTypeResult = Type()->IrType(emitter);
+            if (irTypeResult.Error()) return Result<bool>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            Result<intermediate.Value*> castResult = emitter.CreateBitcast(value, irType);
+            if (castResult.Error()) return Result<bool>(ErrorId(castResult.GetErrorId()));
+            intermediate.Value* casted = castResult.Value();
+            emitter.Stack().Push(casted);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a 'bitcast' expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        private UniquePtr<BoundExpression> expr;
+    }
+
+    public class BoundFunctionPtr : BoundExpression
+    {
+        public BoundFunctionPtr(const System.Lex.Span& span_, FunctionSymbol* functionSymbol_, TypeSymbol* type_) :
+            base(span_, BoundNodeKind.boundFunctionPtr, type_), functionSymbol(functionSymbol_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "function pointer";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundFunctionPtr(Span(), functionSymbol, Type());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return functionSymbol;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<string> instantiatedNameResult = ToUtf8(functionSymbol->InstantiatedName());
+            if (instantiatedNameResult.Error()) return Result<bool>(ErrorId(instantiatedNameResult.GetErrorId()));
+            string instantiatedName = Rvalue(instantiatedNameResult.Value());
+            Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(functionSymbol);
+            if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
+            intermediate.FunctionType* functionType = functionTypeResult.Value();
+            Result<intermediate.Function*> functionResult = emitter.GetOrInsertFunction(instantiatedName, functionType);
+            if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
+            intermediate.Function* function = functionResult.Value();
+            intermediate.Value* symbol = emitter.MakeSymbolValue(functionType, function->ToString());
+            emitter.Stack().Push(symbol);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a 'function pointer' expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        private FunctionSymbol* functionSymbol;
+    }
+
+    public class BoundDisjunction : BoundExpression
+    {
+        public BoundDisjunction(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& left_, UniquePtr<BoundExpression>&& right_,
+            UniquePtr<BoundLocalVariable>&& temporary_, TypeSymbol* boolType_) :
+            base(span_, BoundNodeKind.boundDisjunction, boolType_), left(left_), right(right_), temporary(temporary_)
+        {
+            left->SetParent(this);
+            right->SetParent(this);
+            temporary->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "disjunction";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundDisjunction(Span(), UniquePtr<BoundExpression>(left->Clone()), UniquePtr<BoundExpression>(right->Clone()),
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(temporary->Clone())), Type());
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = temporary->Load(emitter, OperationFlags.addr);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* temp = emitter.Stack().Pop();
+            loadResult = left->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* leftValue = emitter.Stack().Pop();
+            intermediate.BasicBlock* trueBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* rightBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* falseBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+            Result<bool> branchResult = emitter.CreateBranch(leftValue, trueBlock, rightBlock);
+            if (branchResult.Error()) return branchResult;
+            emitter.SetCurrentBasicBlock(rightBlock);
+            loadResult = right->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* rightValue = emitter.Stack().Pop();
+            branchResult = emitter.CreateBranch(rightValue, trueBlock, falseBlock);
+            if (branchResult.Error()) return branchResult;
+            emitter.SetCurrentBasicBlock(trueBlock);
+            Result<bool> storeResult = emitter.CreateStore(emitter.GetBoolValue(true), temp);
+            if (storeResult.Error()) return storeResult;
+            Result<bool> jumpResult = emitter.CreateJump(nextBlock);
+            if (jumpResult.Error()) return jumpResult;
+            emitter.SetCurrentBasicBlock(falseBlock);
+            storeResult = emitter.CreateStore(emitter.GetBoolValue(false), temp);
+            if (storeResult.Error()) return storeResult;
+            jumpResult = emitter.CreateJump(nextBlock);
+            if (jumpResult.Error()) return jumpResult;
+            emitter.SetCurrentBasicBlock(nextBlock);
+            Result<intermediate.Value*> tempResult = emitter.CreateLoad(temp);
+            if (tempResult.Error()) return Result<bool>(ErrorId(tempResult.GetErrorId()));
+            emitter.Stack().Push(tempResult.Value());
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a disjunction", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public inline BoundExpression* Left() const
+        {
+            return left.Get();
+        }
+        public inline BoundExpression* Right() const
+        {
+            return left.Get();
+        }
+        private UniquePtr<BoundExpression> left;
+        private UniquePtr<BoundExpression> right;
+        private UniquePtr<BoundLocalVariable> temporary;
+    }
+
+    public class BoundConjunction : BoundExpression
+    {
+        public BoundConjunction(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& left_, UniquePtr<BoundExpression>&& right_,
+            UniquePtr<BoundLocalVariable>&& temporary_, TypeSymbol* boolType_) :
+            base(span_, BoundNodeKind.boundConjunction, boolType_), left(left_), right(right_), temporary(temporary_)
+        {
+            left->SetParent(this);
+            right->SetParent(this);
+            temporary->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "conjunction";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundConjunction(Span(), UniquePtr<BoundExpression>(left->Clone()), UniquePtr<BoundExpression>(right->Clone()),
+                UniquePtr<BoundLocalVariable>(cast<BoundLocalVariable*>(temporary->Clone())), Type());
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = temporary->Load(emitter, OperationFlags.addr);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* temp = emitter.Stack().Pop();
+            loadResult = left->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* leftValue = emitter.Stack().Pop();
+            intermediate.BasicBlock* trueBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* rightBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* falseBlock = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* nextBlock = emitter.CreateBasicBlock();
+            Result<bool> branchResult = emitter.CreateBranch(leftValue, rightBlock, falseBlock);
+            if (branchResult.Error()) return branchResult;
+            emitter.SetCurrentBasicBlock(rightBlock);
+            loadResult = right->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* rightValue = emitter.Stack().Pop();
+            branchResult = emitter.CreateBranch(rightValue, trueBlock, falseBlock);
+            if (branchResult.Error()) return branchResult;
+            emitter.SetCurrentBasicBlock(trueBlock);
+            Result<bool> storeResult = emitter.CreateStore(emitter.GetBoolValue(true), temp);
+            if (storeResult.Error()) return storeResult;
+            Result<bool> jumpResult = emitter.CreateJump(nextBlock);
+            if (jumpResult.Error()) return jumpResult;
+            emitter.SetCurrentBasicBlock(falseBlock);
+            storeResult = emitter.CreateStore(emitter.GetBoolValue(false), temp);
+            if (storeResult.Error()) return storeResult;
+            jumpResult = emitter.CreateJump(nextBlock);
+            if (jumpResult.Error()) return jumpResult;
+            emitter.SetCurrentBasicBlock(nextBlock);
+            Result<intermediate.Value*> tempResult = emitter.CreateLoad(temp);
+            if (tempResult.Error()) return Result<bool>(ErrorId(tempResult.GetErrorId()));
+            emitter.Stack().Push(tempResult.Value());
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a conjunction", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override bool HasValue() const
+        {
+            return true;
+        }
+        public inline BoundExpression* Left() const
+        {
+            return left.Get();
+        }
+        public inline BoundExpression* Right() const
+        {
+            return left.Get();
+        }
+        private UniquePtr<BoundExpression> left;
+        private UniquePtr<BoundExpression> right;
+        private UniquePtr<BoundLocalVariable> temporary;
+    }
+
+    public class BoundTypeExpression : BoundExpression
+    {
+        public BoundTypeExpression(const System.Lex.Span& span_, TypeSymbol* type_) : base(span_, BoundNodeKind.boundTypeExpression, type_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "type expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundTypeExpression(Span(), Type());
+        }
+        public override bool IsComplete() const
+        {
+            return false;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load from a type", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a type", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+    }
+
+    public class BoundNamespaceExpression : BoundExpression
+    {
+        public BoundNamespaceExpression(const System.Lex.Span& span_, NamespaceSymbol* ns_, NamespaceTypeSymbol* nsType_) :
+            base(span_, BoundNodeKind.boundNamespaceExpression, nsType_), ns(ns_), nsType(nsType_)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "namespace expression";
+        }
+        public inline NamespaceSymbol* Ns() const
+        {
+            return ns;
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundNamespaceExpression(Span(), ns, nsType->Clone());
+        }
+        public override bool IsComplete() const
+        {
+            return false;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load from a namespace", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a namespace", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        private NamespaceSymbol* ns;
+        private UniquePtr<NamespaceTypeSymbol> nsType;
+    }
+
+    public class BoundFunctionGroupExpression : BoundExpression
+    {
+        public BoundFunctionGroupExpression(const System.Lex.Span& span_, const Uuid& moduleId_, int fileIndex_, FunctionGroupSymbol* functionGroup_,
+            FunctionGroupTypeSymbol* functionGroupType_) :
+            base(span_, BoundNodeKind.boundFunctionGroupExpression, functionGroupType_), functionGroup(functionGroup_), moduleId(moduleId_), fileIndex(fileIndex_),
+            functionGroupType(functionGroupType_), scopeQualified(false), qualifiedScope(null)
+        {
+        }
+        public override string TypeString() const
+        {
+            return "function group expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            BoundFunctionGroupExpression* clone = new BoundFunctionGroupExpression(Span(), moduleId, fileIndex, functionGroup, functionGroupType->Clone());
+            if (!classPtr.IsNull())
+            {
+                clone->SetClassPtr(UniquePtr<BoundExpression>(classPtr->Clone()));
+            }
+            if (IsScopeQualified())
+            {
+                clone->SetScopeQualified();
+                clone->SetQualifiedScope(qualifiedScope);
+            }
+            return clone;
+        }
+        public inline FunctionGroupSymbol* FunctionGroup() const
+        {
+            return functionGroup;
+        }
+        public override bool IsComplete() const
+        {
+            return false;
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            if (!classPtr.IsNull())
+            {
+                Result<bool> loadResult = classPtr->Load(emitter, OperationFlags.none);
+                if (loadResult.Error()) return loadResult;
+            }
+            else
+            {
+                emitter.Stack().Push(null);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a function group", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override const Uuid& ModuleId() const
+        {
+            return moduleId;
+        }
+        public override int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public inline BoundExpression* ClassPtr() const
+        {
+            return classPtr.Get();
+        }
+        public void SetClassPtr(UniquePtr<BoundExpression>&& classPtr_)
+        {
+            classPtr = classPtr_;
+            classPtr->SetParent(this);
+        }
+        public inline BoundExpression* ReleaseClassPtr()
+        {
+            return classPtr.Release();
+        }
+        public inline bool IsScopeQualified() const
+        {
+            return scopeQualified;
+        }
+        public inline void SetScopeQualified()
+        {
+            scopeQualified = true;
+        }
+        public inline ContainerScope* QualifiedScope() const
+        {
+            return qualifiedScope;
+        }
+        public inline void SetQualifiedScope(ContainerScope* qualifiedScope_)
+        {
+            qualifiedScope = qualifiedScope_;
+        }
+        public inline const List<TypeSymbol*>& TemplateArgumentTypes() const
+        {
+            return templateArgumentTypes;
+        }
+        public inline void SetTemplateArgumentTypes(List<TypeSymbol*>&& templateArgumentTypes_)
+        {
+            templateArgumentTypes = templateArgumentTypes_;
+        }
+        private FunctionGroupSymbol* functionGroup;
+        private UniquePtr<BoundExpression> classPtr;
+        private List<TypeSymbol*> templateArgumentTypes;
+        private Uuid moduleId;
+        private int fileIndex;
+        private UniquePtr<FunctionGroupTypeSymbol> functionGroupType;
+        private bool scopeQualified;
+        private ContainerScope* qualifiedScope;
+    }
+
+    public class BoundMemberExpression : BoundExpression
+    {
+        public BoundMemberExpression(const System.Lex.Span& span_, UniquePtr<BoundExpression>&& classPtr_, UniquePtr<BoundExpression>&& member_,
+            MemberExpressionTypeSymbol* memberExpressionType_) :
+            base(span_, BoundNodeKind.boundMemberExpression, memberExpressionType_), classPtr(classPtr_), member(member_), memberExpressionType(memberExpressionType_)
+        {
+            classPtr->SetParent(this);
+            member->SetParent(this);
+        }
+        public override string TypeString() const
+        {
+            return "member expression";
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override BoundExpression* Clone() const
+        {
+            return new BoundMemberExpression(Span(), UniquePtr<BoundExpression>(classPtr->Clone()), UniquePtr<BoundExpression>(member->Clone()),
+                memberExpressionType->Clone());
+        }
+        public override FunctionSymbol* GetFunctionSymbol() const
+        {
+            return member->GetFunctionSymbol();
+        }
+        public override bool IsComplete() const
+        {
+            return false;
+        }
+        public BoundExpression* ClassPtr() const
+        {
+            return classPtr.Get();
+        }
+        public void ResetClassPtr()
+        {
+            classPtr.Reset();
+        }
+        public BoundExpression* ReleaseClassPtr()
+        {
+            return classPtr.Release();
+        }
+        public BoundExpression* Member() const
+        {
+            return member.Get();
+        }
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            Result<bool> loadResult = classPtr->Load(emitter, OperationFlags.none);
+            if (loadResult.Error()) return loadResult;
+            return Result<bool>(true);
+        }
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to a member expression", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        private UniquePtr<BoundExpression> classPtr;
+        private UniquePtr<BoundExpression> member;
+        private UniquePtr<MemberExpressionTypeSymbol> memberExpressionType;
+    }
+}
+

@@ -1006,7 +1006,7 @@ namespace scmpg
                         }
                         else
                         {
-                            sourceFormatter << "static System.Result<bool> Parse(LexerT& lexer";
+                            sourceFormatter << "public static System.Result<bool> Parse(LexerT& lexer";
                         }
                         for (const auto& param : startRule->Parameters())
                         {

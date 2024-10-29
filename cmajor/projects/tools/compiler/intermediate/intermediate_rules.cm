@@ -1,0 +1,104 @@
+using System;
+using System.Collections;
+
+namespace intermediate.parser
+{
+    public class RuleNameMap
+    {
+        static RuleNameMap() : instance(new RuleNameMap())
+        {
+        }
+        public static RuleNameMap& Instance()
+        {
+            return *instance;
+        }
+        public Map<long, string>* GetRuleNameMap() const
+        {
+            return &ruleNameMap;
+        }
+        private RuleNameMap()
+        {
+            ruleNameMap[250696132965957633] = "intermediate.parser.intermediate_parser.IntermediateFile";
+            ruleNameMap[250696132965957634] = "intermediate.parser.intermediate_parser.TypeDeclarations";
+            ruleNameMap[250696132965957635] = "intermediate.parser.intermediate_parser.TypeDeclaration";
+            ruleNameMap[250696132965957636] = "intermediate.parser.intermediate_parser.TypeId";
+            ruleNameMap[250696132965957637] = "intermediate.parser.intermediate_parser.FundamentalTypeId";
+            ruleNameMap[250696132965957638] = "intermediate.parser.intermediate_parser.TypeRef";
+            ruleNameMap[250696132965957639] = "intermediate.parser.intermediate_parser.StructureType";
+            ruleNameMap[250696132965957640] = "intermediate.parser.intermediate_parser.ArrayType";
+            ruleNameMap[250696132965957641] = "intermediate.parser.intermediate_parser.FunctionType";
+            ruleNameMap[250696132965957642] = "intermediate.parser.intermediate_parser.DataDefinitions";
+            ruleNameMap[250696132965957643] = "intermediate.parser.intermediate_parser.DataDefinition";
+            ruleNameMap[250696132965957644] = "intermediate.parser.intermediate_parser.Constant";
+            ruleNameMap[250696132965957645] = "intermediate.parser.intermediate_parser.BoolConstant";
+            ruleNameMap[250696132965957646] = "intermediate.parser.intermediate_parser.SByteConstant";
+            ruleNameMap[250696132965957647] = "intermediate.parser.intermediate_parser.ByteConstant";
+            ruleNameMap[250696132965957648] = "intermediate.parser.intermediate_parser.ShortConstant";
+            ruleNameMap[250696132965957649] = "intermediate.parser.intermediate_parser.UShortConstant";
+            ruleNameMap[250696132965957650] = "intermediate.parser.intermediate_parser.IntConstant";
+            ruleNameMap[250696132965957651] = "intermediate.parser.intermediate_parser.UIntConstant";
+            ruleNameMap[250696132965957652] = "intermediate.parser.intermediate_parser.LongConstant";
+            ruleNameMap[250696132965957653] = "intermediate.parser.intermediate_parser.ULongConstant";
+            ruleNameMap[250696132965957654] = "intermediate.parser.intermediate_parser.FloatConstant";
+            ruleNameMap[250696132965957655] = "intermediate.parser.intermediate_parser.DoubleConstant";
+            ruleNameMap[250696132965957656] = "intermediate.parser.intermediate_parser.AddressConstant";
+            ruleNameMap[250696132965957657] = "intermediate.parser.intermediate_parser.ArrayConstant";
+            ruleNameMap[250696132965957658] = "intermediate.parser.intermediate_parser.StructureConstant";
+            ruleNameMap[250696132965957659] = "intermediate.parser.intermediate_parser.StringConstant";
+            ruleNameMap[250696132965957660] = "intermediate.parser.intermediate_parser.StringArrayConstant";
+            ruleNameMap[250696132965957661] = "intermediate.parser.intermediate_parser.StringArrayPrefix";
+            ruleNameMap[250696132965957662] = "intermediate.parser.intermediate_parser.ConversionConstant";
+            ruleNameMap[250696132965957663] = "intermediate.parser.intermediate_parser.SymbolConstant";
+            ruleNameMap[250696132965957664] = "intermediate.parser.intermediate_parser.Value";
+            ruleNameMap[250696132965957665] = "intermediate.parser.intermediate_parser.RegValue";
+            ruleNameMap[250696132965957666] = "intermediate.parser.intermediate_parser.ResultRegValue";
+            ruleNameMap[250696132965957667] = "intermediate.parser.intermediate_parser.SymbolValue";
+            ruleNameMap[250696132965957668] = "intermediate.parser.intermediate_parser.LiteralValue";
+            ruleNameMap[250696132965957669] = "intermediate.parser.intermediate_parser.Functions";
+            ruleNameMap[250696132965957670] = "intermediate.parser.intermediate_parser.FunctionDeclaration";
+            ruleNameMap[250696132965957671] = "intermediate.parser.intermediate_parser.FunctionDefinition";
+            ruleNameMap[250696132965957672] = "intermediate.parser.intermediate_parser.FunctionHeader";
+            ruleNameMap[250696132965957673] = "intermediate.parser.intermediate_parser.BasicBlock";
+            ruleNameMap[250696132965957674] = "intermediate.parser.intermediate_parser.Label";
+            ruleNameMap[250696132965957675] = "intermediate.parser.intermediate_parser.Operand";
+            ruleNameMap[250696132965957676] = "intermediate.parser.intermediate_parser.Instructions";
+            ruleNameMap[250696132965957677] = "intermediate.parser.intermediate_parser.Instruction";
+            ruleNameMap[250696132965957678] = "intermediate.parser.intermediate_parser.StoreInstruction";
+            ruleNameMap[250696132965957679] = "intermediate.parser.intermediate_parser.ArgInstruction";
+            ruleNameMap[250696132965957680] = "intermediate.parser.intermediate_parser.JmpInstruction";
+            ruleNameMap[250696132965957681] = "intermediate.parser.intermediate_parser.BranchInstruction";
+            ruleNameMap[250696132965957682] = "intermediate.parser.intermediate_parser.ProcedureCallInstruction";
+            ruleNameMap[250696132965957683] = "intermediate.parser.intermediate_parser.RetInstruction";
+            ruleNameMap[250696132965957684] = "intermediate.parser.intermediate_parser.Case";
+            ruleNameMap[250696132965957685] = "intermediate.parser.intermediate_parser.SwitchInstruction";
+            ruleNameMap[250696132965957686] = "intermediate.parser.intermediate_parser.ValueInstruction";
+            ruleNameMap[250696132965957687] = "intermediate.parser.intermediate_parser.Operation";
+            ruleNameMap[250696132965957688] = "intermediate.parser.intermediate_parser.UnaryInstruction";
+            ruleNameMap[250696132965957689] = "intermediate.parser.intermediate_parser.BinaryInstruction";
+            ruleNameMap[250696132965957690] = "intermediate.parser.intermediate_parser.ParamInstruction";
+            ruleNameMap[250696132965957691] = "intermediate.parser.intermediate_parser.LocalInstruction";
+            ruleNameMap[250696132965957692] = "intermediate.parser.intermediate_parser.LoadInstruction";
+            ruleNameMap[250696132965957693] = "intermediate.parser.intermediate_parser.ElemAddrInstruction";
+            ruleNameMap[250696132965957694] = "intermediate.parser.intermediate_parser.PtrOffsetInstruction";
+            ruleNameMap[250696132965957695] = "intermediate.parser.intermediate_parser.PtrDifftInstruction";
+            ruleNameMap[250696132965957696] = "intermediate.parser.intermediate_parser.FunctionCallInstruction";
+            ruleNameMap[250696132965957697] = "intermediate.parser.intermediate_parser.NoOperationInstruction";
+            ruleNameMap[250696132965957698] = "intermediate.parser.intermediate_parser.Metadata";
+            ruleNameMap[250696132965957699] = "intermediate.parser.intermediate_parser.MetadataStruct";
+            ruleNameMap[250696132965957700] = "intermediate.parser.intermediate_parser.MetadataField";
+            ruleNameMap[250696132965957701] = "intermediate.parser.intermediate_parser.MetadataItem";
+            ruleNameMap[250696132965957702] = "intermediate.parser.intermediate_parser.MetadataBool";
+            ruleNameMap[250696132965957703] = "intermediate.parser.intermediate_parser.MetadataLong";
+            ruleNameMap[250696132965957704] = "intermediate.parser.intermediate_parser.MetadataString";
+            ruleNameMap[250696132965957705] = "intermediate.parser.intermediate_parser.MetadataRef";
+        }
+        private Map<long, string> ruleNameMap; 
+        private static UniquePtr<RuleNameMap> instance;
+    }
+
+    public Map<long, string>* GetRuleNameMapPtr()
+    {
+        return RuleNameMap.Instance().GetRuleNameMap();
+    }
+
+}

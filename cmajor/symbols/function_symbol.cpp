@@ -678,6 +678,24 @@ void FunctionSymbol::ComputeName()
 {
     std::u32string name;
     name.append(groupName);
+    if (!templateArgumentTypes.empty())
+    {
+        name.append(1, '<');
+        bool first = true;
+        for (TypeSymbol* type : templateArgumentTypes)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                name.append(U", ");
+            }
+            name.append(type->FullName());
+        }
+        name.append(1, '>');
+    }
     name.append(1, U'(');
     int n = parameters.size();
     for (int i = 0; i < n; ++i)
@@ -723,18 +741,22 @@ void FunctionSymbol::ComputeMangledName()
         mangledName.append(1, U'_').append(GroupName());
     }
     SymbolType symbolType = GetSymbolType();
+    std::string parentClassStr;
     switch (symbolType)
     {
     case SymbolType::staticConstructorSymbol: case SymbolType::constructorSymbol: case SymbolType::destructorSymbol: case SymbolType::memberFunctionSymbol:
     {
         Symbol* parentClass = Parent();
         mangledName.append(1, U'_').append(parentClass->SimpleName());
+        parentClassStr.append(1, '.').append(util::ToUtf8(parentClass->MangledName()));
+        break;
     }
     }
     std::string templateArgumentStr;
     for (const auto& templateArgumentType : TemplateArgumentTypes())
     {
-        templateArgumentStr.append(".").append(util::ToUtf8(templateArgumentType->FullName()));
+        templateArgumentStr.append(".").append(
+            util::ToUtf8(templateArgumentType->BaseType()->FullName()).append(".").append(util::ToUtf8(templateArgumentType->FullName())));
     }
     std::string constraintStr;
     if (constraint)
@@ -742,7 +764,7 @@ void FunctionSymbol::ComputeMangledName()
         constraintStr = constraint->ToString();
     }
     mangledName.append(1, U'_').append(util::ToUtf32(util::GetSha1MessageDigest(
-        util::ToUtf8(FullNameWithSpecifiers()) + templateArgumentStr + compileUnitId + constraintStr)));
+        util::ToUtf8(FullNameWithSpecifiers()) + parentClassStr + templateArgumentStr + compileUnitId + constraintStr)));
     SetMangledName(mangledName);
 }
 
@@ -784,6 +806,24 @@ std::u32string FunctionSymbol::FullName(bool withParamNames) const
     else
     {
         fullName.append(groupName);
+    }
+    if (!templateArgumentTypes.empty())
+    {
+        fullName.append(1, '<');
+        bool first = true;
+        for (TypeSymbol* type : templateArgumentTypes)
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                fullName.append(U", ");
+            }
+            fullName.append(type->FullName());
+        }
+        fullName.append(1, '>');
     }
     fullName.append(1, U'(');
     int n = parameters.size();

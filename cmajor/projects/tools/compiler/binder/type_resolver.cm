@@ -1,0 +1,676 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public enum TypeResolverFlags : byte
+    {
+        none = 0u, resolveClassGroup = 1u << 0u, createMemberSymbols = 1u << 1u
+    }
+
+    public class NamespaceTypeSymbol : TypeSymbol
+    {
+        public NamespaceTypeSymbol(const System.Lex.Span& span_, NamespaceSymbol* ns_) : base(SymbolKind.namespaceTypeSymbol, span_, ns_->Name()), ns(ns_)
+        {
+        }
+        public inline NamespaceSymbol* Ns() const
+        {
+            return ns;
+        }
+        public override bool IsInComplete() const
+        {
+            return true;
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            #assert(false);
+            return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
+        }
+        public NamespaceTypeSymbol* Clone() const
+        {
+            return new NamespaceTypeSymbol(Span(), ns);
+        }
+        private NamespaceSymbol* ns;
+    }
+
+    public class TypeResolver : Visitor
+    {
+        public TypeResolver(BoundCompileUnit* boundCompileUnit_, ContainerScope* containerScope_, TypeResolverFlags flags_, ClassTypeSymbol* currentClass_) :
+            boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), module(boundCompileUnit->GetModule()),
+            classTemplateRepository(boundCompileUnit->GetClassTemplateRepository()), containerScope(containerScope_), flags(flags_), currentClass(currentClass_),
+            type(null), derivations(Derivations.none), errorId(0)
+        {
+        }
+        public override void Visit(AutoNode& autoNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"auto");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(BoolNode& boolNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"bool");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(SByteNode& sbyteNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"sbyte");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(ByteNode& byteNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"byte");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(ShortNode& shortNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"short");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(UShortNode& ushortNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"ushort");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(IntNode& intNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"int");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(UIntNode& uintNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"uint");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(LongNode& longNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"long");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(ULongNode& ulongNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"ulong");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(FloatNode& floatNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"float");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(DoubleNode& doubleNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"double");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(CharNode& charNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"char");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(WCharNode& wcharNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"wchar");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(UCharNode& ucharNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"uchar");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(VoidNode& voidNode)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetTypeByName(u"void");
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            type = typeResult.Value();
+        }
+        public override void Visit(ConstNode& constNode)
+        {
+            if (HasFrontConstDerivation(derivations))
+            {
+                errorId = MakeError("already has 'const' derivation", constNode.GetFullSpan());
+                return;
+            }
+            derivations = cast<Derivations>(derivations | Derivations.constDerivation);
+            constNode.Subject()->Accept(*this);
+        }
+        public override void Visit(LValueRefNode& lvalueRefNode)
+        {
+            if (HasReferenceDerivation(derivations))
+            {
+                errorId = MakeError("cannot have reference to reference type", lvalueRefNode.GetFullSpan());
+                return;
+            }
+            derivations = cast<Derivations>(derivations | Derivations.lvalueRefDerivation);
+            lvalueRefNode.Subject()->Accept(*this);
+        }
+        public override void Visit(RValueRefNode& rvalueRefNode)
+        {
+            if (HasReferenceDerivation(derivations))
+            {
+                errorId = MakeError("cannot have reference to reference type", rvalueRefNode.GetFullSpan());
+                return;
+            }
+            derivations = cast<Derivations>(derivations | Derivations.rvalueRefDerivation);
+            rvalueRefNode.Subject()->Accept(*this);
+        }
+        public override void Visit(PointerNode& pointerNode)
+        {
+            pointerNode.Subject()->Accept(*this);
+            derivations = SetPointerDerivations(PointerCount(derivations) + 1);
+        }
+        public override void Visit(ArrayNode& arrayNode)
+        {
+            Foo();
+            Result<TypeSymbol*> result = ResolveType(arrayNode.Subject(), boundCompileUnit, containerScope, TypeResolverFlags.none, currentClass);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+            if (type->IsReferenceType())
+            {
+                errorId = MakeError("cannot have array of reference type", arrayNode.GetFullSpan());
+                return;
+            }
+            long size = -1;
+            if (arrayNode.Size() != null)
+            {
+                Result<TypeSymbol*> longTypeResult = symbolTable->GetTypeByName(u"long");
+                if (longTypeResult.Error())
+                {
+                    SetErrorId(longTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* longType = longTypeResult.Value();
+                Result<UniquePtr<Value>> sizeResult = Evaluate(arrayNode.Size(), longType, containerScope, boundCompileUnit, null);
+                if (sizeResult.Error())
+                {
+                    SetErrorId(sizeResult.GetErrorId());
+                    return;
+                }
+                Value* sizeValue = sizeResult.Value().Get();
+                if (sizeValue->IsLongValue())
+                {
+                    LongValue* longSizeValue = cast<LongValue*>(sizeValue);
+                    size = longSizeValue->GetValue();
+                }
+                else
+                {
+                    errorId = MakeError("long type value expected", arrayNode.Size()->GetFullSpan());
+                    return;
+                }
+            }
+            Result<ArrayTypeSymbol*> arrayTypeResult = symbolTable->MakeArrayType(boundCompileUnit->Context(), type, size);
+            if (arrayTypeResult.Error())
+            {
+                SetErrorId(arrayTypeResult.GetErrorId());
+                return;
+            }
+            type = arrayTypeResult.Value();
+        }
+        public override void Visit(IdentifierNode& identifierNode)
+        {
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            if (symbolResult.Error())
+            {
+                errorId = symbolResult.GetErrorId();
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol == null)
+            {
+                for (const auto& fileScope : boundCompileUnit->FileScopes())
+                {
+                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    if (symbolResult.Error())
+                    {
+                        errorId = symbolResult.GetErrorId();
+                        return;
+                    }
+                    symbol = symbolResult.Value();
+                    if (symbol != null)
+                    {
+                        break;
+                    }
+                }
+            }
+            if (symbol != null)
+            {
+                ResolveSymbol(&identifierNode, symbol);
+            }
+            else
+            {
+                Result<string> nameResult = ToUtf8(identifierNode.Str());
+                if (nameResult.Error())
+                {
+                    errorId = nameResult.GetErrorId();
+                    return;
+                }
+                string name = Rvalue(nameResult.Value());
+                errorId = MakeError("type symbol '" + name + "' not found", identifierNode.GetFullSpan());
+                return;
+            }
+        }
+        public override void Visit(TemplateIdNode& templateIdNode)
+        {
+            int arity = templateIdNode.Arity();
+            Result<TypeSymbol*> primaryResult = ResolveType(templateIdNode.Primary(), boundCompileUnit, containerScope, TypeResolverFlags.resolveClassGroup,
+                currentClass);
+            if (primaryResult.Error())
+            {
+                errorId = primaryResult.GetErrorId();
+                return;
+            }
+            TypeSymbol* primaryTemplateType = primaryResult.Value();
+            if (primaryTemplateType->IsClassGroupSymbol())
+            {
+                ClassGroupSymbol* classGroup = cast<ClassGroupSymbol*>(primaryTemplateType);
+                ClassTypeSymbol* classType = classGroup->GetClass(arity);
+                if (classType != null)
+                {
+                    primaryTemplateType = classType;
+                }
+                else
+                {
+                    errorId = MakeError("primary class template with arity " + ToString(arity) + " not found", templateIdNode.GetFullSpan());
+                    return;
+                }
+            }
+            if (!primaryTemplateType->IsClassTypeSymbol())
+            {
+                errorId = MakeError("class type symbol expected", primaryTemplateType->FullSpan(), templateIdNode.GetFullSpan());
+                return;
+            }
+            ClassTypeSymbol* classTemplate = cast<ClassTypeSymbol*>(primaryTemplateType);
+            if (!classTemplate->IsClassTemplate())
+            {
+                errorId = MakeError("class template expected", classTemplate->FullSpan(), templateIdNode.GetFullSpan());
+                return;
+            }
+            if (classTemplate->IsProject() && !classTemplate->IsBound())
+            {
+                TypeBinder typeBinder(boundCompileUnit);
+                Node* node = symbolTable->GetNode(classTemplate);
+                if (node != null && node->IsClassNode())
+                {
+                    ClassNode* classNode = cast<ClassNode*>(node);
+                    typeBinder.AddUsingNodesToCurrentCompileUnit(classNode);
+                }
+                else
+                {
+                    errorId = MakeError("class node not found", classTemplate->FullSpan(), templateIdNode.GetFullSpan());
+                    return;
+                }
+            }
+            List<TypeSymbol*> templateArgumentTypes;
+            int n = arity;
+            for (int i = 0; i < n; ++i)
+            {
+                Result<TypeSymbol*> templateArgumentResult = ResolveType(templateIdNode.TemplateArguments()[i], boundCompileUnit, containerScope,
+                    TypeResolverFlags.none, currentClass);
+                if (templateArgumentResult.Error())
+                {
+                    errorId = templateArgumentResult.GetErrorId();
+                    return;
+                }
+                TypeSymbol* templateArgumentType = templateArgumentResult.Value();
+                templateArgumentTypes.Add(templateArgumentType);
+            }
+            int m = cast<int>(classTemplate->TemplateParameters().Count());
+            if (n < m)
+            {
+                auto defaultResult = classTemplateRepository->ResolveDefaultTemplateArguments(templateArgumentTypes, classTemplate, containerScope, &templateIdNode);
+                if (defaultResult.Error())
+                {
+                    errorId = defaultResult.GetErrorId();
+                    return;
+                }
+            }
+            ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable->MakeClassTemplateSpecialization(classTemplate, templateArgumentTypes);
+            if (!classTemplateSpecialization->IsBound())
+            {
+                auto result = classTemplateRepository->BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, &templateIdNode);
+                if (result.Error())
+                {
+                    errorId = result.GetErrorId();
+                    return;
+                }
+            }
+            type = classTemplateSpecialization;
+        }
+        public override void Visit(DotNode& dotNode)
+        {
+            dotNode.Subject()->Accept(*this);
+            Scope* scope = null;
+            if (type->IsClassGroupSymbol())
+            {
+                ClassGroupSymbol* classGroup = cast<ClassGroupSymbol*>(type);
+                TypeSymbol* originalType = type;
+                type = classGroup->GetClass(0);
+                if (type == null)
+                {
+                    if (currentClass != null && classGroup->Name() == currentClass->Name())
+                    {
+                        type = currentClass;
+                    }
+                }
+                if (type == null)
+                {
+                    Result<string> originalTypeFullNameResult = ToUtf8(originalType->FullName());
+                    if (originalTypeFullNameResult.Error())
+                    {
+                        SetErrorId(originalTypeFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string originalTypeFullName = Rvalue(originalTypeFullNameResult.Value());
+                    errorId = MakeError("symbol '" + originalTypeFullName + "' does not denote dotNode a class type, an array type or a namespace",
+                        dotNode.GetFullSpan(), originalType->FullSpan());
+                    return;
+                }
+            }
+            if (type->IsNamespaceTypeSymbol())
+            {
+                NamespaceTypeSymbol* nsType = cast<NamespaceTypeSymbol*>(type);
+                scope = nsType->Ns()->GetContainerScope();
+            }
+            else if (type->IsClassTypeSymbol() || type->IsArrayTypeSymbol() || type->IsEnumTypeSymbol())
+            {
+                scope = type->GetContainerScope();
+            }
+            else
+            {
+                Result<string> typeFullNameResult = ToUtf8(type->FullName());
+                if (typeFullNameResult.Error())
+                {
+                    SetErrorId(typeFullNameResult.GetErrorId());
+                    return;
+                }
+                string typeFullName = Rvalue(typeFullNameResult.Value());
+                errorId = MakeError("symbol '" + typeFullName + "' does not denote dotNode a class type, an array type or a namespace",
+                    dotNode.GetFullSpan(), type->FullSpan());
+                return;
+            }
+            Result<Symbol*> symbolResult = scope->Lookup(dotNode.MemberId()->Str(), ScopeLookup.this_and_base);
+            if (symbolResult.Error())
+            {
+                SetErrorId(symbolResult.GetErrorId());
+                return;
+            }
+            Symbol* symbol = symbolResult.Value();
+            if (symbol != null)
+            {
+                ResolveSymbol(dotNode.MemberId(), symbol);
+            }
+            else
+            {
+                Result<string> nameResult = ToUtf8(dotNode.MemberId()->Str());
+                if (nameResult.Error())
+                {
+                    SetErrorId(nameResult.GetErrorId());
+                    return;
+                }
+                string name = Rvalue(nameResult.Value());
+                errorId = MakeError("type symbol '" + name + "' not found", dotNode.GetFullSpan());
+                return;
+            }
+        }
+        public override void Visit(AliasNode& aliasNode)
+        {
+            Result<TypeSymbol*> result = ResolveType(aliasNode.TypeExpr(), boundCompileUnit, containerScope, flags, currentClass);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            type = result.Value();
+            if (type->IsClassGroupSymbol())
+            {
+                ClassGroupSymbol* classGroup = cast<ClassGroupSymbol*>(type);
+                TypeSymbol* originalType = type;
+                type = classGroup->GetClass(0);
+                if (type == null)
+                {
+                    if (currentClass != null && classGroup->Name() == currentClass->Name())
+                    {
+                        type = currentClass;
+                    }
+                }
+                if (type == null)
+                {
+                    Result<string> originalTypeFullNameResult = ToUtf8(originalType->FullName());
+                    if (originalTypeFullNameResult.Error())
+                    {
+                        SetErrorId(originalTypeFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string originalTypeFullName = Rvalue(originalTypeFullNameResult.Value());
+                    errorId = MakeError("symbol '" + originalTypeFullName + "' does not denote dotNode a class type, an array type or a namespace",
+                        aliasNode.GetFullSpan(), originalType->FullSpan());
+                    return;
+                }
+            }
+        }
+        public void ResolveSymbol(IdentifierNode* identifierNode, Symbol* symbol)
+        {
+            if (symbol->IsTypeSymbol())
+            {
+                type = cast<TypeSymbol*>(symbol);
+            }
+            else
+            {
+                switch (symbol->Kind())
+                {
+                    case SymbolKind.aliasTypeSymbol:
+                    {
+                        AliasTypeSymbol* aliasTypeSymbol = cast<AliasTypeSymbol*>(symbol);
+                        if (aliasTypeSymbol->IsProject() && !aliasTypeSymbol->IsBound())
+                        {
+                            TypeBinder typeBinder(boundCompileUnit);
+                            typeBinder.SetContainerScope(aliasTypeSymbol->Parent()->GetContainerScope());
+                            Node* node = symbolTable->GetNode(aliasTypeSymbol);
+                            if (node != null)
+                            {
+                                if (node->IsTypedefNode())
+                                {
+                                    TypedefNode* typedefNode = cast<TypedefNode*>(node);
+                                    typeBinder.BindTypedef(aliasTypeSymbol, typedefNode, false);
+                                }
+                                else if (node->IsAliasNode())
+                                {
+                                    AliasNode* aliasNode = cast<AliasNode*>(node);
+                                    typeBinder.BindAlias(aliasTypeSymbol, aliasNode, false);
+                                }
+                            }
+                            else
+                            {
+                                errorId = MakeError("node not found", aliasTypeSymbol->FullSpan(), identifierNode->GetFullSpan());
+                                return;
+                            }
+                            if (typeBinder.Error())
+                            {
+                                errorId = typeBinder.GetErrorId();
+                                return;
+                            }
+                        }
+                        type = aliasTypeSymbol->Type();
+                        break;
+                    }
+                    case SymbolKind.boundTemplateParameterSymbol:
+                    {
+                        BoundTemplateParameterSymbol* boundTemplateParameterSymbol = cast<BoundTemplateParameterSymbol*>(symbol);
+                        type = boundTemplateParameterSymbol->Type();
+                        break;
+                    }
+                    case SymbolKind.namespaceSymbol:
+                    {
+                        NamespaceSymbol* ns = cast<NamespaceSymbol*>(symbol);
+                        NamespaceTypeSymbol* nsType = new NamespaceTypeSymbol(identifierNode->GetSpan(), ns);
+                        nsTypeSymbols.Add(UniquePtr<NamespaceTypeSymbol>(nsType));
+                        type = nsType;
+                        break;
+                    }
+                }
+            }
+        }
+        public inline TypeSymbol* Type() const
+        {
+            return type;
+        }
+        public inline Derivations GetDerivations() const
+        {
+            return derivations;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private SymbolTable* symbolTable;
+        private Module* module;
+        private ClassTemplateRepository* classTemplateRepository;
+        private ContainerScope* containerScope;
+        private TypeResolverFlags flags;
+        private ClassTypeSymbol* currentClass;
+        private TypeSymbol* type;
+        private Derivations derivations;
+        private List<UniquePtr<NamespaceTypeSymbol>> nsTypeSymbols;
+        private int errorId;
+    }
+
+    public Result<TypeSymbol*> ResolveType(Node* typeExprNode, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+    {
+        return ResolveType(typeExprNode, boundCompileUnit, containerScope, TypeResolverFlags.none, null);
+    }
+
+    public Result<TypeSymbol*> ResolveType(Node* typeExprNode, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope,
+        TypeResolverFlags flags, ClassTypeSymbol* currentClass)
+    {
+        TypeResolver resolver(boundCompileUnit, containerScope, flags, currentClass);
+        typeExprNode->Accept(resolver);
+        if (resolver.Error()) return Result<TypeSymbol*>(ErrorId(resolver.GetErrorId()));
+        TypeSymbol* type = resolver.Type();
+        if ((flags & TypeResolverFlags.resolveClassGroup) != TypeResolverFlags.none && type->IsClassGroupSymbol())
+        {
+            return type;
+        }
+        if (type->IsClassGroupSymbol())
+        {
+            ClassGroupSymbol* classGroup = cast<ClassGroupSymbol*>(type);
+            type = classGroup->GetClass(0);
+            if (type == null)
+            {
+                if (currentClass != null && classGroup->Name() == currentClass->GroupName())
+                {
+                    type = currentClass;
+                }
+            }
+        }
+        if (type == null || type->IsInComplete())
+        {
+            int errorId = MakeError("incomplete type expression", typeExprNode->GetFullSpan());
+            return Result<TypeSymbol*>(ErrorId(errorId));
+        }
+        Derivations derivations = resolver.GetDerivations();
+        Derivations unifiedDerivations = UnifyDerivations(derivations, type->GetDerivations());
+        if (unifiedDerivations != Derivations.none)
+        {
+            return boundCompileUnit->GetSymbolTable()->MakeDerivedType(boundCompileUnit->Context(), type->BaseType(), unifiedDerivations);
+        }
+        return Result<TypeSymbol*>(cast<TypeSymbol*>(type));
+    }
+}
+

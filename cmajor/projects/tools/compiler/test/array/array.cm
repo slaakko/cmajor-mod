@@ -1,0 +1,16 @@
+public class Foo
+{
+    public int Access(int i)
+    {
+        return a[i];
+    }
+    private int[3] a;
+}
+
+void main()
+{
+    Foo foo;
+    Foo bar(foo);
+    foo = bar;
+    foo.Access(0);
+}

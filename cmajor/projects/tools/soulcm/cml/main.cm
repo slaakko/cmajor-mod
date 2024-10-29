@@ -1,4 +1,5 @@
 using System;
+using cm.token;
 
 int main(int argc, const char** argv)
 {
@@ -43,7 +44,7 @@ int main(int argc, const char** argv)
                 Console.Error() << incResult.GetErrorMessage() << endl();
                 return 1;
             }
-            Console.Out() << token.ToString() << endl();
+            Console.Out() << TokenName(token.id) << "(" << token.ToString() << ")" << endl();
         }
     }
     return 0;

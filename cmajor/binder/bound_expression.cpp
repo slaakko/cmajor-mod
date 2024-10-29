@@ -1103,10 +1103,6 @@ void BoundDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
             genObjects.back()->SetType(argument->GetType());
         }
         cmajor::ir::OperationFlags callFlags = cmajor::ir::OperationFlags::none;
-        if (GetFlag(BoundExpressionFlags::virtualCall))
-        {
-            callFlags = callFlags | cmajor::ir::OperationFlags::virtualCall;
-        }
 /*      TODO
         if (!delegateTypeSymbol->IsNothrow())
         {
@@ -1253,10 +1249,6 @@ void BoundClassDelegateCall::Store(cmajor::ir::Emitter& emitter, cmajor::ir::Ope
             genObjects.back()->SetType(argument->GetType());
         }
         cmajor::ir::OperationFlags callFlags = cmajor::ir::OperationFlags::none;
-        if (GetFlag(BoundExpressionFlags::virtualCall))
-        {
-            callFlags = callFlags | cmajor::ir::OperationFlags::virtualCall;
-        }
 /*      TODO
         if (!classDelegateTypeSymbol->IsNothrow())
         {
@@ -1702,6 +1694,7 @@ BoundAsExpression::BoundAsExpression(std::unique_ptr<BoundExpression>&& expr_, c
     leftClassIdVar(std::move(leftClassIdVar_)), rightClassIdVar(std::move(rightClassIdVar_))
 {
     expr->SetParent(this);
+    variable->SetParent(this);
     leftClassIdVar->SetParent(this);
     rightClassIdVar->SetParent(this);
 }

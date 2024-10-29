@@ -1,0 +1,282 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class BoundCompileUnit : BoundNode
+    {
+        public BoundCompileUnit(SymbolsContext& context_, Module* module_, SourceFileNode* sourceFile_, AttributeBinder* attributeBinder_) :
+            base(System.Lex.Span(), BoundNodeKind.boundCompileUnit),
+            context(context_), module(module_), symbolTable(module->GetSymbolTable()), sourceFile(sourceFile_), currentNamespace(null),
+            attributeBinder(attributeBinder_), bindingTypes(false), hasGotos(false),
+            classTemplateRepository(this), functionTemplateRepository(this), inlineFunctionRepository(this), operationRepository(this),
+            conceptRepository(), constExprFunctionRepository(this)
+        {
+            string objectFileDirectory = module->ObjectFileDirectory();
+            objectFilePath = System.IO.Path.Combine(objectFileDirectory, System.IO.Path.ChangeExtension(System.IO.Path.GetFileName(sourceFile->FilePath()), ".obj"));
+            asmFilePath = System.IO.Path.Combine(objectFileDirectory, System.IO.Path.ChangeExtension(System.IO.Path.GetFileName(sourceFile->FilePath()), ".asm"));
+        }
+        public inline const string& ObjectFilePath() const
+        {
+            return objectFilePath;
+        }
+        public inline const string& AsmFilePath() const
+        {
+            return asmFilePath;
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load from compile unit", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to compile unit", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public inline bool BindingTypes() const
+        {
+            return bindingTypes;
+        }
+        public void PushBindingTypes()
+        {
+            bindingTypesStack.Push(bindingTypes);
+            bindingTypes = true;
+        }
+        public void PopBindingTypes()
+        {
+            bindingTypes = bindingTypesStack.Pop();
+        }
+        public bool CodeGenerated(FunctionSymbol* functionSymbol) const
+        {
+            return codeGenerated.Find(functionSymbol) != codeGenerated.End();
+        }
+        public void SetCodeGenerated(FunctionSymbol* functionSymbol)
+        {
+            codeGenerated.Insert(functionSymbol);
+        }
+        [nodiscard]
+        public Result<bool> FinalizeBinding(ClassTemplateSpecializationSymbol* classTemplateSpecialization)
+        {
+            if (classTemplateSpecialization->GetModule() == module && classTemplateSpecialization->StatementsNotBound())
+            {
+                classTemplateSpecialization->ResetStatementsNotBound();
+                FileScope* fileScope = classTemplateSpecialization->ReleaseFileScope();
+                bool fileScopeAdded = false;
+                if (fileScope != null)
+                {
+                    AddFileScope(fileScope);
+                    fileScopeAdded = true;
+                }
+                StatementBinder statementBinder(this);
+                classTemplateSpecialization->GlobalNs()->Accept(statementBinder);
+                if (statementBinder.Error())
+                {
+                    return Result<bool>(ErrorId(statementBinder.GetErrorId()));
+                }
+                if (fileScopeAdded)
+                {
+                    RemoveLastFileScope();
+                }
+            }
+            return Result<bool>(true);
+        }
+        public inline SymbolsContext& Context()
+        {
+            return context;
+        }
+        public inline Module* GetModule() const
+        {
+            return module;
+        }
+        public inline SymbolTable* GetSymbolTable() const
+        {
+            return symbolTable;
+        }
+        public inline ConversionTable* GetConversionTable() const
+        {
+            return &conversionTable;
+        }
+        public inline SourceFileNode* SourceFile() const
+        {
+            return sourceFile;
+        }
+        public void PushNamespace(BoundNamespace* ns)
+        {
+            namespaceStack.Push(currentNamespace);
+            currentNamespace = ns;
+        }
+        public void PopNamespace()
+        {
+            currentNamespace = namespaceStack.Pop();
+        }
+        public void AddBoundNode(UniquePtr<BoundNode>&& boundNode)
+        {
+            if (currentNamespace != null)
+            {
+                currentNamespace->AddMember(boundNode);
+            }
+            else
+            {
+                boundNode->SetParent(this);
+                boundNodes.Add(boundNode);
+            }
+        }
+        public inline const List<UniquePtr<BoundNode>>& BoundNodes() const
+        {
+            return boundNodes;
+        }
+        public inline AttributeBinder* GetAttributeBinder() const
+        {
+            return attributeBinder;
+        }
+        public inline ClassTemplateRepository* GetClassTemplateRepository() const
+        {
+            return &classTemplateRepository;
+        }
+        public inline FunctionTemplateRepository* GetFunctionTemplateRepository() const
+        {
+            return &functionTemplateRepository;
+        }
+        public inline InlineFunctionRepository* GetInlineFunctionRepository() const
+        {
+            return &inlineFunctionRepository;
+        }
+        public inline OperationRepository* GetOperationRepository() const
+        {
+            return &operationRepository;
+        }
+        public inline ConceptRepository* GetConceptRepository() const
+        {
+            return &conceptRepository;
+        }
+        public inline ConstantArrayRepository* GetConstantArrayRepository() const
+        {
+            return &constantArrayRepository;
+        }
+        public inline ConstantStructureRepository* GetConstantStructureRepository() const
+        {
+            return &constantStructureRepository;
+        }
+        public inline ConstExprFunctionRepository* GetConstExprFunctionRepository() const
+        {
+            return &constExprFunctionRepository;
+        }
+        public inline const List<UniquePtr<FileScope>>& FileScopes() const
+        {
+            return fileScopes;
+        }
+        public FileScope* FirstFileScope() const
+        {
+            return fileScopes.Front().Get();
+        }
+        public void AddFileScope(FileScope* fileScope)
+        {
+            fileScopes.Add(UniquePtr<FileScope>(fileScope));
+        }
+        public void RemoveLastFileScope()
+        {
+            fileScopes.RemoveLast();
+        }
+        public FileScope* ReleaseLastFileScope()
+        {
+            return fileScopes.RemoveLast().Release();
+        }
+        public inline bool HasGotos() const
+        {
+            return hasGotos;
+        }
+        public inline void SetHasGotos()
+        {
+            hasGotos = true;
+        }
+        public int Install(const string& str)
+        {
+            return utf8StringRepository.Install(str);
+        }
+        public int Install(const wstring& str)
+        {
+            return utf16StringRepository.Install(str);
+        }
+        public int Install(const ustring& str)
+        {
+            return utf32StringRepository.Install(str);
+        }
+        public const string& GetUtf8String(int stringId)
+        {
+            return utf8StringRepository.GetString(stringId);
+        }
+        public const wstring& GetUtf16String(int stringId)
+        {
+            return utf16StringRepository.GetString(stringId);
+        }
+        public const ustring& GetUtf32String(int stringId)
+        {
+            return utf32StringRepository.GetString(stringId);
+        }
+        public bool IsGeneratedDestructorInstantiated(DestructorSymbol* destructorSymbol) const
+        {
+            return instantiatedGeneratedDestructors.Find(destructorSymbol) == instantiatedGeneratedDestructors.End();
+        }
+        public void SetGeneratedDestructorInstantiated(DestructorSymbol* destructorSymbol)
+        {
+            instantiatedGeneratedDestructors.Insert(destructorSymbol);
+        }
+        public bool CanReuse(FunctionSymbol* functionSymbol) const
+        {
+            return canReuse.Find(functionSymbol) != canReuse.End();
+        }
+        public void SetCanReuse(FunctionSymbol* functionSymbol)
+        {
+            canReuse.Insert(functionSymbol);
+        }
+        public void AddGlobalNs(UniquePtr<NamespaceNode>&& globalNs)
+        {
+            globalNamespaceNodes.Add(globalNs);
+        }
+        private SymbolsContext& context;
+        private Module* module;
+        private SymbolTable* symbolTable;
+        private ConversionTable conversionTable;
+        private SourceFileNode* sourceFile;
+        private BoundNamespace* currentNamespace;
+        private Stack<BoundNamespace*> namespaceStack;
+        private List<UniquePtr<BoundNode>> boundNodes;
+        private AttributeBinder* attributeBinder;
+        private bool bindingTypes;
+        private bool hasGotos;
+        private Stack<bool> bindingTypesStack;
+        private List<UniquePtr<FileScope>> fileScopes;
+        private ClassTemplateRepository classTemplateRepository;
+        private FunctionTemplateRepository functionTemplateRepository;
+        private InlineFunctionRepository inlineFunctionRepository;
+        private OperationRepository operationRepository;
+        private ConceptRepository conceptRepository;
+        private ConstantArrayRepository constantArrayRepository;
+        private ConstantStructureRepository constantStructureRepository;
+        private ConstExprFunctionRepository constExprFunctionRepository;
+        private Set<DestructorSymbol*> instantiatedGeneratedDestructors;
+        private StringRepository<string, const char*> utf8StringRepository;
+        private StringRepository<wstring, const wchar*> utf16StringRepository;
+        private StringRepository<ustring, const uchar*> utf32StringRepository;
+        private Set<FunctionSymbol*> canReuse;
+        private List<UniquePtr<NamespaceNode>> globalNamespaceNodes;
+        private string objectFilePath;
+        private string asmFilePath;
+        private Set<FunctionSymbol*> codeGenerated;
+    }
+}
+

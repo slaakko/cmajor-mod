@@ -2123,14 +2123,17 @@ public:
     ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
+    bool CanInline() const override { return canInline; }
+    void SetCanInline(bool canInline_) { canInline = canInline_; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
     const char* ClassName() const override { return "ClassDefaultConstructor"; }
 private:
     cmajor::symbols::ClassTypeSymbol* classType;
+    bool canInline;
 };
 
 ClassDefaultConstructor::ClassDefaultConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit) :
-    cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_)
+    cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_), canInline(true)
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
@@ -2173,7 +2176,8 @@ void ClassDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols::C
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -2197,17 +2201,24 @@ void ClassDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols::C
         function->SetModule(&GetBoundCompileUnit().GetModule());
         function->SetParent(classType);
         function->SetLinkOnceOdrLinkage();
-        functionMap[classType->TypeId()] = function;
         defaultConstructor->SetCompileUnit(GetBoundCompileUnit().GetCompileUnitNode());
         defaultConstructor->SetModule(&GetBoundCompileUnit().GetModule());
-        if (GenerateImplementation(defaultConstructor.get(), containerScope, currentFunction, exception, node))
+        if ((flags & CollectFlags::dontInstantiate) == CollectFlags::none)
         {
-            functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(defaultConstructor.release()));
+            functionMap[classType->TypeId()] = function;
+            if (GenerateImplementation(defaultConstructor.get(), containerScope, currentFunction, exception, node))
+            {
+                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(defaultConstructor.release()));
+            }
+            else
+            {
+                functionMap[classType->TypeId()] = nullptr;
+                return;
+            }
         }
         else
         {
-            functionMap[classType->TypeId()] = nullptr;
-            return;
+            functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(defaultConstructor.release()));
         }
     }
     viableFunctions.Insert(function);
@@ -2227,6 +2238,7 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::unique_ptr<BoundExpression>(
                 new BoundFunctionCall(node->GetSpan(), classType->StaticConstructor())))));
             if (!classType->StaticConstructor()->DontThrow()) nothrow = false;
+            defaultConstructor->SetCanInline(false);
         }
         if (classType->BaseClass())
         {
@@ -2250,6 +2262,7 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
                 GetBoundCompileUnit(), boundFunction.get(), node);
             if (!baseConstructorCall->GetFunctionSymbol()->DontThrow()) nothrow = false;
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(baseConstructorCall))));
+            defaultConstructor->SetCanInline(false);
         }
         if (classType->IsPolymorphic())
         {
@@ -2272,8 +2285,13 @@ bool ClassDefaultConstructorOperation::GenerateImplementation(ClassDefaultConstr
                 classPtr = new BoundConversion(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToHolderConversion);
             }
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundSetVmtPtrStatement(std::unique_ptr<BoundExpression>(classPtr), classType)));
+            defaultConstructor->SetCanInline(false);
         }
         int n = classType->MemberVariables().size();
+        if (n > maxGeneratedInlineFunctionMembers)
+        {
+            defaultConstructor->SetCanInline(false);
+        }
         for (int i = 0; i < n; ++i)
         {
             cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
@@ -2317,14 +2335,17 @@ public:
     ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
+    bool CanInline() const override { return canInline; }
+    void SetCanInline(bool canInline_) { canInline = canInline_; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
     const char* ClassName() const override { return "ClassCopyConstructor"; }
 private:
     cmajor::symbols::ClassTypeSymbol* classType;
+    bool canInline;
 };
 
 ClassCopyConstructor::ClassCopyConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit) :
-    cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_)
+    cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_), canInline(true)
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
@@ -2371,7 +2392,8 @@ void ClassCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -2424,18 +2446,25 @@ void ClassCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
             function->SetLinkOnceOdrLinkage();
-            functionMap[classType->TypeId()] = function;
             copyConstructor->SetCompileUnit(GetBoundCompileUnit().GetCompileUnitNode());
             copyConstructor->SetModule(&GetBoundCompileUnit().GetModule());
-            if (GenerateImplementation(copyConstructor.get(), containerScope, currentFunction, exception, node))
+            if ((flags & CollectFlags::dontInstantiate) == CollectFlags::none)
             {
-                GetBoundCompileUnit().AddCopyConstructorToMap(classType->TypeId(), copyConstructor.get());
-                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copyConstructor.release()));
+                functionMap[classType->TypeId()] = function;
+                if (GenerateImplementation(copyConstructor.get(), containerScope, currentFunction, exception, node))
+                {
+                    GetBoundCompileUnit().AddCopyConstructorToMap(classType->TypeId(), copyConstructor.get());
+                    functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copyConstructor.release()));
+                }
+                else
+                {
+                    functionMap[classType->TypeId()] = nullptr;
+                    return;
+                }
             }
             else
             {
-                functionMap[classType->TypeId()] = nullptr;
-                return;
+                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copyConstructor.release()));
             }
         }
         viableFunctions.Insert(function);
@@ -2456,6 +2485,7 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::unique_ptr<BoundExpression>(
                 new BoundFunctionCall(node->GetSpan(), classType->StaticConstructor())))));
             if (!classType->StaticConstructor()->DontThrow()) nothrow = false;
+            copyConstructor->SetCanInline(false);
         }
         if (classType->BaseClass())
         {
@@ -2488,6 +2518,7 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
                 GetBoundCompileUnit(), boundFunction.get(), node);
             if (!baseConstructorCall->GetFunctionSymbol()->DontThrow()) nothrow = false;
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(baseConstructorCall))));
+            copyConstructor->SetCanInline(false);
         }
         if (classType->IsPolymorphic())
         {
@@ -2510,8 +2541,13 @@ bool ClassCopyConstructorOperation::GenerateImplementation(ClassCopyConstructor*
                 classPtr = new BoundConversion(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToHolderConversion);
             }
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundSetVmtPtrStatement(std::unique_ptr<BoundExpression>(classPtr), classType)));
+            copyConstructor->SetCanInline(false);
         }
         int n = classType->MemberVariables().size();
+        if (n > maxGeneratedInlineFunctionMembers)
+        {
+            copyConstructor->SetCanInline(false);
+        }
         for (int i = 0; i < n; ++i)
         {
             cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
@@ -2561,14 +2597,17 @@ public:
     ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
+    bool CanInline() const override { return canInline; }
+    void SetCanInline(bool canInline_) { canInline = canInline_; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
     const char* ClassName() const override { return "ClassMoveConstructor"; }
 private:
     cmajor::symbols::ClassTypeSymbol* classType;
+    bool canInline;
 };
 
 ClassMoveConstructor::ClassMoveConstructor(cmajor::symbols::ClassTypeSymbol* classType_, BoundCompileUnit* boundCompileUnit) :
-    cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_)
+    cmajor::symbols::ConstructorSymbol(classType_->GetSpan(), U"@constructor"), classType(classType_), canInline(true)
 {
     SetAccess(cmajor::symbols::SymbolAccess::public_);
     SetParent(classType);
@@ -2615,7 +2654,8 @@ void ClassMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
 {
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -2660,17 +2700,24 @@ void ClassMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
             function->SetLinkOnceOdrLinkage();
-            functionMap[classType->TypeId()] = function;
             moveConstructor->SetCompileUnit(GetBoundCompileUnit().GetCompileUnitNode());
             moveConstructor->SetModule(&GetBoundCompileUnit().GetModule());
-            if (GenerateImplementation(moveConstructor.get(), containerScope, currentFunction, exception, node))
+            if ((flags & CollectFlags::dontInstantiate) == CollectFlags::none)
             {
-                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(moveConstructor.release()));
+                functionMap[classType->TypeId()] = function;
+                if (GenerateImplementation(moveConstructor.get(), containerScope, currentFunction, exception, node))
+                {
+                    functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(moveConstructor.release()));
+                }
+                else
+                {
+                    functionMap[classType->TypeId()] = nullptr;
+                    return;
+                }
             }
             else
             {
-                functionMap[classType->TypeId()] = nullptr;
-                return;
+                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(moveConstructor.release()));
             }
         }
         viableFunctions.Insert(function);
@@ -2691,6 +2738,7 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::unique_ptr<BoundExpression>(
                 new BoundFunctionCall(node->GetSpan(), classType->StaticConstructor())))));
             if (!classType->StaticConstructor()->DontThrow()) nothrow = false;
+            moveConstructor->SetCanInline(false);
         }
         if (classType->BaseClass())
         {
@@ -2724,6 +2772,7 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
                 GetBoundCompileUnit(), boundFunction.get(), node);
             if (!baseConstructorCall->GetFunctionSymbol()->DontThrow()) nothrow = false;
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(baseConstructorCall))));
+            moveConstructor->SetCanInline(false);
         }
         if (classType->IsPolymorphic())
         {
@@ -2746,8 +2795,13 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
                 classPtr = new BoundConversion(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToHolderConversion);
             }
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundSetVmtPtrStatement(std::unique_ptr<BoundExpression>(classPtr), classType)));
+            moveConstructor->SetCanInline(false);
         }
         int n = classType->MemberVariables().size();
+        if (n > maxGeneratedInlineFunctionMembers)
+        {
+            moveConstructor->SetCanInline(false);
+        }
         for (int i = 0; i < n; ++i)
         {
             cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
@@ -2771,7 +2825,7 @@ bool ClassMoveConstructorOperation::GenerateImplementation(ClassMoveConstructor*
             rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
             std::vector<std::unique_ptr<BoundExpression>> rvalueArguments;
             rvalueArguments.push_back(std::move(thatBoundMemberVariable));
-            std::unique_ptr<BoundFunctionCall> rvalueMemberCall = ResolveOverload(U"System.Rvalue", containerScope, rvalueLookups, rvalueArguments, GetBoundCompileUnit(), 
+            std::unique_ptr<BoundFunctionCall> rvalueMemberCall = ResolveOverload(U"System.Rvalue", containerScope, rvalueLookups, rvalueArguments, GetBoundCompileUnit(),
                 boundFunction.get(), node);
             memberConstructorCallArguments.push_back(std::move(rvalueMemberCall));
             std::unique_ptr<BoundFunctionCall> memberConstructorCall = ResolveOverload(U"@constructor", containerScope, memberConstructorCallLookups, memberConstructorCallArguments,
@@ -2804,10 +2858,13 @@ public:
     ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
+    bool CanInline() const override { return canInline; }
+    void SetCanInline(bool canInline_) { canInline = canInline_; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
     const char* ClassName() const override { return "ClassCopyAssignment"; }
 private:
     cmajor::symbols::ClassTypeSymbol* classType;
+    bool canInline; 
 };
 
 ClassCopyAssignment::ClassCopyAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit) :
@@ -2859,7 +2916,8 @@ void ClassCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
     CollectFlags flags)
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -2904,17 +2962,24 @@ void ClassCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
             function->SetLinkOnceOdrLinkage();
-            functionMap[classType->TypeId()] = function;
             copyAssignment->SetCompileUnit(GetBoundCompileUnit().GetCompileUnitNode());
             copyAssignment->SetModule(&GetBoundCompileUnit().GetModule());
-            if (GenerateImplementation(copyAssignment.get(), containerScope, currentFunction, exception, node))
+            if ((flags & CollectFlags::dontInstantiate) == CollectFlags::none)
             {
-                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copyAssignment.release())); // todo
+                functionMap[classType->TypeId()] = function;
+                if (GenerateImplementation(copyAssignment.get(), containerScope, currentFunction, exception, node))
+                {
+                    functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copyAssignment.release())); // todo
+                }
+                else
+                {
+                    functionMap[classType->TypeId()] = nullptr;
+                    return;
+                }
             }
             else
             {
-                functionMap[classType->TypeId()] = nullptr;
-                return;
+                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(copyAssignment.release())); // todo
             }
         }
         viableFunctions.Insert(function);
@@ -2961,8 +3026,13 @@ bool ClassCopyAssignmentOperation::GenerateImplementation(ClassCopyAssignment* c
                 GetBoundCompileUnit(), boundFunction.get(), node);
             if (!baseAssignmentCall->GetFunctionSymbol()->DontThrow()) nothrow = false;
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(baseAssignmentCall))));
+            copyAssignment->SetCanInline(false);
         }
         int n = classType->MemberVariables().size();
+        if (n > maxGeneratedInlineFunctionMembers)
+        {
+            copyAssignment->SetCanInline(false);
+        }
         for (int i = 0; i < n; ++i)
         {
             cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
@@ -3012,14 +3082,17 @@ public:
     ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit);
     cmajor::symbols::SymbolAccess DeclaredAccess() const override { return cmajor::symbols::SymbolAccess::public_; }
     bool IsGeneratedFunction() const override { return true; }
+    bool CanInline() const override { return canInline; }
+    void SetCanInline(bool canInline_) { canInline = canInline_; }
     cmajor::symbols::ClassTypeSymbol* ClassType() { return classType; }
     const char* ClassName() const override { return "ClassMoveAssignment"; }
 private:
     cmajor::symbols::ClassTypeSymbol* classType;
+    bool canInline;
 };
 
 ClassMoveAssignment::ClassMoveAssignment(cmajor::symbols::ClassTypeSymbol* classType_, cmajor::symbols::TypeSymbol* voidType_, BoundCompileUnit* boundCompileUnit) :
-    cmajor::symbols::MemberFunctionSymbol(classType_->GetSpan(), U"operator="), classType(classType_)
+    cmajor::symbols::MemberFunctionSymbol(classType_->GetSpan(), U"operator="), classType(classType_), canInline(true)
 {
     SetGroupName(U"operator=");
     SetAccess(cmajor::symbols::SymbolAccess::public_);
@@ -3068,7 +3141,8 @@ void ClassMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
 {
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
-    if (type->PointerCount() != 1 || !type->RemovePointer()->PlainType()->IsClassTypeSymbol()) return;
+    cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
+    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -3110,17 +3184,24 @@ void ClassMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
             function->SetModule(&GetBoundCompileUnit().GetModule());
             function->SetParent(classType);
             function->SetLinkOnceOdrLinkage();
-            functionMap[classType->TypeId()] = function;
             moveAssignment->SetCompileUnit(GetBoundCompileUnit().GetCompileUnitNode());
             moveAssignment->SetModule(&GetBoundCompileUnit().GetModule());
-            if (GenerateImplementation(moveAssignment.get(), containerScope, currentFunction, exception, node))
+            if ((flags & CollectFlags::dontInstantiate) == CollectFlags::none)
             {
-                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(moveAssignment.release()));
+                functionMap[classType->TypeId()] = function;
+                if (GenerateImplementation(moveAssignment.get(), containerScope, currentFunction, exception, node))
+                {
+                    functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(moveAssignment.release()));
+                }
+                else
+                {
+                    functionMap[classType->TypeId()] = nullptr;
+                    return;
+                }
             }
             else
             {
-                functionMap[classType->TypeId()] = nullptr;
-                return;
+                functions.push_back(std::unique_ptr<cmajor::symbols::FunctionSymbol>(moveAssignment.release()));
             }
         }
         viableFunctions.Insert(function);
@@ -3168,8 +3249,13 @@ bool ClassMoveAssignmentOperation::GenerateImplementation(ClassMoveAssignment* m
                 GetBoundCompileUnit(), boundFunction.get(), node);
             if (!baseAssignmentCall->GetFunctionSymbol()->DontThrow()) nothrow = false;
             boundFunction->Body()->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(baseAssignmentCall))));
+            moveAssignment->SetCanInline(false);
         }
         int n = classType->MemberVariables().size();
+        if (n > maxGeneratedInlineFunctionMembers)
+        {
+            moveAssignment->SetCanInline(false);
+        }
         for (int i = 0; i < n; ++i)
         {
             cmajor::symbols::MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
@@ -3578,6 +3664,13 @@ void GenerateStaticClassInitialization(cmajor::symbols::StaticConstructorSymbol*
                 }
             }
         }
+        if (!memberInitializerMap.empty())
+        {
+            cmajor::ast::MemberInitializerNode* initializer = memberInitializerMap.begin()->second;
+            throw cmajor::symbols::Exception("no static member variable found for initializer named '" + util::ToUtf8(initializer->MemberId()->Str()) + "'",
+                node->GetFullSpan(), initializer->GetFullSpan());
+
+        }
     }
     catch (const cmajor::symbols::Exception& ex)
     {
@@ -3688,7 +3781,8 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
         {
             if (!classType->BaseClass())
             {
-                throw cmajor::symbols::Exception("class '" + util::ToUtf8(classType->FullName()) + "' does not have a base class", node->GetFullSpan(), classType->GetFullSpan());
+                throw cmajor::symbols::Exception("class '" + util::ToUtf8(classType->FullName()) + "' does not have a base class", node->GetFullSpan(), 
+                    baseInitializer->GetFullSpan());
             }
             std::vector<FunctionScopeLookup> lookups;
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
@@ -3865,7 +3959,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                     rvalueLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
                     std::vector<std::unique_ptr<BoundExpression>> rvalueArguments;
                     rvalueArguments.push_back(std::move(thatBoundMemberVariable));
-                    std::unique_ptr<BoundFunctionCall> rvalueMemberCall = ResolveOverload(U"System.Rvalue", containerScope, rvalueLookups, rvalueArguments, boundCompileUnit, 
+                    std::unique_ptr<BoundFunctionCall> rvalueMemberCall = ResolveOverload(U"System.Rvalue", containerScope, rvalueLookups, rvalueArguments, boundCompileUnit,
                         boundFunction, node);
                     arguments.push_back(std::move(rvalueMemberCall));
                     std::unique_ptr<BoundFunctionCall> memberConstructorCall = ResolveOverload(U"@constructor", containerScope, lookups, arguments, boundCompileUnit, boundFunction,
@@ -3902,7 +3996,7 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
         {
             cmajor::ast::MemberInitializerNode* initializer = memberInitializerMap.begin()->second;
             throw cmajor::symbols::Exception("no member variable found for initializer named '" + util::ToUtf8(initializer->MemberId()->Str()) + "'",
-                node->GetFullSpan(), classType->GetFullSpan());
+                node->GetFullSpan(), initializer->GetFullSpan());
         }
     }
     catch (const cmajor::symbols::Exception& ex)
@@ -4076,7 +4170,6 @@ void GenerateClassTermination(cmajor::symbols::DestructorSymbol* destructorSymbo
         Assert(thisParam, "this parameter expected");
         if (classType->IsPolymorphic())
         {
-            cmajor::symbols::ParameterSymbol* thisParam = destructorSymbol->Parameters()[0];
             BoundExpression* classPtr = nullptr;
             cmajor::symbols::ClassTypeSymbol* vmtPtrHolderClass = classType->VmtPtrHolderClass();
             if (vmtPtrHolderClass == classType)

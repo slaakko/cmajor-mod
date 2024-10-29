@@ -1,0 +1,38 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+
+namespace binder
+{
+    public class ConceptRepository
+    {
+        public ConceptRepository()
+        {
+        }
+        public BoundConcept* GetBoundConcept(const BoundConceptKey& key) const
+        {
+            auto it = boundConceptMap.Find(key);
+            if (it != boundConceptMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void AddBoundConcept(const BoundConceptKey& key, UniquePtr<BoundConcept>&& boundConcept)
+        {
+            boundConceptMap[key] = boundConcept.Get();
+            boundConcepts.Add(boundConcept);
+        }
+        private HashMap<BoundConceptKey, BoundConcept*> boundConceptMap;
+        private List<UniquePtr<BoundConcept>> boundConcepts;
+    }
+}
+

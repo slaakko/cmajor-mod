@@ -1,0 +1,1160 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public Result<ustring> MakeArrayTypeName(TypeSymbol* elementType, long size)
+    {
+        string sizeStr = ToString(size);
+        Result<ustring> sizeResult = ToUtf32(sizeStr);
+        if (sizeResult.Error()) return sizeResult;
+        ustring name = elementType->FullName() + u"[" + sizeResult.Value() + u"]";
+        return Result<ustring>(name);
+    }
+
+    public class ArrayKey
+    {
+        public ArrayKey(TypeSymbol* elementType_, long size_) : elementType(elementType_), size(size_)
+        {
+        }
+        public inline TypeSymbol* ElementType() const
+        {
+            return elementType;
+        }
+        public inline long Size() const
+        {
+            return size;
+        }
+        private TypeSymbol* elementType;
+        private long size;
+    }
+
+    public bool operator==(const ArrayKey& left, const ArrayKey& right)
+    {
+        if (!TypesEqual(left.ElementType(), right.ElementType())) return false;
+        if (left.Size() != right.Size()) return false;
+        return true;
+    }
+
+    public ulong GetHashCode(const ArrayKey& key)
+    {
+        ulong x = GetHashCode(key.ElementType());
+        x = x ^ GetHashCode(key.Size());
+        return x;
+    }
+
+    public class ArrayTypeSymbol : TypeSymbol
+    {
+        public ArrayTypeSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.arrayTypeSymbol, span_, name_)
+        {
+        }
+        public ArrayTypeSymbol(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* elementType_, long size_) :
+            base(SymbolKind.arrayTypeSymbol, span_, name_), elementType(elementType_), size(size_)
+        {
+        }
+        public inline TypeSymbol* ElementType() const
+        {
+            return elementType;
+        }
+        public inline long Size() const
+        {
+            return size;
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(elementType->TypeId());
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(size);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> elementTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (elementTypeIdResult.Error()) return Result<bool>(ErrorId(elementTypeIdResult.GetErrorId()));
+            elementTypeId = elementTypeIdResult.Value();
+            Result<long> sizeResult = reader.GetBinaryReader().ReadLong();
+            if (sizeResult.Error()) return Result<bool>(ErrorId(sizeResult.GetErrorId()));
+            size = sizeResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(elementTypeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            elementType = typeResult.Value();
+            symbolTable->MapType(this, true);
+            return Result<bool>(true);
+        }
+        public override Result<intermediate.Type*> IrType(Emitter& emitter)
+        {
+            #assert(size != -1);
+            Result<intermediate.Type*> elementIrTypeResult = elementType->IrType(emitter);
+            if (elementIrTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(elementIrTypeResult.GetErrorId()));
+            intermediate.Type* elementIrType = elementIrTypeResult.Value();
+            Result<intermediate.ArrayType*> arrayTypeResult = emitter.GetArrayType(elementIrType, size);
+            if (arrayTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(arrayTypeResult.GetErrorId()));
+            return Result<intermediate.Type*>(arrayTypeResult.Value());
+        }
+        public override ValueKind GetValueKind() const
+        {
+            return ValueKind.arrayValue;
+        }
+        private TypeSymbol* elementType;
+        private Uuid elementTypeId;
+        private long size;
+    }
+
+    public class ArrayLengthFunction : FunctionSymbol
+    {
+        public ArrayLengthFunction(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.arrayLengthFunctionSymbol, span_, name_)
+        {
+        }
+        public ArrayLengthFunction(SymbolsContext& context, ArrayTypeSymbol* arrayType_) :
+            base(SymbolKind.arrayLengthFunctionSymbol, arrayType_->Span(), u"Length"), arrayType(arrayType_)
+        {
+            SetGroupName(u"Length");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->Span(), u"array");
+            arrayParam->SetType(arrayType);
+            Result<bool> result = AddMember(arrayParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
+            if (longTypeResult.Error())
+            {
+                SetErrorId(longTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* longType = longTypeResult.Value();
+            SetReturnType(longType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(arrayType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
+            arrayTypeId = arrayTypeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
+            if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
+            TypeSymbol* type = arrayTypeResult.Value();
+            #assert(type->IsArrayTypeSymbol());
+            arrayType = cast<ArrayTypeSymbol*>(type);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            intermediate.Value* size = emitter.GetLongValue(arrayType->Size());
+            emitter.Stack().Push(size);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private Uuid arrayTypeId;
+    }
+
+    public class ArrayBeginFunction : FunctionSymbol
+    {
+        public ArrayBeginFunction(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.arrayBeginFunctionSymbol, span_, name_)
+        {
+        }
+        public ArrayBeginFunction(SymbolsContext& context, ArrayTypeSymbol* arrayType_) :
+            base(SymbolKind.arrayBeginFunctionSymbol, arrayType_->Span(), u"@arrayBegin"), arrayType(arrayType_)
+        {
+            SetGroupName(u"Begin");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->Span(), u"array");
+            arrayParam->SetType(arrayType);
+            Result<bool> result = AddMember(arrayParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* returnType = arrayType->ElementType()->AddPointer(context);
+            SetReturnType(returnType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(arrayType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
+            arrayTypeId = arrayTypeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
+            if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
+            TypeSymbol* type = arrayTypeResult.Value();
+            #assert(type->IsArrayTypeSymbol());
+            arrayType = cast<ArrayTypeSymbol*>(type);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* arrayPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> arrayBeginResult = emitter.GetArrayBeginAddress(arrayPtr);
+            if (arrayBeginResult.Error()) return Result<bool>(ErrorId(arrayBeginResult.GetErrorId()));
+            intermediate.Value* arrayBegin = arrayBeginResult.Value();
+            emitter.Stack().Push(arrayBegin);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private Uuid arrayTypeId;
+    }
+
+    public class ArrayEndFunction : FunctionSymbol
+    {
+        public ArrayEndFunction(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.arrayEndFunctionSymbol, span_, name_)
+        {
+        }
+        public ArrayEndFunction(SymbolsContext& context, ArrayTypeSymbol* arrayType_) :
+            base(SymbolKind.arrayEndFunctionSymbol, arrayType_->Span(), u"@arrayEnd"), arrayType(arrayType_)
+        {
+            SetGroupName(u"End");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->Span(), u"array");
+            arrayParam->SetType(arrayType);
+            Result<bool> result = AddMember(arrayParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* returnType = arrayType->ElementType()->AddPointer(context);
+            SetReturnType(returnType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(arrayType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
+            arrayTypeId = arrayTypeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
+            if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
+            TypeSymbol* type = arrayTypeResult.Value();
+            #assert(type->IsArrayTypeSymbol());
+            arrayType = cast<ArrayTypeSymbol*>(type);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* arrayPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> arrayEndResult = emitter.GetArrayEndAddress(arrayPtr, arrayType->Size());
+            if (arrayEndResult.Error()) return Result<bool>(ErrorId(arrayEndResult.GetErrorId()));
+            intermediate.Value* arrayEnd = arrayEndResult.Value();
+            emitter.Stack().Push(arrayEnd);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private Uuid arrayTypeId;
+    }
+
+    public class ArrayCBeginFunction : FunctionSymbol
+    {
+        public ArrayCBeginFunction(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.arrayCBeginFunctionSymbol, span_, name_)
+        {
+        }
+        public ArrayCBeginFunction(SymbolsContext& context, ArrayTypeSymbol* arrayType_) :
+            base(SymbolKind.arrayCBeginFunctionSymbol, arrayType_->Span(), u"@arrayCBegin"), arrayType(arrayType_)
+        {
+            SetGroupName(u"CBegin");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->Span(), u"array");
+            arrayParam->SetType(arrayType);
+            Result<bool> result = AddMember(arrayParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* returnType = arrayType->ElementType()->AddConst(context)->AddPointer(context);
+            SetReturnType(returnType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(arrayType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
+            arrayTypeId = arrayTypeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
+            if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
+            TypeSymbol* type = arrayTypeResult.Value();
+            #assert(type->IsArrayTypeSymbol());
+            arrayType = cast<ArrayTypeSymbol*>(type);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* arrayPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> arrayBeginResult = emitter.GetArrayBeginAddress(arrayPtr);
+            if (arrayBeginResult.Error()) return Result<bool>(ErrorId(arrayBeginResult.GetErrorId()));
+            intermediate.Value* arrayBegin = arrayBeginResult.Value();
+            emitter.Stack().Push(arrayBegin);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private Uuid arrayTypeId;
+    }
+
+    public class ArrayCEndFunction : FunctionSymbol
+    {
+        public ArrayCEndFunction(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.arrayCEndFunctionSymbol, span_, name_)
+        {
+        }
+        public ArrayCEndFunction(SymbolsContext& context, ArrayTypeSymbol* arrayType_) :
+            base(SymbolKind.arrayCEndFunctionSymbol, arrayType_->Span(), u"@arrayCEnd"), arrayType(arrayType_)
+        {
+            SetGroupName(u"CEnd");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->Span(), u"array");
+            arrayParam->SetType(arrayType);
+            Result<bool> result = AddMember(arrayParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* returnType = arrayType->ElementType()->AddConst(context)->AddPointer(context);
+            SetReturnType(returnType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(arrayType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
+            arrayTypeId = arrayTypeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
+            if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
+            TypeSymbol* type = arrayTypeResult.Value();
+            #assert(type->IsArrayTypeSymbol());
+            arrayType = cast<ArrayTypeSymbol*>(type);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 1);
+            IrObject* object0 = irObjects[0];
+            Result<bool> result = object0->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* arrayPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> arrayEndResult = emitter.GetArrayEndAddress(arrayPtr, arrayType->Size());
+            if (arrayEndResult.Error()) return Result<bool>(ErrorId(arrayEndResult.GetErrorId()));
+            intermediate.Value* arrayEnd = arrayEndResult.Value();
+            emitter.Stack().Push(arrayEnd);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private Uuid arrayTypeId;
+    }
+
+    public class ArrayDefaultConstructor : FunctionSymbol
+    {
+        public ArrayDefaultConstructor(SymbolsContext& context, ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeDefaultConstructor_) :
+            base(arrayType_->Span(), u"@arrayDefaultConstructor"), arrayType(arrayType_), elementTypeDefaultConstructor(elementTypeDefaultConstructor_)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
+            thisParam->SetType(arrayType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            List<LocalVariableSymbol*> temporaries;
+            Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
+            if (longTypeResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(longTypeResult.GetErrorId()));
+            TypeSymbol* longType = longTypeResult.Value();
+            Result<LocalVariableSymbol*> temporaryResult = currentFunction->CreateTemporary(System.Lex.Span(), longType, context);
+            if (temporaryResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(temporaryResult.GetErrorId()));
+            LocalVariableSymbol* temporary = temporaryResult.Value();
+            temporaries.Add(temporary);
+            return Result<List<LocalVariableSymbol*>>(temporaries);
+        }
+        public void SetTemporariesForElementDefaultConstructor(List<UniquePtr<IrObject>>&& temporaries)
+        {
+            temporariesForElementDefaultConstructor = temporaries;
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* arrayObject = irObjects[0];
+            IrObject* loopVar = irObjects[1];
+            emitter.Stack().Push(emitter.GetLongValue(0));
+            Result<bool> result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* size = emitter.GetLongValue(arrayType->Size());
+            intermediate.BasicBlock* loop = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* init = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* next = emitter.CreateBasicBlock();
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(loop);
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index = emitter.Stack().Pop();
+            Result<intermediate.Value*> lessResult = emitter.CreateLess(index, size);
+            if (lessResult.Error()) return Result<bool>(ErrorId(lessResult.GetErrorId()));
+            intermediate.Value* less = lessResult.Value();
+            result = emitter.CreateBranch(less, init, next);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(init);
+            result = arrayObject->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* arrayPtr = emitter.Stack().Pop();
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index2 = emitter.Stack().Pop();
+            Result<intermediate.Value*> elementPtrResult = emitter.CreateArrayIndexAddress(arrayPtr, index2);
+            if (elementPtrResult.Error()) return Result<bool>(ErrorId(elementPtrResult.GetErrorId()));
+            intermediate.Value* elementPtr = elementPtrResult.Value();
+            NativeValue elementPtrValue(elementPtr);
+            List<IrObject*> elementIrObjects;
+            elementIrObjects.Add(&elementPtrValue);
+            for (const auto& temp : temporariesForElementDefaultConstructor)
+            {
+                elementIrObjects.Add(temp.Get());
+            }
+            result = elementTypeDefaultConstructor->GenerateCall(emitter, elementIrObjects, OperationFlags.none);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> nextResult = emitter.CreateAdd(index2, emitter.GetLongValue(1));
+            if (nextResult.Error()) return Result<bool>(ErrorId(nextResult.GetErrorId()));
+            emitter.Stack().Push(nextResult.Value());
+            result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(next);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private FunctionSymbol* elementTypeDefaultConstructor;
+        private List<UniquePtr<IrObject>> temporariesForElementDefaultConstructor;
+    }
+
+    public class ArrayCopyConstructor : FunctionSymbol
+    {
+        public ArrayCopyConstructor(SymbolsContext& context, ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyConstructor_) :
+            base(arrayType_->Span(), u"@arrayCopyConstructor"), arrayType(arrayType_), elementTypeCopyConstructor(elementTypeCopyConstructor_)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
+            thisParam->SetType(arrayType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
+            thatParam->SetType(arrayType->AddConst(context)->AddLvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            List<LocalVariableSymbol*> temporaries;
+            Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
+            if (longTypeResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(longTypeResult.GetErrorId()));
+            TypeSymbol* longType = longTypeResult.Value();
+            Result<LocalVariableSymbol*> temporaryResult = currentFunction->CreateTemporary(System.Lex.Span(), longType, context);
+            if (temporaryResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(temporaryResult.GetErrorId()));
+            LocalVariableSymbol* temporary = temporaryResult.Value();
+            temporaries.Add(temporary);
+            return Result<List<LocalVariableSymbol*>>(temporaries);
+        }
+        public void SetTemporariesForElementCopyConstructor(List<UniquePtr<IrObject>>&& temporaries)
+        {
+            temporariesForElementCopyConstructor = temporaries;
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 3);
+            IrObject* targetArrayObject = irObjects[0];
+            IrObject* sourceArrayObject = irObjects[1];
+            IrObject* loopVar = irObjects[2];
+            emitter.Stack().Push(emitter.GetLongValue(0));
+            Result<bool> result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* size = emitter.GetLongValue(arrayType->Size());
+            intermediate.BasicBlock* loop = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* init = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* next = emitter.CreateBasicBlock();
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(loop);
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index = emitter.Stack().Pop();
+            Result<intermediate.Value*> lessResult = emitter.CreateLess(index, size);
+            if (lessResult.Error()) return Result<bool>(ErrorId(lessResult.GetErrorId()));
+            intermediate.Value* less = lessResult.Value();
+            result = emitter.CreateBranch(less, init, next);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(init);
+            result = targetArrayObject->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* targetArrayPtr = emitter.Stack().Pop();
+            result = sourceArrayObject->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* sourceArrayPtr = emitter.Stack().Pop();
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index2 = emitter.Stack().Pop();
+            Result<intermediate.Value*> elementPtrResult = emitter.CreateArrayIndexAddress(targetArrayPtr, index2);
+            if (elementPtrResult.Error()) return Result<bool>(ErrorId(elementPtrResult.GetErrorId()));
+            intermediate.Value* elementPtr = elementPtrResult.Value();
+            NativeValue elementPtrValue(elementPtr);
+            List<IrObject*> elementIrObjects;
+            elementIrObjects.Add(&elementPtrValue);
+            Result<intermediate.Value*> sourceElementPtrResult = emitter.CreateArrayIndexAddress(sourceArrayPtr, index2);
+            if (sourceElementPtrResult.Error()) return Result<bool>(ErrorId(sourceElementPtrResult.GetErrorId()));
+            intermediate.Value* sourceElementPtr = sourceElementPtrResult.Value();
+            intermediate.Value* sourceElementValue = sourceElementPtr;
+            TypeSymbol* elementType = arrayType->ElementType();
+            if (elementType->IsBasicTypeSymbol() || elementType->IsPointerType() || elementType->IsDelegateTypeSymbol())
+            {
+                Result<intermediate.Value*> sourceLoadResult = emitter.CreateLoad(sourceElementPtr);
+                if (sourceLoadResult.Error()) return Result<bool>(ErrorId(sourceLoadResult.GetErrorId()));
+                sourceElementValue = sourceLoadResult.Value();
+            }
+            NativeValue sourceValue(sourceElementValue);
+            elementIrObjects.Add(&sourceValue);
+            for (const auto& temp : temporariesForElementCopyConstructor)
+            {
+                elementIrObjects.Add(temp.Get());
+            }
+            result = elementTypeCopyConstructor->GenerateCall(emitter, elementIrObjects, OperationFlags.none);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> nextResult = emitter.CreateAdd(index2, emitter.GetLongValue(1));
+            if (nextResult.Error()) return Result<bool>(ErrorId(nextResult.GetErrorId()));
+            emitter.Stack().Push(nextResult.Value());
+            result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(next);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private FunctionSymbol* elementTypeCopyConstructor;
+        private List<UniquePtr<IrObject>> temporariesForElementCopyConstructor;
+    }
+
+    public class ArrayMoveConstructor : FunctionSymbol
+    {
+        public ArrayMoveConstructor(SymbolsContext& context, ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveConstructor_) :
+            base(arrayType_->Span(), u"@arrayMoveConstructor"), arrayType(arrayType_), elementTypeMoveConstructor(elementTypeMoveConstructor_)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
+            thisParam->SetType(arrayType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
+            thatParam->SetType(arrayType->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            List<LocalVariableSymbol*> temporaries;
+            Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
+            if (longTypeResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(longTypeResult.GetErrorId()));
+            TypeSymbol* longType = longTypeResult.Value();
+            Result<LocalVariableSymbol*> temporaryResult = currentFunction->CreateTemporary(System.Lex.Span(), longType, context);
+            if (temporaryResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(temporaryResult.GetErrorId()));
+            LocalVariableSymbol* temporary = temporaryResult.Value();
+            temporaries.Add(temporary);
+            return Result<List<LocalVariableSymbol*>>(temporaries);
+        }
+        public void SetTemporariesForElementMoveConstructor(List<UniquePtr<IrObject>>&& temporaries)
+        {
+            temporariesForElementMoveConstructor = temporaries;
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 3);
+            IrObject* targetArrayObject = irObjects[0];
+            IrObject* sourceArrayObject = irObjects[1];
+            IrObject* loopVar = irObjects[2];
+            emitter.Stack().Push(emitter.GetLongValue(0));
+            Result<bool> result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* size = emitter.GetLongValue(arrayType->Size());
+            intermediate.BasicBlock* loop = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* init = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* next = emitter.CreateBasicBlock();
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(loop);
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index = emitter.Stack().Pop();
+            Result<intermediate.Value*> lessResult = emitter.CreateLess(index, size);
+            if (lessResult.Error()) return Result<bool>(ErrorId(lessResult.GetErrorId()));
+            intermediate.Value* less = lessResult.Value();
+            result = emitter.CreateBranch(less, init, next);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(init);
+            result = targetArrayObject->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* targetArrayPtr = emitter.Stack().Pop();
+            result = sourceArrayObject->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* sourceArrayPtr = emitter.Stack().Pop();
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index2 = emitter.Stack().Pop();
+            Result<intermediate.Value*> elementPtrResult = emitter.CreateArrayIndexAddress(targetArrayPtr, index2);
+            if (elementPtrResult.Error()) return Result<bool>(ErrorId(elementPtrResult.GetErrorId()));
+            intermediate.Value* elementPtr = elementPtrResult.Value();
+            NativeValue elementPtrValue(elementPtr);
+            List<IrObject*> elementIrObjects;
+            elementIrObjects.Add(&elementPtrValue);
+            Result<intermediate.Value*> sourceElementPtrResult = emitter.CreateArrayIndexAddress(sourceArrayPtr, index2);
+            if (sourceElementPtrResult.Error()) return Result<bool>(ErrorId(sourceElementPtrResult.GetErrorId()));
+            intermediate.Value* sourceElementPtr = sourceElementPtrResult.Value();
+            NativeValue sourcePtrValue(sourceElementPtr);
+            elementIrObjects.Add(&sourcePtrValue);
+            for (const auto& temp : temporariesForElementMoveConstructor)
+            {
+                elementIrObjects.Add(temp.Get());
+            }
+            result = elementTypeMoveConstructor->GenerateCall(emitter, elementIrObjects, OperationFlags.none);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> nextResult = emitter.CreateAdd(index2, emitter.GetLongValue(1));
+            if (nextResult.Error()) return Result<bool>(ErrorId(nextResult.GetErrorId()));
+            emitter.Stack().Push(nextResult.Value());
+            result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(next);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private FunctionSymbol* elementTypeMoveConstructor;
+        private List<UniquePtr<IrObject>> temporariesForElementMoveConstructor;
+    }
+
+    public class ArrayCopyAssignment : FunctionSymbol
+    {
+        public ArrayCopyAssignment(SymbolsContext& context, ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeCopyAssignment_) :
+            base(arrayType_->Span(), u"@arrayCopyAssignment"), arrayType(arrayType_), elementTypeCopyAssignment(elementTypeCopyAssignment_)
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
+            thisParam->SetType(arrayType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
+            thatParam->SetType(arrayType->AddConst(context)->AddLvalueReference(context));
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            List<LocalVariableSymbol*> temporaries;
+            Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
+            if (longTypeResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(longTypeResult.GetErrorId()));
+            TypeSymbol* longType = longTypeResult.Value();
+            Result<LocalVariableSymbol*> temporaryResult = currentFunction->CreateTemporary(System.Lex.Span(), longType, context);
+            if (temporaryResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(temporaryResult.GetErrorId()));
+            LocalVariableSymbol* temporary = temporaryResult.Value();
+            temporaries.Add(temporary);
+            return Result<List<LocalVariableSymbol*>>(temporaries);
+        }
+        public void SetTemporariesForElementCopyAssignment(List<UniquePtr<IrObject>>&& temporaries)
+        {
+            temporariesForElementCopyAssignment = temporaries;
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 3);
+            IrObject* targetArrayObject = irObjects[0];
+            IrObject* sourceArrayObject = irObjects[1];
+            IrObject* loopVar = irObjects[2];
+            emitter.Stack().Push(emitter.GetLongValue(0));
+            Result<bool> result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* size = emitter.GetLongValue(arrayType->Size());
+            intermediate.BasicBlock* loop = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* init = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* next = emitter.CreateBasicBlock();
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(loop);
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index = emitter.Stack().Pop();
+            Result<intermediate.Value*> lessResult = emitter.CreateLess(index, size);
+            if (lessResult.Error()) return Result<bool>(ErrorId(lessResult.GetErrorId()));
+            intermediate.Value* less = lessResult.Value();
+            result = emitter.CreateBranch(less, init, next);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(init);
+            result = targetArrayObject->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* targetArrayPtr = emitter.Stack().Pop();
+            result = sourceArrayObject->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* sourceArrayPtr = emitter.Stack().Pop();
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index2 = emitter.Stack().Pop();
+            Result<intermediate.Value*> elementPtrResult = emitter.CreateArrayIndexAddress(targetArrayPtr, index2);
+            if (elementPtrResult.Error()) return Result<bool>(ErrorId(elementPtrResult.GetErrorId()));
+            intermediate.Value* elementPtr = elementPtrResult.Value();
+            NativeValue elementPtrValue(elementPtr);
+            List<IrObject*> elementIrObjects;
+            elementIrObjects.Add(&elementPtrValue);
+            Result<intermediate.Value*> sourceElementPtrResult = emitter.CreateArrayIndexAddress(sourceArrayPtr, index2);
+            if (sourceElementPtrResult.Error()) return Result<bool>(ErrorId(sourceElementPtrResult.GetErrorId()));
+            intermediate.Value* sourceElementPtr = sourceElementPtrResult.Value();
+            intermediate.Value* sourceElementValue = sourceElementPtr;
+            TypeSymbol* elementType = arrayType->ElementType();
+            if (elementType->IsBasicTypeSymbol() || elementType->IsPointerType() || elementType->IsDelegateTypeSymbol())
+            {
+                Result<intermediate.Value*> sourceLoadResult = emitter.CreateLoad(sourceElementPtr);
+                if (sourceLoadResult.Error()) return Result<bool>(ErrorId(sourceLoadResult.GetErrorId()));
+                sourceElementValue = sourceLoadResult.Value();
+            }
+            NativeValue sourceValue(sourceElementValue);
+            elementIrObjects.Add(&sourceValue);
+            for (const auto& temp : temporariesForElementCopyAssignment)
+            {
+                elementIrObjects.Add(temp.Get());
+            }
+            result = elementTypeCopyAssignment->GenerateCall(emitter, elementIrObjects, OperationFlags.none);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> nextResult = emitter.CreateAdd(index2, emitter.GetLongValue(1));
+            if (nextResult.Error()) return Result<bool>(ErrorId(nextResult.GetErrorId()));
+            emitter.Stack().Push(nextResult.Value());
+            result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(next);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private FunctionSymbol* elementTypeCopyAssignment;
+        private List<UniquePtr<IrObject>> temporariesForElementCopyAssignment;
+    }
+
+    public class ArrayMoveAssignment : FunctionSymbol
+    {
+        public ArrayMoveAssignment(SymbolsContext& context, ArrayTypeSymbol* arrayType_, FunctionSymbol* elementTypeMoveAssignment_) :
+            base(arrayType_->Span(), u"@arrayMoveAssignment"), arrayType(arrayType_), elementTypeMoveAssignment(elementTypeMoveAssignment_)
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
+            thisParam->SetType(arrayType->AddPointer(context));
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
+            thatParam->SetType(arrayType->AddRvalueReference(context));
+            result = AddMember(thatParam, context);
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        public override Result<List<LocalVariableSymbol*>> CreateTemporariesTo(FunctionSymbol* currentFunction, SymbolsContext& context)
+        {
+            List<LocalVariableSymbol*> temporaries;
+            Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
+            if (longTypeResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(longTypeResult.GetErrorId()));
+            TypeSymbol* longType = longTypeResult.Value();
+            Result<LocalVariableSymbol*> temporaryResult = currentFunction->CreateTemporary(System.Lex.Span(), longType, context);
+            if (temporaryResult.Error()) return Result<List<LocalVariableSymbol*>>(ErrorId(temporaryResult.GetErrorId()));
+            LocalVariableSymbol* temporary = temporaryResult.Value();
+            temporaries.Add(temporary);
+            return Result<List<LocalVariableSymbol*>>(temporaries);
+        }
+        public void SetTemporariesForElementMoveAssignment(List<UniquePtr<IrObject>>&& temporaries)
+        {
+            temporariesForElementMoveAssignment = temporaries;
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 3);
+            IrObject* targetArrayObject = irObjects[0];
+            IrObject* sourceArrayObject = irObjects[1];
+            IrObject* loopVar = irObjects[2];
+            emitter.Stack().Push(emitter.GetLongValue(0));
+            Result<bool> result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* size = emitter.GetLongValue(arrayType->Size());
+            intermediate.BasicBlock* loop = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* init = emitter.CreateBasicBlock();
+            intermediate.BasicBlock* next = emitter.CreateBasicBlock();
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(loop);
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index = emitter.Stack().Pop();
+            Result<intermediate.Value*> lessResult = emitter.CreateLess(index, size);
+            if (lessResult.Error()) return Result<bool>(ErrorId(lessResult.GetErrorId()));
+            intermediate.Value* less = lessResult.Value();
+            result = emitter.CreateBranch(less, init, next);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(init);
+            result = targetArrayObject->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* targetArrayPtr = emitter.Stack().Pop();
+            result = sourceArrayObject->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* sourceArrayPtr = emitter.Stack().Pop();
+            result = loopVar->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* index2 = emitter.Stack().Pop();
+            Result<intermediate.Value*> elementPtrResult = emitter.CreateArrayIndexAddress(targetArrayPtr, index2);
+            if (elementPtrResult.Error()) return Result<bool>(ErrorId(elementPtrResult.GetErrorId()));
+            intermediate.Value* elementPtr = elementPtrResult.Value();
+            NativeValue elementPtrValue(elementPtr);
+            List<IrObject*> elementIrObjects;
+            elementIrObjects.Add(&elementPtrValue);
+            Result<intermediate.Value*> sourceElementPtrResult = emitter.CreateArrayIndexAddress(sourceArrayPtr, index2);
+            if (sourceElementPtrResult.Error()) return Result<bool>(ErrorId(sourceElementPtrResult.GetErrorId()));
+            intermediate.Value* sourceElementPtr = sourceElementPtrResult.Value();
+            NativeValue sourcePtrValue(sourceElementPtr);
+            elementIrObjects.Add(&sourcePtrValue);
+            for (const auto& temp : temporariesForElementMoveAssignment)
+            {
+                elementIrObjects.Add(temp.Get());
+            }
+            result = elementTypeMoveAssignment->GenerateCall(emitter, elementIrObjects, OperationFlags.none);
+            if (result.Error()) return result;
+            Result<intermediate.Value*> nextResult = emitter.CreateAdd(index2, emitter.GetLongValue(1));
+            if (nextResult.Error()) return Result<bool>(ErrorId(nextResult.GetErrorId()));
+            emitter.Stack().Push(nextResult.Value());
+            result = loopVar->Store(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            result = emitter.CreateJump(loop);
+            if (result.Error()) return result;
+            emitter.SetCurrentBasicBlock(next);
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+        private FunctionSymbol* elementTypeMoveAssignment;
+        private List<UniquePtr<IrObject>> temporariesForElementMoveAssignment;
+    }
+
+    public class ArrayTypeElementAccess : FunctionSymbol
+    {
+        public ArrayTypeElementAccess(SymbolsContext& context, ArrayTypeSymbol* arrayType_) : base(arrayType_->Span(), u"@arrayElementAccess"), arrayType(arrayType_)
+        {
+            SetGroupName(u"operator[]");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* arrayParam = new ParameterSymbol(arrayType->Span(), u"array");
+            arrayParam->SetType(arrayType);
+            Result<bool> result = AddMember(arrayParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
+            if (longTypeResult.Error())
+            {
+                SetErrorId(longTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* longType = longTypeResult.Value();
+            ParameterSymbol* indexParam = new ParameterSymbol(arrayType->Span(), u"index");
+            indexParam->SetType(longType);
+            result = AddMember(indexParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* returnType = arrayType->ElementType();
+            if (!returnType->IsBasicTypeSymbol() && !returnType->IsPointerType() && !returnType->IsDelegateTypeSymbol())
+            {
+                returnType = returnType->AddLvalueReference(context);
+            }
+            SetReturnType(returnType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(irObjects.Count() == 2);
+            IrObject* arrayObject = irObjects[0];
+            IrObject* indexObject = irObjects[1];
+            Result<bool> result = arrayObject->Load(emitter, OperationFlags.addr);
+            if (result.Error()) return result;
+            intermediate.Value* arrayPtr = emitter.Stack().Pop();
+            result = indexObject->Load(emitter, OperationFlags.none);
+            if (result.Error()) return result;
+            intermediate.Value* indexValue = emitter.Stack().Pop();
+            Result<intermediate.Value*> elementPtrResult = emitter.CreateArrayIndexAddress(arrayPtr, indexValue);
+            if (elementPtrResult.Error()) return Result<bool>(ErrorId(elementPtrResult.GetErrorId()));
+            intermediate.Value* elementPtr = elementPtrResult.Value();
+            TypeSymbol* elementType = arrayType->ElementType();
+            if (!GetFlag(flags, OperationFlags.addr) && (elementType->IsBasicTypeSymbol() || elementType->IsPointerType() || elementType->IsDelegateTypeSymbol()))
+            {
+                Result<intermediate.Value*> elementValueResult = emitter.CreateLoad(elementPtr);
+                if (elementValueResult.Error()) return Result<bool>(ErrorId(elementValueResult.GetErrorId()));
+                intermediate.Value* elementValue = elementValueResult.Value();
+                emitter.Stack().Push(elementValue);
+            }
+            else
+            {
+                emitter.Stack().Push(elementPtr);
+            }
+            return Result<bool>(true);
+        }
+        private ArrayTypeSymbol* arrayType;
+    }
+}
+

@@ -9,6 +9,7 @@ using cm.token;
 parser cm.parser.TypeExprParser
 {
     lexer cm.lexer.CmajorLexer;
+    main;
 
     using cm.parser.FundamentalTypeParser.FundamentalType;
     using cm.parser.ExpressionParser.Expression;

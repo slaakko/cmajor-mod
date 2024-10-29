@@ -1,0 +1,94 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+
+namespace binder
+{
+    [nodiscard]
+    public Result<bool> CheckAccess(FunctionSymbol* fromFunction, Symbol* toSymbol)
+    {
+        bool hasAccess = HasAccess(fromFunction, toSymbol);
+        if (!hasAccess)
+        {
+            Result<string> typeStringResult = ToUtf8(toSymbol->TypeString());
+            if (typeStringResult.Error()) return Result<bool>(ErrorId(typeStringResult.GetErrorId()));
+            string typeString = Rvalue(typeStringResult.Value());
+            Result<string> symbolFullNameResult = ToUtf8(toSymbol->FullName());
+            if (symbolFullNameResult.Error()) return Result<bool>(ErrorId(symbolFullNameResult.GetErrorId()));
+            string symbolFullName = Rvalue(symbolFullNameResult.Value());
+            int errorId = MakeError(typeString + " '" + symbolFullName + "' is inaccessible due to its protection level", fromFunction->FullSpan(), toSymbol->FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    public bool HasAccess(FunctionSymbol* fromFunction, Symbol* toSymbol)
+    {
+        if (fromFunction == null) return false;
+        FunctionSymbol* toContainingFunction = toSymbol->ContainingFunction();
+        if (toContainingFunction != null)
+        {
+            if (fromFunction == toContainingFunction || FunctionSymbolsEqual(fromFunction, toContainingFunction))
+            {
+                return true;
+            }
+        }
+        ClassTypeSymbol* toContainingClass = toSymbol->ContainingClass();
+        if (toContainingClass != null)
+        {
+            if (!HasAccess(fromFunction, toContainingClass)) return false;
+        }
+        switch (toSymbol->Access())
+        {
+            case SymbolAccess.public_:
+            {
+                return true;
+            }
+            case SymbolAccess.protected_:
+            {
+                ClassTypeSymbol* fromContainingClass = fromFunction->ContainingClass();
+                if (fromContainingClass != null)
+                {
+                    if (toContainingClass != null && toContainingClass->IsSameParentOrAncestorOf(fromContainingClass))
+                    {
+                        return true;
+                    }
+                    if (fromContainingClass->HasBaseClass(toContainingClass))
+                    {
+                        return true;
+                    }
+                }
+                break;
+            }
+            case SymbolAccess.internal_:
+            {
+                if (fromFunction->GetModule() == toSymbol->GetModule())
+                {
+                    return true;
+                }
+                break;
+            }
+            case SymbolAccess.private_:
+            {
+                if (toContainingClass != null)
+                {
+                    ClassTypeSymbol* fromContainingClass = fromFunction->ContainingClass();
+                    if (fromContainingClass != null)
+                    {
+                        if (toContainingClass->IsSameParentOrAncestorOf(fromContainingClass))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        return false;
+    }
+}
+

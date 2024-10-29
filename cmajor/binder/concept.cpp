@@ -1013,7 +1013,6 @@ void ConstraintChecker::Visit(cmajor::ast::FunctionConstraintNode& functionConst
     {
         cmajor::ast::ParameterNode* parameterNode = functionConstraintNode.Parameters()[i];
         cmajor::symbols::TypeSymbol* parameterType = ResolveType(parameterNode->TypeExpr(), boundCompileUnit, containerScope);
-        lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
         parameterTypes.push_back(parameterType);
         arguments.push_back(std::unique_ptr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), parameterType)));
     }

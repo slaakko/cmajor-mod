@@ -1,0 +1,494 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.IO
+{
+    public class BinaryReader : IOBase
+    {
+        public BinaryReader() : base(), stream(null) {}
+        public BinaryReader(Stream* stream_) : base(), stream(stream_)
+        {
+        }
+        suppress BinaryReader(const BinaryReader&);
+        suppress void operator=(const BinaryReader&);
+        public override ~BinaryReader()
+        {
+            long n = streams.Count();
+            for (long i = n - 1; i >= 0; --i)
+            {
+                streams[i].Reset();
+            }
+        }
+        public Stream* GetStream()
+        {
+            return stream;
+        }
+        public void SetStream(Stream* stream_)
+        {
+            stream = stream_;
+        }
+        public void Own(Stream* strm)
+        {
+            streams.Add(UniquePtr<Stream>(strm));
+        }
+        [nodiscard]
+        public Result<bool> ReadBool()
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = ReadByte();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(cast<bool>(result.Value()));
+        }
+        [nodiscard]
+        public Result<char> ReadChar()
+        {
+            if (Error())
+            {
+                return Result<char>(ErrorId(GetErrorId()));
+            }
+            auto result = ReadByte();
+            if (result.Error())
+            {
+                return Result<char>(ErrorId(result.GetErrorId()));
+            }
+            return Result<char>(cast<char>(result.Value()));
+        }
+        [nodiscard]
+        public Result<wchar> ReadWChar()
+        {
+            if (Error())
+            {
+                return Result<wchar>(ErrorId(GetErrorId()));
+            }
+            auto result = ReadUShort();
+            if (result.Error())
+            {
+                return Result<wchar>(ErrorId(result.GetErrorId()));
+            }
+            return Result<wchar>(cast<wchar>(result.Value()));
+        }
+        [nodiscard]
+        public Result<uchar> ReadUChar()
+        {
+            if (Error())
+            {
+                return Result<uchar>(ErrorId(GetErrorId()));
+            }
+            auto result = ReadUInt();
+            if (result.Error())
+            {
+                return Result<uchar>(ErrorId(result.GetErrorId()));
+            }
+            return Result<uchar>(cast<uchar>(result.Value()));
+        }
+        [nodiscard]
+        public Result<sbyte> ReadSByte()
+        {
+            if (Error())
+            {
+                return Result<sbyte>(ErrorId(GetErrorId()));
+            }
+            auto result = ReadByte();
+            if (result.Error())
+            {
+                return Result<sbyte>(ErrorId(result.GetErrorId()));
+            }
+            return Result<sbyte>(cast<sbyte>(result.Value()));
+        }
+        [nodiscard]
+        public Result<int> ReadByteOrEnd()
+        {
+            if (Error())
+            {
+                return Result<int>(ErrorId(GetErrorId()));
+            }
+            if (stream == null)
+            {
+                int errorId = RtmAllocateError("BinaryReader.ReadByteOrEnd: stream is null");
+                SetErrorId(errorId);
+                return Result<int>(ErrorId(errorId));
+            }
+            auto result = stream->ReadByte();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return result;
+            }
+            return result;
+        }
+        [nodiscard]
+        public Result<byte> ReadByte()
+        {
+            if (Error())
+            {
+                return Result<byte>(ErrorId(GetErrorId()));
+            }
+            if (stream == null)
+            {
+                int errorId = RtmAllocateError("BinaryReader.ReadByte: stream is null");
+                SetErrorId(errorId);
+                return Result<byte>(ErrorId(errorId));
+            }
+            auto readResult = stream->ReadByte();
+            if (readResult.Error())
+            {
+                SetErrorId(readResult.GetErrorId());
+                return Result<byte>(ErrorId(readResult.GetErrorId()));
+            }
+            int x = readResult.Value();
+            if (x == -1)
+            {
+                int errorId = RtmAllocateError("unexpected end of binary byte stream");
+                SetErrorId(errorId);
+                return Result<byte>(ErrorId(errorId));
+            }
+            return Result<byte>(cast<byte>(x));
+        }
+        [nodiscard]
+        public Result<short> ReadShort()
+        {
+            if (Error())
+            {
+                return Result<short>(ErrorId(GetErrorId()));
+            }
+            auto result = ReadUShort();
+            if (result.Error())
+            {
+                return Result<short>(ErrorId(result.GetErrorId()));
+            }
+            return Result<short>(cast<short>(result.Value()));
+        }
+        [nodiscard]
+        public Result<ushort> ReadUShort()
+        {
+            if (Error())
+            {
+                return Result<ushort>(ErrorId(GetErrorId()));
+            }
+            auto x0 = ReadByte();
+            if (x0.Error())
+            {
+                return Result<ushort>(ErrorId(x0.GetErrorId()));
+            }
+            auto x1 = ReadByte();
+            if (x1.Error())
+            {
+                return Result<ushort>(ErrorId(x1.GetErrorId()));
+            }
+            ushort x = cast<ushort>(x0.Value()) << 8u | cast<ushort>(x1.Value());
+            return Result<ushort>(x);
+        }
+        [nodiscard]
+        public Result<int> ReadInt()
+        {
+            if (Error())
+            {
+                return Result<int>(ErrorId(GetErrorId()));
+            }
+            auto x = ReadUInt();
+            if (x.Error())
+            {
+                return Result<int>(ErrorId(x.GetErrorId()));
+            }
+            return Result<int>(cast<int>(x.Value()));
+        }
+        [nodiscard]
+        public Result<uint> ReadUInt()
+        {
+            if (Error())
+            {
+                return Result<uint>(ErrorId(GetErrorId()));
+            }
+            auto x0 = ReadByte();
+            if (x0.Error())
+            {
+                return Result<uint>(ErrorId(x0.GetErrorId()));
+            }
+            auto x1 = ReadByte();
+            if (x1.Error())
+            {
+                return Result<uint>(ErrorId(x1.GetErrorId()));
+            }
+            auto x2 = ReadByte();
+            if (x2.Error())
+            {
+                return Result<uint>(ErrorId(x2.GetErrorId()));
+            }
+            auto x3 = ReadByte();
+            if (x3.Error())
+            {
+                return Result<uint>(ErrorId(x3.GetErrorId()));
+            }
+            uint x = cast<uint>(x0.Value()) << 24u | cast<uint>(x1.Value()) << 16u | cast<uint>(x2.Value()) << 8u | cast<uint>(x3.Value());
+            return Result<uint>(x);
+        }
+        [nodiscard]
+        public Result<long> ReadLong()
+        {
+            if (Error())
+            {
+                return Result<long>(ErrorId(GetErrorId()));
+            }
+            auto x = ReadULong();
+            if (x.Error())
+            {
+                return Result<long>(ErrorId(x.GetErrorId()));
+            }
+            return Result<long>(cast<long>(x.Value()));
+        }
+        [nodiscard]
+        public Result<ulong> ReadULong()
+        {
+            if (Error())
+            {
+                return Result<ulong>(ErrorId(GetErrorId()));
+            }
+            auto x0 = ReadByte();
+            if (x0.Error())
+            {
+                return Result<ulong>(ErrorId(x0.GetErrorId()));
+            }
+            auto x1 = ReadByte();
+            if (x1.Error())
+            {
+                return Result<ulong>(ErrorId(x1.GetErrorId()));
+            }
+            auto x2 = ReadByte();
+            if (x2.Error())
+            {
+                return Result<ulong>(ErrorId(x2.GetErrorId()));
+            }
+            auto x3 = ReadByte();
+            if (x3.Error())
+            {
+                return Result<ulong>(ErrorId(x3.GetErrorId()));
+            }
+            auto x4 = ReadByte();
+            if (x4.Error())
+            {
+                return Result<ulong>(ErrorId(x4.GetErrorId()));
+            }
+            auto x5 = ReadByte();
+            if (x5.Error())
+            {
+                return Result<ulong>(ErrorId(x5.GetErrorId()));
+            }
+            auto x6 = ReadByte();
+            if (x6.Error())
+            {
+                return Result<ulong>(ErrorId(x6.GetErrorId()));
+            }
+            auto x7 = ReadByte();
+            if (x7.Error())
+            {
+                return Result<ulong>(ErrorId(x7.GetErrorId()));
+            }
+            ulong x = cast<ulong>(x0.Value()) << 56u | cast<ulong>(x1.Value()) << 48u | cast<ulong>(x2.Value()) << 40u | cast<ulong>(x3.Value()) << 32u |
+                cast<ulong>(x4.Value()) << 24u | cast<ulong>(x5.Value()) << 16u | cast<ulong>(x6.Value()) << 8u | cast<ulong>(x7.Value());
+            return Result<ulong>(x);
+        }
+        [nodiscard]
+        public Result<float> ReadFloat()
+        {
+            if (Error())
+            {
+                return Result<float>(ErrorId(GetErrorId()));
+            }
+            auto x = ReadUInt();
+            if (x.Error())
+            {
+                return Result<float>(ErrorId(x.GetErrorId()));
+            }
+            void* u = &x;
+            return Result<float>(*cast<float*>(u));
+        }
+        [nodiscard]
+        public Result<double> ReadDouble()
+        {
+            if (Error())
+            {
+                return Result<double>(ErrorId(GetErrorId()));
+            }
+            auto x = ReadULong();
+            if (x.Error())
+            {
+                return Result<double>(ErrorId(x.GetErrorId()));
+            }
+            void* u = &x;
+            return Result<double>(*cast<double*>(u));
+        }
+        [nodiscard]
+        public Result<string> ReadString()
+        {
+            if (Error())
+            {
+                return Result<string>(ErrorId(GetErrorId()));
+            }
+            string s;
+            auto c = ReadChar();
+            if (c.Error())
+            {
+                return Result<string>(ErrorId(c.GetErrorId()));
+            }
+            while (c.Value() != '\0')
+            {
+                s.Append(c.Value());
+                c = ReadChar();
+                if (c.Error())
+                {
+                    return Result<string>(ErrorId(c.GetErrorId()));
+                }
+            }
+            return Result<string>(s);
+        }
+        [nodiscard]
+        public Result<wstring> ReadWString()
+        {
+            if (Error())
+            {
+                return Result<wstring>(ErrorId(GetErrorId()));
+            }
+            auto s = ReadString();
+            if (s.Error())
+            {
+                return Result<wstring>(ErrorId(s.GetErrorId()));
+            }
+            return Result<wstring>(ToUtf16(s.Value()));
+        }
+        [nodiscard]
+        public Result<ustring> ReadUString()
+        {
+            if (Error())
+            {
+                return Result<ustring>(ErrorId(GetErrorId()));
+            }
+            auto s = ReadString();
+            if (s.Error())
+            {
+                return Result<ustring>(ErrorId(s.GetErrorId()));
+            }
+            return Result<ustring>(ToUtf32(s.Value()));
+        }
+        [nodiscard]
+        public Result<Uuid> ReadUuid()
+        {
+            if (Error())
+            {
+                return Result<Uuid>(ErrorId(GetErrorId()));
+            }
+            Uuid uuid;
+            for (byte& b : uuid)
+            {
+                auto result = ReadByte();
+                if (result.Error())
+                {
+                    return Result<Uuid>(ErrorId(result.GetErrorId()));
+                }
+                b = result.Value();
+            }
+            return Result<Uuid>(uuid);
+        }
+        [nodiscard]
+        public Result<bool> Read(byte* buffer, int size)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            for (int i = 0; i < size; ++i)
+            {
+                auto result = ReadByte();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                buffer[i] = result.Value();
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Seek(long pos, Origin origin)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            if (stream == null)
+            {
+                int errorId = RtmAllocateError("BinaryReader.Seek: stream is null");
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            auto result = stream->Seek(pos, origin);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return result;
+            }
+            return result;
+        }
+        [nodiscard]
+        public Result<long> Tell()
+        {
+            if (Error())
+            {
+                return Result<long>(ErrorId(GetErrorId()));
+            }
+            if (stream == null)
+            {
+                int errorId = RtmAllocateError("BinaryReader.Tell: stream is null");
+                SetErrorId(errorId);
+                return Result<long>(ErrorId(errorId));
+            }
+            auto result = stream->Tell();
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return result;
+            }
+            return result;
+        }
+        [nodiscard]
+        public Result<long> Size()
+        {
+            if (Error())
+            {
+                return Result<long>(ErrorId(GetErrorId()));
+            }
+            auto pos = Tell();
+            if (pos.Error())
+            {
+                return pos;
+            }
+            auto seekResult = Seek(0, Origin.seekEnd);
+            if (seekResult.Error())
+            {
+                return Result<long>(ErrorId(seekResult.GetErrorId()));
+            }
+            auto size = Tell();
+            if (size.Error())
+            {
+                return Result<long>(ErrorId(size.GetErrorId()));
+            }
+            auto seekResult2 = Seek(pos.Value(), Origin.seekSet);
+            if (seekResult2.Error())
+            {
+                return Result<long>(ErrorId(seekResult2.GetErrorId()));
+            }
+            return size;
+        }
+        private Stream* stream;
+        private List<UniquePtr<Stream>> streams;
+    }
+}

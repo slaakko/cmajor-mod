@@ -1,0 +1,243 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.IO
+{
+    public static class File
+    {
+        public static Result<bool> Exists(const string& filePath)
+        {
+            int errorId = 0;
+            bool exists = RtmFileExists(filePath.Chars(), errorId);
+            if (errorId > 0)
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                return Result<bool>(exists);
+            }
+        }
+        public static Result<long> Size(const string& filePath)
+        {
+            int errorId = 0;
+            long fileSize = RtmGetFileSize(filePath.Chars(), errorId);
+            if (fileSize == -1)
+            {
+                return Result<long>(ErrorId(errorId));
+            }
+            else
+            {
+                return Result<long>(fileSize);
+            }
+        }
+        public static Result<bool> LastWriteTimeLess(const string& filePath1, const string& filePath2)
+        {
+            int errorId = 0;
+            bool result = RtmLastWriteTimeLess(filePath1.Chars(), filePath2.Chars(), errorId);
+            if (errorId != 0)
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(result);
+        }
+        public static Result<StreamWriter> CreateText(const string& filePath)
+        {
+            UniquePtr<FileStream> fileStream = new FileStream(filePath, OpenMode.write);
+            if (fileStream->Error())
+            {
+                return Result<StreamWriter>(ErrorId(fileStream->GetErrorId()));
+            }
+            UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
+            if (bufferedStream->Error())
+            {
+                return Result<StreamWriter>(ErrorId(bufferedStream->GetErrorId()));
+            }
+            StreamWriter writer(bufferedStream.Get());
+            writer.Own(fileStream.Release());
+            writer.Own(bufferedStream.Release());
+            if (writer.Error())
+            {
+                return Result<StreamWriter>(ErrorId(writer.GetErrorId()));
+            }
+            return Result<StreamWriter>(Rvalue(writer));
+        }
+        public static Result<BinaryWriter> CreateBinary(const string& filePath)
+        {
+            UniquePtr<FileStream> fileStream = new FileStream(filePath, cast<OpenMode>(OpenMode.write | OpenMode.binary));
+            if (fileStream->Error())
+            {
+                return Result<BinaryWriter>(ErrorId(fileStream->GetErrorId()));
+            }
+            UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
+            if (bufferedStream->Error())
+            {
+                return Result<BinaryWriter>(ErrorId(bufferedStream->GetErrorId()));
+            }
+            BinaryWriter writer(bufferedStream.Get());
+            writer.Own(fileStream.Release());
+            writer.Own(bufferedStream.Release());
+            if (writer.Error())
+            {
+                return Result<BinaryWriter>(ErrorId(writer.GetErrorId()));
+            }
+            return Result<BinaryWriter>(Rvalue(writer));
+        }
+        public static Result<StreamWriter> AppendText(const string& filePath)
+        {
+            UniquePtr<FileStream> fileStream = new FileStream(filePath, OpenMode.append);
+            if (fileStream->Error())
+            {
+                return Result<StreamWriter>(ErrorId(fileStream->GetErrorId()));
+            }
+            UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
+            if (bufferedStream->Error())
+            {
+                return Result<StreamWriter>(ErrorId(bufferedStream->GetErrorId()));
+            }
+            StreamWriter writer(bufferedStream.Get());
+            writer.Own(fileStream.Release());
+            writer.Own(bufferedStream.Release());
+            if (writer.Error())
+            {
+                return Result<StreamWriter>(ErrorId(writer.GetErrorId()));
+            }
+            return Result<StreamWriter>(Rvalue(writer));
+        }
+        public static Result<StreamReader> OpenRead(const string& filePath)
+        {
+            UniquePtr<FileStream> fileStream = new FileStream(filePath, OpenMode.read);
+            if (fileStream->Error())
+            {
+                return Result<StreamReader>(ErrorId(fileStream->GetErrorId()));
+            }
+            UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
+            if (bufferedStream->Error())
+            {
+                return Result<StreamReader>(ErrorId(bufferedStream->GetErrorId()));
+            }
+            StreamReader reader(bufferedStream.Get());
+            reader.Own(fileStream.Release());
+            reader.Own(bufferedStream.Release());
+            if (reader.Error())
+            {
+                return Result<StreamReader>(ErrorId(reader.GetErrorId()));
+            }
+            return Result<StreamReader>(Rvalue(reader));
+        }
+        public static Result<BinaryReader> OpenBinary(const string& filePath)
+        {
+            UniquePtr<FileStream> fileStream = new FileStream(filePath, cast<OpenMode>(OpenMode.read | OpenMode.binary));
+            if (fileStream->Error())
+            {
+                return Result<BinaryReader>(ErrorId(fileStream->GetErrorId()));
+            }
+            UniquePtr<BufferedStream> bufferedStream = new BufferedStream(fileStream.Get());
+            if (bufferedStream->Error())
+            {
+                return Result<BinaryReader>(ErrorId(bufferedStream->GetErrorId()));
+            }
+            BinaryReader reader(bufferedStream.Get());
+            reader.Own(fileStream.Release());
+            reader.Own(bufferedStream.Release());
+            if (reader.Error())
+            {
+                return Result<BinaryReader>(ErrorId(reader.GetErrorId()));
+            }
+            return Result<BinaryReader>(Rvalue(reader));
+        }
+        public static Result<string> ReadAllText(const string& filePath)
+        {
+            Result<StreamReader> reader = OpenRead(filePath);
+            if (reader.Error())
+            {
+                return Result<string>(reader.GetErrorId());
+            }
+            auto content = reader.Value().ReadToEnd();
+            if (content.Error())
+            {
+                return Result<string>(ErrorId(content.GetErrorId()));
+            }
+            const string& contentValue = content.Value();
+            if (contentValue.Length() >= 3 && cast<byte>(contentValue[0]) == 0xEFu && cast<byte>(contentValue[1]) == 0xBBu && cast<byte>(contentValue[2]) == 0xBFu)
+            {
+                return Result<string>(contentValue.Substring(3));
+            }
+            else
+            {
+                return Result<string>(contentValue);
+            }
+        }
+        public static Result<List<string>> ReadAllLines(const string& filePath)
+        {
+            List<string> lines;
+            bool start = true;
+            Result<StreamReader> readerResult = OpenRead(filePath);
+            if (readerResult.Error())
+            {
+                return Result<List<string>>(ErrorId(readerResult.GetErrorId()));
+            }
+            StreamReader& reader = readerResult.Value();
+            auto line = reader.ReadLine();
+            if (line.Error())
+            {
+                return Result<List<string>>(ErrorId(line.GetErrorId()));
+            }
+            const string& lineValue = line.Value();
+            while (!reader.EndOfStream())
+            {
+                if (start)
+                {
+                    if (lineValue.Length() >= 3 && cast<byte>(lineValue[0]) == 0xEFu && cast<byte>(lineValue[1]) == 0xBBu && cast<byte>(lineValue[2]) == 0xBFu)
+                    {
+                        line = Result<string>(lineValue.Substring(3));
+                    }
+                    start = false;
+                }
+                lines.Add(line.Value());
+                line = reader.ReadLine();
+                if (line.Error())
+                {
+                    return Result<List<string>>(ErrorId(line.GetErrorId()));
+                }
+            }
+            if (!line.Value().IsEmpty())
+            {
+                lines.Add(line.Value());
+            }
+            return Result<List<string>>(lines);
+        }
+        public static Result<bool> Remove(const string& filePath)
+        {
+            int errorId = 0;
+            if (!RtmRemoveFile(filePath.Chars(), errorId))
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public static Result<bool> Copy(const string& sourceFilePath, const string& targetFilePath)
+        {
+            int errorId = 0;
+            if (!RtmCopyFile(sourceFilePath.Chars(), targetFilePath.Chars(), errorId))
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public static Result<bool> Move(const string& sourceFilePath, const string& targetFilePath)
+        {
+            int errorId = 0;
+            if (!RtmMoveFile(sourceFilePath.Chars(), targetFilePath.Chars(), errorId))
+            {
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+    }
+}

@@ -5299,7 +5299,9 @@ void MainWindow::AddFilePathsToProject(const std::string& newSourceFilePath, con
         }
         if (sourceFilePath == newSourceFilePath)
         {
-            std::ofstream file(sourceFilePath);
+            {
+                std::ofstream file(sourceFilePath);
+            }
             AddCmajorEditor(data->fileName, data->key, data->filePath, project);
         }
     }

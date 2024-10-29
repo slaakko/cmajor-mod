@@ -1,0 +1,3386 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using assembly;
+
+namespace intermediate
+{
+    [nodiscard]
+    public Result<bool> EmitPrologue(CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        int numPushes = 0;
+        assembly.Instruction* pushRbp = new assembly.Instruction(assembly.OpCode.PUSH);
+        Result<assembly.Register*> regResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbp);
+        if (regResult.Error())
+        {
+            return Result<bool>(ErrorId(regResult.GetErrorId()));
+        }
+        pushRbp->AddOperand(regResult.Value());
+        Result<bool> result = codeGenerator.Emit(pushRbp);
+        if (result.Error()) return result;
+        ++numPushes;
+
+        for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedLocalRegs())
+        {
+            assembly.Instruction* pushReg = new assembly.Instruction(assembly.OpCode.PUSH);
+            pushReg->AddOperand(regGroup->GetReg(8));
+            result = codeGenerator.Emit(pushReg);
+            if (result.Error()) return result;
+            ++numPushes;
+        }
+
+        for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedNonvolatileRegs())
+        {
+            assembly.Instruction* pushReg = new assembly.Instruction(assembly.OpCode.PUSH);
+            pushReg->AddOperand(regGroup->GetReg(8));
+            result = codeGenerator.Emit(pushReg);
+            if (result.Error()) return result;
+            ++numPushes;
+        }
+
+        Frame& frame = codeGenerator.RegAllocator()->GetFrame();
+        if ((numPushes % 2) == 0)
+        {
+            assembly.Instruction* pushReg = new assembly.Instruction(assembly.OpCode.PUSH);
+            Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbx, false);
+            if (rbxResult.Error())
+            {
+                return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+            }
+            assembly.Register* rbx = rbxResult.Value();
+            pushReg->AddOperand(rbx);
+            result = codeGenerator.Emit(pushReg);
+            if (result.Error()) return result;
+            frame.SetRbxPushed();
+        }
+
+        int nxmmregs = cast<int>(assemblyContext->GetRegisterPool()->UsedLocalXMMRegs().Count() + assemblyContext->GetRegisterPool()->UsedNonvolatileXMMRegs().Count());
+        frame.SetNumUsedXMMRegs(nxmmregs);
+        result = frame.SetMacroValues(assemblyContext);
+        if (result.Error()) return result;
+
+        Result<IntegerLiteral*> frameSizeResult = assemblyContext->MakeIntegerLiteral(frame.Size(), 8);
+        if (frameSizeResult.Error()) return Result<bool>(ErrorId(frameSizeResult.GetErrorId()));
+        IntegerLiteral* frameSize = frameSizeResult.Value();
+
+        if (frame.Size() > 4096)
+        {
+            assemblyContext->GetFile()->GetDeclarationSection()->AddFunctionDeclaration(new assembly.FunctionDeclaration("__chkstk"));
+            assembly.Instruction* movEax = new assembly.Instruction(assembly.OpCode.MOV);
+            Result<assembly.Register*> eaxResult = assemblyContext->GetGlobalReg(4, assembly.RegisterGroupKind.rax);
+            if (eaxResult.Error())
+            {
+                return Result<bool>(ErrorId(eaxResult.GetErrorId()));
+            }
+            assembly.Register* eax = eaxResult.Value();
+            movEax->AddOperand(eax);
+            movEax->AddOperand(frameSize);
+            result = codeGenerator.Emit(movEax);
+            if (result.Error()) return result;
+            assembly.Value* chkstk = assemblyContext->MakeSymbol("__chkstk");
+            assembly.Instruction* checkStackCall = new assembly.Instruction(assembly.OpCode.CALL);
+            checkStackCall->AddOperand(chkstk);
+            result = codeGenerator.Emit(checkStackCall);
+            if (result.Error()) return result;
+        }
+
+        assembly.Instruction* subRsp = new assembly.Instruction(assembly.OpCode.SUB);
+        Result<assembly.Register*> rspResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rsp);
+        if (rspResult.Error()) return Result<bool>(ErrorId(rspResult.GetErrorId()));
+        assembly.Register* rsp = rspResult.Value();
+        subRsp->AddOperand(rsp);
+        subRsp->AddOperand(frameSize);
+        result = codeGenerator.Emit(subRsp);
+        if (result.Error()) return result;
+
+        if (nxmmregs > 0)
+        {
+            int xmmRegIndex = 0;
+            for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedLocalXMMRegs())
+            {
+                assembly.Instruction* movReg = new assembly.Instruction(assembly.OpCode.MOVSD);
+                Result<IntegerLiteral*> xmmRegIndexResult = assemblyContext->MakeIntegerLiteral(xmmRegIndex * 16, 8);
+                if (xmmRegIndexResult.Error()) return Result<bool>(ErrorId(xmmRegIndexResult.GetErrorId()));
+                Result<assembly.Value*> sizePrefixResult = assemblyContext->MakeSizePrefix(8, assemblyContext->MakeContent(assemblyContext->MakeBinaryExpr(
+                    rsp, xmmRegIndexResult.Value(), assembly.Operator.add)));
+                if (sizePrefixResult.Error()) return Result<bool>(ErrorId(sizePrefixResult.GetErrorId()));
+                movReg->AddOperand(sizePrefixResult.Value());
+                movReg->AddOperand(regGroup->GetReg(16));
+                result = codeGenerator.Emit(movReg);
+                if (result.Error()) return result;
+                ++xmmRegIndex;
+            }
+
+            for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedNonvolatileXMMRegs())
+            {
+                assembly.Instruction* movReg = new assembly.Instruction(assembly.OpCode.MOVSD);
+                Result<IntegerLiteral*> xmmRegIndexResult = assemblyContext->MakeIntegerLiteral(xmmRegIndex * 16, 8);
+                if (xmmRegIndexResult.Error()) return Result<bool>(ErrorId(xmmRegIndexResult.GetErrorId()));
+                Result<assembly.Value*> sizePrefixResult = assemblyContext->MakeSizePrefix(8, assemblyContext->MakeContent(assemblyContext->MakeBinaryExpr(
+                    rsp, xmmRegIndexResult.Value(), assembly.Operator.add)));
+                if (sizePrefixResult.Error()) return Result<bool>(ErrorId(sizePrefixResult.GetErrorId()));
+                movReg->AddOperand(sizePrefixResult.Value());
+                movReg->AddOperand(regGroup->GetReg(16));
+                result = codeGenerator.Emit(movReg);
+                if (result.Error()) return result;
+                ++xmmRegIndex;
+            }
+        }
+
+        assembly.Instruction* leaRbp = new assembly.Instruction(assembly.OpCode.LEA);
+        Result<assembly.Register*> rbpResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbp);
+        if (rbpResult.Error()) return Result<bool>(ErrorId(rbpResult.GetErrorId()));
+        assembly.Register* rbp = rbpResult.Value();
+        Result<assembly.IntegerLiteral*> sizeResult = assemblyContext->MakeIntegerLiteral(frame.CalleeParamAreaSize() + frame.XMMSaveRegSize(), 8);
+        if (sizeResult.Error()) return Result<bool>(ErrorId(sizeResult.GetErrorId()));
+        assembly.IntegerLiteral* size = sizeResult.Value();
+        Result<assembly.Value*> sizePrefixResult = assemblyContext->MakeSizePrefix(8, assemblyContext->MakeContent(
+            assemblyContext->MakeBinaryExpr(rsp, size, assembly.Operator.add)));
+        if (sizePrefixResult.Error()) return Result<bool>(ErrorId(sizePrefixResult.GetErrorId()));
+        leaRbp->AddOperand(rbp);
+        leaRbp->AddOperand(sizePrefixResult.Value());
+        result = codeGenerator.Emit(leaRbp);
+        if (result.Error()) return result;
+
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitEpilogue(CodeGenerator& codeGenerator)
+    {
+        assembly.Instruction* leaderInst = null;
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+
+        Frame& frame = codeGenerator.RegAllocator()->GetFrame();
+        int nxmmregs = frame.GetNumUsedXMMRegs();
+        Result<assembly.Register*> rspResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rsp);
+        if (rspResult.Error()) return Result<bool>(ErrorId(rspResult.GetErrorId()));
+        assembly.Register* rsp = rspResult.Value();
+
+        Result<assembly.Register*> rbpResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbp);
+        if (rbpResult.Error())
+        {
+            return Result<bool>(ErrorId(rbpResult.GetErrorId()));
+        }
+        assembly.Register* rbp = rbpResult.Value();
+
+        if (nxmmregs > 0)
+        {
+            int xmmRegIndex = nxmmregs - 1;
+            List<assembly.RegisterGroup*> usedNVXMMRegs;
+            for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedNonvolatileXMMRegs())
+            {
+                usedNVXMMRegs.Add(regGroup);
+            }
+            Reverse(usedNVXMMRegs.Begin(), usedNVXMMRegs.End());
+            for (assembly.RegisterGroup* regGroup : usedNVXMMRegs)
+            {
+                assembly.Instruction* movReg = new assembly.Instruction(assembly.OpCode.MOVSD);
+                if (leaderInst == null)
+                {
+                    leaderInst = movReg;
+                    leaderInst->SetLabel("@" + ToString(codeGenerator.ExitLabelId()));
+                }
+                movReg->AddOperand(regGroup->GetReg(16));
+                Result<IntegerLiteral*> xmmRegIndexResult = assemblyContext->MakeIntegerLiteral(xmmRegIndex * 16, 8);
+                if (xmmRegIndexResult.Error()) return Result<bool>(ErrorId(xmmRegIndexResult.GetErrorId()));
+                Result<assembly.Value*> sizePrefixResult = assemblyContext->MakeSizePrefix(8, assemblyContext->MakeContent(assemblyContext->MakeBinaryExpr(
+                    rsp, xmmRegIndexResult.Value(), assembly.Operator.add)));
+                if (sizePrefixResult.Error()) return Result<bool>(ErrorId(sizePrefixResult.GetErrorId()));
+                movReg->AddOperand(sizePrefixResult.Value());
+                Result<bool> result = codeGenerator.Emit(movReg);
+                if (result.Error()) return result;
+                --xmmRegIndex;
+            }
+            List<assembly.RegisterGroup*> usedLocalXMMRegs;
+            for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedLocalXMMRegs())
+            {
+                usedLocalXMMRegs.Add(regGroup);
+            }
+            Reverse(usedLocalXMMRegs.Begin(), usedLocalXMMRegs.End());
+            for (assembly.RegisterGroup* regGroup : usedLocalXMMRegs)
+            {
+                assembly.Instruction* movReg = new assembly.Instruction(assembly.OpCode.MOVSD);
+                if (leaderInst == null)
+                {
+                    leaderInst = movReg;
+                    leaderInst->SetLabel("@" + ToString(codeGenerator.ExitLabelId()));
+                }
+                movReg->AddOperand(regGroup->GetReg(16));
+                Result<IntegerLiteral*> xmmRegIndexResult = assemblyContext->MakeIntegerLiteral(xmmRegIndex * 16, 8);
+                if (xmmRegIndexResult.Error()) return Result<bool>(ErrorId(xmmRegIndexResult.GetErrorId()));
+                Result<assembly.Value*> sizePrefixResult = assemblyContext->MakeSizePrefix(8, assemblyContext->MakeContent(assemblyContext->MakeBinaryExpr(
+                    rsp, xmmRegIndexResult.Value(), assembly.Operator.add)));
+                if (sizePrefixResult.Error()) return Result<bool>(ErrorId(sizePrefixResult.GetErrorId()));
+                movReg->AddOperand(sizePrefixResult.Value());
+                Result<bool> result = codeGenerator.Emit(movReg);
+                if (result.Error()) return result;
+                --xmmRegIndex;
+            }
+        }
+
+        assembly.Instruction* leaRsp = new assembly.Instruction(assembly.OpCode.LEA);
+        if (leaderInst == null)
+        {
+            leaderInst = leaRsp;
+            leaderInst->SetLabel("@" + ToString(codeGenerator.ExitLabelId()));
+        }
+        leaRsp->AddOperand(rsp);
+
+        Result<assembly.IntegerLiteral*> sizeResult = assemblyContext->MakeIntegerLiteral(frame.Size() - frame.CalleeParamAreaSize() - frame.XMMSaveRegSize(), 8);
+        if (sizeResult.Error()) return Result<bool>(ErrorId(sizeResult.GetErrorId()));
+        assembly.IntegerLiteral* size = sizeResult.Value();
+        Result<assembly.Value*> sizePrefixResult = assemblyContext->MakeSizePrefix(8, assemblyContext->MakeContent(
+            assemblyContext->MakeBinaryExpr(rbp, size, assembly.Operator.add)));
+        if (sizePrefixResult.Error()) return Result<bool>(ErrorId(sizePrefixResult.GetErrorId()));
+        leaRsp->AddOperand(sizePrefixResult.Value());
+        Result<bool> result = codeGenerator.Emit(leaRsp);
+        if (result.Error()) return result;
+
+        Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbx, false);
+        if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+        assembly.Register* rbx = rbxResult.Value();
+
+        if (frame.RbxPushed())
+        {
+            assembly.Instruction* popReg = new assembly.Instruction(assembly.OpCode.POP);
+            popReg->AddOperand(rbx);
+            result = codeGenerator.Emit(popReg);
+            if (result.Error()) return result;
+        }
+
+        List<assembly.RegisterGroup*> usedNVRegs;
+        for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedNonvolatileRegs())
+        {
+            usedNVRegs.Add(regGroup);
+        }
+        Reverse(usedNVRegs.Begin(), usedNVRegs.End());
+        for (assembly.RegisterGroup* regGroup : usedNVRegs)
+        {
+            assembly.Instruction* popReg = new assembly.Instruction(assembly.OpCode.POP);
+            popReg->AddOperand(regGroup->GetReg(8));
+            result = codeGenerator.Emit(popReg);
+            if (result.Error()) return result;
+        }
+        List<assembly.RegisterGroup*> usedLocalRegs;
+        for (assembly.RegisterGroup* regGroup : assemblyContext->GetRegisterPool()->UsedLocalRegs())
+        {
+            usedLocalRegs.Add(regGroup);
+        }
+        Reverse(usedLocalRegs.Begin(), usedLocalRegs.End());
+        for (assembly.RegisterGroup* regGroup : usedLocalRegs)
+        {
+            assembly.Instruction* popReg = new assembly.Instruction(assembly.OpCode.POP);
+            popReg->AddOperand(regGroup->GetReg(8));
+            result = codeGenerator.Emit(popReg);
+            if (result.Error()) return result;
+        }
+        assembly.Instruction* popRbp = new assembly.Instruction(assembly.OpCode.POP);
+        popRbp->AddOperand(rbp);
+        result = codeGenerator.Emit(popRbp);
+        if (result.Error()) return result;
+
+        assembly.Instruction* ret = new assembly.Instruction(assembly.OpCode.RET);
+        Result<assembly.IntegerLiteral*> zeroResult = assemblyContext->MakeIntegerLiteral(0, 1);
+        if (zeroResult.Error()) return Result<bool>(ErrorId(zeroResult.GetErrorId()));
+        assembly.IntegerLiteral* zero = zeroResult.Value();
+        ret->AddOperand(zero);
+        result = codeGenerator.Emit(ret);
+        if (result.Error()) return result;
+
+        return Result<bool>(true);
+    }
+
+    public Result<FrameLocation> GetFrameLocation(Value* value, CodeGenerator& codeGenerator)
+    {
+        Instruction* inst = null;
+        if (value->IsRegValue())
+        {
+            RegValue* regValue = cast<RegValue*>(value);
+            inst = regValue->Inst();
+            if (inst == null)
+            {
+                codeGenerator.Error("error getting frame location: instruction for reg value not set");
+                return Result<FrameLocation>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else if (value->IsInstruction())
+        {
+            inst = cast<Instruction*>(value);
+        }
+        if (inst != null)
+        {
+            Locations locs = codeGenerator.RegAllocator()->GetLocations(inst);
+            if ((locs & Locations.frame) != Locations.none)
+            {
+                FrameLocation frameLocation = codeGenerator.RegAllocator()->GetFrameLocation(inst);
+                if (frameLocation.IsValid())
+                {
+                    return Result<FrameLocation>(frameLocation);
+                }
+                else
+                {
+                    codeGenerator.Error("error getting frame location: frame location not valid");
+                    return Result<FrameLocation>(ErrorId(codeGenerator.GetErrorId()));
+                }
+            }
+            else
+            {
+                codeGenerator.Error("error getting frame location: value not in frame");
+                return Result<FrameLocation>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else
+        {
+            codeGenerator.Error("error getting frame location: invalid value kind");
+            return Result<FrameLocation>(ErrorId(codeGenerator.GetErrorId()));
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFrameLocationOperand(long size, const FrameLocation& frameLocation, assembly.Instruction* instruction, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Result<assembly.Register*> regResult = assemblyContext->GetGlobalReg(8, frameLocation.Reg());
+        if (regResult.Error())
+        {
+            return Result<bool>(ErrorId(regResult.GetErrorId()));
+        }
+        assembly.Register* reg = regResult.Value();
+        Result<assembly.IntegerLiteral*> offsetResult = assemblyContext->MakeIntegerLiteral(frameLocation.Offset(), 8);
+        if (offsetResult.Error()) return Result<bool>(ErrorId(offsetResult.GetErrorId()));
+        assembly.Value* frameLoc = offsetResult.Value();
+        if (frameLocation.GetMacro() != null)
+        {
+            frameLoc = assemblyContext->MakeSymbol(frameLocation.GetMacro()->Name());
+        }
+        Result<assembly.Value*> sizePrefixResult =  assemblyContext->MakeSizePrefix(size, assemblyContext->MakeContent(
+            assemblyContext->MakeBinaryExpr(reg, frameLoc, assembly.Operator.add)));
+        if (sizePrefixResult.Error()) return Result<bool>(ErrorId(sizePrefixResult.GetErrorId()));
+        instruction->AddOperand(sizePrefixResult.Value());
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerPtrOperand(long size, Value* value, assembly.Instruction* instruction, CodeGenerator& codeGenerator)
+    {
+        Instruction* inst = null;
+        if (value->IsRegValue())
+        {
+            RegValue* regValue = cast<RegValue*>(value);
+            inst = regValue->Inst();
+            if (inst == null)
+            {
+                codeGenerator.Error("error emitting ptr operand: instruction for reg value not set");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else if (value->IsInstruction())
+        {
+            inst = cast<Instruction*>(value);
+        }
+        else if (value->IsAddressValue())
+        {
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            AddressValue* addressValue = cast<AddressValue*>(value);
+            GlobalVariable* globalVar = addressValue->GetValue();
+            assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+            Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rdx);
+            if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+            assembly.Register* rdx = rdxResult.Value();
+            leaInst->AddOperand(rdx);
+            leaInst->AddOperand(assemblyContext->MakeSymbol(globalVar->Name()));
+            Result<bool> result = codeGenerator.Emit(leaInst);
+            if (result.Error()) return result;
+            Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(size, assemblyContext->MakeContent(rdx));
+            if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+            instruction->AddOperand(sizePrefix.Value());
+            return Result<bool>(true);
+        }
+        if (inst != null)
+        {
+            if (inst->IsLocalInstruction())
+            {
+                Result<FrameLocation> frameLocationResult = GetFrameLocation(value, codeGenerator);
+                if (frameLocationResult.Error()) return Result<bool>(ErrorId(frameLocationResult.GetErrorId()));
+                FrameLocation frameLocation = frameLocationResult.Value();
+                return EmitFrameLocationOperand(size, frameLocation, instruction, codeGenerator);
+            }
+            else
+            {
+                assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                assembly.Register* rax = raxResult.Value();
+                Result<assembly.Register*> regOperandResult = MakeIntegerRegOperand(value, rax, codeGenerator);
+                if (regOperandResult.Error()) return Result<bool>(ErrorId(regOperandResult.GetErrorId()));
+                Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(size, assemblyContext->MakeContent(regOperandResult.Value()));
+                if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+                assembly.Value* operand = sizePrefix.Value();
+                instruction->AddOperand(operand);
+            }
+        }
+        else
+        {
+            codeGenerator.Error("error emitting ptr operand: invalid value kind");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointPtrOperand(long size, Value* value, assembly.Instruction* instruction, CodeGenerator& codeGenerator)
+    {
+        Instruction* inst = null;
+        if (value->IsRegValue())
+        {
+            RegValue* regValue = cast<RegValue*>(value);
+            inst = regValue->Inst();
+            if (inst == null)
+            {
+                codeGenerator.Error("error emitting ptr operand: instruction for reg value not set");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else if (value->IsInstruction())
+        {
+            inst = cast<Instruction*>(value);
+        }
+        else if (value->IsAddressValue())
+        {
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            AddressValue* addressValue = cast<AddressValue*>(value);
+            GlobalVariable* globalVar = addressValue->GetValue();
+            assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+            Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rdx);
+            if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+            assembly.Register* rdx = rdxResult.Value();
+            leaInst->AddOperand(rdx);
+            leaInst->AddOperand(assemblyContext->MakeSymbol(globalVar->Name()));
+            Result<bool> result = codeGenerator.Emit(leaInst);
+            if (result.Error()) return result;
+            Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(size, assemblyContext->MakeContent(rdx));
+            if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+            instruction->AddOperand(sizePrefix.Value());
+            return Result<bool>(true);
+        }
+        if (inst != null)
+        {
+            if (inst->IsLocalInstruction())
+            {
+                Result<FrameLocation> frameLocationResult = GetFrameLocation(value, codeGenerator);
+                if (frameLocationResult.Error()) return Result<bool>(ErrorId(frameLocationResult.GetErrorId()));
+                FrameLocation frameLocation = frameLocationResult.Value();
+                return EmitFrameLocationOperand(size, frameLocation, instruction, codeGenerator);
+            }
+            else
+            {
+                assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+                Result<assembly.Register*> xmm1Result = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.xmm1);
+                if (xmm1Result.Error()) return Result<bool>(ErrorId(xmm1Result.GetErrorId()));
+                assembly.Register* xmm1 = xmm1Result.Value();
+                Result<assembly.Register*> regOperandResult = MakeFloatingPointRegOperand(value, xmm1, codeGenerator);
+                if (regOperandResult.Error()) return Result<bool>(ErrorId(regOperandResult.GetErrorId()));
+                Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(size, assemblyContext->MakeContent(regOperandResult.Value()));
+                if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+                assembly.Value* operand = sizePrefix.Value();
+                instruction->AddOperand(operand);
+            }
+        }
+        else
+        {
+            codeGenerator.Error("error emitting ptr operand: invalid value kind");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    public Result<long> GetIndex(Value* index, CodeGenerator& codeGenerator)
+    {
+        if (index->IsIntegerValue())
+        {
+            return Result<long>(index->GetIntegerValue());
+        }
+        else
+        {
+            codeGenerator.Error("error emitting ptr operand: invalid index value kind");
+            return Result<long>(ErrorId(codeGenerator.GetErrorId()));
+        }
+    }
+
+    public Result<long> GetOffset(Type* type, long index, CodeGenerator& codeGenerator)
+    {
+        Result<StructureType*> structureTypeResult = type->GetStructurePointeeType(codeGenerator.Span(), codeGenerator.GetContext());
+        if (structureTypeResult.Error()) return Result<long>(ErrorId(structureTypeResult.GetErrorId()));
+        StructureType* structureType = structureTypeResult.Value();
+        return Result<long>(structureType->FieldOffset(index));
+    }
+
+    public Result<long> GetElementSize(Type* type, CodeGenerator& codeGenerator)
+    {
+        Result<ArrayType*> arrayTypeResult = type->GetArrayPointeeType(codeGenerator.Span(), codeGenerator.GetContext());
+        if (arrayTypeResult.Error()) return Result<long>(ErrorId(arrayTypeResult.GetErrorId()));
+        ArrayType* arrayType = arrayTypeResult.Value();
+        return Result<long>(arrayType->ElementType()->Size());
+    }
+
+    public Result<long> GetPointeeSize(Type* type, CodeGenerator& codeGenerator)
+    {
+        if (type->IsPointerType())
+        {
+            PointerType* pointerType = cast<PointerType*>(type);
+            Result<Type*> pointeeTypeResult = pointerType->RemovePointer(codeGenerator.GetContext());
+            if (pointeeTypeResult.Error()) return Result<long>(ErrorId(pointeeTypeResult.GetErrorId()));
+            Type* pointeeType = pointeeTypeResult.Value();
+            return Result<long>(pointeeType->Size());
+        }
+        else
+        {
+            codeGenerator.Error("error getting pointee size: pointer type expected");
+            return Result<long>(ErrorId(codeGenerator.GetErrorId()));
+        }
+    }
+
+    public Result<assembly.Register*> MakeIntegerRegOperand(Value* value, assembly.Register* reg, CodeGenerator& codeGenerator)
+    {
+        long size = Min(value->GetType()->Size(), cast<long>(reg->Size()));
+        if (value->IsRegValue())
+        {
+            RegValue* regValue = cast<RegValue*>(value);
+            Instruction* inst = regValue->Inst();
+            if (inst != null)
+            {
+                if (inst->IsLocalInstruction())
+                {
+                    assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+                    leaInst->AddOperand(reg);
+                    Result<bool> result = EmitIntegerPtrOperand(size, value, leaInst, codeGenerator);
+                    if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+                    result = codeGenerator.Emit(leaInst);
+                    if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+                    return Result<assembly.Register*>(reg);
+                }
+                Locations locs = codeGenerator.RegAllocator()->GetLocations(inst);
+                if ((locs & Locations.reg) != Locations.none)
+                {
+                    assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(inst);
+                    if (regGroup != null)
+                    {
+                        return Result<assembly.Register*>(regGroup->GetReg(size));
+                    }
+                    else
+                    {
+                        codeGenerator.Error("error making reg operand: reg group not valid");
+                        return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                    }
+                }
+                else if ((locs & Locations.frame) != Locations.none)
+                {
+                    FrameLocation frameLocation = codeGenerator.RegAllocator()->GetFrameLocation(inst);
+                    if (frameLocation.IsValid())
+                    {
+                        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+                        assembly.RegisterGroup* regGroup = assemblyContext->GetRegisterPool()->GetRegisterGroup(reg->Group(), true);
+                        Result<bool> result = EmitIntegerLoad(size, frameLocation, regGroup, codeGenerator);
+                        if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+                    }
+                    else
+                    {
+                        codeGenerator.Error("error making reg operand: frame location not valid");
+                        return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    codeGenerator.Error("error making reg operand: no locations for inst");
+                    return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                }
+            }
+            else
+            {
+                codeGenerator.Error("error making reg operand: instruction for reg value not set");
+                return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else if (value->IsAddressValue())
+        {
+            AddressValue* v = cast<AddressValue*>(value);
+            assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+            leaInst->AddOperand(reg);
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            leaInst->AddOperand(assemblyContext->MakeSymbol(v->GetValue()->Name()));
+            Result<bool> result = codeGenerator.Emit(leaInst);
+            if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+        }
+        else
+        {
+            assembly.Instruction* inst = new assembly.Instruction(assembly.OpCode.MOV);
+            inst->AddOperand(reg);
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            switch (value->Kind())
+            {
+                case ValueKind.boolValue:
+                {
+                    BoolValue* v = cast<BoolValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(cast<long>(v->GetValue()), 1);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.sbyteValue:
+                {
+                    SByteValue* v = cast<SByteValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(v->GetValue(), 1);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.byteValue:
+                {
+                    ByteValue* v = cast<ByteValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(v->GetValue(), 1);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.shortValue:
+                {
+                    ShortValue* v = cast<ShortValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(v->GetValue(), 2);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.ushortValue:
+                {
+                    UShortValue* v = cast<UShortValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(v->GetValue(), 2);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.intValue:
+                {
+                    IntValue* v = cast<IntValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(v->GetValue(), 4);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.uintValue:
+                {
+                    UIntValue* v = cast<UIntValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(v->GetValue(), 4);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.longValue:
+                {
+                    LongValue* v = cast<LongValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(v->GetValue(), 8);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.ulongValue:
+                {
+                    ULongValue* v = cast<ULongValue*>(value);
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(cast<long>(v->GetValue()), 8);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.nullValue:
+                {
+                    Result<assembly.IntegerLiteral*> operandResult = assemblyContext->MakeIntegerLiteral(0, 8);
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    assembly.IntegerLiteral* operand = operandResult.Value();
+                    inst->AddOperand(operand);
+                    break;
+                }
+                case ValueKind.symbolValue:
+                {
+                    SymbolValue* v = cast<SymbolValue*>(value);
+                    inst->AddOperand(assemblyContext->MakeSymbol(v->Symbol()));
+                    break;
+                }
+                default:
+                {
+                    codeGenerator.Error("error making reg operand: not implemented for value kind " + ValueKindStr(value->Kind()));
+                    return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                }
+            }
+        }
+        return Result<assembly.Register*>(reg);
+    }
+
+    [nodiscard]
+    public Result<assembly.Register*> MakeFloatingPointRegOperand(Value* value, assembly.Register* reg, CodeGenerator& codeGenerator)
+    {
+        long size = Min(value->GetType()->Size(), cast<long>(reg->Size()));
+        if (value->Kind() == ValueKind.regValue)
+        {
+            RegValue* regValue = cast<RegValue*>(value);
+            Instruction* inst = regValue->Inst();
+            if (inst != null)
+            {
+                if (inst->IsLocalInstruction())
+                {
+                    assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+                    leaInst->AddOperand(reg);
+                    Result<bool> result = EmitFloatingPointPtrOperand(size, value, leaInst, codeGenerator);
+                    if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+                    result = codeGenerator.Emit(leaInst);
+                    if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+                    return Result<assembly.Register*>(reg);
+                }
+                Locations locs = codeGenerator.RegAllocator()->GetLocations(inst);
+                if ((locs & Locations.reg) != Locations.none)
+                {
+                    assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(inst);
+                    if (regGroup != null)
+                    {
+                        return Result<assembly.Register*>(regGroup->GetReg(size));
+                    }
+                    else
+                    {
+                        codeGenerator.Error("error making reg operand: reg group not valid");
+                        return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                    }
+                }
+                else if ((locs & Locations.frame) != Locations.none)
+                {
+                    FrameLocation frameLocation = codeGenerator.RegAllocator()->GetFrameLocation(inst);
+                    if (frameLocation.IsValid())
+                    {
+                        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+                        assembly.RegisterGroup* regGroup = assemblyContext->GetRegisterPool()->GetRegisterGroup(reg->Group(), true);
+                        Result<bool> result = EmitFloatingPointLoad(size, frameLocation, regGroup, codeGenerator);
+                        if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+                    }
+                    else
+                    {
+                        codeGenerator.Error("error making reg operand: frame location not valid");
+                        return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    codeGenerator.Error("error making reg operand: no locations for inst");
+                    return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                }
+            }
+        }
+        else if (value->IsAddressValue())
+        {
+            AddressValue* v = cast<AddressValue*>(value);
+            assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+            leaInst->AddOperand(reg);
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            leaInst->AddOperand(assemblyContext->MakeSymbol(v->GetValue()->Name()));
+            Result<bool> result = codeGenerator.Emit(leaInst);
+            if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+        }
+        else
+        {
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (size == 4)
+            {
+                opCode = assembly.OpCode.MOVSS;
+            }
+            else if (size == 8)
+            {
+                opCode = assembly.OpCode.MOVSD;
+            }
+            else
+            {
+                codeGenerator.Error("error making reg operand: invalid value size");
+                return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* inst = new assembly.Instruction(opCode);
+            inst->AddOperand(reg);
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            switch (value->Kind())
+            {
+                case ValueKind.floatValue:
+                {
+                    FloatValue* v = cast<FloatValue*>(value);
+                    Result<assembly.Value*> operandResult = assemblyContext->MakeFloatLiteralSymbol(v->GetValue());
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    inst->AddOperand(operandResult.Value());
+                    break;
+                }
+                case ValueKind.doubleValue:
+                {
+                    DoubleValue* v = cast<DoubleValue*>(value);
+                    Result<assembly.Value*> operandResult = assemblyContext->MakeDoubleLiteralSymbol(v->GetValue());
+                    if (operandResult.Error()) return Result<assembly.Register*>(ErrorId(operandResult.GetErrorId()));
+                    inst->AddOperand(operandResult.Value());
+                    break;
+                }
+                default:
+                {
+                    codeGenerator.Error("error making reg operand: invalid value kind " + ValueKindStr(value->Kind()));
+                    return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
+                }
+            }
+            Result<bool> result = codeGenerator.Emit(inst);
+            if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
+        }
+        return Result<assembly.Register*>(reg);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerRet(RetInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        if (inst.ReturnValue() != null)
+        {
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            long size = inst.ReturnValue()->GetType()->Size();
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            movInst->AddOperand(rax);
+            Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rbx);
+            if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+            assembly.Register* rbx = rbxResult.Value();
+            Result<assembly.Register*> regResult = MakeIntegerRegOperand(inst.ReturnValue(), rbx, codeGenerator);
+            if (regResult.Error()) return Result<bool>(ErrorId(regResult.GetErrorId()));
+            assembly.Register* reg = regResult.Value();
+            movInst->AddOperand(reg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        int targetLabelId = codeGenerator.ExitLabelId();
+        assembly.Instruction* jmpInst = new assembly.Instruction(assembly.OpCode.JMP);
+        jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(targetLabelId)));
+        Result<bool> result = codeGenerator.Emit(jmpInst);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointRet(RetInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        if (inst.ReturnValue() != null)
+        {
+            long size = inst.ReturnValue()->GetType()->Size();
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (size == 4)
+            {
+                opCode = assembly.OpCode.MOVSS;
+            }
+            else if (size == 8)
+            {
+                opCode = assembly.OpCode.MOVSD;
+            }
+            else
+            {
+                codeGenerator.Error("error making reg operand: invalid value size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* movInst = new assembly.Instruction(opCode);
+            Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(16, assembly.RegisterGroupKind.xmm0);
+            if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+            assembly.Register* xmm0 = xmm0Result.Value();
+            movInst->AddOperand(xmm0);
+            Result<assembly.Register*> xmm1Result = assemblyContext->GetGlobalReg(16, assembly.RegisterGroupKind.xmm1);
+            if (xmm1Result.Error()) return Result<bool>(ErrorId(xmm1Result.GetErrorId()));
+            assembly.Register* xmm1 = xmm1Result.Value();
+            Result<assembly.Register*> regResult = MakeFloatingPointRegOperand(inst.ReturnValue(), xmm1, codeGenerator);
+            if (regResult.Error()) return Result<bool>(ErrorId(regResult.GetErrorId()));
+            assembly.Register* reg = regResult.Value();
+            if (regResult.Error()) return Result<bool>(ErrorId(regResult.GetErrorId()));
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        int targetLabelId = codeGenerator.ExitLabelId();
+        assembly.Instruction* jmpInst = new assembly.Instruction(assembly.OpCode.JMP);
+        jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(targetLabelId)));
+        Result<bool> result = codeGenerator.Emit(jmpInst);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitSignExtend(SignExtendInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        long operandSize = inst.Operand()->GetType()->Size();
+        long resultSize = inst.GetResult()->GetType()->Size();
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.OpCode opCode = assembly.OpCode.MOVSX;
+        if (operandSize == 4)
+        {
+            opCode = assembly.OpCode.MOVSXD;
+        }
+        assembly.Instruction* movsxInst = new assembly.Instruction(opCode);
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Register* reg = regGroup->GetReg(resultSize);
+            movsxInst->AddOperand(reg);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> sourceRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            movsxInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(movsxInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting sign extend instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitZeroExtend(ZeroExtendInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        long operandSize = inst.Operand()->GetType()->Size();
+        long resultSize = inst.GetResult()->GetType()->Size();
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.OpCode opCode = assembly.OpCode.MOV;
+        if (operandSize <= 2 && operandSize != resultSize)
+        {
+            opCode = assembly.OpCode.MOVZX;
+        }
+        else if (resultSize == 8)
+        {
+            resultSize = 4;
+        }
+        assembly.Instruction* movInst = new assembly.Instruction(opCode);
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Register* reg = regGroup->GetReg(resultSize);
+            movInst->AddOperand(reg);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> sourceRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            movInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting zero extend instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointExtend(FloatingPointExtendInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            long operandSize = inst.Operand()->GetType()->Size();
+            long resultSize = inst.GetResult()->GetType()->Size();
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.xmm0);
+            if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+            assembly.Register* xmm0 = xmm0Result.Value();
+            Result<assembly.Register*> sourceRegResult = MakeFloatingPointRegOperand(inst.Operand(), xmm0, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (resultSize == 8 && operandSize == 4)
+            {
+                opCode = assembly.OpCode.CVTSS2SD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting fpextend instruction: invalid floating-point types");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* convertInst = new assembly.Instruction(opCode);
+            convertInst->AddOperand(resultReg);
+            convertInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(convertInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting fpextend instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerTruncate(TruncateInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            long resultSize = inst.GetResult()->GetType()->Size();
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(resultSize, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> sourceRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(resultReg);
+            movInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting truncate instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointTruncate(TruncateInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            long resultSize = inst.GetResult()->GetType()->Size();
+            long operandSize = inst.Operand()->GetType()->Size();
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.xmm0);
+            if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+            assembly.Register* xmm0 = xmm0Result.Value();
+            Result<assembly.Register*> sourceRegResult = MakeFloatingPointRegOperand(inst.Operand(), xmm0, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (resultSize == 4 && operandSize == 8)
+            {
+                opCode = assembly.OpCode.CVTSD2SS;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting truncate instruction: invalid floating-point truncation types");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* convertInst = new assembly.Instruction(opCode);
+            convertInst->AddOperand(resultReg);
+            convertInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(convertInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting truncate instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerBinOpInst(BinaryInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        long size = inst.GetType()->Size();
+        assembly.OpCode opCode = assembly.OpCode.ADD;
+        bool smallMod = false;
+        bool smallDiv = false;
+        switch (inst.GetOpCode())
+        {
+            case OpCode.add:
+            {
+                opCode = assembly.OpCode.ADD;
+                break;
+            }
+            case OpCode.sub:
+            {
+                opCode = assembly.OpCode.SUB;
+                break;
+            }
+            case OpCode.mul:
+            {
+                if (inst.GetType()->IsUnsignedType())
+                {
+                    opCode = assembly.OpCode.MUL;
+                }
+                else
+                {
+                    opCode = assembly.OpCode.IMUL;
+                }
+                break;
+            }
+            case OpCode.div_:
+            {
+                if (inst.GetType()->IsUnsignedType())
+                {
+                    opCode = assembly.OpCode.DIV;
+                }
+                else
+                {
+                    opCode = assembly.OpCode.IDIV;
+                }
+                break;
+            }
+            case OpCode.mod:
+            {
+                if (inst.GetType()->IsUnsignedType())
+                {
+                    opCode = assembly.OpCode.DIV;
+                }
+                else
+                {
+                    opCode = assembly.OpCode.IDIV;
+                }
+                break;
+            }
+            case OpCode.and_:
+            {
+                opCode = assembly.OpCode.AND;
+                break;
+            }
+            case OpCode.or_:
+            {
+                opCode = assembly.OpCode.OR;
+                break;
+            }
+            case OpCode.xor_:
+            {
+                opCode = assembly.OpCode.XOR;
+                break;
+            }
+            case OpCode.shl:
+            {
+                opCode = assembly.OpCode.SHL;
+                break;
+            }
+            case OpCode.shr:
+            {
+                if (inst.GetType()->IsUnsignedType())
+                {
+                    opCode = assembly.OpCode.SHR;
+                }
+                else
+                {
+                    opCode = assembly.OpCode.SAR;
+                }
+                break;
+            }
+        }
+        assembly.Instruction* instruction = new assembly.Instruction(opCode);
+        assembly.Register* leftOperandReg = null;
+        assembly.Register* rightOperandReg = null;
+        assembly.Register* resultOperandReg = null;
+        switch (inst.GetOpCode())
+        {
+            case OpCode.add:
+            case OpCode.sub:
+            case OpCode.and_:
+            case OpCode.or_:
+            case OpCode.xor_:
+            {
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                assembly.Register* rax = raxResult.Value();
+                Result<assembly.Register*> leftOperandRegResult = MakeIntegerRegOperand(inst.Left(), rax, codeGenerator);
+                if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+                leftOperandReg = leftOperandRegResult.Value();
+                instruction->AddOperand(leftOperandReg);
+                Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rbx);
+                if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+                assembly.Register* rbx = rbxResult.Value();
+                Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), rbx, codeGenerator);
+                if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+                rightOperandReg = rightOperandRegResult.Value();
+                instruction->AddOperand(rightOperandReg);
+                resultOperandReg = leftOperandReg;
+                break;
+            }
+            case OpCode.div_:
+            {
+                Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rdx);
+                if (raxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+                assembly.Register* rdx = rdxResult.Value();
+                assembly.Instruction* xorInst = new assembly.Instruction(assembly.OpCode.XOR);
+                xorInst->AddOperand(rdx);
+                xorInst->AddOperand(rdx);
+                Result<bool> result = codeGenerator.Emit(xorInst);
+                if (result.Error()) return result;
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                assembly.Register* rax = raxResult.Value();
+                Result<assembly.Register*> leftOperandRegResult = MakeIntegerRegOperand(inst.Left(), rax, codeGenerator);
+                if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+                leftOperandReg = leftOperandRegResult.Value();
+                if (leftOperandReg->Group() != assembly.RegisterGroupKind.rax)
+                {
+                    assembly.Instruction* movInstruction = new assembly.Instruction(assembly.OpCode.MOV);
+                    movInstruction->AddOperand(rax);
+                    movInstruction->AddOperand(leftOperandReg);
+                    result = codeGenerator.Emit(movInstruction);
+                    if (result.Error()) return result;
+                }
+                resultOperandReg = rax;
+                if (size < 2)
+                {
+                    smallDiv = true;
+                }
+                Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rbx);
+                if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+                assembly.Register* rbx = rbxResult.Value();
+                Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), rbx, codeGenerator);
+                if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+                rightOperandReg = rightOperandRegResult.Value();
+                instruction->AddOperand(rightOperandReg);
+                break;
+            }
+            case OpCode.mul:
+            {
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                assembly.Register* rax = raxResult.Value();
+                Result<assembly.Register*> leftOperandRegResult = MakeIntegerRegOperand(inst.Left(), rax, codeGenerator);
+                if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+                leftOperandReg = leftOperandRegResult.Value();
+                if (leftOperandReg->Group() != assembly.RegisterGroupKind.rax)
+                {
+                    assembly.Instruction* movInstruction = new assembly.Instruction(assembly.OpCode.MOV);
+                    movInstruction->AddOperand(rax);
+                    movInstruction->AddOperand(leftOperandReg);
+                    Result<bool> result = codeGenerator.Emit(movInstruction);
+                    if (result.Error()) return result;
+                }
+                resultOperandReg = rax;
+                Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rbx);
+                if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+                assembly.Register* rbx = rbxResult.Value();
+                Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), rbx, codeGenerator);
+                if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+                rightOperandReg = rightOperandRegResult.Value();
+                instruction->AddOperand(rightOperandReg);
+                break;
+            }
+            case OpCode.mod:
+            {
+                Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rdx);
+                if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+                assembly.Register* rdx = rdxResult.Value();
+                assembly.Instruction* xorInst = new assembly.Instruction(assembly.OpCode.XOR);
+                xorInst->AddOperand(rdx);
+                xorInst->AddOperand(rdx);
+                Result<bool> result = codeGenerator.Emit(xorInst);
+                if (result.Error()) return result;
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                assembly.Register* rax = raxResult.Value();
+                Result<assembly.Register*> leftOperandRegResult = MakeIntegerRegOperand(inst.Left(), rax, codeGenerator);
+                if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+                leftOperandReg = leftOperandRegResult.Value();
+                if (leftOperandReg->Group() != assembly.RegisterGroupKind.rax)
+                {
+                    assembly.Instruction* movInstruction = new assembly.Instruction(assembly.OpCode.MOV);
+                    movInstruction->AddOperand(rax);
+                    movInstruction->AddOperand(leftOperandReg);
+                    result = codeGenerator.Emit(movInstruction);
+                    if (result.Error()) return result;
+                }
+                Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rbx);
+                if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+                assembly.Register* rbx = rbxResult.Value();
+                Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), rbx, codeGenerator);
+                if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+                rightOperandReg = rightOperandRegResult.Value();
+                instruction->AddOperand(rightOperandReg);
+                if (size > 1)
+                {
+                    resultOperandReg = rdx;
+                }
+                else
+                {
+                    resultOperandReg = rax;
+                    smallMod = true;
+                }
+                break;
+            }
+            case OpCode.shl:
+            case OpCode.shr:
+            {
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                assembly.Register* rax = raxResult.Value();
+                Result<assembly.Register*> leftOperandRegResult = MakeIntegerRegOperand(inst.Left(), rax, codeGenerator);
+                if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+                leftOperandReg = leftOperandRegResult.Value();
+                Result<assembly.Register*> clResult = assemblyContext->GetGlobalReg(1, assembly.RegisterGroupKind.rcx);
+                if (clResult.Error()) return Result<bool>(ErrorId(clResult.GetErrorId()));
+                assembly.Register* cl = clResult.Value();
+                Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), cl, codeGenerator);
+                if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+                if (rightOperandReg->Group() != assembly.RegisterGroupKind.rcx)
+                {
+                    assembly.Instruction* movInstruction = new assembly.Instruction(assembly.OpCode.MOV);
+                    movInstruction->AddOperand(cl);
+                    movInstruction->AddOperand(rightOperandReg);
+                    Result<bool> result = codeGenerator.Emit(movInstruction);
+                    if (result.Error()) return result;
+                }
+                instruction->AddOperand(leftOperandReg);
+                instruction->AddOperand(cl);
+                resultOperandReg = leftOperandReg;
+                break;
+            }
+        }
+        if (size == 1 && (smallMod || smallDiv) && inst.GetType()->IsSignedType())
+        {
+            assembly.Instruction* cbwInstruction = new assembly.Instruction(assembly.OpCode.CBW);
+            Result<bool> result = codeGenerator.Emit(cbwInstruction);
+            if (result.Error()) return result;
+        }
+        else if (size == 2 && (inst.GetOpCode() == OpCode.div_ || inst.GetOpCode() == OpCode.mod) && inst.GetType()->IsSignedType())
+        {
+            assembly.Instruction* cwdInstruction = new assembly.Instruction(assembly.OpCode.CWD);
+            Result<bool> result = codeGenerator.Emit(cwdInstruction);
+            if (result.Error()) return result;
+        }
+        else if (size == 4 && (inst.GetOpCode() == OpCode.div_ || inst.GetOpCode() == OpCode.mod) && inst.GetType()->IsSignedType())
+        {
+            assembly.Instruction* cdqInstruction = new assembly.Instruction(assembly.OpCode.CDQ);
+            Result<bool> result = codeGenerator.Emit(cdqInstruction);
+            if (result.Error()) return result;
+        }
+        else if (size == 8 && (inst.GetOpCode() == OpCode.div_ || inst.GetOpCode() == OpCode.mod) && inst.GetType()->IsSignedType())
+        {
+            assembly.Instruction* cqoInstruction = new assembly.Instruction(assembly.OpCode.CQO);
+            Result<bool> result = codeGenerator.Emit(cqoInstruction);
+            if (result.Error()) return result;
+        }
+        Result<bool> result = codeGenerator.Emit(instruction);
+        if (result.Error()) return result;
+        if (smallMod)
+        {
+            assembly.Instruction* shrInstruction = new assembly.Instruction(assembly.OpCode.SHR);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(2, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            shrInstruction->AddOperand(rax);
+            Result<assembly.IntegerLiteral*> byteResult = assemblyContext->MakeIntegerLiteral(8, 1);
+            if (byteResult.Error()) return Result<bool>(ErrorId(byteResult.GetErrorId()));
+            assembly.IntegerLiteral* b = byteResult.Value();
+            shrInstruction->AddOperand(b);
+            result = codeGenerator.Emit(shrInstruction);
+            if (result.Error()) return result;
+        }
+        assembly.Instruction* movInstruction = new assembly.Instruction(assembly.OpCode.MOV);
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            if (smallDiv)
+            {
+                assembly.Instruction* xorInstruction = new assembly.Instruction(assembly.OpCode.XOR);
+                Result<assembly.Register*> ahResult = assemblyContext->GetGlobalReg(assembly.highByteRegSize, assembly.RegisterGroupKind.rax);
+                if (ahResult.Error()) return Result<bool>(ErrorId(ahResult.GetErrorId()));
+                assembly.Register* ah = ahResult.Value();
+                xorInstruction->AddOperand(ah);
+                xorInstruction->AddOperand(ah);
+                result = codeGenerator.Emit(xorInstruction);
+                if (result.Error()) return result;
+            }
+            movInstruction->AddOperand(regGroup->GetReg(size));
+            movInstruction->AddOperand(resultOperandReg);
+            result = codeGenerator.Emit(movInstruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting integer binary operation instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointBinOpInst(BinaryInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        long size = inst.GetType()->Size();
+        if (size != 4 && size != 8)
+        {
+            codeGenerator.Error("error emitting floating point binary operation instruction: invalid size");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.OpCode opCode = assembly.OpCode.NOP;
+        switch (inst.GetOpCode())
+        {
+            case OpCode.add:
+            {
+                if (size == 4)
+                {
+                    opCode = assembly.OpCode.ADDSS;
+                }
+                else if (size == 8)
+                {
+                    opCode = assembly.OpCode.ADDSD;
+                }
+                break;
+            }
+            case OpCode.sub:
+            {
+                if (size == 4)
+                {
+                    opCode = assembly.OpCode.SUBSS;
+                }
+                else if (size == 8)
+                {
+                    opCode = assembly.OpCode.SUBSD;
+                }
+                break;
+            }
+            case OpCode.mul:
+            {
+                if (size == 4)
+                {
+                    opCode = assembly.OpCode.MULSS;
+                }
+                else if (size == 8)
+                {
+                    opCode = assembly.OpCode.MULSD;
+                }
+                break;
+            }
+            case OpCode.div_:
+            {
+                if (size == 4)
+                {
+                    opCode = assembly.OpCode.DIVSS;
+                }
+                else if (size == 8)
+                {
+                    opCode = assembly.OpCode.DIVSD;
+                }
+                break;
+            }
+        }
+        assembly.Instruction* instruction = new assembly.Instruction(opCode);
+        Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm0);
+        if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+        assembly.Register* xmm0 = xmm0Result.Value();
+        Result<assembly.Register*> leftOperandRegResult = MakeFloatingPointRegOperand(inst.Left(), xmm0, codeGenerator);
+        if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+        assembly.Register* leftOperandReg = leftOperandRegResult.Value();
+        instruction->AddOperand(leftOperandReg);
+        Result<assembly.Register*> xmm1Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm1);
+        if (xmm1Result.Error()) return Result<bool>(ErrorId(xmm1Result.GetErrorId()));
+        assembly.Register* xmm1 = xmm1Result.Value();
+        Result<assembly.Register*> rightOperandRegResult = MakeFloatingPointRegOperand(inst.Right(), xmm1, codeGenerator);
+        if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+        assembly.Register* rightOperandReg = rightOperandRegResult.Value();
+        instruction->AddOperand(rightOperandReg);
+        assembly.Register* resultOperandReg = leftOperandReg;
+        Result<bool> result = codeGenerator.Emit(instruction);
+        if (result.Error()) return result;
+        assembly.OpCode movOpCode = assembly.OpCode.NOP;
+        if (size == 4)
+        {
+            movOpCode = assembly.OpCode.MOVSS;
+        }
+        else if (size == 8)
+        {
+            movOpCode = assembly.OpCode.MOVSD;
+        }
+        assembly.Instruction* movInstruction = new assembly.Instruction(movOpCode);
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            movInstruction->AddOperand(regGroup->GetReg(size));
+            movInstruction->AddOperand(resultOperandReg);
+            result = codeGenerator.Emit(movInstruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting floating-point binary operation instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitBitcast(BitcastInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            Type* type = inst.Operand()->GetType();
+            long size = type->Size();
+            assembly.Register* resultReg = regGroup->GetReg(size);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> sourceRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(resultReg);
+            movInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting bitcast instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntToFloat(IntToFloatInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Value* operand = inst.Operand();
+        Type* operandType = operand->GetType();
+        long operandSize = operandType->Size();
+        Type* resultType = inst.GetResult()->GetType();
+        long resultSize = resultType->Size();
+        Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.rbx);
+        if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+        assembly.Register* rbx = rbxResult.Value();
+        Result<assembly.Register*> sourceRegResult = MakeIntegerRegOperand(inst.Operand(), rbx, codeGenerator);
+        if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+        assembly.Register* sourceReg = sourceRegResult.Value();
+        if (operandSize < 4)
+        {
+            assembly.OpCode opCode = assembly.OpCode.MOVSX;
+            if (operandType->IsUnsignedType())
+            {
+                opCode = assembly.OpCode.MOVZX;
+            }
+            assembly.Instruction* extendInst = new assembly.Instruction(opCode);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(4, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            extendInst->AddOperand(rax);
+            extendInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(extendInst);
+            if (result.Error()) return result;
+            sourceReg = rax;
+        }
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (resultSize == 4)
+            {
+                opCode = assembly.OpCode.CVTSI2SS;
+            }
+            else if (resultSize == 8)
+            {
+                opCode = assembly.OpCode.CVTSI2SD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting inttofloat instruction: invalid result size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* convertInstruction = new assembly.Instruction(opCode);
+            convertInstruction->AddOperand(resultReg);
+            convertInstruction->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(convertInstruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting inttofloat instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatToInt(FloatToIntInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Value* operand = inst.Operand();
+        Type* operandType = operand->GetType();
+        long operandSize = operandType->Size();
+        Type* resultType = inst.GetResult()->GetType();
+        long resultSize = resultType->Size();
+        RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.xmm0);
+            if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+            assembly.Register* xmm0 = xmm0Result.Value();
+            Result<assembly.Register*> sourceRegResult = MakeFloatingPointRegOperand(inst.Operand(), xmm0, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (operandSize == 4)
+            {
+                opCode = assembly.OpCode.CVTTSS2SI;
+            }
+            else if (operandSize == 8)
+            {
+                opCode = assembly.OpCode.CVTTSD2SO;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting floattoint instruction: invalid operand size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* convertInstruction = new assembly.Instruction(opCode);
+            convertInstruction->AddOperand(resultReg);
+            convertInstruction->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(convertInstruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting floattoint instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntToPtr(IntToPtrInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            Type* type = inst.Operand()->GetType();
+            long size = type->Size();
+            assembly.Register* resultReg = regGroup->GetReg(size);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> sourceRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(resultReg);
+            movInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting inttoptr instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitPtrToInt(PtrToIntInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            Type* type = inst.Operand()->GetType();
+            long size = type->Size();
+            assembly.Register* resultReg = regGroup->GetReg(size);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> sourceRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (sourceRegResult.Error()) return Result<bool>(ErrorId(sourceRegResult.GetErrorId()));
+            assembly.Register* sourceReg = sourceRegResult.Value();
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(resultReg);
+            movInst->AddOperand(sourceReg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting ptrtoint instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerEqual(EqualInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            long resultSize = 1;
+            long size = inst.Left()->GetType()->Size();
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            assembly.Instruction* cmpInstruction = new assembly.Instruction(assembly.OpCode.CMP);
+            Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rcx);
+            if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+            assembly.Register* rcx = rcxResult.Value();
+            Result<assembly.Register*> leftOperandRegResult = MakeIntegerRegOperand(inst.Left(), rcx, codeGenerator);
+            if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+            assembly.Register* leftOperandReg = leftOperandRegResult.Value();
+            cmpInstruction->AddOperand(leftOperandReg);
+            Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rdx);
+            if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+            assembly.Register* rdx = rdxResult.Value();
+            Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), rdx, codeGenerator);
+            if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+            assembly.Register* rightOperandReg = rightOperandRegResult.Value();
+            cmpInstruction->AddOperand(rightOperandReg);
+            Result<bool> result = codeGenerator.Emit(cmpInstruction);
+            if (result.Error()) return result;
+            assembly.Instruction* setInst = new assembly.Instruction(assembly.OpCode.SETE);
+            setInst->AddOperand(resultReg);
+            result = codeGenerator.Emit(setInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting equal instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointEqual(EqualInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Value* leftOperand = inst.Left();
+        Type* leftOperandType = leftOperand->GetType();
+        long operandSize = leftOperandType->Size();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            long resultSize = 1;
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (operandSize == 4)
+            {
+                opCode = assembly.OpCode.UCOMISS;
+            }
+            else if (operandSize == 8)
+            {
+                opCode = assembly.OpCode.UCOMISD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting equal instruction: invalid operand size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* instruction = new assembly.Instruction(opCode);
+            Result<assembly.Register*> xmm1Result = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.xmm1);
+            if (xmm1Result.Error()) return Result<bool>(ErrorId(xmm1Result.GetErrorId()));
+            assembly.Register* xmm1 = xmm1Result.Value();
+            Result<assembly.Register*> leftOperandRegResult = MakeFloatingPointRegOperand(inst.Left(), xmm1, codeGenerator);
+            if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+            assembly.Register* leftOperandReg = leftOperandRegResult.Value();
+            instruction->AddOperand(leftOperandReg);
+            Result<assembly.Register*> xmm2Result = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.xmm2);
+            if (xmm2Result.Error()) return Result<bool>(ErrorId(xmm2Result.GetErrorId()));
+            assembly.Register* xmm2 = xmm2Result.Value();
+            Result<assembly.Register*> rightOperandRegResult = MakeFloatingPointRegOperand(inst.Right(), xmm2, codeGenerator);
+            if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+            assembly.Register* rightOperandReg = rightOperandRegResult.Value();
+            instruction->AddOperand(rightOperandReg);
+            Result<bool> result = codeGenerator.Emit(instruction);
+            if (result.Error()) return result;
+            assembly.Instruction* setInst = new assembly.Instruction(assembly.OpCode.SETE);
+            setInst->AddOperand(resultReg);
+            result = codeGenerator.Emit(setInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting equal instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerLess(LessInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            long resultSize = 1;
+            long size = inst.Left()->GetType()->Size();
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            assembly.Instruction* cmpInstruction = new assembly.Instruction(assembly.OpCode.CMP);
+            Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rcx);
+            if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+            assembly.Register* rcx = rcxResult.Value();
+            Result<assembly.Register*> leftOperandRegResult = MakeIntegerRegOperand(inst.Left(), rcx, codeGenerator);
+            if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+            assembly.Register* leftOperandReg = leftOperandRegResult.Value();
+            cmpInstruction->AddOperand(leftOperandReg);
+            Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rdx);
+            if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+            assembly.Register* rdx = rdxResult.Value();
+            Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), rdx, codeGenerator);
+            if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+            assembly.Register* rightOperandReg = rightOperandRegResult.Value();
+            cmpInstruction->AddOperand(rightOperandReg);
+            Result<bool> result = codeGenerator.Emit(cmpInstruction);
+            if (result.Error()) return result;
+            assembly.OpCode opCode = assembly.OpCode.SETL;
+            if (inst.Left()->GetType()->IsUnsignedType())
+            {
+                opCode = assembly.OpCode.SETC;
+            }
+            assembly.Instruction* setInst = new assembly.Instruction(opCode);
+            setInst->AddOperand(resultReg);
+            result = codeGenerator.Emit(setInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting less instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointLess(LessInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Value* leftOperand = inst.Left();
+        Type* leftOperandType = leftOperand->GetType();
+        long operandSize = leftOperandType->Size();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            long resultSize = 1;
+            assembly.Register* resultReg = regGroup->GetReg(resultSize);
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (operandSize == 4)
+            {
+                opCode = assembly.OpCode.COMISS;
+            }
+            else if (operandSize == 8)
+            {
+                opCode = assembly.OpCode.COMISD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting less instruction: invalid operand size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* instruction = new assembly.Instruction(opCode);
+            Result<assembly.Register*> xmm1Result = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.xmm1);
+            if (xmm1Result.Error()) return Result<bool>(ErrorId(xmm1Result.GetErrorId()));
+            assembly.Register* xmm1 = xmm1Result.Value();
+            Result<assembly.Register*> leftOperandRegResult = MakeFloatingPointRegOperand(inst.Left(), xmm1, codeGenerator);
+            if (leftOperandRegResult.Error()) return Result<bool>(ErrorId(leftOperandRegResult.GetErrorId()));
+            assembly.Register* leftOperandReg = leftOperandRegResult.Value();
+            instruction->AddOperand(leftOperandReg);
+            Result<assembly.Register*> xmm2Result = assemblyContext->GetGlobalReg(operandSize, assembly.RegisterGroupKind.xmm2);
+            if (xmm2Result.Error()) return Result<bool>(ErrorId(xmm2Result.GetErrorId()));
+            assembly.Register* xmm2 = xmm2Result.Value();
+            Result<assembly.Register*> rightOperandRegResult = MakeFloatingPointRegOperand(inst.Right(), xmm2, codeGenerator);
+            if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+            assembly.Register* rightOperandReg = rightOperandRegResult.Value();
+            instruction->AddOperand(rightOperandReg);
+            Result<bool> result = codeGenerator.Emit(instruction);
+            if (result.Error()) return result;
+            assembly.Instruction* setInst = new assembly.Instruction(assembly.OpCode.SETC);
+            setInst->AddOperand(resultReg);
+            result = codeGenerator.Emit(setInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting less instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitJmp(JmpInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.Instruction* jmpInstruction = new assembly.Instruction(assembly.OpCode.JMP);
+        jmpInstruction->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.TargetBasicBlock()->Id())));
+        Result<bool> result = codeGenerator.Emit(jmpInstruction);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitBranch(BranchInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        int size = 4;
+        Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+        if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+        assembly.Register* rax = raxResult.Value();
+        Result<assembly.Register*> operandRegResult = MakeIntegerRegOperand(inst.Cond(), rax, codeGenerator);
+        if (operandRegResult.Error()) return Result<bool>(ErrorId(operandRegResult.GetErrorId()));
+        assembly.Register* operandReg = operandRegResult.Value();
+        assembly.Instruction* orInstruction = new assembly.Instruction(assembly.OpCode.OR);
+        orInstruction->AddOperand(operandReg);
+        orInstruction->AddOperand(operandReg);
+        Result<bool> result = codeGenerator.Emit(orInstruction);
+        if (result.Error()) return result;
+        assembly.Instruction* jnzInstruction = new assembly.Instruction(assembly.OpCode.JNZ);
+        jnzInstruction->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.TrueTargetBasicBlock()->Id())));
+        result = codeGenerator.Emit(jnzInstruction);
+        if (result.Error()) return result;
+        assembly.Instruction* jmpInstruction = new assembly.Instruction(assembly.OpCode.JMP);
+        jmpInstruction->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.FalseTargetBasicBlock()->Id())));
+        result = codeGenerator.Emit(jmpInstruction);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitNot(NotInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            Type* type = inst.Operand()->GetType();
+            long size = type->Size();
+            assembly.Register* resultReg = regGroup->GetReg(size);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> operandRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (operandRegResult.Error()) return Result<bool>(ErrorId(operandRegResult.GetErrorId()));
+            assembly.Register* operandReg = operandRegResult.Value();
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(resultReg);
+            movInst->AddOperand(operandReg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+            if (type->IsBooleanType())
+            {
+                assembly.Instruction* xorInst = new assembly.Instruction(assembly.OpCode.XOR);
+                xorInst->AddOperand(resultReg);
+                Result<assembly.IntegerLiteral*> literalResult = assemblyContext->MakeIntegerLiteral(1, cast<int>(size));
+                if (literalResult.Error()) return Result<bool>(ErrorId(literalResult.GetErrorId()));
+                assembly.IntegerLiteral* one = literalResult.Value();
+                xorInst->AddOperand(one);
+                result = codeGenerator.Emit(xorInst);
+                if (result.Error()) return result;
+            }
+            else if (type->IsIntegerType())
+            {
+                assembly.Instruction* notInst = new assembly.Instruction(assembly.OpCode.NOT);
+                notInst->AddOperand(resultReg);
+                result = codeGenerator.Emit(notInst);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting not instruction: integer or boolean type expected");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else
+        {
+            codeGenerator.Error("error emitting not instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerNeg(NegInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            Type* type = inst.Operand()->GetType();
+            long size = type->Size();
+            assembly.Register* resultReg = regGroup->GetReg(size);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> operandRegResult = MakeIntegerRegOperand(inst.Operand(), rax, codeGenerator);
+            if (operandRegResult.Error()) return Result<bool>(ErrorId(operandRegResult.GetErrorId()));
+            assembly.Register* operandReg = operandRegResult.Value();
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(resultReg);
+            movInst->AddOperand(operandReg);
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+            assembly.Instruction* negInst = new assembly.Instruction(assembly.OpCode.NEG);
+            negInst->AddOperand(resultReg);
+            result = codeGenerator.Emit(negInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting neg instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointNeg(NegInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            Type* type = inst.Operand()->GetType();
+            long size = type->Size();
+            assembly.Register* resultReg = regGroup->GetReg(size);
+            Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm0);
+            if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+            assembly.Register* xmm0 = xmm0Result.Value();
+            Result<assembly.Register*> operandRegResult = MakeFloatingPointRegOperand(inst.Operand(), xmm0, codeGenerator);
+            if (operandRegResult.Error()) return Result<bool>(ErrorId(operandRegResult.GetErrorId()));
+            assembly.Register* operandReg = operandRegResult.Value();
+            assembly.OpCode mulOpCode = assembly.OpCode.NOP;
+            UniquePtr<Value> value;
+            if (size == 4)
+            {
+                value.Reset(new FloatValue(-1.0f, codeGenerator.GetContext()->GetTypes()->GetFloatType()));
+                mulOpCode = assembly.OpCode.MULSS;
+            }
+            else if (size == 8)
+            {
+                value.Reset(new DoubleValue(-1.0, codeGenerator.GetContext()->GetTypes()->GetDoubleType()));
+                mulOpCode = assembly.OpCode.MULSD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting neg instruction: invalid operand size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            Result<assembly.Register*> xmm1Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm1);
+            if (xmm1Result.Error()) return Result<bool>(ErrorId(xmm1Result.GetErrorId()));
+            assembly.Register* xmm1 = xmm1Result.Value();
+            Result<assembly.Register*> minusOneRegResult = MakeFloatingPointRegOperand(value.Get(), xmm1, codeGenerator);
+            if (minusOneRegResult.Error()) return Result<bool>(ErrorId(minusOneRegResult.GetErrorId()));
+            assembly.Register* minusOneReg = minusOneRegResult.Value();
+            assembly.Instruction* instruction = new assembly.Instruction(mulOpCode);
+            instruction->AddOperand(operandReg);
+            instruction->AddOperand(minusOneReg);
+            Result<bool> result = codeGenerator.Emit(instruction);
+            if (result.Error()) return result;
+            assembly.OpCode movOpCode = assembly.OpCode.NOP;
+            if (size == 4)
+            {
+                movOpCode = assembly.OpCode.MOVSS;
+            }
+            else if (size == 8)
+            {
+                movOpCode = assembly.OpCode.MOVSD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting neg instruction: invalid operand size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* movInstruction = new assembly.Instruction(movOpCode);
+            movInstruction->AddOperand(resultReg);
+            movInstruction->AddOperand(operandReg);
+            result = codeGenerator.Emit(movInstruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting neg instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitNop(NoOperationInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.Instruction* nopInst = new assembly.Instruction(assembly.OpCode.NOP);
+        Result<bool> result = codeGenerator.Emit(nopInst);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitSwitch(SwitchInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        long size = inst.Cond()->GetType()->Size();
+        Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rbx);
+        if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+        assembly.Register* rbx = rbxResult.Value();
+        Result<assembly.Register*> condRegResult = MakeIntegerRegOperand(inst.Cond(), rbx, codeGenerator);
+        if (condRegResult.Error()) return Result<bool>(ErrorId(condRegResult.GetErrorId()));
+        assembly.Register* condReg = condRegResult.Value();
+        for (const auto& caseTarget : inst.CaseTargets())
+        {
+            long size = caseTarget.caseValue->GetType()->Size();
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> caseRegResult = MakeIntegerRegOperand(caseTarget.caseValue, rax, codeGenerator);
+            if (caseRegResult.Error()) return Result<bool>(ErrorId(caseRegResult.GetErrorId()));
+            assembly.Register* caseReg = caseRegResult.Value();
+            assembly.Instruction* cmpInst = new assembly.Instruction(assembly.OpCode.CMP);
+            cmpInst->AddOperand(caseReg);
+            cmpInst->AddOperand(condReg);
+            Result<bool> result = codeGenerator.Emit(cmpInst);
+            if (result.Error()) return result;
+            assembly.Instruction* jeInst = new assembly.Instruction(assembly.OpCode.JE);
+            jeInst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(caseTarget.targetBlock->Id())));
+            result = codeGenerator.Emit(jeInst);
+            if (result.Error()) return result;
+        }
+        assembly.Instruction* jmpInst = new assembly.Instruction(assembly.OpCode.JMP);
+        jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.DefaultTargetBlock()->Id())));
+        Result<bool> result = codeGenerator.Emit(jmpInst);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerLoad(long size, const FrameLocation& frameLocation, assembly.RegisterGroup* regGroup, CodeGenerator& codeGenerator)
+    {
+        if (!frameLocation.IsValid())
+        {
+            codeGenerator.Error("error emitting load: frame location not valid");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.Instruction* instruction = new assembly.Instruction(assembly.OpCode.MOV);
+        instruction->AddOperand(regGroup->GetReg(size));
+        Result<bool> result = EmitFrameLocationOperand(size, frameLocation, instruction, codeGenerator);
+        if (result.Error()) return result;
+        result = codeGenerator.Emit(instruction);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<assembly.Instruction*> EmitIntegerStore(long size, const FrameLocation& frameLocation, assembly.RegisterGroup* regGroup, CodeGenerator& codeGenerator)
+    {
+        if (!frameLocation.IsValid())
+        {
+            codeGenerator.Error("error emitting store: frame location not valid");
+            return Result<assembly.Instruction*>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.Instruction* instruction = new assembly.Instruction(assembly.OpCode.MOV);
+        Result<bool> result = EmitFrameLocationOperand(size, frameLocation, instruction, codeGenerator);
+        if (result.Error()) return Result<assembly.Instruction*>(ErrorId(result.GetErrorId()));
+        instruction->AddOperand(regGroup->GetReg(size));
+        result = codeGenerator.Emit(instruction);
+        if (result.Error()) return Result<assembly.Instruction*>(ErrorId(result.GetErrorId()));
+        return Result<assembly.Instruction*>(instruction);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointLoad(long size, const FrameLocation& frameLocation, assembly.RegisterGroup* regGroup, CodeGenerator& codeGenerator)
+    {
+        if (!frameLocation.IsValid())
+        {
+            codeGenerator.Error("error emitting load: frame location not valid");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.OpCode opCode = assembly.OpCode.NOP;
+        if (size == 4)
+        {
+            opCode = assembly.OpCode.MOVSS;
+        }
+        else if (size == 8)
+        {
+            opCode = assembly.OpCode.MOVSD;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting load: invalid size");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.Instruction* instruction = new assembly.Instruction(opCode);
+        instruction->AddOperand(regGroup->GetReg(size));
+        Result<bool> result = EmitFrameLocationOperand(size, frameLocation, instruction, codeGenerator);
+        if (result.Error()) return result;
+        result = codeGenerator.Emit(instruction);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    public Result<assembly.Instruction*> EmitFloatingPointStore(long size, const FrameLocation& frameLocation, assembly.RegisterGroup* regGroup, CodeGenerator& codeGenerator)
+    {
+        if (!frameLocation.IsValid())
+        {
+            codeGenerator.Error("error emitting store: frame location not valid");
+            return Result<assembly.Instruction*>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.OpCode opCode = assembly.OpCode.NOP;
+        if (size == 4)
+        {
+            opCode = assembly.OpCode.MOVSS;
+        }
+        else if (size == 8)
+        {
+            opCode = assembly.OpCode.MOVSD;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting store: invalid size");
+            return Result<assembly.Instruction*>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.Instruction* instruction = new assembly.Instruction(opCode);
+        Result<bool> result = EmitFrameLocationOperand(size, frameLocation, instruction, codeGenerator);
+        if (result.Error()) return Result<assembly.Instruction*>(ErrorId(result.GetErrorId()));
+        instruction->AddOperand(regGroup->GetReg(size));
+        result = codeGenerator.Emit(instruction);
+        if (result.Error()) return Result<assembly.Instruction*>(ErrorId(result.GetErrorId()));
+        return Result<assembly.Instruction*>(instruction);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerLoad(LoadInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup == null)
+        {
+            codeGenerator.Error("error emitting load: reg group not valid");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        Type* type = inst.GetResult()->GetType();
+        if (type->IsFundamentalType() || type->IsPointerType())
+        {
+            long size = type->Size();
+            assembly.Instruction* instruction = new assembly.Instruction(assembly.OpCode.MOV);
+            instruction->AddOperand(regGroup->GetReg(size));
+            Result<bool> result = EmitIntegerPtrOperand(size, inst.Ptr(), instruction, codeGenerator);
+            if (result.Error()) return result;
+            result = codeGenerator.Emit(instruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting load: invalid type kind");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerStore(StoreInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        Type* type = inst.GetValue()->GetType();
+        if (type->IsFundamentalType() || type->IsPointerType())
+        {
+            long size = type->Size();
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            assembly.Instruction* instruction = new assembly.Instruction(assembly.OpCode.MOV);
+            Result<bool> result = EmitIntegerPtrOperand(size, inst.Ptr(), instruction, codeGenerator);
+            if (result.Error()) return result;
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> regOperandResult = MakeIntegerRegOperand(inst.GetValue(), rax, codeGenerator);
+            if (regOperandResult.Error()) return Result<bool>(ErrorId(regOperandResult.GetErrorId()));
+            instruction->AddOperand(regOperandResult.Value());
+            result = codeGenerator.Emit(instruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting store: invalid type kind");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointLoad(LoadInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup == null)
+        {
+            codeGenerator.Error("error emitting load: reg group not valid");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        Type* type = inst.GetResult()->GetType();
+        if (type->IsFloatingPointType())
+        {
+            long size = type->Size();
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (size == 4)
+            {
+                opCode = assembly.OpCode.MOVSS;
+            }
+            else if (size == 8)
+            {
+                opCode = assembly.OpCode.MOVSD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting load: invalid size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.Instruction* instruction = new assembly.Instruction(opCode);
+            instruction->AddOperand(regGroup->GetReg(size));
+            Result<bool> result = EmitFloatingPointPtrOperand(size, inst.Ptr(), instruction, codeGenerator);
+            if (result.Error()) return result;
+            result = codeGenerator.Emit(instruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting load: invalid type kind");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointStore(StoreInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        Type* type = inst.GetValue()->GetType();
+        if (type->IsFloatingPointType())
+        {
+            long size = type->Size();
+            assembly.OpCode opCode = assembly.OpCode.NOP;
+            if (size == 4)
+            {
+                opCode = assembly.OpCode.MOVSS;
+            }
+            else if (size == 8)
+            {
+                opCode = assembly.OpCode.MOVSD;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting store: invalid size");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+            assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            assembly.Instruction* instruction = new assembly.Instruction(opCode);
+            Result<bool> result = EmitFloatingPointPtrOperand(size, inst.Ptr(), instruction, codeGenerator);
+            if (result.Error()) return result;
+            Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm0);
+            if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+            assembly.Register* xmm0 = xmm0Result.Value();
+            Result<assembly.Register*> regResult = MakeFloatingPointRegOperand(inst.GetValue(), xmm0, codeGenerator);
+            if (regResult.Error()) return Result<bool>(ErrorId(regResult.GetErrorId()));
+            assembly.Register* reg = regResult.Value();
+            instruction->AddOperand(reg);
+            result = codeGenerator.Emit(instruction);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting store: invalid type kind");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerParam(ParamInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        Type* type = inst.GetType();
+        long size = type->Size();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup == null)
+        {
+            codeGenerator.Error("error emitting param: reg group not valid");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        switch (inst.Index())
+        {
+            case 0:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rcx);
+                if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+                assembly.Register* rcx = rcxResult.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(rcx);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 1:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rdx);
+                if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+                assembly.Register* rdx = rdxResult.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(rdx);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 2:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> r8Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.r8);
+                if (r8Result.Error()) return Result<bool>(ErrorId(r8Result.GetErrorId()));
+                assembly.Register* r8 = r8Result.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(r8);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 3:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> r9Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.r9);
+                if (r9Result.Error()) return Result<bool>(ErrorId(r9Result.GetErrorId()));
+                assembly.Register* r9 = r9Result.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(r9);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            default:
+            {
+                Locations locs = codeGenerator.RegAllocator()->GetLocations(&inst);
+                if ((locs & Locations.frame) != Locations.none)
+                {
+                    FrameLocation frameLocation = codeGenerator.RegAllocator()->GetFrameLocation(&inst);
+                    Result<bool> result = EmitIntegerLoad(size, frameLocation, regGroup, codeGenerator);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    codeGenerator.Error("error emitting param: no frame location");
+                    return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+                }
+                break;
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointParam(ParamInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        Type* type = inst.GetType();
+        long size = type->Size();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup == null)
+        {
+            codeGenerator.Error("error emitting param: reg group not valid");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.OpCode movOpCode = assembly.OpCode.NOP;
+        if (size == 4)
+        {
+            movOpCode = assembly.OpCode.MOVSS;
+        }
+        else if (size == 8)
+        {
+            movOpCode = assembly.OpCode.MOVSD;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting param: invalid operand size");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        switch (inst.Index())
+        {
+            case 0:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> paramRegResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm0);
+                if (paramRegResult.Error()) return Result<bool>(ErrorId(paramRegResult.GetErrorId()));
+                assembly.Register* paramReg = paramRegResult.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(paramReg);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 1:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> paramRegResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm1);
+                if (paramRegResult.Error()) return Result<bool>(ErrorId(paramRegResult.GetErrorId()));
+                assembly.Register* paramReg = paramRegResult.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(paramReg);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 2:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> paramRegResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm2);
+                if (paramRegResult.Error()) return Result<bool>(ErrorId(paramRegResult.GetErrorId()));
+                assembly.Register* paramReg = paramRegResult.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(paramReg);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 3:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> paramRegResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm3);
+                if (paramRegResult.Error()) return Result<bool>(ErrorId(paramRegResult.GetErrorId()));
+                assembly.Register* paramReg = paramRegResult.Value();
+                movInst->AddOperand(regGroup->GetReg(size));
+                movInst->AddOperand(paramReg);
+                Result<bool> result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            default:
+            {
+                Locations locs = codeGenerator.RegAllocator()->GetLocations(&inst);
+                if ((locs & Locations.frame) != Locations.none)
+                {
+                    FrameLocation frameLocation = codeGenerator.RegAllocator()->GetFrameLocation(&inst);
+                    Result<bool> result = EmitFloatingPointLoad(size, frameLocation, regGroup, codeGenerator);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    codeGenerator.Error("error emitting param: no frame location");
+                    return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+                }
+                break;
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerArgOperand(Instruction* argInst, long size, Value* arg, assembly.Instruction* instruction, CodeGenerator& codeGenerator)
+    {
+        if (arg->IsRegValue())
+        {
+            RegValue* regValue = cast<RegValue*>(arg);
+            Instruction* inst = regValue->Inst();
+            if (inst->IsLocalInstruction())
+            {
+                assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(argInst);
+                if (regGroup != null)
+                {
+                    assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+                    leaInst->AddOperand(regGroup->GetReg(8));
+                    Result<FrameLocation> frameLocationResult = GetFrameLocation(arg, codeGenerator);
+                    if (frameLocationResult.Error()) return Result<bool>(ErrorId(frameLocationResult.GetErrorId()));
+                    FrameLocation frameLocation = frameLocationResult.Value();
+                    Result<bool> result = EmitFrameLocationOperand(1, frameLocation, leaInst, codeGenerator);
+                    if (result.Error()) return result;
+                    result = codeGenerator.Emit(leaInst);
+                    if (result.Error()) return result;
+                    instruction->AddOperand(regGroup->GetReg(8));
+                    return Result<bool>(true);
+                }
+                else
+                {
+                    codeGenerator.Error("error emitting arg: reg group not valid");
+                    return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+                }
+            }
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rax);
+        if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+        assembly.Register* rax = raxResult.Value();
+        Result<assembly.Register*> regOperandResult = MakeIntegerRegOperand(arg, rax, codeGenerator);
+        if (regOperandResult.Error()) return Result<bool>(ErrorId(regOperandResult.GetErrorId()));
+        assembly.Register* regOperand = regOperandResult.Value();
+        instruction->AddOperand(regOperand);
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointArgOperand(Instruction* argInst, long size, Value* arg, assembly.Instruction* instruction, CodeGenerator& codeGenerator)
+    {
+        if (arg->IsRegValue())
+        {
+            RegValue* regValue = cast<RegValue*>(arg);
+            Instruction* inst = regValue->Inst();
+            if (inst->IsLocalInstruction())
+            {
+                assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(argInst);
+                if (regGroup != null)
+                {
+                    assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+                    leaInst->AddOperand(regGroup->GetReg(8));
+                    Result<FrameLocation> frameLocationResult = GetFrameLocation(arg, codeGenerator);
+                    if (frameLocationResult.Error()) return Result<bool>(ErrorId(frameLocationResult.GetErrorId()));
+                    FrameLocation frameLocation = frameLocationResult.Value();
+                    Result<bool> result = EmitFrameLocationOperand(1, frameLocation, leaInst, codeGenerator);
+                    if (result.Error()) return result;
+                    result = codeGenerator.Emit(leaInst);
+                    if (result.Error()) return result;
+                    instruction->AddOperand(regGroup->GetReg(8));
+                    return Result<bool>(true);
+                }
+                else
+                {
+                    codeGenerator.Error("error emitting arg: reg group not valid");
+                    return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+                }
+            }
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm0);
+        if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+        assembly.Register* xmm0 = xmm0Result.Value();
+        Result<assembly.Register*> regOperandResult = MakeFloatingPointRegOperand(arg, xmm0, codeGenerator);
+        if (regOperandResult.Error()) return Result<bool>(ErrorId(regOperandResult.GetErrorId()));
+        assembly.Register* regOperand = regOperandResult.Value();
+        instruction->AddOperand(regOperand);
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitArgLocationOperand(long size, const ArgLocation& argLocation, assembly.Instruction* instruction, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Result<assembly.Register*> regResult = assemblyContext->GetGlobalReg(8, argLocation.Reg());
+        if (regResult.Error()) return Result<bool>(ErrorId(regResult.GetErrorId()));
+        assembly.Register* reg = regResult.Value();
+        Result<assembly.IntegerLiteral*> literalResult = assemblyContext->MakeIntegerLiteral(argLocation.Offset(), 8);
+        if (literalResult.Error()) return Result<bool>(ErrorId(literalResult.GetErrorId()));
+        assembly.IntegerLiteral* offset = literalResult.Value();
+        assembly.Value* value = assemblyContext->MakeBinaryExpr(reg, offset, assembly.Operator.add);
+        assembly.Value* content = assemblyContext->MakeContent(value);
+        Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(size, content);
+        if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+        instruction->AddOperand(sizePrefix.Value());
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitIntegerArg(ArgInstruction& inst, CallFrame* callFrame, int index, CodeGenerator& codeGenerator)
+    {
+        Result<RegisterAllocationAction> actionResult = codeGenerator.RegAllocator()->Run(&inst);
+        if (actionResult.Error()) return Result<bool>(ErrorId(actionResult.GetErrorId()));
+        RegisterAllocationAction action = actionResult.Value();
+        if (action == RegisterAllocationAction.spill)
+        {
+            for (const SpillData& spillData : codeGenerator.RegAllocator()->GetSpillData())
+            {
+                Result<assembly.Instruction*> storeInstResult = EmitIntegerStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), codeGenerator);
+                if (storeInstResult.Error()) return Result<bool>(ErrorId(storeInstResult.GetErrorId()));
+                assembly.Instruction* storeInst = storeInstResult.Value();
+                Instruction* instToSpill = spillData.InstToSpill();
+                Instruction* next = instToSpill->Next();
+                if (next != null)
+                {
+                    int assemblyIndex = next->AssemblyIndex();
+                    if (assemblyIndex != -1)
+                    {
+                        codeGenerator.AssemblyFunction()->InsertInstruction(assemblyIndex, storeInst->Clone());
+                    }
+                }
+                codeGenerator.RegAllocator()->RemoveFromRegisterGroups(instToSpill);
+            }
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        long size = inst.Arg()->GetType()->Size();
+        switch (index)
+        {
+            case 0:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rcx);
+                if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+                assembly.Register* rcx = rcxResult.Value();
+                movInst->AddOperand(rcx);
+                Result<bool> result = EmitIntegerArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 1:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rdx);
+                if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+                assembly.Register* rdx = rdxResult.Value();
+                movInst->AddOperand(rdx);
+                Result<bool> result = EmitIntegerArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 2:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> r8Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.r8);
+                if (r8Result.Error()) return Result<bool>(ErrorId(r8Result.GetErrorId()));
+                assembly.Register* r8 = r8Result.Value();
+                movInst->AddOperand(r8);
+                Result<bool> result = EmitIntegerArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 3:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> r9Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.r9);
+                if (r9Result.Error()) return Result<bool>(ErrorId(r9Result.GetErrorId()));
+                assembly.Register* r9 = r9Result.Value();
+                movInst->AddOperand(r9);
+                Result<bool> result = EmitIntegerArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            default:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+                if (regGroup != null)
+                {
+                    assembly.Register* reg = regGroup->GetReg(size);
+                    movInst->AddOperand(reg);
+                    Result<bool> result = EmitIntegerArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                    if (result.Error()) return result;
+                    result = codeGenerator.Emit(movInst);
+                    if (result.Error()) return result;
+                    assembly.Instruction* pushToFrameInst = new assembly.Instruction(assembly.OpCode.MOV);
+                    ArgLocation argLocation = callFrame->GetArgLocation(index);
+                    result = EmitArgLocationOperand(size, argLocation, pushToFrameInst, codeGenerator);
+                    if (result.Error()) return result;
+                    pushToFrameInst->AddOperand(reg);
+                    result = codeGenerator.Emit(pushToFrameInst);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    codeGenerator.Error("error emitting arg instruction: reg group for inst not found");
+                    return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+                }
+                break;
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFloatingPointArg(ArgInstruction& inst, CallFrame* callFrame, int index, CodeGenerator& codeGenerator)
+    {
+        Result<RegisterAllocationAction> actionResult = codeGenerator.RegAllocator()->Run(&inst);
+        if (actionResult.Error()) return Result<bool>(ErrorId(actionResult.GetErrorId()));
+        RegisterAllocationAction action = actionResult.Value();
+        if (action == RegisterAllocationAction.spill)
+        {
+            for (const SpillData& spillData : codeGenerator.RegAllocator()->GetSpillData())
+            {
+                Result<assembly.Instruction*> storeInstResult = EmitFloatingPointStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), codeGenerator);
+                if (storeInstResult.Error()) return Result<bool>(ErrorId(storeInstResult.GetErrorId()));
+                assembly.Instruction* storeInst = storeInstResult.Value();
+                Instruction* instToSpill = spillData.InstToSpill();
+                Instruction* next = instToSpill->Next();
+                if (next != null)
+                {
+                    int assemblyIndex = next->AssemblyIndex();
+                    if (assemblyIndex != -1)
+                    {
+                        codeGenerator.AssemblyFunction()->InsertInstruction(assemblyIndex, storeInst->Clone());
+                    }
+                }
+                codeGenerator.RegAllocator()->RemoveFromRegisterGroups(instToSpill);
+            }
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        long size = inst.Arg()->GetType()->Size();
+        assembly.OpCode movOpCode = assembly.OpCode.NOP;
+        if (size == 4)
+        {
+            movOpCode = assembly.OpCode.MOVSS;
+        }
+        else if (size == 8)
+        {
+            movOpCode = assembly.OpCode.MOVSD;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting arg instruction: invalid operand size");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        switch (index)
+        {
+            case 0:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm0);
+                if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+                assembly.Register* xmm0 = xmm0Result.Value();
+                movInst->AddOperand(xmm0);
+                Result<bool> result = EmitFloatingPointArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 1:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> xmm1Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm1);
+                if (xmm1Result.Error()) return Result<bool>(ErrorId(xmm1Result.GetErrorId()));
+                assembly.Register* xmm1 = xmm1Result.Value();
+                movInst->AddOperand(xmm1);
+                Result<bool> result = EmitFloatingPointArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 2:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> xmm2Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm2);
+                if (xmm2Result.Error()) return Result<bool>(ErrorId(xmm2Result.GetErrorId()));
+                assembly.Register* xmm2 = xmm2Result.Value();
+                movInst->AddOperand(xmm2);
+                Result<bool> result = EmitFloatingPointArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            case 3:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                Result<assembly.Register*> xmm3Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm3);
+                if (xmm3Result.Error()) return Result<bool>(ErrorId(xmm3Result.GetErrorId()));
+                assembly.Register* xmm3 = xmm3Result.Value();
+                movInst->AddOperand(xmm3);
+                Result<bool> result = EmitFloatingPointArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+                break;
+            }
+            default:
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(movOpCode);
+                assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+                if (regGroup != null)
+                {
+                    assembly.Register* reg = regGroup->GetReg(size);
+                    movInst->AddOperand(reg);
+                    Result<bool> result = EmitFloatingPointArgOperand(&inst, size, inst.Arg(), movInst, codeGenerator);
+                    if (result.Error()) return result;
+                    result = codeGenerator.Emit(movInst);
+                    if (result.Error()) return result;
+                    assembly.Instruction* pushToFrameInst = new assembly.Instruction(movOpCode);
+                    ArgLocation argLocation = callFrame->GetArgLocation(index);
+                    result = EmitArgLocationOperand(size, argLocation, pushToFrameInst, codeGenerator);
+                    if (result.Error()) return result;
+                    pushToFrameInst->AddOperand(reg);
+                    result = codeGenerator.Emit(pushToFrameInst);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    codeGenerator.Error("error emitting arg instruction: reg group for inst not found");
+                    return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+                }
+                break;
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitArgs(const List<ArgInstruction*>& args, CodeGenerator& codeGenerator)
+    {
+        CallFrame callFrame;
+        int n = cast<int>(args.Count());
+        long calleeParamAreaSize = n * 8;
+        Frame& frame = codeGenerator.RegAllocator()->GetFrame();
+        frame.SetCalleeParamAreaSize(Max(frame.CalleeParamAreaSize(), calleeParamAreaSize));
+        for (int i = 0; i < n; ++i)
+        {
+            ArgInstruction* argInst = args[i];
+            long size = argInst->Arg()->GetType()->Size();
+            callFrame.AllocateArgLocation(size);
+        }
+        for (int i = n - 1; i >= 0; --i)
+        {
+            ArgInstruction* arg = args[i];
+            if (arg->IsFloatingPointInstruction())
+            {
+                Result<bool> result = EmitFloatingPointArg(*arg, &callFrame, i, codeGenerator);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                Result<bool> result = EmitIntegerArg(*arg, &callFrame, i, codeGenerator);
+                if (result.Error()) return result;
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<assembly.Value*> MakeCalleeOperand(Value* value, assembly.Register* reg, CodeGenerator& codeGenerator)
+    {
+        if (value->Kind() == ValueKind.regValue)
+        {
+            Result<assembly.Register*> regResult = MakeIntegerRegOperand(value, reg, codeGenerator);
+            if (regResult.Error()) return Result<assembly.Value*>(ErrorId(regResult.GetErrorId()));
+            return Result<assembly.Value*>(regResult.Value());
+        }
+        else
+        {
+            if (value->IsSymbolValue())
+            {
+                SymbolValue* symbolValue = cast<SymbolValue*>(value);
+                assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+                return Result<assembly.Value*>(assemblyContext->MakeSymbol(symbolValue->Symbol()));
+            }
+            else
+            {
+                codeGenerator.Error("error emitting callee operand: invalid value kind");
+                return Result<assembly.Value*>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> EmitProcedureCall(ProcedureCallInstruction& inst, const List<ArgInstruction*>& args, CodeGenerator& codeGenerator)
+    {
+        Result<bool> result = EmitArgs(args, codeGenerator);
+        if (result.Error()) return result;
+        Result<RegisterAllocationAction> actionResult = codeGenerator.RegAllocator()->Run(&inst);
+        if (actionResult.Error()) return Result<bool>(ErrorId(actionResult.GetErrorId()));
+        RegisterAllocationAction action = actionResult.Value();
+        if (action == RegisterAllocationAction.spill)
+        {
+            for (const SpillData& spillData : codeGenerator.RegAllocator()->GetSpillData())
+            {
+                assembly.Instruction* storeInst = null;
+                if (spillData.RegisterGroupToSpill()->IsFloatingPointReg())
+                {
+                    Result<assembly.Instruction*> storeInstResult = EmitFloatingPointStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), codeGenerator);
+                    if (storeInstResult.Error()) return Result<bool>(ErrorId(storeInstResult.GetErrorId()));
+                    storeInst = storeInstResult.Value();
+                }
+                else
+                {
+                    Result<assembly.Instruction*> storeInstResult = EmitIntegerStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), codeGenerator);
+                    if (storeInstResult.Error()) return Result<bool>(ErrorId(storeInstResult.GetErrorId()));
+                    storeInst = storeInstResult.Value();
+                }
+                Instruction* instToSpill = spillData.InstToSpill();
+                Instruction* next = instToSpill->Next();
+                if (next != null)
+                {
+                    int assemblyIndex = next->AssemblyIndex();
+                    if (assemblyIndex != -1)
+                    {
+                        codeGenerator.AssemblyFunction()->InsertInstruction(assemblyIndex, storeInst->Clone());
+                    }
+                }
+                codeGenerator.RegAllocator()->RemoveFromRegisterGroups(instToSpill);
+            }
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Register* reg = regGroup->GetReg(8);
+            assembly.Instruction* callInst = new assembly.Instruction(assembly.OpCode.CALL);
+            Result<assembly.Value*> calleeResult = MakeCalleeOperand(inst.Callee(), reg, codeGenerator);
+            if (calleeResult.Error()) return Result<bool>(ErrorId(calleeResult.GetErrorId()));
+            assembly.Value* callee = calleeResult.Value();
+            callInst->AddOperand(callee);
+            Result<bool> result = codeGenerator.Emit(callInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting call instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitFunctionCall(FunctionCallInstruction& inst, const List<ArgInstruction*>& args, CodeGenerator& codeGenerator)
+    {
+        Result<bool> result = EmitArgs(args, codeGenerator);
+        if (result.Error()) return result;
+        Result<RegisterAllocationAction> actionResult = codeGenerator.RegAllocator()->Run(&inst);
+        if (actionResult.Error()) return Result<bool>(ErrorId(actionResult.GetErrorId()));
+        RegisterAllocationAction action = actionResult.Value();
+        if (action == RegisterAllocationAction.spill)
+        {
+            for (const SpillData& spillData : codeGenerator.RegAllocator()->GetSpillData())
+            {
+                assembly.Instruction* storeInst = null;
+                if (spillData.RegisterGroupToSpill()->IsFloatingPointReg())
+                {
+                    Result<assembly.Instruction*> storeInstResult = EmitFloatingPointStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), codeGenerator);
+                    if (storeInstResult.Error()) return Result<bool>(ErrorId(storeInstResult.GetErrorId()));
+                    storeInst = storeInstResult.Value();
+                }
+                else
+                {
+                    Result<assembly.Instruction*> storeInstResult = EmitIntegerStore(8, spillData.SpillToFrameLocation(), spillData.RegisterGroupToSpill(), codeGenerator);
+                    if (storeInstResult.Error()) return Result<bool>(ErrorId(storeInstResult.GetErrorId()));
+                    storeInst = storeInstResult.Value();
+                }
+                Instruction* instToSpill = spillData.InstToSpill();
+                Instruction* next = instToSpill->Next();
+                if (next != null)
+                {
+                    int assemblyIndex = next->AssemblyIndex();
+                    if (assemblyIndex != -1)
+                    {
+                        codeGenerator.AssemblyFunction()->InsertInstruction(assemblyIndex, storeInst->Clone());
+                    }
+                }
+                codeGenerator.RegAllocator()->RemoveFromRegisterGroups(instToSpill);
+            }
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Instruction* callInst = new assembly.Instruction(assembly.OpCode.CALL);
+            Type* type = inst.GetResult()->GetType();
+            int size = cast<int>(type->Size());
+            if (!type->IsFloatingPointType())
+            {
+                size = 8;
+            }
+            assembly.Register* reg = regGroup->GetReg(size);
+            assembly.Register* callReg = regGroup->GetReg(8);
+            Result<assembly.Value*> calleeResult = MakeCalleeOperand(inst.Callee(), callReg, codeGenerator);
+            if (calleeResult.Error()) return Result<bool>(ErrorId(calleeResult.GetErrorId()));
+            assembly.Value* callee = calleeResult.Value();
+            callInst->AddOperand(callee);
+            result = codeGenerator.Emit(callInst);
+            if (result.Error()) return result;
+            if (type->IsFloatingPointType())
+            {
+                assembly.OpCode opCode = assembly.OpCode.NOP;
+                if (size == 4)
+                {
+                    opCode = assembly.OpCode.MOVSS;
+                }
+                else if (size == 8)
+                {
+                    opCode = assembly.OpCode.MOVSD;
+                }
+                else
+                {
+                    codeGenerator.Error("error emitting function call: invalid result size");
+                    return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+                }
+                assembly.Instruction* movInst = new assembly.Instruction(opCode);
+                movInst->AddOperand(reg);
+                Result<assembly.Register*> xmm0Result = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.xmm0);
+                if (xmm0Result.Error()) return Result<bool>(ErrorId(xmm0Result.GetErrorId()));
+                assembly.Register* xmm0 = xmm0Result.Value();
+                movInst->AddOperand(xmm0);
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+                movInst->AddOperand(reg);
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                assembly.Register* rax = raxResult.Value();
+                movInst->AddOperand(rax);
+                result = codeGenerator.Emit(movInst);
+                if (result.Error()) return result;
+            }
+        }
+        else
+        {
+            codeGenerator.Error("error emitting function call: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitElemAddr(ElemAddrInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Result<ElemAddrKind> elemAddrKindResult = inst.GetElemAddrKind(codeGenerator.GetContext());
+        if (elemAddrKindResult.Error()) return Result<bool>(ErrorId(elemAddrKindResult.GetErrorId()));
+        ElemAddrKind elemAddrKind = elemAddrKindResult.Value();
+        if (elemAddrKind == ElemAddrKind.array)
+        {
+            Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbx);
+            if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+            assembly.Register* rbx = rbxResult.Value();
+            Result<assembly.Register*> indexRegResult = MakeIntegerRegOperand(inst.IndexValue(), rbx, codeGenerator);
+            if (indexRegResult.Error()) return Result<bool>(ErrorId(indexRegResult.GetErrorId()));
+            assembly.Register* indexReg = indexRegResult.Value();
+            Result<long> indexFactorResult = GetElementSize(inst.Ptr()->GetType(), codeGenerator);
+            if (indexFactorResult.Error()) return Result<bool>(ErrorId(indexFactorResult.GetErrorId()));
+            long indexFactor = indexFactorResult.Value();
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            movInst->AddOperand(rax);
+            Result<assembly.IntegerLiteral*> literalResult = assemblyContext->MakeIntegerLiteral(indexFactor, 8);
+            if (literalResult.Error()) return Result<bool>(ErrorId(literalResult.GetErrorId()));
+            movInst->AddOperand(literalResult.Value());
+            Result<bool> result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+            assembly.Instruction* mulInst = new assembly.Instruction(assembly.OpCode.MUL);
+            mulInst->AddOperand(indexReg);
+            result = codeGenerator.Emit(mulInst);
+            if (result.Error()) return result;
+            assembly.Instruction* leaPtrInst = new assembly.Instruction(assembly.OpCode.LEA);
+            Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rcx);
+            if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+            assembly.Register* rcx = rcxResult.Value();
+            leaPtrInst->AddOperand(rcx);
+            result = EmitIntegerPtrOperand(8, inst.Ptr(), leaPtrInst, codeGenerator);
+            if (result.Error()) return result;
+            result = codeGenerator.Emit(leaPtrInst);
+            if (result.Error()) return result;
+            assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+            if (regGroup != null)
+            {
+                assembly.Register* resultReg = regGroup->GetReg(8);
+                assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+                leaInst->AddOperand(resultReg);
+                assembly.Value* value = assemblyContext->MakeBinaryExpr(rax, rcx, assembly.Operator.add);
+                Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(8, assemblyContext->MakeContent(value));
+                if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+                leaInst->AddOperand(sizePrefix.Value());
+                result = codeGenerator.Emit(leaInst);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting elemaddr instruction: reg group for inst not found");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else if (elemAddrKind == ElemAddrKind.structure)
+        {
+            assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+            if (regGroup != null)
+            {
+                assembly.Register* resultReg = regGroup->GetReg(8);
+                Result<long> indexResult = GetIndex(inst.IndexValue(), codeGenerator);
+                if (indexResult.Error()) return Result<bool>(ErrorId(indexResult.GetErrorId()));
+                long index = indexResult.Value();
+                Result<long> offsetResult = GetOffset(inst.Ptr()->GetType(), index, codeGenerator);
+                if (offsetResult.Error()) return Result<bool>(ErrorId(offsetResult.GetErrorId()));
+                long offset = offsetResult.Value();
+                assembly.Instruction* movOffsetInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbx);
+                if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+                assembly.Register* rbx = rbxResult.Value();
+                movOffsetInst->AddOperand(rbx);
+                Result<assembly.IntegerLiteral*> literalResult = assemblyContext->MakeIntegerLiteral(offset, 8);
+                if (literalResult.Error()) return Result<bool>(ErrorId(literalResult.GetErrorId()));
+                movOffsetInst->AddOperand(literalResult.Value());
+                Result<bool> result = codeGenerator.Emit(movOffsetInst);
+                if (result.Error()) return result;
+                assembly.Instruction* leaPtrInst = new assembly.Instruction(assembly.OpCode.LEA);
+                Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rcx);
+                if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+                assembly.Register* rcx = rcxResult.Value();
+                leaPtrInst->AddOperand(rcx);
+                result = EmitIntegerPtrOperand(8, inst.Ptr(), leaPtrInst, codeGenerator);
+                if (result.Error()) return result;
+                result = codeGenerator.Emit(leaPtrInst);
+                if (result.Error()) return result;
+                assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+                leaInst->AddOperand(resultReg);
+                assembly.Value* value = assemblyContext->MakeContent(assemblyContext->MakeBinaryExpr(rbx, rcx, assembly.Operator.add));
+                Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(8, value);
+                if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+                leaInst->AddOperand(sizePrefix.Value());
+                result = codeGenerator.Emit(leaInst);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                codeGenerator.Error("error emitting elemaddr instruction: reg group for inst not found");
+                return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+            }
+        }
+        else
+        {
+            codeGenerator.Error("error emitting elemaddr: invalid elemaddr kind");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitPtrOffset(PtrOffsetInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbx);
+        if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+        assembly.Register* rbx = rbxResult.Value();
+        Result<assembly.Register*> offsetRegResult = MakeIntegerRegOperand(inst.Offset(), rbx, codeGenerator);
+        if (offsetRegResult.Error()) return Result<bool>(ErrorId(offsetRegResult.GetErrorId()));
+        assembly.Register* offsetReg = offsetRegResult.Value();
+        Result<long> offsetFactorResult = GetPointeeSize(inst.Ptr()->GetType(), codeGenerator);
+        if (offsetFactorResult.Error()) return Result<bool>(ErrorId(offsetFactorResult.GetErrorId()));
+        long offsetFactor = offsetFactorResult.Value();
+        assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+        Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rax);
+        if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+        assembly.Register* rax = raxResult.Value();
+        movInst->AddOperand(rax);
+        Result<assembly.IntegerLiteral*> literalResult = assemblyContext->MakeIntegerLiteral(offsetFactor, 8);
+        if (literalResult.Error()) return Result<bool>(ErrorId(literalResult.GetErrorId()));
+        movInst->AddOperand(literalResult.Value());
+        Result<bool> result = codeGenerator.Emit(movInst);
+        if (result.Error()) return result;
+        assembly.Instruction* mulInst = new assembly.Instruction(assembly.OpCode.MUL);
+        mulInst->AddOperand(offsetReg);
+        result = codeGenerator.Emit(mulInst);
+        if (result.Error()) return result;
+        Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rcx);
+        if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+        assembly.Register* rcx = rcxResult.Value();
+        Result<assembly.Register*> ptrRegResult = MakeIntegerRegOperand(inst.Ptr(), rcx, codeGenerator);
+        if (ptrRegResult.Error()) return Result<bool>(ErrorId(ptrRegResult.GetErrorId()));
+        assembly.Register* ptrReg = ptrRegResult.Value();
+        assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Register* resultReg = regGroup->GetReg(8);
+            leaInst->AddOperand(resultReg);
+            Result<assembly.Value*> sizePrefix = assemblyContext->MakeSizePrefix(8,
+                assemblyContext->MakeContent(assemblyContext->MakeBinaryExpr(rax, ptrReg, assembly.Operator.add)));
+            if (sizePrefix.Error()) return Result<bool>(ErrorId(sizePrefix.GetErrorId()));
+            leaInst->AddOperand(sizePrefix.Value());
+            result = codeGenerator.Emit(leaInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting ptroffset instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> EmitPtrDiff(PtrDiffInstruction& inst, CodeGenerator& codeGenerator)
+    {
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        Result<long> scaleFactorResult = GetPointeeSize(inst.LeftPtr()->GetType(), codeGenerator);
+        if (scaleFactorResult.Error()) return Result<bool>(ErrorId(scaleFactorResult.GetErrorId()));
+        long scaleFactor = scaleFactorResult.Value();
+        assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+        Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rcx);
+        if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+        assembly.Register* rcx = rcxResult.Value();
+        movInst->AddOperand(rcx);
+        Result<assembly.IntegerLiteral*> literalResult = assemblyContext->MakeIntegerLiteral(scaleFactor, 8);
+        movInst->AddOperand(literalResult.Value());
+        Result<bool> result = codeGenerator.Emit(movInst);
+        if (result.Error()) return result;
+        assembly.Instruction* subInst = new assembly.Instruction(assembly.OpCode.SUB);
+        assembly.RegisterGroup* regGroup = codeGenerator.RegAllocator()->GetRegisterGroup(&inst);
+        if (regGroup != null)
+        {
+            assembly.Register* resultReg = regGroup->GetReg(8);
+            Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rax);
+            if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+            assembly.Register* rax = raxResult.Value();
+            Result<assembly.Register*> leftRegResult = MakeIntegerRegOperand(inst.LeftPtr(), rax, codeGenerator);
+            if (leftRegResult.Error()) return Result<bool>(ErrorId(leftRegResult.GetErrorId()));
+            assembly.Register* leftReg = leftRegResult.Value();
+            subInst->AddOperand(leftReg);
+            Result<assembly.Register*> rbxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbx);
+            if (rbxResult.Error()) return Result<bool>(ErrorId(rbxResult.GetErrorId()));
+            assembly.Register* rbx = rbxResult.Value();
+            Result<assembly.Register*> rightRegResult = MakeIntegerRegOperand(inst.RightPtr(), rbx, codeGenerator);
+            if (rightRegResult.Error()) return Result<bool>(ErrorId(rightRegResult.GetErrorId()));
+            assembly.Register* rightReg = rightRegResult.Value();
+            subInst->AddOperand(rightReg);
+            result = codeGenerator.Emit(subInst);
+            if (result.Error()) return result;
+            Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rdx);
+            if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+            assembly.Register* rdx = rdxResult.Value();
+            assembly.Instruction* xorInst = new assembly.Instruction(assembly.OpCode.XOR);
+            xorInst->AddOperand(rdx);
+            xorInst->AddOperand(rdx);
+            result = codeGenerator.Emit(xorInst);
+            if (result.Error()) return result;
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(rax);
+            movInst->AddOperand(leftReg);
+            result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+            assembly.Instruction* divInst = new assembly.Instruction(assembly.OpCode.DIV);
+            divInst->AddOperand(rcx);
+            result = codeGenerator.Emit(divInst);
+            if (result.Error()) return result;
+            assembly.Instruction* movResultInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movResultInst->AddOperand(resultReg);
+            movResultInst->AddOperand(rax);
+            result = codeGenerator.Emit(movResultInst);
+            if (result.Error()) return result;
+        }
+        else
+        {
+            codeGenerator.Error("error emitting ptrdiff instruction: reg group for inst not found");
+            return Result<bool>(ErrorId(codeGenerator.GetErrorId()));
+        }
+        return Result<bool>(true);
+    }
+}
+
+

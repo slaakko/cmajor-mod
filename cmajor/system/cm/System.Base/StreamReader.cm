@@ -1,0 +1,186 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.IO
+{
+    public class StreamReader : IOBase
+    {
+        public StreamReader() : base(), stream(null), buffered(false), eos(false)
+        {
+        }
+        public StreamReader(Stream* stream_) : base(), stream(stream_), buffered(false), eos(false)
+        {
+            if (stream != null && stream->Error())
+            {
+                SetErrorId(stream->GetErrorId());
+            }
+        }
+        suppress StreamReader(const StreamReader&);
+        suppress void operator=(const StreamReader&);
+        public override ~StreamReader()
+        {
+            long n = streams.Count();
+            for (long i = n - 1; i >= 0; --i)
+            {
+                streams[i].Reset();
+            }
+        }
+        public Stream* GetStream()
+        {
+            return stream;
+        }
+        public void SetStream(Stream* stream_)
+        {
+            stream = stream_;
+            if (stream != null && stream->Error())
+            {
+                SetErrorId(stream->GetErrorId());
+            }
+        }
+        public void Own(Stream* strm)
+        {
+            streams.Add(UniquePtr<Stream>(strm));
+        }
+        [nodiscard]
+        public Result<int> Read()
+        {
+            auto x = Get(false);
+            if (x.Error())
+            {
+                return Result<int>(ErrorId(x.GetErrorId()));
+            }
+            eos = x.Value() == -1;
+            return Result<int>(x.Value());
+        }
+        [nodiscard]
+        public Result<int> Peek()
+        {
+            auto x = Get(true);
+            if (x.Error())
+            {
+                return Result<int>(ErrorId(x.GetErrorId()));
+            }
+            eos = x.Value() == -1;
+            return Result<int>(x.Value());
+        }
+        [nodiscard]
+        public Result<string> ReadLine()
+        {
+            string result;
+            auto x = Read();
+            if (x.Error())
+            {
+                return Result<string>(ErrorId(x.GetErrorId()));
+            }
+            bool prevWasCR = false;
+            while (x.Value() != -1)
+            {
+                if (cast<char>(x.Value()) == '\r')
+                {
+                    if (prevWasCR)
+                    {
+                        result.Append('\r');
+                    }
+                    prevWasCR = true;
+                }
+                else if (cast<char>(x.Value()) == '\n')
+                {
+                    return Result<string>(result);
+                }
+                else
+                {
+                    if (prevWasCR)
+                    {
+                        result.Append('\r');
+                        prevWasCR = false;
+                    }
+                    result.Append(cast<char>(x.Value()));
+                }
+                x = Read();
+                if (x.Error())
+                {
+                    return Result<string>(ErrorId(x.GetErrorId()));
+                }
+            }
+            eos = true;
+            if (prevWasCR)
+            {
+                result.Append('\r');
+            }
+            return Result<string>(result);
+        }
+        [nodiscard]
+        public Result<string> ReadToEnd()
+        {
+            string result;
+            auto x = Read();
+            if (x.Error())
+            {
+                return Result<string>(ErrorId(x.GetErrorId()));
+            }
+            while (x.Value() != -1)
+            {
+                result.Append(cast<char>(x.Value()));
+                x = Read();
+                if (x.Error())
+                {
+                    return Result<string>(ErrorId(x.GetErrorId()));
+                }
+            }
+            eos = true;
+            return Result<string>(result);
+        }
+        public void PutBack(byte b)
+        {
+            buffered = true;
+            buffer = b;
+        }
+        [nodiscard]
+        private Result<int> Get(bool peek)
+        {
+            if (buffered)
+            {
+                if (!peek)
+                {
+                    buffered = false;
+                }
+                return Result<int>(buffer);
+            }
+            else
+            {
+                if (stream == null)
+                {
+                    int errorId = RtmAllocateError("StreamReader.Get: stream is null");
+                    SetErrorId(errorId);
+                    return Result<int>(ErrorId(errorId));
+                }
+                auto x = stream->ReadByte();
+                if (x.Error())
+                {
+                    SetErrorId(x.GetErrorId());
+                    return Result<int>(ErrorId(x.GetErrorId()));
+                }
+                if (peek)
+                {
+                    buffer = x.Value();
+                    buffered = true;
+                }
+                return Result<int>(x.Value());
+            }
+        }
+        public inline bool EndOfStream() const
+        {
+            return eos;
+        }
+        private Stream* stream;
+        private List<UniquePtr<Stream>> streams;
+        private bool buffered;
+        private int buffer;
+        private bool eos;
+    }
+}

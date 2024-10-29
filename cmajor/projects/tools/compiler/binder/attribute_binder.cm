@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class AttributeBinder
+    {
+        public AttributeBinder(Module* module_) : module(module_)
+        {
+        }
+        [nodiscard]
+        public Result<bool> BindAttributes(AttributesNode* attrs, Symbol* symbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> GenerateImplementation(AttributesNode* attrs, Symbol* symbol, StatementBinder* statementBinder)
+        {
+            // todo
+            return Result<bool>(true);
+        }
+        private Module* module;
+    }
+}
+

@@ -1,0 +1,695 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+
+namespace symbols
+{
+    public abstract class EmittingDelegate
+    {
+        public EmittingDelegate()
+        {
+        }
+        public default virtual ~EmittingDelegate();
+        public abstract int Install(const string& str);
+        public abstract int Install(const wstring& str);
+        public abstract int Install(const ustring& str);
+        public abstract intermediate.Value* GetGlobalStringValue(int stringId);
+        public abstract Result<intermediate.Value*> GetGlobalWStringValue(int stringId);
+        public abstract Result<intermediate.Value*> GetGlobalUStringValue(int stringId);
+    }
+
+    public class Emitter
+    {
+        public Emitter(SymbolsContext& symbolsContext_, EmittingDelegate* emittingDelegate_) :
+            symbolsContext(symbolsContext_), emittingDelegate(emittingDelegate_)
+        {
+        }
+        public inline ValueStack& Stack()
+        {
+            return stack;
+        }
+        public inline void SetCompileUnitId(const string& compileUnitId)
+        {
+            context.GetCompileUnit()->SetId(compileUnitId);
+        }
+        public inline int Install(const string& str)
+        {
+            return emittingDelegate->Install(str);
+        }
+        public inline int Install(const wstring& str)
+        {
+            return emittingDelegate->Install(str);
+        }
+        public inline int Install(const ustring& str)
+        {
+            return emittingDelegate->Install(str);
+        }
+        public inline intermediate.Value* GetGlobalStringValue(int stringId)
+        {
+            return emittingDelegate->GetGlobalStringValue(stringId);
+        }
+        public inline Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
+        {
+            return emittingDelegate->GetGlobalWStringValue(stringId);
+        }
+        public inline Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
+        {
+            return emittingDelegate->GetGlobalUStringValue(stringId);
+        }
+        public inline intermediate.Value* CreateGlobalStringValue(const string& stringValue)
+        {
+            return context.GetData()->CreateGlobalStringValue(stringValue);
+        }
+        public inline Result<intermediate.Value*> CreateGlobalWStringValue(const wstring& wstringValue)
+        {
+            Result<intermediate.GlobalVariable*> globalVariableResult = context.GetData()->CreateGlobalWStringValue(wstringValue);
+            if (globalVariableResult.Error()) return Result<intermediate.Value*>(ErrorId(globalVariableResult.GetErrorId()));
+            return Result<intermediate.Value*>(globalVariableResult.Value());
+        }
+        public inline Result<intermediate.Value*> CreateGlobalUStringValue(const ustring& ustringValue)
+        {
+            Result<intermediate.GlobalVariable*> globalVariableResult = context.GetData()->CreateGlobalUStringValue(ustringValue);
+            if (globalVariableResult.Error()) return Result<intermediate.Value*>(ErrorId(globalVariableResult.GetErrorId()));
+            return Result<intermediate.Value*>(globalVariableResult.Value());
+        }
+        public inline void SetFilePath(const string& filePath)
+        {
+            context.GetCompileUnit()->SetFilePath(filePath);
+        }
+        public inline void SetCurrentFunction(intermediate.Function* function)
+        {
+            context.SetCurrentFunction(function);
+        }
+        public inline void SetCurrentLineNumber(int lineNumber)
+        {
+            context.SetCurrentSourceLineNumber(lineNumber);
+        }
+        [nodiscard]
+        public Result<bool> WriteIntermediateCode()
+        {
+            Result<bool> result = context.GetCompileUnit()->Write();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline intermediate.Type* GetBoolType() const
+        {
+            return context.GetTypes()->GetBoolType();
+        }
+        public inline intermediate.Type* GetSByteType() const
+        {
+            return context.GetTypes()->GetSByteType();
+        }
+        public inline intermediate.Type* GetByteType() const
+        {
+            return context.GetTypes()->GetByteType();
+        }
+        public inline intermediate.Type* GetShortType() const
+        {
+            return context.GetTypes()->GetShortType();
+        }
+        public inline intermediate.Type* GetUShortType() const
+        {
+            return context.GetTypes()->GetUShortType();
+        }
+        public inline intermediate.Type* GetIntType() const
+        {
+            return context.GetTypes()->GetIntType();
+        }
+        public inline intermediate.Type* GetUIntType() const
+        {
+            return context.GetTypes()->GetUIntType();
+        }
+        public inline intermediate.Type* GetLongType() const
+        {
+            return context.GetTypes()->GetLongType();
+        }
+        public inline intermediate.Type* GetULongType() const
+        {
+            return context.GetTypes()->GetULongType();
+        }
+        public inline intermediate.Type* GetFloatType() const
+        {
+            return context.GetTypes()->GetFloatType();
+        }
+        public inline intermediate.Type* GetDoubleType() const
+        {
+            return context.GetTypes()->GetDoubleType();
+        }
+        public inline intermediate.Type* GetVoidType() const
+        {
+            return context.GetTypes()->GetVoidType();
+        }
+        public inline intermediate.PointerType* GetVoidPtrType() const
+        {
+            return context.GetTypes()->GetVoidPtrType();
+        }
+        public inline Result<intermediate.Type*> GetPointerType(intermediate.Type* baseType)
+        {
+            return baseType->AddPointer(&context);
+        }
+        public inline Result<intermediate.ArrayType*> GetArrayType(intermediate.Type* elementType, long elementCount)
+        {
+            return context.GetTypes()->GetArrayType(System.Lex.Span(), elementType, elementCount);
+        }
+        public inline Result<intermediate.StructureType*> GetStructureType(const List<intermediate.Type*>& memberTypes)
+        {
+            return context.GetTypes()->GetStructureType(System.Lex.Span(), memberTypes);
+        }
+        public inline Result<intermediate.StructureType*> CreateForwardDeclaredStructureType()
+        {
+            return context.GetTypes()->CreateStructureType();
+        }
+        public inline void SetStructureTypeBody(intermediate.StructureType* structureType, const List<intermediate.Type*>& memberTypes)
+        {
+            context.GetTypes()->SetStructureTypeBody(structureType, memberTypes);
+        }
+        public Result<intermediate.FunctionType*> GetFunctionType(FunctionSymbol* functionSymbol)
+        {
+            auto it = functionTypeMap.Find(functionSymbol);
+            if (it != functionTypeMap.End())
+            {
+                return Result<intermediate.FunctionType*>(it->second);
+            }
+            else
+            {
+                intermediate.Type* irReturnType = GetVoidType();
+                TypeSymbol* returnType = functionSymbol->ReturnType();
+                if (returnType != null && !returnType->IsVoidTypeSymbol() && !functionSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+                {
+                    Result<intermediate.Type*> irTypeResult = returnType->IrType(*this);
+                    if (irTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(irTypeResult.GetErrorId()));
+                    irReturnType = irTypeResult.Value();
+                }
+                List<intermediate.Type*> irParamTypes;
+                for (ParameterSymbol* parameter : functionSymbol->Parameters())
+                {
+                    TypeSymbol* paramType = parameter->Type();
+                    if (paramType->IsClassTypeSymbol() || paramType->IsClassDelegateTypeSymbol() || paramType->IsInterfaceTypeSymbol())
+                    {
+                        LockGuard<RecursiveMutex> lock(symbolsContext.RootModule()->Lock());
+                        paramType = paramType->AddConst(symbolsContext)->AddLvalueReference(symbolsContext);
+                    }
+                    Result<intermediate.Type*> paramIrTypeResult = paramType->IrType(*this);
+                    if (paramIrTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(paramIrTypeResult.GetErrorId()));
+                    intermediate.Type* paramIrType = paramIrTypeResult.Value();
+                    irParamTypes.Add(paramIrType);
+                }
+                if (functionSymbol->ReturnParam() != null)
+                {
+                    Result<intermediate.Type*> returnParamIrTypeResult = functionSymbol->ReturnParam()->Type()->IrType(*this);
+                    if (returnParamIrTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(returnParamIrTypeResult.GetErrorId()));
+                    intermediate.Type* returnParamIrType = returnParamIrTypeResult.Value();
+                    irParamTypes.Add(returnParamIrType);
+                }
+                Result<intermediate.FunctionType*> functionTypeResult = context.GetTypes()->GetFunctionType(System.Lex.Span(), irReturnType, irParamTypes);
+                if (functionTypeResult.Error()) return functionTypeResult;
+                intermediate.FunctionType* functionType = functionTypeResult.Value();
+                functionTypeMap[functionSymbol] = functionType;
+                return Result<intermediate.FunctionType*>(functionType);
+            }
+        }
+        public Result<intermediate.FunctionType*> GetFunctionType(DelegateTypeSymbol* delegateTypeSymbol)
+        {
+            auto it = functionTypeMap.Find(delegateTypeSymbol);
+            if (it != functionTypeMap.End())
+            {
+                return Result<intermediate.FunctionType*>(it->second);
+            }
+            else
+            {
+                intermediate.Type* irReturnType = GetVoidType();
+                TypeSymbol* returnType = delegateTypeSymbol->ReturnType();
+                if (!returnType->IsVoidTypeSymbol() && !delegateTypeSymbol->ReturnsClassInterfaceOrClassDelegateByValue())
+                {
+                    Result<intermediate.Type*> irReturnTypeResult = returnType->IrType(*this);
+                    if (irReturnTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(irReturnTypeResult.GetErrorId()));
+                    irReturnType = irReturnTypeResult.Value();
+                }
+                List<intermediate.Type*> irParamTypes;
+                for (ParameterSymbol* parameter : delegateTypeSymbol->Parameters())
+                {
+                    TypeSymbol* paramType = parameter->Type();
+                    if (paramType->IsClassTypeSymbol() || paramType->IsClassDelegateTypeSymbol() || paramType->IsInterfaceTypeSymbol())
+                    {
+                        LockGuard<RecursiveMutex> lock(symbolsContext.RootModule()->Lock());
+                        paramType = paramType->AddConst(symbolsContext)->AddLvalueReference(symbolsContext);
+                    }
+                    Result<intermediate.Type*> paramIrTypeResult = paramType->IrType(*this);
+                    if (paramIrTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(paramIrTypeResult.GetErrorId()));
+                    intermediate.Type* paramIrType = paramIrTypeResult.Value();
+                    irParamTypes.Add(paramIrType);
+                }
+                if (delegateTypeSymbol->ReturnParam() != null)
+                {
+                    Result<intermediate.Type*> returnParamIrTypeResult = delegateTypeSymbol->ReturnParam()->Type()->IrType(*this);
+                    if (returnParamIrTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(returnParamIrTypeResult.GetErrorId()));
+                    intermediate.Type* returnParamIrType = returnParamIrTypeResult.Value();
+                    irParamTypes.Add(returnParamIrType);
+                }
+                Result<intermediate.FunctionType*> functionTypeResult = context.GetTypes()->GetFunctionType(System.Lex.Span(), irReturnType, irParamTypes);
+                if (functionTypeResult.Error()) return functionTypeResult;
+                intermediate.FunctionType* functionType = functionTypeResult.Value();
+                functionTypeMap[delegateTypeSymbol] = functionType;
+                return Result<intermediate.FunctionType*>(functionType);
+            }
+        }
+        public Result<intermediate.StructureType*> GetClassDelegateType(ClassDelegateTypeSymbol* classDelegateTypeSymbol)
+        {
+            auto it = classDelegateTypeMap.Find(classDelegateTypeSymbol);
+            if (it != classDelegateTypeMap.End())
+            {
+                return Result<intermediate.StructureType*>(it->second);
+            }
+            else
+            {
+                List<intermediate.Type*> elementTypes;
+                elementTypes.Add(GetVoidPtrType());
+                Result<intermediate.FunctionType*> functionTypeResult = GetFunctionType(classDelegateTypeSymbol->DelegateType());
+                if (functionTypeResult.Error()) return Result<intermediate.StructureType*>(ErrorId(functionTypeResult.GetErrorId()));
+                intermediate.FunctionType* functionType = functionTypeResult.Value();
+                elementTypes.Add(functionType);
+                Result<intermediate.StructureType*> structureTypeResult = context.GetTypes()->GetStructureType(System.Lex.Span(), elementTypes);
+                if (structureTypeResult.Error()) return structureTypeResult;
+                intermediate.StructureType* structureType = structureTypeResult.Value();
+                classDelegateTypeMap[classDelegateTypeSymbol] = structureType;
+                return Result<intermediate.StructureType*>(structureType);
+            }
+        }
+        public inline Result<intermediate.Function*> GetOrInsertFunction(const string& name, intermediate.FunctionType* type)
+        {
+            return context.GetCode()->GetOrInsertFunction(name, type);
+        }
+        public inline intermediate.GlobalVariable* GetOrInsertGlobal(const string& name, intermediate.Type* type)
+        {
+            return context.GetData()->GetOrInsertGlobal(name, type);
+        }
+        public inline intermediate.Value* MakeSymbolValue(intermediate.Type* type, const string& symbol)
+        {
+            return context.GetData()->MakeSymbolValue(System.Lex.Span(), type, symbol);
+        }
+        public inline Result<intermediate.MetadataStruct*> CreateMetadataStruct()
+        {
+            return context.GetMetadata()->CreateMetadataStruct();
+        }
+        public inline intermediate.MetadataRef* CreateMetadataRef(int mdId)
+        {
+            return context.GetMetadata()->CreateMetadataRef(System.Lex.Span(), mdId);
+        }
+        public inline intermediate.MetadataString* CreateMetadataString(const string& value)
+        {
+            return context.GetMetadata()->CreateMetadataString(value);
+        }
+        public inline intermediate.MetadataBool* CreateMetadataBool(bool value)
+        {
+            return context.GetMetadata()->CreateMetadataBool(value);
+        }
+        public inline intermediate.MetadataLong* CreateMetadataLong(long value)
+        {
+            return context.GetMetadata()->CreateMetadataLong(value);
+        }
+        public inline intermediate.Value* MakeDefaultBool()
+        {
+            return context.GetDefaultBool();
+        }
+        public inline intermediate.Value* MakeDefaultSByte()
+        {
+            return context.GetDefaultSByte();
+        }
+        public inline intermediate.Value* MakeDefaultByte()
+        {
+            return context.GetDefaultByte();
+        }
+        public inline intermediate.Value* MakeDefaultShort()
+        {
+            return context.GetDefaultShort();
+        }
+        public inline intermediate.Value* MakeDefaultUShort()
+        {
+            return context.GetDefaultUShort();
+        }
+        public inline intermediate.Value* MakeDefaultInt()
+        {
+            return context.GetDefaultInt();
+        }
+        public inline intermediate.Value* MakeDefaultUInt()
+        {
+            return context.GetDefaultUInt();
+        }
+        public inline intermediate.Value* MakeDefaultLong()
+        {
+            return context.GetDefaultLong();
+        }
+        public inline intermediate.Value* MakeDefaultULong()
+        {
+            return context.GetDefaultULong();
+        }
+        public inline intermediate.Value* MakeDefaultFloat()
+        {
+            return context.GetDefaultFloat();
+        }
+        public inline intermediate.Value* MakeDefaultDouble()
+        {
+            return context.GetDefaultDouble();
+        }
+        public inline intermediate.Value* MakeDefaultChar()
+        {
+            return context.GetDefaultByte();
+        }
+        public inline intermediate.Value* MakeDefaultWChar()
+        {
+            return context.GetDefaultUShort();
+        }
+        public inline intermediate.Value* MakeDefaultUChar()
+        {
+            return context.GetDefaultUInt();
+        }
+        public inline intermediate.Value* GetBoolValue(bool value)
+        {
+            return context.GetData()->GetBoolValue(value);
+        }
+        public inline intermediate.Value* GetSByteValue(sbyte value)
+        {
+            return context.GetData()->GetSByteValue(value);
+        }
+        public inline intermediate.Value* GetByteValue(byte value)
+        {
+            return context.GetData()->GetByteValue(value);
+        }
+        public inline intermediate.Value* GetShortValue(short value)
+        {
+            return context.GetData()->GetShortValue(value);
+        }
+        public inline intermediate.Value* GetUShortValue(ushort value)
+        {
+            return context.GetData()->GetUShortValue(value);
+        }
+        public inline intermediate.Value* GetIntValue(int value)
+        {
+            return context.GetData()->GetIntValue(value);
+        }
+        public inline intermediate.Value* GetUIntValue(uint value)
+        {
+            return context.GetData()->GetUIntValue(value);
+        }
+        public inline intermediate.Value* GetLongValue(long value)
+        {
+            return context.GetData()->GetLongValue(value);
+        }
+        public inline intermediate.Value* GetULongValue(ulong value)
+        {
+            return context.GetData()->GetULongValue(value);
+        }
+        public inline intermediate.Value* GetFloatValue(float value)
+        {
+            return context.GetData()->GetFloatValue(value);
+        }
+        public inline intermediate.Value* GetDoubleValue(double value)
+        {
+            return context.GetData()->GetDoubleValue(value);
+        }
+        public inline intermediate.Value* GetNullValue(intermediate.PointerType* pointerType)
+        {
+            return pointerType->DefaultValue();
+        }
+        public inline intermediate.Value* GetArrayValue(const List<intermediate.Value*>& elementValues, intermediate.ArrayType* arrayType)
+        {
+            return context.GetData()->MakeArrayValue(System.Lex.Span(), elementValues, arrayType);
+        }
+        public inline intermediate.Value* GetStructureValue(const List<intermediate.Value*>& fieldValues, intermediate.StructureType* structureType)
+        {
+            return context.GetData()->MakeStructureValue(System.Lex.Span(), fieldValues, structureType);
+        }
+        public intermediate.Value* GetConversionValue(intermediate.Type* targetType, intermediate.Value* from)
+        {
+            return context.GetData()->MakeConversionValue(targetType, from);
+        }
+        public inline Result<intermediate.Value*> CreateLocal(intermediate.Type* type)
+        {
+            return context.CreateLocal(type);
+        }
+        public inline Result<intermediate.Value*> CreateLoad(intermediate.Value* value)
+        {
+            return context.CreateLoad(value);
+        }
+        public inline Result<bool> CreateStore(intermediate.Value* value, intermediate.Value* ptr)
+        {
+            return context.CreateStore(value, ptr);
+        }
+        public inline Result<intermediate.Value*> CreateRet(intermediate.Value* value)
+        {
+            return context.CreateRet(value);
+        }
+        public inline Result<intermediate.Value*> CreateRetVoid()
+        {
+            return context.CreateRet(null);
+        }
+        public inline Result<intermediate.Value*> CreateSignExtension(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateSignExtension(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateZeroExtension(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateZeroExtension(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateFloatingPointExtension(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateFloatingPointExtension(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateTruncation(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateTruncation(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateBitcast(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateBitcast(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateIntToFloat(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateIntToFloat(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateFloatToInt(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateFloatToInt(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateIntToPtr(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreateIntToPtr(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreatePtrToInt(intermediate.Value* operand, intermediate.Type* destinationType)
+        {
+            return context.CreatePtrToInt(operand, destinationType);
+        }
+        public inline Result<intermediate.Value*> CreateNot(intermediate.Value* operand)
+        {
+            return context.CreateNot(operand);
+        }
+        public inline Result<intermediate.Value*> CreateNeg(intermediate.Value* operand)
+        {
+            return context.CreateNeg(operand);
+        }
+        public inline Result<intermediate.Value*> CreateAdd(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateAdd(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateSub(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateSub(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateMul(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateMul(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateDiv(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateDiv(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateMod(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateMod(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateAnd(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateAnd(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateOr(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateOr(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateXor(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateXor(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateShl(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateShl(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateShr(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateShr(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateEqual(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateEqual(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateLess(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreateLess(left, right);
+        }
+        public inline Result<intermediate.Value*> CreateCall(intermediate.FunctionType* functionType, intermediate.Value* callee, const List<intermediate.Value*>& args)
+        {
+            return context.CreateCall(functionType, callee, args);
+        }
+        public inline Result<bool> CreateBranch(intermediate.Value* cond, intermediate.BasicBlock* trueBlock, intermediate.BasicBlock* falseBlock)
+        {
+            return context.CreateBranch(cond, trueBlock, falseBlock);
+        }
+        public inline Result<bool> CreateJump(intermediate.BasicBlock* dest)
+        {
+            return context.CreateJump(dest);
+        }
+        public inline Result<intermediate.Value*> CreatePtrOffset(intermediate.Value* ptr, intermediate.Value* offset)
+        {
+            return context.CreatePtrOffset(ptr, offset);
+        }
+        public inline Result<intermediate.Value*> CreatePtrDiff(intermediate.Value* left, intermediate.Value* right)
+        {
+            return context.CreatePtrDiff(left, right);
+        }
+        public inline Result<intermediate.SwitchInstruction*> CreateSwitch(intermediate.Value* condition, intermediate.BasicBlock* defaultDest)
+        {
+            return context.CreateSwitch(condition, defaultDest);
+        }
+        public inline Result<bool> CreateNop()
+        {
+            return context.CreateNop();
+        }
+        public inline Result<intermediate.Value*> GetMemberVariablePtr(intermediate.Value* classPtr, int layoutIndex)
+        {
+            return context.CreateElemAddr(classPtr, context.GetData()->GetLongValue(layoutIndex));
+        }
+        public inline Result<intermediate.Value*> GetObjectFromClassDelegate(intermediate.Value* classDelegatePtr)
+        {
+            return context.CreateElemAddr(classDelegatePtr, context.GetData()->GetLongValue(0));
+        }
+        public inline Result<intermediate.Value*> GetDelegateFromClassDelegate(intermediate.Value* classDelegatePtr)
+        {
+            return context.CreateElemAddr(classDelegatePtr, context.GetData()->GetLongValue(1));
+        }
+        public inline Result<intermediate.Value*> GetArrayBeginAddress(intermediate.Value* arrayPtr)
+        {
+            return context.CreateElemAddr(arrayPtr, context.GetData()->GetLongValue(0));
+        }
+        public inline Result<intermediate.Value*> GetArrayEndAddress(intermediate.Value* arrayPtr, long size)
+        {
+            return context.CreateElemAddr(arrayPtr, context.GetData()->GetLongValue(size));
+        }
+        public inline Result<intermediate.Value*> CreateArrayIndexAddress(intermediate.Value* arrayPtr, intermediate.Value* index)
+        {
+            return context.CreateElemAddr(arrayPtr, index);
+        }
+        public Result<intermediate.Value*> GetVmtPtr(intermediate.Value* thisPtr, int vmtPtrIndex, intermediate.Type* vmtPtrType)
+        {
+            Result<intermediate.Value*> vmtPtrPtrResult = context.CreateElemAddr(thisPtr, context.GetData()->GetLongValue(vmtPtrIndex));
+            if (vmtPtrPtrResult.Error()) return vmtPtrPtrResult;
+            intermediate.Value* vmtPtrPtr = vmtPtrPtrResult.Value();
+            Result<intermediate.Value*> loadResult = context.CreateLoad(vmtPtrPtr);
+            if (loadResult.Error()) return loadResult;
+            intermediate.Value* vmtPtr = loadResult.Value();
+            return context.CreateBitcast(vmtPtr, vmtPtrType);
+        }
+        public Result<intermediate.Value*> GetMethodPtr(intermediate.Value* vmtPtr, int methodIndex)
+        {
+            Result<intermediate.Value*> methodPtrPtrResult = context.CreateElemAddr(vmtPtr, context.GetData()->GetLongValue(methodIndex));
+            if (methodPtrPtrResult.Error()) return methodPtrPtrResult;
+            return context.CreateLoad(methodPtrPtrResult.Value());
+        }
+        public inline Result<intermediate.Value*> GetClassIdPtr(intermediate.Value* vmtPtr)
+        {
+            return context.CreateElemAddr(vmtPtr, context.GetData()->GetLongValue(0));
+        }
+        public Result<intermediate.Value*> SizeOf(intermediate.PointerType* pointerType)
+        {
+            intermediate.Value* nullPtr = pointerType->DefaultValue();
+            Result<intermediate.Value*> oneResult = context.CreatePtrOffset(nullPtr, context.GetData()->GetLongValue(1));
+            if (oneResult.Error()) return Result<intermediate.Value*>(ErrorId(oneResult.GetErrorId()));
+            intermediate.Value* one = oneResult.Value();
+            Result<intermediate.Value*> sizeResult = context.CreatePtrToInt(one, context.GetTypes()->GetLongType());
+            return sizeResult;
+        }
+        public inline intermediate.BasicBlock* CreateBasicBlock()
+        {
+            return context.CreateBasicBlock();
+        }
+        public inline void SetCurrentBasicBlock(intermediate.BasicBlock* basicBlock)
+        {
+            context.SetCurrentBasicBlock(basicBlock);
+        }
+        public inline SymbolsContext& GetSymbolsContext()
+        {
+            return symbolsContext;
+        }
+        public Result<intermediate.Value*> GetIrObject(Symbol* symbol) const
+        {
+            auto it = irObjectMap.Find(symbol);
+            if (it != irObjectMap.End())
+            {
+                return Result<intermediate.Value*>(it->second);
+            }
+            else
+            {
+                int errorId = MakeError("IR object not found", symbol->FullSpan());
+                return Result<intermediate.Value*>(ErrorId(errorId));
+            }
+        }
+        public void SetIrObject(Symbol* symbol, intermediate.Value* irObject)
+        {
+            irObjectMap[symbol] = irObject;
+        }
+        public void SaveObjectPointer(intermediate.Value* objectPointer_)
+        {
+            if (objectPointer == null)
+            {
+                objectPointer = objectPointer_;
+            }
+        }
+        public void SetObjectPointer(intermediate.Value* objectPointer_)
+        {
+            objectPointer = objectPointer_;
+        }
+        public inline intermediate.Value* ObjectPointer() const
+        {
+            return objectPointer;
+        }
+        public intermediate.Type* GetIrTypeByTypeId(const Uuid& typeId) const
+        {
+            auto it = irTypeMap.Find(typeId);
+            if (it != irTypeMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void SetIrTypeByTypeId(const Uuid& typeId, intermediate.Type* irType)
+        {
+            irTypeMap[typeId] = irType;
+        }
+        private intermediate.Context context;
+        private ValueStack stack;
+        private SymbolsContext& symbolsContext;
+        private intermediate.Function* currentFunction;
+        private Map<Symbol*, intermediate.Value*> irObjectMap;
+        private Map<Symbol*, intermediate.FunctionType*> functionTypeMap;
+        private Map<Uuid, intermediate.Type*> irTypeMap;
+        private Map<ClassDelegateTypeSymbol*, intermediate.StructureType*> classDelegateTypeMap;
+        private intermediate.Value* objectPointer;
+        private EmittingDelegate* emittingDelegate;
+    }
+}

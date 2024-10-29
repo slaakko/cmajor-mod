@@ -1,0 +1,183 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+
+namespace binder
+{
+    public enum BoundNodeKind : byte
+    {
+        boundCompileUnit, boundClass, boundFunction,
+        boundSequenceStatement, boundCompoundStatement, boundReturnStatement, boundIfStatement, boundWhileStatement, boundDoStatement, boundForStatement,
+        boundSwitchStatement, boundCaseStatement, boundDefaultStatement, boundGotoCaseStatement, boundGotoDefaultStatement, boundBreakStatement, boundContinueStatement,
+        boundGotoStatement, boundConstructionStatement, boundAssignmentStatement, boundExpressionStatement, boundInitializationStatement, boundEmptyStatement,
+        boundSetVmtPtrStatement,
+        boundParameter, boundLocalVariable, boundMemberVariable, boundConstant, boundEnumConstant, boundLiteral, boundTemporary, boundBitcast, boundFunctionPtr,
+        boundConstructAndReturnTemporary, boundClassOrClassDelegateConversionResult,
+        boundFunctionCall, boundDelegateCall, boundClassDelegateCall, boundConversion, boundSizeOfExpression, boundAddressOfExpression, boundDereferenceExpression,
+        boundReferenceToPointerExpression, boundConstructExpression, boundIsExpression, boundAsExpression, boundTypeNameExpression, boundTypeIdExpression,
+        boundDisjunction, boundConjunction, boundAtomicConstraint, boundDisjunctiveConstraint, boundConjunctiveConstraint, boundConcept,
+        boundTypeExpression, boundNamespaceExpression, boundFunctionGroupExpression, boundMemberExpression, boundNamespace, boundEnumTypeDefinition, boundGlobalVariable
+    }
+
+    public abstract class BoundNode : IrObject
+    {
+        public BoundNode(const System.Lex.Span& span_, BoundNodeKind kind_) : span(span_), kind(kind_), parent(null)
+        {
+        }
+        public abstract void Accept(BoundNodeVisitor& visitor);
+        public inline const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline BoundNodeKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsBoundCompoundStatement() const
+        {
+            return kind == BoundNodeKind.boundCompoundStatement;
+        }
+        public inline bool IsBoundBreakStatement() const
+        {
+            return kind == BoundNodeKind.boundBreakStatement;
+        }
+        public inline bool IsBoundReturnStatement() const
+        {
+            return kind == BoundNodeKind.boundReturnStatement;
+        }
+        public inline bool IsBoundSwitchStatement() const
+        {
+            return kind == BoundNodeKind.boundSwitchStatement;
+        }
+        public inline bool IsBoundWhileStatement() const
+        {
+            return kind == BoundNodeKind.boundWhileStatement;
+        }
+        public inline bool IsBoundDoStatement() const
+        {
+            return kind == BoundNodeKind.boundDoStatement;
+        }
+        public inline bool IsBoundForStatement() const
+        {
+            return kind == BoundNodeKind.boundForStatement;
+        }
+        public inline bool IsBoundIfStatement() const
+        {
+            return kind == BoundNodeKind.boundIfStatement;
+        }
+        public inline bool IsAddressOfExpression() const
+        {
+            return kind == BoundNodeKind.boundAddressOfExpression;
+        }
+        public inline bool IsDerefenceExpression() const
+        {
+            return kind == BoundNodeKind.boundDereferenceExpression;
+        }
+        public inline bool IsBoundLocalVariable() const
+        {
+            return kind == BoundNodeKind.boundLocalVariable;
+        }
+        public inline bool IsBoundMemberVariable() const
+        {
+            return kind == BoundNodeKind.boundMemberVariable;
+        }
+        public inline bool IsBoundConstant() const
+        {
+            return kind == BoundNodeKind.boundConstant;
+        }
+        public inline bool IsBoundLiteral() const
+        {
+            return kind == BoundNodeKind.boundLiteral;
+        }
+        public inline bool IsBoundCaseStatement() const
+        {
+            return kind == BoundNodeKind.boundCaseStatement;
+        }
+        public inline bool IsBoundDefaultStatement() const
+        {
+            return kind == BoundNodeKind.boundDefaultStatement;
+        }
+        public inline bool IsBoundTypeExpression() const
+        {
+            return kind == BoundNodeKind.boundTypeExpression;
+        }
+        public inline bool IsBoundNamespaceExpression() const
+        {
+            return kind == BoundNodeKind.boundNamespaceExpression;
+        }
+        public inline bool IsBoundFunctionGroupExpression() const
+        {
+            return kind == BoundNodeKind.boundFunctionGroupExpression;
+        }
+        public inline bool IsBoundMemberExpression() const
+        {
+            return kind == BoundNodeKind.boundMemberExpression;
+        }
+        public inline bool IsBoundFunctionCall() const
+        {
+            return kind == BoundNodeKind.boundFunctionCall;
+        }
+        public inline bool IsBoundAtomicConstraint() const
+        {
+            return kind == BoundNodeKind.boundAtomicConstraint;
+        }
+        public inline bool IsBoundConjunctiveConstraint() const
+        {
+            return kind == BoundNodeKind.boundConjunctiveConstraint;
+        }
+        public inline bool IsBoundDisjunctiveConstraint() const
+        {
+            return kind == BoundNodeKind.boundDisjunctiveConstraint;
+        }
+        public inline bool IsBoundBinaryConstraint() const
+        {
+            return kind == BoundNodeKind.boundDisjunctiveConstraint || kind == BoundNodeKind.boundConjunctiveConstraint;
+        }
+        public inline BoundNode* Parent() const
+        {
+            return parent;
+        }
+        public inline void SetParent(BoundNode* parent_)
+        {
+            parent = parent_;
+        }
+        public virtual bool IsBoundStatement() const
+        {
+            return false;
+        }
+        public System.Lex.FullSpan FullSpan() const
+        {
+            return System.Lex.FullSpan(ModuleId(), FileIndex(), span);
+        }
+        public virtual const Uuid& ModuleId() const
+        {
+            if (parent != null)
+            {
+                return parent->ModuleId();
+            }
+            else
+            {
+                return cm.ast.EmptyModuleId.Get();
+            }
+        }
+        public virtual int FileIndex() const
+        {
+            if (parent != null)
+            {
+                return parent->FileIndex();
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        private System.Lex.Span span;
+        private BoundNodeKind kind;
+        private BoundNode* parent;
+    }
+}
+

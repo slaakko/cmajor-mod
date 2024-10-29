@@ -1,0 +1,383 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public enum MetadataItemKind
+    {
+        metadataRef, metadataBool, metadataLong, metadataString, metadataStruct
+    }
+
+    public abstract class MetadataItem
+    {
+        public MetadataItem(MetadataItemKind kind_) : kind(kind_)
+        {
+        }
+        public default virtual ~MetadataItem();
+        public inline MetadataItemKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsMetadataRef() const
+        {
+            return kind == MetadataItemKind.metadataRef;
+        }
+        public inline bool IsMetadataBool() const
+        {
+            return kind == MetadataItemKind.metadataBool;
+        }
+        public inline bool IsMetadataLong() const
+        {
+            return kind == MetadataItemKind.metadataLong;
+        }
+        public inline bool IsMetadataString() const
+        {
+            return kind == MetadataItemKind.metadataString;
+        }
+        public inline bool IsMetadataStruct() const
+        {
+            return kind == MetadataItemKind.metadataStruct;
+        }
+        [nodiscard]
+        public abstract Result<bool> Write(System.Text.CodeFormatter& formatter);
+        private MetadataItemKind kind;
+    }
+
+    public class MetadataRef : MetadataItem
+    {
+        public MetadataRef(const System.Lex.Span& span_, int nodeId_) : base(MetadataItemKind.metadataRef), span(span_), nodeId(nodeId_), metadataStruct(null)
+        {
+        }
+        public inline const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline int NodeId() const
+        {
+            return nodeId;
+        }
+        public inline MetadataStruct* GetMetadataStruct() const
+        {
+            return metadataStruct;
+        }
+        public inline void SetMetadataStruct(MetadataStruct* metadataStruct_)
+        {
+            metadataStruct = metadataStruct_;
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.Write("!" + ToString(nodeId));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private System.Lex.Span span;
+        private int nodeId;
+        private MetadataStruct* metadataStruct;
+    }
+
+    public class MetadataBool : MetadataItem
+    {
+        public MetadataBool(bool value_) : base(MetadataItemKind.metadataBool), value(value_)
+        {
+        }
+        public inline bool GetValue() const
+        {
+            return value;
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (value)
+            {
+                Result<bool> result = formatter.Write("true");
+                if (result.Error()) return result;
+            }
+            else
+            {
+                Result<bool> result = formatter.Write("false");
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private bool value;
+    }
+
+    public class MetadataLong : MetadataItem
+    {
+        public MetadataLong(long value_) : base(MetadataItemKind.metadataLong), value(value_)
+        {
+        }
+        public inline long GetValue() const
+        {
+            return value;
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.Write(ToString(value));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private long value;
+    }
+
+    public class MetadataString : MetadataItem
+    {
+        public MetadataString(const string& value_) : base(MetadataItemKind.metadataString), value(value_)
+        {
+        }
+        public inline const string& GetValue() const
+        {
+            return value;
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<string> strResult = StringStr(value);
+            if (strResult.Error()) return Result<bool>(ErrorId(strResult.GetErrorId()));
+            string s = Rvalue(strResult.Value());
+            Result<bool> result = formatter.Write("\"" + s + "\"");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private string value;
+    }
+
+    public class MetadataStruct : MetadataItem
+    {
+        public MetadataStruct(const System.Lex.Span& span_, int id_) : base(MetadataItemKind.metadataStruct), span(span_), id(id_)
+        {
+        }
+        public inline const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public void AddItem(const string& fieldName, MetadataItem* item)
+        {
+            itemMap[fieldName] = item;
+        }
+        public MetadataItem* GetItem(const string& fieldName) const
+        {
+            auto it = itemMap.Find(fieldName);
+            if (it != itemMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.Write("!" + ToString(id));
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> WriteDefinition(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.Write("!" + ToString(id) + " = {");
+            if (result.Error()) return result;
+            bool first = true;
+            for (const auto& item : itemMap)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    result = formatter.Write(", ");
+                    if (result.Error()) return result;
+                }
+                result = formatter.Write(item.first);
+                if (result.Error()) return result;
+                result = formatter.Write(": ");
+                if (result.Error()) return result;
+                result = item.second->Write(formatter);
+                if (result.Error()) return result;
+            }
+            result = formatter.WriteLine("}");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private System.Lex.Span span;
+        private int id;
+        private Map<string, MetadataItem*> itemMap;
+    }
+
+    public class Metadata
+    {
+        public Metadata(Context* context_) : context(context_)
+        {
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (metadataNodes.IsEmpty()) return Result<bool>(false);
+            Result<bool> result = formatter.WriteLine();
+            if (result.Error()) return result;
+            result = formatter.WriteLine("metadata");
+            if (result.Error()) return result;
+            result = formatter.WriteLine("{");
+            if (result.Error()) return result;
+            formatter.IncIndent();
+            for (const auto& node : metadataNodes)
+            {
+                result = node->WriteDefinition(formatter);
+                if (result.Error()) return result;
+            }
+            formatter.DecIndent();
+            result = formatter.WriteLine("}");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public Result<MetadataStruct*> CreateMetadataStruct()
+        {
+            return AddMetadataStruct(System.Lex.Span(), cast<int>(metadataNodes.Count()));
+        }
+        public MetadataStruct* GetMetadataStruct(int id) const
+        {
+            auto it = metadataMap.Find(id);
+            if (it != metadataMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Result<MetadataStruct*> AddMetadataStruct(const System.Lex.Span& span, int id)
+        {
+            MetadataStruct* prev = GetMetadataStruct(id);
+            if (prev != null)
+            {
+                int errorId = Error("error adding metadata node: node id " + ToString(id) + " not unique", span, prev->Span(), context);
+                return Result<MetadataStruct*>(ErrorId(errorId));
+            }
+            MetadataStruct* metadataStruct = new MetadataStruct(span, id);
+            metadataNodes.Add(UniquePtr<MetadataStruct>(metadataStruct));
+            metadataMap[metadataStruct->Id()] = metadataStruct;
+            return Result<MetadataStruct*>(metadataStruct);
+        }
+        public MetadataBool* CreateMetadataBool(bool value)
+        {
+            if (value)
+            {
+                if (trueItem == null)
+                {
+                    trueItem = new MetadataBool(true);
+                    metadataItems.Add(UniquePtr<MetadataItem>(trueItem));
+                }
+                return trueItem;
+            }
+            else
+            {
+                if (falseItem == null)
+                {
+                    falseItem = new MetadataBool(false);
+                    metadataItems.Add(UniquePtr<MetadataItem>(falseItem));
+                }
+                return falseItem;
+            }
+        }
+        public MetadataLong* CreateMetadataLong(long value)
+        {
+            auto it = longItemMap.Find(value);
+            if (it != longItemMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                MetadataLong* metadataLong = new MetadataLong(value);
+                metadataItems.Add(UniquePtr<MetadataItem>(metadataLong));
+                longItemMap[value] = metadataLong;
+                return metadataLong;
+            }
+        }
+        public MetadataString* CreateMetadataString(const string& value)
+        {
+            return CreateMetadataString(value, false);
+        }
+        public MetadataString* CreateMetadataString(const string& value, bool crop)
+        {
+            string v = value;
+            if (crop)
+            {
+                v = value.Substring(1, value.Length() - 2);
+            }
+            auto it = stringItemMap.Find(v);
+            if (it != stringItemMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                MetadataString* metadataString = new MetadataString(v);
+                metadataItems.Add(UniquePtr<MetadataItem>(metadataString));
+                stringItemMap[v] = metadataString;
+                return metadataString;
+            }
+        }
+        public MetadataRef* CreateMetadataRef(const System.Lex.Span& span, int nodeId)
+        {
+            auto it = referenceMap.Find(nodeId);
+            if (it != referenceMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                MetadataRef* metadataRef = new MetadataRef(span, nodeId);
+                referenceMap[metadataRef->NodeId()] = metadataRef;
+                metadataItems.Add(UniquePtr<MetadataItem>(metadataRef));
+                metadataReferences.Add(metadataRef);
+                return metadataRef;
+            }
+        }
+        [nodiscard]
+        public Result<bool> ResolveReferences()
+        {
+            for (MetadataRef* metadataRef : metadataReferences)
+            {
+                int nodeId = metadataRef->NodeId();
+                MetadataStruct* metadataNode = GetMetadataStruct(nodeId);
+                if (metadataNode != null)
+                {
+                    metadataRef->SetMetadataStruct(metadataNode);
+                }
+                else
+                {
+                    int errorId = Error("error resolving metadata reference: node id " + ToString(nodeId) + " not found", metadataRef->Span(), context);
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        private Context* context;
+        private List<UniquePtr<MetadataStruct>> metadataNodes;
+        private List<UniquePtr<MetadataItem>> metadataItems;
+        private Map<int, MetadataStruct*> metadataMap;
+        private Map<long, MetadataLong*> longItemMap;
+        private Map<string, MetadataString*> stringItemMap;
+        private Map<int, MetadataRef*> referenceMap;
+        private List<MetadataRef*> metadataReferences;
+        private MetadataBool* trueItem;
+        private MetadataBool* falseItem;
+    }
+}
+

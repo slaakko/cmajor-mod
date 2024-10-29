@@ -11,6 +11,8 @@ import std.core;
 
 export namespace cmajor::build {
 
+std::recursive_mutex& GetResourceLock();
+
 void AddResources(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, std::vector<std::string>& objectFilePaths);
 
 void GenerateRuntimeResourceFile(cmajor::ast::Project* project, cmajor::symbols::Module* rootModule, 

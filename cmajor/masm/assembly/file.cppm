@@ -62,7 +62,6 @@ private:
     DeclarationSection declarationSection;
     DataSection dataSection;
     CodeSection codeSection;
-    std::vector<std::unique_ptr<Function>> functions;
 };
 
 } // cmajor::masm::assembly

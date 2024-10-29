@@ -1,0 +1,69 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public class CompileUnit
+    {
+        public CompileUnit(Context* context_) : context(context_), filePath()
+        {
+        }
+        public void SetFilePath(const string& filePath_)
+        {
+            filePath = filePath_;
+        }
+        public void SetId(const string& id_)
+        {
+            id = id_;
+        }
+        public inline const string& Id() const
+        {
+            return id;
+        }
+        [nodiscard]
+        public Result<bool> Write()
+        {
+            if (filePath.IsEmpty())
+            {
+                int errorId = AllocateError("file path is empty");
+                return Result<bool>(ErrorId(errorId));
+            }
+            Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(filePath);
+            if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+            System.Text.CodeFormatter formatter(writerResult.Value());
+            formatter.SetIndentSize(8);
+            Result<bool> result = context->GetTypes()->Write(formatter);
+            if (result.Error()) return result;
+            result = context->GetData()->Write(formatter);
+            if (result.Error()) return result;
+            bool first = true;
+            Function* fn = context->GetCode()->FirstFunction();
+            while (fn != null)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    Result<bool> result = formatter.WriteLine();
+                    if (result.Error()) return result;
+                }
+                Result<bool> result = fn->Write(formatter);
+                if (result.Error()) return result;
+                fn = fn->Next();
+            }
+            result = context->GetMetadata()->Write(formatter);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private Context* context;
+        private string filePath;
+        private string id;
+    }
+}

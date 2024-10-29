@@ -1,0 +1,535 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Threading;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    internal class InstantiationGuard
+    {
+        public InstantiationGuard(SymbolTable* symbolTable_, int fileIndex, const Uuid& moduleId) : symbolTable(symbolTable_)
+        {
+            symbolTable->PushInstantiatingTemplate();
+            symbolTable->PushCurrentFileIndex(fileIndex);
+            symbolTable->PushCurrentModuleId(moduleId);
+        }
+        public ~InstantiationGuard()
+        {
+            symbolTable->PopCurrentModuleId();
+            symbolTable->PopCurrentFileIndex();
+            symbolTable->PopInstantiatingTemplate();
+        }
+        private SymbolTable* symbolTable;
+    }
+
+    public class ClassTemplateRepository
+    {
+        public ClassTemplateRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        {
+        }
+        [nodiscard]
+        public Result<bool> ResolveDefaultTemplateArguments(List<TypeSymbol*>& templateArgumentTypes, ClassTypeSymbol* classTemplate, ContainerScope* containerScope, Node* node)
+        {
+            Result<bool> result = DoResolveDefaultTemplateArguments(templateArgumentTypes, classTemplate, containerScope, node);
+            if (result.Error())
+            {
+                Result<string> classTemplateFullNameResult = ToUtf8(classTemplate->FullName());
+                if (classTemplateFullNameResult.Error()) return Result<bool>(ErrorId(classTemplateFullNameResult.GetErrorId()));
+                string classTemplateFullName = Rvalue(classTemplateFullNameResult.Value());
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+                int errorId = MakeError("Could not resolve default template arguments of class template '" + classTemplateFullName + "': Reason:\n" + reasonMessage,
+                    node->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                return result;
+            }
+        }
+        [nodiscard]
+        public Result<bool> DoResolveDefaultTemplateArguments(List<TypeSymbol*>& templateArgumentTypes, ClassTypeSymbol* classTemplate, ContainerScope* containerScope, Node* node)
+        {
+            int n = cast<int>(classTemplate->TemplateParameters().Count());
+            int m = cast<int>(templateArgumentTypes.Count());
+            if (m == n) return Result<bool>(true);
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            Node* classTemplateNode = symbolTable->GetNode(classTemplate);
+            if (classTemplateNode == null)
+            {
+                classTemplateNode = classTemplate->GetClassNode();
+            }
+            #assert(classTemplateNode->IsClassNode());
+            ClassNode* classNode = cast<ClassNode*>(classTemplateNode);
+            int numFileScopeAdded = 0;
+            int nu = classTemplate->UsingNodes().Count();
+            if (nu > 0)
+            {
+                FileScope* fileScope = new FileScope();
+                for (int i = 0; i < nu; ++i)
+                {
+                    Node* usingNode = classTemplate->UsingNodes()[i];
+                    if (usingNode->IsNamespaceImportNode())
+                    {
+                        NamespaceImportNode* namespaceImportNode = cast<NamespaceImportNode*>(usingNode);
+                        auto installResult = fileScope->InstallNamespaceImport(containerScope, namespaceImportNode);
+                        if (installResult.Error()) return installResult;
+                    }
+                    else if (usingNode->IsAliasNode())
+                    {
+                        AliasNode* aliasNode = cast<AliasNode*>(usingNode);
+                        auto typeResult = ResolveType(aliasNode->TypeExpr(), boundCompileUnit, containerScope);
+                        if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                        TypeSymbol* type = typeResult.Value();
+                        fileScope->InstallAlias(aliasNode, type);
+                    }
+                }
+                boundCompileUnit->AddFileScope(fileScope);
+                ++numFileScopeAdded;
+            }
+            Result<NamespaceSymbol*> nsResult = classTemplate->Ns();
+            if (nsResult.Error()) return Result<bool>(ErrorId(nsResult.GetErrorId()));
+            NamespaceSymbol* ns = nsResult.Value();
+            if (!ns->IsGlobalNamespace())
+            {
+                FileScope* primaryFileScope = new FileScope();
+                primaryFileScope->AddContainerScope(ns->GetContainerScope());
+                boundCompileUnit->AddFileScope(primaryFileScope);
+                ++numFileScopeAdded;
+            }
+            ContainerScope resolveScope;
+            resolveScope.SetContainer(cast<ContainerSymbol*>(containerScope->Container()));
+            List<UniquePtr<BoundTemplateParameterSymbol>> boundTemplateParameters;
+            for (int i = 0; i < n; ++i)
+            {
+                TemplateParameterSymbol* templateParameterSymbol = classTemplate->TemplateParameters()[i];
+                BoundTemplateParameterSymbol* boundTemplateParameter = new BoundTemplateParameterSymbol(templateParameterSymbol->Span(), templateParameterSymbol->Name());
+                boundTemplateParameters.Add(UniquePtr<BoundTemplateParameterSymbol>(boundTemplateParameter));
+                if (i < m)
+                {
+                    boundTemplateParameter->SetType(templateArgumentTypes[i]);
+                    auto result = resolveScope.Install(boundTemplateParameter);
+                    if (result.Error()) return result;
+                }
+                else
+                {
+                    if (i >= classNode->TemplateParameters().Count())
+                    {
+                        int errorId = MakeError("too few template arguments", node->GetFullSpan());
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    Node* defaultTemplateArgumentNode = classNode->TemplateParameters()[i]->DefaultTemplateArgument();
+                    if (defaultTemplateArgumentNode == null)
+                    {
+                        int errorId = MakeError("too few template arguments", node->GetFullSpan());
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                    Result<TypeSymbol*> typeResult = ResolveType(defaultTemplateArgumentNode, boundCompileUnit, &resolveScope);
+                    if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                    TypeSymbol* templateArgumentType = typeResult.Value();
+                    templateArgumentTypes.Add(templateArgumentType);
+                }
+            }
+            for (int i = 0; i < numFileScopeAdded; ++i)
+            {
+                boundCompileUnit->RemoveLastFileScope();
+            }
+            return Result<bool>(true);
+        }
+
+        [nodiscard]
+        public Result<bool> BindClassTemplateSpecialization(ClassTemplateSpecializationSymbol* classTemplateSpecialization, ContainerScope* containerScope, Node* node)
+        {
+            Result<bool> result = DoBindClassTemplateSpecialization(classTemplateSpecialization, containerScope, node);
+            if (result.Error())
+            {
+                Result<string> specializationFullNameResult = ToUtf8(classTemplateSpecialization->FullName());
+                if (specializationFullNameResult.Error()) return Result<bool>(ErrorId(specializationFullNameResult.GetErrorId()));
+                string specializationFullName = Rvalue(specializationFullNameResult.Value());
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+                int errorId = MakeError("Could not bind class template specialization '" + specializationFullName + "': Reason:\n" + reasonMessage, node->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            else
+            {
+                return result;
+            }
+        }
+
+        [nodiscard]
+        public Result<bool> DoBindClassTemplateSpecialization(ClassTemplateSpecializationSymbol* classTemplateSpecialization, ContainerScope* containerScope, Node* node)
+        {
+            if (classTemplateSpecialization->IsBound()) return Result<bool>(true);
+            SymbolsContext& context = boundCompileUnit->Context();
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            ClassTypeSymbol* classTemplate = classTemplateSpecialization->ClassTemplate();
+            Node* classTemplateNode = symbolTable->GetNode(classTemplate);
+            if (classTemplateNode == null)
+            {
+                classTemplateNode = classTemplate->GetClassNode();
+            }
+            if (classTemplateNode == null)
+            {
+                int errorId = MakeError("class template node not found", node->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            #assert(classTemplateNode->IsClassNode());
+            ClassNode* classNode = cast<ClassNode*>(classTemplateNode);
+            UniquePtr<NamespaceNode> globalNs(new NamespaceNode(classNode->GetSpan(), classNode->FileIndex(),
+                new IdentifierNode(classNode->GetSpan(), classNode->FileIndex(), ustring())));
+            globalNs->SetModuleId(classTemplateSpecialization->ModuleId());
+            NamespaceNode* currentNs = globalNs.Get();
+            CloneContext cloneContext;
+            cloneContext.SetInstantiateClassNode();
+            int nu = cast<int>(classTemplate->UsingNodes().Count());
+            for (int i = 0; i < nu; ++i)
+            {
+                Node* usingNode = classTemplate->UsingNodes()[i];
+                globalNs->AddMember(usingNode->Clone(cloneContext));
+            }
+            bool fileScopeAdded = false;
+            Result<NamespaceSymbol*> nsResult = classTemplate->Ns();
+            if (nsResult.Error()) return Result<bool>(ErrorId(nsResult.GetErrorId()));
+            NamespaceSymbol* ns = nsResult.Value();
+            if (!ns->IsGlobalNamespace())
+            {
+                FileScope* primaryFileScope = new FileScope();
+                primaryFileScope->AddContainerScope(ns->GetContainerScope());
+                boundCompileUnit->AddFileScope(primaryFileScope);
+                fileScopeAdded = true;
+            }
+            ustring fullNsName = ns->FullName();
+            List<ustring> nsComponents = fullNsName.Split('.');
+            for (const ustring& nsComponent : nsComponents)
+            {
+                NamespaceNode* nsNode = new NamespaceNode(classNode->GetSpan(), classNode->FileIndex(),
+                    new IdentifierNode(classNode->GetSpan(), classNode->FileIndex(), nsComponent));
+                nsNode->SetModuleId(classTemplateSpecialization->ModuleId());
+                currentNs->AddMember(nsNode);
+                currentNs = nsNode;
+            }
+            ClassNode* classInstanceNode = cast<ClassNode*>(classNode->Clone(cloneContext));
+            currentNs->AddMember(classInstanceNode);
+            int n = cast<int>(classTemplate->TemplateParameters().Count());
+            int m = cast<int>(classTemplateSpecialization->TemplateArgumentTypes().Count());
+            if (n != m)
+            {
+                int errorId = MakeError("wrong number of template arguments", node->GetFullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            ContainerScope resolveScope;
+            resolveScope.SetContainer(cast<ContainerSymbol*>(containerScope->Container()));
+            for (int i = 0; i < n; ++i)
+            {
+                TemplateParameterSymbol* templateParameter = classTemplate->TemplateParameters()[i];
+                BoundTemplateParameterSymbol* boundTemplateParameter = new BoundTemplateParameterSymbol(templateParameter->Span(), templateParameter->Name());
+                boundTemplateParameter->SetParent(classTemplateSpecialization);
+                TypeSymbol* templateArgumentType = classTemplateSpecialization->TemplateArgumentTypes()[i];
+                boundTemplateParameter->SetType(templateArgumentType);
+                auto result = classTemplateSpecialization->AddMember(boundTemplateParameter, context);
+                if (result.Error()) return result;
+            }
+            LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
+            symbolTable->SetCurrentSourceFile(boundCompileUnit->SourceFile());
+            InstantiationGuard instantiationGuard(symbolTable, classTemplateSpecialization->FileIndex(), classTemplateSpecialization->ModuleId());
+            auto result = CreateSymbols(globalNs.Get(), symbolTable, boundCompileUnit->Context(), classInstanceNode, classTemplateSpecialization, false);
+            if (result.Error()) return result;
+            TypeBinder typeBinder(boundCompileUnit);
+            typeBinder.SetContainerScope(classTemplateSpecialization->GetContainerScope());
+            globalNs->Accept(typeBinder);
+            if (boundCompileUnit->BindingTypes())
+            {
+                classTemplateSpecialization->SetGlobalNs(Rvalue(globalNs));
+                classTemplateSpecialization->SetStatementsNotBound();
+                if (fileScopeAdded)
+                {
+                    FileScope* fileScope = boundCompileUnit->ReleaseLastFileScope();
+                    classTemplateSpecialization->SetFileScope(fileScope);
+                }
+            }
+            else
+            {
+                StatementBinder statementBinder(boundCompileUnit);
+                globalNs->Accept(statementBinder);
+                classTemplateSpecialization->SetGlobalNs(Rvalue(globalNs));
+                if (fileScopeAdded)
+                {
+                    boundCompileUnit->RemoveLastFileScope();
+                }
+            }
+            return Result<bool>(true);
+        }
+        public Result<FunctionSymbol*> Instantiate(FunctionSymbol* memberFunctionSymbol, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
+        {
+            Result<FunctionSymbol*> result = DoInstantiate(memberFunctionSymbol, containerScope, currentFunction, node);
+            if (result.Error())
+            {
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+                Result<string> memberFunctionFullNameResult = ToUtf8(memberFunctionSymbol->FullName());
+                if (memberFunctionFullNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(memberFunctionFullNameResult.GetErrorId()));
+                string memberFunctionFullName = Rvalue(memberFunctionFullNameResult.Value());
+                int errorId = MakeError("Could not instantiate member function '" + memberFunctionFullName + "'. Reason:\n" + reasonMessage, node->GetFullSpan());
+                return Result<FunctionSymbol*>(ErrorId(errorId));
+            }
+            else
+            {
+                return result;
+            }
+        }
+        public Result<FunctionSymbol*> DoInstantiate(FunctionSymbol* memberFunctionSymbol, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
+        {
+            if (instantiatedMemberFunctions.Find(memberFunctionSymbol) != instantiatedMemberFunctions.End())
+            {
+                return GetCopy(memberFunctionSymbol);
+            }
+            instantiatedMemberFunctions.Insert(memberFunctionSymbol);
+            if (classTemplateSpecialization->HasFullInstantiation())
+            {
+                return memberFunctionSymbol;
+            }
+            Symbol* parent = memberFunctionSymbol->Parent();
+            #assert(parent->IsClassTemplateSpecializationSymbol());
+            ClassTemplateSpecializationSymbol* classTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(parent);
+            #assert(classTemplateSpecialization->IsBound());
+            SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
+            Node* memberFunctionNode = symbolTable->GetNode(memberFunctionSymbol);
+            if (memberFunctionNode == null)
+            {
+                int errorId = MakeError("node not found in symbol table", node->GetFullSpan());
+                return Result<FunctionSymbol*>(ErrorId(errorId));
+            }
+            Result<bool> result = boundCompileUnit->FinalizeBinding(classTemplateSpecialization);
+            if (result.Error())
+            {
+                return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            }
+            ClassTypeSymbol* classTemplate = classTemplateSpecialization->ClassTemplate();
+            Map<TemplateParameterSymbol*, TypeSymbol*> templateParameterMap;
+            int n = cast<int>(classTemplateSpecialization->TemplateArgumentTypes().Count());
+            for (int i = 0; i < n; ++i)
+            {
+                TemplateParameterSymbol* templateParameter = classTemplate->TemplateParameters()[i];
+                TypeSymbol* templateArgument = classTemplateSpecialization->TemplateArgumentTypes()[i];
+                templateParameterMap[templateParameter] = templateArgument;
+            }
+            if (!classTemplateSpecialization->IsConstraintChecked())
+            {
+                classTemplateSpecialization->SetConstraintChecked();
+                if (classTemplate->Constraint() != null)
+                {
+                    UniquePtr<BoundConstraint> boundConstraint;
+                    Result<bool> constraintCheckResult = CheckConstraint(classTemplate->Constraint(), classTemplate->UsingNodes(), boundCompileUnit, containerScope,
+                        currentFunction, classTemplate->TemplateParameters(), templateParameterMap, boundConstraint, node, memberFunctionSymbol);
+                    if (constraintCheckResult.Error())
+                    {
+                        string constraintCheckError = RtmGetErrorMessageWithoutStackTrace(constraintCheckResult.GetErrorId());
+                        Result<string> classTemplateSpecializationFullNameResult = ToUtf8(classTemplateSpecialization->FullName());
+                        if (classTemplateSpecializationFullNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(classTemplateSpecializationFullNameResult.GetErrorId()));
+                        string classTemplateSpecializationFullName = Rvalue(classTemplateSpecializationFullNameResult.Value());
+                        int errorId = MakeError("concept check of class template specialization '" + classTemplateSpecializationFullName + "' failed: " + constraintCheckError,
+                            node->GetFullSpan());
+                        return Result<FunctionSymbol*>(ErrorId(errorId));
+                    }
+                }
+            }
+            FileScope* fileScope = new FileScope();
+            int nu = cast<int>(classTemplate->UsingNodes().Count());
+            for (int i = 0; i < nu; ++i)
+            {
+                Node* usingNode = classTemplate->UsingNodes()[i];
+                if (usingNode->IsNamespaceImportNode())
+                {
+                    NamespaceImportNode* namespaceImportNode = cast<NamespaceImportNode*>(usingNode);
+                    Result<bool> installResult = fileScope->InstallNamespaceImport(containerScope, namespaceImportNode);
+                    if (installResult.Error()) return Result<FunctionSymbol*>(ErrorId(installResult.GetErrorId()));
+                }
+                else if (usingNode->IsAliasNode())
+                {
+                    AliasNode* aliasNode = cast<AliasNode*>(usingNode);
+                    Result<TypeSymbol*> resolveResult = ResolveType(aliasNode, boundCompileUnit, containerScope);
+                    if (resolveResult.Error()) return Result<FunctionSymbol*>(ErrorId(resolveResult.GetErrorId()));
+                    TypeSymbol* type = resolveResult.Value();
+                    fileScope->InstallAlias(aliasNode, type);
+                }
+            }
+            Result<NamespaceSymbol*> nsResult = classTemplate->Ns();
+            if (nsResult.Error()) return Result<FunctionSymbol*>(ErrorId(nsResult.GetErrorId()));
+            NamespaceSymbol* ns = nsResult.Value();
+            if (!ns->IsGlobalNamespace())
+            {
+                fileScope->AddContainerScope(ns->GetContainerScope());
+            }
+            boundCompileUnit->AddFileScope(fileScope);
+            #assert(memberFunctionNode->IsFunctionNode());
+            FunctionNode* functionInstanceNode = cast<FunctionNode*>(memberFunctionNode);
+            if (memberFunctionSymbol->IsDefault())
+            {
+                functionInstanceNode->SetBodySource(new CompoundStatementNode(memberFunctionNode->GetSpan(), memberFunctionNode->FileIndex()));
+            }
+            #assert(functionInstanceNode->BodySource() != null);
+            CloneContext cloneContext;
+            functionInstanceNode->SetBody(cast<CompoundStatementNode*>(functionInstanceNode->BodySource()->Clone(cloneContext)));
+            if (functionInstanceNode->WhereConstraint() != null)
+            {
+                UniquePtr<BoundConstraint> boundConstraint;
+                FileScope* classTemplateScope = new FileScope();
+                classTemplateScope->AddContainerScope(classTemplateSpecialization->GetContainerScope());
+                boundCompileUnit->AddFileScope(classTemplateScope);
+                Result<bool> constraintCheckResult = CheckConstraint(functionInstanceNode->WhereConstraint(), classTemplate->UsingNodes(), boundCompileUnit,
+                    containerScope, currentFunction, classTemplate->TemplateParameters(), templateParameterMap, boundConstraint, node, memberFunctionSymbol);
+                if (constraintCheckResult.Error())
+                {
+                    boundCompileUnit->RemoveLastFileScope();
+                    Result<string> memberFunctionFullNameResult = ToUtf8(memberFunctionSymbol->FullName());
+                    if (memberFunctionFullNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(memberFunctionFullNameResult.GetErrorId()));
+                    string memberFunctionFullName = Rvalue(memberFunctionFullNameResult.Value());
+                    string constraintCheckError = RtmGetErrorMessageWithoutStackTrace(constraintCheckResult.GetErrorId());
+                    int errorId = MakeError("concept check of class template member function '" + memberFunctionFullName + "' failed: " + constraintCheckError,
+                        node->GetFullSpan());
+                    return Result<FunctionSymbol*>(ErrorId(errorId));
+                }
+                else
+                {
+                    boundCompileUnit->RemoveLastFileScope();
+                }
+            }
+            LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
+            FunctionSymbol* master = memberFunctionSymbol;
+            Result<FunctionSymbol*> copyResult = master->Copy();
+            if (copyResult.Error()) return Result<FunctionSymbol*>(ErrorId(copyResult.GetErrorId()));
+            FunctionSymbol* copy = copyResult.Value();
+            copyMap[master] = copy;
+            memberFunctionSymbol = copy;
+            symbolTable->AddFunctionSymbol(UniquePtr<FunctionSymbol>(memberFunctionSymbol));
+            symbolTable->SetCurrentSourceFile(boundCompileUnit->SourceFile());
+            InstantiationGuard instantiationGuard(symbolTable, classTemplate->FileIndex(), classTemplate->ModuleId());
+            SourceFileNode* sourceFile = boundCompileUnit->SourceFile();
+            Result<string> sourceFileIdResult = sourceFile->Id();
+            if (sourceFileIdResult.Error()) return Result<FunctionSymbol*>(ErrorId(sourceFileIdResult.GetErrorId()));
+            string sourceFileId = Rvalue(sourceFileIdResult.Value());
+            memberFunctionSymbol->SetSourceFileId(sourceFileId);
+            memberFunctionSymbol->SetFlag(FunctionSymbolFlags.dontReuse);
+            Result<bool> mangleResult = memberFunctionSymbol->ComputeMangledName();
+            if (mangleResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangleResult.GetErrorId()));
+            master->SetInstantiatedName(memberFunctionSymbol->MangledName());
+            boundCompileUnit->SetCanReuse(memberFunctionSymbol);
+            symbolTable->BeginContainer(memberFunctionSymbol);
+            symbolTable->MapNode(functionInstanceNode, memberFunctionSymbol);
+            Result<bool> createResult = CreateSymbols(functionInstanceNode->Body(), symbolTable, boundCompileUnit->Context());
+            if (createResult.Error()) return Result<FunctionSymbol*>(ErrorId(createResult.GetErrorId()));
+            symbolTable->EndContainer();
+            TypeBinder typeBinder(boundCompileUnit);
+            typeBinder.SetContainerScope(memberFunctionSymbol->GetContainerScope());
+            typeBinder.SetCurrentFunctionSymbol(memberFunctionSymbol);
+            functionInstanceNode->Body()->Accept(typeBinder);
+            if (typeBinder.Error()) return Result<FunctionSymbol*>(ErrorId(typeBinder.GetErrorId()));
+            StatementBinder statementBinder(boundCompileUnit);
+            UniquePtr<BoundClass> boundClass(new BoundClass(classTemplateSpecialization->Span(), classTemplateSpecialization,
+                classTemplateSpecialization->ModuleId(), classTemplateSpecialization->FileIndex()));
+            statementBinder.SetCurrentClass(boundClass.Get());
+            UniquePtr<BoundFunction> boundFunction(new BoundFunction(memberFunctionSymbol->Span(), memberFunctionSymbol, memberFunctionSymbol->ModuleId(),
+                memberFunctionSymbol->FileIndex()));
+            boundFunction->SetNode(functionInstanceNode);
+            statementBinder.SetCurrentFunction(boundFunction.Get());
+            statementBinder.SetContainerScope(memberFunctionSymbol->GetContainerScope());
+            if (memberFunctionSymbol->IsConstructorSymbol())
+            {
+                ConstructorSymbol* constructorSymbol = cast<ConstructorSymbol*>(memberFunctionSymbol);
+                Node* node = symbolTable->GetNode(memberFunctionSymbol);
+                #assert(node != null);
+                #assert(node->IsConstructorNode());
+                ConstructorNode* constructorNode = cast<ConstructorNode*>(node);
+                statementBinder.SetCurrentConstructor(constructorSymbol, constructorNode);
+            }
+            else if (memberFunctionSymbol->IsDestructorSymbol())
+            {
+                DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(memberFunctionSymbol);
+                Node* node = symbolTable->GetNode(memberFunctionSymbol);
+                #assert(node != null);
+                #assert(node->IsDestructorNode());
+                DestructorNode* destructorNode = cast<DestructorNode*>(node);
+                statementBinder.SetCurrentDestructor(destructorSymbol, destructorNode);
+            }
+            else if (memberFunctionSymbol->IsMemberFunctionSymbol())
+            {
+                MemberFunctionSymbol* memFnSymbol = cast<MemberFunctionSymbol*>(memberFunctionSymbol);
+                Node* node = symbolTable->GetNode(memberFunctionSymbol);
+                #assert(node != null);
+                #assert(node->IsMemberFunctionNode());
+                MemberFunctionNode* memberFunctionNode = cast<MemberFunctionNode*>(node);
+                statementBinder.SetCurrentMemberFunction(memFnSymbol, memberFunctionNode);
+            }
+            functionInstanceNode->Body()->Accept(statementBinder);
+            if (statementBinder.Error()) return Result<FunctionSymbol*>(ErrorId(statementBinder.GetErrorId()));
+            Result<bool> returnPathResult = CheckFunctionReturnPaths(memberFunctionSymbol, functionInstanceNode->Body(), node, containerScope, boundCompileUnit, currentFunction);
+            if (returnPathResult.Error()) return Result<FunctionSymbol*>(ErrorId(returnPathResult.GetErrorId()));
+            BoundStatement* boundStatement = statementBinder.ReleaseStatement();
+            #assert(boundStatement != null && boundStatement->IsBoundCompoundStatement());
+            BoundCompoundStatement* boundCompoundStatement = cast<BoundCompoundStatement*>(boundStatement);
+            boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(boundCompoundStatement));
+            Result<bool> genResult = statementBinder.GenerateEnterAndExitFunctionCode(boundFunction.Get());
+            if (genResult.Error()) return Result<FunctionSymbol*>(ErrorId(genResult.GetErrorId()));
+            ustring instantiatedMemberFunctionMangledName = boundFunction->GetFunctionSymbol()->MangledName();
+            boundClass->AddMember(UniquePtr<BoundNode>(boundFunction.Release()));
+            boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundClass.Release()));
+            boundCompileUnit->RemoveLastFileScope();
+            Result<bool> instantiationResult = InstantiateDestructorAndVirtualFunctions(classTemplateSpecialization, containerScope, currentFunction, node);
+            if (instantiationResult.Error())
+            {
+                return Result<FunctionSymbol*>(ErrorId(instantiationResult.GetErrorId()));
+            }
+            else
+            {
+                return Result<FunctionSymbol*>(memberFunctionSymbol);
+            }
+        }
+        [nodiscard]
+        public Result<bool> InstantiateDestructorAndVirtualFunctions(ClassTemplateSpecializationSymbol* specialization, ContainerScope* containerScope,
+            BoundFunction* currentFunction, Node* node)
+        {
+            for (FunctionSymbol* virtualMemberFunction : specialization->Vmt())
+            {
+                if (virtualMemberFunction->Parent() == specialization && !virtualMemberFunction->IsGenerated())
+                {
+                    Result<FunctionSymbol*> result = Instantiate(virtualMemberFunction, containerScope, currentFunction, node);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            if (specialization->Destructor() != null)
+            {
+                if (!specialization->Destructor()->IsGenerated())
+                {
+                    Result<FunctionSymbol*> result = Instantiate(specialization->Destructor(), containerScope, currentFunction, node);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        private FunctionSymbol* GetCopy(FunctionSymbol* master) const
+        {
+            auto it = copyMap.Find(master);
+            if (it != copyMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return master;
+            }
+        }
+        private BoundCompileUnit* boundCompileUnit;
+        private Set<FunctionSymbol*> instantiatedMemberFunctions;
+        private Map<FunctionSymbol*, FunctionSymbol*> copyMap;
+    }
+}
+

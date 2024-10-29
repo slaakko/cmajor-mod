@@ -51,7 +51,7 @@ class Error
 public:
     Error();
     Error(const std::string& message_, StackTrace&& stackTrace_);
-    const char* Message();
+    const char* Message(bool addStackTrace);
 private:
     std::string message;
     StackTrace stackTrace;
@@ -66,12 +66,15 @@ Error::Error(const std::string& message_, StackTrace&& stackTrace_) : message(me
 {
 }
 
-const char* Error::Message()
+const char* Error::Message(bool addStackTrace)
 {
-    if (!stackTraceGenerated && !stackTrace.IsEmpty())
+    if (addStackTrace)
     {
-        stackTraceGenerated = true;
-        message.append("\nSTACK TRACE:\n").append(stackTrace.ToString());
+        if (!stackTraceGenerated && !stackTrace.IsEmpty())
+        {
+            stackTraceGenerated = true;
+            message.append("\nSTACK TRACE:\n").append(stackTrace.ToString());
+        }
     }
     return message.c_str();
 }
@@ -83,7 +86,7 @@ public:
     static Errors& Instance();
     int AllocateError(const std::string& errorMessage, StackTrace&& stackTrace);
     void DisposeError(int errorId);
-    const char* GetErrorMessage(int errorId) const;
+    const char* GetErrorMessage(int errorId, bool addStackTrace) const;
 private:
     std::vector<std::unique_ptr<Error>> errors;
 };
@@ -114,14 +117,14 @@ void Errors::DisposeError(int errorId)
     }
 }
 
-const char* Errors::GetErrorMessage(int errorId) const
+const char* Errors::GetErrorMessage(int errorId, bool addStackTrace) const
 {
     if (errorId > 0 && errorId < errors.size())
     {
         Error* error = errors[errorId].get();
         if (error)
         {
-            return error->Message();
+            return error->Message(addStackTrace);
         }
     }
     return "";
@@ -137,7 +140,13 @@ int AllocateError(const std::string& errorMessage)
 const char* RtmGetErrorMessage(int errorId)
 {
     if (errorId == 0) return "";
-    return cmajor::masm::rt::Errors::Instance().GetErrorMessage(errorId);
+    return cmajor::masm::rt::Errors::Instance().GetErrorMessage(errorId, true);
+}
+
+const char* RtmGetErrorMessageWithoutStackTrace(int errorId)
+{
+    if (errorId == 0) return "";
+    return cmajor::masm::rt::Errors::Instance().GetErrorMessage(errorId, false);
 }
 
 int RtmAllocateError(const char* errorMessage)

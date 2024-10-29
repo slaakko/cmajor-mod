@@ -1,7 +1,13 @@
 solution compiler;
+project <assembly/assembly.cmp>;
+project <binder/binder.cmp>;
+project <build/build.cmp>;
 project <../soulcm/cm.ast/cm.ast.cmp>;
 project <../soulcm/cm.lexer/cm.lexer.cmp>;
 project <../soulcm/cm.parser/cm.parser.cmp>;
 project <cmcmc/cmcmc.cmp>;
-activeProject cmcmc;
+project <codegen/codegen.cmp>;
+project <intermediate/intermediate.cmp>;
+project <symbols/symbols.cmp>;
+activeProject intermediate;
 activeBackEnd=masm;

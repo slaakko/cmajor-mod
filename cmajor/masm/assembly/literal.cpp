@@ -11,9 +11,12 @@ namespace cmajor::masm::assembly {
 
 std::string ToHexStr(const std::string& hexStr)
 {
-    if ((hexStr[0] >= 'a' && hexStr[0] <= 'f') || (hexStr[0] >= 'A' && hexStr[0] <= 'F'))
+    if (!hexStr.empty())
     {
-        return "0" + hexStr;
+        if ((hexStr[0] >= 'a' && hexStr[0] <= 'f') || (hexStr[0] >= 'A' && hexStr[0] <= 'F'))
+        {
+            return "0" + hexStr;
+        }
     }
     return hexStr;
 }
@@ -70,19 +73,19 @@ std::string ToStringLiteralStr(const std::string& s)
     return result;
 }
 
-IntegerLiteral::IntegerLiteral(int64_t value_, int size_) : Value(ToIntegerLiteralStr(value_, size_)), value(value_), size(size_)
+IntegerLiteral::IntegerLiteral(int64_t value_, int size_) : Value(ValueKind::integerLiteral, ToIntegerLiteralStr(value_, size_)), value(value_), size(size_)
 {
 }
 
-FloatLiteral::FloatLiteral(float value_) : Value(ToFloatLiteralStr(value_)), value(value_)
+FloatLiteral::FloatLiteral(float value_) : Value(ValueKind::floatLiteral, ToFloatLiteralStr(value_)), value(value_)
 {
 }
 
-DoubleLiteral::DoubleLiteral(double value_) : Value(ToDoubleLiteralStr(value_)), value(value_)
+DoubleLiteral::DoubleLiteral(double value_) : Value(ValueKind::doubleLiteral, ToDoubleLiteralStr(value_)), value(value_)
 {
 }
 
-StringLiteral::StringLiteral(const std::string& value_) : Value("'" + ToStringLiteralStr(value_) + "'"), value(value_)
+StringLiteral::StringLiteral(const std::string& value_) : Value(ValueKind::stringLiteral, "'" + ToStringLiteralStr(value_) + "'"), value(value_)
 {
 }
 

@@ -17,7 +17,6 @@ class IntegerLiteral : public Value
 public:
     IntegerLiteral(int64_t value_, int size_);
     int64_t GetValue() const { return value; }
-    bool IsIntegerLiteral() const { return true; }
 private:
     int64_t value;
     int size;

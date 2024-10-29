@@ -1,0 +1,121 @@
+using System;
+using System.Collections;
+
+namespace intermediate.token
+{
+    public class TokenMap
+    {
+        static TokenMap() : instance(new TokenMap())
+        {
+        }
+        public static TokenMap& Instance()
+        {
+            return *instance;
+        }
+        public string TokenName(long tokenId) const
+        {
+            auto it = tokenMap.Find(tokenId);
+            if (it != tokenMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return "unknown token id";
+            }
+        }
+        private TokenMap()
+        {
+            tokenMap[4500651471624208385] = "ID";
+            tokenMap[4500651471624208386] = "TYPES";
+            tokenMap[4500651471624208387] = "DATA";
+            tokenMap[4500651471624208388] = "FUNCTION";
+            tokenMap[4500651471624208389] = "EXTERN";
+            tokenMap[4500651471624208390] = "INLINE";
+            tokenMap[4500651471624208391] = "METADATA";
+            tokenMap[4500651471624208392] = "STORE";
+            tokenMap[4500651471624208393] = "ARG";
+            tokenMap[4500651471624208394] = "JMP";
+            tokenMap[4500651471624208395] = "BRANCH";
+            tokenMap[4500651471624208396] = "CALL";
+            tokenMap[4500651471624208397] = "RET";
+            tokenMap[4500651471624208398] = "SWITCH";
+            tokenMap[4500651471624208399] = "NOP";
+            tokenMap[4500651471624208400] = "NOT";
+            tokenMap[4500651471624208401] = "NEG";
+            tokenMap[4500651471624208402] = "SIGNEXTEND";
+            tokenMap[4500651471624208403] = "ZEROEXTEND";
+            tokenMap[4500651471624208404] = "FPEXTEND";
+            tokenMap[4500651471624208405] = "TRUNCATE";
+            tokenMap[4500651471624208406] = "BITCAST";
+            tokenMap[4500651471624208407] = "INTTOFLOAT";
+            tokenMap[4500651471624208408] = "FLOATTOINT";
+            tokenMap[4500651471624208409] = "INTTOPTR";
+            tokenMap[4500651471624208410] = "PTRTOINT";
+            tokenMap[4500651471624208411] = "ADD";
+            tokenMap[4500651471624208412] = "SUB";
+            tokenMap[4500651471624208413] = "MUL";
+            tokenMap[4500651471624208414] = "DIV";
+            tokenMap[4500651471624208415] = "MOD";
+            tokenMap[4500651471624208416] = "AND";
+            tokenMap[4500651471624208417] = "OR";
+            tokenMap[4500651471624208418] = "XOR";
+            tokenMap[4500651471624208419] = "SHL";
+            tokenMap[4500651471624208420] = "SHR";
+            tokenMap[4500651471624208421] = "EQUAL";
+            tokenMap[4500651471624208422] = "LESS";
+            tokenMap[4500651471624208423] = "PARAM";
+            tokenMap[4500651471624208424] = "LOCAL";
+            tokenMap[4500651471624208425] = "LOAD";
+            tokenMap[4500651471624208426] = "ELEMADDR";
+            tokenMap[4500651471624208427] = "PTROFFSET";
+            tokenMap[4500651471624208428] = "PTRDIFF";
+            tokenMap[4500651471624208429] = "TYPE";
+            tokenMap[4500651471624208430] = "OFFSET";
+            tokenMap[4500651471624208431] = "SIZE";
+            tokenMap[4500651471624208432] = "ALIGNMENT";
+            tokenMap[4500651471624208433] = "VOID";
+            tokenMap[4500651471624208434] = "BOOL";
+            tokenMap[4500651471624208435] = "SBYTE";
+            tokenMap[4500651471624208436] = "BYTE";
+            tokenMap[4500651471624208437] = "SHORT";
+            tokenMap[4500651471624208438] = "USHORT";
+            tokenMap[4500651471624208439] = "INT";
+            tokenMap[4500651471624208440] = "UINT";
+            tokenMap[4500651471624208441] = "LONG";
+            tokenMap[4500651471624208442] = "ULONG";
+            tokenMap[4500651471624208443] = "FLOAT";
+            tokenMap[4500651471624208444] = "DOUBLE";
+            tokenMap[4500651471624208445] = "TRUE";
+            tokenMap[4500651471624208446] = "FALSE";
+            tokenMap[4500651471624208447] = "NULL_TOKEN";
+            tokenMap[4500651471624208448] = "CONV";
+            tokenMap[4500651471624208449] = "LPAREN";
+            tokenMap[4500651471624208450] = "RPAREN";
+            tokenMap[4500651471624208451] = "COMMA";
+            tokenMap[4500651471624208452] = "LBRACE";
+            tokenMap[4500651471624208453] = "RBRACE";
+            tokenMap[4500651471624208454] = "AST";
+            tokenMap[4500651471624208455] = "COLON";
+            tokenMap[4500651471624208456] = "SEMICOLON";
+            tokenMap[4500651471624208457] = "LBRACKET";
+            tokenMap[4500651471624208458] = "RBRACKET";
+            tokenMap[4500651471624208459] = "ASSIGN";
+            tokenMap[4500651471624208460] = "AT";
+            tokenMap[4500651471624208461] = "DOLLAR";
+            tokenMap[4500651471624208462] = "EXCLAMATION";
+            tokenMap[4500651471624208463] = "TYPEID";
+            tokenMap[4500651471624208464] = "CLSID";
+            tokenMap[4500651471624208465] = "STRING";
+            tokenMap[4500651471624208466] = "NUMBER";
+            tokenMap[4500651471624208467] = "HEXNUM";
+        }
+        private static UniquePtr<TokenMap> instance;
+        private Map<long, string> tokenMap;
+    }
+
+    public string TokenName(long tokenId)
+    {
+        return TokenMap.Instance().TokenName(tokenId);
+    }
+}

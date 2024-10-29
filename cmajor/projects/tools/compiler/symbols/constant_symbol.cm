@@ -1,0 +1,192 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using cm.ast;
+
+namespace symbols
+{
+    public class ConstantSymbol : Symbol
+    {
+        public ConstantSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.constantSymbol, span_, name_), evaluating(false)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"constant";
+        }
+        public void SetStrValue(const string& strValue_)
+        {
+            strValue = strValue_;
+        }
+        public inline const string& StrValue() const
+        {
+            return strValue;
+        }
+        public inline TypeSymbol* Type() const
+        {
+            return type;
+        }
+        public inline void SetType(TypeSymbol* type_)
+        {
+            type = type_;
+        }
+        public inline Value* GetValue()
+        {
+            return value.Get();
+        }
+        public inline void SetValue(Value* value_)
+        {
+            value.Reset(value_);
+        }
+        public inline bool Evaluating() const
+        {
+            return evaluating;
+        }
+        public inline void SetEvaluating()
+        {
+            evaluating = true;
+        }
+        public inline void ResetEvaluating()
+        {
+            evaluating = false;
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be nothrow", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be throw", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("constant cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        public Result<intermediate.Value*> ArrayIrObject(Emitter& emitter, bool create)
+        {
+            #assert(type->IsArrayTypeSymbol());
+            #assert(!value.IsNull());
+            #assert(value->IsArrayValue());
+            ArrayValue* arrayValue = cast<ArrayValue*>(value.Get());
+            Result<intermediate.Type*> irArrayTypeResult = type->IrType(emitter);
+            if (irArrayTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irArrayTypeResult.GetErrorId()));
+            intermediate.Type* irType = irArrayTypeResult.Value();
+            Result<string> mangledNameResult = ToUtf8(MangledName());
+            if (mangledNameResult.Error()) return Result<intermediate.Value*>(ErrorId(mangledNameResult.GetErrorId()));
+            intermediate.GlobalVariable* irObject = emitter.GetOrInsertGlobal(mangledNameResult.Value(), irType);
+            if (create)
+            {
+                Result<intermediate.Value*> irValueResult = arrayValue->IrValue(emitter);
+                if (irValueResult.Error()) return Result<intermediate.Value*>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                irObject->SetInitializer(irValue);
+            }
+            return Result<intermediate.Value*>(irObject);
+        }
+        public Result<intermediate.Value*> StructureIrObject(Emitter& emitter, bool create)
+        {
+            #assert(type->IsClassTypeSymbol());
+            #assert(!value.IsNull());
+            #assert(value->IsStructureValue());
+            StructureValue* structureValue = cast<StructureValue*>(value.Get());
+            Result<intermediate.Type*> irStructureTypeResult = type->IrType(emitter);
+            if (irStructureTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irStructureTypeResult.GetErrorId()));
+            intermediate.Type* irType = irStructureTypeResult.Value();
+            Result<string> mangledNameResult = ToUtf8(MangledName());
+            if (mangledNameResult.Error()) return Result<intermediate.Value*>(ErrorId(mangledNameResult.GetErrorId()));
+            intermediate.GlobalVariable* irObject = emitter.GetOrInsertGlobal(mangledNameResult.Value(), irType);
+            if (create)
+            {
+                Result<intermediate.Value*> irValueResult = structureValue->IrValue(emitter);
+                if (irValueResult.Error()) return Result<intermediate.Value*>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                irObject->SetInitializer(irValue);
+            }
+            return Result<intermediate.Value*>(irObject);
+        }
+        private TypeSymbol* type;
+        private UniquePtr<Value> value;
+        private bool evaluating;
+        private string strValue;
+    }
+}
+

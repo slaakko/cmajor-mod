@@ -19,7 +19,7 @@ namespace cm.lexer
                 return;
             }
             SetClassMap(classMapResult.Value());
-            SetKeywordMap(GetKeywordMap());
+            SetKeywordMap(GetKeywords());
         }
         public override int NextState(int state, uchar c)
         {

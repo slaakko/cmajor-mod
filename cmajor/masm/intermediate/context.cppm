@@ -19,6 +19,26 @@ export namespace cmajor::masm::intermediate {
 
 namespace context { }
 
+enum class ContextFlags : int
+{
+    none = 0, debug = 1 << 0
+};
+
+constexpr ContextFlags operator|(ContextFlags left, ContextFlags right)
+{
+    return ContextFlags(int(left) | int(right));
+}
+
+constexpr ContextFlags operator&(ContextFlags left, ContextFlags right)
+{
+    return ContextFlags(int(left) & int(right));
+}
+
+constexpr ContextFlags operator~(ContextFlags flags)
+{
+    return ContextFlags(~int(flags));
+}
+
 class Context
 {
 public:
@@ -78,6 +98,12 @@ public:
     void Write(const std::string& intermediateFilePath);
     void SetInlineDepth(int inlineDepth_) { inlineDepth = inlineDepth_; }
     int InlineDepth() const { return inlineDepth; }
+    void SetContextFlag(ContextFlags flag) { flags = flags | flag; }
+    bool GetContextFlag(ContextFlags flag) const { return (flags & flag) != ContextFlags::none; }
+    int FunctionsInlined() const { return functionsInlined; }
+    void IncFunctionsInlined() { ++functionsInlined; }
+    int TotalFunctions() const { return totalFunctions; }
+    void IncTotalFunctions() { ++totalFunctions; }
 private:
     CompileUnit compileUnit;
     Types types;
@@ -89,6 +115,9 @@ private:
     cmajor::masm::assembly::Context assemblyContext;
     int inlineDepth;
     std::unique_ptr<cmajor::masm::intermediate::MetadataRef> metadataRef;
+    ContextFlags flags;
+    int functionsInlined;
+    int totalFunctions;
 };
 
 } // cmajor::masm::intermediate

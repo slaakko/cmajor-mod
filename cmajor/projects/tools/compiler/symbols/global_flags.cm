@@ -1,0 +1,79 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public enum GlobalFlags
+    {
+        none = 0,
+        verbose = 1 << 0,
+        rebuild = 1 << 1,
+        singleThreadedCompile = 1 << 2,
+        clean = 1 << 3,
+        release = 1 << 4,
+        buildAll = 1 << 5
+    }
+
+    internal GlobalFlags globalFlags;
+    internal string config;
+    
+    public inline bool GetGlobalFlag(GlobalFlags globalFlag)
+    {
+        return (globalFlags & globalFlag) != GlobalFlags.none;
+    }
+
+    public void SetGlobalFlag(GlobalFlags globalFlag)
+    {
+        globalFlags = cast<GlobalFlags>(globalFlags | globalFlag);
+    }
+
+    public inline const string& GetConfig()
+    {
+        return config;
+    }
+
+    internal class CommandLineDefines
+    {
+        static CommandLineDefines() : instance(new CommandLineDefines())
+        {
+        }
+        public static CommandLineDefines& Instance()
+        {
+            return *instance;
+        }
+        private CommandLineDefines() : set()
+        {
+        }
+        public Set<ustring>& DefineSet()
+        {
+            return set;
+        }
+        private static UniquePtr<CommandLineDefines> instance;
+        private Set<ustring> set;
+    }
+    
+    public void DefineCommandLineConditionalSymbol(const ustring& symbol)
+    {
+        CommandLineDefines.Instance().DefineSet().Insert(symbol);
+    }
+
+    public inline const Set<ustring>& GetCommandLineDefines()
+    {
+        return CommandLineDefines.Instance().DefineSet();
+    }
+
+    public void SetConfig(const string& config_)
+    {
+        config = config_;
+        if (config == "release")
+        {
+            SetGlobalFlag(GlobalFlags.release);
+        }
+    }
+}
+

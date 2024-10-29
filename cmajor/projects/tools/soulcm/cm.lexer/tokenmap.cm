@@ -1,0 +1,185 @@
+using System;
+using System.Collections;
+
+namespace cm.token
+{
+    public class TokenMap
+    {
+        static TokenMap() : instance(new TokenMap())
+        {
+        }
+        public static TokenMap& Instance()
+        {
+            return *instance;
+        }
+        public string TokenName(long tokenId) const
+        {
+            auto it = tokenMap.Find(tokenId);
+            if (it != tokenMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return "unknown token id";
+            }
+        }
+        private TokenMap()
+        {
+            tokenMap[8751485895598669825] = "AUTO";
+            tokenMap[8751485895598669826] = "ASSERT";
+            tokenMap[8751485895598669827] = "ELIF";
+            tokenMap[8751485895598669828] = "ENDIF";
+            tokenMap[8751485895598669829] = "BOOL";
+            tokenMap[8751485895598669830] = "TRUE";
+            tokenMap[8751485895598669831] = "FALSE";
+            tokenMap[8751485895598669832] = "SBYTE";
+            tokenMap[8751485895598669833] = "BYTE";
+            tokenMap[8751485895598669834] = "SHORT";
+            tokenMap[8751485895598669835] = "USHORT";
+            tokenMap[8751485895598669836] = "INT";
+            tokenMap[8751485895598669837] = "UINT";
+            tokenMap[8751485895598669838] = "LONG";
+            tokenMap[8751485895598669839] = "ULONG";
+            tokenMap[8751485895598669840] = "FLOAT";
+            tokenMap[8751485895598669841] = "DOUBLE";
+            tokenMap[8751485895598669842] = "CHAR";
+            tokenMap[8751485895598669843] = "WCHAR";
+            tokenMap[8751485895598669844] = "UCHAR";
+            tokenMap[8751485895598669845] = "VOID";
+            tokenMap[8751485895598669846] = "ENUM";
+            tokenMap[8751485895598669847] = "CAST";
+            tokenMap[8751485895598669848] = "INTERFACE";
+            tokenMap[8751485895598669849] = "NAMESPACE";
+            tokenMap[8751485895598669850] = "USING";
+            tokenMap[8751485895598669851] = "STATIC";
+            tokenMap[8751485895598669852] = "EXTERN";
+            tokenMap[8751485895598669853] = "AS";
+            tokenMap[8751485895598669854] = "IS";
+            tokenMap[8751485895598669855] = "EXPLICIT";
+            tokenMap[8751485895598669856] = "DELEGATE";
+            tokenMap[8751485895598669857] = "INLINE";
+            tokenMap[8751485895598669858] = "CDECL";
+            tokenMap[8751485895598669859] = "NOTHROW";
+            tokenMap[8751485895598669860] = "WINAPI";
+            tokenMap[8751485895598669861] = "PUBLIC";
+            tokenMap[8751485895598669862] = "PROTECTED";
+            tokenMap[8751485895598669863] = "PRIVATE";
+            tokenMap[8751485895598669864] = "INTERNAL";
+            tokenMap[8751485895598669865] = "VIRTUAL";
+            tokenMap[8751485895598669866] = "ABSTRACT";
+            tokenMap[8751485895598669867] = "OVERRIDE";
+            tokenMap[8751485895598669868] = "SUPPRESS";
+            tokenMap[8751485895598669869] = "OPERATOR";
+            tokenMap[8751485895598669870] = "CLASS";
+            tokenMap[8751485895598669871] = "RETURN";
+            tokenMap[8751485895598669872] = "IF";
+            tokenMap[8751485895598669873] = "ELSE";
+            tokenMap[8751485895598669874] = "SWITCH";
+            tokenMap[8751485895598669875] = "CASE";
+            tokenMap[8751485895598669876] = "DEFAULT";
+            tokenMap[8751485895598669877] = "EQUIVALENCE";
+            tokenMap[8751485895598669878] = "IMPLICATION";
+            tokenMap[8751485895598669879] = "WHILE";
+            tokenMap[8751485895598669880] = "DO";
+            tokenMap[8751485895598669881] = "FOR";
+            tokenMap[8751485895598669882] = "BREAK";
+            tokenMap[8751485895598669883] = "CONTINUE";
+            tokenMap[8751485895598669884] = "GOTO";
+            tokenMap[8751485895598669885] = "TYPEDEF";
+            tokenMap[8751485895598669886] = "TYPENAME";
+            tokenMap[8751485895598669887] = "TYPEID";
+            tokenMap[8751485895598669888] = "CONST";
+            tokenMap[8751485895598669889] = "CONSTEXPR";
+            tokenMap[8751485895598669890] = "NULL_LITERAL";
+            tokenMap[8751485895598669891] = "THIS";
+            tokenMap[8751485895598669892] = "BASE";
+            tokenMap[8751485895598669893] = "CONSTRUCT";
+            tokenMap[8751485895598669894] = "DESTROY";
+            tokenMap[8751485895598669895] = "NEW";
+            tokenMap[8751485895598669896] = "DELETE";
+            tokenMap[8751485895598669897] = "SIZEOF";
+            tokenMap[8751485895598669898] = "TRY";
+            tokenMap[8751485895598669899] = "CATCH";
+            tokenMap[8751485895598669900] = "THROW";
+            tokenMap[8751485895598669901] = "CONCEPT";
+            tokenMap[8751485895598669902] = "WHERE";
+            tokenMap[8751485895598669903] = "AXIOM";
+            tokenMap[8751485895598669904] = "AND";
+            tokenMap[8751485895598669905] = "OR";
+            tokenMap[8751485895598669906] = "ID";
+            tokenMap[8751485895598669907] = "INTEGER_LITERAL";
+            tokenMap[8751485895598669908] = "FLOATING_LITERAL";
+            tokenMap[8751485895598669909] = "CHAR_LITERAL";
+            tokenMap[8751485895598669910] = "STRING_LITERAL";
+            tokenMap[8751485895598669911] = "DISJUNCTION";
+            tokenMap[8751485895598669912] = "AMP_AMP";
+            tokenMap[8751485895598669913] = "EQ";
+            tokenMap[8751485895598669914] = "NEQ";
+            tokenMap[8751485895598669915] = "LEQ";
+            tokenMap[8751485895598669916] = "GEQ";
+            tokenMap[8751485895598669917] = "SHIFT_LEFT";
+            tokenMap[8751485895598669918] = "SHIFT_RIGHT";
+            tokenMap[8751485895598669919] = "PLUS";
+            tokenMap[8751485895598669920] = "MINUS";
+            tokenMap[8751485895598669921] = "STAR";
+            tokenMap[8751485895598669922] = "DIV";
+            tokenMap[8751485895598669923] = "REM";
+            tokenMap[8751485895598669924] = "PLUS_PLUS";
+            tokenMap[8751485895598669925] = "MINUS_MINUS";
+            tokenMap[8751485895598669926] = "ASSIGN";
+            tokenMap[8751485895598669927] = "DOT";
+            tokenMap[8751485895598669928] = "LPAREN";
+            tokenMap[8751485895598669929] = "RPAREN";
+            tokenMap[8751485895598669930] = "LBRACE";
+            tokenMap[8751485895598669931] = "RBRACE";
+            tokenMap[8751485895598669932] = "LBRACKET";
+            tokenMap[8751485895598669933] = "RBRACKET";
+            tokenMap[8751485895598669934] = "LANGLE";
+            tokenMap[8751485895598669935] = "RANGLE";
+            tokenMap[8751485895598669936] = "COLON";
+            tokenMap[8751485895598669937] = "SEMICOLON";
+            tokenMap[8751485895598669938] = "HASH";
+            tokenMap[8751485895598669939] = "COMMA";
+            tokenMap[8751485895598669940] = "ARROW";
+            tokenMap[8751485895598669941] = "QUEST";
+            tokenMap[8751485895598669942] = "AMP";
+            tokenMap[8751485895598669943] = "DOLLAR";
+            tokenMap[8751485895598669944] = "EXCLAMATION";
+            tokenMap[8751485895598669945] = "TILDE";
+            tokenMap[8751485895598669946] = "CARET";
+            tokenMap[8751485895598669947] = "PIPE";
+            tokenMap[8751485895598669948] = "PRODUCES";
+            tokenMap[8751485895598669949] = "BACKSLASH";
+            tokenMap[8751485895598669950] = "PROJECT";
+            tokenMap[8751485895598669951] = "SOLUTION";
+            tokenMap[8751485895598669952] = "REFERENCE";
+            tokenMap[8751485895598669953] = "SOURCE";
+            tokenMap[8751485895598669954] = "RESOURCE";
+            tokenMap[8751485895598669955] = "RC";
+            tokenMap[8751485895598669956] = "TEXT";
+            tokenMap[8751485895598669957] = "ACTION";
+            tokenMap[8751485895598669958] = "TARGET";
+            tokenMap[8751485895598669959] = "PROGRAM";
+            tokenMap[8751485895598669960] = "WINGUIAPP";
+            tokenMap[8751485895598669961] = "WINAPP";
+            tokenMap[8751485895598669962] = "LIBRARY";
+            tokenMap[8751485895598669963] = "WINLIB";
+            tokenMap[8751485895598669964] = "UNIT_TEST";
+            tokenMap[8751485895598669965] = "ACTIVE_PROJECT";
+            tokenMap[8751485895598669966] = "ACTIVE_BACKEND";
+            tokenMap[8751485895598669967] = "FILE_PATH";
+            tokenMap[8751485895598669968] = "KEYWORD";
+            tokenMap[8751485895598669969] = "OTHER";
+            tokenMap[8751485895598669970] = "WS";
+            tokenMap[8751485895598669971] = "COMMENT";
+        }
+        private static UniquePtr<TokenMap> instance;
+        private Map<long, string> tokenMap;
+    }
+
+    public string TokenName(long tokenId)
+    {
+        return TokenMap.Instance().TokenName(tokenId);
+    }
+}

@@ -1,0 +1,1604 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using cm.ast;
+
+namespace symbols
+{
+    public class SymbolTable
+    {
+        public SymbolTable(Module* module_) :
+            module(module_), globalNs(System.Lex.Span(), ustring()), container(&globalNs), instantiatingTemplate(false), currentFileIndex(-1), currentModuleId(),
+            parameterIndex(0), declarationBlockIndex(0), currentClass(null), axiomNumber(0)
+        {
+            globalNs.SetModule(module);
+            globalNs.SetModuleId(module->Id());
+        }
+        public inline Module* GetModule() const
+        {
+            return module;
+        }
+        public inline NamespaceSymbol& GlobalNs()
+        {
+            return globalNs;
+        }
+        public inline void SetCurrentSourceFile(SourceFileNode* currentSourceFile_)
+        {
+            currentSourceFile = currentSourceFile_;
+        }
+        public void InitUuids()
+        {
+            derivationIds.Clear();
+            for (byte i = 0u; i < numDerivations; ++i)
+            {
+                derivationIds.Add(Uuid.Random());
+            }
+            positionIds.Clear();
+            for (long i = 0; i < Uuid.size; ++i)
+            {
+                positionIds.Add(Uuid.Random());
+            }
+        }
+        public const Uuid& GetDerivationId(Derivations derivations)
+        {
+            return derivationIds[DerivationId(derivations)];
+        }
+        public const Uuid& GetPositionId(Derivations derivations)
+        {
+            return positionIds[PositionId(derivations)];
+        }
+        [nodiscard]
+        public Result<bool> AddTypeSymbolToGlobalScope(TypeSymbol* typeSymbol, SymbolsContext& context)
+        {
+            typeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+            typeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            typeSymbol->SetSourceFile(currentSourceFile);
+            typeSymbol->SetModule(module);
+            SetTypeIdFor(typeSymbol);
+            typeNameMap[typeSymbol->FullName()] = typeSymbol;
+            auto result = globalNs.AddMember(typeSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddFunctionSymbolToGlobalScope(FunctionSymbol* functionSymbol, SymbolsContext& context)
+        {
+            functionSymbol->SetFileIndex(currentSourceFile->FileIndex());
+            functionSymbol->SetModuleId(currentSourceFile->ModuleId());
+            functionSymbol->SetSourceFile(currentSourceFile);
+            SetFunctionIdFor(functionSymbol);
+            functionSymbol->SetModule(module);
+            auto result = globalNs.AddMember(functionSymbol, context);
+            if (result.Error()) return result;
+            if (functionSymbol->IsConversion())
+            {
+                conversionTable.AddConversion(functionSymbol);
+            }
+            return Result<bool>(true);
+        }
+        public void SetTypeIdFor(TypeSymbol* typeSymbol)
+        {
+            typeSymbol->SetTypeId(Uuid.Random());
+        }
+        public void SetTypeIdFor(ConceptSymbol* conceptSymbol)
+        {
+            conceptSymbol->SetTypeId(Uuid.Random());
+        }
+        public void SetFunctionIdFor(FunctionSymbol* functionSymbol)
+        {
+            functionSymbol->SetFunctionId(Uuid.Random());
+        }
+        public Result<TypeSymbol*> GetTypeByName(const ustring& typeName) const
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            auto it = typeNameMap.Find(typeName);
+            if (it != typeNameMap.End())
+            {
+                return Result<TypeSymbol*>(it->second);
+            }
+            else
+            {
+                auto typeNameResult = ToUtf8(typeName);
+                if (typeNameResult.Error()) return Result<TypeSymbol*>(ErrorId(typeNameResult.GetErrorId()));
+                string typeNameStr = Rvalue(typeNameResult.Value());
+                int errorId = AllocateError("type '" + typeNameStr + "' not found");
+                return Result<TypeSymbol*>(ErrorId(errorId));
+            }
+        }
+        [nodiscard]
+        public Result<bool> Write(SymbolWriter& writer)
+        {
+            if (module->IsCore())
+            {
+                byte numDerivationIds = cast<byte>(derivationIds.Count());
+                auto result = writer.GetBinaryWriter().Write(numDerivationIds);
+                if (result.Error()) return result;
+                for (byte i = 0u; i < numDerivationIds; ++i)
+                {
+                    result = writer.GetBinaryWriter().Write(derivationIds[i]);
+                    if (result.Error()) return result;
+                }
+                byte numPositionIds = cast<byte>(positionIds.Count());
+                result = writer.GetBinaryWriter().Write(numPositionIds);
+                if (result.Error()) return result;
+                for (byte i = 0u; i < numPositionIds; ++i)
+                {
+                    result = writer.GetBinaryWriter().Write(positionIds[i]);
+                    if (result.Error()) return result;
+                }
+            }
+            auto result = globalNs.Write(writer);
+            if (result.Error()) return result;
+            List<ArrayTypeSymbol*> exportedArrayTypes;
+            for (const auto& arrayType : arrayTypes)
+            {
+                if (arrayType->IsProject())
+                {
+                    exportedArrayTypes.Add(arrayType.Get());
+                }
+            }
+            int na = cast<int>(exportedArrayTypes.Count());
+            result = writer.GetBinaryWriter().Write(na);
+            if (result.Error()) return result;
+            for (ArrayTypeSymbol* exportedArrayType : exportedArrayTypes)
+            {
+                result = writer.Write(exportedArrayType);
+                if (result.Error()) return result;
+            }
+            List<DerivedTypeSymbol*> exportedDerivedTypes;
+            Map<Uuid, DerivedTypeSymbol*> derivedTypeMap;
+            for (const auto& derivedType : derivedTypes)
+            {
+                if (derivedType->IsProject())
+                {
+                    if (derivedType->BaseType()->IsClassTemplateSpecializationSymbol() && !derivedType->BaseType()->IsBound()) continue;
+                    derivedTypeMap[derivedType->TypeId()] = derivedType.Get(); // last wins
+                }
+            }
+            for (const auto& p : derivedTypeMap)
+            {
+                exportedDerivedTypes.Add(p.second);
+            }
+            int nd = cast<int>(exportedDerivedTypes.Count());
+            result = writer.GetBinaryWriter().Write(nd);
+            if (result.Error()) return result;
+            for (int i = 0; i < nd; ++i)
+            {
+                DerivedTypeSymbol* derivedType = exportedDerivedTypes[i];
+                result = writer.Write(derivedType);
+                if (result.Error()) return result;
+            }
+            List<TypeSymbol*> exportedClassTemplateSpecializations;
+            Map<Uuid, TypeSymbol*> specializationMap;
+            for (const auto& classTemplateSpecialization : classTemplateSpecializations)
+            {
+                if (classTemplateSpecialization->IsProject() && classTemplateSpecialization->IsBound())
+                {
+                    specializationMap[classTemplateSpecialization->TypeId()] = classTemplateSpecialization.Get(); // last wins
+                }
+            }
+            for (const auto& p : specializationMap)
+            {
+                exportedClassTemplateSpecializations.Add(p.second);
+            }
+            int nec = cast<int>(exportedClassTemplateSpecializations.Count());
+            result = writer.GetBinaryWriter().Write(nec);
+            if (result.Error()) return result;
+            for (TypeSymbol* classTemplateSpecialization : exportedClassTemplateSpecializations)
+            {
+                result = writer.Write(classTemplateSpecialization);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Read(SymbolReader& reader)
+        {
+            reader.SetSymbolTable(this);
+            if (module->IsCore())
+            {
+                Result<byte> numDerivationIdsResult = reader.GetBinaryReader().ReadByte();
+                if (numDerivationIdsResult.Error()) return Result<bool>(ErrorId(numDerivationIdsResult.GetErrorId()));
+                byte numDerivationIds = numDerivationIdsResult.Value();
+                for (byte i = 0u; i < numDerivationIds; ++i)
+                {
+                    Result<Uuid> derivationIdResult = reader.GetBinaryReader().ReadUuid();
+                    if (derivationIdResult.Error()) return Result<bool>(ErrorId(derivationIdResult.GetErrorId()));
+                    derivationIds.Add(derivationIdResult.Value());
+                }
+                Result<byte> numPositionIdsResult = reader.GetBinaryReader().ReadByte();
+                if (numPositionIdsResult.Error()) return Result<bool>(ErrorId(numPositionIdsResult.GetErrorId()));
+                byte numPositionIds = numPositionIdsResult.Value();
+                for (byte i = 0u; i < numPositionIds; ++i)
+                {
+                    Result<Uuid> positionIdResult = reader.GetBinaryReader().ReadUuid();
+                    if (positionIdResult.Error()) return Result<bool>(ErrorId(positionIdResult.GetErrorId()));
+                    positionIds.Add(positionIdResult.Value());
+                }
+            }
+            auto result = globalNs.Read(reader);
+            if (result.Error()) return result;
+            Result<int> naResult = reader.GetBinaryReader().ReadInt();
+            if (naResult.Error()) return Result<bool>(ErrorId(naResult.GetErrorId()));
+            int na = naResult.Value();
+            for (int i = 0; i < na; ++i)
+            {
+                Result<ArrayTypeSymbol*> arrayTypeSymbolResult = reader.ReadArrayTypeSymbol(&globalNs);
+                if (arrayTypeSymbolResult.Error()) return Result<bool>(ErrorId(arrayTypeSymbolResult.GetErrorId()));
+                ArrayTypeSymbol* arrayType = arrayTypeSymbolResult.Value();
+                arrayTypes.Add(UniquePtr<ArrayTypeSymbol>(arrayType));
+                MapType(arrayType, false);
+            }
+            Result<int> ndResult = reader.GetBinaryReader().ReadInt();
+            if (ndResult.Error()) return Result<bool>(ErrorId(ndResult.GetErrorId()));
+            int nd = ndResult.Value();
+            for (int i = 0; i < nd; ++i)
+            {
+                Result<DerivedTypeSymbol*> derivedTypeSymbolResult = reader.ReadDerivedTypeSymbol(&globalNs);
+                if (derivedTypeSymbolResult.Error()) return Result<bool>(ErrorId(derivedTypeSymbolResult.GetErrorId()));
+                DerivedTypeSymbol* derivedTypeSymbol = derivedTypeSymbolResult.Value();
+                derivedTypes.Add(UniquePtr<DerivedTypeSymbol>(derivedTypeSymbol));
+                MapType(derivedTypeSymbol, false);
+            }
+            Result<int> necResult = reader.GetBinaryReader().ReadInt();
+            if (necResult.Error()) return Result<bool>(ErrorId(necResult.GetErrorId()));
+            int nec = necResult.Value();
+            for (int i = 0; i < nec; ++i)
+            {
+                Result<ClassTemplateSpecializationSymbol*> specializationResult = reader.ReadClassTemplateSpecializationSymbol(&globalNs);
+                if (specializationResult.Error()) return Result<bool>(ErrorId(specializationResult.GetErrorId()));
+                ClassTemplateSpecializationSymbol* specializationSymbol = specializationResult.Value();
+                classTemplateSpecializations.Add(UniquePtr<ClassTemplateSpecializationSymbol>(specializationSymbol));
+                MapType(specializationSymbol, false);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Import(SymbolTable* symbolTable, SymbolsContext& context)
+        {
+            auto result = globalNs.Import(&symbolTable->globalNs, this, context);
+            if (result.Error()) return result;
+            for (const auto& t : symbolTable->typeMap)
+            {
+                typeMap[t.first] = t.second;
+            }
+            for (const auto& t : symbolTable->conceptMap)
+            {
+                conceptMap[t.first] = t.second;
+            }
+            for (const auto& t : symbolTable->typeNameMap)
+            {
+                typeNameMap[t.first] = t.second;
+            }
+            for (const auto& t : symbolTable->derivedTypeMap)
+            {
+                List<DerivedTypeSymbol*>& list = derivedTypeMap[t.first];
+                for (DerivedTypeSymbol* derivedType : t.second)
+                {
+                    if (Find(list.Begin(), list.End(), derivedType) == list.End())
+                    {
+                        list.Add(derivedType);
+                    }
+                }
+            }
+            for (const auto& t : symbolTable->classTemplateSpecializationMap)
+            {
+                classTemplateSpecializationMap[t.first] = t.second;
+            }
+            conversionTable.Import(symbolTable->conversionTable);
+            for (ClassTypeSymbol* polymorphicClass : symbolTable->polymorphicClasses)
+            {
+                polymorphicClasses.Insert(polymorphicClass);
+            }
+            return Result<bool>(true);
+        }
+        public inline ContainerSymbol* Container() const
+        {
+            return container;
+        }
+        public void BeginContainer(ContainerSymbol* container_)
+        {
+            containerStack.Push(container);
+            container = container_;
+        }
+        public void EndContainer()
+        {
+            container = containerStack.Pop();
+        }
+        public Result<NamespaceSymbol*> BeginNamespace(const ustring& namespaceName, const System.Lex.Span& span, const Uuid& moduleId, int fileIndex, SymbolsContext& context)
+        {
+            if (namespaceName.IsEmpty())
+            {
+                BeginContainer(&globalNs);
+                return Result<NamespaceSymbol*>(&globalNs);
+            }
+            else
+            {
+                Result<Symbol*> containerScopeResult = container->GetContainerScope()->Lookup(namespaceName);
+                if (containerScopeResult.Error()) return Result<NamespaceSymbol*>(ErrorId(containerScopeResult.GetErrorId()));
+                Symbol* symbol = containerScopeResult.Value();
+                if (symbol != null)
+                {
+                    if (symbol->IsNamespaceSymbol())
+                    {
+                        NamespaceSymbol* ns = cast<NamespaceSymbol*>(symbol);
+                        BeginContainer(ns);
+                        return Result<NamespaceSymbol*>(ns);
+                    }
+                    else
+                    {
+                        auto nameResult = ToUtf8(symbol->Name());
+                        if (nameResult.Error()) return Result<NamespaceSymbol*>(ErrorId(nameResult.GetErrorId()));
+                        int errorId = MakeError("symbol '" + nameResult.Value() + "' does not denote a namespace", symbol->FullSpan());
+                        return Result<NamespaceSymbol*>(ErrorId(errorId));
+                    }
+                }
+                else
+                {
+                    Result<NamespaceSymbol*> namespaceResult = container->GetContainerScope()->CreateNamespace(namespaceName, span, moduleId, fileIndex, context);
+                    if (namespaceResult.Error()) return namespaceResult;
+                    NamespaceSymbol* ns = namespaceResult.Value();
+                    BeginContainer(ns);
+                    return Result<NamespaceSymbol*>(ns);
+                }
+            }
+        }
+        public inline void EndNamespace()
+        {
+            EndContainer();
+        }
+        [nodiscard]
+        public Result<AliasTypeSymbol*> AddAliasType(AliasNode& aliasNode, SymbolsContext& context)
+        {
+            AliasTypeSymbol* aliasTypeSymbol = new AliasTypeSymbol(aliasNode.GetSpan(), aliasNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                aliasTypeSymbol->SetFileIndex(currentFileIndex);
+                aliasTypeSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                aliasTypeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                aliasTypeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            aliasTypeSymbol->SetSourceFile(currentSourceFile);
+            aliasTypeSymbol->SetModule(module);
+            MapNode(&aliasNode, aliasTypeSymbol);
+            auto result = container->AddMember(aliasTypeSymbol, context);
+            if (result.Error()) return Result<AliasTypeSymbol*>(ErrorId(result.GetErrorId()));
+            return Result<AliasTypeSymbol*>(aliasTypeSymbol);
+        }
+        [nodiscard]
+        public Result<bool> BeginFunction(FunctionNode& functionNode, int functionIndex)
+        {
+            FunctionSymbol* functionSymbol = new FunctionSymbol(functionNode.GetSpan(), functionNode.GroupId());
+            SetFunctionIdFor(functionSymbol);
+            functionSymbol->SetIndex(functionIndex);
+            if ((functionNode.GetSpecifiers() & Specifiers.constexpr_) != Specifiers.none)
+            {
+                functionSymbol->SetConstExpr();
+            }
+            functionSymbol->SetHasSource();
+            if (instantiatingTemplate)
+            {
+                functionSymbol->SetFileIndex(currentFileIndex);
+                functionSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                functionSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                functionSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            functionSymbol->SetSourceFile(currentSourceFile);
+            functionSymbol->SetModule(module);
+            functionSymbol->SetGroupName(functionNode.GroupId());
+            if (functionNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                functionSymbol->SetConstraint(cast<WhereConstraintNode*>(functionNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            if (functionSymbol->GroupName() == u"main" || functionSymbol->GroupName() == u"wmain" || functionSymbol->GroupName() == u"WinMain" ||
+                functionSymbol->GroupName() == u"wWinMain")
+            {
+                if (functionNode.IsProgramMain())
+                {
+                    functionSymbol->SetCDecl();
+                    functionSymbol->SetProgramMain();
+                }
+                else
+                {
+                    if (mainFunctionSymbol != null)
+                    {
+                        int errorId = MakeError("already has main function", functionNode.GetFullSpan(), mainFunctionSymbol->FullSpan());
+                    }
+                    else
+                    {
+                        mainFunctionSymbol = functionSymbol;
+                    }
+                }
+            }
+            MapNode(&functionNode, functionSymbol);
+            BeginContainer(functionSymbol);
+            parameterIndex = 0;
+            ResetDeclarationBlockIndex();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> EndFunction(bool addMember, SymbolsContext& context)
+        {
+            FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(container);
+            EndContainer();
+            if (addMember)
+            {
+                auto result = container->AddMember(functionSymbol, context);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                createdFunctionSymbol = functionSymbol;
+            }
+            return Result<bool>(true);
+        }
+        public void BeginClass(ClassNode& classNode)
+        {
+            ClassTypeSymbol* classTypeSymbol = new ClassTypeSymbol(classNode.GetSpan(), classNode.Id()->Str());
+            classTypeSymbol->SetGroupName(classNode.Id()->Str());
+            currentClassStack.Push(currentClass);
+            currentClass = classTypeSymbol;
+            if (instantiatingTemplate)
+            {
+                classTypeSymbol->SetFileIndex(currentFileIndex);
+                classTypeSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                classTypeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                classTypeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            classTypeSymbol->SetSourceFile(currentSourceFile);
+            classTypeSymbol->SetModule(module);
+            MapNode(&classNode, classTypeSymbol);
+            SetTypeIdFor(classTypeSymbol);
+            BeginContainer(classTypeSymbol);
+        }
+        [nodiscard]
+        public Result<bool> EndClass(SymbolsContext& context)
+        {
+            ClassTypeSymbol* classTypeSymbol = currentClass;
+            currentClass = currentClassStack.Pop();
+            EndContainer();
+            classTypeSymbol->ComputeMinArity();
+            auto result = container->AddMember(classTypeSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public void BeginClassTemplateSpecialization(ClassNode& classInstanceNode, ClassTemplateSpecializationSymbol* classTemplateSpecialization)
+        {
+            currentClassStack.Push(currentClass);
+            currentClass = classTemplateSpecialization;
+            MapNode(&classInstanceNode, classTemplateSpecialization);
+            if (classTemplateSpecialization->TypeIdNotSet())
+            {
+                SetTypeIdFor(classTemplateSpecialization);
+            }
+            BeginContainer(classTemplateSpecialization);
+        }
+        public void EndClassTemplateSpecialization()
+        {
+            EndContainer();
+            currentClass = currentClassStack.Pop();
+        }
+        public void BeginStaticConstructor(StaticConstructorNode& staticConstructorNode, int functionIndex)
+        {
+            StaticConstructorSymbol* staticConstructorSymbol = new StaticConstructorSymbol(staticConstructorNode.GetSpan(), u"@static_constructor");
+            staticConstructorSymbol->SetIndex(functionIndex);
+            SetFunctionIdFor(staticConstructorSymbol);
+            staticConstructorSymbol->SetHasSource();
+            if (instantiatingTemplate)
+            {
+                staticConstructorSymbol->SetFileIndex(currentFileIndex);
+                staticConstructorSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                staticConstructorSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                staticConstructorSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            staticConstructorSymbol->SetSourceFile(currentSourceFile);
+            staticConstructorSymbol->SetModule(module);
+            if (staticConstructorNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                staticConstructorSymbol->SetConstraint(cast<WhereConstraintNode*>(staticConstructorNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            MapNode(&staticConstructorNode, staticConstructorSymbol);
+            BeginContainer(staticConstructorSymbol);
+            ResetDeclarationBlockIndex();
+        }
+        [nodiscard]
+        public Result<bool> EndStaticConstructor(bool addMember, SymbolsContext& context)
+        {
+            StaticConstructorSymbol* staticConstructorSymbol = cast<StaticConstructorSymbol*>(container);
+            EndContainer();
+            if (addMember)
+            {
+                auto result = container->AddMember(staticConstructorSymbol, context);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                createdFunctionSymbol = staticConstructorSymbol;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> BeginConstructor(SymbolsContext& context, ConstructorNode& constructorNode, int functionIndex)
+        {
+            ConstructorSymbol* constructorSymbol = new ConstructorSymbol(constructorNode.GetSpan(), u"@constructor");
+            constructorSymbol->SetIndex(functionIndex);
+            SetFunctionIdFor(constructorSymbol);
+            if ((constructorNode.GetSpecifiers() & Specifiers.constexpr_) != Specifiers.none)
+            {
+                constructorSymbol->SetConstExpr();
+            }
+            constructorSymbol->SetHasSource();
+            if (instantiatingTemplate)
+            {
+                constructorSymbol->SetFileIndex(currentFileIndex);
+                constructorSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                constructorSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                constructorSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            constructorSymbol->SetSourceFile(currentSourceFile);
+            constructorSymbol->SetModule(module);
+            if (constructorNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                constructorSymbol->SetConstraint(cast<WhereConstraintNode*>(constructorNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            MapNode(&constructorNode, constructorSymbol);
+            BeginContainer(constructorSymbol);
+            parameterIndex = 0;
+            ResetDeclarationBlockIndex();
+            ParameterSymbol* thisParam = new ParameterSymbol(constructorNode.GetSpan(), u"this");
+            TypeSymbol* thisParamType = null;
+            if (currentClass != null)
+            {
+                thisParamType = currentClass->AddPointer(context);
+                thisParam->SetType(thisParamType);
+                thisParam->SetBound();
+                auto result = constructorSymbol->AddMember(thisParam, context);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> EndConstructor(bool addMember, SymbolsContext& context)
+        {
+            ConstructorSymbol* constructorSymbol = cast<ConstructorSymbol*>(container);
+            EndContainer();
+            if (addMember)
+            {
+                auto result = container->AddMember(constructorSymbol, context);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                createdFunctionSymbol = constructorSymbol;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> BeginDestructor(SymbolsContext& context, DestructorNode& destructorNode, int functionIndex)
+        {
+            DestructorSymbol* destructorSymbol = new DestructorSymbol(destructorNode.GetSpan(), u"@destructor");
+            destructorSymbol->SetIndex(functionIndex);
+            SetFunctionIdFor(destructorSymbol);
+            destructorSymbol->SetHasSource();
+            if (instantiatingTemplate)
+            {
+                destructorSymbol->SetFileIndex(currentFileIndex);
+                destructorSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                destructorSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                destructorSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            destructorSymbol->SetSourceFile(currentSourceFile);
+            destructorSymbol->SetModule(module);
+            if (destructorNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                destructorSymbol->SetConstraint(cast<WhereConstraintNode*>(destructorNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            MapNode(&destructorNode, destructorSymbol);
+            BeginContainer(destructorSymbol);
+            ResetDeclarationBlockIndex();
+            ParameterSymbol* thisParam = new ParameterSymbol(destructorNode.GetSpan(), u"this");
+            TypeSymbol* thisParamType = null;
+            if (currentClass != null)
+            {
+                thisParamType = currentClass->AddPointer(context);
+                thisParam->SetType(thisParamType);
+                thisParam->SetBound();
+                auto result = destructorSymbol->AddMember(thisParam, context);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> EndDestructor(bool addMember, SymbolsContext& context)
+        {
+            DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(container);
+            EndContainer();
+            if (addMember)
+            {
+                auto result = container->AddMember(destructorSymbol, context);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                createdFunctionSymbol = destructorSymbol;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> BeginMemberFunction(SymbolsContext& context, MemberFunctionNode& memberFunctionNode, int functionIndex)
+        {
+            MemberFunctionSymbol* memberFunctionSymbol = new MemberFunctionSymbol(memberFunctionNode.GetSpan(), memberFunctionNode.GroupId());
+            memberFunctionSymbol->SetIndex(functionIndex);
+            SetFunctionIdFor(memberFunctionSymbol);
+            if ((memberFunctionNode.GetSpecifiers() & Specifiers.constexpr_) != Specifiers.none)
+            {
+                memberFunctionSymbol->SetConstExpr();
+            }
+            memberFunctionSymbol->SetHasSource();
+            if (instantiatingTemplate)
+            {
+                memberFunctionSymbol->SetFileIndex(currentFileIndex);
+                memberFunctionSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                memberFunctionSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                memberFunctionSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            memberFunctionSymbol->SetSourceFile(currentSourceFile);
+            memberFunctionSymbol->SetModule(module);
+            memberFunctionSymbol->SetGroupName(memberFunctionNode.GroupId());
+            if (memberFunctionNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                memberFunctionSymbol->SetConstraint(cast<WhereConstraintNode*>(memberFunctionNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            MapNode(&memberFunctionNode, memberFunctionSymbol);
+            BeginContainer(memberFunctionSymbol);
+            parameterIndex = 0;
+            ResetDeclarationBlockIndex();
+            if ((memberFunctionNode.GetSpecifiers() & Specifiers.static_) == Specifiers.none)
+            {
+                ParameterSymbol* thisParam = new ParameterSymbol(memberFunctionNode.GetSpan(), u"this");
+                TypeSymbol* thisParamType = null;
+                if (currentClass != null)
+                {
+                    if (memberFunctionNode.IsConst())
+                    {
+                        thisParamType = currentClass->AddConst(context)->AddPointer(context);
+                    }
+                    else
+                    {
+                        thisParamType = currentClass->AddPointer(context);
+                    }
+                }
+                else if (currentInterface != null)
+                {
+                    thisParamType = currentInterface->AddPointer(context);
+                }
+                thisParam->SetType(thisParamType);
+                thisParam->SetBound();
+                auto result = memberFunctionSymbol->AddMember(thisParam, context);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> EndMemberFunction(bool addMember, SymbolsContext& context)
+        {
+            MemberFunctionSymbol* memberFunctionSymbol = cast<MemberFunctionSymbol*>(container);
+            EndContainer();
+            if (addMember)
+            {
+                auto result = container->AddMember(memberFunctionSymbol, context);
+                if (result.Error()) return result;
+            }
+            else
+            {
+                createdFunctionSymbol = memberFunctionSymbol;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> BeginConversionFunction(SymbolsContext& context, ConversionFunctionNode& conversionFunctionNode, int functionIndex)
+        {
+            ConversionFunctionSymbol* conversionFunctionSymbol = new ConversionFunctionSymbol(conversionFunctionNode.GetSpan(), u"@conversion");
+            conversionFunctionSymbol->SetIndex(functionIndex);
+            SetFunctionIdFor(conversionFunctionSymbol);
+            if ((conversionFunctionNode.GetSpecifiers() & Specifiers.constexpr_) != Specifiers.none)
+            {
+                conversionFunctionSymbol->SetConstExpr();
+            }
+            conversionFunctionSymbol->SetHasSource();
+            if (instantiatingTemplate)
+            {
+                conversionFunctionSymbol->SetFileIndex(currentFileIndex);
+                conversionFunctionSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                conversionFunctionSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                conversionFunctionSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            conversionFunctionSymbol->SetSourceFile(currentSourceFile);
+            conversionFunctionSymbol->SetModule(module);
+            conversionFunctionSymbol->SetGroupName(u"@operator_conv");
+            if (conversionFunctionNode.WhereConstraint() != null)
+            {
+                CloneContext cloneContext;
+                conversionFunctionSymbol->SetConstraint(cast<WhereConstraintNode*>(conversionFunctionNode.WhereConstraint()->Clone(cloneContext)));
+            }
+            MapNode(&conversionFunctionNode, conversionFunctionSymbol);
+            BeginContainer(conversionFunctionSymbol);
+            ResetDeclarationBlockIndex();
+            ParameterSymbol* thisParam = new ParameterSymbol(conversionFunctionNode.GetSpan(), u"this");
+            TypeSymbol* thisParamType = null;
+            if (conversionFunctionNode.IsConst())
+            {
+                thisParamType = currentClass->AddConst(context)->AddPointer(context);
+            }
+            else
+            {
+                thisParamType = currentClass->AddPointer(context);
+            }
+            thisParam->SetType(thisParamType);
+            thisParam->SetBound();
+            auto result = conversionFunctionSymbol->AddMember(thisParam, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> EndConversionFunction(bool addMember, SymbolsContext& context)
+        {
+            ConversionFunctionSymbol* conversionFunctionSymbol = cast<ConversionFunctionSymbol*>(container);
+            EndContainer();
+            if (addMember)
+            {
+                auto result = container->AddMember(conversionFunctionSymbol, context);
+                return result;
+            }
+            else
+            {
+                createdFunctionSymbol = conversionFunctionSymbol;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddMemberVariable(MemberVariableNode& memberVariableNode, SymbolsContext& context)
+        {
+            MemberVariableSymbol* memberVariableSymbol = new MemberVariableSymbol(memberVariableNode.GetSpan(), memberVariableNode.Id()->Str());
+            if ((memberVariableNode.GetSpecifiers() & Specifiers.static_) != Specifiers.none)
+            {
+                memberVariableSymbol->SetStatic();
+            }
+            if (instantiatingTemplate)
+            {
+                memberVariableSymbol->SetFileIndex(currentFileIndex);
+                memberVariableSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                memberVariableSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                memberVariableSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            memberVariableSymbol->SetSourceFile(currentSourceFile);
+            MapNode(&memberVariableNode, memberVariableSymbol);
+            auto result = container->AddMember(memberVariableSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> BeginDelegate(DelegateNode& delegateNode, SymbolsContext& context)
+        {
+            DelegateTypeSymbol* delegateTypeSymbol = new DelegateTypeSymbol(delegateNode.GetSpan(), delegateNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                delegateTypeSymbol->SetFileIndex(currentFileIndex);
+                delegateTypeSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                delegateTypeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                delegateTypeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            delegateTypeSymbol->SetSourceFile(currentSourceFile);
+            delegateTypeSymbol->SetModule(module);
+            MapNode(&delegateNode, delegateTypeSymbol);
+            SetTypeIdFor(delegateTypeSymbol);
+            auto result = container->AddMember(delegateTypeSymbol, context);
+            if (result.Error()) return result;
+            BeginContainer(delegateTypeSymbol);
+            parameterIndex = 0;
+            return Result<bool>(true);
+        }
+        public void EndDelegate()
+        {
+            EndContainer();
+        }
+        [nodiscard]
+        public Result<bool> BeginClassDelegate(ClassDelegateNode& classDelegateNode, SymbolsContext& context)
+        {
+            ClassDelegateTypeSymbol* classDelegateTypeSymbol = new ClassDelegateTypeSymbol(classDelegateNode.GetSpan(), classDelegateNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                classDelegateTypeSymbol->SetFileIndex(currentFileIndex);
+                classDelegateTypeSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                classDelegateTypeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                classDelegateTypeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            classDelegateTypeSymbol->SetSourceFile(currentSourceFile);
+            classDelegateTypeSymbol->SetModule(module);
+            MapNode(&classDelegateNode, classDelegateTypeSymbol);
+            SetTypeIdFor(classDelegateTypeSymbol);
+            auto result = container->AddMember(classDelegateTypeSymbol, context);
+            if (result.Error()) return result;
+            BeginContainer(classDelegateTypeSymbol);
+            parameterIndex = 0;
+            return Result<bool>(true);
+        }
+        public void EndClassDelegate()
+        {
+            EndContainer();
+        }
+        [nodiscard]
+        public Result<bool> AddTemplateParameter(TemplateParameterNode* templateParameterNode, SymbolsContext& context)
+        {
+            TemplateParameterSymbol* templateParameterSymbol = new TemplateParameterSymbol(templateParameterNode->GetSpan(), templateParameterNode->Id()->Str());
+            if (templateParameterNode->DefaultTemplateArgument() != null)
+            {
+                templateParameterSymbol->SetHasDefault();
+            }
+            templateParameterSymbol->SetSourceFile(currentSourceFile);
+            templateParameterSymbol->SetModule(module);
+            SetTypeIdFor(templateParameterSymbol);
+            MapNode(templateParameterNode, templateParameterSymbol);
+            auto result = container->AddMember(templateParameterSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddTemplateParameter(IdentifierNode* identifierNode, SymbolsContext& context)
+        {
+            TemplateParameterSymbol* templateParameterSymbol = new TemplateParameterSymbol(identifierNode->GetSpan(), identifierNode->Str());
+            templateParameterSymbol->SetSourceFile(currentSourceFile);
+            templateParameterSymbol->SetModule(module);
+            SetTypeIdFor(templateParameterSymbol);
+            MapNode(identifierNode, templateParameterSymbol);
+            auto result = container->AddMember(templateParameterSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddParameter(ParameterNode& parameterNode, SymbolsContext& context)
+        {
+            bool artificialId = false;
+            ustring parameterName;
+            if (parameterNode.Id() != null)
+            {
+                parameterName = parameterNode.Id()->Str();
+            }
+            else
+            {
+                auto parameterNameResult = ToUtf32("@p" + ToString(parameterIndex));
+                if (parameterNameResult.Error()) return Result<bool>(ErrorId(parameterNameResult.GetErrorId()));
+                parameterName = Rvalue(parameterNameResult.Value());
+                artificialId = true;
+            }
+            ParameterSymbol* parameterSymbol = new ParameterSymbol(parameterNode.GetSpan(), parameterName);
+            if (instantiatingTemplate)
+            {
+                parameterSymbol->SetFileIndex(currentFileIndex);
+                parameterSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                parameterSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                parameterSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            parameterSymbol->SetSourceFile(currentSourceFile);
+            MapNode(&parameterNode, parameterSymbol);
+            auto result = container->AddMember(parameterSymbol, context);
+            if (result.Error()) return result;
+            ++parameterIndex;
+            if (artificialId)
+            {
+                parameterSymbol->SetArtificialName();
+            }
+            return Result<bool>(true);
+        }
+        public void BeginConcept(ConceptNode& conceptNode, bool hasSource)
+        {
+            ConceptSymbol* conceptSymbol = new ConceptSymbol(conceptNode.GetSpan(), conceptNode.Id()->Str());
+            if (hasSource)
+            {
+                conceptSymbol->SetHasSource();
+            }
+            conceptSymbol->SetGroupName(conceptNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                conceptSymbol->SetFileIndex(currentFileIndex);
+                conceptSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                conceptSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                conceptSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            conceptSymbol->SetSourceFile(currentSourceFile);
+            conceptSymbol->SetModule(module);
+            MapNode(&conceptNode, conceptSymbol);
+            SetTypeIdFor(conceptSymbol);
+            BeginContainer(conceptSymbol);
+        }
+        [nodiscard]
+        public Result<bool> EndConcept(SymbolsContext& context)
+        {
+            ConceptSymbol* conceptSymbol = cast<ConceptSymbol*>(container);
+            EndContainer();
+            auto result = container->AddMember(conceptSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> BeginAxiom(AxiomNode& axiomNode)
+        {
+            ustring axiomId;
+            if (axiomNode.Id() != null)
+            {
+                axiomId = axiomNode.Id()->Str();
+            }
+            else
+            {
+                auto result = ToUtf32("@axiom" + ToString(NextAxiomNumber()));
+                if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+                axiomId = Rvalue(result.Value());
+            }
+            AxiomSymbol* axiomSymbol = new AxiomSymbol(axiomNode.GetSpan(), axiomId);
+            if (instantiatingTemplate)
+            {
+                axiomSymbol->SetFileIndex(currentFileIndex);
+                axiomSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                axiomSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                axiomSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            axiomSymbol->SetSourceFile(currentSourceFile);
+            MapNode(&axiomNode, axiomSymbol);
+            BeginContainer(axiomSymbol);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> EndAxiom(SymbolsContext& context)
+        {
+            AxiomSymbol* axiomSymbol = cast<AxiomSymbol*>(container);
+            EndContainer();
+            auto result = container->AddMember(axiomSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> BeginDeclarationBlock(Node& node, SymbolsContext& context)
+        {
+            auto utf32result = ToUtf32(ToString(GetNextDeclarationBlockIndex()));
+            if (utf32result.Error()) return Result<bool>(ErrorId(utf32result.GetErrorId()));
+            DeclarationBlockSymbol* declarationBlockSymbol = new DeclarationBlockSymbol(node.GetSpan(), u"@locals" + utf32result.Value());
+            if (instantiatingTemplate)
+            {
+                declarationBlockSymbol->SetFileIndex(currentFileIndex);
+                declarationBlockSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                declarationBlockSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                declarationBlockSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            declarationBlockSymbol->SetSourceFile(currentSourceFile);
+            declarationBlockSymbol->SetModule(module);
+            MapNode(&node, declarationBlockSymbol);
+            auto result = container->AddMember(declarationBlockSymbol, context);
+            if (result.Error()) return result;
+            BeginContainer(declarationBlockSymbol);
+            return Result<bool>(true);
+        }
+        public void EndDeclarationBlock()
+        {
+            EndContainer();
+        }
+        [nodiscard]
+        public Result<bool> BeginEnumType(EnumTypeNode& enumTypeNode, SymbolsContext& context)
+        {
+            EnumTypeSymbol* enumTypeSymbol = new EnumTypeSymbol(enumTypeNode.GetSpan(), enumTypeNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                enumTypeSymbol->SetFileIndex(currentFileIndex);
+                enumTypeSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                enumTypeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                enumTypeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            enumTypeSymbol->SetSourceFile(currentSourceFile);
+            enumTypeSymbol->SetModule(module);
+            MapNode(&enumTypeNode, enumTypeSymbol);
+            SetTypeIdFor(enumTypeSymbol);
+            auto result = container->AddMember(enumTypeSymbol, context);
+            if (result.Error()) return result;
+            BeginContainer(enumTypeSymbol);
+            return Result<bool>(true);
+        }
+        public void EndEnumType()
+        {
+            EndContainer();
+        }
+        [nodiscard]
+        public Result<bool> AddEnumConstant(EnumConstantNode& enumConstantNode, SymbolsContext& context)
+        {
+            EnumConstantSymbol* enumConstantSymbol = new EnumConstantSymbol(enumConstantNode.GetSpan(), enumConstantNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                enumConstantSymbol->SetFileIndex(currentFileIndex);
+                enumConstantSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                enumConstantSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                enumConstantSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            enumConstantSymbol->SetSourceFile(currentSourceFile);
+            enumConstantSymbol->SetModule(module);
+            MapNode(&enumConstantNode, enumConstantSymbol);
+            auto result = container->AddMember(enumConstantSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddConstant(ConstantNode& constantNode, SymbolsContext& context)
+        {
+            ConstantSymbol* constantSymbol = new ConstantSymbol(constantNode.GetSpan(), constantNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                constantSymbol->SetFileIndex(currentFileIndex);
+                constantSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                constantSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                constantSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            constantSymbol->SetSourceFile(currentSourceFile);
+            constantSymbol->SetModule(module);
+            Result<string> strValueResult = ToUtf8(constantNode.StrValue());
+            if (strValueResult.Error()) return Result<bool>(ErrorId(strValueResult.GetErrorId()));
+            constantSymbol->SetStrValue(strValueResult.Value());
+            MapNode(&constantNode, constantSymbol);
+            auto result = container->AddMember(constantSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddAliasType(TypedefNode& typedefNode, SymbolsContext& context)
+        {
+            AliasTypeSymbol* aliasTypeSymbol = new AliasTypeSymbol(typedefNode.GetSpan(), typedefNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                aliasTypeSymbol->SetFileIndex(currentFileIndex);
+                aliasTypeSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                aliasTypeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                aliasTypeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            aliasTypeSymbol->SetSourceFile(currentSourceFile);
+            aliasTypeSymbol->SetModule(module);
+            MapNode(&typedefNode, aliasTypeSymbol);
+            auto result = container->AddMember(aliasTypeSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddLocalVariable(ConstructionStatementNode& constructionStatementNode, SymbolsContext& context)
+        {
+            LocalVariableSymbol* localVariableSymbol = new LocalVariableSymbol(constructionStatementNode.GetSpan(), constructionStatementNode.Id()->Str());
+            if (instantiatingTemplate)
+            {
+                localVariableSymbol->SetFileIndex(currentFileIndex);
+                localVariableSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                localVariableSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                localVariableSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            localVariableSymbol->SetSourceFile(currentSourceFile);
+            localVariableSymbol->SetModule(module);
+            MapNode(&constructionStatementNode, localVariableSymbol);
+            auto result = container->AddMember(localVariableSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Resolve(const List<Symbol*>& resolutionList)
+        {
+            for (Symbol* symbol : resolutionList)
+            {
+                auto result = symbol->Resolve(this);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public TypeSymbol* MakeDerivedType(SymbolsContext& context, TypeSymbol* baseType, Derivations derivations)
+        {
+            #assert(baseType != null);
+            if (derivations == Derivations.none) return baseType;
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            List<DerivedTypeSymbol*>& mappedDerivedTypes = derivedTypeMap[baseType->TypeId()];
+            int n = cast<int>(mappedDerivedTypes.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                DerivedTypeSymbol* derivedType = mappedDerivedTypes[i];
+                if (derivedType->GetDerivations() == derivations)
+                {
+                    return derivedType;
+                }
+            }
+            DerivedTypeSymbol* derivedType = new DerivedTypeSymbol(baseType->Span(), MakeDerivedTypeName(baseType, derivations), baseType, derivations);
+            derivedType->SetParent(&globalNs);
+            derivedType->SetModule(module);
+            derivedType->ComputeTypeId(context);
+            mappedDerivedTypes.Add(derivedType);
+            derivedTypes.Add(UniquePtr<DerivedTypeSymbol>(derivedType));
+            return derivedType;
+        }
+        public ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const List<TypeSymbol*>& templateArgumentTypes)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            ClassTemplateSpecializationKey key(classTemplate, templateArgumentTypes);
+            auto it = classTemplateSpecializationMap.Find(key);
+            if (it != classTemplateSpecializationMap.End())
+            {
+                ClassTemplateSpecializationSymbol* classTemplateSpecialization = it->second;
+                return classTemplateSpecialization;
+            }
+            ustring classTemplateSpecializationName = MakeClassTemplateSpecializationName(classTemplate, templateArgumentTypes);
+            ClassTemplateSpecializationSymbol* classTemplateSpecialization = new ClassTemplateSpecializationSymbol(classTemplate->Span(), classTemplateSpecializationName,
+                classTemplate, templateArgumentTypes);
+            SetTypeIdFor(classTemplateSpecialization);
+            classTemplateSpecialization->SetGroupName(classTemplate->GroupName());
+            classTemplateSpecializationMap[key] = classTemplateSpecialization;
+            classTemplateSpecialization->SetParent(&globalNs);
+            classTemplateSpecialization->SetFileIndex(classTemplate->FileIndex());
+            classTemplateSpecialization->SetModuleId(classTemplate->ModuleId());
+            classTemplateSpecialization->SetModule(module);
+            classTemplateSpecializations.Add(UniquePtr<ClassTemplateSpecializationSymbol>(classTemplateSpecialization));
+            ++numSpecializationsNew;
+            return classTemplateSpecialization;
+        }
+        public ClassTemplateSpecializationSymbol* CopyClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            ClassTypeSymbol* classTemplate = source->ClassTemplate();
+            const List<TypeSymbol*>& templateArgumentTypes = source->TemplateArgumentTypes();
+            ClassTemplateSpecializationKey key(classTemplate, templateArgumentTypes);
+            ustring classTemplateSpecializationName = MakeClassTemplateSpecializationName(classTemplate, templateArgumentTypes);
+            ClassTemplateSpecializationSymbol* copy = new ClassTemplateSpecializationSymbol(
+                source->Span(), classTemplateSpecializationName, classTemplate, templateArgumentTypes);
+            copy->SetTypeId(source->TypeId());
+            copy->SetGroupName(classTemplate->GroupName());
+            classTemplateSpecializationMap[key] = copy;
+            copy->SetParent(&globalNs);
+            copy->SetFileIndex(source->FileIndex());
+            copy->SetModuleId(source->ModuleId());
+            copy->SetModule(module);
+            classTemplateSpecializations.Add(UniquePtr<ClassTemplateSpecializationSymbol>(copy));
+            derivedTypeMap[copy->TypeId()].Clear();
+            specializationCopyMap[source] = copy;
+            ++numSpecializationsCopied;
+            return copy;
+        }
+        public ClassTemplateSpecializationSymbol* GetCurrentClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source)
+        {
+            auto it = specializationCopyMap.Find(source);
+            if (it != specializationCopyMap.End())
+            {
+                return it->second;
+            }
+            return source;
+        }
+        public Result<ArrayTypeSymbol*> MakeArrayType(SymbolsContext& context, TypeSymbol* elementType, long size)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            ArrayKey key(elementType, size);
+            auto it = arrayTypeMap.Find(key);
+            if (it != arrayTypeMap.End())
+            {
+                return it->second;
+            }
+            Result<ustring> arrayTypeNameResult = MakeArrayTypeName(elementType, size);
+            if (arrayTypeNameResult.Error()) return Result<ArrayTypeSymbol*>(ErrorId(arrayTypeNameResult.GetErrorId()));
+            ustring arrayTypeName = Rvalue(arrayTypeNameResult.Value());
+            ArrayTypeSymbol* arrayType = new ArrayTypeSymbol(elementType->Span(), arrayTypeName, elementType, size);
+            SetTypeIdFor(arrayType);
+            arrayTypeMap[key] = arrayType;
+            arrayType->SetParent(&globalNs);
+            arrayType->SetModule(module);
+            ArrayLengthFunction* arrayLengthFunction = new ArrayLengthFunction(context, arrayType);
+            SetFunctionIdFor(arrayLengthFunction);
+            Result<bool> result = arrayType->AddMember(arrayLengthFunction, context);
+            if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
+            ArrayBeginFunction* arrayBeginFunction = new ArrayBeginFunction(context, arrayType);
+            SetFunctionIdFor(arrayBeginFunction);
+            result = arrayType->AddMember(arrayBeginFunction, context);
+            if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
+            ArrayEndFunction* arrayEndFunction = new ArrayEndFunction(context, arrayType);
+            SetFunctionIdFor(arrayEndFunction);
+            result = arrayType->AddMember(arrayEndFunction, context);
+            if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
+            ArrayCBeginFunction* arrayCBeginFunction = new ArrayCBeginFunction(context, arrayType);
+            SetFunctionIdFor(arrayCBeginFunction);
+            result = arrayType->AddMember(arrayCBeginFunction, context);
+            if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
+            ArrayCEndFunction* arrayCEndFunction = new ArrayCEndFunction(context, arrayType);
+            SetFunctionIdFor(arrayCEndFunction);
+            result = arrayType->AddMember(arrayCEndFunction, context);
+            if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
+            AliasTypeSymbol* iterator = new AliasTypeSymbol(elementType->Span(), u"Iterator");
+            iterator->SetModule(module);
+            iterator->SetAccess(SymbolAccess.public_);
+            iterator->SetType(arrayType->ElementType()->AddPointer(context));
+            iterator->SetBound();
+            result = arrayType->AddMember(iterator, context);
+            if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
+            AliasTypeSymbol* constIterator = new AliasTypeSymbol(elementType->Span(), u"ConstIterator");
+            constIterator->SetModule(module);
+            constIterator->SetAccess(SymbolAccess.public_);
+            constIterator->SetType(arrayType->ElementType()->AddConst(context)->AddPointer(context));
+            constIterator->SetBound();
+            result = arrayType->AddMember(constIterator, context);
+            if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
+            arrayTypes.Add(UniquePtr<ArrayTypeSymbol>(arrayType));
+            return Result<ArrayTypeSymbol*>(arrayType);
+        }
+        public void MapConcept(ConceptSymbol* concept_)
+        {
+            conceptMap[concept_->TypeId()] = concept_;
+        }
+        public Result<ConceptSymbol*> GetConcept(const Uuid& typeId) const
+        {
+            auto it = conceptMap.Find(typeId);
+            if (it != conceptMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                auto typeIdStrResult = ToString(typeId);
+                if (typeIdStrResult.Error()) return Result<ConceptSymbol*>(ErrorId(typeIdStrResult.GetErrorId()));
+                string typeIdStr = Rvalue(typeIdStrResult.Value());
+                int errorId = AllocateError("concept for id " + typeIdStr + " not found");
+                return Result<ConceptSymbol*>(ErrorId(errorId));
+            }
+        }
+        public void MapType(TypeSymbol* type, bool full)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            typeMap[type->TypeId()] = type;
+            typeNameMap[type->FullName()] = type;
+            if (full)
+            {
+                if (type->IsDerivedTypeSymbol())
+                {
+                    DerivedTypeSymbol* derivedTypeSymbol = cast<DerivedTypeSymbol*>(type);
+                    if (derivedTypeSymbol->BaseType() != null)
+                    {
+                        List<DerivedTypeSymbol*>& mappedDerivedTypes = derivedTypeMap[derivedTypeSymbol->BaseType()->TypeId()];
+                        if (Find(mappedDerivedTypes.Begin(), mappedDerivedTypes.End(), derivedTypeSymbol) == mappedDerivedTypes.End())
+                        {
+                            mappedDerivedTypes.Add(derivedTypeSymbol);
+                        }
+                    }
+                }
+                else if (type->IsClassTemplateSpecializationSymbol())
+                {
+                    ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(type);
+                    ClassTemplateSpecializationKey key(specialization->ClassTemplate(), specialization->TemplateArgumentTypes());
+                    auto it = classTemplateSpecializationMap.Find(key);
+                    if (it == classTemplateSpecializationMap.End())
+                    {
+                        classTemplateSpecializationMap[key] = specialization;
+                    }
+                }
+                else if (type->IsArrayTypeSymbol())
+                {
+                    ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(type);
+                    ArrayKey key(arrayType->ElementType(), arrayType->Size());
+                    arrayTypeMap[key] = arrayType;
+                }
+            }
+        }
+        public Result<TypeSymbol*> GetType(const Uuid& typeId) const
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            auto it = typeMap.Find(typeId);
+            if (it != typeMap.End())
+            {
+                return Result<TypeSymbol*>(it->second);
+            }
+            else
+            {
+                auto typeIdStrResult = ToString(typeId);
+                if (typeIdStrResult.Error()) return Result<TypeSymbol*>(ErrorId(typeIdStrResult.GetErrorId()));
+                string typeIdStr = Rvalue(typeIdStrResult.Value());
+                int errorId = AllocateError("type for id " + typeIdStr + " not found");
+                return Result<TypeSymbol*>(ErrorId(errorId));
+            }
+        }
+        public void MapFunction(FunctionSymbol* function)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            functionMap[function->FunctionId()] = function;
+        }
+        public Result<FunctionSymbol*> GetFunction(const Uuid& functionId) const
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            auto it = functionMap.Find(functionId);
+            if (it != functionMap.End())
+            {
+                return Result<FunctionSymbol*>(it->second);
+            }
+            else
+            {
+                auto functionIdStrResult = ToString(functionId);
+                if (functionIdStrResult.Error()) return Result<FunctionSymbol*>(ErrorId(functionIdStrResult.GetErrorId()));
+                string functionIdStr = Rvalue(functionIdStrResult.Value());
+                int errorId = AllocateError("function for id " + functionIdStr + " not found");
+                return Result<FunctionSymbol*>(ErrorId(errorId));
+            }
+        }
+        public void MapNode(Node* node, Symbol* symbol)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            nodeSymbolMap[node] = symbol;
+            symbolNodeMap[symbol] = node;
+        }
+        public Result<Symbol*> GetSymbol(Node* node) const
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            auto it = nodeSymbolMap.Find(node);
+            if (it != nodeSymbolMap.End())
+            {
+                return Result<Symbol*>(it->second);
+            }
+            else
+            {
+                int errorId = MakeError("symbol for node not found", node->GetFullSpan());
+                return Result<Symbol*>(ErrorId(errorId));
+            }
+        }
+        public Node* GetNode(Symbol* symbol) const
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            auto it = symbolNodeMap.Find(symbol);
+            if (it != symbolNodeMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void PushInstantiatingTemplate()
+        {
+            instantiatingTemplateStack.Push(instantiatingTemplate);
+            instantiatingTemplate = true;
+        }
+        public void PushCurrentFileIndex(int currentFileIndex_)
+        {
+            fileIndexStack.Push(currentFileIndex);
+            currentFileIndex = currentFileIndex_;
+        }
+        public void PushCurrentModuleId(const Uuid& currentModuleId_)
+        {
+            moduleIdStack.Push(currentModuleId);
+            currentModuleId = currentModuleId_;
+        }
+        public void PopInstantiatingTemplate()
+        {
+            instantiatingTemplate = instantiatingTemplateStack.Pop();
+        }
+        public void PopCurrentFileIndex()
+        {
+             currentFileIndex = fileIndexStack.Pop();
+        }
+        public void PopCurrentModuleId()
+        {
+            currentModuleId = moduleIdStack.Pop();
+        }
+        public inline int GetNextDeclarationBlockIndex()
+        {
+            return declarationBlockIndex++;
+        }
+        public inline void ResetDeclarationBlockIndex()
+        {
+            declarationBlockIndex = 0;
+        }
+        public inline int NextAxiomNumber()
+        {
+            return axiomNumber++;
+        }
+        public inline FunctionSymbol* MainFunctionSymbol() const
+        {
+            return mainFunctionSymbol;
+        }
+        public inline FunctionSymbol* CreatedFunctionSymbol() const
+        {
+            return createdFunctionSymbol;
+        }
+        [nodiscard]
+        public Result<bool> AddPolymorphicClass(ClassTypeSymbol* polymorphicClass)
+        {
+            if (!polymorphicClass->IsPolymorphic())
+            {
+                int errorId = MakeError("not a polymorphic class", polymorphicClass->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            polymorphicClasses.Insert(polymorphicClass);
+            return Result<bool>(true);
+        }
+        public void AddConversion(FunctionSymbol* conversion)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            conversionTable.AddConversion(conversion);
+        }
+        public FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            return conversionTable.GetConversion(sourceType, targetType, context);
+        }
+        public void AddFunctionSymbol(UniquePtr<FunctionSymbol>&& functionSymbol)
+        {
+            LockGuard<RecursiveMutex> lock(GetModule()->Lock());
+            functionSymbols.Add(functionSymbol);
+        }
+        public inline void SetCurrentClass(ClassTypeSymbol* currentClass_)
+        {
+            currentClass = currentClass_;
+        }
+        private Module* module;
+        private List<Uuid> derivationIds;
+        private List<Uuid> positionIds;
+        private NamespaceSymbol globalNs;
+        private SourceFileNode* currentSourceFile;
+        private Map<Uuid, TypeSymbol*> typeMap;
+        private Map<Uuid, ConceptSymbol*> conceptMap;
+        private Map<Uuid, FunctionSymbol*> functionMap;
+        private Map<ustring, TypeSymbol*> typeNameMap;
+        private Map<Uuid, List<DerivedTypeSymbol*>> derivedTypeMap;
+        private List<UniquePtr<DerivedTypeSymbol>> derivedTypes;
+        private HashMap<ClassTemplateSpecializationKey, ClassTemplateSpecializationSymbol*> classTemplateSpecializationMap;
+        private List<UniquePtr<ClassTemplateSpecializationSymbol>> classTemplateSpecializations;
+        private Map<ClassTemplateSpecializationSymbol*, ClassTemplateSpecializationSymbol*> specializationCopyMap;
+        private HashMap<ArrayKey, ArrayTypeSymbol*> arrayTypeMap;
+        private List<UniquePtr<ArrayTypeSymbol>> arrayTypes;
+        private int numSpecializationsCopied;
+        private int numSpecializationsNew;
+        private ContainerSymbol* container;
+        private Stack<ContainerSymbol*> containerStack;
+        private Map<Node*, Symbol*> nodeSymbolMap;
+        private Map<Symbol*, Node*> symbolNodeMap;
+        private bool instantiatingTemplate;
+        private Stack<bool> instantiatingTemplateStack;
+        private int currentFileIndex;
+        private Stack<int> fileIndexStack;
+        private Uuid currentModuleId;
+        private Stack<Uuid> moduleIdStack;
+        private ClassTypeSymbol* currentClass;
+        private Stack<ClassTypeSymbol*> currentClassStack;
+        private InterfaceTypeSymbol* currentInterface;
+        private int parameterIndex;
+        private int declarationBlockIndex;
+        private int axiomNumber;
+        private FunctionSymbol* mainFunctionSymbol;
+        private FunctionSymbol* createdFunctionSymbol;
+        private Set<ClassTypeSymbol*> polymorphicClasses;
+        private ConversionTable conversionTable;
+        private List<UniquePtr<FunctionSymbol>> functionSymbols;
+    }
+
+    [nodiscard]
+    public Result<bool> InitCoreSymbolTable(SymbolsContext& context, SymbolTable* symbolTable, const System.Lex.Span& rootSpan, SourceFileNode* rootSourceFile)
+    {
+        symbolTable->SetCurrentSourceFile(rootSourceFile);
+        symbolTable->InitUuids();
+        BoolTypeSymbol* boolTypeSymbol = new BoolTypeSymbol(rootSpan);
+        auto result = symbolTable->AddTypeSymbolToGlobalScope(boolTypeSymbol, context);
+        if (result.Error()) return result;
+        SByteTypeSymbol* sbyteTypeSymbol = new SByteTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(sbyteTypeSymbol, context);
+        if (result.Error()) return result;
+        ByteTypeSymbol* byteTypeSymbol = new ByteTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(byteTypeSymbol, context);
+        if (result.Error()) return result;
+        ShortTypeSymbol* shortTypeSymbol = new ShortTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(shortTypeSymbol, context);
+        if (result.Error()) return result;
+        UShortTypeSymbol* ushortTypeSymbol = new UShortTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(ushortTypeSymbol, context);
+        if (result.Error()) return result;
+        IntTypeSymbol* intTypeSymbol = new IntTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(intTypeSymbol, context);
+        if (result.Error()) return result;
+        UIntTypeSymbol* uintTypeSymbol = new UIntTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(uintTypeSymbol, context);
+        if (result.Error()) return result;
+        LongTypeSymbol* longTypeSymbol = new LongTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(longTypeSymbol, context);
+        if (result.Error()) return result;
+        ULongTypeSymbol* ulongTypeSymbol = new ULongTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(ulongTypeSymbol, context);
+        if (result.Error()) return result;
+        FloatTypeSymbol* floatTypeSymbol = new FloatTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(floatTypeSymbol, context);
+        if (result.Error()) return result;
+        DoubleTypeSymbol* doubleTypeSymbol = new DoubleTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(doubleTypeSymbol, context);
+        if (result.Error()) return result;
+        CharTypeSymbol* charTypeSymbol = new CharTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(charTypeSymbol, context);
+        if (result.Error()) return result;
+        WCharTypeSymbol* wcharTypeSymbol = new WCharTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(wcharTypeSymbol, context);
+        if (result.Error()) return result;
+        UCharTypeSymbol* ucharTypeSymbol = new UCharTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(ucharTypeSymbol, context);
+        if (result.Error()) return result;
+        VoidTypeSymbol* voidTypeSymbol = new VoidTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(voidTypeSymbol, context);
+        if (result.Error()) return result;
+        AutoTypeSymbol* autoTypeSymbol = new AutoTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(autoTypeSymbol, context);
+        if (result.Error()) return result;
+        NullPtrTypeSymbol* nullPtrTypeSymbol = new NullPtrTypeSymbol(rootSpan);
+        result = symbolTable->AddTypeSymbolToGlobalScope(nullPtrTypeSymbol, context);
+        if (result.Error()) return result;
+        result = MakeBasicTypeOperations(context, symbolTable, rootSpan,
+            boolTypeSymbol, sbyteTypeSymbol, byteTypeSymbol, shortTypeSymbol, ushortTypeSymbol, intTypeSymbol, uintTypeSymbol,
+            longTypeSymbol, ulongTypeSymbol, floatTypeSymbol, doubleTypeSymbol, charTypeSymbol, wcharTypeSymbol, ucharTypeSymbol, voidTypeSymbol);
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+}

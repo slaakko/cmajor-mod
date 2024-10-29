@@ -1,0 +1,1336 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace intermediate
+{
+    public enum TypeKind : byte
+    {
+        fundamentalType, structureType, arrayType, functionType, pointerType
+    }
+
+    public const int voidTypeId = 0;
+    public const int boolTypeId = 1;
+    public const int sbyteTypeId = 2;
+    public const int byteTypeId = 3;
+    public const int shortTypeId = 4;
+    public const int ushortTypeId = 5;
+    public const int intTypeId = 6;
+    public const int uintTypeId = 7;
+    public const int longTypeId = 8;
+    public const int ulongTypeId = 9;
+    public const int floatTypeId = 10;
+    public const int doubleTypeId = 11;
+    public const int userTypeId = 12;
+    public const int pointerTypeId = cast<int>(1) << 31;
+
+    public constexpr inline bool IsFundamentalTypeId(int typeId)
+    {
+        return typeId >= 0 && typeId < userTypeId;
+    }
+
+    public constexpr inline bool IsPointerTypeId(int typeId)
+    {
+        return (typeId & pointerTypeId) != 0;
+    }
+
+    public Result<int> MakeUserTypeId(const string& typeIdStr)
+    {
+        Result<int> typeIdResult = ParseInt(typeIdStr.Substring(2));
+        if (typeIdResult.Error()) return Result<int>(ErrorId(typeIdResult.GetErrorId()));
+        int typeId = typeIdResult.Value();
+        return Result<int>(userTypeId + typeId);
+    }
+
+    public constexpr inline int MakeUserTypeId(int typeId)
+    {
+        return typeId - userTypeId;
+    }
+
+    public constexpr inline int MakePointerTypeId(int baseTypeId, sbyte pointerCount)
+    {
+        return pointerTypeId | (cast<int>(pointerCount) << (cast<int>(32) - 8)) | baseTypeId;
+    }
+
+    public constexpr inline int MakeTypeId(int baseTypeId, sbyte pointerCount)
+    {
+        if (pointerCount == 0)
+        {
+            return baseTypeId;
+        }
+        else
+        {
+            return MakePointerTypeId(baseTypeId, pointerCount);
+        }
+    }
+
+    public constexpr inline int GetBaseTypeId(int typeId)
+    {
+        return typeId & (~(pointerTypeId | (cast<int>(0x7F) << (cast<int>(32) - 8))) | cast<int>(0x00FFFFFF));
+    }
+
+    public constexpr inline sbyte GetPointerCount(int typeId)
+    {
+        return cast<sbyte>((typeId & (cast<int>(0x7F) << (cast<int>(32) - 8))) >> (cast<int>(32) - 8));
+    }
+
+    public abstract class Type
+    {
+        public Type(const System.Lex.Span& span_, TypeKind kind_, int id_) : span(span_), kind(kind_), id(id_)
+        {
+        }
+        public default virtual ~Type();
+        public virtual void Accept(Visitor& visitor)
+        {
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            return formatter.Write(Name());
+        }
+        [nodiscard]
+        public virtual Result<bool> WriteDeclaration(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.Write(Name());
+            if (result.Error()) return result;
+            result = formatter.Write(" = type ");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public abstract string Name() const;
+        public abstract long Size() const;
+        public abstract long Alignment() const;
+        public inline const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline TypeKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsFundamentalType() const
+        {
+            return kind == TypeKind.fundamentalType;
+        }
+        public inline bool IsCompoundType() const
+        {
+            return !IsFundamentalType();
+        }
+        public inline bool IsPointerType() const
+        {
+            return kind == TypeKind.pointerType;
+        }
+        public inline bool IsStructureType() const
+        {
+            return kind == TypeKind.structureType;
+        }
+        public inline bool IsArrayType() const
+        {
+            return kind == TypeKind.arrayType;
+        }
+        public inline bool IsFunctionType() const
+        {
+            return kind == TypeKind.functionType;
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public inline bool IsVoidType() const
+        {
+            return id == voidTypeId;
+        }
+        public inline bool IsBooleanType() const
+        {
+            return id == boolTypeId;
+        }
+        public inline bool IsFloatType() const
+        {
+            return id == floatTypeId;
+        }
+        public inline bool IsDoubleType() const
+        {
+            return id == doubleTypeId;
+        }
+        public bool IsIntegerType() const
+        {
+            switch (id)
+            {
+                case sbyteTypeId:
+                case byteTypeId:
+                case shortTypeId:
+                case ushortTypeId:
+                case intTypeId:
+                case uintTypeId:
+                case longTypeId:
+                case ulongTypeId:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool IsFloatingPointType() const
+        {
+            switch (id)
+            {
+                case floatTypeId:
+                case doubleTypeId:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public inline bool IsArithmeticType() const
+        {
+            return IsIntegerType() || IsFloatingPointType();
+        }
+        public bool IsUnsignedType() const
+        {
+            switch (id)
+            {
+                case byteTypeId:
+                case ushortTypeId:
+                case uintTypeId:
+                case ulongTypeId:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool IsSignedType() const
+        {
+            switch (id)
+            {
+                case sbyteTypeId:
+                case shortTypeId:
+                case intTypeId:
+                case longTypeId:
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public Result<Type*> AddPointer(Context* context) const
+        {
+            if (IsPointerType())
+            {
+                PointerType* pointerType = cast<PointerType*>(this);
+                return context->GetTypes()->MakePointerType(System.Lex.Span(), GetBaseTypeId(pointerType->Id()), GetPointerCount(pointerType->Id()) + 1);
+            }
+            else
+            {
+                return context->GetTypes()->MakePointerType(System.Lex.Span(), Id(), 1);
+            }
+        }
+        public Result<Type*> RemovePointer(Context* context) const
+        {
+            if (IsPointerType())
+            {
+                PointerType* pointerType = cast<PointerType*>(this);
+                return pointerType->BaseType();
+            }
+            else
+            {
+                int errorId = AllocateError("pointer type expected");
+                return Result<Type*>(ErrorId(errorId));
+            }
+            return Result<Type*>(cast<Type*>(null));
+        }
+        [nodiscard]
+        public virtual Result<bool> Add(Types* types)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> Resolve(Types* types)
+        {
+            return Result<bool>(true);
+        }
+        public Result<StructureType*> GetStructurePointeeType(const System.Lex.Span& span, Context* context)
+        {
+            Result<Type*> pointeeTypeResult = RemovePointer(context);
+            if (pointeeTypeResult.Error()) return Result<StructureType*>(ErrorId(pointeeTypeResult.GetErrorId()));
+            Type* pointeeType = pointeeTypeResult.Value();
+            if (pointeeType->IsStructureType())
+            {
+                return Result<StructureType*>(cast<StructureType*>(pointeeType));
+            }
+            else
+            {
+                return Result<StructureType*>(ErrorId(Error("structure type expected", span, context)));
+            }
+        }
+        public Result<ArrayType*> GetArrayPointeeType(const System.Lex.Span& span, Context* context)
+        {
+            Result<Type*> pointeeTypeResult = RemovePointer(context);
+            if (pointeeTypeResult.Error()) return Result<ArrayType*>(ErrorId(pointeeTypeResult.GetErrorId()));
+            Type* pointeeType = pointeeTypeResult.Value();
+            if (pointeeType->IsArrayType())
+            {
+                return Result<ArrayType*>(cast<ArrayType*>(pointeeType));
+            }
+            else
+            {
+                return Result<ArrayType*>(ErrorId(Error("array type expected", span, context)));
+            }
+        }
+        private System.Lex.Span span;
+        private TypeKind kind;
+        private int id;
+    }
+
+    public class VoidType : Type
+    {
+        public VoidType() : base(System.Lex.Span(), TypeKind.fundamentalType, voidTypeId)
+        {
+        }
+        public override string Name() const
+        {
+            return "void";
+        }
+        public override long Size() const
+        {
+            return -1;
+        }
+        public override long Alignment() const
+        {
+            return -1;
+        }
+    }
+
+    public class BoolType : Type
+    {
+        public BoolType() : base(System.Lex.Span(), TypeKind.fundamentalType, boolTypeId), defaultValue(false, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "bool";
+        }
+        public override long Size() const
+        {
+            return 1;
+        }
+        public override long Alignment() const
+        {
+            return 1;
+        }
+        public inline BoolValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private BoolValue defaultValue;
+    }
+
+    public class SByteType : Type
+    {
+        public SByteType() : base(System.Lex.Span(), TypeKind.fundamentalType, sbyteTypeId), defaultValue(0, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "sbyte";
+        }
+        public override long Size() const
+        {
+            return 1;
+        }
+        public override long Alignment() const
+        {
+            return 1;
+        }
+        public inline SByteValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private SByteValue defaultValue;
+    }
+
+    public class ByteType : Type
+    {
+        public ByteType() : base(System.Lex.Span(), TypeKind.fundamentalType, byteTypeId), defaultValue(0u, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "byte";
+        }
+        public override long Size() const
+        {
+            return 1;
+        }
+        public override long Alignment() const
+        {
+            return 1;
+        }
+        public inline ByteValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private ByteValue defaultValue;
+    }
+
+    public class ShortType : Type
+    {
+        public ShortType() : base(System.Lex.Span(), TypeKind.fundamentalType, shortTypeId), defaultValue(0, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "short";
+        }
+        public override long Size() const
+        {
+            return 2;
+        }
+        public override long Alignment() const
+        {
+            return 2;
+        }
+        public inline ShortValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private ShortValue defaultValue;
+    }
+
+    public class UShortType : Type
+    {
+        public UShortType() : base(System.Lex.Span(), TypeKind.fundamentalType, ushortTypeId), defaultValue(0u, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "ushort";
+        }
+        public override long Size() const
+        {
+            return 2;
+        }
+        public override long Alignment() const
+        {
+            return 2;
+        }
+        public inline UShortValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private UShortValue defaultValue;
+    }
+
+    public class IntType : Type
+    {
+        public IntType() : base(System.Lex.Span(), TypeKind.fundamentalType, intTypeId), defaultValue(0, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "int";
+        }
+        public override long Size() const
+        {
+            return 4;
+        }
+        public override long Alignment() const
+        {
+            return 4;
+        }
+        public inline IntValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private IntValue defaultValue;
+    }
+
+    public class UIntType : Type
+    {
+        public UIntType() : base(System.Lex.Span(), TypeKind.fundamentalType, uintTypeId), defaultValue(0u, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "uint";
+        }
+        public override long Size() const
+        {
+            return 4;
+        }
+        public override long Alignment() const
+        {
+            return 4;
+        }
+        public inline UIntValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private UIntValue defaultValue;
+    }
+
+    public class LongType : Type
+    {
+        public LongType() : base(System.Lex.Span(), TypeKind.fundamentalType, longTypeId), defaultValue(0, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "long";
+        }
+        public override long Size() const
+        {
+            return 8;
+        }
+        public override long Alignment() const
+        {
+            return 8;
+        }
+        public inline LongValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private LongValue defaultValue;
+    }
+
+    public class ULongType : Type
+    {
+        public ULongType() : base(System.Lex.Span(), TypeKind.fundamentalType, ulongTypeId), defaultValue(0u, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "ulong";
+        }
+        public override long Size() const
+        {
+            return 8;
+        }
+        public override long Alignment() const
+        {
+            return 8;
+        }
+        public inline ULongValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private ULongValue defaultValue;
+    }
+
+    public class FloatType : Type
+    {
+        public FloatType() : base(System.Lex.Span(), TypeKind.fundamentalType, floatTypeId), defaultValue(0.0f, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "float";
+        }
+        public override long Size() const
+        {
+            return 4;
+        }
+        public override long Alignment() const
+        {
+            return 4;
+        }
+        public inline FloatValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private FloatValue defaultValue;
+    }
+
+    public class DoubleType : Type
+    {
+        public DoubleType() : base(System.Lex.Span(), TypeKind.fundamentalType, doubleTypeId), defaultValue(0.0, this)
+        {
+        }
+        public override string Name() const
+        {
+            return "double";
+        }
+        public override long Size() const
+        {
+            return 8;
+        }
+        public override long Alignment() const
+        {
+            return 8;
+        }
+        public inline DoubleValue* DefaultValue() const
+        {
+            return &defaultValue;
+        }
+        private DoubleValue defaultValue;
+    }
+
+    public class TypeRef
+    {
+        public TypeRef() : span(), id(-1), type(null)
+        {
+        }
+        public TypeRef(const System.Lex.Span& span_, int id_) : span(span_), id(id_), type(null)
+        {
+        }
+        public inline System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public inline Type* GetType() const
+        {
+            #assert(type != null);
+            return type;
+        }
+        public inline void SetType(Type* type_)
+        {
+            #assert(type_ != null);
+            type = type_;
+        }
+        private System.Lex.Span span;
+        private int id;
+        private Type* type;
+    }
+
+    public TypeRef MakeTypeRef(const System.Lex.Span& span, int baseTypeId, sbyte pointerCount)
+    {
+        return TypeRef(span, MakeTypeId(baseTypeId, pointerCount));
+    }
+
+    public class StructureType : Type
+    {
+        public StructureType(const System.Lex.Span& span_, int typeId_, const List<TypeRef>& fieldTypeRefs_) :
+            base(span_, TypeKind.structureType, typeId_), fieldTypeRefs(fieldTypeRefs_), sizeAndOffsetsComputed(false), size(0), fieldOffsets()
+        {
+        }
+        public StructureType(int typeId_) : base(System.Lex.Span(), TypeKind.structureType, typeId_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> WriteDeclaration(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = base->WriteDeclaration(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write("{ ");
+            if (result.Error()) return result;
+            int n = FieldCount();
+            for (int i = 0 ; i < n; ++i)
+            {
+                Type* fieldType = FieldType(i);
+                if (i > 0)
+                {
+                    result = formatter.Write(", ");
+                    if (result.Error()) return result;
+                }
+                result = fieldType->Write(formatter);
+                if (result.Error()) return result;
+            }
+            result = formatter.Write(" }");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override string Name() const
+        {
+            return "$T" + ToString(Id() - userTypeId);
+        }
+        public override long Size() const
+        {
+            if (!sizeAndOffsetsComputed)
+            {
+                ComputeSizeAndOffsets();
+            }
+            return size;
+        }
+        public override long Alignment() const
+        {
+            return 1;
+        }
+        public inline const List<TypeRef>& FieldTypeRefs() const
+        {
+            return fieldTypeRefs;
+        }
+        public void SetFieldTypeRefs(List<TypeRef>&& fieldTypeRefs_)
+        {
+            fieldTypeRefs = fieldTypeRefs_;
+        }
+        public inline int FieldCount() const
+        {
+            return cast<int>(fieldTypeRefs.Count());
+        }
+        public inline Type* FieldType(long index) const
+        {
+            return fieldTypeRefs[index].GetType();
+        }
+        public long FieldOffset(long index) const
+        {
+            if (!sizeAndOffsetsComputed)
+            {
+                ComputeSizeAndOffsets();
+            }
+            return fieldOffsets[index];
+        }
+        private void ComputeSizeAndOffsets()
+        {
+            sizeAndOffsetsComputed = true;
+            long offset = 0;
+            int n = FieldCount();
+            for (int i = 0; i < n; ++i)
+            {
+                Type* fieldType = FieldType(i);
+                long memberOffset = offset;
+                if (i > 0)
+                {
+                    long alignment = fieldType->Alignment();
+                    memberOffset = alignment * ((offset - 1) / alignment + 1);
+                }
+                fieldOffsets.Add(memberOffset);
+                offset = memberOffset + fieldType->Size();
+            }
+            if (n == 0)
+            {
+                size = 8;
+            }
+            else
+            {
+                size = 8 * ((offset - 1) / 8 + 1);
+            }
+        }
+        [nodiscard]
+        public override Result<bool> Add(Types* types)
+        {
+            return types->Add(this);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(Types* types)
+        {
+            for (auto& typeRef : fieldTypeRefs)
+            {
+                Result<bool> result = types->ResolveType(typeRef, Span());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private List<TypeRef> fieldTypeRefs;
+        private bool sizeAndOffsetsComputed;
+        private long size;
+        private List<long> fieldOffsets;
+    }
+
+    public class ArrayTypeKey
+    {
+        public ArrayTypeKey(Type* elementType_, long elementCount_) : elementType(elementType_), elementCount(elementCount_)
+        {
+        }
+        public inline Type* ElementType() const
+        {
+            return elementType;
+        }
+        public inline long ElementCount() const
+        {
+            return elementCount;
+        }
+        private Type* elementType;
+        private long elementCount;
+    }
+
+    public bool operator<(const ArrayTypeKey& left, const ArrayTypeKey& right)
+    {
+        if (left.ElementType() < right.ElementType()) return true;
+        if (left.ElementType() > right.ElementType()) return false;
+        return left.ElementCount() < right.ElementCount();
+    }
+
+    public class ArrayType : Type
+    {
+        public ArrayType(const System.Lex.Span& span_, int typeId_, long elementCount_, const TypeRef& elementTypeRef_) :
+            base(span_, TypeKind.arrayType, typeId_), elementCount(elementCount_), elementTypeRef(elementTypeRef_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> WriteDeclaration(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = base->WriteDeclaration(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write("[");
+            if (result.Error()) return result;
+            result = formatter.Write(ToString(elementCount));
+            if (result.Error()) return result;
+            result = formatter.Write(" x ");
+            if (result.Error()) return result;
+            result = ElementType()->Write(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write("]");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override string Name() const
+        {
+            return "$T" + ToString(Id() - userTypeId);
+        }
+        public override long Size() const
+        {
+            return Align(elementCount * ElementType()->Size(), 8);
+        }
+        public override long Alignment() const
+        {
+            return 8;
+        }
+        public inline long ElementCount() const
+        {
+            return elementCount;
+        }
+        public inline const TypeRef& ElementTypeRef() const
+        {
+            return elementTypeRef;
+        }
+        public inline Type* ElementType() const
+        {
+            return elementTypeRef.GetType();
+        }
+        [nodiscard]
+        public override Result<bool> Add(Types* types)
+        {
+            return types->Add(this);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(Types* types)
+        {
+            Result<bool> result = types->ResolveType(elementTypeRef, Span());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private long elementCount;
+        private TypeRef elementTypeRef;
+    }
+
+    public class FunctionTypeKey
+    {
+        public FunctionTypeKey(Type* returnType_, const List<Type*>& paramTypes_) : returnType(returnType_), paramTypes(paramTypes_)
+        {
+        }
+        public inline Type* ReturnType() const
+        {
+            return returnType;
+        }
+        public inline const List<Type*>& ParamTypes() const
+        {
+            return paramTypes;
+        }
+        private Type* returnType;
+        private List<Type*> paramTypes;
+    }
+
+    public bool operator<(const FunctionTypeKey& left, const FunctionTypeKey& right)
+    {
+        if (left.ReturnType() < right.ReturnType()) return true;
+        if (left.ReturnType() > right.ReturnType()) return false;
+        return left.ParamTypes() < right.ParamTypes();
+    }
+
+    public class FunctionType : Type
+    {
+        public FunctionType(const System.Lex.Span& span_, int typeId_, const TypeRef& returnTypeRef_, const List<TypeRef>& paramTypeRefs_) :
+            base(span_, TypeKind.functionType, typeId_), returnTypeRef(returnTypeRef_), paramTypeRefs(paramTypeRefs_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> WriteDeclaration(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = base->WriteDeclaration(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write("function ");
+            if (result.Error()) return result;
+            result = ReturnType()->Write(formatter);
+            if (result.Error()) return result;
+            result = formatter.Write("(");
+            if (result.Error()) return result;
+            int n = Arity();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    result = formatter.Write(", ");
+                    if (result.Error()) return result;
+                }
+                result = ParamType(i)->Write(formatter);
+                if (result.Error()) return result;
+            }
+            result = formatter.Write(")");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public override string Name() const
+        {
+            return "$T" + ToString(Id() - userTypeId);
+        }
+        public override long Size() const
+        {
+            return 8;
+        }
+        public override long Alignment() const
+        {
+            return 8;
+        }
+        public inline const TypeRef& ReturnTypeRef() const
+        {
+            return returnTypeRef;
+        }
+        public inline Type* ReturnType() const
+        {
+           return returnTypeRef.GetType();
+        }
+        public inline int Arity() const
+        {
+            return cast<int>(paramTypeRefs.Count());
+        }
+        public inline const List<TypeRef>& ParamTypeRefs() const
+        {
+            return paramTypeRefs;
+        }
+        public inline Type* ParamType(int index) const
+        {
+            return paramTypeRefs[index].GetType();
+        }
+        [nodiscard]
+        public override Result<bool> Add(Types* types)
+        {
+            return types->Add(this);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(Types* types)
+        {
+            Result<bool> result = types->ResolveType(returnTypeRef, Span());
+            if (result.Error()) return result;
+            for (auto& paramTypeRef : paramTypeRefs)
+            {
+                result = types->ResolveType(paramTypeRef, Span());
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private TypeRef returnTypeRef;
+        private List<TypeRef> paramTypeRefs;
+    }
+
+    public class PointerType : Type
+    {
+        public PointerType(const System.Lex.Span& span_, int typeId_, sbyte pointerCount_, int baseTypeId_) :
+            base(span_, TypeKind.pointerType, typeId_), pointerCount(pointerCount_), baseTypeRef(span_, baseTypeId_), nullValue(span_, this)
+        {
+        }
+        public inline sbyte PointerCount() const
+        {
+            return pointerCount;
+        }
+        public inline TypeRef& BaseTypeRef() const
+        {
+            return baseTypeRef;
+        }
+        public inline Type* BaseType() const
+        {
+            return baseTypeRef.GetType();
+        }
+        public inline void SetBaseType(Type* baseType)
+        {
+            #assert(baseType != null);
+            baseTypeRef.SetType(baseType);
+        }
+        public override string Name() const
+        {
+            #assert(baseTypeRef.GetType() != null);
+            return baseTypeRef.GetType()->Name() + "*";
+        }
+        public override long Size() const
+        {
+            return 8;
+        }
+        public override long Alignment() const
+        {
+            return 8;
+        }
+        public inline NullValue* DefaultValue() const
+        {
+            return &nullValue;
+        }
+        private sbyte pointerCount;
+        private TypeRef baseTypeRef;
+        private NullValue nullValue;
+    }
+
+    public class Types
+    {
+        public Types(Context* context_) : context(context_), voidPtrType(System.Lex.Span(), MakePointerTypeId(voidTypeId, 1), 1, voidTypeId), nextUserTypeId(userTypeId)
+        {
+            voidPtrType.SetBaseType(&voidType);
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (types.IsEmpty()) return Result<bool>(false);
+            Result<bool> result = formatter.WriteLine("types");
+            if (result.Error()) return result;
+            result = formatter.WriteLine("{");
+            if (result.Error()) return result;
+            formatter.IncIndent();
+            for (Type* type : declaredTypes)
+            {
+                result = type->WriteDeclaration(formatter);
+                if (result.Error()) return result;
+                result = formatter.WriteLine();
+                if (result.Error()) return result;
+            }
+            formatter.DecIndent();
+            result = formatter.WriteLine("}");
+            if (result.Error()) return result;
+            result = formatter.WriteLine();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline int NextUserTypeId()
+        {
+            return nextUserTypeId++;
+        }
+        public inline VoidType* GetVoidType() const
+        {
+            return &voidType;
+        }
+        public inline BoolType* GetBoolType() const
+        {
+            return &boolType;
+        }
+        public inline SByteType* GetSByteType() const
+        {
+            return &sbyteType;
+        }
+        public inline ByteType* GetByteType() const
+        {
+            return &byteType;
+        }
+        public inline ShortType* GetShortType() const
+        {
+            return &shortType;
+        }
+        public inline UShortType* GetUShortType() const
+        {
+            return &ushortType;
+        }
+        public inline IntType* GetIntType() const
+        {
+            return &intType;
+        }
+        public inline UIntType* GetUIntType() const
+        {
+            return &uintType;
+        }
+        public inline LongType* GetLongType() const
+        {
+            return &longType;
+        }
+        public inline ULongType* GetULongType() const
+        {
+            return &ulongType;
+        }
+        public inline FloatType* GetFloatType() const
+        {
+            return &floatType;
+        }
+        public inline DoubleType* GetDoubleType() const
+        {
+            return &doubleType;
+        }
+        public inline PointerType* GetVoidPtrType() const
+        {
+            return &voidPtrType;
+        }
+        public void AddStructureType(const System.Lex.Span& span, int typeId, const List<TypeRef>& fieldTypeRefs)
+        {
+            types.Add(UniquePtr<Type>(new StructureType(span, typeId, fieldTypeRefs)));
+        }
+        public void AddArrayType(const System.Lex.Span& span, int typeId, long size, const TypeRef& elementTypeRef)
+        {
+            types.Add(UniquePtr<Type>(new ArrayType(span, typeId, size, elementTypeRef)));
+        }
+        public void AddFunctionType(const System.Lex.Span& span, int typeId, const TypeRef& returnTypeRef, const List<TypeRef>& paramTypeRefs)
+        {
+            types.Add(UniquePtr<Type>(new FunctionType(span, typeId, returnTypeRef, paramTypeRefs)));
+        }
+        [nodiscard]
+        public Result<bool> Add(Type* type)
+        {
+            Type* prev = Get(type->Id());
+            if (prev != null)
+            {
+                return Error("error adding type id " + ToString(type->Id()) + ": type id not unique", type->Span(), prev->Span(), context);
+            }
+            MapType(type);
+            declaredTypes.Add(type);
+            return Result<bool>(true);
+        }
+        public Result<Type*> MakePointerType(const System.Lex.Span& span, int baseTypeId, sbyte pointerCount)
+        {
+            auto it = pointerTypeMap.Find(MakePair(baseTypeId, pointerCount));
+            if (it != pointerTypeMap.End())
+            {
+                #assert(it->second != null);
+                return Result<Type*>(it->second);
+            }
+            PointerType* type = null;
+            if (pointerCount > 1)
+            {
+                type = new PointerType(span, MakePointerTypeId(baseTypeId, pointerCount), pointerCount, MakePointerTypeId(baseTypeId, pointerCount - 1));
+            }
+            else
+            {
+                type = new PointerType(span, MakePointerTypeId(baseTypeId, pointerCount), pointerCount, baseTypeId);
+            }
+            auto result = ResolveType(type->BaseTypeRef(), span);
+            if (result.Error()) return Result<Type*>(ErrorId(result.GetErrorId()));
+            #assert(type->BaseType() != null);
+            types.Add(UniquePtr<Type>(type));
+            MapType(type);
+            pointerTypeMap[MakePair(baseTypeId, pointerCount)] = type;
+            return Result<Type*>(type);
+        }
+        public Result<FunctionType*> GetFunctionType(const System.Lex.Span& span, Type* returnType, const List<Type*>& paramTypes)
+        {
+            FunctionTypeKey key(returnType, paramTypes);
+            auto it = functionTypeMap.Find(key);
+            if (it != functionTypeMap.End())
+            {
+                return Result<FunctionType*>(it->second);
+            }
+            TypeRef returnTypeRef(System.Lex.Span(), returnType->Id());
+            returnTypeRef.SetType(returnType);
+            List<TypeRef> paramTypeRefs;
+            for (Type* paramType : paramTypes)
+            {
+                TypeRef paramTypeRef(System.Lex.Span(), paramType->Id());
+                paramTypeRef.SetType(paramType);
+                paramTypeRefs.Add(paramTypeRef);
+            }
+            FunctionType* functionType = new FunctionType(span, NextUserTypeId(), returnTypeRef, paramTypeRefs);
+            types.Add(UniquePtr<Type>(functionType));
+            Result<bool> result = Add(functionType);
+            if (result.Error()) return Result<FunctionType*>(ErrorId(result.GetErrorId()));
+            MapType(functionType);
+            functionTypeMap[key] = functionType;
+            return Result<FunctionType*>(functionType);
+        }
+        public Result<ArrayType*> GetArrayType(const System.Lex.Span& span, Type* elementType, long elementCount)
+        {
+            ArrayTypeKey key(elementType, elementCount);
+            auto it = arrayTypeMap.Find(key);
+            if (it != arrayTypeMap.End())
+            {
+                return Result<ArrayType*>(it->second);
+            }
+            TypeRef elementTypeRef(span, elementType->Id());
+            elementTypeRef.SetType(elementType);
+            ArrayType* arrayType = new ArrayType(span, NextUserTypeId(), elementCount, elementTypeRef);
+            types.Add(UniquePtr<Type>(arrayType));
+            Result<bool> result = Add(arrayType);
+            if (result.Error()) return Result<ArrayType*>(ErrorId(result.GetErrorId()));
+            MapType(arrayType);
+            arrayTypeMap[key] = arrayType;
+            return Result<ArrayType*>(arrayType);
+        }
+        public Result<StructureType*> GetStructureType(const System.Lex.Span& span, const List<Type*>& memberTypes)
+        {
+            auto it = structureTypeMap.Find(memberTypes);
+            if (it != structureTypeMap.End())
+            {
+                return Result<StructureType*>(it->second);
+            }
+            List<TypeRef> fieldTypeRefs;
+            for (Type* memberType : memberTypes)
+            {
+                TypeRef fieldTypeRef(span, memberType->Id());
+                fieldTypeRef.SetType(memberType);
+                fieldTypeRefs.Add(fieldTypeRef);
+            }
+            StructureType* structureType = new StructureType(span, NextUserTypeId(), fieldTypeRefs);
+            types.Add(UniquePtr<Type>(structureType));
+            Result<bool> result = Add(structureType);
+            if (result.Error()) return Result<StructureType*>(ErrorId(result.GetErrorId()));
+            MapType(structureType);
+            structureTypeMap[memberTypes] = structureType;
+            return Result<StructureType*>(structureType);
+        }
+        public Result<StructureType*> CreateStructureType()
+        {
+            StructureType* structureType = new StructureType(NextUserTypeId());
+            types.Add(UniquePtr<Type>(structureType));
+            Result<bool> result = Add(structureType);
+            if (result.Error()) return Result<StructureType*>(ErrorId(result.GetErrorId()));
+            return Result<StructureType*>(structureType);
+        }
+        public void SetStructureTypeBody(StructureType* structureType, const List<Type*>& memberTypes)
+        {
+            List<TypeRef> fieldTypeRefs;
+            for (Type* memberType : memberTypes)
+            {
+                TypeRef fieldTypeRef(System.Lex.Span(), memberType->Id());
+                fieldTypeRef.SetType(memberType);
+                fieldTypeRefs.Add(fieldTypeRef);
+            }
+            structureType->SetFieldTypeRefs(Rvalue(fieldTypeRefs));
+        }
+        [nodiscard]
+        public Result<bool> ResolveType(TypeRef& typeRef, const System.Lex.Span& span)
+        {
+            Type* type = Get(typeRef.Id());
+            if (type == null)
+            {
+                if (IsPointerTypeId(typeRef.Id()))
+                {
+                    Result<Type*> typeResult = MakePointerType(typeRef.Span(), GetBaseTypeId(typeRef.Id()), GetPointerCount(typeRef.Id()));
+                    if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                    type = typeResult.Value();
+                }
+            }
+            if (type == null)
+            {
+                int errorId = Error("type not resolved", span, typeRef.Span(), context);
+                return Result<bool>(ErrorId(errorId));
+            }
+            typeRef.SetType(type);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> ResolveReferences()
+        {
+            for (const auto& type : types)
+            {
+                Result<bool> result = type->Add(this);
+                if (result.Error()) return result;
+            }
+            List<Type*> toResolve;
+            for (const auto& type : types)
+            {
+                toResolve.Add(type.Get());
+            }
+            for (Type* type : toResolve)
+            {
+                Result<bool> result = type->Resolve(this);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public void MapType(Type* type)
+        {
+            typeMap[type->Id()] = type;
+        }
+        public Type* Get(int id) const
+        {
+            if (IsFundamentalTypeId(id))
+            {
+                return GetFundamentalType(id);
+            }
+            auto it = typeMap.Find(id);
+            if (it != typeMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Type* GetFundamentalType(int typeId) const
+        {
+            switch (typeId)
+            {
+                case voidTypeId:
+                {
+                    return &voidType;
+                }
+                case boolTypeId:
+                {
+                    return &boolType;
+                }
+                case sbyteTypeId:
+                {
+                    return &sbyteType;
+                }
+                case byteTypeId:
+                {
+                    return &byteType;
+                }
+                case shortTypeId:
+                {
+                    return &shortType;
+                }
+                case ushortTypeId:
+                {
+                    return &ushortType;
+                }
+                case intTypeId:
+                {
+                    return &intType;
+                }
+                case uintTypeId:
+                {
+                    return &uintType;
+                }
+                case longTypeId:
+                {
+                    return &longType;
+                }
+                case ulongTypeId:
+                {
+                    return &ulongType;
+                }
+                case floatTypeId:
+                {
+                    return &floatType;
+                }
+                case doubleTypeId:
+                {
+                    return &doubleType;
+                }
+            }
+            return null;
+        }
+        private Context* context;
+        private VoidType voidType;
+        private BoolType boolType;
+        private SByteType sbyteType;
+        private ByteType byteType;
+        private ShortType shortType;
+        private UShortType ushortType;
+        private IntType intType;
+        private UIntType uintType;
+        private LongType longType;
+        private ULongType ulongType;
+        private FloatType floatType;
+        private DoubleType doubleType;
+        private PointerType voidPtrType;
+        private Map<Pair<int, sbyte>, PointerType*> pointerTypeMap;
+        private Map<FunctionTypeKey, FunctionType*> functionTypeMap;
+        private Map<ArrayTypeKey, ArrayType*> arrayTypeMap;
+        private Map<List<Type*>, StructureType*> structureTypeMap;
+        private List<UniquePtr<Type>> types;
+        private List<Type*> declaredTypes;
+        private Map<int, Type*> typeMap;
+        private int nextUserTypeId;
+    }
+}
+

@@ -1,0 +1,491 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System.IO;
+
+namespace System
+{
+    public abstract class CounterBase
+    {
+        public CounterBase() : useCount(1), weakCount(1)
+        {
+        }
+        suppress CounterBase(const CounterBase&);
+        suppress void operator=(const CounterBase&);
+        suppress CounterBase(CounterBase&&);
+        suppress void operator=(CounterBase&&);
+        public default virtual ~CounterBase();
+        public abstract void Dispose();
+        public virtual void Destruct()
+        {
+            delete this;
+        }
+        public inline void AddReference()
+        {
+            #assert(useCount != 0 || weakCount == 0);
+            ++useCount;
+            ++weakCount;
+        }
+        public inline void Release()
+        {
+            --useCount;
+            if (useCount != 0)
+            {
+                --weakCount;
+                return;
+            }
+            Dispose();
+            WeakRelease();
+        }
+        public inline void WeakAddReference()
+        {
+            ++weakCount;
+        }
+        public void WeakRelease()
+        {
+            --weakCount;
+            if (weakCount == 0)
+            {
+                Destruct();
+            }
+        }
+        public inline int GetUseCount() const
+        {
+            return useCount;
+        }
+        private int useCount;
+        private int weakCount;
+    }
+
+    public class Counter<T> : CounterBase
+    {
+        private typedef Counter<T> Self;
+
+        public Counter(T* ptr_) : ptr(ptr_)
+        {
+        }
+        suppress Counter(const Self&);
+        suppress void operator=(const Self&);
+        suppress Counter(Self&&);
+        suppress void operator=(Self&&);
+        public override void Dispose()
+        {
+            delete ptr;
+            ptr = null;
+        }
+        private T* ptr;
+    }
+
+    public class SharedCount<T>
+    {
+        private typedef Counter<T>* CounterPtrType;
+        private typedef SharedCount<T> Self;
+
+        public SharedCount() : counter(null)
+        {
+        }
+        public SharedCount(T* ptr_) : counter(new Counter<T>(ptr_))
+        {
+        }
+        public SharedCount(Counter<T>* counter_) : counter(counter_) // to support SharedCountCast
+        {
+            if (counter != null)
+            {
+                counter->AddReference();
+            }
+        }
+        public SharedCount(const Self& that) : counter(that.counter)
+        {
+            if (counter != null)
+            {
+                counter->AddReference();
+            }
+        }
+        public SharedCount(Self&& that) : counter(that.counter)
+        {
+            that.counter = null;
+        }
+        public SharedCount(const WeakCount<T>& that) : counter(that.GetCounter())
+        {
+            #assert(counter != null);
+            counter->AddReference();
+        }
+        public void operator=(const Self& that)
+        {
+            CounterPtrType otherCounter = that.counter;
+            if (otherCounter != null)
+            {
+                otherCounter->AddReference();
+            }
+            if (counter != null)
+            {
+                counter->Release();
+            }
+            counter = otherCounter;
+        }
+        public void operator=(Self&& that)
+        {
+            Swap(counter, that.counter);
+        }
+        public ~SharedCount()
+        {
+            if (counter != null)
+            {
+                counter->Release();
+            }
+        }
+        public void Swap(Self& that)
+        {
+            CounterPtrType otherCounter = that.counter;
+            that.counter = counter;
+            counter = otherCounter;
+        }
+        public int GetUseCount() const
+        {
+            if (counter != null)
+            {
+                return counter->GetUseCount();
+            }
+            return 0;
+        }
+        public bool IsUnique() const
+        {
+            return GetUseCount() == 1;
+        }
+        public CounterPtrType GetCounter() const
+        {
+            return counter;
+        }
+        private CounterPtrType counter;
+    }
+
+    public bool operator==<T>(const SharedCount<T>& left, const SharedCount<T>& right)
+    {
+        return left.GetCounter() == right.GetCounter();
+    }
+
+    public bool operator<<T>(const SharedCount<T>& left, const SharedCount<T>& right)
+    {
+        return left.GetCounter() < right.GetCounter();
+    }
+
+    internal SharedCount<U> SharedCountCast<U, T>(const SharedCount<T>& from)
+    {
+        return SharedCount<U>(cast<Counter<U>*>(from.GetCounter()));
+    }
+
+    public class WeakCount<T>
+    {
+        private typedef Counter<T>* CounterPtrType;
+        private typedef WeakCount<T> Self;
+
+        public WeakCount() : counter(null)
+        {
+        }
+        public WeakCount(const Self& that) : counter(that.counter)
+        {
+            if (counter != null)
+            {
+                counter->WeakAddReference();
+            }
+        }
+        public WeakCount(Self&& that) : counter(that.counter)
+        {
+            that.counter = null;
+        }
+        public WeakCount(const SharedCount<T>& that) : counter(that.GetCounter())
+        {
+            if (counter != null)
+            {
+                counter->WeakAddReference();
+            }
+        }
+        public ~WeakCount()
+        {
+            if (counter != null)
+            {
+                counter->WeakRelease();
+            }
+        }
+        public void operator=(const SharedCount<T>& that)
+        {
+            CounterPtrType otherCounter = that.GetCounter();
+            if (otherCounter != null)
+            {
+                otherCounter->WeakAddReference();
+            }
+            if (counter != null)
+            {
+                counter->WeakRelease();
+            }
+            counter = otherCounter;
+        }
+        public void operator=(const Self& that)
+        {
+            CounterPtrType otherCounter = that.counter;
+            if (otherCounter != null)
+            {
+                otherCounter->WeakAddReference();
+            }
+            if (counter != null)
+            {
+                counter->WeakRelease();
+            }
+            counter = otherCounter;
+        }
+        public void operator=(Self&& that)
+        {
+            Swap(counter, that.counter);
+        }
+        public void Swap(Self& that)
+        {
+            CounterPtrType otherCounter = that.counter;
+            that.counter = counter;
+            counter = otherCounter;
+        }
+        public int GetUseCount() const
+        {
+            if (counter != null)
+            {
+                return counter->GetUseCount();
+            }
+            return 0;
+        }
+        public CounterPtrType GetCounter() const
+        {
+            return counter;
+        }
+        private CounterPtrType counter;
+    }
+
+    public bool operator==<T>(const WeakCount<T>& left, const WeakCount<T>& right)
+    {
+        return left.GetCounter() == right.GetCounter();
+    }
+
+    public bool operator<<T>(const WeakCount<T>& left, const WeakCount<T>& right)
+    {
+        return left.GetCounter() < right.GetCounter();
+    }
+
+    public class SharedPtr<T>
+    {
+        private typedef SharedPtr<T> Self;
+        private typedef SharedCount<T> CountType;
+
+        public SharedPtr() : ptr(null), count()
+        {
+        }
+        public explicit SharedPtr(T* ptr_) : ptr(ptr_), count(ptr)
+        {
+            EnableSharedFromThis(ptr_, ptr_, count);
+        }
+        public SharedPtr(T* ptr_, const CountType& count_) : ptr(ptr_), count(count_) // to support PtrCast
+        {
+        }
+        public SharedPtr(const Self& that) : ptr(that.ptr), count(that.count)
+        {
+        }
+        public SharedPtr(Self&& that) : ptr(that.ptr), count(Rvalue(that.count))
+        {
+            that.ptr = null;
+        }
+        public SharedPtr(const WeakPtr<T>& that) : ptr(), count(that.GetCount())
+        {
+            ptr = that.GetPtrForSharedPtr();
+        }
+        public void Reset()
+        {
+            Self().Swap(*this);
+        }
+        public void Reset(T* ptr_)
+        {
+            Self(ptr_).Swap(*this);
+        }
+        public void operator=(const Self& that)
+        {
+            ptr = that.ptr;
+            count = that.count;
+        }
+        public void operator=(Self&& that)
+        {
+            Swap(ptr, that.ptr);
+            Swap(count, that.count);
+        }
+        public inline T* operator->() const
+        {
+            #assert(ptr != null);
+            return ptr;
+        }
+        public inline T& operator*() const
+        {
+            #assert(ptr != null);
+            return *ptr;
+        }
+        public inline T* GetPtr() const
+        {
+            return ptr;
+        }
+        public inline T* Get() const
+        {
+            return ptr;
+        }
+        public inline const CountType& GetCount() const
+        {
+            return count;
+        }
+        public inline bool IsNull() const
+        {
+            return ptr == null;
+        }
+        public void Swap(Self& that)
+        {
+            Swap(ptr, that.ptr);
+            count.Swap(that.count);
+        }
+        public bool IsUnique() const
+        {
+            return count.IsUnique();
+        }
+        public int GetUseCount() const
+        {
+            return count.GetUseCount();
+        }
+        private T* ptr;
+        private CountType count;
+    }
+
+    public bool operator==<T>(const SharedPtr<T>& left, const SharedPtr<T>& right)
+    {
+        return left.Get() == right.Get();
+    }
+
+    public bool operator<<T>(const SharedPtr<T>& left, const SharedPtr<T>& right)
+    {
+        #assert(left.Get() != null && right.Get() != null || left.Get() == null && right.Get() == null);
+        return left.Get() < right.Get();
+    }
+
+    public SharedPtr<U> PtrCast<U, T>(const SharedPtr<T>& from)
+    {
+        return SharedPtr<U>(cast<U*>(from.Get()), SharedCountCast<U>(from.GetCount()));
+    }
+
+    public class WeakPtr<T>
+    {
+        private typedef WeakPtr<T> Self;
+        private typedef WeakCount<T> CountType;
+
+        public WeakPtr() : ptr(null), count()
+        {
+        }
+        public WeakPtr(const SharedPtr<T>& that) : ptr(that.Get()), count(that.GetCount())
+        {
+        }
+        public WeakPtr(const Self& that) : ptr(), count(that.count)
+        {
+            ptr = that.Lock().Ptr();
+        }
+        public default ~WeakPtr();
+        public void operator=(const Self& that)
+        {
+            ptr = that.Lock().Get();
+            count = that.count;
+        }
+        public void operator=(const SharedPtr<T>& that)
+        {
+            ptr = that.Get();
+            count = that.GetCount();
+        }
+        public int GetUseCount() const
+        {
+            return count.GetUseCount();
+        }
+        public bool IsExpired() const
+        {
+            return count.GetUseCount() == 0;
+        }
+        public SharedPtr<T> Lock() const
+        {
+            if (IsExpired())
+            {
+                return SharedPtr<T>();
+            }
+            return SharedPtr<T>(*this);
+        }
+        public void Reset()
+        {
+            Self().Swap(*this);
+        }
+        public void Swap(Self& that)
+        {
+            Swap(ptr, that.ptr);
+            count.Swap(that.count);
+        }
+        // GetPtrForSharedPtr() is not ment to be called by user code.
+        // Call the Lock() member function instead when you want to get the pointer.
+        // It returns a SharedPtr that may or may not contain a pointer,
+        // depending on whether the pointer is expired or not.
+
+        public inline T* GetPtrForSharedPtr() const
+        {
+            return ptr;
+        }
+        public inline const CountType& GetCount() const
+        {
+            return count;
+        }
+        public void Assign(T* ptr_, const SharedCount<T>& count_)   // to support EnableSharedFromThis
+        {
+            ptr = ptr_;
+            count = count_;
+        }
+        private T* ptr;
+        private CountType count;
+    }
+
+    public class ShareableFromThis<T>
+    {
+        public SharedPtr<T> GetSharedFromThis() const
+        {
+            SharedPtr<T> p(weakThis);
+            #assert(p.Get() == this);
+            return p;
+        }
+        public WeakPtr<T>& GetWeakThis()
+        {
+            return weakThis;
+        }
+        private WeakPtr<T> weakThis;
+    }
+
+    public inline void EnableSharedFromThis<T>(void*, void*, const SharedCount<T>&)
+    {
+    }
+
+    public void EnableSharedFromThis<T, U>(ShareableFromThis<T>* left, U* right, const SharedCount<U>& count)
+    {
+        if (left != null)
+        {
+            left->GetWeakThis().Assign(cast<T*>(right), SharedCountCast<T>(count));
+        }
+    }
+
+    [system_default]
+    public TextWriter& operator<<<T>(TextWriter& writer, const SharedPtr<T>& ptr)
+    {
+        if (writer.Error()) return writer;
+        if (ptr.IsNull())
+        {
+            writer << "null";
+        }
+        else
+        {
+            const T& temp = *ptr;
+            writer << temp;
+        }
+        return writer;
+    }
+}

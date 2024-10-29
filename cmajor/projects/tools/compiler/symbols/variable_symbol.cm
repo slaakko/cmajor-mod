@@ -1,0 +1,432 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using cm.ast;
+
+namespace symbols
+{
+    public abstract class VariableSymbol : Symbol
+    {
+        public VariableSymbol(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) : base(kind_, span_, name_)
+        {
+        }
+        public inline TypeSymbol* Type() const
+        {
+            return type;
+        }
+        public inline void SetType(TypeSymbol* type_)
+        {
+            type = type_;
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(type->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+            typeId = typeIdResult.Value();
+            reader.AddToResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            auto typeSymbolResult = symbolTable->GetType(typeId);
+            if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
+            type = typeSymbolResult.Value();
+            return Result<bool>(true);
+        }
+        private TypeSymbol* type;
+        private Uuid typeId;
+    }
+
+    public class ParameterSymbol : VariableSymbol
+    {
+        public ParameterSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.parameterSymbol, span_, name_), artificialName(false)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"parameter";
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(artificialName);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<bool> artificialNameResult = reader.GetBinaryReader().ReadBool();
+            if (artificialNameResult.Error()) return Result<bool>(ErrorId(artificialNameResult.GetErrorId()));
+            artificialName = artificialNameResult.Value();
+            return Result<bool>(true);
+        }
+        public ParameterSymbol* Clone() const
+        {
+            ParameterSymbol* clone = new ParameterSymbol(Span(), Name());
+            clone->SetType(cast<TypeSymbol*>(Type()));
+            clone->artificialName = artificialName;
+            return clone;
+        }
+        public inline bool ArtificialName() const
+        {
+            return artificialName;
+        }
+        public inline void SetArtificialName()
+        {
+            artificialName = true;
+        }
+        private bool artificialName;
+    }
+
+    public class LocalVariableSymbol : VariableSymbol
+    {
+        public LocalVariableSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.localVariableSymbol, span_, name_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"local_variable";
+        }
+        public override bool IsExportSymbol() const
+        {
+            return false;
+        }
+    }
+
+    public class MemberVariableSymbol : VariableSymbol
+    {
+        public MemberVariableSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.memberVariableSymbol, span_, name_), layoutIndex(-1)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"member_variable";
+        }
+        public inline int LayoutIndex() const
+        {
+            return layoutIndex;
+        }
+        public inline void SetLayoutIndex(int layoutIndex_)
+        {
+            layoutIndex = layoutIndex_;
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(layoutIndex);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<int> layoutIndexResult = reader.GetBinaryReader().ReadInt();
+            if (layoutIndexResult.Error()) return Result<bool>(ErrorId(layoutIndexResult.GetErrorId()));
+            layoutIndex = layoutIndexResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                SetStatic();
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be nothrow", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be throw", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("member variable cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        private int layoutIndex;
+    }
+
+    public class GlobalVariableSymbol : VariableSymbol
+    {
+        public GlobalVariableSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.globalVariableSymbol, span_, name_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"global_variable";
+        }
+        public inline Value* Initializer() const
+        {
+            return initializer.Get();
+        }
+        public void SetInitializer(UniquePtr<Value>&& initializer_)
+        {
+            initializer = initializer_;
+        }
+        public override Result<intermediate.Value*> GetIrObject(Emitter& emitter)
+        {
+            Result<string> mangledNameResult = ToUtf8(MangledName());
+            if (mangledNameResult.Error()) return Result<intermediate.Value*>(ErrorId(mangledNameResult.GetErrorId()));
+            string mangledName = mangledNameResult.Value();
+            Result<intermediate.Type*> irTypeResult = Type()->IrType(emitter);
+            if (irTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            return emitter.GetOrInsertGlobal(mangledName, irType);
+        }
+        [nodiscard]
+        public Result<bool> CreateIrObject(Emitter& emitter)
+        {
+            Result<intermediate.Value*> irObjectResult = GetIrObject(emitter);
+            if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
+            intermediate.Value* irObject = irObjectResult.Value();
+            intermediate.Value* init = null;
+            if (initializer == null)
+            {
+                Result<intermediate.Value*> defaultIdValueResult = Type()->CreateDefaultIrValue(emitter);
+                if (defaultIdValueResult.Error()) return Result<bool>(ErrorId(defaultIdValueResult.GetErrorId()));
+                init = defaultIdValueResult.Value();
+            }
+            else
+            {
+                Result<intermediate.Value*> irValueResult = initializer->IrValue(emitter);
+                if (irValueResult.Error()) return Result<bool>(ErrorId(irValueResult.GetErrorId()));
+                init = irValueResult.Value();
+            }
+            if (irObject is intermediate.GlobalVariable*)
+            {
+                intermediate.GlobalVariable* var = cast<intermediate.GlobalVariable*>(irObject);
+                var->SetInitializer(init);
+            }
+            else
+            {
+                int errorId = MakeError("global variable object expected", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            // todo
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            // todo
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetSpecifiers(Specifiers specifiers)
+        {
+            Specifiers accessSpecifiers = specifiers & Specifiers.access_;
+            Result<bool> result = SetAccess(accessSpecifiers);
+            if (result.Error()) return result;
+            if ((specifiers & Specifiers.static_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be static", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.virtual_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be virtual", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.override_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be override", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.abstract_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be abstract", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.inline_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be inline", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.explicit_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be explicit", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.external_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be external", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.suppress_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be suppressed", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.default_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be default", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.constexpr_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be constexpr", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.cdecl_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be cdecl", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.nothrow_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be nothrow", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.throw_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be throw", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.new_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be new", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.const_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be const", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            if ((specifiers & Specifiers.unit_test_) != Specifiers.none)
+            {
+                int errorId = MakeError("global variable cannot be unit_test", FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<Value> initializer;
+    }
+
+    public class VariableValueSymbol : VariableSymbol
+    {
+        public VariableValueSymbol(const System.Lex.Span& span_, const ustring& name_, UniquePtr<Value>&& value_) : base(SymbolKind.variableValueSymbol, span_, name_)
+        {
+        }
+        public override ustring TypeString() const
+        {
+             return u"variable_value";
+        }
+        public override bool IsExportSymbol() const
+        {
+            return false;
+        }
+        public inline Value* GetValue() const
+        {
+            return value.Get();
+        }
+        public inline void SetValue(Value* value_)
+        {
+            value.Reset(value_);
+        }
+        private UniquePtr<Value> value;
+    }
+}
+

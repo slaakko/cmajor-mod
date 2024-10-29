@@ -1,0 +1,166 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace assembly
+{
+    public class DeclarationSection
+    {
+        public DeclarationSection()
+        {
+        }
+        public void AddFunctionDeclaration(FunctionDeclaration* declaration)
+        {
+            declarations.Add(UniquePtr<Declaration>(declaration));
+        }
+        public void AddPublicDataDeclaration(PublicDataDeclaration* declaration)
+        {
+            declarations.Add(UniquePtr<Declaration>(declaration));
+        }
+        public void AddExternalDataDeclaration(ExternalDataDeclaration* declaration)
+        {
+            declarations.Add(UniquePtr<Declaration>(declaration));
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            for (const auto& declaration : declarations)
+            {
+                Result<bool> result = declaration->Write(formatter);
+                if (result.Error()) return result;
+            }
+            Result<bool> result = formatter.WriteLine();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private List<UniquePtr<Declaration>> declarations;
+    }
+
+    public class DataSection
+    {
+        public DataSection()
+        {
+        }
+        public void AddData(Data* data)
+        {
+            dataList.Add(UniquePtr<Data>(data));
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (dataList.IsEmpty()) return Result<bool>(false);
+            Result<bool> result = formatter.WriteLine(".DATA");
+            if (result.Error()) return result;
+            result = formatter.WriteLine();
+            if (result.Error()) return result;
+            for (const auto& data : dataList)
+            {
+                result = data->Write(formatter);
+                if (result.Error()) return result;
+            }
+            result = formatter.WriteLine();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private List<UniquePtr<Data>> dataList;
+    }
+
+    public class CodeSection
+    {
+        public CodeSection()
+        {
+        }
+        public Function* CreateFunction(const string& name)
+        {
+            Function* function = new Function(name);
+            functions.Add(UniquePtr<Function>(function));
+            return function;
+        }
+        [nodiscard]
+        public Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            Result<bool> result = formatter.WriteLine(".CODE");
+            if (result.Error()) return result;
+            result = formatter.WriteLine();
+            if (result.Error()) return result;
+            for (const auto& function : functions)
+            {
+                result = function->Write(formatter);
+                if (result.Error()) return result;
+                result = formatter.WriteLine();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private List<UniquePtr<Function>> functions;
+    }
+
+    public class File
+    {
+        public File(const string& filePath_) : filePath(filePath_), writer(), formatter(), errorId(0)
+        {
+            Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(filePath);
+            if (writerResult.Error())
+            {
+                SetErrorId(writerResult.GetErrorId());
+                return;
+            }
+            writer.Reset(new System.IO.StreamWriter(Rvalue(writerResult.Value())));
+            formatter.Reset(new System.Text.CodeFormatter(*writer));
+            formatter->SetIndentSize(8);
+        }
+        public inline const string& FilePath() const
+        {
+            return filePath;
+        }
+        public DeclarationSection* GetDeclarationSection() const
+        {
+            return &declarationSection;
+        }
+        public DataSection* GetDataSection() const
+        {
+            return &dataSection;
+        }
+        public CodeSection* GetCodeSection() const
+        {
+            return &codeSection;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        [nodiscard]
+        public Result<bool> Write()
+        {
+            Result<bool> result = declarationSection.Write(*formatter);
+            if (result.Error()) return result;
+            result = dataSection.Write(*formatter);
+            if (result.Error()) return result;
+            result = codeSection.Write(*formatter);
+            if (result.Error()) return result;
+            result = formatter->WriteLine("END");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private string filePath;
+        private UniquePtr<System.IO.StreamWriter> writer;
+        private UniquePtr<System.Text.CodeFormatter> formatter;
+        private DeclarationSection declarationSection;
+        private DataSection dataSection;
+        private CodeSection codeSection;
+        private int errorId;
+    }
+}
+

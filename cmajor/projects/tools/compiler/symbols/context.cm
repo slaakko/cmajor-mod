@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public class SymbolsContext
+    {
+        public inline void SetRootModule(Module* rootModule_)
+        {
+            rootModule = rootModule_;
+        }
+        public inline Module* RootModule() const
+        {
+            return rootModule;
+        }
+        public inline void SetCoreModule(Module* coreModule_)
+        {
+            coreModule = coreModule_;
+        }
+        public inline Module* CoreModule() const
+        {
+            return coreModule;
+        }
+        private Module* rootModule;
+        private Module* coreModule;
+    }
+}
+

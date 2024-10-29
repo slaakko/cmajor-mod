@@ -44,7 +44,7 @@ namespace scmlg
         formatter << "return *instance;" << endl();
         formatter.DecIndent();
         formatter << "}" << endl();
-        formatter << "public System.Lex.KeywordMap* GetKeywordMap() const" << endl();
+        formatter << "public System.Lex.KeywordMap* GetKeywords() const" << endl();
         formatter << "{" << endl();
         formatter.IncIndent();
         formatter << "return &keywordMap;" << endl();
@@ -81,10 +81,10 @@ namespace scmlg
         formatter << "private static UniquePtr<Keywords> instance;" << endl();
         formatter.DecIndent();
         formatter << "}" << endl() << endl();
-        formatter << "public System.Lex.KeywordMap* GetKeywordMap()" << endl();
+        formatter << "public System.Lex.KeywordMap* GetKeywords()" << endl();
         formatter << "{" << endl();
         formatter.IncIndent();
-        formatter << "return Keywords.Instance().GetKeywordMap();" << endl();
+        formatter << "return Keywords.Instance().GetKeywords();" << endl();
         formatter.DecIndent();
         formatter << "}" << endl() << endl();
         formatter.DecIndent();

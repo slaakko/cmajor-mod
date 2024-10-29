@@ -578,7 +578,10 @@ namespace scmlg
         formatter.DecIndent();
         formatter << "}" << endl();
         formatter << "SetClassMap(classMapResult.Value());" << endl();
-        formatter << "SetKeywordMap(GetKeywordMap());" << endl();
+        if (!scmlgFile->KeywordFiles().IsEmpty())
+        {
+            formatter << "SetKeywordMap(GetKeywords());" << endl();
+        }
         formatter.DecIndent();
         formatter << "}" << endl();
         formatter << "public override int NextState(int state, uchar c)" << endl();

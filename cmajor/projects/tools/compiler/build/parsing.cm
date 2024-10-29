@@ -1,0 +1,169 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Threading;
+using symbols;
+using cm.ast;
+using cm.lexer;
+using cm.parser;
+
+namespace build
+{
+    internal Result<UniquePtr<SourceFileNode>> ParseSourceFile(int fileIndex, Module* module)
+    {
+        System.Lex.FileMap& fileMap = module->GetFileMap();
+        const string& sourceFilePath = fileMap.GetFileName(fileIndex);
+        auto sourceFileContentResult = File.ReadAllText(sourceFilePath);
+        if (sourceFileContentResult.Error())
+        {
+            return Result<UniquePtr<SourceFileNode>>(ErrorId(sourceFileContentResult.GetErrorId()));
+        }
+        const string& sourceFileContent = sourceFileContentResult.Value();
+        auto utf32Result = ToUtf32(sourceFileContent);
+        if (utf32Result.Error())
+        {
+            return Result<UniquePtr<SourceFileNode>>(ErrorId(utf32Result.GetErrorId()));
+        }
+        const ustring& content = utf32Result.Value();
+        uchar* start = content.Chars();
+        uchar* end = content.Chars() + content.Length();
+        CmajorLexer lexer(start, end, sourceFilePath);
+        if (lexer.Error())
+        {
+            return Result<UniquePtr<SourceFileNode>>(ErrorId(lexer.GetErrorId()));
+        }
+        lexer.SetRuleNameMapPtr(GetRuleNameMapPtr());
+        lexer.SetFileIndex(fileIndex);
+        Context context;
+        auto parseResult = SourceFileParser<CmajorLexer>.Parse(lexer, &context);
+        if (parseResult.Error())
+        {
+            return Result<UniquePtr<SourceFileNode>>(ErrorId(parseResult.GetErrorId()));
+        }
+        fileMap.AddSourceFile(fileIndex, Rvalue(utf32Result.Value()), lexer.GetLineStartIndeces());
+        SourceFileNode* sourceFile = parseResult.Value().Get();
+        sourceFile->SetModuleId(module->Id());
+        sourceFile->GlobalNs()->SetModuleId(module->Id());
+        return Result<UniquePtr<SourceFileNode>>(Rvalue(parseResult.Value()));
+    }
+
+    internal class ParsingThreadData
+    {
+        public ParsingThreadData(Module* module_, int size_) : stop(false), module(module_), size(size_)
+        {
+            sourceFileResults.Resize(size);
+        }
+        public bool stop;
+        public Module* module;
+        public int size;
+        public Mutex mtx;
+        public Queue<int> fileIndexQueue;
+        public List<Result<UniquePtr<SourceFileNode>>> sourceFileResults;
+    }
+
+    internal void ParseFunc(void* data)
+    {
+        ParsingThreadData* threadData = cast<ParsingThreadData*>(data);
+        while (!threadData->stop)
+        {
+            int fileIndex = -1;
+            {
+                LockGuard<Mutex> lock(threadData->mtx);
+                if (threadData->fileIndexQueue.IsEmpty()) return;
+                fileIndex = threadData->fileIndexQueue.Get();
+            }
+            Result<UniquePtr<SourceFileNode>> sourceFileResult = ParseSourceFile(fileIndex, threadData->module);
+            if (sourceFileResult.Error())
+            {
+                threadData->stop = true;
+            }
+            threadData->sourceFileResults[fileIndex] = Rvalue(sourceFileResult);
+        }
+    }
+
+    [nodiscard]
+    internal Result<bool> ParseMultiThreaded(Project* project, const List<int>& fileIndeces, Module* module)
+    {
+        ParsingThreadData threadData(module, cast<int>(fileIndeces.Count()));
+        for (int fileIndex : fileIndeces)
+        {
+            threadData.fileIndexQueue.Put(fileIndex);
+        }
+        int numThreads = HardwareConcurrency();
+        List<Thread> threads;
+        for (int i = 0; i < numThreads; ++i)
+        {
+            Thread thread = Thread.StartFunction(ParseFunc, &threadData);
+            threads.Add(Rvalue(thread));
+        }
+        for (auto& thread : threads)
+        {
+            thread.Join();
+        }
+        int n = threadData.size;
+        for (int i = 0; i < n; ++i)
+        {
+            Result<UniquePtr<SourceFileNode>>& result = threadData.sourceFileResults[i];
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            else
+            {
+                project->AddSourceFile(result.Value().Release());
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    internal Result<bool> ParseSingleThreaded(Project* project, const List<int>& fileIndeces, Module* module)
+    {
+        for (int fileIndex : fileIndeces)
+        {
+            Result<UniquePtr<SourceFileNode>> sourceFileResult = ParseSourceFile(fileIndex, module);
+            if (sourceFileResult.Error())
+            {
+                return Result<bool>(ErrorId(sourceFileResult.GetErrorId()));
+            }
+            else
+            {
+                project->AddSourceFile(sourceFileResult.Value().Release());
+            }
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> ParseSourceFiles(Project* project, Module* module)
+    {
+        List<int> fileIndeces;
+        for (const auto& sourceFilePath : project->SourceFilePaths())
+        {
+            fileIndeces.Add(module->GetFileMap().MapFileName(sourceFilePath));
+        }
+        if (GetGlobalFlag(GlobalFlags.singleThreadedCompile))
+        {
+            return ParseSingleThreaded(project, fileIndeces, module);
+        }
+        else
+        {
+            return ParseMultiThreaded(project, fileIndeces, module);
+        }
+    }
+
+    public Result<UniquePtr<Project>> ParseProjectFile(const string& projectFilePath)
+    {
+        return ParseProjectFile(projectFilePath, GetConfig(), cm.ast.BackEnd.cm, "cm");
+    }
+
+    public Result<UniquePtr<Solution>> ParseSolutionFile(const string& solutionFilePath)
+    {
+        return cm.parser.ParseSolutionFile(solutionFilePath);
+    }
+}
+

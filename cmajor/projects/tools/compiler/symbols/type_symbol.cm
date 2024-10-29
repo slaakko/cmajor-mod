@@ -1,0 +1,224 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public abstract class TypeSymbol : ContainerSymbol
+    {
+        public TypeSymbol(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) : base(kind_, span_, name_), typeId(Uuid())
+        {
+        }
+        public override bool IsTypeSymbol() const
+        {
+            return true;
+        }
+        public inline const Uuid& TypeId() const
+        {
+            return typeId;
+        }
+        public inline void SetTypeId(const Uuid& typeId_)
+        {
+            typeId = typeId_;
+        }
+        public bool TypeIdNotSet() const
+        {
+            return typeId == Uuid();
+        }
+        public virtual ValueKind GetValueKind() const
+        {
+            return ValueKind.none;
+        }
+        public virtual TypeSymbol* BaseType() const
+        {
+            return this;
+        }
+        public virtual bool IsConstType() const
+        {
+            return false;
+        }
+        public virtual bool IsReferenceType() const
+        {
+            return false;
+        }
+        public virtual bool IsLvalueReferenceType() const
+        {
+            return false;
+        }
+        public virtual bool IsRvalueReferenceType() const
+        {
+            return false;
+        }
+        public virtual bool IsSignedType() const
+        {
+            return false;
+        }
+        public virtual bool IsUnsignedType() const
+        {
+            return false;
+        }
+        public virtual bool IsIntegralType() const
+        {
+            return false;
+        }
+        public inline bool IsFloatingPointType() const
+        {
+            return IsFloatTypeSymbol() || IsDoubleTypeSymbol();
+        }
+        public virtual bool IsStringFunctionContainer() const
+        {
+            return false;
+        }
+        public virtual bool IsPointerType() const
+        {
+            return false;
+        }
+        public virtual bool IsNullPtrType() const
+        {
+            return false;
+        }
+        public virtual bool IsVoidPtrType() const
+        {
+            return false;
+        }
+        public virtual bool IsPolymorphicType() const
+        {
+            return false;
+        }
+        public virtual bool IsSwitchConditionType() const
+        {
+            return false;
+        }
+        public virtual bool IsCharacterType() const
+        {
+            return false;
+        }
+        public virtual bool IsCharacterPointerType() const
+        {
+            return false;
+        }
+        public virtual int PointerCount() const
+        {
+            return 0;
+        }
+        public virtual bool IsInComplete() const
+        {
+            return false;
+        }
+        public virtual bool IsRecursive(TypeSymbol* type, HashSet<Uuid>& tested)
+        {
+            if (tested.Find(TypeId()) != tested.End())
+            {
+                return TypesEqual(type, this);
+            }
+            tested.Insert(TypeId());
+            return TypesEqual(type, this);
+        }
+        public virtual bool HasNontrivialDestructor() const
+        {
+            return false;
+        }
+        public virtual TypeSymbol* PlainType(SymbolsContext& context) const
+        {
+            return this;
+        }
+        public virtual TypeSymbol* RemoveConst(SymbolsContext& context)
+        {
+            return this;
+        }
+        public virtual TypeSymbol* RemoveReference(SymbolsContext& context)
+        {
+            return this;
+        }
+        public virtual TypeSymbol* RemovePointer(SymbolsContext& context)
+        {
+            return this;
+        }
+        public virtual TypeSymbol* RemovePtrOrRef(SymbolsContext& context)
+        {
+            return this;
+        }
+        public virtual Derivations GetDerivations() const
+        {
+            return Derivations();
+        }
+        public virtual TypeSymbol* RemoveDerivations(Derivations sourceDerivations, SymbolsContext& context) const
+        {
+            if (HasPointerDerivation(sourceDerivations)) return null;
+            return this;
+        }
+        public virtual TypeSymbol* Unify(TypeSymbol* that, SymbolsContext& context)
+        {
+            return null;
+        }
+        public virtual TypeSymbol* UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
+        {
+            return null;
+        }
+        public virtual TypeSymbol* AddConst(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, Derivations.constDerivation);
+        }
+        public virtual TypeSymbol* AddLvalueReference(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, Derivations.lvalueRefDerivation);
+        }
+        public virtual TypeSymbol* AddRvalueReference(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, Derivations.rvalueRefDerivation);
+        }
+        public virtual TypeSymbol* AddPointer(SymbolsContext& context)
+        {
+            return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, SetPointerDerivations(1));
+        }
+        public virtual Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            int errorId = MakeError("default IR value not implemented for this kind of type", FullSpan());
+            return Result<intermediate.Value*>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(typeId != Uuid());
+            result = writer.GetBinaryWriter().Write(typeId);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+            typeId = typeIdResult.Value();
+            reader.GetSymbolTable()->MapType(this, false);
+            return Result<bool>(true);
+        }
+        public abstract Result<intermediate.Type*> IrType(Emitter& emitter);
+        private Uuid typeId;
+    }
+
+    public bool CompareTypesForEquality(TypeSymbol* left, TypeSymbol* right)
+    {
+        if (left->IsDerivedTypeSymbol() && right->IsDerivedTypeSymbol())
+        {
+            DerivedTypeSymbol* derivedLeft = cast<DerivedTypeSymbol*>(left);
+            DerivedTypeSymbol* derivedRight = cast<DerivedTypeSymbol*>(right);
+            if (TypesEqual(derivedLeft->BaseType(), derivedRight->BaseType()) && derivedLeft->GetDerivations() == derivedRight->GetDerivations()) return true;
+        }
+        return false;
+    }
+
+    public inline bool TypesEqual(TypeSymbol* left, TypeSymbol* right)
+    {
+        if (left == right) return true;
+        if (left->TypeId() == right->TypeId()) return true;
+        return CompareTypesForEquality(left, right);
+    }
+}

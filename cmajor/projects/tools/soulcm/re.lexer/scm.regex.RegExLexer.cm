@@ -18,7 +18,6 @@ namespace scm.regex
                 return;
             }
             SetClassMap(classMapResult.Value());
-            SetKeywordMap(GetKeywordMap());
         }
         public override int NextState(int state, uchar c)
         {

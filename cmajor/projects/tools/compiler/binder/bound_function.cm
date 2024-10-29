@@ -1,0 +1,94 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class BoundFunction : BoundNode
+    {
+        public BoundFunction(const System.Lex.Span& span_, FunctionSymbol* functionSymbol_, const Uuid& moduleId_, int fileIndex_) :
+            base(span_, BoundNodeKind.boundFunction), functionSymbol(functionSymbol_), moduleId(moduleId_), fileIndex(fileIndex_),
+            hasGotos(false)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public inline FunctionSymbol* GetFunctionSymbol() const
+        {
+            return functionSymbol;
+        }
+        public void SetBody(UniquePtr<BoundCompoundStatement>&& body_)
+        {
+            body = body_;
+        }
+        public inline BoundCompoundStatement* Body() const
+        {
+            return body.Get();
+        }
+        public void AddLabeledStatement(BoundStatement* labeledStatement)
+        {
+            labeledStatements.Add(labeledStatement);
+        }
+        public inline const List<BoundStatement*>& LabeledStatements() const
+        {
+            return labeledStatements;
+        }
+        public void AddTemporaryDestructorCall(UniquePtr<BoundFunctionCall>&& destructorCall, BoundFunction* currentFunction, ContainerScope* currentContainerScope, Node* node)
+        {
+            // todo
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load from function", functionSymbol->FullSpan(), FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to function", functionSymbol->FullSpan(), FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public override const Uuid& ModuleId() const
+        {
+            return moduleId;
+        }
+        public override int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public inline bool HasGotos() const
+        {
+            return hasGotos;
+        }
+        public inline void SetHasGotos()
+        {
+            hasGotos = true;
+        }
+        public inline Node* GetNode() const
+        {
+            return node;
+        }
+        public inline void SetNode(Node* node_)
+        {
+            node = node_;
+        }
+        private FunctionSymbol* functionSymbol;
+        private UniquePtr<BoundCompoundStatement> body;
+        private Uuid moduleId;
+        private int fileIndex;
+        private bool hasGotos;
+        private List<UniquePtr<BoundFunctionCall>> temporaryDestructorCalls;
+        private List<BoundStatement*> labeledStatements;
+        private Node* node;
+    }
+}
+

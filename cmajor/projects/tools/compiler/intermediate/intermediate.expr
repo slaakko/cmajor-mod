@@ -1,0 +1,22 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+expressions intermediate.expr
+{
+    ws = "[ \t\n\r]+";
+    newline = "\r\n|\n|\r";
+    comment = "//[^\n\r]*{newline}";
+    separators = "({ws}|{comment})+";
+    id = "({idstart}|_)({idcont}|@|_)*";
+    digit = "[0-9]";
+    typeidentifier = "$T{digit}+";
+    hexdigit = "[0-9a-fA-F]";
+    clsid = "clsid\(([-]|{hexdigit})+\)";
+    string = "\"[^\"\r\n]*\"";
+    sign = "[+-]";
+    fraction = "{digit}*\.{digit}+|{digit}+\.";
+    number = "{sign}?({fraction}|{digit}+)([eE]{sign}?{digit}+)?";
+    hexnum = "{hexdigit}+";
+}

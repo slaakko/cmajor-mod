@@ -1,0 +1,55 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace binder
+{
+    public class BoundNamespace : BoundNode
+    {
+        public BoundNamespace(const System.Lex.Span& span_, const Uuid& moduleId_, int fileIndex_) :
+            base(span_, BoundNodeKind.boundNamespace), moduleId(moduleId_), fileIndex(fileIndex_)
+        {
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot load from namespace", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public override Result<bool> Store(Emitter& emitter, OperationFlags flags)
+        {
+            int errorId = MakeError("cannot store to namespace", FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public void AddMember(UniquePtr<BoundNode>&& member)
+        {
+            member->SetParent(this);
+            members.Add(member);
+        }
+        public inline const List<UniquePtr<BoundNode>>& Members() const
+        {
+            return members;
+        }
+        public override const Uuid& ModuleId() const
+        {
+            return moduleId;
+        }
+        public override int FileIndex() const
+        {
+            return fileIndex;
+        }
+        private Uuid moduleId;
+        private int fileIndex;
+        private List<UniquePtr<BoundNode>> members;
+    }
+}
+
