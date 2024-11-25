@@ -1,0 +1,94 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public abstract class CharacterData : Node
+    {
+        public CharacterData(NodeKind kind_, const System.Lex.Span& span_, int fileIndex_, const string& name_) : this(kind_, span_, fileIndex_, name_, string())
+        {
+        }
+        public CharacterData(NodeKind kind_, const System.Lex.Span& span_, int fileIndex_, const string& name_, const string& data_) :
+            base(kind_, span_, fileIndex_, name_), data(data_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            auto escapeValue = XmlCharDataEscape(data);
+            if (escapeValue.Error())
+            {
+                return Result<bool>(ErrorId(escapeValue.GetErrorId()));
+            }
+            formatter << escapeValue.Value();
+            return Result<bool>(true);
+        }
+        public override bool ValueContainsNewLine() const
+        {
+            return data.Find('\n') != -1;
+        }
+        public const string& Data() const
+        {
+            return data;
+        }
+        private string data;
+    }
+
+    [nodiscard]
+    public Result<string> XmlCharDataEscape(const string& text)
+    {
+        string result;
+        auto utf32Result = ToUtf32(text);
+        if (utf32Result.Error())
+        {
+            return Result<string>(ErrorId(utf32Result.GetErrorId()));
+        }
+        ustring value = utf32Result.Value();
+        for (uchar c : value)
+        {
+            switch (c)
+            {
+                case '<':
+                {
+                    result.Append("&lt;");
+                    break;
+                }
+                case '&':
+                {
+                    result.Append("&amp;");
+                    break;
+                }
+                case '\r': case '\n':
+                {
+                    result.Append(cast<char>(c));
+                    break;
+                }
+                default:
+                {
+                    if (cast<int>(c) >= 32 && cast<int>(c) < 127)
+                    {
+                        result.Append(cast<char>(c));
+                    }
+                    else
+                    {
+                        int codePoint = cast<int>(c);
+                        string charText = "&#";
+                        charText.Append(ToString(codePoint)).Append(';');
+                        result.Append(charText);
+                    }
+                    break;
+                }
+            }
+        }
+        return Result<string>(result);
+    }
+}
+

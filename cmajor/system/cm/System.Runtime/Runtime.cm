@@ -8,6 +8,8 @@ public extern cdecl void RtmDone();
 public extern cdecl void RtmEnqueueDestruction(void*, void*);
 public extern cdecl void RtmBeginStaticInitCriticalSection();
 public extern cdecl void RtmEndtaticInitCriticalSection();
+public extern cdecl const char* RtmClassName(void* typeId);
+public extern cdecl bool RtmIs(void* typeId, void* baseTypeId);
 public extern cdecl void RtmPushFunction(void* traceInfo);
 public extern cdecl void RtmPopFunction(void* traceInfo);
 public extern cdecl void* RtmMemAlloc(long size);
@@ -122,7 +124,7 @@ public extern cdecl int RtmProcessReadLine(void* process, int handle, int& error
 public extern cdecl int RtmProcessReadToEnd(void* process, int handle, int& errorId);
 public extern cdecl bool RtmProcessWriteLine(void* process, const char* line, int& errorId);
 public extern cdecl int* RtmGetClassMap(const char* classMapName, int& errorId);
-public extern cdecl int RtmInitZlib(int mode, int level, void** handle, int& errorId);
+public extern cdecl void RtmInitZlib(int mode, int level, void** handle, int& errorId);
 public extern cdecl void RtmDoneZlib(int mode, void* handle);
 public extern cdecl void RtmSetInputZlib(void* inChunk, uint inAvail, void* handle);
 public extern cdecl int RtmInflateZlib(void* outChunk, uint outChunkSize, uint* have, uint* outAvail, uint* inAvail, void* handle, int& errorId);

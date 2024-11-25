@@ -1227,7 +1227,19 @@ namespace binder
                 }
                 TypeSymbol* argumentType = argumentTypeResult.Value();
                 ParameterNode* parameterNode = functionNode.Parameters()[i];
-                VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), Rvalue(argumentValue));
+                ustring parameterName = u"@p";
+                Result<ustring> us = ToUtf32(ToString(i));
+                if (us.Error())
+                {
+                    SetErrorId(us.GetErrorId());
+                    return;
+                }
+                parameterName.Append(us.Value());
+                if (parameterNode->Id() != null)
+                {
+                    parameterName = parameterNode->Id()->Str();
+                }
+                VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterName, Rvalue(argumentValue));
                 variableValueSymbol->SetType(argumentType);
                 declarationBlock.AddMember(variableValueSymbol, context);
             }
@@ -1245,7 +1257,7 @@ namespace binder
         {
             if (currentFileScope != null)
             {
-                Result<bool> result = currentFileScope->InstallNamespaceImport(containerScope, &namespaceImportNode);
+                Result<bool> result = currentFileScope->InstallNamespaceImport(containerScope, &namespaceImportNode, context);
                 if (result.Error())
                 {
                     SetErrorId(result.GetErrorId());
@@ -1533,7 +1545,14 @@ namespace binder
                 SetErrorId(argumentResult.GetErrorId());
                 return;
             }
-            arguments.Insert(arguments.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(constructionStatementNode.GetSpan(), type->AddPointer(context))));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            arguments.Insert(arguments.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(constructionStatementNode.GetSpan(), pointerType)));
             List<FunctionScopeLookup> scopeLookups;
             scopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
             scopeLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
@@ -1616,7 +1635,14 @@ namespace binder
                 SetErrorId(result.GetErrorId());
                 return;
             }
-            literals.Insert(literals.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(assignmentStatementNode.GetSpan(), target->Type()->AddPointer(context))));
+            Result<TypeSymbol*> targetPointerTypeResult = target->Type()->AddPointer(context);
+            if (targetPointerTypeResult.Error())
+            {
+                SetErrorId(targetPointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* targetPointerType = targetPointerTypeResult.Value();
+            literals.Insert(literals.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(assignmentStatementNode.GetSpan(), targetPointerType)));
             List<FunctionScopeLookup> scopeLookups;
             scopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
             scopeLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
@@ -2008,15 +2034,22 @@ namespace binder
                 {
                     if (currentClassType != null)
                     {
-                        arguments.Insert(arguments.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), currentClassType->AddPointer(context))));
+                        Result<TypeSymbol*> currentClassPtrTypeResult = currentClassType->AddPointer(context);
+                        if (currentClassPtrTypeResult.Error())
+                        {
+                            SetErrorId(currentClassPtrTypeResult.GetErrorId());
+                            return;
+                        }
+                        TypeSymbol* currentClassPtrType = currentClassPtrTypeResult.Value();
+                        arguments.Insert(arguments.Begin(), UniquePtr<BoundExpression>(new BoundTypeExpression(invokeNode.GetSpan(), currentClassPtrType)));
                         functionScopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, currentClassType->GetContainerScope()));
                         functionCallResult = ResolveOverload(functionGroup->Name(), containerScope, functionScopeLookups, arguments,
                             boundCompileUnit, currentFunction, &invokeNode, flags, functionGroupValue->TemplateTypeArguments());
-                        if (functionCallResult.Error())
-                        {
-                            SetErrorId(MakeCannotEvaluateStaticallyError(&invokeNode));
-                            return;
-                        }
+                    }
+                    if (functionCallResult.Error())
+                    {
+                        SetErrorId(MakeCannotEvaluateStaticallyError(&invokeNode));
+                        return;
                     }
                 }
                 BoundFunctionCall* boundFunctionCall = functionCallResult.Value().Get();
@@ -2042,7 +2075,7 @@ namespace binder
                 }
                 else if (functionSymbol->IsConstExpr())
                 {
-                    Result<FunctionNode*> functionNodeResult = boundCompileUnit->GetConstExprFunctionRepository()->GetFunctionNode(functionSymbol);
+                    Result<FunctionNode*> functionNodeResult = boundCompileUnit->GetConstExprFunctionRepository()->GetFunctionNode(functionSymbol, &invokeNode);
                     if (functionNodeResult.Error())
                     {
                         SetErrorId(functionNodeResult.GetErrorId());
@@ -2307,7 +2340,7 @@ namespace binder
         }
         public override void Visit(IdentifierNode& identifierNode)
         {
-            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent, context);
             if (symbolResult.Error())
             {
                 SetErrorId(symbolResult.GetErrorId());
@@ -2318,7 +2351,7 @@ namespace binder
             {
                 for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
                 {
-                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    symbolResult = fileScope->Lookup(identifierNode.Str(), context);
                     if (symbolResult.Error())
                     {
                         SetErrorId(symbolResult.GetErrorId());
@@ -2347,6 +2380,37 @@ namespace binder
                 }
                 string symbolName = Rvalue(symbolNameResult.Value());
                 SetErrorId(MakeError("symbol '" + symbolName + "' not found", identifierNode.GetFullSpan()));
+                return;
+            }
+        }
+        public override void Visit(TemplateIdNode& templateIdNode)
+        {
+            templateIdNode.Primary()->Accept(*this);
+            if (Error()) return;
+            if (value->IsFunctionGroupValue())
+            {
+                FunctionGroupValue* functionGroupValue = cast<FunctionGroupValue*>(value.Get());
+                FunctionGroupSymbol* functionGroup = functionGroupValue->FunctionGroup();
+                List<TypeSymbol*> templateTypeArguments;
+                int n = cast<int>(templateIdNode.TemplateArguments().Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    Node* templateArgumentNode = templateIdNode.TemplateArguments()[i];
+                    Result<TypeSymbol*> templateTypeArgumentResult = ResolveType(templateArgumentNode, boundCompileUnit, containerScope);
+                    if (templateTypeArgumentResult.Error())
+                    {
+                        SetErrorId(templateTypeArgumentResult.GetErrorId());
+                        return;
+                    }
+                    TypeSymbol* templateTypeArgument = templateTypeArgumentResult.Value();
+                    templateTypeArguments.Add(templateTypeArgument);
+                }
+                functionGroupValue->SetTemplateTypeArguments(Rvalue(templateTypeArguments));
+            }
+            else
+            {
+                int errorId = MakeError("function group value expected", templateIdNode.GetFullSpan());
+                SetErrorId(errorId);
                 return;
             }
         }
@@ -2382,7 +2446,13 @@ namespace binder
                         }
                         TypeSymbol* type = typeResult.Value();
                         ScopedValue* scopedValue = new ScopedValue(dotNode.GetSpan(), type);
-                        scopedValue->SetType(type->AddPointer(context));
+                        Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+                        if (pointerTypeResult.Error())
+                        {
+                            SetErrorId(pointerTypeResult.GetErrorId());
+                            return;
+                        }
+                        scopedValue->SetType(pointerTypeResult.Value());
                         scopedValue->SetSubject(value.Release());
                         value.Reset(scopedValue);
                         break;
@@ -2427,7 +2497,7 @@ namespace binder
                 }
                 ContainerScope* scope = containerSymbol->GetContainerScope();
                 qualifiedScope = scope;
-                Result<Symbol*> symbolResult = scope->Lookup(dotNode.MemberId()->Str());
+                Result<Symbol*> symbolResult = scope->Lookup(dotNode.MemberId()->Str(), context);
                 if (symbolResult.Error())
                 {
                     SetErrorId(symbolResult.GetErrorId());
@@ -2469,6 +2539,10 @@ namespace binder
         public override void Visit(ArrowNode& arrowNode)
         {
             SetErrorId(MakeCannotEvaluateStaticallyError(&arrowNode));
+        }
+        public override void Visit(DerefNode& derefNode)
+        {
+            SetErrorId(MakeCannotEvaluateStaticallyError(&derefNode));
         }
 
         private void EvaluateSymbol(Symbol* symbol, Node* node)
@@ -2746,13 +2820,16 @@ namespace binder
                 Result<TypeSymbol*> typeResult = value->Type(boundCompileUnit->GetSymbolTable(), context);
                 if (typeResult.Error()) return Result<UniquePtr<Value>>(ErrorId(typeResult.GetErrorId()));
                 TypeSymbol* type = typeResult.Value();
-                if (!TypesEqual(targetType->PlainType(context), type))
+                Result<TypeSymbol*> targetPlainTypeResult = targetType->PlainType(context);
+                if (targetPlainTypeResult.Error()) return Result<UniquePtr<Value>>(ErrorId(targetPlainTypeResult.GetErrorId()));
+                TypeSymbol* targetPlainType = targetPlainTypeResult.Value();
+                if (!TypesEqual(targetPlainType, type))
                 {
                     if (targetType->IsArrayTypeSymbol() && cast<ArrayTypeSymbol*>(targetType)->Size() == -1)
                     {
                         return result;
                     }
-                    Result<Value*> targetValueResult = value->As(targetType->PlainType(context), false, node);
+                    Result<Value*> targetValueResult = value->As(targetPlainType, false, node);
                     if (targetValueResult.Error()) return Result<UniquePtr<Value>>(ErrorId(targetValueResult.GetErrorId()));
                     return Result<UniquePtr<Value>>(UniquePtr<Value>(targetValueResult.Value()));
                 }

@@ -6,6 +6,10 @@
 using System;
 using System.Collections;
 
+public cdecl void IFoo()
+{
+}
+
 namespace intermediate
 {
     public enum OpCode : byte
@@ -666,6 +670,8 @@ namespace intermediate
     {
         public ArgInstruction(const System.Lex.Span& span_, Value* arg_) : base(span_, null, OpCode.arg), arg(arg_)
         {
+            #assert(arg != null);
+            #assert(arg->GetType() != null);
         }
         public override void Accept(Visitor& visitor)
         {
@@ -1387,6 +1393,10 @@ namespace intermediate
             if (result.Error()) return result;
             return Result<bool>(true);
         }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return true;
+        }
     }
 
     public class FloatToIntInstruction : UnaryInstruction
@@ -1408,6 +1418,10 @@ namespace intermediate
             result = WriteArg(formatter);
             if (result.Error()) return result;
             return Result<bool>(true);
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return false;
         }
     }
 
@@ -1774,6 +1788,10 @@ namespace intermediate
             if (result.Error()) return result;
             return Result<bool>(true);
         }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return false;
+        }
     }
 
     public class LessInstruction : BinaryInstruction
@@ -1796,6 +1814,10 @@ namespace intermediate
             result = WriteArgs(formatter);
             if (result.Error()) return result;
             return Result<bool>(true);
+        }
+        public override bool IsFloatingPointInstruction() const
+        {
+            return false;
         }
     }
 
@@ -2359,11 +2381,26 @@ namespace intermediate
 
     public class Function : Component
     {
-        public Function(Context* context, ComponentContainer* container, const System.Lex.Span& span_, FunctionType* type_, const string& name_, bool definition_, MetadataRef* metadataRef_,
-            bool parsing) :
-            base(ValueKind.function, span_, type_), flags(FunctionFlags.none), type(type_), name(name_), metadataRef(metadataRef_), comment(),
+        public Function(Context* context, ComponentContainer* container, const System.Lex.Span& span_, Type* type_, const string& name_, bool definition_,
+            MetadataRef* metadataRef_, bool parsing) :
+            base(ValueKind.function, span_, type_), flags(FunctionFlags.none), name(name_), metadataRef(metadataRef_), comment(),
                 basicBlocks(this), nextRegNumber(0), nextBBNumber(0), mdId(-1), errorId(0)
         {
+            Type* t = GetType();
+            if (t->IsPointerType())
+            {
+                t = cast<PointerType*>(t)->BaseType();
+            }
+            functionType = null;
+            if (t->IsFunctionType())
+            {
+                functionType = cast<FunctionType*>(t);
+            }
+            else
+            {
+                int errorId = Error("function type or function pointer type expected", Span(), Parent()->GetContext());
+                SetErrorId(errorId);
+            }
             SetContainer(container);
             if (definition_)
             {
@@ -2373,9 +2410,9 @@ namespace intermediate
             {
                 entryBlock.Reset(new BasicBlock(span_, NextBBNumber()));
                 entryBlock->SetContainer(&basicBlocks);
-                for (int i = 0; i < type->Arity(); ++i)
+                for (int i = 0; i < functionType->Arity(); ++i)
                 {
-                    Type* paramType = type->ParamType(i);
+                    Type* paramType = functionType->ParamType(i);
                     #assert(paramType != null);
                     Instruction* paramInst = new ParamInstruction(span_, MakeNextRegValue(paramType));
                     Result<bool> addResult = entryBlock->AddInstruction(paramInst);
@@ -2429,9 +2466,6 @@ namespace intermediate
                 if (result.Error()) return result;
             }
             Context* context = Parent()->GetContext();
-            Result<Type*> ptrTypeResult = type->AddPointer(context);
-            if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
-            Type* ptrType = ptrTypeResult.Value();
             if (metadataRef != null)
             {
                 mdId = metadataRef->NodeId();
@@ -2441,7 +2475,7 @@ namespace intermediate
             {
                 mdIdStr.Append(" !").Append(ToString(mdId));
             }
-            Result<bool> result = formatter.WriteLine("function " + ptrType->Name() + " " + name + mdIdStr);
+            Result<bool> result = formatter.WriteLine("function " + GetType()->Name() + " " + name + mdIdStr);
             if (result.Error()) return result;
             if (basicBlocks.IsEmpty())
             {
@@ -2726,7 +2760,7 @@ namespace intermediate
         }
         public inline int Arity() const
         {
-            return type->Arity();
+            return functionType->Arity();
         }
         public inline int MdId() const
         {
@@ -2782,7 +2816,7 @@ namespace intermediate
         }
         private FunctionFlags flags;
         private string name;
-        private FunctionType* type;
+        private FunctionType* functionType;
         private MetadataRef* metadataRef;
         private List<Value*> params;
         private string comment;
@@ -2848,7 +2882,10 @@ namespace intermediate
             }
             else
             {
-                Function* function = new Function(context, &functions, System.Lex.Span(), functionType, functionName, false, null, false);
+                Result<Type*> typeResult = functionType->AddPointer(context);
+                if (typeResult.Error()) return Result<Function*>(ErrorId(typeResult.GetErrorId()));
+                Type* type = typeResult.Value();
+                Function* function = new Function(context, &functions, System.Lex.Span(), type, functionName, false, null, false);
                 if (function->Error())
                 {
                     return Result<Function*>(ErrorId(function->GetErrorId()));
@@ -2882,29 +2919,15 @@ namespace intermediate
                     return Result<Function*>(prev);
                 }
             }
-            if (type->IsPointerType())
+            Function* function = new Function(context, &functions, span, type, functionId, true, metadataRef, true);
+            if (function->Error()) return Result<Function*>(ErrorId(function->GetErrorId()));
+            if (inline_)
             {
-                PointerType* pointerType = cast<PointerType*>(type);
-                type = pointerType->BaseType();
+                function->SetInline();
             }
-            if (type->IsFunctionType())
-            {
-                FunctionType* functionType = cast<FunctionType*>(type);
-                Function* function = new Function(context, &functions, span, functionType, functionId, true, metadataRef, true);
-                if (function->Error()) return Result<Function*>(ErrorId(function->GetErrorId()));
-                if (inline_)
-                {
-                    function->SetInline();
-                }
-                functions.AddChild(function);
-                functionMap[function->Name()] = function;
-                return Result<Function*>(function);
-            }
-            else
-            {
-                int errorId = Error("error adding function '" + functionId + "': type is not a function type", span, context);
-                return Result<Function*>(ErrorId(errorId));
-            }
+            functions.AddChild(function);
+            functionMap[function->Name()] = function;
+            return Result<Function*>(function);
         }
         public Result<Function*> AddFunctionDeclaration(const System.Lex.Span& span, Type* type, const string& functionId)
         {
@@ -2918,20 +2941,11 @@ namespace intermediate
                 }
                 return Result<Function*>(prev);
             }
-            if (type->IsFunctionType())
-            {
-                FunctionType* functionType = cast<FunctionType*>(type);
-                Function* function = new Function(context, &functions, span, functionType, functionId, false, null, true);
-                if (function->Error()) return Result<Function*>(ErrorId(function->GetErrorId()));
-                functions.AddChild(function);
-                functionMap[function->Name()] = function;
-                return Result<Function*>(function);
-            }
-            else
-            {
-                int errorId = Error("error adding function '" + functionId + "': type is not a function type", span, context);
-                return Result<Function*>(ErrorId(errorId));
-            }
+            Function* function = new Function(context, &functions, span, type, functionId, false, null, true);
+            if (function->Error()) return Result<Function*>(ErrorId(function->GetErrorId()));
+            functions.AddChild(function);
+            functionMap[function->Name()] = function;
+            return Result<Function*>(function);
         }
         private Context* context;
         private ComponentContainer functions;

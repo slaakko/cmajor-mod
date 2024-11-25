@@ -75,7 +75,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -96,6 +103,7 @@ namespace binder
             if (irTypeResult.Error()) return Result<bool>(ErrorId(irTypeResult.GetErrorId()));
             intermediate.Type* irType = irTypeResult.Value();
             intermediate.Value* nullValue = emitter.GetNullValue(cast<intermediate.PointerType*>(irType));
+            emitter.Stack().Push(nullValue);
             IrObject* target = irObjects[0];
             Result<bool> result = target->Store(emitter, OperationFlags.none);
             if (result.Error()) return result;
@@ -123,7 +131,12 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* pointerType = type->RemovePointer(context);
+            Result<TypeSymbol*> pointerTypeResult = type->RemovePointer(context);
+            if (pointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
             FunctionSymbol* function = functionMap[pointerType];
             if (function == null)
             {
@@ -150,7 +163,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -210,9 +230,20 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* pointerType = type->RemovePointer(context);
+            Result<TypeSymbol*> pointerTypeResult = type->RemovePointer(context);
+            if (pointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            Result<TypeSymbol*> rvalueRefTypeResult = pointerType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             if (GetCollectFlag(flags, CollectFlags.noRvalueRef) ||
-                !TypesEqual(arguments[1]->Type(), pointerType->AddRvalueReference(context)) && !arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+                !TypesEqual(arguments[1]->Type(), rvalueRefType) && !arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
             {
                 FunctionSymbol* function = functionMap[pointerType];
                 if (function == null)
@@ -245,7 +276,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -253,7 +291,14 @@ namespace binder
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(type->AddRvalueReference(context));
+            Result<TypeSymbol*> rvalueRefTypeResult = type->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                SetErrorId(rvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            thatParam->SetType(rvalueRefType);
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -310,8 +355,19 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* pointerType = type->RemovePointer(context);
-            if (TypesEqual(arguments[1]->Type(), pointerType->AddRvalueReference(context)) || arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+            Result<TypeSymbol*> pointerTypeResult = type->RemovePointer(context);
+            if (pointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            Result<TypeSymbol*> rvalueRefTypeResult = pointerType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            if (TypesEqual(arguments[1]->Type(), rvalueRefType) || arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
             {
                 FunctionSymbol* function = functionMap[pointerType];
                 if (function == null)
@@ -344,7 +400,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -399,9 +462,20 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* pointerType = type->RemovePointer(context);
+            Result<TypeSymbol*> pointerTypeResult = type->RemovePointer(context);
+            if (pointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            Result<TypeSymbol*> rvalueRefTypeResult = pointerType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             if (GetCollectFlag(flags, CollectFlags.noRvalueRef) ||
-                !TypesEqual(arguments[1]->Type(), pointerType->AddRvalueReference(context)) && !arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+                !TypesEqual(arguments[1]->Type(), rvalueRefType) && !arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
             {
                 FunctionSymbol* function = functionMap[pointerType];
                 if (function == null)
@@ -437,7 +511,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -445,7 +526,13 @@ namespace binder
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(type->AddRvalueReference(context));
+            Result<TypeSymbol*> rvalueRefTypeResult = type->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                SetErrorId(rvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            thatParam->SetType(rvalueRefTypeResult.Value());
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -497,8 +584,19 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* pointerType = type->RemovePointer(context);
-            if (TypesEqual(arguments[1]->Type(), pointerType->AddRvalueReference(context)) || arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
+            Result<TypeSymbol*> pointerTypeResult = type->RemovePointer(context);
+            if (pointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            Result<TypeSymbol*> rvalueRefTypeResult = pointerType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            if (TypesEqual(arguments[1]->Type(), rvalueRefType) || arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
             {
                 FunctionSymbol* function = functionMap[pointerType];
                 if (function == null)
@@ -662,12 +760,23 @@ namespace binder
             TypeSymbol* leftType = arguments[0]->Type();
             if (!leftType->IsPointerType()) return Result<bool>(false);
             SymbolsContext& context = Context();
-            leftType = leftType->PlainType(context);
+            Result<TypeSymbol*> plainTypeResult = leftType->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            }
+            leftType = plainTypeResult.Value();
             TypeSymbol* rightType = arguments[1]->Type();
             Result<TypeSymbol*> longTypeResult = GetSymbolTable()->GetTypeByName(u"long");
             if (longTypeResult.Error()) return Result<bool>(ErrorId(longTypeResult.GetErrorId()));
             TypeSymbol* longType = longTypeResult.Value();
-            if (!rightType->PlainType(context)->IsIntegralType())
+            Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+            if (rightPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rightPlainType = rightPlainTypeResult.Value();
+            if (!rightPlainType->IsIntegralType())
             {
                 ArgumentMatch argumentMatch;
                 Result<FunctionSymbol*> conversionResult = GetConversion(rightType, longType, containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
@@ -755,20 +864,31 @@ namespace binder
         public override Result<bool> CollectViableFunctions(ContainerScope* containerScope, const List<UniquePtr<BoundExpression>>& arguments, BoundFunction* currentFunction,
             Node* node, CollectFlags flags, ViableFunctionSet& viableFunctions)
         {
+            SymbolsContext& context = Context();
             Result<TypeSymbol*> longTypeResult = GetSymbolTable()->GetTypeByName(u"long");
             if (longTypeResult.Error()) return Result<bool>(ErrorId(longTypeResult.GetErrorId()));
             TypeSymbol* longType = longTypeResult.Value();
             TypeSymbol* leftType = arguments[0]->Type();
-            if (!leftType->PlainType(context)->IsIntegralType())
+            Result<TypeSymbol*> leftPlainTypeResult = leftType->PlainType(context);
+            if (leftPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(leftPlainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* leftPlainType = leftPlainTypeResult.Value();
+            if (!leftPlainType->IsIntegralType())
             {
                 ArgumentMatch argumentMatch;
                 Result<FunctionSymbol*> conversionResult = GetConversion(leftType, longType, containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (conversionResult.Error()) return Result<bool>(ErrorId(conversionResult.GetErrorId()));
             }
-            SymbolsContext& context = Context();
             TypeSymbol* rightType = arguments[1]->Type();
             if (!rightType->IsPointerType()) return Result<bool>(false);
-            rightType = rightType->PlainType(context);
+            Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+            if (rightPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            }
+            rightType = rightPlainTypeResult.Value();
             if (rightType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
                 ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(rightType->BaseType());
@@ -857,12 +977,23 @@ namespace binder
             TypeSymbol* leftType = arguments[0]->Type();
             if (!leftType->IsPointerType()) return Result<bool>(false);
             SymbolsContext& context = Context();
-            leftType = leftType->PlainType(context);
+            Result<TypeSymbol*> leftPlainTypeResult = leftType->PlainType(context);
+            if (leftPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(leftPlainTypeResult.GetErrorId()));
+            }
+            leftType = leftPlainTypeResult.Value();
             TypeSymbol* rightType = arguments[1]->Type();
             Result<TypeSymbol*> longTypeResult = GetSymbolTable()->GetTypeByName(u"long");
             if (longTypeResult.Error()) return Result<bool>(ErrorId(longTypeResult.GetErrorId()));
             TypeSymbol* longType = longTypeResult.Value();
-            if (!rightType->PlainType(context)->IsIntegralType())
+            Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+            if (rightPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rightPlainType = rightPlainTypeResult.Value();
+            if (!rightPlainType->IsIntegralType())
             {
                 ArgumentMatch argumentMatch;
                 Result<FunctionSymbol*> conversionResult = GetConversion(rightType, longType, containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
@@ -952,10 +1083,20 @@ namespace binder
             TypeSymbol* leftType = arguments[0]->Type();
             if (!leftType->IsPointerType()) return Result<bool>(false);
             SymbolsContext& context = Context();
-            leftType = leftType->PlainType(context);
+            Result<TypeSymbol*> leftPlainTypeResult = leftType->PlainType(context);
+            if (leftPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(leftPlainTypeResult.GetErrorId()));
+            }
+            leftType = leftPlainTypeResult.Value();
             TypeSymbol* rightType = arguments[1]->Type();
             if (!rightType->IsPointerType()) return Result<bool>(false);
-            rightType = rightType->PlainType(context);
+            Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+            if (rightPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            }
+            rightType = rightPlainTypeResult.Value();
             if (leftType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
                 ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(leftType->BaseType());
@@ -1043,10 +1184,20 @@ namespace binder
             TypeSymbol* leftType = arguments[0]->Type();
             if (!leftType->IsPointerType()) return Result<bool>(false);
             SymbolsContext& context = Context();
-            leftType = leftType->PlainType(context);
+            Result<TypeSymbol*> leftPlainTypeResult = leftType->PlainType(context);
+            if (leftPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(leftPlainTypeResult.GetErrorId()));
+            }
+            leftType = leftPlainTypeResult.Value();
             TypeSymbol* rightType = arguments[1]->Type();
             if (!rightType->IsPointerType()) return Result<bool>(false);
-            rightType = rightType->PlainType(context);
+            Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+            if (rightPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            }
+            rightType = rightPlainTypeResult.Value();
             if (leftType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
                 ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(leftType->BaseType());
@@ -1134,10 +1285,20 @@ namespace binder
             TypeSymbol* leftType = arguments[0]->Type();
             if (!leftType->IsPointerType()) return Result<bool>(false);
             SymbolsContext& context = Context();
-            leftType = leftType->PlainType(context);
+            Result<TypeSymbol*> leftPlainTypeResult = leftType->PlainType(context);
+            if (leftPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(leftPlainTypeResult.GetErrorId()));
+            }
+            leftType = leftPlainTypeResult.Value();
             TypeSymbol* rightType = arguments[1]->Type();
             if (!rightType->IsPointerType()) return Result<bool>(false);
-            rightType = rightType->PlainType(context);
+            Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+            if (rightPlainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            }
+            rightType = rightPlainTypeResult.Value();
             if (leftType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
                 ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(leftType->BaseType());
@@ -1172,7 +1333,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* operandParam = new ParameterSymbol(span_, u"operand");
-            operandParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error())
+            {
+                SetErrorId(ptrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* ptrType = ptrTypeResult.Value();
+            operandParam->SetType(ptrType);
             Result<bool> result = AddMember(operandParam, context);
             if (result.Error())
             {
@@ -1215,7 +1383,12 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* pointerType = type->RemovePointer(context);
+            Result<TypeSymbol*> pointerTypeResult = type->RemovePointer(context);
+            if (pointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
             FunctionSymbol* function = functionMap[pointerType];
             if (function == null)
             {
@@ -1241,7 +1414,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error())
+            {
+                SetErrorId(ptrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* ptrType = ptrTypeResult.Value();
+            thisParam->SetType(ptrType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -1293,11 +1473,17 @@ namespace binder
                 Result<bool> result = GetBoundCompileUnit()->FinalizeBinding(specialization);
                 if (result.Error()) return result;
             }
-            TypeSymbol* lvalueRefType = type->RemovePointer(Context());
+            SymbolsContext& context = Context();
+            Result<TypeSymbol*> lvalueRefTypeResult = type->RemovePointer(context);
+            if (lvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
             FunctionSymbol* function = functionMap[lvalueRefType];
             if (function == null)
             {
-                function = new LvalueRefefenceCopyCtor(node->GetSpan(), lvalueRefType, Context());
+                function = new LvalueRefefenceCopyCtor(node->GetSpan(), lvalueRefType, context);
                 if (function->Error()) return Result<bool>(ErrorId(function->GetErrorId()));
                 function->SetModule(GetModule());
                 function->SetParent(&GetSymbolTable()->GlobalNs());
@@ -1320,7 +1506,14 @@ namespace binder
             SetLvalueReferenceCopyAssignment();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error())
+            {
+                SetErrorId(ptrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* ptrType = ptrTypeResult.Value();
+            thisParam->SetType(ptrType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -1374,10 +1567,33 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* lvalueRefType = type->RemovePointer(context);
-            if (lvalueRefType->PlainType(context)->IsClassTypeSymbol()) return Result<bool>(false);
+            Result<TypeSymbol*> lvalueRefTypeResult = type->RemovePointer(context);
+            if (lvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = lvalueRefType->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* plainType = plainTypeResult.Value();
+            if (plainType->IsClassTypeSymbol()) return Result<bool>(false);
+            Result<TypeSymbol*> nonConstTypeResult = arguments[1]->Type()->RemoveConst(context);
+            if (nonConstTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(nonConstTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nonConstType = nonConstTypeResult.Value();
+            Result<TypeSymbol*> rvalueRefTypeResult = plainType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             if (GetCollectFlag(flags, CollectFlags.noRvalueRef) ||
-                !TypesEqual(arguments[1]->Type()->RemoveConst(context), lvalueRefType->PlainType(context)->AddRvalueReference(context)) &&
+                !TypesEqual(nonConstType, rvalueRefType) &&
                 !arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
             {
                 FunctionSymbol* function = functionMap[lvalueRefType];
@@ -1413,7 +1629,13 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error())
+            {
+                SetErrorId(ptrTypeResult.GetErrorId());
+                return;
+            }
+            thisParam->SetType(ptrTypeResult.Value());
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -1421,7 +1643,20 @@ namespace binder
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(type->RemoveReference(context)->AddRvalueReference(context));
+            Result<TypeSymbol*> nonRefTypeResult = type->RemoveReference(context);
+            if (nonRefTypeResult.Error())
+            {
+                SetErrorId(nonRefTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* nonRefType = nonRefTypeResult.Value();
+            Result<TypeSymbol*> rvalueRefTypeResult = nonRefType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                SetErrorId(rvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            thatParam->SetType(rvalueRefTypeResult.Value());
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -1472,10 +1707,33 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* lvalueRefType = type->RemovePointer(context);
-            if (lvalueRefType->PlainType(context)->IsClassTypeSymbol()) return Result<bool>(false);
-            if (lvalueRefType->PlainType(context)->IsArrayTypeSymbol()) return Result<bool>(false);
-            if (TypesEqual(arguments[1]->Type()->RemoveConst(context), lvalueRefType->PlainType(context)->AddRvalueReference(context)) ||
+            Result<TypeSymbol*> lvalueRefTypeResult = type->RemovePointer(context);
+            if (lvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = lvalueRefType->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* plainType = plainTypeResult.Value();
+            if (plainType->IsClassTypeSymbol()) return Result<bool>(false);
+            if (plainType->IsArrayTypeSymbol()) return Result<bool>(false);
+            Result<TypeSymbol*> rvalueRefTypeResult = plainType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            Result<TypeSymbol*> nonConstTypeResult = arguments[1]->Type()->RemoveConst(context);
+            if (nonConstTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(nonConstTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nonConstType = nonConstTypeResult.Value();
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            if (TypesEqual(nonConstType, rvalueRefType) ||
                 arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference))
             {
                 FunctionSymbol* function = functionMap[lvalueRefType];
@@ -1578,7 +1836,14 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error())
+            {
+                SetErrorId(ptrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* ptrType = ptrTypeResult.Value();
+            thisParam->SetType(ptrType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -1631,8 +1896,19 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* rvalueRefType = type->RemovePointer(context);
-            if (rvalueRefType->PlainType(context)->IsClassTypeSymbol()) return Result<bool>(false);
+            Result<TypeSymbol*> rvalueRefTypeResult = type->RemovePointer(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = rvalueRefType->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* plainType = plainTypeResult.Value();
+            if (plainType->IsClassTypeSymbol()) return Result<bool>(false);
             FunctionSymbol* function = functionMap[rvalueRefType];
             if (function == null)
             {
@@ -1658,7 +1934,13 @@ namespace binder
             SetBasicTypeOperation();
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error())
+            {
+                SetErrorId(ptrTypeResult.GetErrorId());
+                return;
+            }
+            thisParam->SetType(ptrTypeResult.Value());
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -1716,8 +1998,19 @@ namespace binder
                 if (result.Error()) return result;
             }
             SymbolsContext& context = Context();
-            TypeSymbol* rvalueRefType = type->RemovePointer(context);
-            if (rvalueRefType->PlainType(context)->IsClassTypeSymbol()) return Result<bool>(false);
+            Result<TypeSymbol*> rvalueRefTypeResult = type->RemovePointer(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = rvalueRefType->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* plainType = plainTypeResult.Value();
+            if (plainType->IsClassTypeSymbol()) return Result<bool>(false);
             FunctionSymbol* function = functionMap[rvalueRefType];
             if (function == null)
             {
@@ -1816,7 +2109,14 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            if (type->PointerCount() != 1 || !type->RemovePointer(context)->IsArrayTypeSymbol()) return Result<bool>(false);
+            if (type->PointerCount() != 1) return Result<bool>(false);
+            Result<TypeSymbol*> nonPointerTypeResult = type->RemovePointer(context);
+            if (nonPointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(nonPointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nonPointerType = nonPointerTypeResult.Value();
+            if (!nonPointerType->IsArrayTypeSymbol()) return Result<bool>(false);
             ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(type->BaseType());
             if (arrayType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
@@ -1829,13 +2129,19 @@ namespace binder
             {
                 List<FunctionScopeLookup> elementLookups;
                 elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                 if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
                 ContainerScope* scope = scopeResult.Value();
                 elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
                 elementLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                 List<UniquePtr<BoundExpression>> elementArguments;
-                elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(context))));
+                Result<TypeSymbol*> elementPtrTypeResult = arrayType->ElementType()->AddPointer(context);
+                if (elementPtrTypeResult.Error())
+                {
+                    return Result<bool>(ErrorId(elementPtrTypeResult.GetErrorId()));
+                }
+                TypeSymbol* elementPtrType = elementPtrTypeResult.Value();
+                elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), elementPtrType)));
                 Result<UniquePtr<BoundFunctionCall>> elementDefaultConstructorResult = ResolveOverload(u"@constructor", containerScope, elementLookups, elementArguments,
                     GetBoundCompileUnit(), currentFunction, node);
                 if (elementDefaultConstructorResult.Error()) return Result<bool>(ErrorId(elementDefaultConstructorResult.GetErrorId()));
@@ -1867,7 +2173,14 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            if (type->PointerCount() != 1 || !type->RemovePointer(context)->IsArrayTypeSymbol()) return Result<bool>(false);
+            if (type->PointerCount() != 1) return Result<bool>(false);
+            Result<TypeSymbol*> nonPointerTypeResult = type->RemovePointer(context);
+            if (nonPointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(nonPointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nonPointerType = nonPointerTypeResult.Value();
+            if (!nonPointerType->IsArrayTypeSymbol()) return Result<bool>(false);
             ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(type->BaseType());
             if (arrayType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
@@ -1875,27 +2188,55 @@ namespace binder
                 Result<bool> result = GetBoundCompileUnit()->FinalizeBinding(specialization);
                 if (result.Error()) return result;
             }
-            TypeSymbol* rightType = arguments[1]->Type()->PlainType(context);
+            Result<TypeSymbol*> plainTypeResult = arguments[1]->Type()->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rightType = plainTypeResult.Value();
             bool typesEqual = TypesEqual(rightType, arrayType);
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
+            Result<TypeSymbol*> rvalueRefTypeResult = arrayType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             if (typesEqual ||
                 GetCollectFlag(flags, CollectFlags.noRvalueRef) ||
-                (!TypesEqual(arguments[1]->Type(), arrayType->AddRvalueReference(context)) && !bindToRvalueRef))
+                (!TypesEqual(arguments[1]->Type(), rvalueRefType) && !bindToRvalueRef))
             {
                 FunctionSymbol* function = functionMap[arrayType->TypeId()];
                 if (function == null)
                 {
                     List<FunctionScopeLookup> elementLookups;
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                     if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
                     ContainerScope* scope = scopeResult.Value();
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                     List<UniquePtr<BoundExpression>> elementArguments;
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(context))));
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(),
-                        arrayType->ElementType()->AddConst(context)->AddLvalueReference(context))));
+                    Result<TypeSymbol*> elementPtrTypeResult = arrayType->ElementType()->AddPointer(context);
+                    if (elementPtrTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(elementPtrTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* elementPtrType = elementPtrTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), elementPtrType)));
+                    Result<TypeSymbol*> constElementTypeResult = arrayType->ElementType()->AddConst(context);
+                    if (constElementTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(constElementTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* constElementType = constElementTypeResult.Value();
+                    Result<TypeSymbol*> lvalueRefTypeResult = constElementType->AddLvalueReference(context);
+                    if (lvalueRefTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), lvalueRefType)));
                     Result<UniquePtr<BoundFunctionCall>> elementCopyConstructorResult = ResolveOverload(u"@constructor", containerScope, elementLookups, elementArguments,
                         GetBoundCompileUnit(), currentFunction, node);
                     if (elementCopyConstructorResult.Error()) return Result<bool>(ErrorId(elementCopyConstructorResult.GetErrorId()));
@@ -1932,7 +2273,14 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            if (type->PointerCount() != 1 || !type->RemovePointer(context)->IsArrayTypeSymbol()) return Result<bool>(false);
+            if (type->PointerCount() != 1) return Result<bool>(false);
+            Result<TypeSymbol*> nonPointerTypeResult = type->RemovePointer(context);
+            if (nonPointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(nonPointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nonPointerType = nonPointerTypeResult.Value();
+            if (!nonPointerType->IsArrayTypeSymbol()) return Result<bool>(false);
             ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(type->BaseType());
             if (arrayType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
@@ -1940,23 +2288,40 @@ namespace binder
                 Result<bool> result = GetBoundCompileUnit()->FinalizeBinding(specialization);
                 if (result.Error()) return result;
             }
+            Result<TypeSymbol*> rvalueRefTypeResult = arrayType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
-            if (TypesEqual(arguments[1]->Type(), arrayType->AddRvalueReference(context)) || bindToRvalueRef)
+            if (TypesEqual(arguments[1]->Type(), rvalueRefType) || bindToRvalueRef)
             {
                 FunctionSymbol* function = functionMap[arrayType->TypeId()];
                 if (function == null)
                 {
                     List<FunctionScopeLookup> elementLookups;
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                     if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
                     ContainerScope* scope = scopeResult.Value();
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                     List<UniquePtr<BoundExpression>> elementArguments;
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(context))));
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(),
-                        arrayType->ElementType()->AddRvalueReference(context))));
+                    Result<TypeSymbol*> elementPtrTypeResult = arrayType->ElementType()->AddPointer(context);
+                    if (elementPtrTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(elementPtrTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* elementPtrType = elementPtrTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), elementPtrType)));
+                    Result<TypeSymbol*> rvalueRefTypeResult = arrayType->ElementType()->AddRvalueReference(context);
+                    if (rvalueRefTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), rvalueRefType)));
                     Result<UniquePtr<BoundFunctionCall>> elementMoveConstructorResult = ResolveOverload(u"@constructor", containerScope, elementLookups, elementArguments,
                         GetBoundCompileUnit(), currentFunction, node);
                     if (elementMoveConstructorResult.Error()) return Result<bool>(ErrorId(elementMoveConstructorResult.GetErrorId()));
@@ -1993,7 +2358,14 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            if (type->PointerCount() != 1 || !type->RemovePointer(context)->IsArrayTypeSymbol()) return Result<bool>(false);
+            if (type->PointerCount() != 1) return Result<bool>(false);
+            Result<TypeSymbol*> nonPointerTypeResult = type->RemovePointer(context);
+            if (nonPointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(nonPointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nonPointerType = nonPointerTypeResult.Value();
+            if (!nonPointerType->IsArrayTypeSymbol()) return Result<bool>(false);
             ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(type->BaseType());
             if (arrayType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
@@ -2001,27 +2373,55 @@ namespace binder
                 Result<bool> result = GetBoundCompileUnit()->FinalizeBinding(specialization);
                 if (result.Error()) return result;
             }
-            TypeSymbol* rightType = arguments[1]->Type()->PlainType(context);
+            Result<TypeSymbol*> plainTypeResult = arguments[1]->Type()->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                return  Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rightType = plainTypeResult.Value();
             bool typesEqual = TypesEqual(rightType, arrayType);
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
+            Result<TypeSymbol*> rvalueRefTypeResult = arrayType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            }
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             if (typesEqual ||
                 GetCollectFlag(flags, CollectFlags.noRvalueRef) ||
-                (!TypesEqual(arguments[1]->Type(), arrayType->AddRvalueReference(context)) && !bindToRvalueRef))
+                (!TypesEqual(arguments[1]->Type(), rvalueRefType) && !bindToRvalueRef))
             {
                 FunctionSymbol* function = functionMap[arrayType->TypeId()];
                 if (function == null)
                 {
                     List<FunctionScopeLookup> elementLookups;
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                     if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
                     ContainerScope* scope = scopeResult.Value();
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                     List<UniquePtr<BoundExpression>> elementArguments;
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(context))));
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(),
-                        arrayType->ElementType()->AddConst(context)->AddLvalueReference(context))));
+                    Result<TypeSymbol*> elementPtrTypeResult = arrayType->ElementType()->AddPointer(context);
+                    if (elementPtrTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(elementPtrTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* elementPtrType = elementPtrTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), elementPtrType)));
+                    Result<TypeSymbol*> constTypeResult = arrayType->ElementType()->AddConst(context);
+                    if (constTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(constTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* constType = constTypeResult.Value();
+                    Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                    if (lvalueRefTypeResult.Error())
+                    {
+                        return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                    }
+                    TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), lvalueRefType)));
                     Result<UniquePtr<BoundFunctionCall>> elementCopyAssignmentResult = ResolveOverload(u"operator=", containerScope, elementLookups, elementArguments,
                         GetBoundCompileUnit(), currentFunction, node);
                     if (elementCopyAssignmentResult.Error()) return Result<bool>(ErrorId(elementCopyAssignmentResult.GetErrorId()));
@@ -2058,7 +2458,11 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            if (type->PointerCount() != 1 || !type->RemovePointer(context)->IsArrayTypeSymbol()) return Result<bool>(false);
+            if (type->PointerCount() != 1) return Result<bool>(false);
+            Result<TypeSymbol*> nonPtrTypeResult = type->RemovePointer(context);
+            if (nonPtrTypeResult.Error()) return Result<bool>(ErrorId(nonPtrTypeResult.GetErrorId()));
+            TypeSymbol* nonPtrType = nonPtrTypeResult.Value();
+            if (!nonPtrType->IsArrayTypeSymbol()) return Result<bool>(false);
             ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(type->BaseType());
             if (arrayType->BaseType()->IsClassTemplateSpecializationSymbol())
             {
@@ -2067,22 +2471,30 @@ namespace binder
                 if (result.Error()) return result;
             }
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
-            if (TypesEqual(arguments[1]->Type(), arrayType->AddRvalueReference(context)) || bindToRvalueRef)
+            Result<TypeSymbol*> rvalueRefTypeResult = arrayType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            if (TypesEqual(arguments[1]->Type(), rvalueRefType) || bindToRvalueRef)
             {
                 FunctionSymbol* function = functionMap[arrayType->TypeId()];
                 if (function == null)
                 {
                     List<FunctionScopeLookup> elementLookups;
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                    Result<ContainerScope*> scopeResult = arrayType->ElementType()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                     if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
                     ContainerScope* scope = scopeResult.Value();
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
                     elementLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                     List<UniquePtr<BoundExpression>> elementArguments;
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), arrayType->ElementType()->AddPointer(context))));
-                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(),
-                        arrayType->ElementType()->AddRvalueReference(context))));
+                    Result<TypeSymbol*> elementPtrTypeResult = arrayType->ElementType()->AddPointer(context);
+                    if (elementPtrTypeResult.Error()) return Result<bool>(ErrorId(elementPtrTypeResult.GetErrorId()));
+                    TypeSymbol* elementPtrType = elementPtrTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), elementPtrType)));
+                    Result<TypeSymbol*> rvalueRefTypeResult = arrayType->ElementType()->AddRvalueReference(context);
+                    if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+                    TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+                    elementArguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), rvalueRefType)));
                     Result<UniquePtr<BoundFunctionCall>> elementMoveAssignmentResult = ResolveOverload(u"operator=", containerScope, elementLookups, elementArguments,
                         GetBoundCompileUnit(), currentFunction, node);
                     if (elementMoveAssignmentResult.Error()) return Result<bool>(ErrorId(elementMoveAssignmentResult.GetErrorId()));
@@ -2120,13 +2532,19 @@ namespace binder
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
             TypeSymbol* leftType = arguments[0]->Type();
-            if (!leftType->PlainType(context)->IsArrayTypeSymbol()) return Result<bool>(false);
-            ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(leftType->PlainType(context));
+            Result<TypeSymbol*> plainTypeResult = leftType->PlainType(context);
+            if (plainTypeResult.Error()) return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            TypeSymbol* plainType = plainTypeResult.Value();
+            if (!plainType->IsArrayTypeSymbol()) return Result<bool>(false);
+            ArrayTypeSymbol* arrayType = cast<ArrayTypeSymbol*>(plainType);
             TypeSymbol* rightType = arguments[1]->Type();
             Result<TypeSymbol*> longTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"long");
             if (longTypeResult.Error()) return Result<bool>(ErrorId(longTypeResult.GetErrorId()));
             TypeSymbol* longType = longTypeResult.Value();
-            if (!rightType->PlainType(context)->IsIntegralType())
+            Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+            if (rightPlainTypeResult.Error()) return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            TypeSymbol* rightPlainType = rightPlainTypeResult.Value();
+            if (!rightPlainType->IsIntegralType())
             {
                 ArgumentMatch argumentMatch;
                 Result<FunctionSymbol*> conversionResult = GetConversion(rightType, longType, containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
@@ -2159,7 +2577,14 @@ namespace binder
             SetAccess(SymbolAccess.public_);
             SetParent(classType);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(classType->AddPointer(context));
+            Result<TypeSymbol*> ptrTypeResult = classType->AddPointer(context);
+            if (ptrTypeResult.Error())
+            {
+                SetErrorId(ptrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* ptrType = ptrTypeResult.Value();
+            thisParam->SetType(ptrType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -2198,7 +2623,12 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            TypeSymbol* baseType = type->RemovePointer(context)->PlainType(context);
+            Result<TypeSymbol*> nonPtrTypeResult = type->RemovePointer(context);
+            if (nonPtrTypeResult.Error()) return Result<bool>(ErrorId(nonPtrTypeResult.GetErrorId()));
+            TypeSymbol* nonPtrType = nonPtrTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = nonPtrType->PlainType(context);
+            if (plainTypeResult.Error()) return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            TypeSymbol* baseType = plainTypeResult.Value();
             if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return Result<bool>(false);
             ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type->BaseType());
             if (classType->IsStatic())
@@ -2247,6 +2677,7 @@ namespace binder
             ClassTypeSymbol* classType = defaultConstructor->ClassType();
             SymbolsContext& context = Context();
             UniquePtr<BoundFunction> boundFunction(new BoundFunction(node->GetSpan(), defaultConstructor, node->ModuleId(), node->FileIndex()));
+            boundFunction->SetBoundCompileUnit(GetBoundCompileUnit());
             boundFunction->SetNode(node);
             boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(new BoundCompoundStatement(node->GetSpan())));
             if (classType->StaticConstructor() != null)
@@ -2264,7 +2695,10 @@ namespace binder
                 List<UniquePtr<BoundExpression>> baseConstructorCallArguments;
                 ParameterSymbol* thisParam = defaultConstructor->Parameters()[0];
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                Result<TypeSymbol*> baseClassPointerTypeResult = classType->BaseClass()->AddPointer(context);
+                if (baseClassPointerTypeResult.Error()) return Result<bool>(ErrorId(baseClassPointerTypeResult.GetErrorId()));
+                TypeSymbol* baseClassPointerType = baseClassPointerTypeResult.Value();
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPointerType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thisToBaseConversionResult.Error())
                 {
@@ -2319,7 +2753,10 @@ namespace binder
                 else
                 {
                     ArgumentMatch argumentMatch;
-                    Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context),
+                    Result<TypeSymbol*> vmtPtrPtrTypeResult = vmtPtrHolderClass->AddPointer(context);
+                    if (vmtPtrPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrPtrTypeResult.GetErrorId()));
+                    TypeSymbol* vmtPtrPtrType = vmtPtrPtrTypeResult.Value();
+                    Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrPtrType,
                         containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                     if (thisToHolderConversionResult.Error())
                     {
@@ -2347,7 +2784,7 @@ namespace binder
                 MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
                 List<FunctionScopeLookup> memberConstructorCallLookups;
                 memberConstructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                 if (scopeResult.Error())
                 {
                     Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
@@ -2366,7 +2803,9 @@ namespace binder
                 ParameterSymbol* thisParam = defaultConstructor->GetThisParam();
                 #assert(thisParam != null);
                 boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
-                TypeSymbol* type = boundMemberVariable->Type()->AddPointer(context);
+                Result<TypeSymbol*> typeResult = boundMemberVariable->Type()->AddPointer(context);
+                if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                TypeSymbol* type = typeResult.Value();
                 memberConstructorCallArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(),
                     UniquePtr<BoundExpression>(boundMemberVariable.Release()), type)));
                 Result<UniquePtr<BoundFunctionCall>> memberConstructorCallResult = ResolveOverload(u"@constructor", containerScope,
@@ -2401,7 +2840,14 @@ namespace binder
             SetAccess(SymbolAccess.public_);
             SetParent(classType);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(classType->AddPointer(context));
+            Result<TypeSymbol*> classPtrTypeResult = classType->AddPointer(context);
+            if (classPtrTypeResult.Error())
+            {
+                SetErrorId(classPtrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* classPtrType = classPtrTypeResult.Value();
+            thisParam->SetType(classPtrType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -2409,7 +2855,20 @@ namespace binder
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(classType->AddConst(context)->AddLvalueReference(context));
+            Result<TypeSymbol*> constTypeResult = classType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+            if (lvalueRefTypeResult.Error())
+            {
+                SetErrorId(lvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            thatParam->SetType(lvalueRefTypeResult.Value());
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -2448,7 +2907,12 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            TypeSymbol* baseType = type->RemovePointer(context)->PlainType(context);
+            Result<TypeSymbol*> nonPtrTypeResult = type->RemovePointer(context);
+            if (nonPtrTypeResult.Error()) return Result<bool>(ErrorId(nonPtrTypeResult.GetErrorId()));
+            TypeSymbol* nonPtrType = nonPtrTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = nonPtrType->PlainType(context);
+            if (plainTypeResult.Error()) return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            TypeSymbol* baseType = plainTypeResult.Value();
             if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return Result<bool>(false);
             ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type->BaseType());
             if (classType->IsStatic())
@@ -2456,7 +2920,9 @@ namespace binder
                 int errorId = MakeError("cannot copy an instance of a static class", node->GetFullSpan(), classType->FullSpan());
                 return Result<bool>(ErrorId(errorId));
             }
-            TypeSymbol* rightType = arguments[1]->Type()->PlainType(context);
+            Result<TypeSymbol*> rightPlainTypeResult = arguments[1]->Type()->PlainType(context);
+            if (rightPlainTypeResult.Error()) return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            TypeSymbol* rightType = rightPlainTypeResult.Value();
             bool typesEqual = TypesEqual(rightType, classType);
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
             bool conversionFunctionExists = false;
@@ -2467,7 +2933,7 @@ namespace binder
                 if (!conversionResult.Error())
                 {
                     FunctionSymbol* conversion = conversionResult.Value();
-                    if (conversion != null && conversion->IsConversionFunctionSymbol())
+                    if (conversion->IsConversionFunctionSymbol())
                     {
                         conversionFunctionExists = true;
                         if (conversion->ReturnsClassInterfaceOrClassDelegateByValue())
@@ -2477,9 +2943,12 @@ namespace binder
                     }
                 }
             }
+            Result<TypeSymbol*> rvalueRefTypeResult = classType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             if (typesEqual ||
                 GetCollectFlag(flags, CollectFlags.noRvalueRef) ||
-                (!TypesEqual(arguments[1]->Type(), classType->AddRvalueReference(context)) && !bindToRvalueRef) && (typesEqual || conversionFunctionExists))
+                (!TypesEqual(arguments[1]->Type(), rvalueRefType) && !bindToRvalueRef) && (typesEqual || conversionFunctionExists))
             {
                 if (classType->CopyConstructor() != null)
                 {
@@ -2527,6 +2996,7 @@ namespace binder
             ClassTypeSymbol* classType = copyConstructor->ClassType();
             SymbolsContext& context = Context();
             UniquePtr<BoundFunction> boundFunction(new BoundFunction(node->GetSpan(), copyConstructor, node->ModuleId(), node->FileIndex()));
+            boundFunction->SetBoundCompileUnit(GetBoundCompileUnit());
             boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(new BoundCompoundStatement(node->GetSpan())));
             boundFunction->SetNode(node);
             if (classType->StaticConstructor() != null)
@@ -2544,7 +3014,10 @@ namespace binder
                 List<UniquePtr<BoundExpression>> baseConstructorCallArguments;
                 ParameterSymbol* thisParam = copyConstructor->Parameters()[0];
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+                if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+                TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thisToBaseConversionResult.Error())
                 {
@@ -2561,7 +3034,13 @@ namespace binder
                     UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion));
                 baseConstructorCallArguments.Add(Rvalue(baseClassPointerConversion));
                 ParameterSymbol* thatParam = copyConstructor->Parameters()[1];
-                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), classType->BaseClass()->AddConst(context)->AddLvalueReference(context),
+                Result<TypeSymbol*> constTypeResult = classType->BaseClass()->AddConst(context);
+                if (constTypeResult.Error()) return Result<bool>(ErrorId(constTypeResult.GetErrorId()));
+                TypeSymbol* constType = constTypeResult.Value();
+                Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                if (lvalueRefTypeResult.Error()) return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), lvalueRefType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thatToBaseConversionResult.Error())
                 {
@@ -2616,7 +3095,10 @@ namespace binder
                 else
                 {
                     ArgumentMatch argumentMatch;
-                    Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context),
+                    Result<TypeSymbol*> vmtPtrPtrTypeResult = vmtPtrHolderClass->AddPointer(context);
+                    if (vmtPtrPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrPtrTypeResult.GetErrorId()));
+                    TypeSymbol* vmtPtrPtrType = vmtPtrPtrTypeResult.Value();
+                    Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrPtrType,
                         containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                     if (thisToHolderConversionResult.Error())
                     {
@@ -2644,7 +3126,7 @@ namespace binder
                 MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
                 List<FunctionScopeLookup> memberConstructorCallLookups;
                 memberConstructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                 if (scopeResult.Error())
                 {
                     Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
@@ -2685,13 +3167,18 @@ namespace binder
                 ParameterSymbol* thisParam = copyConstructor->GetThisParam();
                 #assert(thisParam != null);
                 boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
-                TypeSymbol* type = boundMemberVariable->Type()->AddPointer(context);
+                Result<TypeSymbol*> typeResult = boundMemberVariable->Type()->AddPointer(context);
+                if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                TypeSymbol* type = typeResult.Value();
                 memberConstructorCallArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(),
                     UniquePtr<BoundExpression>(boundMemberVariable.Release()), type)));
                 ParameterSymbol* thatParam = copyConstructor->Parameters()[1];
                 UniquePtr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
+                Result<TypeSymbol*> ptrTypeResult = thatParam->Type()->BaseType()->AddPointer(context);
+                if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                TypeSymbol* ptrType = ptrTypeResult.Value();
                 thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundReferenceToPointerExpression(node->GetSpan(),
-                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), thatParam->Type()->BaseType()->AddPointer(context))));
+                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), ptrType)));
                 memberConstructorCallArguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable.Release()));
                 Result<UniquePtr<BoundFunctionCall>> memberConstructorCallResult = ResolveOverload(u"@constructor", containerScope,
                     memberConstructorCallLookups, memberConstructorCallArguments, GetBoundCompileUnit(), boundFunction.Get(), node);
@@ -2725,7 +3212,13 @@ namespace binder
             SetAccess(SymbolAccess.public_);
             SetParent(classType);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(classType->AddPointer(context));
+            Result<TypeSymbol*> classPtrTypeResult = classType->AddPointer(context);
+            if (classPtrTypeResult.Error())
+            {
+                SetErrorId(classPtrTypeResult.GetErrorId());
+                return;
+            }
+            thisParam->SetType(classPtrTypeResult.Value());
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -2733,7 +3226,13 @@ namespace binder
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(classType->AddRvalueReference(context));
+            Result<TypeSymbol*> rvalueRefTypeResult = classType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                SetErrorId(rvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            thatParam->SetType(rvalueRefTypeResult.Value());
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -2773,7 +3272,13 @@ namespace binder
             if (GetCollectFlag(flags, CollectFlags.noRvalueRef)) return Result<bool>(false);
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            TypeSymbol* baseType = type->RemovePointer(context)->PlainType(context);
+            Result<TypeSymbol*> nonPtrTypeResult = type->RemovePointer(context);
+            if (nonPtrTypeResult.Error()) return Result<bool>(ErrorId(nonPtrTypeResult.GetErrorId()));
+            TypeSymbol* nonPtrType = nonPtrTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = nonPtrType->PlainType(context);
+            if (plainTypeResult.Error()) return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            TypeSymbol* plainType = plainTypeResult.Value();
+            TypeSymbol* baseType = plainType;
             if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return Result<bool>(false);
             ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type->BaseType());
             if (classType->IsStatic())
@@ -2781,25 +3286,32 @@ namespace binder
                 int errorId = MakeError("cannot move an instance of a static class", node->GetFullSpan(), classType->FullSpan());
                 return Result<bool>(ErrorId(errorId));
             }
-            TypeSymbol* rightType = arguments[1]->Type()->PlainType(context);
+            Result<TypeSymbol*> rightPlainTypeResult = arguments[1]->Type()->PlainType(context);
+            if (rightPlainTypeResult.Error()) return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            TypeSymbol* rightType = rightPlainTypeResult.Value();
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
-            bool typesEqual = TypesEqual(arguments[1]->Type(), classType->AddRvalueReference(context));
+            Result<TypeSymbol*> rvalueRefTypeResult = classType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            bool typesEqual = TypesEqual(arguments[1]->Type(), rvalueRefType);
             if (!typesEqual)
             {
                 ArgumentMatch argumentMatch;
                 Result<FunctionSymbol*> conversionResult = GetConversion(rightType, classType, containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
-                if (conversionResult.Error()) return Result<bool>(ErrorId(conversionResult.GetErrorId()));
-                FunctionSymbol* conversion = conversionResult.Value();
-                if (conversion != null && conversion->IsConversionFunctionSymbol())
+                if (!conversionResult.Error())
                 {
-                    if (conversion->ReturnsClassInterfaceOrClassDelegateByValue())
+                    FunctionSymbol* conversion = conversionResult.Value();
+                    if (conversion->IsConversionFunctionSymbol())
                     {
-                        bindToRvalueRef = true;
+                        if (conversion->ReturnsClassInterfaceOrClassDelegateByValue())
+                        {
+                            bindToRvalueRef = true;
+                        }
                     }
-                }
-                else if (!TypesEqual(rightType, classType))
-                {
-                    return Result<bool>(false); // reject conversion
+                    else if (!TypesEqual(rightType, classType))
+                    {
+                        return Result<bool>(false); // reject conversion
+                    }
                 }
             }
             if (typesEqual || bindToRvalueRef)
@@ -2850,6 +3362,7 @@ namespace binder
             ClassTypeSymbol* classType = moveConstructor->ClassType();
             SymbolsContext& context = Context();
             UniquePtr<BoundFunction> boundFunction(new BoundFunction(node->GetSpan(), moveConstructor, node->ModuleId(), node->FileIndex()));
+            boundFunction->SetBoundCompileUnit(GetBoundCompileUnit());
             boundFunction->SetNode(node);
             boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(new BoundCompoundStatement(node->GetSpan())));
             if (classType->StaticConstructor() != null)
@@ -2867,7 +3380,10 @@ namespace binder
                 List<UniquePtr<BoundExpression>> baseConstructorCallArguments;
                 ParameterSymbol* thisParam = moveConstructor->Parameters()[0];
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+                if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+                TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thisToBaseConversionResult.Error())
                 {
@@ -2884,7 +3400,10 @@ namespace binder
                     UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion));
                 baseConstructorCallArguments.Add(Rvalue(baseClassPointerConversion));
                 ParameterSymbol* thatParam = moveConstructor->Parameters()[1];
-                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), classType->BaseClass()->AddRvalueReference(context),
+                Result<TypeSymbol*> rvalueRefTypeResult = classType->BaseClass()->AddRvalueReference(context);
+                if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+                TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), rvalueRefType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thatToBaseConversionResult.Error())
                 {
@@ -2939,7 +3458,10 @@ namespace binder
                 else
                 {
                     ArgumentMatch argumentMatch;
-                    Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context),
+                    Result<TypeSymbol*> vmtPtrPtrTypeResult = vmtPtrHolderClass->AddPointer(context);
+                    if (vmtPtrPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrPtrTypeResult.GetErrorId()));
+                    TypeSymbol* vmtPtrPtrType = vmtPtrPtrTypeResult.Value();
+                    Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrPtrType,
                         containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                     if (thisToHolderConversionResult.Error())
                     {
@@ -2967,7 +3489,7 @@ namespace binder
                 MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
                 List<FunctionScopeLookup> memberConstructorCallLookups;
                 memberConstructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                 if (scopeResult.Error())
                 {
                     Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
@@ -2986,13 +3508,37 @@ namespace binder
                 ParameterSymbol* thisParam = moveConstructor->GetThisParam();
                 #assert(thisParam != null);
                 boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                Result<TypeSymbol*> typeResult = boundMemberVariable->Type()->AddPointer(context);
+                if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                TypeSymbol* type = typeResult.Value();
                 memberConstructorCallArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(),
-                    UniquePtr<BoundExpression>(boundMemberVariable.Release()), boundMemberVariable->Type()->AddPointer(context))));
+                    UniquePtr<BoundExpression>(boundMemberVariable.Release()), type)));
                 ParameterSymbol* thatParam = moveConstructor->Parameters()[1];
                 UniquePtr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
+                Result<TypeSymbol*> ptrTypeResult = thatParam->Type()->BaseType()->AddPointer(context);
+                if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                TypeSymbol* ptrType = ptrTypeResult.Value();
                 thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundReferenceToPointerExpression(node->GetSpan(),
-                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), thatParam->Type()->BaseType()->AddPointer(context))));
-                memberConstructorCallArguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable.Release()));
+                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), ptrType)));
+                List<FunctionScopeLookup> rvalueLookups;
+                rvalueLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                rvalueLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+                List<UniquePtr<BoundExpression>> rvalueArguments;
+                rvalueArguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable.Release()));
+                Result<UniquePtr<BoundFunctionCall>> rvalueMemberCallResult = ResolveOverload(u"System.Rvalue", containerScope, rvalueLookups, rvalueArguments,
+                    GetBoundCompileUnit(), boundFunction.Get(), node);
+                if (rvalueMemberCallResult.Error())
+                {
+                    Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
+                    if (classTypeFullNameResult.Error()) return Result<bool>(ErrorId(classTypeFullNameResult.GetErrorId()));
+                    string classTypeFullName = Rvalue(classTypeFullNameResult.Value());
+                    string message = RtmGetErrorMessageWithoutStackTrace(rvalueMemberCallResult.GetErrorId());
+                    int errorId = MakeError("Cannot create move constructor for class '" + classTypeFullName +
+                        "'. Reason:\n" + message, node->GetFullSpan(), memberVariableSymbol->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+                UniquePtr<BoundFunctionCall> rvalueMemberCall = Rvalue(rvalueMemberCallResult.Value());
+                memberConstructorCallArguments.Add(UniquePtr<BoundExpression>(rvalueMemberCall.Release()));
                 Result<UniquePtr<BoundFunctionCall>> memberConstructorCallResult = ResolveOverload(u"@constructor", containerScope,
                     memberConstructorCallLookups, memberConstructorCallArguments, GetBoundCompileUnit(), boundFunction.Get(), node);
                 if (memberConstructorCallResult.Error())
@@ -3026,7 +3572,14 @@ namespace binder
             SetAccess(SymbolAccess.public_);
             SetParent(classType);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(classType->AddPointer(context));
+            Result<TypeSymbol*> classPtrTypeResult = classType->AddPointer(context);
+            if (classPtrTypeResult.Error())
+            {
+                SetErrorId(classPtrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* classPtrType = classPtrTypeResult.Value();
+            thisParam->SetType(classPtrType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -3034,7 +3587,21 @@ namespace binder
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(classType->AddConst(context)->AddLvalueReference(context));
+            Result<TypeSymbol*> constTypeResult = classType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+            if (lvalueRefTypeResult.Error())
+            {
+                SetErrorId(lvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+            thatParam->SetType(lvalueRefType);
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -3074,7 +3641,12 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            TypeSymbol* baseType = type->RemovePointer(context)->PlainType(context);
+            Result<TypeSymbol*> nonPtrTypeResult = type->RemovePointer(context);
+            if (nonPtrTypeResult.Error()) return Result<bool>(ErrorId(nonPtrTypeResult.GetErrorId()));
+            TypeSymbol* nonPtrType = nonPtrTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = nonPtrType->PlainType(context);
+            if (plainTypeResult.Error()) return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            TypeSymbol* baseType = plainTypeResult.Value();
             if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return Result<bool>(false);
             ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type->BaseType());
             if (classType->IsStatic())
@@ -3082,7 +3654,9 @@ namespace binder
                 int errorId = MakeError("cannot assign an instance of a static class", node->GetFullSpan(), classType->FullSpan());
                 return Result<bool>(ErrorId(errorId));
             }
-            TypeSymbol* rightType = arguments[1]->Type()->PlainType(context);
+            Result<TypeSymbol*> rightPlainTypeResult = arguments[1]->Type()->PlainType(context);
+            if (rightPlainTypeResult.Error()) return Result<bool>(ErrorId(rightPlainTypeResult.GetErrorId()));
+            TypeSymbol* rightType = rightPlainTypeResult.Value();
             bool typesEqual = TypesEqual(rightType, classType);
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
             bool conversionFunctionExists = false;
@@ -3093,7 +3667,7 @@ namespace binder
                 if (!conversionResult.Error())
                 {
                     FunctionSymbol* conversion = conversionResult.Value();
-                    if (conversion != null && conversion->IsConversionFunctionSymbol())
+                    if (conversion->IsConversionFunctionSymbol())
                     {
                         conversionFunctionExists = true;
                         if (conversion->ReturnsClassInterfaceOrClassDelegateByValue())
@@ -3103,9 +3677,12 @@ namespace binder
                     }
                 }
             }
+            Result<TypeSymbol*> rvalueRefTypeResult = classType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
             if (typesEqual ||
                 GetCollectFlag(flags, CollectFlags.noRvalueRef) ||
-                (!TypesEqual(arguments[1]->Type(), classType->AddRvalueReference(context)) && !bindToRvalueRef) && (typesEqual || conversionFunctionExists))
+                (!TypesEqual(arguments[1]->Type(), rvalueRefType) && !bindToRvalueRef) && (typesEqual || conversionFunctionExists))
             {
                 if (classType->CopyAssignment() != null)
                 {
@@ -3156,6 +3733,7 @@ namespace binder
             ClassTypeSymbol* classType = copyAssignment->ClassType();
             SymbolsContext& context = Context();
             UniquePtr<BoundFunction> boundFunction(new BoundFunction(node->GetSpan(), copyAssignment, node->ModuleId(), node->FileIndex()));
+            boundFunction->SetBoundCompileUnit(GetBoundCompileUnit());
             boundFunction->SetNode(node);
             boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(new BoundCompoundStatement(node->GetSpan())));
             if (classType->BaseClass() != null)
@@ -3167,7 +3745,10 @@ namespace binder
                 List<UniquePtr<BoundExpression>> baseAssignmentCallArguments;
                 ParameterSymbol* thisParam = copyAssignment->Parameters()[0];
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+                if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+                TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thisToBaseConversionResult.Error())
                 {
@@ -3184,7 +3765,13 @@ namespace binder
                     UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion));
                 baseAssignmentCallArguments.Add(Rvalue(baseClassPointerConversion));
                 ParameterSymbol* thatParam = copyAssignment->Parameters()[1];
-                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), classType->BaseClass()->AddConst(context)->AddLvalueReference(context),
+                Result<TypeSymbol*> constTypeResult = classType->BaseClass()->AddConst(context);
+                if (constTypeResult.Error()) return Result<bool>(ErrorId(constTypeResult.GetErrorId()));
+                TypeSymbol* constType = constTypeResult.Value();
+                Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                if (lvalueRefTypeResult.Error()) return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), lvalueRefType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thatToBaseConversionResult.Error())
                 {
@@ -3226,7 +3813,7 @@ namespace binder
                 MemberVariableSymbol* memberVariableSymbol = classType->MemberVariables()[i];
                 List<FunctionScopeLookup> memberAssignmentCallLookups;
                 memberAssignmentCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                 if (scopeResult.Error())
                 {
                     Result<string> classTypeFullNameResult = ToUtf8(classType->FullName());
@@ -3245,13 +3832,18 @@ namespace binder
                 ParameterSymbol* thisParam = copyAssignment->GetThisParam();
                 #assert(thisParam != null);
                 boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
-                TypeSymbol* type = boundMemberVariable->Type()->AddPointer(context);
+                Result<TypeSymbol*> typeResult = boundMemberVariable->Type()->AddPointer(context);
+                if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                TypeSymbol* type = typeResult.Value();
                 memberAssignmentCallArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(),
                     UniquePtr<BoundExpression>(boundMemberVariable.Release()), type)));
                 ParameterSymbol* thatParam = copyAssignment->Parameters()[1];
                 UniquePtr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
+                Result<TypeSymbol*> basePtrTypeResult = thatParam->Type()->BaseType()->AddPointer(context);
+                if (basePtrTypeResult.Error()) return Result<bool>(ErrorId(basePtrTypeResult.GetErrorId()));
+                TypeSymbol* basePtrType = basePtrTypeResult.Value();
                 thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundReferenceToPointerExpression(node->GetSpan(),
-                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), thatParam->Type()->BaseType()->AddPointer(context))));
+                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), basePtrType)));
                 memberAssignmentCallArguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable.Release()));
                 Result<UniquePtr<BoundFunctionCall>> memberAssignmentCallResult = ResolveOverload(u"operator=", containerScope,
                     memberAssignmentCallLookups, memberAssignmentCallArguments, GetBoundCompileUnit(), boundFunction.Get(), node);
@@ -3286,7 +3878,14 @@ namespace binder
             SetAccess(SymbolAccess.public_);
             SetParent(classType);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(classType->AddPointer(context));
+            Result<TypeSymbol*> classPtrTypeResult = classType->AddPointer(context);
+            if (classPtrTypeResult.Error())
+            {
+                SetErrorId(classPtrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* classPtrType = classPtrTypeResult.Value();
+            thisParam->SetType(classPtrType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -3294,7 +3893,13 @@ namespace binder
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(classType->AddRvalueReference(context));
+            Result<TypeSymbol*> rvalueRefTypeResult = classType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error())
+            {
+                SetErrorId(rvalueRefTypeResult.GetErrorId());
+                return;
+            }
+            thatParam->SetType(rvalueRefTypeResult.Value());
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -3334,7 +3939,12 @@ namespace binder
         {
             TypeSymbol* type = arguments[0]->Type();
             SymbolsContext& context = Context();
-            TypeSymbol* baseType = type->RemovePointer(context)->PlainType(context);
+            Result<TypeSymbol*> nonPtrTypeResult = type->RemovePointer(context);
+            if (nonPtrTypeResult.Error()) return Result<bool>(ErrorId(nonPtrTypeResult.GetErrorId()));
+            TypeSymbol* nonPtrType = nonPtrTypeResult.Value();
+            Result<TypeSymbol*> plainTypeResult = nonPtrType->PlainType(context);
+            if (plainTypeResult.Error()) return Result<bool>(ErrorId(plainTypeResult.GetErrorId()));
+            TypeSymbol* baseType = plainTypeResult.Value();
             if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return Result<bool>(false);
             ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type->BaseType());
             if (classType->IsStatic())
@@ -3342,8 +3952,14 @@ namespace binder
                 int errorId = MakeError("cannot assign an instance of a static class", node->GetFullSpan(), classType->FullSpan());
                 return Result<bool>(ErrorId(errorId));
             }
-            TypeSymbol* rightType = arguments[1]->Type()->PlainType(context);
-            bool typesEqual = TypesEqual(rightType, classType->AddRvalueReference(context));
+            Result<TypeSymbol*> argumentPlainTypeResult = arguments[1]->Type()->PlainType(context);
+            if (argumentPlainTypeResult.Error()) return Result<bool>(ErrorId(argumentPlainTypeResult.GetErrorId()));
+            TypeSymbol* rightType = argumentPlainTypeResult.Value();
+            TypeSymbol* argumentType = arguments[1]->Type();
+            Result<TypeSymbol*> rvalueRefTypeResult = classType->AddRvalueReference(context);
+            if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+            TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+            bool typesEqual = TypesEqual(arguments[1]->Type(), rvalueRefType);
             bool bindToRvalueRef = arguments[1]->GetFlag(BoundExpressionFlags.bindToRvalueReference);
             if (!typesEqual)
             {
@@ -3352,7 +3968,7 @@ namespace binder
                 if (!conversionResult.Error())
                 {
                     FunctionSymbol* conversion = conversionResult.Value();
-                    if (conversion != null && conversion->IsConversionFunctionSymbol())
+                    if (conversion->IsConversionFunctionSymbol())
                     {
                         if (conversion->ReturnsClassInterfaceOrClassDelegateByValue())
                         {
@@ -3412,6 +4028,7 @@ namespace binder
             ClassTypeSymbol* classType = moveAssignment->ClassType();
             SymbolsContext& context = Context();
             UniquePtr<BoundFunction> boundFunction(new BoundFunction(node->GetSpan(), moveAssignment, node->ModuleId(), node->FileIndex()));
+            boundFunction->SetBoundCompileUnit(GetBoundCompileUnit());
             boundFunction->SetNode(node);
             boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(new BoundCompoundStatement(node->GetSpan())));
             if (classType->BaseClass() != null)
@@ -3423,7 +4040,10 @@ namespace binder
                 List<UniquePtr<BoundExpression>> baseAssignmentCallArguments;
                 ParameterSymbol* thisParam = moveAssignment->Parameters()[0];
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+                if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+                TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thisToBaseConversionResult.Error())
                 {
@@ -3440,7 +4060,10 @@ namespace binder
                     UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion));
                 baseAssignmentCallArguments.Add(Rvalue(baseClassPointerConversion));
                 ParameterSymbol* thatParam = moveAssignment->Parameters()[1];
-                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), classType->BaseClass()->AddRvalueReference(context),
+                Result<TypeSymbol*> rvalueRefTypeResult = classType->BaseClass()->AddRvalueReference(context);
+                if (rvalueRefTypeResult.Error()) return Result<bool>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+                TypeSymbol* rvalueRefType = rvalueRefTypeResult.Value();
+                Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(), rvalueRefType,
                     containerScope, GetBoundCompileUnit(), currentFunction, argumentMatch, node);
                 if (thatToBaseConversionResult.Error())
                 {
@@ -3491,8 +4114,11 @@ namespace binder
                 swapArguments.Add(UniquePtr<BoundExpression>(boundMemberVariable.Release()));
                 ParameterSymbol* thatParam = moveAssignment->Parameters()[1];
                 UniquePtr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
+                Result<TypeSymbol*> ptrTypeResult = thatParam->Type()->BaseType()->AddPointer(context);
+                if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                TypeSymbol* ptrType = ptrTypeResult.Value();
                 thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundReferenceToPointerExpression(node->GetSpan(),
-                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), thatParam->Type()->BaseType()->AddPointer(context))));
+                    UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), ptrType)));
                 swapArguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable.Release()));
                 Result<UniquePtr<BoundFunctionCall>> swapCallResult = ResolveOverload(u"System.Swap", containerScope,
                     swapLookups, swapArguments, GetBoundCompileUnit(), boundFunction.Get(), node);
@@ -3559,8 +4185,8 @@ namespace binder
         private List<Operation*> operations;
     }
 
-    public class OperationGroup
-    {
+   public class OperationGroup
+   {
         public OperationGroup()
         {
         }
@@ -3587,7 +4213,10 @@ namespace binder
             if (arity < arityOperations.Count())
             {
                 ArityOperation* arityOperation = arityOperations[arity].Get();
-                return arityOperation->CollectViableFunctions(containerScope, arguments, currentFunction, node, flags, viableFunctions);
+                if (arityOperation != null)
+                {
+                    return arityOperation->CollectViableFunctions(containerScope, arguments, currentFunction, node, flags, viableFunctions);
+                }
             }
             return Result<bool>(false);
         }
@@ -3671,9 +4300,12 @@ namespace binder
             if (clsPointerTypeResult.Error()) return Result<FunctionSymbol*>(ErrorId(clsPointerTypeResult.GetErrorId()));
             TypeSymbol* clsPointerType = clsPointerTypeResult.Value();
             arguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), Rvalue(clsTypeExpr), clsPointerType)));
-            Result<TypeSymbol*> classLvalueRefTypeResult = cls->AddConst(context)->AddLvalueReference(context);
-            if (classLvalueRefTypeResult.Error()) return Result<FunctionSymbol*>(ErrorId(classLvalueRefTypeResult.GetErrorId()));
-            TypeSymbol* classLvalueRefType = classLvalueRefTypeResult.Value();
+            Result<TypeSymbol*> constTypeResult = cls->AddConst(context);
+            if (constTypeResult.Error()) return Result<FunctionSymbol*>(ErrorId(constTypeResult.GetErrorId()));
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+            if (lvalueRefTypeResult.Error()) return Result<FunctionSymbol*>(lvalueRefTypeResult.GetErrorId());
+            TypeSymbol* classLvalueRefType = lvalueRefTypeResult.Value();
             arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(node->GetSpan(), classLvalueRefType)));
             ContainerScope* containerScope = cls->GetContainerScope();
             Result<bool> result = classCopyConstructorOperation->CollectViableFunctions(containerScope, arguments, currentFunction, node, CollectFlags.none, viableFunctions);

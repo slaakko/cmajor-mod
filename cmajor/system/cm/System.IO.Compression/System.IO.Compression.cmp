@@ -1,0 +1,4 @@
+project System.IO.Compression;
+target=library;
+reference <../System.Base/System.Base.cmp>;
+source <DeflateStream.cm>;

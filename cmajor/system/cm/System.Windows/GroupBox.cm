@@ -1,0 +1,250 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Windows
+{
+    public ControlCreateParams& GroupBoxControlCreateParams(ControlCreateParams& controlCreateParams, ButtonStyle buttonStyle)
+    {
+        controlCreateParams.SetWindowClassName("BUTTON");
+        controlCreateParams.SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | buttonStyle));
+        controlCreateParams.SetBackgroundColor(DefaultControlBackgroundColor());
+        return controlCreateParams;
+    }
+
+    public ControlCreateParams& GroupBoxControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return GroupBoxControlCreateParams(controlCreateParams, ButtonStyle.BS_GROUPBOX);
+    }
+
+    public class GroupBoxCreateParams
+    {
+        public GroupBoxCreateParams(ControlCreateParams& controlCreateParams_) : controlCreateParams(controlCreateParams_)
+        {
+        }
+        public GroupBoxCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+    }
+
+    public class GroupBox : ButtonBase
+    {
+        public GroupBox(const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("BUTTON", DefaultWindowClassStyle(), cast<WindowStyle>(DefaultChildWindowStyle() | ButtonStyle.BS_GROUPBOX), DefaultExtendedWindowStyle(),
+            backgroundColor, text, location, size, dock, anchors), children(this), checkedRadioButton(null)
+        {
+        }
+        public GroupBox(const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this(DefaultControlBackgroundColor(), text, location, size, dock, anchors)
+        {
+        }
+        public GroupBox(GroupBoxCreateParams& createParams) : base(createParams.controlCreateParams), children(this), checkedRadioButton(null)
+        {
+        }
+        [nodiscard]
+        public Result<bool> AddChild(Control* child)
+        {
+            auto result = children.AddChild(child);
+            if (result.Error()) return result;
+            ControlEventArgs args(child);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<UniquePtr<Control>> RemoveChild(Control* child)
+        {
+            UniquePtr<Component> childComponent = children.RemoveChild(child);
+            ControlEventArgs args(child);
+            auto result = OnControlRemoved(args);
+            if (result.Error()) return Result<UniquePtr<Control>>(ErrorId(result.GetErrorId()));
+            if (args.errorId != 0)
+            {
+                return Result<UniquePtr<Control>>(ErrorId(args.errorId));
+            }
+            return UniquePtr<Control>(childComponent.Release() as Control*);
+        }
+        [nodiscard]
+        public Result<bool> InsertChildBefore(Control* child, Control* before)
+        {
+            auto result = children.InsertBefore(child, before);
+            if (result.Error()) return result;
+            ControlEventArgs args(child);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> InsertChildAfter(Control* child, Control* after)
+        {
+            auto result = children.InsertAfter(child, after);
+            if (result.Error()) return result;
+            ControlEventArgs args(child);
+            result = OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        public const ComponentContainer& Children() const
+        {
+            return children;
+        }
+        public inline RadioButton* CheckedRadioButton() const
+        {
+            return checkedRadioButton;
+        }
+        public void SetCheckedRadioButton(RadioButton* radioButton)
+        {
+            if (radioButton != checkedRadioButton)
+            {
+                if (checkedRadioButton != null)
+                {
+                    checkedRadioButton->SetChecked(false);
+                }
+                checkedRadioButton = radioButton;
+                if (checkedRadioButton != null)
+                {
+                    checkedRadioButton->SetChecked(true);
+                }
+            }
+        }
+        internal inline void ResetCheckedRadioButton()
+        {
+            checkedRadioButton = null;
+        }
+        protected override Result<bool> OnCreated()
+        {
+            auto result = base->OnCreated();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = graphicsResult.Value();
+            auto fontHandleResult = GetFontHandle(graphics);
+            if (fontHandleResult.Error())
+            {
+                return Result<bool>(ErrorId(fontHandleResult.GetErrorId()));
+            }
+            FontHandle* fontHandle = fontHandleResult.Value();
+            if (!fontHandle->IsNull())
+            {
+                SendSetFontMessage(*fontHandle);
+            }
+            SubClassCommandWndProc();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnControlAdded(ControlEventArgs& args)
+        {
+            auto result = base->OnControlAdded(args);
+            if (result.Error()) return result;
+            if (args.control is RadioButton*)
+            {
+                if (checkedRadioButton == null)
+                {
+                    SetCheckedRadioButton(cast<RadioButton*>(args.control));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnControlRemoved(ControlEventArgs& args)
+        {
+            auto result = base->OnControlRemoved(args);
+            if (result.Error()) return result;
+            if (args.control is RadioButton*)
+            {
+                if (checkedRadioButton == cast<RadioButton*>(args.control))
+                {
+                    ResetCheckedRadioButton();
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildGotFocus(ControlEventArgs& args)
+        {
+            auto result = base->OnChildGotFocus(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildGotFocus(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnChildLostFocus(ControlEventArgs& args)
+        {
+            auto result = base->OnChildLostFocus(args);
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                result = parentControl->OnChildLostFocus(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        internal override Control* GetFirstEnabledTabStopControl() const
+        {
+            Component* child = children.FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* control = cast<Control*>(child);
+                    Control* tabStopChild = control->GetFirstEnabledTabStopControl();
+                    if (tabStopChild != null)
+                    {
+                        return tabStopChild;
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return null;
+        }
+        internal override Control* GetLastEnabledTabStopControl() const
+        {
+            Component* child = children.LastChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* control = cast<Control*>(child);
+                    Control* tabStopChild = control->GetLastEnabledTabStopControl();
+                    if (tabStopChild != null)
+                    {
+                        return tabStopChild;
+                    }
+                }
+                child = child->PrevSibling();
+            }
+            return null;
+        }
+        private ComponentContainer children;
+        private RadioButton* checkedRadioButton;
+    }
+}

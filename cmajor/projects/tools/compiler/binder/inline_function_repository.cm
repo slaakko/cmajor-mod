@@ -37,6 +37,7 @@ namespace binder
             {
                 return GetCopy(inlineFunction);
             }
+            SymbolsContext& context = boundCompileUnit->Context();
             while (inlineFunction->Master() != null)
             {
                 inlineFunction = inlineFunction->Master();
@@ -67,7 +68,7 @@ namespace binder
             NamespaceNode* currentNs = globalNs.Get();
             CloneContext cloneContext;
             cloneContext.SetInstantiateFunctionNode();
-            Result<NamespaceSymbol*> nsResult = inlineFunction->Ns();
+            Result<NamespaceSymbol*> nsResult = inlineFunction->Ns(context);
             if (nsResult.Error()) return Result<FunctionSymbol*>(nsResult.GetErrorId());
             NamespaceSymbol* ns = nsResult.Value();
             bool fileScopeAdded = false;
@@ -84,7 +85,7 @@ namespace binder
                     Node* usingNode = inlineFunction->UsingNodes()[i];
                     if (usingNode->IsNamespaceImportNode())
                     {
-                        Result<bool> installResult = primaryFileScope->InstallNamespaceImport(containerScope, cast<NamespaceImportNode*>(usingNode));
+                        Result<bool> installResult = primaryFileScope->InstallNamespaceImport(containerScope, cast<NamespaceImportNode*>(usingNode), context);
                         if (installResult.Error()) return Result<FunctionSymbol*>(ErrorId(installResult.GetErrorId()));
                     }
                     else if (usingNode->IsAliasNode())
@@ -141,6 +142,7 @@ namespace binder
                 StatementBinder statementBinder(boundCompileUnit);
                 UniquePtr<BoundFunction> boundFunction(new BoundFunction(functionInstanceNode->GetSpan(), functionSymbol.Get(),
                     functionInstanceNode->ModuleId(), functionInstanceNode->FileIndex()));
+                boundFunction->SetBoundCompileUnit(boundCompileUnit);
                 boundFunction->SetNode(functionInstanceNode);
                 statementBinder.SetCurrentFunction(boundFunction.Get());
                 statementBinder.SetContainerScope(functionSymbol->GetContainerScope());
@@ -201,6 +203,7 @@ namespace binder
                 statementBinder.SetCurrentClass(boundClass.Get());
                 UniquePtr<BoundFunction> boundFunction(new BoundFunction(functionInstanceNode->GetSpan(), functionSymbol.Get(),
                     functionInstanceNode->ModuleId(), functionInstanceNode->FileIndex()));
+                boundFunction->SetBoundCompileUnit(boundCompileUnit);
                 boundFunction->SetNode(functionInstanceNode);
                 statementBinder.SetCurrentFunction(boundFunction.Get());
                 statementBinder.SetContainerScope(functionSymbol->GetContainerScope());

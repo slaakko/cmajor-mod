@@ -1,0 +1,303 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Windows
+{
+    public ControlCreateParams& RadioButtonControlCreateParams(ControlCreateParams& controlCreateParams, ButtonStyle buttonStyle)
+    {
+        return controlCreateParams.SetWindowClassName("BUTTON").
+            SetWindowStyle(cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP | buttonStyle));
+    }
+
+    public ControlCreateParams& RadioButtonControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        return RadioButtonControlCreateParams(controlCreateParams, cast<ButtonStyle>(ButtonStyle.BS_RADIOBUTTON | ButtonStyle.BS_NOTIFY));
+    }
+
+    public class RadioButtonCreateParams
+    {
+        public RadioButtonCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_), autoSize(true)
+        {
+        }
+        public RadioButtonCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public RadioButtonCreateParams& SetAutoSize(bool autoSize_)
+        {
+            autoSize = autoSize_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public bool autoSize;
+    }
+
+    public class RadioButton : ButtonBase
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, checked = 1 << 0, autoSize = 1 << 1, autoSized = 1 << 2
+        }
+
+        public RadioButton(const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors,
+            bool autoSize) : base("BUTTON", DefaultWindowClassStyle(),
+            cast<WindowStyle>(DefaultChildWindowStyle() | WindowStyle.WS_TABSTOP | ButtonStyle.BS_RADIOBUTTON | ButtonStyle.BS_NOTIFY),
+            DefaultExtendedWindowStyle(), backgroundColor, text, location, size, dock, anchors), flags(Flags.none)
+        {
+            if (autoSize)
+            {
+                SetAutoSizeFlag();
+            }
+            else
+            {
+                ResetAutoSizeFlag();
+            }
+        }
+        public RadioButton(const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors, bool autoSize) :
+            this(DefaultControlBackgroundColor(), text, location, size, dock, anchors, autoSize)
+        {
+        }
+        public RadioButton(RadioButtonCreateParams& createParams) : base(createParams.controlCreateParams), flags(Flags.none)
+        {
+            if (createParams.autoSize)
+            {
+                SetAutoSizeFlag();
+            }
+            else
+            {
+                ResetAutoSizeFlag();
+            }
+        }
+        public bool Checked()
+        {
+            return GetCheckedFlag();
+        }
+        public void SetChecked(bool checked)
+        {
+            if (checked)
+            {
+                Control* parent = ParentControl();
+                if (parent != null)
+                {
+                    if (parent is GroupBox*)
+                    {
+                        GroupBox* groupBox = cast<GroupBox*>(parent);
+                        if (groupBox->CheckedRadioButton() != this)
+                        {
+                            groupBox->SetCheckedRadioButton(this);
+                        }
+                    }
+                }
+                SetCheckedFlag();
+                if (Handle() != null)
+                {
+                    WinSendMessage(Handle(), BM_SETCHECK, BST_CHECKED, 0);
+                }
+                SetFocus();
+            }
+            else
+            {
+                Control* parent = ParentControl();
+                if (parent != null)
+                {
+                    if (parent is GroupBox*)
+                    {
+                        GroupBox* groupBox = cast<GroupBox*>(parent);
+                        if (groupBox->CheckedRadioButton() == this)
+                        {
+                            groupBox->ResetCheckedRadioButton();
+                        }
+                    }
+                }
+                ResetCheckedFlag();
+                if (Handle() != null)
+                {
+                    WinSendMessage(Handle(), BM_SETCHECK, BST_UNCHECKED, 0);
+                }
+            }
+        }
+        protected override Result<bool> OnCreated()
+        {
+            auto result = base->OnCreated();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = graphicsResult.Value();
+            auto fontHandleResult = GetFontHandle(graphics);
+            if (fontHandleResult.Error())
+            {
+                return Result<bool>(ErrorId(fontHandleResult.GetErrorId()));
+            }
+            FontHandle* fontHandle = fontHandleResult.Value();
+            if (!fontHandle->IsNull())
+            {
+                SendSetFontMessage(*fontHandle);
+            }
+            if (GetCheckedFlag())
+            {
+                SetChecked(true);
+            }
+            else
+            {
+                SetChecked(false);
+            }
+            if (GetAutoSizeFlag())
+            {
+                auto result = DoAutoSize();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnClick(ClickEventArgs& args)
+        {
+            auto result = base->OnClick(args);
+            if (result.Error()) return result;
+            SetChecked(true);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnTextChanged()
+        {
+            auto baseResult = base->OnTextChanged();
+            if (baseResult.Error())
+            {
+                return Result<bool>(ErrorId(baseResult.GetErrorId()));
+            }
+            if (GetAutoSizeFlag())
+            {
+                ResetAutoSized();
+                auto result = DoAutoSize();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected virtual void OnCheckedChanged()
+        {
+            checkedChangedEvent.Fire();
+        }
+        public Event<CheckedChangedEventHandler>& CheckedChangedEvent() const
+        {
+            return checkedChangedEvent;
+        }
+        private void RetrieveCheckedState()
+        {
+            long result = WinSendMessage(Handle(), BM_GETCHECK, 0u, 0);
+            if (result == BST_CHECKED)
+            {
+                SetCheckedFlag();
+            }
+            else
+            {
+                ResetCheckedFlag();
+            }
+        }
+        [nodiscard]
+        private Result<bool> DoAutoSize()
+        {
+            if (AutoSized()) return Result<bool>(true);
+            if (Handle() == null) return Result<bool>(false);
+            auto graphicsResult = Graphics.FromWindowHandle(Handle());
+            if (graphicsResult.Error())
+            {
+                return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+            }
+            Graphics& graphics = graphicsResult.Value();
+            const Font& font = GetFont();
+            StringFormat stringFormat;
+            if (stringFormat.Error())
+            {
+                return Result<bool>(ErrorId(stringFormat.GetErrorId()));
+            }
+            auto measureResult = graphics.MeasureStringRectF(Text(), font, PointF(0, 0), stringFormat);
+            if (measureResult.Error())
+            {
+                return Result<bool>(ErrorId(measureResult.GetErrorId()));
+            }
+            RectF r = measureResult.Value();
+            Size buttonSize = GetButtonSize();
+            Size borderSize = GetBorderSize();
+            r.size.w = r.size.w + buttonSize.w + borderSize.w;
+            r.size.h = Max(r.size.h, buttonSize.h + borderSize.h);
+            auto result = SetSize(Size(cast<int>(r.size.w), cast<int>(r.size.h)));
+            if (result.Error()) return result;
+            SetAutoSized();
+            return Result<bool>(true);
+        }
+        private Size GetButtonSize()
+        {
+            int x = GetSystemMetrics(SystemMetricsId.SM_CXMENUCHECK);
+            int y = GetSystemMetrics(SystemMetricsId.SM_CYMENUCHECK);
+            return Size(x, y);
+        }
+        private Size GetBorderSize()
+        {
+            int x = GetSystemMetrics(SystemMetricsId.SM_CXBORDER);
+            int y = GetSystemMetrics(SystemMetricsId.SM_CYBORDER);
+            return Size(x, y);
+        }
+        private inline bool GetCheckedFlag() const
+        {
+            return (flags & Flags.checked) != Flags.none;
+        }
+        private void SetCheckedFlag()
+        {
+            if (!GetCheckedFlag())
+            {
+                flags = cast<Flags>(flags | Flags.checked);
+                OnCheckedChanged();
+            }
+        }
+        private void ResetCheckedFlag()
+        {
+            if (GetCheckedFlag())
+            {
+                flags = cast<Flags>(flags & ~Flags.checked);
+                OnCheckedChanged();
+            }
+        }
+        private inline bool GetAutoSizeFlag() const
+        {
+            return (flags & Flags.autoSize) != Flags.none;
+        }
+        private inline void SetAutoSizeFlag()
+        {
+            flags = cast<Flags>(flags | Flags.autoSize);
+        }
+        private inline void ResetAutoSizeFlag()
+        {
+            flags = cast<Flags>(flags & ~Flags.autoSize);
+        }
+        private inline bool AutoSized() const
+        {
+            return (flags & Flags.autoSized) != Flags.none;
+        }
+        private inline void SetAutoSized()
+        {
+            flags = cast<Flags>(flags | Flags.autoSized);
+        }
+        private inline void ResetAutoSized()
+        {
+            flags = cast<Flags>(flags & ~Flags.autoSized);
+        }
+        private Flags flags;
+        private Event<CheckedChangedEventHandler> checkedChangedEvent;
+    }
+}

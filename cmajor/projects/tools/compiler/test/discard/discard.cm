@@ -1,0 +1,12 @@
+using System;
+
+[nodiscard]
+public Result<bool> foo()
+{
+    return Result<bool>(true);
+}
+
+void main()
+{
+    foo();
+}

@@ -13,6 +13,140 @@ namespace symbols
         {
             SetBasicTypeSymbol();
         }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            Uuid defaultConstructorId;
+            if (defaultConstructor != null)
+            {
+                defaultConstructorId = defaultConstructor->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(defaultConstructorId);
+            if (result.Error()) return result;
+            Uuid copyConstructorId;
+            if (copyConstructor != null)
+            {
+                copyConstructorId = copyConstructor->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(copyConstructorId);
+            if (result.Error()) return result;
+            Uuid moveConstructorId;
+            if (moveConstructor != null)
+            {
+                moveConstructorId = moveConstructor->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(moveConstructorId);
+            if (result.Error()) return result;
+            Uuid copyAssignmentId;
+            if (copyAssignment != null)
+            {
+                copyAssignmentId = copyAssignment->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(copyAssignmentId);
+            if (result.Error()) return result;
+            Uuid moveAssignmentId;
+            if (moveAssignment != null)
+            {
+                moveAssignmentId = moveAssignment->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(moveAssignmentId);
+            if (result.Error()) return result;
+            Uuid returnId;
+            if (returnFn != null)
+            {
+                returnId = returnFn->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(returnId);
+            if (result.Error()) return result;
+            Uuid equalityOpId;
+            if (equalityOp != null)
+            {
+                equalityOpId = equalityOp->FunctionId();
+            }
+            result = writer.GetBinaryWriter().Write(equalityOpId);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> defaultConstructorIdResult = reader.GetBinaryReader().ReadUuid();
+            if (defaultConstructorIdResult.Error()) return Result<bool>(ErrorId(defaultConstructorIdResult.GetErrorId()));
+            defaultConstructorId = defaultConstructorIdResult.Value();
+            Result<Uuid> copyConstructorIdResult = reader.GetBinaryReader().ReadUuid();
+            if (copyConstructorIdResult.Error()) return Result<bool>(ErrorId(copyConstructorIdResult.GetErrorId()));
+            copyConstructorId = copyConstructorIdResult.Value();
+            Result<Uuid> moveConstructorIdResult = reader.GetBinaryReader().ReadUuid();
+            if (moveConstructorIdResult.Error()) return Result<bool>(ErrorId(moveConstructorIdResult.GetErrorId()));
+            moveConstructorId = moveConstructorIdResult.Value();
+            Result<Uuid> copyAssignmentIdResult = reader.GetBinaryReader().ReadUuid();
+            if (copyAssignmentIdResult.Error()) return Result<bool>(ErrorId(copyAssignmentIdResult.GetErrorId()));
+            copyAssignmentId = copyAssignmentIdResult.Value();
+            Result<Uuid> moveAssignmentIdResult = reader.GetBinaryReader().ReadUuid();
+            if (moveAssignmentIdResult.Error()) return Result<bool>(ErrorId(moveAssignmentIdResult.GetErrorId()));
+            moveAssignmentId = moveAssignmentIdResult.Value();
+            Result<Uuid> returnFnIdResult = reader.GetBinaryReader().ReadUuid();
+            if (returnFnIdResult.Error()) return Result<bool>(ErrorId(returnFnIdResult.GetErrorId()));
+            returnFnId = returnFnIdResult.Value();
+            Result<Uuid> equalityOpIdResult = reader.GetBinaryReader().ReadUuid();
+            if (equalityOpIdResult.Error()) return Result<bool>(ErrorId(equalityOpIdResult.GetErrorId()));
+            equalityOpId = equalityOpIdResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            if (defaultConstructorId != Uuid())
+            {
+                Result<FunctionSymbol*> defaultConstructorResult = symbolTable->GetFunction(defaultConstructorId);
+                if (defaultConstructorResult.Error()) return Result<bool>(ErrorId(defaultConstructorResult.GetErrorId()));
+                defaultConstructor = defaultConstructorResult.Value();
+            }
+            if (copyConstructorId != Uuid())
+            {
+                Result<FunctionSymbol*> copyConstructorResult = symbolTable->GetFunction(copyConstructorId);
+                if (copyConstructorResult.Error()) return Result<bool>(ErrorId(copyConstructorResult.GetErrorId()));
+                copyConstructor = copyConstructorResult.Value();
+            }
+            if (moveConstructorId != Uuid())
+            {
+                Result<FunctionSymbol*> moveConstructorResult = symbolTable->GetFunction(moveConstructorId);
+                if (moveConstructorResult.Error()) return Result<bool>(ErrorId(moveConstructorResult.GetErrorId()));
+                moveConstructor = moveConstructorResult.Value();
+            }
+            if (copyAssignmentId != Uuid())
+            {
+                Result<FunctionSymbol*> copyAssignmentResult = symbolTable->GetFunction(copyAssignmentId);
+                if (copyAssignmentResult.Error()) return Result<bool>(ErrorId(copyAssignmentResult.GetErrorId()));
+                copyAssignment = copyAssignmentResult.Value();
+            }
+            if (moveAssignmentId != Uuid())
+            {
+                Result<FunctionSymbol*> moveAssignmentResult = symbolTable->GetFunction(moveAssignmentId);
+                if (moveAssignmentResult.Error()) return Result<bool>(ErrorId(moveAssignmentResult.GetErrorId()));
+                moveAssignment = moveAssignmentResult.Value();
+            }
+            if (returnFnId != Uuid())
+            {
+                Result<FunctionSymbol*> returnFnResult = symbolTable->GetFunction(returnFnId);
+                if (returnFnResult.Error()) return Result<bool>(ErrorId(returnFnResult.GetErrorId()));
+                returnFn = returnFnResult.Value();
+            }
+            if (equalityOpId != Uuid())
+            {
+                Result<FunctionSymbol*> equalityOpResult = symbolTable->GetFunction(equalityOpId);
+                if (equalityOpResult.Error()) return Result<bool>(ErrorId(equalityOpResult.GetErrorId()));
+                equalityOp = equalityOpResult.Value();
+            }
+            return Result<bool>(true);
+        }
         public inline FunctionSymbol* DefaultConstructor() const
         {
             return defaultConstructor;
@@ -53,13 +187,13 @@ namespace symbols
         {
             moveAssignment = moveAssignment_;
         }
-        public inline FunctionSymbol* ReturnFun() const
+        public inline FunctionSymbol* ReturnFn() const
         {
-            return returnFun;
+            return returnFn;
         }
-        public inline void SetReturnFun(FunctionSymbol* returnFun_)
+        public inline void SetReturnFn(FunctionSymbol* returnFn_)
         {
-            returnFun = returnFun_;
+            returnFn = returnFn_;
         }
         public inline FunctionSymbol* EqualityOp() const
         {
@@ -74,8 +208,15 @@ namespace symbols
         private FunctionSymbol* moveConstructor;
         private FunctionSymbol* copyAssignment;
         private FunctionSymbol* moveAssignment;
-        private FunctionSymbol* returnFun;
+        private FunctionSymbol* returnFn;
         private FunctionSymbol* equalityOp;
+        private Uuid defaultConstructorId;
+        private Uuid copyConstructorId;
+        private Uuid moveConstructorId;
+        private Uuid copyAssignmentId;
+        private Uuid moveAssignmentId;
+        private Uuid returnFnId;
+        private Uuid equalityOpId;
     }
 
     public class BoolTypeSymbol : BasicTypeSymbol
@@ -99,6 +240,10 @@ namespace symbols
         {
             return ValueKind.boolValue;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
     }
 
     public class SByteTypeSymbol : BasicTypeSymbol
@@ -111,6 +256,10 @@ namespace symbols
             return true;
         }
         public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override bool IsSwitchConditionType() const
         {
             return true;
         }
@@ -149,6 +298,10 @@ namespace symbols
         {
             return true;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override Result<intermediate.Type*> IrType(Emitter& emitter)
         {
             return Result<intermediate.Type*>(emitter.GetByteType());
@@ -176,6 +329,10 @@ namespace symbols
         {
             return true;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override ustring TypeString() const
         {
              return u"short";
@@ -200,6 +357,10 @@ namespace symbols
         {
         }
         public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override bool IsSwitchConditionType() const
         {
             return true;
         }
@@ -238,6 +399,10 @@ namespace symbols
         {
             return true;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override ustring TypeString() const
         {
              return u"int";
@@ -273,6 +438,10 @@ namespace symbols
         {
             return true;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override Result<intermediate.Type*> IrType(Emitter& emitter)
         {
             return Result<intermediate.Type*>(emitter.GetUIntType());
@@ -300,6 +469,10 @@ namespace symbols
         {
             return true;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override ustring TypeString() const
         {
              return u"long";
@@ -324,6 +497,10 @@ namespace symbols
         {
         }
         public override bool IsIntegralType() const
+        {
+            return true;
+        }
+        public override bool IsSwitchConditionType() const
         {
             return true;
         }
@@ -412,6 +589,10 @@ namespace symbols
         {
             return true;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override Result<intermediate.Type*> IrType(Emitter& emitter)
         {
             return Result<intermediate.Type*>(emitter.GetByteType());
@@ -443,6 +624,10 @@ namespace symbols
         {
             return true;
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override Result<intermediate.Type*> IrType(Emitter& emitter)
         {
             return Result<intermediate.Type*>(emitter.GetUShortType());
@@ -471,6 +656,10 @@ namespace symbols
             return true;
         }
         public override bool IsCharacterType() const
+        {
+            return true;
+        }
+        public override bool IsSwitchConditionType() const
         {
             return true;
         }

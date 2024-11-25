@@ -106,7 +106,25 @@ namespace symbols
         [nodiscard]
         public Result<bool> CheckDuplicateFunctionSymbols()
         {
-            // todo
+            for (const auto& p : arityFunctionListMap)
+            {
+                Set<ustring> names;
+                for (FunctionSymbol* functionSymbol : p.second)
+                {
+                    if (!functionSymbol->IsFunctionTemplate() && !functionSymbol->IsTemplateSpecialization())
+                    {
+                        if (names.Find(functionSymbol->FullName()) != names.End())
+                        {
+                            Result<string> fullNameResult = ToUtf8(functionSymbol->FullName());
+                            if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
+                            string fullName = Rvalue(fullNameResult.Value());
+                            int errorId = MakeError("function with identical name '" + fullName + "' already defined", FullSpan(), functionSymbol->FullSpan());
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        names.Insert(functionSymbol->FullName());
+                    }
+                }
+            }
             return Result<bool>(true);
         }
         private Map<int, List<FunctionSymbol*>> arityFunctionListMap;
@@ -202,37 +220,86 @@ namespace symbols
         public bool IsDefaultConstructor(SymbolsContext& context) const
         {
             return parameters.Count() == 1 && groupName == u"@constructor" && parameters[0]->Type()->PointerCount() == 1 &&
-                parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol();
+                parameters[0]->Type()->BaseType()->IsClassTypeSymbol();
         }
         public bool IsCopyConstructor(SymbolsContext& context) const
         {
+            TypeSymbol* lvalueRefType = null;
+            if (!parameters.IsEmpty())
+            {
+                Result<TypeSymbol*> constTypeResult = parameters[0]->Type()->BaseType()->AddConst(context);
+                if (constTypeResult.Error()) return false;
+                TypeSymbol* constType = constTypeResult.Value();
+                Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                if (lvalueRefTypeResult.Error()) return false;
+                lvalueRefType = lvalueRefTypeResult.Value();
+            }
+            if (lvalueRefType == null)
+            {
+                return false;
+            }
             return parameters.Count() == 2 && groupName == u"@constructor" && parameters[0]->Type()->PointerCount() == 1 &&
-                parameters[0]->Type()->BaseType()->IsClassTypeSymbol() &&
-                TypesEqual(parameters[0]->Type()->BaseType()->AddConst(context)->AddLvalueReference(context), parameters[1]->Type());
+                parameters[0]->Type()->BaseType()->IsClassTypeSymbol() && TypesEqual(lvalueRefType, parameters[1]->Type());
         }
         public bool IsMoveConstructor(SymbolsContext& context) const
         {
-            if (parameters[0]->Type()->PointerCount() == 1)
+            TypeSymbol* rvalueRefType = null;
+            if (!parameters.IsEmpty())
+            {
+                Result<TypeSymbol*> rvalueRefTypeResult = parameters[0]->Type()->BaseType()->AddRvalueReference(context);
+                if (rvalueRefTypeResult.Error()) return false;
+                rvalueRefType = rvalueRefTypeResult.Value();
+            }
+            if (rvalueRefType == null)
+            {
+                return false;
+            }
+            if (parameters[0]->Type()->PointerCount() != 1)
             {
                 return false;
             }
             return parameters.Count() == 2 && groupName == u"@constructor" &&
-            parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol() &&
-            TypesEqual(parameters[0]->Type()->BaseType()->AddRvalueReference(context), parameters[1]->Type());
+                parameters[0]->Type()->BaseType()->IsClassTypeSymbol() &&
+                TypesEqual(rvalueRefType, parameters[1]->Type());
         }
         public bool IsCopyAssignment(SymbolsContext& context) const
         {
+            TypeSymbol* lvalueRefType = null;
+            if (!parameters.IsEmpty())
+            {
+                Result<TypeSymbol*> constTypeResult = parameters[0]->Type()->BaseType()->AddConst(context);
+                if (constTypeResult.Error()) return false;
+                TypeSymbol* constType = constTypeResult.Value();
+                Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                if (lvalueRefTypeResult.Error()) return false;
+                lvalueRefType = lvalueRefTypeResult.Value();
+            }
+            if (lvalueRefType == null)
+            {
+                return false;
+            }
             return parameters.Count() == 2 && groupName == u"operator=" &&
                 parameters[0]->Type()->PointerCount() == 1 &&
-                parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol() &&
-                TypesEqual(parameters[0]->Type()->BaseType()->AddConst(context)->AddLvalueReference(context), parameters[1]->Type());
+                parameters[0]->Type()->BaseType()->IsClassTypeSymbol() &&
+                TypesEqual(lvalueRefType, parameters[1]->Type());
         }
         public bool IsMoveAssignment(SymbolsContext& context) const
         {
+            TypeSymbol* rvalueRefType = null;
+            if (!parameters.IsEmpty())
+            {
+                Result<TypeSymbol*> rvalueRefTypeResult = parameters[0]->Type()->BaseType()->AddRvalueReference(context);
+                if (rvalueRefTypeResult.Error()) return false;
+                rvalueRefType = rvalueRefTypeResult.Value();
+            }
+            if (rvalueRefType == null)
+            {
+                return false;
+            }
             return parameters.Count() == 2 && groupName == u"operator=" &&
                 parameters[0]->Type()->PointerCount() == 1 &&
-                parameters[0]->Type()->RemovePointer(context)->IsClassTypeSymbol() &&
-                TypesEqual(parameters[0]->Type()->BaseType()->AddRvalueReference(context), parameters[1]->Type());
+                parameters[0]->Type()->BaseType()->IsClassTypeSymbol() &&
+                TypesEqual(rvalueRefType, parameters[1]->Type());
         }
         public virtual bool IsArrayElementAccess() const
         {
@@ -343,7 +410,7 @@ namespace symbols
             Result<intermediate.Function*> calleeResult = emitter.GetOrInsertFunction(instantiatedNameResult.Value(), functionType);
             if (calleeResult.Error()) return Result<bool>(ErrorId(calleeResult.GetErrorId()));
             intermediate.Function* fn = calleeResult.Value();
-            intermediate.Value* callee = emitter.MakeSymbolValue(functionType, fn->ToString());
+            intermediate.Value* callee = emitter.MakeSymbolValue(fn->GetType(), fn->ToString());
             int na = cast<int>(irObjects.Count());
             for (int i = 0; i < na; ++i)
             {
@@ -365,8 +432,11 @@ namespace symbols
             }
             Result<intermediate.Value*> result = emitter.CreateCall(functionType, callee, args);
             if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
-            intermediate.Value* returnValue = result.Value();
-            emitter.Stack().Push(returnValue);
+            if (ReturnType() != null && !ReturnType()->IsVoidTypeSymbol() && !ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                intermediate.Value* returnValue = result.Value();
+                emitter.Stack().Push(returnValue);
+            }
             return Result<bool>(true);
         }
         [nodiscard]
@@ -399,7 +469,10 @@ namespace symbols
                     if (classType != vmtPtrHolderClass)
                     {
                         LockGuard<RecursiveMutex> lock(emitter.GetSymbolsContext().RootModule()->Lock());
-                        Result<intermediate.Type*> vmtPtrHolderClassPtrIrTypeResult = vmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+                        Result<TypeSymbol*> ptrTypeResult = vmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext());
+                        if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                        TypeSymbol* ptrType = ptrTypeResult.Value();
+                        Result<intermediate.Type*> vmtPtrHolderClassPtrIrTypeResult = ptrType->IrType(emitter);
                         if (vmtPtrHolderClassPtrIrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassPtrIrTypeResult.GetErrorId()));
                         intermediate.Type* vmtPtrHolderClassPtrIrType = vmtPtrHolderClassPtrIrTypeResult.Value();
                         Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(thisPtr, vmtPtrHolderClassPtrIrType);
@@ -437,8 +510,11 @@ namespace symbols
             }
             Result<intermediate.Value*> result = emitter.CreateCall(functionType, callee, args);
             if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
-            intermediate.Value* returnValue = result.Value();
-            emitter.Stack().Push(returnValue);
+            if (ReturnType() != null && !ReturnType()->IsVoidTypeSymbol() && !ReturnsClassInterfaceOrClassDelegateByValue())
+            {
+                intermediate.Value* returnValue = result.Value();
+                emitter.Stack().Push(returnValue);
+            }
             return Result<bool>(true);
         }
         [nodiscard]
@@ -837,7 +913,7 @@ namespace symbols
             }
             if (returnTypeId != Uuid() || functionTemplateId != Uuid() || !templateArgumentTypeIds.IsEmpty() || IsConversion())
             {
-                reader.AddToResolutionList(this);
+                reader.AddToSymbolResolutionList(this);
             }
             reader.GetSymbolTable()->MapFunction(this);
             return Result<bool>(true);
@@ -845,6 +921,8 @@ namespace symbols
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             if (returnTypeId != Uuid())
             {
                 auto typeSymbolResult = symbolTable->GetType(returnTypeId);
@@ -1254,6 +1332,22 @@ namespace symbols
         {
             master = master_;
         }
+        public inline void SetTraceEntryVar(LocalVariableSymbol* traceEntryVar_)
+        {
+            traceEntryVar = traceEntryVar_;
+        }
+        public inline LocalVariableSymbol* TraceEntryVar() const
+        {
+            return traceEntryVar;
+        }
+        public inline void SetTraceGuardVar(LocalVariableSymbol* traceGuardVar_)
+        {
+            traceGuardVar = traceGuardVar_;
+        }
+        public inline LocalVariableSymbol* TraceGuardVar() const
+        {
+            return traceGuardVar;
+        }
         private Uuid functionId;
         private ustring groupName;
         private List<TemplateParameterSymbol*> templateParameters;
@@ -1284,6 +1378,8 @@ namespace symbols
         private List<TypeSymbol*> templateArgumentTypes;
         private List<Uuid> templateArgumentTypeIds;
         private FunctionSymbol* master;
+        private LocalVariableSymbol* traceEntryVar;
+        private LocalVariableSymbol* traceGuardVar;
     }
 
     public class StaticConstructorSymbol : FunctionSymbol
@@ -1519,6 +1615,18 @@ namespace symbols
         }
         public override bool IsConstructorDestructorOrNonstaticMemberFunction() const
         {
+            return true;
+        }
+        public override bool IsExportSymbol() const
+        {
+            if (Parent()->IsClassTemplateSpecializationSymbol())
+            {
+                ClassTemplateSpecializationSymbol* classTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(Parent());
+                if (classTemplateSpecialization->IsPrototype())
+                {
+                    return false;
+                }
+            }
             return true;
         }
         public override int StartParamIndex() const

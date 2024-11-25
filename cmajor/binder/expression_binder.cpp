@@ -188,7 +188,7 @@ void ExpressionBinder::BindUnaryOp(BoundExpression* operand, cmajor::ast::Node& 
         temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan());
         operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
             new BoundLocalVariable(node.GetSpan(), temporary)), type->AddPointer())));
-        if (type->IsClassTypeSymbol() || type->IsClassTemplateSpecializationSymbol())
+        if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
@@ -275,7 +275,7 @@ void ExpressionBinder::BindBinaryOp(BoundExpression* left, BoundExpression* righ
         temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, node.GetSpan());
         operatorFunCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(node.GetSpan(), temporary)),
             type->AddPointer())));
-        if (type->IsClassTypeSymbol() || type->IsClassTemplateSpecializationSymbol())
+        if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
@@ -428,6 +428,11 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
     case cmajor::symbols::SymbolType::localVariableSymbol:
     {
         cmajor::symbols::LocalVariableSymbol* localVariableSymbol = static_cast<cmajor::symbols::LocalVariableSymbol*>(symbol);
+        if (!localVariableSymbol->IsInitialized())
+        {
+            throw cmajor::symbols::Exception("local variable '" + util::ToUtf8(localVariableSymbol->Name()) + "' used before initialized",
+                soul::ast::FullSpan(moduleId, fileIndex, span), localVariableSymbol->GetFullSpan());
+        }
         CheckAccess(boundFunction->GetFunctionSymbol(), localVariableSymbol);
         expression.reset(new BoundLocalVariable(span, localVariableSymbol));
         if (idNode)
@@ -495,7 +500,7 @@ void ExpressionBinder::BindSymbol(cmajor::symbols::Symbol* symbol, cmajor::ast::
                 if (thisParam->GetType()->IsConstType())
                 {
                     thisPointerType = thisPointerType->AddConst();
-                    containingClassPointerType->AddConst();
+                    containingClassPointerType = containingClassPointerType->AddConst();
                 }
                 ArgumentMatch argumentMatch;
                 cmajor::symbols::FunctionSymbol* conversionFun = boundCompileUnit.GetConversion(
@@ -1344,7 +1349,7 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
             throw cmajor::symbols::Exception("type of arrow expression subject must be pointer to class type", node.GetFullSpan());
         }
     }
-    else if (expression->GetType()->IsClassTypeSymbol() || expression->GetType()->IsClassTemplateSpecializationSymbol())
+    else if (expression->GetType()->IsClassTypeSymbol())
     {
         cmajor::symbols::TypeSymbol* type = expression->GetType();
         if (type->GetSymbolType() == cmajor::symbols::SymbolType::classTemplateSpecializationSymbol)
@@ -1361,7 +1366,7 @@ void ExpressionBinder::BindArrow(cmajor::ast::Node& node, const std::u32string& 
         BoundFunctionCall* boundFunctionCall = static_cast<BoundFunctionCall*>(expression.get());
         boundFunctionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
             new BoundLocalVariable(node.GetSpan(), temporary)), pointerType)));
-        if (type->IsClassTypeSymbol() || type->IsClassTemplateSpecializationSymbol())
+        if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
@@ -1956,7 +1961,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             invokeNode.GetSpan(), temporary)), type->AddPointer()));
         arguments.push_back(std::move(addrOfTemporary));
         groupName = U"@constructor";
-        if (type->IsClassTypeSymbol() || type->IsClassTemplateSpecializationSymbol())
+        if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
@@ -2064,7 +2069,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             delegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
                 invokeNode.GetSpan(), temporary)),
                 type->AddPointer())));
-            if (type->IsClassTypeSymbol() || type->IsClassTemplateSpecializationSymbol())
+            if (type->IsClassTypeSymbol())
             {
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
                 if (classType->Destructor())
@@ -2164,7 +2169,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
             temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan());
             classDelegateCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(new BoundLocalVariable(
                 invokeNode.GetSpan(), temporary)), type->AddPointer())));
-            if (type->IsClassTypeSymbol() || type->IsClassTemplateSpecializationSymbol())
+            if (type->IsClassTypeSymbol())
             {
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
                 if (classType->Destructor())
@@ -2209,10 +2214,6 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
     if (!arguments.empty() && arguments[0]->GetFlag(BoundExpressionFlags::argIsExplicitThisOrBasePtr))
     {
         argIsExplicitThisOrBasePtr = true;
-    }
-    if (groupName == U"GenerateCode")
-    {
-        int x = 0;
     }
     std::unique_ptr<BoundFunctionCall> functionCall = ResolveOverload(groupName, containerScope, functionScopeLookups, arguments, boundCompileUnit, boundFunction,
         &invokeNode, OverloadResolutionFlags::dontThrow, templateArgumentTypes, exception);
@@ -2329,7 +2330,7 @@ void ExpressionBinder::Visit(cmajor::ast::InvokeNode& invokeNode)
         temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(type, invokeNode.GetSpan());
         functionCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
             new BoundLocalVariable(invokeNode.GetSpan(), temporary)), type->AddPointer())));
-        if (type->IsClassTypeSymbol() || type->IsClassTemplateSpecializationSymbol())
+        if (type->IsClassTypeSymbol())
         {
             cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type);
             if (classType->Destructor())
@@ -2713,7 +2714,7 @@ void ExpressionBinder::Visit(cmajor::ast::CastNode& castNode)
                     new BoundLocalVariable(castNode.GetSpan(), temporary)),
                     conversionFun->ConversionTargetType()->AddPointer())));
                 cmajor::symbols::TypeSymbol* conversionTargetType = conversionFun->ConversionTargetType();
-                if (conversionTargetType->IsClassTypeSymbol() || conversionTargetType->IsClassTemplateSpecializationSymbol())
+                if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())

@@ -56,7 +56,7 @@ namespace System.Collections
         return cast<ulong>(x);
     }
 
-    public inline ulong GetHashCode(const string& s)
+    public ulong GetHashCode(const string& s)
     {
         ulong hashCode = 14695981039346656037u;
         for (char c : s)
@@ -67,7 +67,7 @@ namespace System.Collections
         return hashCode;
     }
 
-    public inline ulong GetHashCode(const wstring& s)
+    public ulong GetHashCode(const wstring& s)
     {
         ulong hashCode = 14695981039346656037u;
         for (wchar c : s)
@@ -78,7 +78,7 @@ namespace System.Collections
         return hashCode;
     }
 
-    public inline ulong GetHashCode(const ustring& s)
+    public ulong GetHashCode(const ustring& s)
     {
         ulong hashCode = 14695981039346656037u;
         for (uchar c : s)

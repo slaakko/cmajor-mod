@@ -43,8 +43,8 @@ namespace symbols
             if (result.Error()) return result;
             Result<string> cmajorRootRelativeFilePathResult = MakeCmajorRootRelativeFilePath(filePath);
             if (cmajorRootRelativeFilePathResult.Error()) return Result<bool>(ErrorId(cmajorRootRelativeFilePathResult.GetErrorId()));
-            string filePath = Rvalue(cmajorRootRelativeFilePathResult.Value());
-            result = writer.Write(filePath);
+            string fp = Rvalue(cmajorRootRelativeFilePathResult.Value());
+            result = writer.Write(fp);
             if (result.Error()) return result;
             return Result<bool>(true);
         }

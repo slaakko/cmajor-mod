@@ -1,0 +1,328 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.XPath
+{
+    public enum FunctionKind
+    {
+        boolean, number, string, last, position, count, max
+    }
+
+    public string FunctionName(FunctionKind kind)
+    {
+        switch (kind)
+        {
+            case FunctionKind.boolean: return "boolean";
+            case FunctionKind.number: return "number";
+            case FunctionKind.string: return "string";
+            case FunctionKind.last: return "last";
+            case FunctionKind.position: return "position";
+            case FunctionKind.count: return "count";
+        }
+        return "<unknown function kind>";
+    }
+
+    public abstract class Function
+    {
+        public Function(FunctionKind kind_) : kind(kind_), name(FunctionName(kind)), minArity(1), maxArity(1)
+        {
+        }
+        public Function(FunctionKind kind_, int minArity_, int maxArity_) : kind(kind_), name(FunctionName(kind)), minArity(minArity_), maxArity(maxArity_)
+        {
+        }
+        public default virtual ~Function();
+        public inline FunctionKind Kind() const
+        {
+            return kind;
+        }
+        public inline const string& Name() const
+        {
+            return name;
+        }
+        public inline int MinArity() const
+        {
+            return minArity;
+        }
+        public inline int MaxArity() const
+        {
+            return maxArity;
+        }
+        public string ArityStr() const
+        {
+            if (minArity == maxArity)
+            {
+                return ToString(minArity);
+            }
+            else if (minArity == 0)
+            {
+                return "at most " + ToString(maxArity);
+            }
+            else
+            {
+                return "at least " + ToString(minArity) + " and at most " + ToString(maxArity);
+            }
+        }
+        [nodiscard]
+        public Result<UniquePtr<Object>> Evaluate(Context& context, const List<Object*>& arguments)
+        {
+            int n = cast<int>(arguments.Count());
+            if (n < minArity || n > maxArity)
+            {
+                int errorId = AllocateError("wrong number of arguments for '" + name + "()' function: " + ArityStr() + " arguments expected, " + ToString(n) +
+                    " arguments provided");
+                return Result<UniquePtr<Object>>(ErrorId(errorId));
+            }
+            return DoEvaluate(context, arguments);
+        }
+        protected abstract Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments);
+        private FunctionKind kind;
+        private string name;
+        private int minArity;
+        private int maxArity;
+    }
+
+    public class BooleanFunction : Function
+    {
+        public BooleanFunction() : base(FunctionKind.boolean)
+        {
+        }
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
+        {
+            Object* arg = arguments.Front();
+            switch (arg->Kind())
+            {
+                case ObjectKind.nodeSet:
+                {
+                    NodeSet* nodeSet = cast<NodeSet*>(arg);
+                    return EvaluateToBoolean(nodeSet);
+                }
+                case ObjectKind.boolean:
+                {
+                    Boolean* boolean = cast<Boolean*>(arg);
+                    return EvaluateToBoolean(boolean);
+                }
+                case ObjectKind.number:
+                {
+                    Number* number = cast<Number*>(arg);
+                    return EvaluateToBoolean(number);
+                }
+                case ObjectKind.string:
+                {
+                    Str* string = cast<Str*>(arg);
+                    return EvaluateToBoolean(string);
+                }
+            }
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Boolean(false)));
+        }
+    }
+
+    public class NumberFunction : Function
+    {
+        public NumberFunction() : base(FunctionKind.number, 0, 1)
+        {
+        }
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
+        {
+            Object* arg = null;
+            NodeSet nodeSet;
+            if (arguments.IsEmpty())
+            {
+                nodeSet.Add(context.Node());
+                arg = &nodeSet;
+            }
+            else
+            {
+                arg = arguments.Front();
+            }
+            switch (arg->Kind())
+            {
+                case ObjectKind.nodeSet:
+                {
+                    NodeSet* nodeSet = cast<NodeSet*>(arg);
+                    return EvaluateToNumber(nodeSet);
+                }
+                case ObjectKind.boolean:
+                {
+                    Boolean* boolean = cast<Boolean*>(arg);
+                    return EvaluateToNumber(boolean);
+                }
+                case ObjectKind.number:
+                {
+                    Number* number = cast<Number*>(arg);
+                    return EvaluateToNumber(number);
+                }
+                case ObjectKind.string:
+                {
+                    Str* string = cast<Str*>(arg);
+                    return EvaluateToNumber(string);
+                }
+            }
+            int errorId = AllocateError("invalid argument to '" + Name() + "()' function");
+            return Result<UniquePtr<Object>>(ErrorId(errorId));
+        }
+    }
+
+    public class StringFunction : Function
+    {
+        public StringFunction() : base(FunctionKind.string, 0, 1)
+        {
+        }
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
+        {
+            Object* arg = null;
+            NodeSet nodeSet;
+            if (arguments.IsEmpty())
+            {
+                nodeSet.Add(context.Node());
+                arg = &nodeSet;
+            }
+            else
+            {
+                arg = arguments.Front();
+            }
+            switch (arg->Kind())
+            {
+                case ObjectKind.nodeSet:
+                {
+                    NodeSet* nodeSet = cast<NodeSet*>(arg);
+                    return EvaluateToString(nodeSet);
+                }
+                case ObjectKind.boolean:
+                {
+                    Boolean* boolean = cast<Boolean*>(arg);
+                    return EvaluateToString(boolean);
+                }
+                case ObjectKind.number:
+                {
+                    Number* number = cast<Number*>(arg);
+                    return EvaluateToString(number);
+                }
+                case ObjectKind.string:
+                {
+                    Str* string = cast<Str*>(arg);
+                    return EvaluateToString(string);
+                }
+            }
+            int errorId = AllocateError("invalid argument to '" + Name() + "()' function");
+            return Result<UniquePtr<Object>>(ErrorId(errorId));
+        }
+    }
+
+    public class LastFunction : Function
+    {
+        public LastFunction() : base(FunctionKind.last, 0, 0)
+        {
+        }
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
+        {
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(context.Size())));
+        }
+    }
+
+    public class PositionFunction : Function
+    {
+        public PositionFunction() : base(FunctionKind.position, 0, 0)
+        {
+        }
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
+        {
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(context.Pos())));
+        }
+    }
+
+    public class CountFunction : Function
+    {
+        public CountFunction() : base(FunctionKind.count)
+        {
+        }
+        [nodiscard]
+        public override Result<UniquePtr<Object>> DoEvaluate(Context& context, const List<Object*>& arguments)
+        {
+            Result<NodeSet*> nodeSetResult = NodeSetCast(arguments.Front(), this);
+            if (nodeSetResult.Error())
+            {
+                return Result<UniquePtr<Object>>(ErrorId(nodeSetResult.GetErrorId()));
+            }
+            NodeSet* nodeSet = nodeSetResult.Value();
+            return Result<UniquePtr<Object>>(UniquePtr<Object>(new Number(nodeSet->Count())));
+        }
+    }
+
+    public class FunctionLibrary
+    {
+        static FunctionLibrary() : instance(new FunctionLibrary())
+        {
+        }
+        public static FunctionLibrary& Instance()
+        {
+            return *instance;
+        }
+        private FunctionLibrary()
+        {
+            functions.Resize(cast<int>(FunctionKind.max));
+            Install(new BooleanFunction());
+            Install(new NumberFunction());
+            Install(new StringFunction());
+            Install(new LastFunction());
+            Install(new PositionFunction());
+            Install(new CountFunction());
+        }
+        [nodiscard]
+        public Result<Function*> GetFunction(FunctionKind kind) const
+        {
+            int index = cast<int>(kind);
+            #assert(index >= 0 && index < functions.Count());
+            Function* function = functions[index].Get();
+            if (function == null)
+            {
+                int errorId = AllocateError("System.XPath.FunctionLibrary: function '" + FunctionName(kind) + "()' not installed");
+                return Result<Function*>(ErrorId(errorId));
+            }
+            return Result<Function*>(function);
+        }
+        [nodiscard]
+        public Result<Function*> GetFunction(const string& name) const
+        {
+            auto it = functionMap.Find(name);
+            if (it != functionMap.End())
+            {
+                return Result<Function*>(it->second);
+            }
+            else
+            {
+                int errorId = AllocateError("System.XPath.FunctionLibrary: function '" + name + "()' not found");
+                return Result<Function*>(ErrorId(errorId));
+            }
+        }
+        public void Install(Function* function)
+        {
+            functions[cast<int>(function->Kind())].Reset(function);
+            functionMap[function->Name()] = function;
+        }
+        private static UniquePtr<FunctionLibrary> instance;
+        private List<UniquePtr<Function>> functions;
+        private Map<string, Function*> functionMap;
+    }
+
+    [nodiscard]
+    public Result<Function*> GetFunction(FunctionKind kind)
+    {
+        return FunctionLibrary.Instance().GetFunction(kind);
+    }
+
+    [nodiscard]
+    public Result<Function*> GetFunction(const string& name)
+    {
+        return FunctionLibrary.Instance().GetFunction(name);
+    }
+}

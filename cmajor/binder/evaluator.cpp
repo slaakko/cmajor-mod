@@ -1194,7 +1194,12 @@ void Evaluator::Visit(cmajor::ast::FunctionNode& functionNode)
         std::unique_ptr<cmajor::symbols::Value> argumentValue = std::move(argumentValues[i]);
         cmajor::symbols::TypeSymbol* argumentType = argumentValue->GetType(symbolTable);
         cmajor::ast::ParameterNode* parameterNode = functionNode.Parameters()[i];
-        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterNode->Id()->Str(), std::move(argumentValue));
+        std::u32string parameterName = U"@p" + util::ToUtf32(std::to_string(i));
+        if (parameterNode->Id())
+        {
+            parameterName = parameterNode->Id()->Str();
+        }
+        VariableValueSymbol* variableValueSymbol = new VariableValueSymbol(parameterNode->GetSpan(), parameterName, std::move(argumentValue));
         variableValueSymbol->SetType(argumentType);
         declarationBlock.AddMember(variableValueSymbol);
     }

@@ -295,12 +295,12 @@ void CompileMultiThreaded(cmajor::ast::Project* project, cmajor::symbols::Module
             } 
             throw;
         }
-        input.Put(i);
+        input.Put(i); 
     }
     int numOutputsReceived = 0;
     while (numOutputsReceived < n && !stop)
     {
-        int compileUnitIndex = output.Get(); 
+        int compileUnitIndex = output.Get();  
         if (compileUnitIndex != -1) 
         {
             ++numOutputsReceived;

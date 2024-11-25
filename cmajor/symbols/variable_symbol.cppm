@@ -71,6 +71,10 @@ public:
     std::string GetSymbolCategoryStr() const override { return "LV"; }
     std::string GetSymbolCategoryDescription() const override { return "local variable"; }
     std::string GetSymbolHelp() const override;
+    bool IsInitialized() const { return initialized; }
+    void SetInitialized() { initialized = true; }
+private:
+    bool initialized;
 };
 
 class MemberVariableSymbol : public VariableSymbol

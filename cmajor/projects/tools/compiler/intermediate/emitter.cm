@@ -613,6 +613,7 @@ namespace intermediate
             assembly.Instruction* leaInst = new assembly.Instruction(assembly.OpCode.LEA);
             leaInst->AddOperand(reg);
             assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+            #assert(v->GetValue() != null);
             leaInst->AddOperand(assemblyContext->MakeSymbol(v->GetValue()->Name()));
             Result<bool> result = codeGenerator.Emit(leaInst);
             if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
@@ -725,6 +726,8 @@ namespace intermediate
                     return Result<assembly.Register*>(ErrorId(codeGenerator.GetErrorId()));
                 }
             }
+            Result<bool> result = codeGenerator.Emit(inst);
+            if (result.Error()) return Result<assembly.Register*>(ErrorId(result.GetErrorId()));
         }
         return Result<assembly.Register*>(reg);
     }
@@ -907,7 +910,7 @@ namespace intermediate
             Result<assembly.Register*> regResult = MakeFloatingPointRegOperand(inst.ReturnValue(), xmm1, codeGenerator);
             if (regResult.Error()) return Result<bool>(ErrorId(regResult.GetErrorId()));
             assembly.Register* reg = regResult.Value();
-            if (regResult.Error()) return Result<bool>(ErrorId(regResult.GetErrorId()));
+            movInst->AddOperand(reg);
             Result<bool> result = codeGenerator.Emit(movInst);
             if (result.Error()) return result;
         }
@@ -1223,7 +1226,7 @@ namespace intermediate
             case OpCode.div_:
             {
                 Result<assembly.Register*> rdxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rdx);
-                if (raxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
+                if (rdxResult.Error()) return Result<bool>(ErrorId(rdxResult.GetErrorId()));
                 assembly.Register* rdx = rdxResult.Value();
                 assembly.Instruction* xorInst = new assembly.Instruction(assembly.OpCode.XOR);
                 xorInst->AddOperand(rdx);
@@ -1340,6 +1343,7 @@ namespace intermediate
                 assembly.Register* cl = clResult.Value();
                 Result<assembly.Register*> rightOperandRegResult = MakeIntegerRegOperand(inst.Right(), cl, codeGenerator);
                 if (rightOperandRegResult.Error()) return Result<bool>(ErrorId(rightOperandRegResult.GetErrorId()));
+                rightOperandReg = rightOperandRegResult.Value();
                 if (rightOperandReg->Group() != assembly.RegisterGroupKind.rcx)
                 {
                     assembly.Instruction* movInstruction = new assembly.Instruction(assembly.OpCode.MOV);
@@ -1648,7 +1652,7 @@ namespace intermediate
             }
             else if (operandSize == 8)
             {
-                opCode = assembly.OpCode.CVTTSD2SO;
+                opCode = assembly.OpCode.CVTTSD2SI;
             }
             else
             {

@@ -22,7 +22,12 @@ namespace symbols
         {
             auto result = base->Write(writer);
             if (result.Error()) return result;
-            result = writer.GetBinaryWriter().Write(type->TypeId());
+            Uuid typeId;
+            if (type != null)
+            {
+                typeId = type->TypeId();
+            }
+            result = writer.GetBinaryWriter().Write(typeId);
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -33,15 +38,21 @@ namespace symbols
             if (result.Error()) return result;
             Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
             if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
-            reader.AddToResolutionList(this);
+            typeId = typeIdResult.Value();
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
-            auto typeSymbolResult = symbolTable->GetType(typeId);
-            if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
-            type = typeSymbolResult.Value();
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            if (typeId != Uuid())
+            {
+                auto typeSymbolResult = symbolTable->GetType(typeId);
+                if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
+                type = typeSymbolResult.Value();
+            }
             return Result<bool>(true);
         }
         public inline TypeSymbol* Type() const

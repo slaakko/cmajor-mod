@@ -1,0 +1,959 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/masm/system/System.Json/Json.parser' using SoulCm parser generator scmpg version 5.0.0
+
+using System;
+using System.Lex;
+using System.Parsing;
+using JsonTokens;
+
+public static class JsonParser<LexerT>
+{
+    public static System.Result<System.UniquePtr<System.Json.JsonValue>> Parse(LexerT& lexer)
+    {
+        System.UniquePtr<System.Json.JsonValue> value;
+        #if (DEBUG)
+        if (lexer.Log() != null)
+        {
+            auto result = lexer.Log()->WriteBeginRule(u"parse");
+            if (result.Error())
+            {
+                return System.Result<System.UniquePtr<System.Json.JsonValue>>(System.ErrorId(result.GetErrorId())); 
+            }
+            lexer.Log()->IncIndent();
+        }
+        #endif
+        auto incResult0 = ++lexer; 
+        if (incResult0.Error())
+        {
+            return System.Result<System.UniquePtr<System.Json.JsonValue>>(System.ErrorId(incResult0.GetErrorId())); 
+        }
+        System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Value(lexer);
+        if (matchResult.Error())
+        {
+            return System.Result<System.UniquePtr<System.Json.JsonValue>>(System.ErrorId(matchResult.GetErrorId()));
+        }
+        System.Parsing.Match match = matchResult.Value();
+        value.Reset(cast<System.Json.JsonValue*>(match.value));
+        #if (DEBUG)
+        if (lexer.Log() != null)
+        {
+            lexer.Log()->DecIndent();
+            auto result = lexer.Log()->WriteEndRule(u"parse");
+            if (result.Error())
+            {
+                return System.Result<System.UniquePtr<System.Json.JsonValue>>(System.ErrorId(result.GetErrorId())); 
+            }
+        }
+        #endif
+        if (match.hit)
+        {
+            if (*lexer == System.Lex.END_TOKEN)
+            {
+                return System.Result<System.UniquePtr<System.Json.JsonValue>>(System.Rvalue(value)); 
+            }
+            else
+            {
+                return System.Result<System.UniquePtr<System.Json.JsonValue>>(lexer.GetFarthestError()); 
+            }
+        }
+        else
+        {
+            return System.Result<System.UniquePtr<System.Json.JsonValue>>(lexer.GetFarthestError()); 
+        }
+    }
+    public static System.Result<System.Parsing.Match> Value(LexerT& lexer)
+    {
+        #if (DEBUG)
+        long parser_debug_match_pos = 0;
+        bool parser_debug_write_to_log = lexer.Log() != null;
+        if (parser_debug_write_to_log)
+        {
+            parser_debug_match_pos = lexer.GetPos();
+            auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Value");
+            if (result.Error())
+            {
+                return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+            }
+        }
+        #endif
+        System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 4742808741454282753);
+        System.UniquePtr<System.Json.JsonObject> o;
+        System.UniquePtr<System.Json.JsonArray> a;
+        System.Parsing.Match match(false);
+        System.Parsing.Match* parentMatch0 = &match;
+        switch (*lexer)
+        {
+            case STRING:
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch1 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == STRING)
+                    {
+                        auto incResult0 = ++lexer;
+                        if (incResult0.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        Token token = lexer.GetToken(pos);
+                        auto stringLiteralResult = System.Json.ParseStringLiteral(token);
+                        if (stringLiteralResult.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(ErrorId(stringLiteralResult.GetErrorId()));
+                        }
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Json.JsonString(stringLiteralResult.Value())));
+                    }
+                    *parentMatch1 = match;
+                }
+                if (match.hit)
+                {
+                    *parentMatch0 = match;
+                }
+                break;
+            }
+            case NUMBER:
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch2 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == NUMBER)
+                    {
+                        auto incResult1 = ++lexer;
+                        if (incResult1.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        Token token = lexer.GetToken(pos);
+                        auto numberResult = System.Json.ParseNumber(token);
+                        if (numberResult.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(ErrorId(numberResult.GetErrorId()));
+                        }
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Json.JsonNumber(numberResult.Value())));
+                    }
+                    *parentMatch2 = match;
+                }
+                if (match.hit)
+                {
+                    *parentMatch0 = match;
+                }
+                break;
+            }
+            case LBRACE:
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch3 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Object(lexer);
+                    if (matchResult.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                    }
+                    System.Parsing.Match match = matchResult.Value();
+                    o.Reset(cast<System.Json.JsonObject*>(match.value));
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, o.Release()));
+                    }
+                    *parentMatch3 = match;
+                }
+                if (match.hit)
+                {
+                    *parentMatch0 = match;
+                }
+                break;
+            }
+            case LBRACKET:
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch4 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Array(lexer);
+                    if (matchResult.Error())
+                    {
+                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                    }
+                    System.Parsing.Match match = matchResult.Value();
+                    a.Reset(cast<System.Json.JsonArray*>(match.value));
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, a.Release()));
+                    }
+                    *parentMatch4 = match;
+                }
+                if (match.hit)
+                {
+                    *parentMatch0 = match;
+                }
+                break;
+            }
+            case TRUE:
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch5 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == TRUE)
+                    {
+                        auto incResult2 = ++lexer;
+                        if (incResult2.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Json.JsonBool(true)));
+                    }
+                    *parentMatch5 = match;
+                }
+                if (match.hit)
+                {
+                    *parentMatch0 = match;
+                }
+                break;
+            }
+            case FALSE:
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch6 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == FALSE)
+                    {
+                        auto incResult3 = ++lexer;
+                        if (incResult3.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult3.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Json.JsonBool(false)));
+                    }
+                    *parentMatch6 = match;
+                }
+                if (match.hit)
+                {
+                    *parentMatch0 = match;
+                }
+                break;
+            }
+            case NULL:
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch7 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == NULL)
+                    {
+                        auto incResult4 = ++lexer;
+                        if (incResult4.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult4.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Json.JsonNull()));
+                    }
+                    *parentMatch7 = match;
+                }
+                if (match.hit)
+                {
+                    *parentMatch0 = match;
+                }
+                break;
+            }
+        }
+        #if (DEBUG)
+        if (parser_debug_write_to_log)
+        {
+            if (match.hit) 
+            {
+                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Value");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            else
+            {
+                auto result = System.Lex.WriteFailureToLog(lexer, u"Value");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+        }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return System.Result<System.Parsing.Match>(match);
+    }
+    public static System.Result<System.Parsing.Match> Object(LexerT& lexer)
+    {
+        #if (DEBUG)
+        long parser_debug_match_pos = 0;
+        bool parser_debug_write_to_log = lexer.Log() != null;
+        if (parser_debug_write_to_log)
+        {
+            parser_debug_match_pos = lexer.GetPos();
+            auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Object");
+            if (result.Error())
+            {
+                return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+            }
+        }
+        #endif
+        System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 4742808741454282754);
+        UniquePtr<System.Json.JsonObject> o = UniquePtr<System.Json.JsonObject>();
+        System.UniquePtr<System.Parsing.Value<bool>> field;
+        System.Parsing.Match match(false);
+        System.Parsing.Match* parentMatch0 = &match;
+        {
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch1 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch2 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == LBRACE)
+                    {
+                        auto incResult0 = ++lexer;
+                        if (incResult0.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        o.Reset(new System.Json.JsonObject());
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch3 = &match;
+                {
+                    System.Parsing.Match match(true);
+                    long save = lexer.GetPos();
+                    System.Parsing.Match* parentMatch4 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch5 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch6 = &match;
+                            {
+                                System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Field(lexer, o.Get());
+                                if (matchResult.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                }
+                                System.Parsing.Match match = matchResult.Value();
+                                field.Reset(cast<System.Parsing.Value<bool>*>(match.value));
+                                *parentMatch6 = match;
+                            }
+                            if (match.hit)
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch7 = &match;
+                                {
+                                    System.Parsing.Match match(true);
+                                    System.Parsing.Match* parentMatch8 = &match;
+                                    {
+                                        while (true)
+                                        {
+                                            long save = lexer.GetPos();
+                                            {
+                                                System.Parsing.Match match(false);
+                                                System.Parsing.Match* parentMatch9 = &match;
+                                                {
+                                                    System.Parsing.Match match(false);
+                                                    if (*lexer == COMMA)
+                                                    {
+                                                        auto incResult1 = ++lexer;
+                                                        if (incResult1.Error())
+                                                        {
+                                                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                                        }
+                                                        match.hit = true;
+                                                    }
+                                                    *parentMatch9 = match;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    System.Parsing.Match match(false);
+                                                    System.Parsing.Match* parentMatch10 = &match;
+                                                    {
+                                                        System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Field(lexer, o.Get());
+                                                        if (matchResult.Error())
+                                                        {
+                                                            return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                        }
+                                                        System.Parsing.Match match = matchResult.Value();
+                                                        field.Reset(cast<System.Parsing.Value<bool>*>(match.value));
+                                                        *parentMatch10 = match;
+                                                    }
+                                                    *parentMatch9 = match;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    *parentMatch8 = match;
+                                                }
+                                                else
+                                                {
+                                                    lexer.SetPos(save);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                *parentMatch6 = match;
+                            }
+                            *parentMatch5 = match;
+                        }
+                        if (match.hit)
+                        {
+                            *parentMatch4 = match;
+                        }
+                        else
+                        {
+                            lexer.SetPos(save);
+                        }
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch1 = match;
+            }
+            *parentMatch0 = match;
+        }
+        if (match.hit)
+        {
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch11 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch12 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == RBRACE)
+                    {
+                        auto incResult2 = ++lexer;
+                        if (incResult2.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Object");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, o.Release()));
+                    }
+                    *parentMatch12 = match;
+                }
+                *parentMatch11 = match;
+            }
+            *parentMatch0 = match;
+        }
+        #if (DEBUG)
+        if (parser_debug_write_to_log)
+        {
+            if (match.hit) 
+            {
+                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Object");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            else
+            {
+                auto result = System.Lex.WriteFailureToLog(lexer, u"Object");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+        }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return System.Result<System.Parsing.Match>(match);
+    }
+    public static System.Result<System.Parsing.Match> Field(LexerT& lexer, System.Json.JsonObject* o)
+    {
+        #if (DEBUG)
+        long parser_debug_match_pos = 0;
+        bool parser_debug_write_to_log = lexer.Log() != null;
+        if (parser_debug_write_to_log)
+        {
+            parser_debug_match_pos = lexer.GetPos();
+            auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Field");
+            if (result.Error())
+            {
+                return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+            }
+        }
+        #endif
+        System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 4742808741454282755);
+        ustring n = ustring();
+        System.UniquePtr<System.Json.JsonValue> v;
+        System.Parsing.Match match(false);
+        System.Parsing.Match* parentMatch0 = &match;
+        {
+            long pos = lexer.GetPos();
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch1 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch2 = &match;
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch3 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch4 = &match;
+                        {
+                            long pos = lexer.GetPos();
+                            System.Parsing.Match match(false);
+                            if (*lexer == STRING)
+                            {
+                                auto incResult0 = ++lexer;
+                                if (incResult0.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                                }
+                                match.hit = true;
+                            }
+                            if (match.hit)
+                            {
+                                Token token = lexer.GetToken(pos);
+                                auto stringLiteralResult = System.Json.ParseStringLiteral(token);
+                                if (stringLiteralResult.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(ErrorId(stringLiteralResult.GetErrorId()));
+                                }
+                                n = stringLiteralResult.Value();
+                            }
+                            *parentMatch4 = match;
+                        }
+                        *parentMatch3 = match;
+                    }
+                    if (match.hit)
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch5 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            if (*lexer == COLON)
+                            {
+                                auto incResult1 = ++lexer;
+                                if (incResult1.Error())
+                                {
+                                    return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                }
+                                match.hit = true;
+                            }
+                            *parentMatch5 = match;
+                        }
+                        *parentMatch3 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                if (match.hit)
+                {
+                    System.Parsing.Match match(false);
+                    System.Parsing.Match* parentMatch6 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch7 = &match;
+                        {
+                            long pos = lexer.GetPos();
+                            System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Value(lexer);
+                            if (matchResult.Error())
+                            {
+                                return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                            }
+                            System.Parsing.Match match = matchResult.Value();
+                            v.Reset(cast<System.Json.JsonValue*>(match.value));
+                            if (match.hit)
+                            {
+                                o->AddField(n, v.Release());
+                            }
+                            *parentMatch7 = match;
+                        }
+                        *parentMatch6 = match;
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                #if (DEBUG)
+                    if (parser_debug_write_to_log)
+                    {
+                        auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Field");
+                        if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                    }
+                #endif
+                return System.Result<System.Parsing.Match>(System.Parsing.Match(true, new System.Parsing.Value<bool>(true)));
+            }
+            *parentMatch0 = match;
+        }
+        #if (DEBUG)
+        if (parser_debug_write_to_log)
+        {
+            if (match.hit) 
+            {
+                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Field");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            else
+            {
+                auto result = System.Lex.WriteFailureToLog(lexer, u"Field");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+        }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return System.Result<System.Parsing.Match>(match);
+    }
+    public static System.Result<System.Parsing.Match> Array(LexerT& lexer)
+    {
+        #if (DEBUG)
+        long parser_debug_match_pos = 0;
+        bool parser_debug_write_to_log = lexer.Log() != null;
+        if (parser_debug_write_to_log)
+        {
+            parser_debug_match_pos = lexer.GetPos();
+            auto result = System.Lex.WriteBeginRuleToLog(lexer, u"Array");
+            if (result.Error())
+            {
+                return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+            }
+        }
+        #endif
+        System.Lex.RuleGuard<LexerT> ruleGuard(lexer, 4742808741454282756);
+        UniquePtr<System.Json.JsonArray> a = UniquePtr<System.Json.JsonArray>();
+        System.UniquePtr<System.Json.JsonValue> first;
+        System.UniquePtr<System.Json.JsonValue> next;
+        System.Parsing.Match match(false);
+        System.Parsing.Match* parentMatch0 = &match;
+        {
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch1 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch2 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == LBRACKET)
+                    {
+                        auto incResult0 = ++lexer;
+                        if (incResult0.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult0.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        a.Reset(new System.Json.JsonArray());
+                    }
+                    *parentMatch2 = match;
+                }
+                *parentMatch1 = match;
+            }
+            if (match.hit)
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch3 = &match;
+                {
+                    System.Parsing.Match match(true);
+                    long save = lexer.GetPos();
+                    System.Parsing.Match* parentMatch4 = &match;
+                    {
+                        System.Parsing.Match match(false);
+                        System.Parsing.Match* parentMatch5 = &match;
+                        {
+                            System.Parsing.Match match(false);
+                            System.Parsing.Match* parentMatch6 = &match;
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch7 = &match;
+                                {
+                                    long pos = lexer.GetPos();
+                                    System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Value(lexer);
+                                    if (matchResult.Error())
+                                    {
+                                        return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                    }
+                                    System.Parsing.Match match = matchResult.Value();
+                                    first.Reset(cast<System.Json.JsonValue*>(match.value));
+                                    if (match.hit)
+                                    {
+                                        a->AddItem(first.Release());
+                                    }
+                                    *parentMatch7 = match;
+                                }
+                                *parentMatch6 = match;
+                            }
+                            if (match.hit)
+                            {
+                                System.Parsing.Match match(false);
+                                System.Parsing.Match* parentMatch8 = &match;
+                                {
+                                    System.Parsing.Match match(true);
+                                    System.Parsing.Match* parentMatch9 = &match;
+                                    {
+                                        while (true)
+                                        {
+                                            long save = lexer.GetPos();
+                                            {
+                                                System.Parsing.Match match(false);
+                                                System.Parsing.Match* parentMatch10 = &match;
+                                                {
+                                                    System.Parsing.Match match(false);
+                                                    System.Parsing.Match* parentMatch11 = &match;
+                                                    {
+                                                        System.Parsing.Match match(false);
+                                                        if (*lexer == COMMA)
+                                                        {
+                                                            auto incResult1 = ++lexer;
+                                                            if (incResult1.Error())
+                                                            {
+                                                                return System.Result<System.Parsing.Match>(System.ErrorId(incResult1.GetErrorId()));
+                                                            }
+                                                            match.hit = true;
+                                                        }
+                                                        *parentMatch11 = match;
+                                                    }
+                                                    if (match.hit)
+                                                    {
+                                                        System.Parsing.Match match(false);
+                                                        System.Parsing.Match* parentMatch12 = &match;
+                                                        {
+                                                            System.Parsing.Match match(false);
+                                                            System.Parsing.Match* parentMatch13 = &match;
+                                                            {
+                                                                long pos = lexer.GetPos();
+                                                                System.Result<System.Parsing.Match> matchResult = JsonParser<LexerT>.Value(lexer);
+                                                                if (matchResult.Error())
+                                                                {
+                                                                    return System.Result<System.Parsing.Match>(System.ErrorId(matchResult.GetErrorId()));
+                                                                }
+                                                                System.Parsing.Match match = matchResult.Value();
+                                                                next.Reset(cast<System.Json.JsonValue*>(match.value));
+                                                                if (match.hit)
+                                                                {
+                                                                    a->AddItem(next.Release());
+                                                                }
+                                                                *parentMatch13 = match;
+                                                            }
+                                                            *parentMatch12 = match;
+                                                        }
+                                                        *parentMatch11 = match;
+                                                    }
+                                                    *parentMatch10 = match;
+                                                }
+                                                if (match.hit)
+                                                {
+                                                    *parentMatch9 = match;
+                                                }
+                                                else
+                                                {
+                                                    lexer.SetPos(save);
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    *parentMatch8 = match;
+                                }
+                                *parentMatch6 = match;
+                            }
+                            *parentMatch5 = match;
+                        }
+                        if (match.hit)
+                        {
+                            *parentMatch4 = match;
+                        }
+                        else
+                        {
+                            lexer.SetPos(save);
+                        }
+                    }
+                    *parentMatch3 = match;
+                }
+                *parentMatch1 = match;
+            }
+            *parentMatch0 = match;
+        }
+        if (match.hit)
+        {
+            System.Parsing.Match match(false);
+            System.Parsing.Match* parentMatch14 = &match;
+            {
+                System.Parsing.Match match(false);
+                System.Parsing.Match* parentMatch15 = &match;
+                {
+                    long pos = lexer.GetPos();
+                    System.Parsing.Match match(false);
+                    if (*lexer == RBRACKET)
+                    {
+                        auto incResult2 = ++lexer;
+                        if (incResult2.Error())
+                        {
+                            return System.Result<System.Parsing.Match>(System.ErrorId(incResult2.GetErrorId()));
+                        }
+                        match.hit = true;
+                    }
+                    if (match.hit)
+                    {
+                        #if (DEBUG)
+                            if (parser_debug_write_to_log)
+                            {
+                                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Array");
+                                if (result.Error()) return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                            }
+                        #endif
+                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, a.Release()));
+                    }
+                    *parentMatch15 = match;
+                }
+                *parentMatch14 = match;
+            }
+            *parentMatch0 = match;
+        }
+        #if (DEBUG)
+        if (parser_debug_write_to_log)
+        {
+            if (match.hit) 
+            {
+                auto result = System.Lex.WriteSuccessToLog(lexer, parser_debug_match_pos, u"Array");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+            else
+            {
+                auto result = System.Lex.WriteFailureToLog(lexer, u"Array");
+                if (result.Error())
+                {
+                    return System.Result<System.Parsing.Match>(System.ErrorId(result.GetErrorId()));
+                }
+            }
+        }
+        #endif
+        if (!match.hit)
+        {
+            match.value = null;
+        }
+        return System.Result<System.Parsing.Match>(match);
+    }
+}
+
+new class JsonParser<JsonLexer>;
+

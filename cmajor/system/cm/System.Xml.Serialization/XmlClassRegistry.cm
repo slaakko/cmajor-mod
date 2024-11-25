@@ -1,0 +1,64 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Xml.Serialization
+{
+    delegate XmlSerializable* FactoryFunction();
+
+    public class XmlClassRegistry
+    {
+        static XmlClassRegistry() : instance(new XmlClassRegistry())
+        {
+        }
+        public static XmlClassRegistry& Instance()
+        {
+            return *instance;
+        }
+        private XmlClassRegistry()
+        {
+        }
+        public Result<bool> Register(int classId, const string& className, FactoryFunction factoryFunction)
+        {
+            auto it = factoryMap.Find(classId);
+            if (it != factoryMap.End())
+            {
+                int errorId = AllocateError("class id " + ToString(classId) + " of class '" +
+                    className + "' conflicts with previously registered class '" + classIdNameMap[classId] +
+                    "', please change the name of one or the other to have different hash codes");
+                return Result<bool>(ErrorId(errorId));
+            }
+            classIdNameMap[classId] = className;
+            factoryMap[classId] = factoryFunction;
+            return Result<bool>(true);
+        }
+        public Result<XmlSerializable*> Create(int classId)
+        {
+            auto it = factoryMap.Find(classId);
+            if (it != factoryMap.End())
+            {
+                FactoryFunction factoryFunction = it->second;
+                return Result<XmlSerializable*>(factoryFunction());
+            }
+            else
+            {
+                int errorId = AllocateError("class having id " + ToString(classId) + " not registered");
+                return Result<XmlSerializable*>(ErrorId(errorId));
+            }
+        }
+        private static UniquePtr<XmlClassRegistry> instance;
+        private Map<int, string> classIdNameMap;
+        private Map<int, FactoryFunction> factoryMap;
+    }
+
+    [nodiscard]
+    public Result<bool> XmlRegister<T>(int classId)
+    {
+        return XmlClassRegistry.Instance().Register(classId, T.StaticClassName(), T.Create);
+    }
+}
+

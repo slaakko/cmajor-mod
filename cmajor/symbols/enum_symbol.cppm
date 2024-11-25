@@ -234,4 +234,5 @@ private:
     TypeSymbol* sourceType;
     TypeSymbol* targetType;
 };
+
 } // namespace cmajor::symbols

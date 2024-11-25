@@ -465,7 +465,7 @@ namespace System.Collections
         public RedBlackTreeNode(const ValueType& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(value_)
         {
         }
-        public RedBlackTreeNode(ValueType&& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(Rvalue(value_))
+        public RedBlackTreeNode(ValueType&& value_, RedBlackTreeNode<T>* parent_) : base(parent_), value(value_)
         {
         }
         public inline const ValueType& Value() const

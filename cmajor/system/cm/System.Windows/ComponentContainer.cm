@@ -1,0 +1,164 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Windows
+{
+    public class ComponentContainer
+    {
+        public ComponentContainer(Component* parent_) : firstChild(null), lastChild(null), parent(parent_)
+        {
+        }
+        public virtual ~ComponentContainer()
+        {
+            Component* child = firstChild;
+            while (child != null)
+            {
+                Component* next = child->NextSibling();
+                delete child;
+                child = next;
+            }
+        }
+        public inline bool IsEmpty() const
+        {
+            return firstChild == null;
+        }
+        [nodiscard]
+        public Result<bool> AddChild(Component* child)
+        {
+            ComponentContainer* container = child->GetContainer();
+            if (container != null)
+            {
+                UniquePtr<Component> removedChild = container->RemoveChild(child);
+                child = removedChild.Release();
+            }
+            if (lastChild != null)
+            {
+                lastChild->LinkAfter(child);
+            }
+            if (firstChild == null)
+            {
+                firstChild = child;
+            }
+            child->SetContainer(this);
+            lastChild = child;
+            if ((child is Control*) && parent != null && (parent is Control*))
+            {
+                Control* childControl = cast<Control*>(child);
+                Control* parentControl = cast<Control*>(parent);
+                auto result = parentControl->AddChildVisual(childControl);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        public UniquePtr<Component> RemoveChild(Component* child)
+        {
+            child->Unlink();
+            if (child == firstChild)
+            {
+                firstChild = child->NextSibling();
+            }
+            if (child == lastChild)
+            {
+                lastChild = child->PrevSibling();
+            }
+            child->SetContainer(null);
+            child->SetNextSibling(null);
+            child->SetPrevSibling(null);
+            return UniquePtr<Component>(child);
+        }
+        [nodiscard]
+        public Result<bool> InsertBefore(Component* child, Component* before)
+        {
+            if (before == null)
+            {
+                return AddChild(child);
+            }
+            else
+            {
+                ComponentContainer* container = child->GetContainer();
+                if (container != null)
+                {
+                    UniquePtr<Component> removedChild = container->RemoveChild(child);
+                    child = removedChild.Release();
+                }
+                child->SetContainer(this);
+                if (firstChild == before)
+                {
+                    firstChild = child;
+                }
+                before->LinkBefore(child);
+                if ((child is Control*) && parent != null && (parent is Control*))
+                {
+                    Control* childControl = cast<Control*>(child);
+                    Control* parentControl = cast<Control*>(parent);
+                    auto result = parentControl->AddChildVisual(childControl);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> InsertAfter(Component* child, Component* after)
+        {
+            if (after == null)
+            {
+                return AddChild(child);
+            }
+            else
+            {
+                ComponentContainer* container = child->GetContainer();
+                if (container != null)
+                {
+                    UniquePtr<Component> removedChild = container->RemoveChild(child);
+                    child = removedChild.Release();
+                }
+                child->SetContainer(this);
+                after->LinkAfter(child);
+                if (after == lastChild)
+                {
+                    lastChild = child;
+                }
+                if ((child is Control*) && parent != null && (parent is Control*))
+                {
+                    Control* childControl = cast<Control*>(child);
+                    Control* parentControl = cast<Control*>(parent);
+                    auto result = parentControl->AddChildVisual(childControl);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        public inline Component* FirstChild() const
+        {
+            return firstChild;
+        }
+        public inline Component* LastChild() const
+        {
+            return lastChild;
+        }
+        public inline Component* Parent() const
+        {
+            return parent;
+        }
+        internal void SetParent(Component* parent_)
+        {
+            parent = parent_;
+        }
+        private Component* firstChild;
+        private Component* lastChild;
+        private Component* parent;
+    }
+}

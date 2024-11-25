@@ -41,6 +41,39 @@ namespace symbols
         {
             value.Reset(value_);
         }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.Write(value.Get());
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(type->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Value*> valueResult = reader.ReadValue();
+            if (valueResult.Error()) return Result<bool>(ErrorId(valueResult.GetErrorId()));
+            value.Reset(valueResult.Value());
+            Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+            typeId = typeIdResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(typeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            type = typeResult.Value();
+            return Result<bool>(true);
+        }
         public inline bool Evaluating() const
         {
             return evaluating;
@@ -152,7 +185,9 @@ namespace symbols
             intermediate.Type* irType = irArrayTypeResult.Value();
             Result<string> mangledNameResult = ToUtf8(MangledName());
             if (mangledNameResult.Error()) return Result<intermediate.Value*>(ErrorId(mangledNameResult.GetErrorId()));
-            intermediate.GlobalVariable* irObject = emitter.GetOrInsertGlobal(mangledNameResult.Value(), irType);
+            Result<intermediate.GlobalVariable*> irObjectResult = emitter.GetOrInsertGlobal(mangledNameResult.Value(), irType);
+            if (irObjectResult.Error()) return Result<intermediate.Value*>(ErrorId(irObjectResult.GetErrorId()));
+            intermediate.GlobalVariable* irObject = irObjectResult.Value();
             if (create)
             {
                 Result<intermediate.Value*> irValueResult = arrayValue->IrValue(emitter);
@@ -173,7 +208,9 @@ namespace symbols
             intermediate.Type* irType = irStructureTypeResult.Value();
             Result<string> mangledNameResult = ToUtf8(MangledName());
             if (mangledNameResult.Error()) return Result<intermediate.Value*>(ErrorId(mangledNameResult.GetErrorId()));
-            intermediate.GlobalVariable* irObject = emitter.GetOrInsertGlobal(mangledNameResult.Value(), irType);
+            Result<intermediate.GlobalVariable*> irObjectResult = emitter.GetOrInsertGlobal(mangledNameResult.Value(), irType);
+            if (irObjectResult.Error()) return Result<intermediate.Value*>(ErrorId(irObjectResult.GetErrorId()));
+            intermediate.GlobalVariable* irObject = irObjectResult.Value();
             if (create)
             {
                 Result<intermediate.Value*> irValueResult = structureValue->IrValue(emitter);
@@ -184,6 +221,7 @@ namespace symbols
             return Result<intermediate.Value*>(irObject);
         }
         private TypeSymbol* type;
+        private Uuid typeId;
         private UniquePtr<Value> value;
         private bool evaluating;
         private string strValue;

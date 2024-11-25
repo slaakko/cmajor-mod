@@ -153,15 +153,82 @@ namespace build
         }
         List<string> objectFilePaths;
         List<string> asmFilePaths;
+        List<string> cppFilePaths;
         Result<bool> compileResult = Compile(context, project, rootModule.Get(), boundCompileUnits, objectFilePaths, asmFilePaths, stop);
         if (compileResult.Error())
         {
             stop = true;
             return compileResult;
         }
+        List<string> resourceScriptFiles;
+        Result<string> cmajorRootDirResult = CmajorRootDir();
+        if (cmajorRootDirResult.Error())
+        {
+            stop = true;
+            return Result<bool>(ErrorId(cmajorRootDirResult.GetErrorId()));
+        }
+        string cmajorRootDir = Rvalue(cmajorRootDirResult.Value());
+        Result<string> xpathLexerFPResult = System.IO.GetFullPath(System.IO.Path.Combine(System.IO.Path.Combine(cmajorRootDir, "rc"), "soul.xml.xpath.lexer.classmap.rc"));
+        if (xpathLexerFPResult.Error())
+        {
+            stop = true;
+            return Result<bool>(ErrorId(xpathLexerFPResult.GetErrorId()));
+        }
+        resourceScriptFiles.Add(xpathLexerFPResult.Value());
+        for (const auto& rcFilePath : rootModule->AllResourceScriptFilePaths())
+        {
+            resourceScriptFiles.Add(rcFilePath);
+        }
+        string classIndexFilePath;
+        string traceDataFilePath;
+        Target target = project->GetTarget();
+        if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
+        {
+            Result<bool> result = GenerateMainUnit(project, rootModule.Get(), cppFilePaths, context);
+            if (result.Error())
+            {
+                stop = true;
+                return result;
+            }
+            classIndexFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(project->ModuleFilePath()), "class_index.bin");
+            result = MakeClassIndexFile(rootModule->GetSymbolTable()->PolymorphicClasses(), classIndexFilePath);
+            if (result.Error())
+            {
+                stop = true;
+                return result;
+            }
+            traceDataFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(project->ModuleFilePath()), "trace_data.bin");
+            result = rootModule->WriteTraceData(traceDataFilePath);
+            if (result.Error())
+            {
+                stop = true;
+                return result;
+            }
+        }
+        result = VSBuild(project, rootModule.Get(), asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath,
+            GetGlobalFlag(GlobalFlags.verbose));
+        if (result.Error())
+        {
+            stop = true;
+            return result;
+        }
+
         SymbolWriter writer(context, project->ModuleFilePath());
         result = rootModule->Write(writer);
-        if (result.Error()) return result;
+        if (result.Error())
+        {
+            stop = true;
+            return result;
+        }
+        if (!CompileWarningCollection.Instance().Warnings().IsEmpty())
+        {
+            LogMessage(project->LogStreamId(), string());
+            LogMessage(project->LogStreamId(), "warnings:");
+            for (const auto& warning : CompileWarningCollection.Instance().Warnings())
+            {
+                warning.ToLog(project->LogStreamId());
+            }
+        }
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
             LogMessage(project->LogStreamId(), "Project '" + projectName + "' built successfully.");
@@ -220,13 +287,21 @@ namespace build
                 }
             }
             auto result = CleanProject(project);
-            if (result.Error()) return result;
+            if (result.Error())
+            {
+                LogMessage(project->LogStreamId(), result.GetErrorMessage());
+                return Result<bool>(false);
+            }
         }
         else
         {
             stopBuild = false;
             auto result = BuildProject(project, rootModule, stopBuild, true, builtProjects);
-            if (result.Error()) return result;
+            if (result.Error())
+            {
+                LogMessage(project->LogStreamId(), result.GetErrorMessage());
+                return Result<bool>(false);
+            }
         }
         return Result<bool>(true);
     }
@@ -246,6 +321,15 @@ namespace build
             stopBuild = false;
             auto result = BuildProject(project, rootModules[i], stopBuild, true, builtProjects);
             if (result.Error()) return result;
+        }
+        if (!CompileWarningCollection.Instance().Warnings().IsEmpty())
+        {
+            LogMessage(-1, string());
+            LogMessage(-1, "warnings:");
+            for (const auto& warning : CompileWarningCollection.Instance().Warnings())
+            {
+                warning.ToLog(-1);
+            }
         }
         if (GetGlobalFlag(GlobalFlags.verbose))
         {
@@ -395,6 +479,15 @@ namespace build
         for (const auto& result : buildData.results)
         {
             if (result.Error()) return result;
+        }
+        if (!CompileWarningCollection.Instance().Warnings().IsEmpty())
+        {
+            LogMessage(-1, string());
+            LogMessage(-1, "warnings:");
+            for (const auto& warning : CompileWarningCollection.Instance().Warnings())
+            {
+                warning.ToLog(-1);
+            }
         }
         if (GetGlobalFlag(GlobalFlags.verbose))
         {

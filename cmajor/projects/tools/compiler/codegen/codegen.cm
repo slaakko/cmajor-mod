@@ -33,18 +33,20 @@ namespace codegen
         {
             return compileUnit->Install(str);
         }
-        public override intermediate.Value* GetGlobalStringValue(int stringId)
+        public override Result<intermediate.Value*> GetGlobalStringValue(int stringId)
         {
             auto it = utf8stringMap.Find(stringId);
             if (it != utf8stringMap.End())
             {
-                return it->second;
+                return Result<intermediate.Value*>(it->second);
             }
             else
             {
-                intermediate.Value* stringValue = emitter.CreateGlobalStringValue(compileUnit->GetUtf8String(stringId));
+                Result<intermediate.Value*> stringValueResult = emitter.CreateGlobalStringValue(compileUnit->GetUtf8String(stringId));
+                if (stringValueResult.Error()) return stringValueResult;
+                intermediate.Value* stringValue = stringValueResult.Value();
                 utf8stringMap[stringId] = stringValue;
-                return stringValue;
+                return Result<intermediate.Value*>(stringValue);
             }
         }
         public override Result<intermediate.Value*> GetGlobalWStringValue(int stringId)
@@ -65,8 +67,8 @@ namespace codegen
         }
         public override Result<intermediate.Value*> GetGlobalUStringValue(int stringId)
         {
-            auto it = utf16stringMap.Find(stringId);
-            if (it != utf16stringMap.End())
+            auto it = utf32stringMap.Find(stringId);
+            if (it != utf32stringMap.End())
             {
                 return Result<intermediate.Value*>(it->second);
             }
@@ -118,6 +120,7 @@ namespace codegen
             int n = cast<int>(boundCompileUnit.BoundNodes().Count());
             for (int i = 0; i < n; ++i)
             {
+                Console.Out() << "BOUND NODE " << n << " : " << i << endl();
                 BoundNode* boundNode = boundCompileUnit.BoundNodes()[i].Get();
                 boundNode->Accept(*this);
                 if (Error()) return;
@@ -163,6 +166,7 @@ namespace codegen
             int n = cast<int>(boundNamespace.Members().Count());
             for (int i = 0; i < n; ++i)
             {
+                Console.Out() << "BOUND MEMBER " << n << " : " << i << endl();
                 BoundNode* node = boundNamespace.Members()[i].Get();
                 node->Accept(*this);
                 if (Error()) return;
@@ -180,9 +184,16 @@ namespace codegen
                     return;
                 }
             }
+            Result<intermediate.Value*> staticResult = classType->StaticObject(emitter, true);
+            if (staticResult.Error())
+            {
+                SetErrorId(staticResult.GetErrorId());
+                return;
+            }
             int n = cast<int>(boundClass.Members().Count());
             for (int i = 0; i < n; ++i)
             {
+                Console.Out() << "BOUND CLASS MEMBER " << n << " : " << i << endl();
                 BoundNode* boundNode = boundClass.Members()[i].Get();
                 boundNode->Accept(*this);
                 if (Error()) return;
@@ -195,6 +206,7 @@ namespace codegen
             FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
             if (compileUnit->CodeGenerated(functionSymbol)) return;
             compileUnit->SetCodeGenerated(functionSymbol);
+            Console.Out() << ">>> " << functionSymbol->FullName() << endl();
             destructorCallGenerated = false;
             lastInstructionWasRet = false;
             basicBlockOpen = false;
@@ -295,7 +307,8 @@ namespace codegen
                     SetErrorId(localResult.GetErrorId());
                     return;
                 }
-                emitter.SetIrObject(parameter, localResult.Value());
+                intermediate.Value* localValue = localResult.Value();
+                emitter.SetIrObject(parameter, localValue);
             }
             int nlv = cast<int>(functionSymbol->LocalVariables().Count());
             for (int i = 0; i < nlv; ++i)
@@ -682,13 +695,16 @@ namespace codegen
                         return;
                     }
                     BoundCompoundStatement* latestRetBlock = latestRetBlockResult.Value();
-                    Result<bool> isConditionalStatementInBlockResult = latestRet->IsConditionalStatementInBlock(latestRetBlock);
-                    if (isConditionalStatementInBlockResult.Error())
+                    if (latestRetBlock != null)
                     {
-                        SetErrorId(isConditionalStatementInBlockResult.GetErrorId());
-                        return;
+                        Result<bool> isConditionalStatementInBlockResult = latestRet->IsConditionalStatementInBlock(latestRetBlock);
+                        if (isConditionalStatementInBlockResult.Error())
+                        {
+                            SetErrorId(isConditionalStatementInBlockResult.GetErrorId());
+                            return;
+                        }
+                        isConditionalStatementInBlock = isConditionalStatementInBlockResult.Value();
                     }
-                    isConditionalStatementInBlock = isConditionalStatementInBlockResult.Value();
                 }
             }
             if (!inDirectSwitchStatement || latestRet != null && !isConditionalStatementInBlock)
@@ -1230,7 +1246,13 @@ namespace codegen
                         if (firstArgument->Type()->IsPointerType())
                         {
                             LockGuard<RecursiveMutex> lock(compileUnit->GetModule()->Lock());
-                            TypeSymbol* firstArgumentBaseType = firstArgument->Type()->RemovePointer(context);
+                            Result<TypeSymbol*> typeResult = firstArgument->Type()->RemovePointer(context);
+                            if (typeResult.Error())
+                            {
+                                SetErrorId(typeResult.GetErrorId());
+                                return;
+                            }
+                            TypeSymbol* firstArgumentBaseType = typeResult.Value();
                             if (firstArgumentBaseType->IsClassTypeSymbol())
                             {
                                 ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(firstArgumentBaseType);
@@ -1791,9 +1813,58 @@ namespace codegen
                 return;
             }
         }
+        public override void Visit(BoundDestroyTemporariesStatement& boundDestroyTemporariesStatement)
+        {
+            Result<bool> result = boundDestroyTemporariesStatement.Execute(emitter);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+        }
         private void GenerateEnterFunctionCode(BoundFunction* currentFunction)
         {
-            // todo
+            const List<UniquePtr<BoundStatement>>& enterCode = currentFunction->EnterCode();
+            if (enterCode.IsEmpty()) return;
+            bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+            inSetLineOrEntryCode = true;
+            LocalVariableSymbol* traceEntryVar = currentFunction->GetFunctionSymbol()->TraceEntryVar();
+            Result<intermediate.Type*> irTypeResult = traceEntryVar->Type()->IrType(emitter);
+            if (irTypeResult.Error())
+            {
+                SetErrorId(irTypeResult.GetErrorId());
+                return;
+            }
+            intermediate.Type* irType = irTypeResult.Value();
+            Result<intermediate.Value*> traceEntryLocalResult = emitter.CreateLocal(irType);
+            if (traceEntryLocalResult.Error())
+            {
+                SetErrorId(traceEntryLocalResult.GetErrorId());
+                return;
+            }
+            intermediate.Value* traceEntryLocal = traceEntryLocalResult.Value();
+            emitter.SetIrObject(traceEntryVar, traceEntryLocal);
+            LocalVariableSymbol* traceGuardVar = currentFunction->GetFunctionSymbol()->TraceGuardVar();
+            irTypeResult = traceGuardVar->Type()->IrType(emitter);
+            if (irTypeResult.Error())
+            {
+                SetErrorId(irTypeResult.GetErrorId());
+                return;
+            }
+            irType = irTypeResult.Value();
+            Result<intermediate.Value*> traceGuardLocalResult = emitter.CreateLocal(irType);
+            if (traceGuardLocalResult.Error())
+            {
+                SetErrorId(traceGuardLocalResult.GetErrorId());
+                return;
+            }
+            intermediate.Value* traceGuardLocal = traceGuardLocalResult.Value();
+            emitter.SetIrObject(traceGuardVar, traceGuardLocal);
+            for (const auto& statement : enterCode)
+            {
+                statement->Accept(*this);
+            }
+            inSetLineOrEntryCode = prevSetLineOrEntryCode;
         }
         [nodiscard]
         private Result<bool> GenJumpingBoolCode()
@@ -1908,7 +1979,19 @@ namespace codegen
             if (prevLineNumber == lineNumber) return;
             emitter.SetCurrentLineNumber(lineNumber);
             prevLineNumber = lineNumber;
-            // todo: execute set line number statement
+            BoundStatement* setLineNumberStatement = currentFunction->GetLineCode();
+            if (setLineNumberStatement != null)
+            {
+                bool prevGenJumpingBoolCode = genJumpingBoolCode;
+                genJumpingBoolCode = false;
+                emitter.BeginSubstituteLineNumber(lineNumber);
+                bool prevSetLineOrEntryCode = inSetLineOrEntryCode;
+                inSetLineOrEntryCode = true;
+                setLineNumberStatement->Accept(*this);
+                inSetLineOrEntryCode = prevSetLineOrEntryCode;
+                emitter.EndSubstituteLineNumber();
+                genJumpingBoolCode = prevGenJumpingBoolCode;
+            }
         }
         private int GetLineNumber(const System.Lex.FullSpan& fullSpan)
         {
@@ -1947,7 +2030,7 @@ namespace codegen
                 Result<intermediate.Function*> functionResult = emitter.GetOrInsertFunction(mangledName, functionType);
                 if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
                 intermediate.Function* fn = functionResult.Value();
-                intermediate.Value* callee = emitter.MakeSymbolValue(functionType, fn->ToString());
+                intermediate.Value* callee = emitter.MakeSymbolValue(fn->GetType(), fn->ToString());
                 List<intermediate.Value*> args;
                 Result<intermediate.Value*> paramObjectResult = parameter->GetIrObject(emitter);
                 if (paramObjectResult.Error()) return Result<bool>(ErrorId(paramObjectResult.GetErrorId()));

@@ -37,21 +37,21 @@ int main(int argc, const char** argv)
                 List<string> components = arg.Split('=');
                 if (components.Count() != 2)
                 {
-                    Console.Error() << "unknown option '" << arg << "'" << endl();
+                    LogMessage(-1, "unknown option '" + arg + "'");
                     return 1;
                 }
                 if (components[0] == "--config")
                 {
                     if (components[1] != "debug" && components[1] != "release")
                     {
-                        Console.Error() << "unknown configuration '" << components[1] << "'" << endl();
+                        LogMessage(-1, "unknown configuration '" + components[1] + "'");
                         return 1;
                     }
                     SetConfig(components[1]);
                 }
                 else
                 {
-                    Console.Error() << "unknown option '" << arg << "'" << endl();
+                    LogMessage(-1, "unknown option '" + arg + "'");
                     return 1;
                 }
             }
@@ -88,7 +88,7 @@ int main(int argc, const char** argv)
                 }
                 else
                 {
-                    Console.Error() << "unknown option '" << arg << "'" << endl();
+                    LogMessage(-1, "unknown option '" + arg + "'");
                     return 1;
                 }
             }
@@ -101,21 +101,21 @@ int main(int argc, const char** argv)
                 List<string> components = options.Split('=');
                 if (components.Count() != 2)
                 {
-                    Console.Error() << "unknown option '" << arg << "'" << endl();
+                    LogMessage(-1, "unknown option '" + arg + "'");
                     return 1;
                 }
                 if (components[0] == "c")
                 {
                     if (components[1] != "debug" && components[1] != "release")
                     {
-                        Console.Error() << "unknown configuration '" << components[1] << "'" << endl();
+                        LogMessage(-1, "unknown configuration '" + components[1] + "'");
                         return 1;
                     }
                     SetConfig(components[1]);
                 }
                 else
                 {
-                    Console.Error() << "unknown option '" << arg << "'" << endl();
+                    LogMessage(-1, "unknown option '" + arg + "'");
                     return 1;
                 }
             }
@@ -162,7 +162,7 @@ int main(int argc, const char** argv)
                         }
                         default:
                         {
-                            Console.Error() << "unknown option '-" << string(o) << "'" << endl();
+                            LogMessage(-1, "unknown option '" + string(o) + "'");
                             return 1;
                         }
                     }
@@ -175,7 +175,7 @@ int main(int argc, const char** argv)
             auto result = ToUtf32(arg);
             if (result.Error())
             {
-                Console.Error() << result.GetErrorMessage() << endl();
+                LogMessage(-1, result.GetErrorMessage());
                 return 1;
             }
             ustring symbol = Rvalue(result.Value());
@@ -186,7 +186,7 @@ int main(int argc, const char** argv)
             auto fullPathResult = System.IO.GetFullPath(arg);
             if (fullPathResult.Error())
             {
-                Console.Error() << fullPathResult.GetErrorMessage() << endl();
+                LogMessage(-1, fullPathResult.GetErrorMessage());
                 return 1;
             }
             const string& file = fullPathResult.Value();
@@ -196,49 +196,49 @@ int main(int argc, const char** argv)
         {
             if (file.EndsWith(".cms"))
             {
-                auto existsResults = System.IO.File.Exists(file);
-                if (existsResults.Error())
+                auto existsResult = System.IO.File.Exists(file);
+                if (existsResult.Error())
                 {
-                    Console.Error() << existsResults.GetErrorMessage() << endl();
+                    LogMessage(-1, existsResult.GetErrorMessage());
                     return 1;
                 }
-                bool exists = existsResults.Value();
+                bool exists = existsResult.Value();
                 if (!exists)
                 {
-                    Console.Error() << "solution file '" << file << "' not found" << endl();
+                    LogMessage(-1, "solution file '" + file + "' not found");
                     return 1;
                 }
                 auto result = BuildSolution(file, rootModules);
                 if (result.Error())
                 {
-                    Console.Error() << result.GetErrorMessage() << endl();
+                    LogMessage(-1, result.GetErrorMessage());
                     return 1;
                 }
             }
             else if (file.EndsWith(".cmp"))
             {
-                auto existsResults = System.IO.File.Exists(file);
-                if (existsResults.Error())
+                auto existsResult = System.IO.File.Exists(file);
+                if (existsResult.Error())
                 {
-                    Console.Error() << existsResults.GetErrorMessage() << endl();
+                    LogMessage(-1, existsResult.GetErrorMessage());
                     return 1;
                 }
-                bool exists = existsResults.Value();
+                bool exists = existsResult.Value();
                 if (!exists)
                 {
-                    Console.Error() << "project file '" << file << "' not found" << endl();
+                    LogMessage(-1, "project  file '" + file + "' not found");
                     return 1;
                 }
                 auto result = BuildProject(file, rootModule, builtProjects);
                 if (result.Error())
                 {
-                    Console.Error() << result.GetErrorMessage() << endl();
+                    LogMessage(-1, result.GetErrorMessage());
                     return 1;
                 }
             }
             else
             {
-                Console.Error() << "file '" << file << "' has unknown extension (not .cmp or .cms)" << endl();
+                LogMessage(-1, "file '" + file + "' has unknown extension (not .cmp or .cms)");
                 return 1;
             }
         }

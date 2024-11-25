@@ -515,8 +515,8 @@ std::string StringValue::ToString() const
     return s;
 }
 
-StringArrayValue::StringArrayValue(const soul::ast::Span& span_, char prefix_, const std::vector<Value*>& strings_) :
-    Value(span_, ValueKind::stringArrayValue, nullptr), prefix(prefix_), strings(strings_)
+StringArrayValue::StringArrayValue(const soul::ast::Span& span_, char prefix_, const std::vector<Value*>& elements_) :
+    Value(span_, ValueKind::stringArrayValue, nullptr), prefix(prefix_), elements(elements_)
 {
 }
 
@@ -529,7 +529,7 @@ std::string StringArrayValue::ToString() const
 {
     std::string s = std::string(1, prefix) + "[ ";
     bool first = true;
-    for (Value* string : strings)
+    for (Value* element : elements)
     {
         if (first)
         {
@@ -539,7 +539,7 @@ std::string StringArrayValue::ToString() const
         {
             s.append(", ");
         }
-        s.append(string->GetType()->Name()).append(" ").append(string->ToString());
+        s.append(element->GetType()->Name()).append(" ").append(element->ToString());
     }
     s.append(" ]");
     return s;

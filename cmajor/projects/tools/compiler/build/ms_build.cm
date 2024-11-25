@@ -1,0 +1,107 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace build
+{
+    [nodiscard]
+    public Result<bool> CreateBuildBat(const string& buildBatPath, const string& configuration, const string& vsProjectFilePath, const string& projectDir,
+        const string& vcvars64Path)
+    {
+        Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(buildBatPath);
+        if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+        System.Text.CodeFormatter formatter(writerResult.Value());
+        Result<bool> result = formatter.WriteLine("@echo off");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("call \"" + vcvars64Path + "\"");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("msbuild -verbosity:minimal -t:Rebuild -p:Configuration=\"" + configuration + "\" " + "\"" + vsProjectFilePath + "\"" + " > \"" + projectDir +
+            "/build.out.log\" 2> \"" + projectDir + "/build.error.log\"");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("exit %ERRORLEVEL%");
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> Dump(const string& logFilePath, int logStreamId)
+    {
+        Result<System.IO.BinaryReader> readerResult = System.IO.File.OpenBinary(logFilePath);
+        if (readerResult.Error()) return Result<bool>(ErrorId(readerResult.GetErrorId()));
+        string line;
+        System.IO.BinaryReader& reader = readerResult.Value();
+        Result<int> readResult = reader.ReadByteOrEnd();
+        if (readResult.Error()) return Result<bool>(ErrorId(readResult.GetErrorId()));
+        int x = readResult.Value();
+        while (x != -1)
+        {
+            byte b = cast<byte>(x);
+            if (b >= 32u && b < 128u)
+            {
+                line.Append(cast<char>(b));
+            }
+            else if (b == 10u)
+            {
+                LogMessage(logStreamId, line);
+                line.Clear();
+            }
+            else if (b >= 128u)
+            {
+                line.Append('_');
+            }
+            readResult = reader.ReadByteOrEnd();
+            if (readResult.Error()) return Result<bool>(ErrorId(readResult.GetErrorId()));
+            x = readResult.Value();
+        }
+        if (!line.IsEmpty())
+        {
+            LogMessage(logStreamId, line);
+        }
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> MSBuild(const string& vsProjectFilePath, const string& config, int logStreamId)
+    {
+        Result<string> vcvars64PathResult = GetVCVars64Path();
+        if (vcvars64PathResult.Error()) return Result<bool>(ErrorId(vcvars64PathResult.GetErrorId()));
+        string vcvars64Path = vcvars64PathResult.Value();
+        string configuration = "Debug";
+        if (config == "release")
+        {
+            configuration = "Release";
+        }
+        string projectDir = System.IO.Path.GetDirectoryName(vsProjectFilePath);
+        Result<string> buildBatPathResult = System.IO.GetFullPath(System.IO.Path.Combine(projectDir, "build.bat"));
+        if (buildBatPathResult.Error()) return Result<bool>(ErrorId(buildBatPathResult.GetErrorId()));
+        string buildBatPath = Rvalue(buildBatPathResult.Value());
+        Result<bool> buildBatResult = CreateBuildBat(buildBatPath, configuration, vsProjectFilePath, projectDir, vcvars64Path);
+        if (buildBatResult.Error()) return buildBatResult;
+        string commandLine = "cmd /C \"" + buildBatPath + "\"";
+        Result<bool> executeResult = Execute(commandLine);
+        string buildOutLogPath = projectDir + "/build.out.log";
+        Result<bool> buildOutLogPathExistsResult = System.IO.File.Exists(buildOutLogPath);
+        if (buildOutLogPathExistsResult.Error()) return buildOutLogPathExistsResult;
+        bool buildOutLogPathExists = buildOutLogPathExistsResult.Value();
+        if (buildOutLogPathExists)
+        {
+            Result<bool> dumpResult = Dump(buildOutLogPath, logStreamId);
+            if (dumpResult.Error()) return dumpResult;
+        }
+        string buildErrorLogPath = projectDir + "/build.error.log";
+        Result<bool> buildErrorLogPathExistsResult = System.IO.File.Exists(buildOutLogPath);
+        if (buildErrorLogPathExistsResult.Error()) return buildErrorLogPathExistsResult;
+        bool buildErrorLogPathExists = buildErrorLogPathExistsResult.Value();
+        if (buildErrorLogPathExists)
+        {
+            Result<bool> dumpResult = Dump(buildErrorLogPath, logStreamId);
+            if (dumpResult.Error()) return dumpResult;
+        }
+        if (executeResult.Error()) return executeResult;
+        return Result<bool>(true);
+    }
+}

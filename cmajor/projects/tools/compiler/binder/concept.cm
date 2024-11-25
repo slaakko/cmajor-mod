@@ -55,7 +55,8 @@ namespace binder
         }
         public override void Visit(IdentifierNode& identifierNode)
         {
-            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            SymbolsContext& context = boundCompileUnit->Context();
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent, context);
             if (symbolResult.Error())
             {
                 SetErrorId(symbolResult.GetErrorId());
@@ -66,7 +67,7 @@ namespace binder
             {
                 for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
                 {
-                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    symbolResult = fileScope->Lookup(identifierNode.Str(), context);
                     if (symbolResult.Error())
                     {
                         SetErrorId(symbolResult.GetErrorId());
@@ -133,7 +134,7 @@ namespace binder
             }
             ContainerScope* containerScope = ns->GetContainerScope();
             ustring name = dotNode.MemberId()->Str();
-            Result<Symbol*> symbolResult = containerScope->Lookup(name, ScopeLookup.this_);
+            Result<Symbol*> symbolResult = containerScope->Lookup(name, ScopeLookup.this_, boundCompileUnit->Context());
             if (symbolResult.Error())
             {
                 SetErrorId(symbolResult.GetErrorId());
@@ -238,7 +239,7 @@ namespace binder
             else if (usingNode->IsNamespaceImportNode())
             {
                 NamespaceImportNode* importNode = cast<NamespaceImportNode*>(usingNode);
-                Result<bool> result = fileScope->InstallNamespaceImport(containerScope, importNode);
+                Result<bool> result = fileScope->InstallNamespaceImport(containerScope, importNode, boundCompileUnit->Context());
                 if (result.Error()) return result;
             }
         }
@@ -315,7 +316,7 @@ namespace binder
             }
             return boundConstraint.Release();
         }
-        public TypeSymbol* GetType() const
+        public Result<TypeSymbol*> GetType() const
         {
             if (type != null)
             {
@@ -330,10 +331,12 @@ namespace binder
                 Derivations unifiedDerivations = UnifyDerivations(derivations, type->GetDerivations());
                 if (unifiedDerivations != Derivations.none)
                 {
-                    type = symbolTable->MakeDerivedType(context, type->BaseType(), unifiedDerivations);
+                    Result<TypeSymbol*> derivedTypeResult = symbolTable->MakeDerivedType(context, type->BaseType(), unifiedDerivations);
+                    if (derivedTypeResult.Error()) return derivedTypeResult;
+                    type = derivedTypeResult.Value();
                 }
             }
-            return type;
+            return Result<TypeSymbol*>(type);
         }
         public void Reset()
         {
@@ -530,8 +533,9 @@ namespace binder
         }
         public override void Visit(IdentifierNode& identifierNode)
         {
+            SymbolsContext& context = boundCompileUnit->Context();
             Reset();
-            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent, context);
             if (symbolResult.Error())
             {
                 SetErrorId(symbolResult.GetErrorId());
@@ -542,7 +546,7 @@ namespace binder
             {
                 for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
                 {
-                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    symbolResult = fileScope->Lookup(identifierNode.Str(), context);
                     if (symbolResult.Error())
                     {
                         SetErrorId(symbolResult.GetErrorId());
@@ -588,7 +592,7 @@ namespace binder
                             type = namespaceTypeSymbol;
                             FileScope* fileScope = new FileScope();
                             NamespaceImportNode importNode(node->GetSpan(), node->FileIndex(), new IdentifierNode(node->GetSpan(), node->FileIndex(), ns->FullName()));
-                            Result<bool> result = fileScope->InstallNamespaceImport(containerScope, &importNode);
+                            Result<bool> result = fileScope->InstallNamespaceImport(containerScope, &importNode, context);
                             if (result.Error())
                             {
                                 SetErrorId(result.GetErrorId());
@@ -640,10 +644,17 @@ namespace binder
         }
         public override void Visit(DotNode& dotNode)
         {
+            SymbolsContext& context = boundCompileUnit->Context();
             Reset();
             dotNode.Subject()->Accept(*this);
             if (Error()) return;
-            TypeSymbol* subjectType = GetType();
+            Result<TypeSymbol*> subjectTypeResult = GetType();
+            if (subjectTypeResult.Error())
+            {
+                SetErrorId(subjectTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* subjectType = subjectTypeResult.Value();
             if (subjectType == null)
             {
                 Result<string> subjectResult = dotNode.Subject()->ToString();
@@ -668,11 +679,11 @@ namespace binder
             if (subjectType->IsNamespaceTypeSymbol())
             {
                 NamespaceTypeSymbol* nsTypeSymbol = cast<NamespaceTypeSymbol*>(subjectType);
-                typeContainerScope = nsTypeSymbol->Ns()->GetContainerScope();
+                typeContainerScope = nsTypeSymbol->Namespace()->GetContainerScope();
             }
             Reset();
             ustring name = dotNode.MemberId()->Str();
-            Result<Symbol*> symbolResult = typeContainerScope->Lookup(name, ScopeLookup.this_and_base);
+            Result<Symbol*> symbolResult = typeContainerScope->Lookup(name, ScopeLookup.this_and_base, context);
             if (symbolResult.Error())
             {
                 SetErrorId(symbolResult.GetErrorId());
@@ -715,7 +726,7 @@ namespace binder
                         type = namespaceTypeSymbol;
                         FileScope* fileScope = new FileScope();
                         NamespaceImportNode importNode(node->GetSpan(), node->FileIndex(), new IdentifierNode(node->GetSpan(), node->FileIndex(), ns->FullName()));
-                        Result<bool> result = fileScope->InstallNamespaceImport(containerScope, &importNode);
+                        Result<bool> result = fileScope->InstallNamespaceImport(containerScope, &importNode, context);
                         if (result.Error())
                         {
                             SetErrorId(result.GetErrorId());
@@ -871,13 +882,43 @@ namespace binder
         {
             Reset();
             Node* invokeExprNode = predicateConstraintNode.InvokeExpr();
-            // todo
+            Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            Result<UniquePtr<Value>> evaluationResult = Evaluate(invokeExprNode, boolType, containerScope, boundCompileUnit, currentFunction);
+            if (evaluationResult.Error())
+            {
+                SetErrorId(evaluationResult.GetErrorId());
+                return;
+            }
+            Value* value = evaluationResult.Value().Get();
+            if (value->IsBoolValue())
+            {
+                BoolValue* boolResult = cast<BoolValue*>(value);
+                result = boolResult->GetValue();
+            }
+            else
+            {
+                int errorId = MakeError("Boolean value expected", predicateConstraintNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
         }
         public override void Visit(IsConstraintNode& isConstraintNode)
         {
             Reset();
             isConstraintNode.TypeExpr()->Accept(*this);
-            TypeSymbol* leftType = GetType();
+            Result<TypeSymbol*> leftTypeResult = GetType();
+            if (leftTypeResult.Error())
+            {
+                SetErrorId(leftTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* leftType = leftTypeResult.Value();
             if (leftType == null)
             {
                 int errorId = MakeError("left operand of 'is' must be a type", isConstraintNode.TypeExpr()->GetFullSpan());
@@ -886,11 +927,29 @@ namespace binder
             }
             Reset();
             isConstraintNode.ConceptOrTypeName()->Accept(*this);
-            TypeSymbol* rightType = GetType();
+            Result<TypeSymbol*> rightTypeResult = GetType();
+            if (rightTypeResult.Error())
+            {
+                SetErrorId(rightTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* rightType = rightTypeResult.Value();
             if (rightType != null)
             {
-                TypeSymbol* leftPlainType = leftType->PlainType(context);
-                TypeSymbol* rightPlainType = rightType->PlainType(context);
+                Result<TypeSymbol*> leftPlainTypeResult = leftType->PlainType(context);
+                if (leftPlainTypeResult.Error())
+                {
+                    SetErrorId(leftPlainTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* leftPlainType = leftPlainTypeResult.Value();
+                Result<TypeSymbol*> rightPlainTypeResult = rightType->PlainType(context);
+                if (rightPlainTypeResult.Error())
+                {
+                    SetErrorId(rightPlainTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* rightPlainType = rightPlainTypeResult.Value();
                 if (TypesEqual(leftPlainType, rightPlainType))
                 {
                     result = true;
@@ -975,7 +1034,13 @@ namespace binder
                     Reset();
                     typeExprNode->Accept(*this);
                     if (Error()) return;
-                    TypeSymbol* resolvedType = GetType();
+                    Result<TypeSymbol*> resolvedTypeResult = GetType();
+                    if (resolvedTypeResult.Error())
+                    {
+                        SetErrorId(resolvedTypeResult.GetErrorId());
+                        return;
+                    }
+                    TypeSymbol* resolvedType = resolvedTypeResult.Value();
                     if (resolvedType != null)
                     {
                         typeArguments.Add(resolvedType);
@@ -1038,14 +1103,27 @@ namespace binder
         {
             Reset();
             typeNameConstraintNode.TypeId()->Accept(*this);
-            TypeSymbol* resolvedType = GetType();
+            Result<TypeSymbol*> resolvedTypeResult = GetType();
+            if (resolvedTypeResult.Error())
+            {
+                SetErrorId(resolvedTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* resolvedType = resolvedTypeResult.Value();
             result = resolvedType != null;
             boundConstraint.Reset(new BoundAtomicConstraint(typeNameConstraintNode.GetSpan(), result));
         }
         public override void Visit(ConstructorConstraintNode& constructorConstraintNode)
         {
             List<UniquePtr<BoundExpression>> arguments;
-            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(constructorConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
+            Result<TypeSymbol*> firstTypeArgumentPtrTypeResult = firstTypeArgument->AddPointer(context);
+            if (firstTypeArgumentPtrTypeResult.Error())
+            {
+                SetErrorId(firstTypeArgumentPtrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* firstTypeArgumentPtrType = firstTypeArgumentPtrTypeResult.Value();
+            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(constructorConstraintNode.GetSpan(), firstTypeArgumentPtrType)));
             List<TypeSymbol*> parameterTypes;
             int n = cast<int>(constructorConstraintNode.Parameters().Count());
             for (int i = 0; i < n; ++i)
@@ -1063,7 +1141,7 @@ namespace binder
             }
             List<FunctionScopeLookup> lookups;
             lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
             if (scopeResult.Error())
             {
                 SetErrorId(scopeResult.GetErrorId());
@@ -1134,9 +1212,22 @@ namespace binder
             Reset();
             memberFunctionConstraintNode.TypeParamId()->Accept(*this);
             if (Error()) return;
-            TypeSymbol* firstType = GetType();
+            Result<TypeSymbol*> firstTypeResult = GetType();
+            if (firstTypeResult.Error())
+            {
+                SetErrorId(firstTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* firstType = firstTypeResult.Value();
+            Result<TypeSymbol*> firstTypePtrTypeResult = firstType->AddPointer(context);
+            if (firstTypePtrTypeResult.Error())
+            {
+                SetErrorId(firstTypePtrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* firstTypePtrType = firstTypePtrTypeResult.Value();
             List<UniquePtr<BoundExpression>> arguments;
-            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(memberFunctionConstraintNode.GetSpan(), firstType->AddPointer(context))));
+            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(memberFunctionConstraintNode.GetSpan(), firstTypePtrType)));
             List<TypeSymbol*> parameterTypes;
             int n = cast<int>(memberFunctionConstraintNode.Parameters().Count());
             for (int i = 0; i < n; ++i)
@@ -1154,7 +1245,7 @@ namespace binder
             }
             List<FunctionScopeLookup> lookups;
             lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
             if (scopeResult.Error())
             {
                 SetErrorId(scopeResult.GetErrorId());
@@ -1219,11 +1310,19 @@ namespace binder
         public override void Visit(FunctionConstraintNode& functionConstraintNode)
         {
             List<UniquePtr<BoundExpression>> arguments;
-            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
+            Result<TypeSymbol*> firstTypeArgumentPtrTypeResult = firstTypeArgument->AddPointer(context);
+            if (firstTypeArgumentPtrTypeResult.Error())
+            {
+                SetErrorId(firstTypeArgumentPtrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* firstTypeArgumentPtrType = firstTypeArgumentPtrTypeResult.Value();
+            arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgumentPtrType)));
             List<TypeSymbol*> parameterTypes;
             List<FunctionScopeLookup> lookups;
             lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+            lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
+            Result<ContainerScope*> scopeResult = firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
             if (scopeResult.Error())
             {
                 SetErrorId(scopeResult.GetErrorId());
@@ -1263,7 +1362,7 @@ namespace binder
             {
                 arguments.Clear();
                 parameterTypes.Clear();
-                arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgument->AddPointer(context))));
+                arguments.Add(UniquePtr<BoundExpression>(new BoundTypeExpression(functionConstraintNode.GetSpan(), firstTypeArgumentPtrType)));
                 int n = cast<int>(functionConstraintNode.Parameters().Count());
                 for (int i = 1; i < n; ++i)
                 {
@@ -1285,6 +1384,7 @@ namespace binder
                     parameterTypes.Clear();
                     lookups.Clear();
                     lookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
+                    lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                     int n = cast<int>(functionConstraintNode.Parameters().Count());
                     for (int i = 0; i < n; ++i)
                     {
@@ -1296,7 +1396,7 @@ namespace binder
                             return;
                         }
                         TypeSymbol* parameterType = parameterTypeResult.Value();
-                        Result<ContainerScope*> scopeResult = parameterType->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                        Result<ContainerScope*> scopeResult = parameterType->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                         if (scopeResult.Error())
                         {
                             SetErrorId(scopeResult.GetErrorId());
@@ -1345,6 +1445,7 @@ namespace binder
                         string resolutionMessage = RtmGetErrorMessageWithoutStackTrace(functionCallResult.GetErrorId());
                         message.Append(resolutionMessage);
                         SetErrorId(MakeError(message, functionConstraintNode.GetFullSpan()));
+                        return;
                     }
                     else
                     {
@@ -1389,7 +1490,13 @@ namespace binder
                     Reset();
                     typeParameterNode->Accept(*this);
                     if (Error()) return;
-                    TypeSymbol* resolvedType = GetType();
+                    Result<TypeSymbol*> resolvedTypeResult = GetType();
+                    if (resolvedTypeResult.Error())
+                    {
+                        SetErrorId(resolvedTypeResult.GetErrorId());
+                        return;
+                    }
+                    TypeSymbol* resolvedType = resolvedTypeResult.Value();
                     if (resolvedType != null)
                     {
                         typeArguments.Add(resolvedType);
@@ -1834,9 +1941,15 @@ namespace binder
         {
             TemplateParameterSymbol* templateParameterSymbol = conceptSymbol->TemplateParameters()[i];
             TypeSymbol* typeArgument = typeArguments[i];
-            if (typeArgument->RemoveConst(context)->IsBasicTypeSymbol())
+            Result<TypeSymbol*> nonconstTypeResult = typeArgument->RemoveConst(context);
+            if (nonconstTypeResult.Error())
             {
-                typeArgument = typeArgument->RemoveConst(context);
+                return Result<UniquePtr<BoundConcept>>(ErrorId(nonconstTypeResult.GetErrorId()));
+            }
+            TypeSymbol* nonconstType = nonconstTypeResult.Value();
+            if (nonconstType->IsBasicTypeSymbol())
+            {
+                typeArgument = nonconstType;
             }
             if (i == 0)
             {
@@ -1931,7 +2044,7 @@ namespace binder
         {
             BoundConcept* boundConcept = new BoundConcept(node->GetSpan(), conceptSymbol, typeArguments);
             boundConcept->SetBoundConstraint(boundConstraint->Clone());
-            Result<Symbol*> commonTypeResult = instantiationScope->Lookup(u"CommonType");
+            Result<Symbol*> commonTypeResult = instantiationScope->Lookup(u"CommonType", boundCompileUnit->Context());
             if (commonTypeResult.Error())
             {
                 return Result<UniquePtr<BoundConcept>>(ErrorId(commonTypeResult.GetErrorId()));

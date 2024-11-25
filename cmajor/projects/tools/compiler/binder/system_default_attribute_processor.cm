@@ -1,0 +1,47 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using symbols;
+using cm.ast;
+
+namespace binder
+{
+    public class SystemDefaultAttributeProcessor : AttributeProcessor
+    {
+        public SystemDefaultAttributeProcessor() : base(u"system_default")
+        {
+        }
+        [nodiscard]
+        public override Result<bool> TypeCheck(AttributeNode* attribute, Symbol* symbol)
+        {
+            if (symbol->IsFunctionSymbol())
+            {
+                FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(symbol);
+                if (attribute->Value().IsEmpty() || attribute->Value() == u"true")
+                {
+                    functionSymbol->SetSystemDefault();
+                }
+                else if (attribute->Value() != u"false")
+                {
+                    Result<string> attributeValueResult = ToUtf8(attribute->Value());
+                    if (attributeValueResult.Error()) return Result<bool>(ErrorId(attributeValueResult.GetErrorId()));
+                    string attributeValue = Rvalue(attributeValueResult.Value());
+                    Result<string> attributeNameResult = ToUtf8(attribute->Name());
+                    if (attributeNameResult.Error()) return Result<bool>(ErrorId(attributeNameResult.GetErrorId()));
+                    string attributeName = Rvalue(attributeNameResult.Value());
+                    int errorId = MakeError("unknown attribute value '" + attributeValue + "' for attribute '" + attributeName + "'", attribute->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            else
+            {
+                return base->TypeCheck(attribute, symbol);
+            }
+            return Result<bool>(true);
+        }
+    }
+}
+

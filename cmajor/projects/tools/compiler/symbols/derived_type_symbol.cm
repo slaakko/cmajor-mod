@@ -228,23 +228,23 @@ namespace symbols
         {
             return derivations;
         }
-        public override TypeSymbol* PlainType(SymbolsContext& context) const
+        public override Result<TypeSymbol*> PlainType(SymbolsContext& context) const
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, MakePlainDerivations(derivations));
         }
-        public override TypeSymbol* RemoveConst(SymbolsContext& context)
+        public override Result<TypeSymbol*> RemoveConst(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, RemoveConstDerivation(derivations));
         }
-        public override TypeSymbol* RemoveReference(SymbolsContext& context)
+        public override Result<TypeSymbol*> RemoveReference(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, RemoveReferenceDerivation(derivations));
         }
-        public override TypeSymbol* RemovePointer(SymbolsContext& context)
+        public override Result<TypeSymbol*> RemovePointer(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, RemovePointerDerivation(derivations));
         }
-        public override TypeSymbol* RemovePtrOrRef(SymbolsContext& context)
+        public override Result<TypeSymbol*> RemovePtrOrRef(SymbolsContext& context)
         {
             if (IsReferenceType())
             {
@@ -256,36 +256,36 @@ namespace symbols
             }
             else
             {
-                return this;
+                return Result<TypeSymbol*>(this);
             }
         }
-        public override TypeSymbol* AddConst(SymbolsContext& context)
+        public override Result<TypeSymbol*> AddConst(SymbolsContext& context)
         {
             if (IsConstType())
             {
-                return this;
+                return Result<TypeSymbol*>(this);
             }
             else
             {
                 return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, AddConstDerivation(derivations));
             }
         }
-        public override TypeSymbol* AddLvalueReference(SymbolsContext& context)
+        public override Result<TypeSymbol*> AddLvalueReference(SymbolsContext& context)
         {
             if (IsLvalueReferenceType())
             {
-                return this;
+                return Result<TypeSymbol*>(this);
             }
             else
             {
                 return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, AddLvalueReferenceDerivation(derivations));
             }
         }
-        public override TypeSymbol* AddRvalueReference(SymbolsContext& context)
+        public override Result<TypeSymbol*> AddRvalueReference(SymbolsContext& context)
         {
             if (IsRvalueReferenceType())
             {
-                return this;
+                return Result<TypeSymbol*>(this);
             }
             else
             {
@@ -301,11 +301,11 @@ namespace symbols
             tested.Insert(TypeId());
             return base->IsRecursive(type, tested) || baseType->IsRecursive(type, tested);
         }
-        public override TypeSymbol* AddPointer(SymbolsContext& context)
+        public override Result<TypeSymbol*> AddPointer(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, AddPointerDerivation(derivations));
         }
-        public override TypeSymbol* RemoveDerivations(Derivations sourceDerivations, SymbolsContext& context) const
+        public override Result<TypeSymbol*> RemoveDerivations(Derivations sourceDerivations, SymbolsContext& context) const
         {
             Derivations result = Derivations.none;
             if (!HasFrontConstDerivation(sourceDerivations) && HasFrontConstDerivation(derivations))
@@ -317,7 +317,7 @@ namespace symbols
             {
                 for (int i = 0; i < pointerDiff; ++i)
                 {
-                    result = AddPointerDerivation(derivations);
+                    result = AddPointerDerivation(result);
                 }
             }
             if (!HasLvalueReferenceDerivation(sourceDerivations) && HasLvalueReferenceDerivation(derivations))
@@ -330,9 +330,11 @@ namespace symbols
             }
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, baseType, result);
         }
-        public override TypeSymbol* Unify(TypeSymbol* that, SymbolsContext& context)
+        public override Result<TypeSymbol*> Unify(TypeSymbol* that, SymbolsContext& context)
         {
-            TypeSymbol* newBaseType = baseType->Unify(that->BaseType(), context);
+            Result<TypeSymbol*> newBaseTypeResult = baseType->Unify(that->BaseType(), context);
+            if (newBaseTypeResult.Error()) return newBaseTypeResult;
+            TypeSymbol* newBaseType = newBaseTypeResult.Value();
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, newBaseType, UnifyDerivations(derivations, that->GetDerivations()));
         }
         public void ComputeTypeId(SymbolsContext& context)
@@ -370,7 +372,23 @@ namespace symbols
                 }
                 emitter.SetIrTypeByTypeId(TypeId(), irType);
             }
-            return Result<intermediate.Type*>(cast<intermediate.Type*>(irType));
+            return Result<intermediate.Type*>(irType);
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            if (HasFrontConstDerivation(derivations) && !HasPointerDerivation(derivations) && !HasReferenceDerivation(derivations))
+            {
+                return baseType->CreateDefaultIrValue(emitter);
+            }
+            else
+            {
+                Result<intermediate.Type*> irTypeResult = IrType(emitter);
+                if (irTypeResult.Error()) return Result<intermediate.Value*>(irTypeResult.GetErrorId());
+                intermediate.Type* irType = irTypeResult.Value();
+                #assert(irType->IsPointerType());
+                intermediate.PointerType* pointerType = cast<intermediate.PointerType*>(irType);
+                return pointerType->DefaultValue();
+            }
         }
         [nodiscard]
         public override Result<bool> Write(SymbolWriter& writer)
@@ -394,12 +412,14 @@ namespace symbols
             Result<byte> derivationsResult = reader.GetBinaryReader().ReadByte();
             if (derivationsResult.Error()) return Result<bool>(ErrorId(derivationsResult.GetErrorId()));
             derivations = cast<Derivations>(derivationsResult.Value());
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             auto result = symbolTable->GetType(baseTypeId);
             if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
             baseType = result.Value();
@@ -417,6 +437,10 @@ namespace symbols
         {
         }
         public override bool IsNullPtrType() const
+        {
+            return true;
+        }
+        public override bool IsPointerType() const
         {
             return true;
         }

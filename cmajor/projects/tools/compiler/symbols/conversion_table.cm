@@ -42,19 +42,23 @@ namespace symbols
             ConversionTableEntry entry(conversion->ConversionSourceType(), conversion->ConversionTargetType());
             conversionMap[entry] = conversion;
         }
-        public FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context)
+        public Result<FunctionSymbol*> GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context)
         {
-            TypeSymbol* sourcePlainType = sourceType->PlainType(context);
-            TypeSymbol* targetPlainType = targetType->PlainType(context);
+            Result<TypeSymbol*> sourceTypeResult = sourceType->PlainType(context);
+            if (sourceTypeResult.Error()) return Result<FunctionSymbol*>(sourceTypeResult.GetErrorId());
+            TypeSymbol* sourcePlainType = sourceTypeResult.Value();
+            Result<TypeSymbol*> targetTypeResult = targetType->PlainType(context);
+            if (targetTypeResult.Error()) return Result<FunctionSymbol*>(targetTypeResult.GetErrorId());
+            TypeSymbol* targetPlainType = targetTypeResult.Value();
             ConversionTableEntry entry(sourcePlainType, targetPlainType);
             auto it = conversionMap.Find(entry);
             if (it != conversionMap.End())
             {
-                return it->second;
+                return Result<FunctionSymbol*>(it->second);
             }
             else
             {
-                return null;
+                return Result<FunctionSymbol*>(cast<FunctionSymbol*>(null));
             }
         }
         public void Add(UniquePtr<FunctionSymbol>&& conversion)

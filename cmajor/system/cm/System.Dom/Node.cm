@@ -1,0 +1,390 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public enum NodeKind
+    {
+        attributeNode, documentFragmentNode, documentNode, elementNode, entityNode, entityReferenceNode, notationNode,
+        processingInstructionNode, textNode, cdataSectionNode, commentNode
+    }
+
+    public string NodeKindStr(NodeKind kind)
+    {
+        switch (kind)
+        {
+            case NodeKind.attributeNode: return "attributeNode";
+            case NodeKind.documentFragmentNode: return "documentFragementNode";
+            case NodeKind.documentNode: return "documentNode";
+            case NodeKind.elementNode: return "elementNode";
+            case NodeKind.entityNode: return "entityNode";
+            case NodeKind.entityReferenceNode: return "entityReferenceNode";
+            case NodeKind.notationNode: return "notationNode";
+            case NodeKind.processingInstructionNode: return "processingInstructionNode";
+            case NodeKind.textNode: return "textNode";
+            case NodeKind.cdataSectionNode: return "cdataSectionNode";
+            case NodeKind.commentNode: return "commentNode";
+        }
+        return "<unknown node kind>";
+    }
+
+    public abstract class Node
+    {
+        public Node(NodeKind kind_, const System.Lex.Span& span_, int fileIndex_, const string& name_) :
+            kind(kind_), span(span_), fileIndex(fileIndex_), name(name_), parent(null), prev(null), next(null), ownerDocument(null)
+        {
+        }
+        public default virtual ~Node();
+        public inline NodeKind Kind() const
+        {
+            return kind;
+        }
+        public const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public const string& Name() const
+        {
+            return name;
+        }
+        public const string& NamespaceUri() const
+        {
+            return namespaceUri;
+        }
+        public void SetNamespaceUri(const string& namespaceUri_)
+        {
+            namespaceUri = namespaceUri_;
+        }
+        public inline bool IsAttributeNode() const
+        {
+            return kind == NodeKind.attributeNode;
+        }
+        public inline bool IsDocumentFragmentNode() const
+        {
+            return kind == NodeKind.documentFragmentNode;
+        }
+        public inline bool IsDocumentNode() const
+        {
+            return kind == NodeKind.documentNode;
+        }
+        public inline bool IsElementNode() const
+        {
+            return kind == NodeKind.elementNode;
+        }
+        public inline bool IsEntityNode() const
+        {
+            return kind == NodeKind.entityNode;
+        }
+        public inline bool IsEntityReferenceNode() const
+        {
+            return kind == NodeKind.entityReferenceNode;
+        }
+        public inline bool IsNotationNode() const
+        {
+            return kind == NodeKind.notationNode;
+        }
+        public inline bool IsProcessingInstructionNode() const
+        {
+            return kind == NodeKind.processingInstructionNode;
+        }
+        public inline bool IsTextNode() const
+        {
+            return kind == NodeKind.textNode;
+        }
+        public inline bool IsCDataSectionNode() const
+        {
+            return kind == NodeKind.cdataSectionNode;
+        }
+        public inline bool IsCommentNode() const
+        {
+            return kind == NodeKind.commentNode;
+        }
+        public ParentNode* Parent() const
+        {
+            return parent;
+        }
+        public void SetParent(ParentNode* parent_)
+        {
+            parent = parent_;
+        }
+        public Node* Prev() const
+        {
+            return prev;
+        }
+        public void SetPrev(Node* prev_)
+        {
+            prev = prev_;
+        }
+        public Node* Next() const
+        {
+            return next;
+        }
+        public void SetNext(Node* next_)
+        {
+            next = next_;
+        }
+        public void LinkBefore(Node* node)
+        {
+            if (prev != null)
+            {
+                prev->next = node;
+            }
+            node->prev = prev;
+            node->next = this;
+            prev = node;
+        }
+        public void LinkAfter(Node* node)
+        {
+            if (next != null)
+            {
+                next->prev = node;
+            }
+            node->prev = this;
+            node->next = next;
+            next = node;
+        }
+        public void Unlink()
+        {
+            if (prev != null)
+            {
+                prev->next = next;
+            }
+            if (next != null)
+            {
+                next->prev = prev;
+            }
+        }
+        public Document* OwnerDocument() const
+        {
+            return ownerDocument;
+        }
+        public void SetOwnerDocument(Document* ownerDocument_)
+        {
+            ownerDocument = ownerDocument_;
+        }
+        public string Prefix() const
+        {
+            if (IsElementNode() || IsAttributeNode())
+            {
+                auto colonPos = name.Find(':');
+                if (colonPos != -1)
+                {
+                    return name.Substring(0, colonPos);
+                }
+            }
+            return string();
+        }
+        public void SetPrefix(const string& prefix)
+        {
+            if (IsElementNode() || IsAttributeNode())
+            {
+                auto colonPos = name.Find(':');
+                if (prefix.IsEmpty())
+                {
+                    if (colonPos != -1)
+                    {
+                        name = name.Substring(colonPos + 1);
+                    }
+                }
+                else
+                {
+                    if (colonPos != -1)
+                    {
+                        name = prefix + ":" + name.Substring(colonPos + 1);
+                    }
+                    else
+                    {
+                        name = prefix + ":" + name;
+                    }
+                }
+            }
+        }
+        public string LocalName() const
+        {
+            if (IsElementNode() || IsAttributeNode())
+            {
+                auto colonPos = name.Find(':');
+                if (colonPos != -1)
+                {
+                    return name.Substring(colonPos + 1);
+                }
+                else
+                {
+                    return name;
+                }
+            }
+            else
+            {
+                return string();
+            }
+        }
+        public virtual void Accept(Visitor& visitor)
+        {
+        }
+        public virtual bool HasChildNodes() const
+        {
+            return false;
+        }
+        public virtual bool HasAttributes() const
+        {
+            return false;
+        }
+        public virtual bool ValueContainsNewLine() const
+        {
+            return false;
+        }
+        public abstract Node* Clone(bool deep) const;
+        public abstract Result<bool> Write(System.Text.CodeFormatter& formatter);
+        public void Walk(NodeOperation& operation, Axis axis)
+        {
+            switch (axis)
+            {
+                case Axis.child:
+                {
+                    WalkChildren(operation);
+                    break;
+                }
+                case Axis.descendant:
+                {
+                    WalkDescendant(operation);
+                    break;
+                }
+                case Axis.descendantOrSelf:
+                {
+                    WalkDescendantOrSelf(operation);
+                    break;
+                }
+                case Axis.parent:
+                {
+                    WalkParent(operation);
+                    break;
+                }
+                case Axis.ancestor:
+                {
+                    WalkAncestor(operation);
+                    break;
+                }
+                case Axis.ancestorOrSelf:
+                {
+                    WalkAncestorOrSelf(operation);
+                    break;
+                }
+                case Axis.followingSibling:
+                {
+                    WalkFollowingSibling(operation);
+                    break;
+                }
+                case Axis.precedingSibling:
+                {
+                    WalkPrecedingSibling(operation);
+                    break;
+                }
+                case Axis.following:
+                {
+                    WalkFollowing(operation);
+                    break;
+                }
+                case Axis.preceding:
+                {
+                    WalkPreceding(operation);
+                    break;
+                }
+                case Axis.attribute:
+                {
+                    WalkAttribute(operation);
+                    break;
+                }
+                case Axis.self:
+                {
+                    operation.Apply(this);
+                    break;
+                }
+            }
+        }
+        public virtual void WalkChildren(NodeOperation& operation)
+        {
+        }
+        public virtual void WalkDescendant(NodeOperation& operation)
+        {
+        }
+        public virtual void WalkDescendantOrSelf(NodeOperation& operation)
+        {
+            operation.Apply(this);
+        }
+        public void WalkParent(NodeOperation& operation)
+        {
+            if (parent != null)
+            {
+                operation.Apply(parent);
+            }
+        }
+        public virtual void WalkFollowing(NodeOperation& operation)
+        {
+            Node* n = next;
+            if (n != null)
+            {
+                n->WalkDescendantOrSelf(operation);
+            }
+        }
+        public virtual void WalkPreceding(NodeOperation& operation)
+        {
+        }
+        public virtual void WalkPrecedingOrSelf(NodeOperation& operation)
+        {
+            operation.Apply(this);
+        }
+        public void WalkAncestor(NodeOperation& operation)
+        {
+            if (parent != null)
+            {
+                parent->WalkAncestorOrSelf(operation);
+            }
+        }
+        public void WalkAncestorOrSelf(NodeOperation& operation)
+        {
+            operation.Apply(this);
+            if (parent != null)
+            {
+                parent->WalkAncestorOrSelf(operation);
+            }
+        }
+        public void WalkFollowingSibling(NodeOperation& operation)
+        {
+            Node* n = next;
+            while (n != null)
+            {
+                operation.Apply(n);
+                n = n->next;
+            }
+        }
+        public void WalkPrecedingSibling(NodeOperation& operation)
+        {
+            Node* p = prev;
+            while (p != null)
+            {
+                operation.Apply(p);
+                p = p->prev;
+            }
+        }
+        public virtual void WalkAttribute(NodeOperation& operation)
+        {
+        }
+        private NodeKind kind;
+        private System.Lex.Span span;
+        private int fileIndex;
+        private string name;
+        private string namespaceUri;
+        private ParentNode* parent;
+        private Node* prev;
+        private Node* next;
+        private Document* ownerDocument;
+    }
+}

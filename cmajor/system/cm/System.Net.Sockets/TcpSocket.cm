@@ -1,0 +1,261 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.IO;
+
+namespace System.Net.Sockets
+{
+    public enum ShutdownMode : int
+    {
+        receive = 0, send = 1, both = 2
+    }
+
+    public class TcpSocket : IOBase
+    {
+        public TcpSocket() : handle(null), connected(false), shutdown(false)
+        {
+            int errorId = 0;
+            handle = RtmCreateSocket(errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+            }
+        }
+        public TcpSocket(const string& node, const string& service) : handle(null), connected(false), shutdown(false)
+        {
+            int errorId = 0;
+            handle = RtmConnectSocket(node.Chars(), service.Chars(), errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+            }
+            else
+            {
+                connected = true;
+            }
+        }
+        public TcpSocket(const string& node, int port) : this(node, ToString(port))
+        {
+        }
+        public TcpSocket(void* handle_) : handle(handle_), connected(true), shutdown(false)
+        {
+        }
+        public TcpSocket(TcpSocket&& that) : handle(that.handle), connected(that.connected), shutdown(that.shutdown)
+        {
+            that.handle = null;
+            that.connected = false;
+            that.shutdown = false;
+        }
+        public void operator=(TcpSocket&& that)
+        {
+            Swap(handle, that.handle);
+            Swap(connected, that.connected);
+            Swap(shutdown, that.shutdown);
+        }
+        public override ~TcpSocket()
+        {
+            if (handle != null)
+            {
+                if (connected && !shutdown)
+                {
+                    auto result = Shutdown(ShutdownMode.both);
+                }
+                if (connected)
+                {
+                    int errorId = 0;
+                    RtmCloseSocket(handle, errorId);
+                }
+                RtmDestroySocket(handle);
+            }
+        }
+        [nodiscard]
+        public Result<bool> Close()
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            if (handle != null)
+            {
+                if (connected && !shutdown)
+                {
+                    auto result = Shutdown(ShutdownMode.both);
+                    if (result.Error())
+                    {
+                        return result;
+                    }
+                }
+                if (connected)
+                {
+                    int errorId = 0;
+                    RtmCloseSocket(handle, errorId);
+                    if (errorId != 0)
+                    {
+                        SetErrorId(errorId);
+                        return Result<bool>(ErrorId(errorId));
+                    }
+                }
+                handle = null;
+                connected = false;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Connect(const string& node, int port)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            return Connect(node, ToString(port));
+        }
+        [nodiscard]
+        public Result<bool> Connect(const string& node, const string& service)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto result = Close();
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            int errorId = 0;
+            handle = RtmConnectSocket(node.Chars(), service.Chars(), errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            connected = true;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Bind(int port)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            RtmBindSocket(handle, port, errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Listen(int backlog)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            RtmListenSocket(handle, backlog, errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<TcpSocket> Accept()
+        {
+            if (Error())
+            {
+                return Result<TcpSocket>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            void* acceptedHandle = RtmAcceptSocket(handle, errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+                return Result<TcpSocket>(ErrorId(errorId));
+            }
+            return Result<TcpSocket>(TcpSocket(acceptedHandle));
+        }
+        [nodiscard]
+        public Result<bool> Shutdown(ShutdownMode mode)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            RtmShutdownSocket(handle, mode, errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+                return Result<bool>(ErrorId(errorId));
+            }
+            shutdown = true;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<int> Send(byte* buffer, int count)
+        {
+            if (Error())
+            {
+                return Result<int>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            int result = RtmSendSocket(handle, buffer, count, 0, errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+                return Result<int>(ErrorId(errorId));
+            }
+            return Result<int>(result);
+        }
+        [nodiscard]
+        public Result<bool> SendAll(byte* buffer, int count)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            byte* p = buffer;
+            while (count > 0)
+            {
+                Result<int> bytesSentResult = Send(p, count);
+                if (bytesSentResult.Error())
+                {
+                    return Result<bool>(ErrorId(bytesSentResult.GetErrorId()));
+                }
+                int bytesSent = bytesSentResult.Value();
+                p = p + bytesSent;
+                count = count - bytesSent;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<int> Receive(byte* buffer, int count)
+        {
+            if (Error())
+            {
+                return Result<int>(ErrorId(GetErrorId()));
+            }
+            int errorId = 0;
+            int result = RtmReceiveSocket(handle, buffer, count, 0, errorId);
+            if (errorId != 0)
+            {
+                SetErrorId(errorId);
+                return Result<int>(ErrorId(errorId));
+            }
+            return Result<int>(result);
+        }
+        private void* handle;
+        private bool connected;
+        private bool shutdown;
+    }
+
+}
+

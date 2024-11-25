@@ -81,7 +81,7 @@ namespace assembly
 
     public class FloatLiteral : Value
     {
-        public FloatLiteral(float value_) : base(ValueKind.floatLiteral, ToString(value_)), value(value_)
+        public FloatLiteral(float value_) : base(ValueKind.floatLiteral, ToString<float>(value_, 6, 6)), value(value_)
         {
         }
         public inline float GetValue() const
@@ -93,7 +93,7 @@ namespace assembly
 
     public class DoubleLiteral : Value
     {
-        public DoubleLiteral(double value_) : base(ValueKind.doubleLiteral, ToString(value_)), value(value_)
+        public DoubleLiteral(double value_) : base(ValueKind.doubleLiteral, ToString<double>(value_, 6, 6)), value(value_)
         {
         }
         public inline double GetValue() const
@@ -123,7 +123,7 @@ namespace assembly
 
     public class StringLiteral : Value
     {
-        public StringLiteral(const string& value_) : base(ValueKind.stringLiteral, ToStringLiteralStr(value_)), value(value_)
+        public StringLiteral(const string& value_) : base(ValueKind.stringLiteral, "'" + ToStringLiteralStr(value_) + "'"), value(value_)
         {
         }
         public override bool CanSplit() const

@@ -8,6 +8,48 @@ using System.Collections;
 
 namespace symbols
 {
+    public void LogLocationText(int logStreamId, const System.Lex.FullSpan& location)
+    {
+        Module* module = GetModuleById(location.moduleId);
+        if (module != null)
+        {
+            int fileIndex = location.fileIndex;
+            const System.Lex.FileMap& fileMap = module->GetFileMap();
+            if (fileMap.HasFileName(fileIndex))
+            {
+                Result<System.Lex.SourceFile*> sourceFileResult = fileMap.GetOrReadSourceFile(fileIndex);
+                if (sourceFileResult.Error())
+                {
+                    LogMessage(logStreamId, sourceFileResult.GetErrorMessage());
+                }
+                System.Lex.SourceFile* sourceFile = sourceFileResult.Value();
+                if (sourceFile != null)
+                {
+                    System.Lex.LineColLen lineColLen = System.Lex.SpanToLineColLen(location.span, sourceFile->LineStartIndeces());
+                    if (lineColLen.IsValid())
+                    {
+                        string locationText;
+                        locationText.Append(fileMap.GetFileName(fileIndex)).Append(" line ").Append(ToString(lineColLen.line)).Append(":");
+                        LogMessage(logStreamId, locationText);
+                        Result<string> lineResult = sourceFile->GetLine(lineColLen.line);
+                        if (!lineResult.Error())
+                        {
+                            string line = Rvalue(lineResult.Value());
+                            LogMessage(logStreamId, line);
+                            string caretText;
+                            caretText.Append(string(' ', Max(cast<int>(0), lineColLen.col - 1))).Append(string('^', lineColLen.len));
+                            LogMessage(logStreamId, caretText);
+                        }
+                        else
+                        {
+                            RtmDisposeError(lineResult.GetErrorId());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public const int nodiscardWarning = 1;
 
     public class Warning
@@ -44,6 +86,34 @@ namespace symbols
         {
             references = references_;
         }
+        public void ToLog(int logStreamId) 
+        {
+            string warningText = "warning ";
+            warningText.Append(ToString(number)).Append(": project '").Append(moduleName).Append("': ").Append(message);
+            LogMessage(logStreamId, warningText);
+            List<System.Lex.FullSpan> locations;
+            if (defined.span.IsValid())
+            {
+                locations.Add(defined);
+            }
+            for (const auto& ref : references)
+            {
+                if (ref.span.IsValid())
+                {
+                    if (Find(locations.Begin(), locations.End(), ref) != locations.End()) continue;
+                    locations.Add(ref);
+                }
+            }
+            int n = cast<int>(locations.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    LogMessage(logStreamId, "see reference:");
+                }
+                LogLocationText(logStreamId, locations[i]);
+            }
+        }
         private int number;
         private string moduleName;
         private string message;
@@ -53,8 +123,15 @@ namespace symbols
 
     public class CompileWarningCollection
     {
-        public CompileWarningCollection()
+        static CompileWarningCollection() : instance(new CompileWarningCollection())
         {
+        }
+        private CompileWarningCollection()
+        {
+        }
+        public static CompileWarningCollection& Instance()
+        {
+            return *instance;
         }
         public bool IsWarningDisabled(int warningNumber) const
         {
@@ -72,28 +149,32 @@ namespace symbols
         {
             warnings.Add(warning);
         }
+        public inline const List<Warning>& Warnings() const
+        {
+            return warnings;
+        }
         private static UniquePtr<CompileWarningCollection> instance;
         private Set<int> disabledWarnings;
         private List<Warning> warnings;
     }
 
-    public bool IsWarningDisabled(Module* module, int warningNumber)
+    public bool IsWarningDisabled(int warningNumber)
     {
-        return module->WarningCollection().IsWarningDisabled(warningNumber);
+        return CompileWarningCollection.Instance().IsWarningDisabled(warningNumber);
     }
 
-    public void DisableWarning(Module* module, int warningNumber)
+    public void DisableWarning(int warningNumber)
     {
-        module->WarningCollection().DisableWarning(warningNumber);
+        CompileWarningCollection.Instance().DisableWarning(warningNumber);
     }
 
-    public void ClearDisabledWarnings(Module* module)
+    public void ClearDisabledWarnings()
     {
-        module->WarningCollection().ClearDisabledWarnings();
+        CompileWarningCollection.Instance().ClearDisabledWarnings();
     }
 
-    public void AddWarning(Module* module, Warning&& warning)
+    public void AddWarning(Warning&& warning)
     {
-        module->WarningCollection().AddWarning(warning);
+        CompileWarningCollection.Instance().AddWarning(warning);
     }
 }

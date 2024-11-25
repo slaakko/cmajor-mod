@@ -335,7 +335,8 @@ void FunctionGroupSymbol::CheckDuplicateFunctionSymbols()
             {
                 if (names.find(functionSymbol->FullName()) != names.cend())
                 {
-                    throw Exception("function with identical name '" + util::ToUtf8(functionSymbol->FullName()) + "' already defined.", GetFullSpan());
+                    throw Exception("function with identical name '" + util::ToUtf8(functionSymbol->FullName()) + "' already defined.", GetFullSpan(), 
+                        functionSymbol->GetFullSpan());
                 }
                 names.insert(functionSymbol->FullName());
             }

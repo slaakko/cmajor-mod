@@ -12,25 +12,18 @@ namespace symbols
     {
         public inline void Push(intermediate.Value* value)
         {
-            s.Add(value);
+            s.Push(value);
         }
-        public intermediate.Value* Pop()
+        public inline intermediate.Value* Pop()
         {
-            return s.RemoveLast();
+            return s.Pop();
         }
         public inline void Dup()
         {
-            s.Add(s.Back());
+            intermediate.Value* top = Pop();
+            Push(top);
+            Push(top);
         }
-        public inline void Swap()
-        {
-            System.Swap(s.Back(), s[s.Count() - 2]);
-        }
-        public void Rotate()
-        {
-            System.Swap(s[s.Count() - 3], s[s.Count() - 2]);
-            System.Swap(s.Back(), s[s.Count() - 2]);
-        }
-        private List<intermediate.Value*> s;
+        private Stack<intermediate.Value*> s;
     }
 }

@@ -1293,7 +1293,7 @@ void EmitFloatToInt(FloatToIntInstruction& inst, CodeGenerator& codeGenerator)
         }
         else if (operandSize == 8)
         {
-            opCode = cmajor::masm::assembly::OpCode::CVTTSD2SO;
+            opCode = cmajor::masm::assembly::OpCode::CVTTSD2SI;
         }
         else
         {
@@ -3187,9 +3187,9 @@ void CodeGenerator::Visit(StringValue& value)
 
 void CodeGenerator::Visit(StringArrayValue& value)
 {
-    for (auto stringValue : value.Strings())
+    for (auto elementValue : value.Elements())
     {
-        stringValue->Accept(*this);
+        elementValue->Accept(*this);
     }
 }
 

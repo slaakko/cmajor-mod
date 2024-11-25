@@ -20,7 +20,7 @@ namespace binder
         public NamespaceTypeSymbol(const System.Lex.Span& span_, NamespaceSymbol* ns_) : base(SymbolKind.namespaceTypeSymbol, span_, ns_->Name()), ns(ns_)
         {
         }
-        public inline NamespaceSymbol* Ns() const
+        public inline NamespaceSymbol* Namespace() const
         {
             return ns;
         }
@@ -43,7 +43,7 @@ namespace binder
     public class TypeResolver : Visitor
     {
         public TypeResolver(BoundCompileUnit* boundCompileUnit_, ContainerScope* containerScope_, TypeResolverFlags flags_, ClassTypeSymbol* currentClass_) :
-            boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), module(boundCompileUnit->GetModule()),
+            boundCompileUnit(boundCompileUnit_), symbolTable(boundCompileUnit->GetSymbolTable()), module(boundCompileUnit->GetModule()), context(boundCompileUnit->Context()),
             classTemplateRepository(boundCompileUnit->GetClassTemplateRepository()), containerScope(containerScope_), flags(flags_), currentClass(currentClass_),
             type(null), derivations(Derivations.none), errorId(0)
         {
@@ -241,11 +241,10 @@ namespace binder
         public override void Visit(PointerNode& pointerNode)
         {
             pointerNode.Subject()->Accept(*this);
-            derivations = SetPointerDerivations(PointerCount(derivations) + 1);
+            derivations = cast<Derivations>((derivations & ~Derivations.pointerMask) | SetPointerDerivations(PointerCount(derivations) + 1));
         }
         public override void Visit(ArrayNode& arrayNode)
         {
-            Foo();
             Result<TypeSymbol*> result = ResolveType(arrayNode.Subject(), boundCompileUnit, containerScope, TypeResolverFlags.none, currentClass);
             if (result.Error())
             {
@@ -296,7 +295,7 @@ namespace binder
         }
         public override void Visit(IdentifierNode& identifierNode)
         {
-            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent);
+            Result<Symbol*> symbolResult = containerScope->Lookup(identifierNode.Str(), ScopeLookup.this_and_base_and_parent, context);
             if (symbolResult.Error())
             {
                 errorId = symbolResult.GetErrorId();
@@ -307,7 +306,7 @@ namespace binder
             {
                 for (const auto& fileScope : boundCompileUnit->FileScopes())
                 {
-                    symbolResult = fileScope->Lookup(identifierNode.Str());
+                    symbolResult = fileScope->Lookup(identifierNode.Str(), context);
                     if (symbolResult.Error())
                     {
                         errorId = symbolResult.GetErrorId();
@@ -427,6 +426,7 @@ namespace binder
         public override void Visit(DotNode& dotNode)
         {
             dotNode.Subject()->Accept(*this);
+            if (Error()) return;
             Scope* scope = null;
             if (type->IsClassGroupSymbol())
             {
@@ -457,7 +457,7 @@ namespace binder
             if (type->IsNamespaceTypeSymbol())
             {
                 NamespaceTypeSymbol* nsType = cast<NamespaceTypeSymbol*>(type);
-                scope = nsType->Ns()->GetContainerScope();
+                scope = nsType->Namespace()->GetContainerScope();
             }
             else if (type->IsClassTypeSymbol() || type->IsArrayTypeSymbol() || type->IsEnumTypeSymbol())
             {
@@ -472,11 +472,11 @@ namespace binder
                     return;
                 }
                 string typeFullName = Rvalue(typeFullNameResult.Value());
-                errorId = MakeError("symbol '" + typeFullName + "' does not denote dotNode a class type, an array type or a namespace",
+                errorId = MakeError("symbol '" + typeFullName + "' does not denote a class type, an array type or a namespace",
                     dotNode.GetFullSpan(), type->FullSpan());
                 return;
             }
-            Result<Symbol*> symbolResult = scope->Lookup(dotNode.MemberId()->Str(), ScopeLookup.this_and_base);
+            Result<Symbol*> symbolResult = scope->Lookup(dotNode.MemberId()->Str(), ScopeLookup.this_and_base, context);
             if (symbolResult.Error())
             {
                 SetErrorId(symbolResult.GetErrorId());
@@ -530,7 +530,7 @@ namespace binder
                         return;
                     }
                     string originalTypeFullName = Rvalue(originalTypeFullNameResult.Value());
-                    errorId = MakeError("symbol '" + originalTypeFullName + "' does not denote dotNode a class type, an array type or a namespace",
+                    errorId = MakeError("symbol '" + originalTypeFullName + "' does not denote a class type, an array type or a namespace",
                         aliasNode.GetFullSpan(), originalType->FullSpan());
                     return;
                 }
@@ -621,6 +621,7 @@ namespace binder
         private BoundCompileUnit* boundCompileUnit;
         private SymbolTable* symbolTable;
         private Module* module;
+        private SymbolsContext& context;
         private ClassTemplateRepository* classTemplateRepository;
         private ContainerScope* containerScope;
         private TypeResolverFlags flags;

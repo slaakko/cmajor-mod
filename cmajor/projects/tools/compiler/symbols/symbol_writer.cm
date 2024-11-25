@@ -40,6 +40,18 @@ namespace symbols
             if (result.Error()) return result;
             return Result<bool>(true);
         }
+        [nodiscard]
+        public Result<bool> Write(Value* value)
+        {
+            #assert(value != null);
+            Result<bool> result = GetBinaryWriter().Write(cast<byte>(value->Kind()));
+            if (result.Error()) return result;
+            result = GetAstWriter().Write(value->Span());
+            if (result.Error()) return result;
+            result = value->Write(*this);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         private AstWriter astWriter;
         private SymbolsContext& context;
     }

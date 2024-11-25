@@ -231,14 +231,6 @@ void MasmCodeGenerator::Visit(cmajor::binder::BoundFunction& boundFunction)
     if (!boundFunction.Body()) return;
     currentFunction = &boundFunction;
     cmajor::symbols::FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
-    if (functionSymbol->MangledName() == U"function_EvaluateShiftLeft_A5F0E366587CE3348FEE8B6A4362E042D75F4128")
-    {
-        int x = 0;
-    }
-    if (functionSymbol->MangledName() == U"function_EvaluateShiftLeft_CA12133843227B43D2C38AD3F56F4E15EE936D30")
-    {
-        int x = 0;
-    }
     if (compileUnit->CodeGenerated(functionSymbol)) return;
     compileUnit->SetCodeGenerated(functionSymbol);
     void* functionType = functionSymbol->IrType(*emitter);

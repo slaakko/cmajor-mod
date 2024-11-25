@@ -8,7 +8,41 @@ using System.Collections;
 using symbols;
 using cm.ast;
 
-cdecl void Foo()
+bool matched = false;
+bool barMatched = false;
+int count = 0;
+
+public bool Matched()
+{
+    return matched;
+}
+
+public bool BarMatched()
+{
+    return barMatched;
+}
+
+public cdecl void Foo()
+{
+    matched = true;
+}
+
+public int Count()
+{
+    return count;
+}
+
+public void IncCount()
+{
+    count = count + 1;
+}
+
+public void Bar()
+{
+    barMatched = true;
+}
+
+public void Bazz()
 {
 }
 
@@ -55,7 +89,7 @@ namespace binder
         }
         public override void Visit(NamespaceImportNode& namespaceImportNode)
         {
-            auto installResult = boundCompileUnit->FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode);
+            auto installResult = boundCompileUnit->FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode, context);
             if (installResult.Error())
             {
                 errorId = installResult.GetErrorId();
@@ -107,11 +141,9 @@ namespace binder
             }
             containerScope = symbol->GetContainerScope();
             int n = cast<int>(namespaceNode.Members().Count());
-            Console.Out() << "MEMBERS: " << n << endl();
             for (int i = 0; i < n; ++i)
             {
                 Node* member = namespaceNode.Members()[i];
-                Console.Out() << "MEMBER: " << i << endl();
                 member->Accept(*this);
                 if (Error()) return;
             }
@@ -134,7 +166,7 @@ namespace binder
         }
         public override void Visit(NamespaceImportNode& namespaceImportNode)
         {
-            auto installResult = boundCompileUnit->FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode);
+            auto installResult = boundCompileUnit->FirstFileScope()->InstallNamespaceImport(containerScope, &namespaceImportNode, context);
             if (installResult.Error())
             {
                 errorId = installResult.GetErrorId();
@@ -237,7 +269,13 @@ namespace binder
             {
                 ParameterSymbol* returnParam = new ParameterSymbol(functionNode.ReturnTypeExpr()->GetSpan(), u"@return");
                 returnParam->SetParent(functionSymbol);
-                returnParam->SetType(returnType->AddPointer(context));
+                Result<TypeSymbol*> ptrTypeResult = returnType->AddPointer(context);
+                if (ptrTypeResult.Error())
+                {
+                    SetErrorId(ptrTypeResult.GetErrorId());
+                    return;
+                }
+                returnParam->SetType(ptrTypeResult.Value());
                 functionSymbol->SetReturnParam(returnParam);
             }
             if (functionNode.Body() != null && !functionSymbol->IsFunctionTemplate())
@@ -431,8 +469,29 @@ namespace binder
             if (constructorSymbol->Arity() == 2 && !constructorSymbol->IsExplicit() && !constructorSymbol->IsGenerated())
             {
                 constructorSymbol->SetImplicitConversion();
-                constructorSymbol->SetConversionSourceType(constructorSymbol->Parameters()[1]->Type()->PlainType(context));
-                constructorSymbol->SetConversionTargetType(constructorSymbol->Parameters()[0]->Type()->RemovePointer(context)->PlainType(context));
+                Result<TypeSymbol*> sourceTypeResult = constructorSymbol->Parameters()[1]->Type()->PlainType(context);
+                if (sourceTypeResult.Error())
+                {
+                    SetErrorId(sourceTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* sourceType = sourceTypeResult.Value();
+                constructorSymbol->SetConversionSourceType(sourceType);
+                Result<TypeSymbol*> nonPtrTypeResult = constructorSymbol->Parameters()[0]->Type()->RemovePointer(context);
+                if (nonPtrTypeResult.Error())
+                {
+                    SetErrorId(nonPtrTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* nonPtrType = nonPtrTypeResult.Value();
+                Result<TypeSymbol*> targetPlainTypeResult = nonPtrType->PlainType(context);
+                if (targetPlainTypeResult.Error())
+                {
+                    SetErrorId(targetPlainTypeResult.GetErrorId());
+                    return;
+                }
+                TypeSymbol* targetPlainType = targetPlainTypeResult.Value();
+                constructorSymbol->SetConversionTargetType(targetPlainType);
                 symbolTable->AddConversion(constructorSymbol);
             }
             if (constructorNode.Body() != null)
@@ -628,7 +687,13 @@ namespace binder
             {
                 ParameterSymbol* returnParam = new ParameterSymbol(memberFunctionNode.ReturnTypeExpr()->GetSpan(), u"@return");
                 returnParam->SetParent(memberFunctionSymbol);
-                returnParam->SetType(returnType->AddPointer(context));
+                Result<TypeSymbol*> ptrTypeResult = returnType->AddPointer(context);
+                if (ptrTypeResult.Error())
+                {
+                    SetErrorId(ptrTypeResult.GetErrorId());
+                    return;
+                }
+                returnParam->SetType(ptrTypeResult.Value());
                 memberFunctionSymbol->SetReturnParam(returnParam);
             }
             if (parent->IsClassTypeSymbol())
@@ -721,8 +786,22 @@ namespace binder
             TypeSymbol* returnType = resolveResult.Value();
             conversionFunctionSymbol->SetReturnType(returnType);
             TypeSymbol* parentTypeSymbol = cast<TypeSymbol*>(parent);
-            conversionFunctionSymbol->SetConversionSourceType(parentTypeSymbol->PlainType(context));
-            conversionFunctionSymbol->SetConversionTargetType(returnType->PlainType(context));
+            Result<TypeSymbol*> plainTypeResult = parentTypeSymbol->PlainType(context);
+            if (plainTypeResult.Error())
+            {
+                SetErrorId(plainTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* plainType = plainTypeResult.Value();
+            conversionFunctionSymbol->SetConversionSourceType(plainType);
+            Result<TypeSymbol*> plainReturnTypeResult = returnType->PlainType(context);
+            if (plainReturnTypeResult.Error())
+            {
+                SetErrorId(plainReturnTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* plainReturnType = plainReturnTypeResult.Value();
+            conversionFunctionSymbol->SetConversionTargetType(plainReturnType);
             if (conversionFunctionSymbol->Constraint() == null && conversionFunctionNode.WhereConstraint() != null)
             {
                 CloneContext cloneContext;
@@ -738,7 +817,13 @@ namespace binder
             {
                 ParameterSymbol* returnParam = new ParameterSymbol(conversionFunctionNode.ReturnTypeExpr()->GetSpan(), u"@return");
                 returnParam->SetParent(conversionFunctionSymbol);
-                returnParam->SetType(returnType->AddPointer(context));
+                Result<TypeSymbol*> ptrTypeResult = returnType->AddPointer(context);
+                if (ptrTypeResult.Error())
+                {
+                    SetErrorId(ptrTypeResult.GetErrorId());
+                    return;
+                }
+                returnParam->SetType(ptrTypeResult.Value());
                 conversionFunctionSymbol->SetReturnParam(returnParam);
             }
             symbolTable->AddConversion(conversionFunctionSymbol);
@@ -898,7 +983,13 @@ namespace binder
             {
                 ParameterSymbol* returnParam = new ParameterSymbol(delegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
                 returnParam->SetParent(delegateTypeSymbol);
-                returnParam->SetType(returnType->AddPointer(context));
+                Result<TypeSymbol*> ptrTypeResult = returnType->AddPointer(context);
+                if (ptrTypeResult.Error())
+                {
+                    SetErrorId(ptrTypeResult.GetErrorId());
+                    return;
+                }
+                returnParam->SetType(ptrTypeResult.Value());
                 delegateTypeSymbol->SetReturnParam(returnParam);
             }
             for (ParameterSymbol* parameterSymbol : delegateTypeSymbol->Parameters())
@@ -995,7 +1086,7 @@ namespace binder
                 return;
             }
             symbolTable->SetFunctionIdFor(equality);
-            Result<NamespaceSymbol*> nsResult = delegateTypeSymbol->Ns();
+            Result<NamespaceSymbol*> nsResult = delegateTypeSymbol->Ns(context);
             if (nsResult.Error())
             {
                 SetErrorId(nsResult.GetErrorId());
@@ -1043,7 +1134,13 @@ namespace binder
                 return;
             }
             TypeSymbol* voidType = voidTypeResult.Value();
-            TypeSymbol* voidPtrType = voidType->AddPointer(context);
+            Result<TypeSymbol*> voidPtrTypeResult = voidType->AddPointer(context);
+            if (voidPtrTypeResult.Error())
+            {
+                SetErrorId(voidPtrTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidPtrType = voidPtrTypeResult.Value();
             objectParam->SetType(voidPtrType);
             result = memberDelegateType->AddMember(objectParam, context);
             if (result.Error())
@@ -1102,11 +1199,17 @@ namespace binder
             {
                 ParameterSymbol* returnParam = new ParameterSymbol(classDelegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
                 returnParam->SetParent(classDelegateTypeSymbol);
-                returnParam->SetType(returnType->AddPointer(context));
+                Result<TypeSymbol*> ptrTypeResult = returnType->AddPointer(context);
+                if (ptrTypeResult.Error())
+                {
+                    SetErrorId(ptrTypeResult.GetErrorId());
+                    return;
+                }
+                returnParam->SetType(ptrTypeResult.Value());
                 classDelegateTypeSymbol->SetReturnParam(returnParam);
                 ParameterSymbol* memberReturnParam = new ParameterSymbol(classDelegateNode.ReturnTypeExpr()->GetSpan(), u"@return");
                 memberReturnParam->SetParent(memberDelegateType);
-                memberReturnParam->SetType(returnType->AddPointer(context));
+                memberReturnParam->SetType(ptrTypeResult.Value());
                 memberDelegateType->SetReturnParam(memberReturnParam);
             }
             memberDelegateType->SetReturnType(returnType);
@@ -1239,7 +1342,7 @@ namespace binder
                 return;
             }
             symbolTable->SetFunctionIdFor(equality);
-            Result<NamespaceSymbol*> nsResult = classDelegateTypeSymbol->Ns();
+            Result<NamespaceSymbol*> nsResult = classDelegateTypeSymbol->Ns(context);
             if (nsResult.Error())
             {
                 SetErrorId(nsResult.GetErrorId());
@@ -1578,9 +1681,9 @@ namespace binder
             int n = cast<int>(enumTypeNode.Constants().Count());
             for (int i = 0; i < n; ++i)
             {
-                if (Error()) return;
                 EnumConstantNode* enumConstantNode = enumTypeNode.Constants()[i];
                 enumConstantNode->Accept(*this);
+                if (Error()) return;
             }
             AliasTypeSymbol* underlyingAliasType = new AliasTypeSymbol(enumTypeNode.GetSpan(), u"UnderlyingType");
             underlyingAliasType->SetModule(module);
@@ -1593,7 +1696,126 @@ namespace binder
                 errorId = result.GetErrorId();
                 return;
             }
-            // todo member functions
+            EnumTypeDefaultConstructor* defaultConstructor = new EnumTypeDefaultConstructor(enumTypeSymbol, context);
+            if (defaultConstructor->Error())
+            {
+                SetErrorId(defaultConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(defaultConstructor);
+            result = enumTypeSymbol->AddMember(defaultConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            EnumTypeCopyConstructor* copyConstructor = new EnumTypeCopyConstructor(enumTypeSymbol, context);
+            if (copyConstructor->Error())
+            {
+                SetErrorId(copyConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyConstructor);
+            result = enumTypeSymbol->AddMember(copyConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            EnumTypeMoveConstructor* moveConstructor = new EnumTypeMoveConstructor(enumTypeSymbol, context);
+            if (moveConstructor->Error())
+            {
+                SetErrorId(moveConstructor->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveConstructor);
+            result = enumTypeSymbol->AddMember(moveConstructor, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            EnumTypeCopyAssignment* copyAssignment = new EnumTypeCopyAssignment(enumTypeSymbol, context);
+            if (copyAssignment->Error())
+            {
+                SetErrorId(copyAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(copyAssignment);
+            result = enumTypeSymbol->AddMember(copyAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            EnumTypeMoveAssignment* moveAssignment = new EnumTypeMoveAssignment(enumTypeSymbol, context);
+            if (moveAssignment->Error())
+            {
+                SetErrorId(moveAssignment->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(moveAssignment);
+            result = enumTypeSymbol->AddMember(moveAssignment, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            EnumTypeReturn* returnFn = new EnumTypeReturn(enumTypeSymbol, context);
+            if (returnFn->Error())
+            {
+                SetErrorId(returnFn->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(returnFn);
+            result = enumTypeSymbol->AddMember(returnFn, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            EnumTypeEquality* equality = new EnumTypeEquality(enumTypeSymbol, context);
+            if (equality->Error())
+            {
+                SetErrorId(equality->GetErrorId());
+                return;
+            }
+            symbolTable->SetFunctionIdFor(equality);
+            Result<NamespaceSymbol*> nsResult = enumTypeSymbol->Ns(context);
+            if (nsResult.Error())
+            {
+                SetErrorId(nsResult.GetErrorId());
+                return;
+            }
+            NamespaceSymbol* ns = nsResult.Value();
+            result = ns->AddMember(equality, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            EnumTypeToUnderlyingTypeConversion* enum2underlying = new EnumTypeToUnderlyingTypeConversion(enumTypeSymbol->Span(), u"@enum2underlying",
+                enumTypeSymbol, underlyingType, context);
+            symbolTable->SetFunctionIdFor(enum2underlying);
+            enum2underlying->SetParent(enumTypeSymbol);
+            symbolTable->AddConversion(enum2underlying);
+            result = enumTypeSymbol->AddMember(enum2underlying, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            UnderlyingTypeToEnumTypeConversion* underlying2enum = new UnderlyingTypeToEnumTypeConversion(enumTypeSymbol->Span(), u"@underlying2enum",
+                underlyingType, enumTypeSymbol, context);
+            symbolTable->SetFunctionIdFor(underlying2enum);
+            underlying2enum->SetParent(enumTypeSymbol);
+            symbolTable->AddConversion(underlying2enum);
+            result = enumTypeSymbol->AddMember(underlying2enum, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
             containerScope = prevContainerScope;
             enumType = prevEnumType;
         }
@@ -1683,10 +1905,25 @@ namespace binder
             globalVariableSymbol->SetType(typeSymbol);
             if (globalVariableNode.Initializer() != null)
             {
-                // evaluate
+                UniquePtr<Value> value;
+                Result<UniquePtr<Value>> valueResult = Evaluate(globalVariableNode.Initializer(), typeSymbol, containerScope, boundCompileUnit, null);
+                if (valueResult.Error())
+                {
+                    SetErrorId(valueResult.GetErrorId());
+                    return;
+                }
+                value = Rvalue(valueResult.Value());
+                Result<TypeSymbol*> typeResult = value->Type(symbolTable, context);
+                if (typeResult.Error())
+                {
+                    SetErrorId(typeResult.GetErrorId());
+                    return;
+                }
+                globalVariableSymbol->SetType(typeResult.Value());
+                globalVariableSymbol->SetInitializer(Rvalue(value));
             }
-            // boundGlobalVariable = new BoundGlobalVariable(globalVariableNode.GetSpan(), globalVariableSymbol); todo
-            // boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundGlobalVariable)); todo
+            BoundGlobalVariable* boundGlobalVariable = new BoundGlobalVariable(globalVariableNode.GetSpan(), globalVariableSymbol);
+            boundCompileUnit->AddBoundNode(UniquePtr<BoundNode>(boundGlobalVariable));
             containerScope = prevContainerScope;
         }
         public void BindAlias(AliasTypeSymbol* aliasTypeSymbol, AliasNode* aliasNode, bool fromOwnCompileUnit)

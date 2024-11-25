@@ -1,0 +1,2 @@
+project parsing_error;
+source <parsing_error.cm>;

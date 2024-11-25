@@ -1,0 +1,44 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public class EntityReference : CharacterData
+    {
+        public EntityReference(const System.Lex.Span& span_, int fileIndex_) : base(NodeKind.entityReferenceNode, span_, fileIndex_, "entity_reference")
+        {
+        }
+        public EntityReference(const System.Lex.Span& span_, int fileIndex_, const string& entityReference_) :
+            base(NodeKind.entityReferenceNode, span_, fileIndex_, "entity_reference", entityReference_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            formatter << "&" << Data() << ";";
+            return Result<bool>(true);
+        }
+        public override Node* Clone(bool deep) const
+        {
+            return new EntityReference(Span(), FileIndex(), Data());
+        }
+    }
+
+    public EntityReference* MakeEntityReference(const string& entityReference)
+    {
+        return new EntityReference(System.Lex.Span(), -1, entityReference);
+    }
+}
+

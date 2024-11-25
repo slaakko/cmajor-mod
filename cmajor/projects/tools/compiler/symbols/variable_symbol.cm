@@ -26,7 +26,15 @@ namespace symbols
         {
             auto result = base->Write(writer);
             if (result.Error()) return result;
-            result = writer.GetBinaryWriter().Write(type->TypeId());
+            if (type != null)
+            {
+                typeId = type->TypeId();
+            }
+            else
+            {
+                typeId = Uuid();
+            }
+            result = writer.GetBinaryWriter().Write(typeId);
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -38,15 +46,20 @@ namespace symbols
             Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
             if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
             typeId = typeIdResult.Value();
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
-            auto typeSymbolResult = symbolTable->GetType(typeId);
-            if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
-            type = typeSymbolResult.Value();
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            if (typeId != Uuid())
+            {
+                auto typeSymbolResult = symbolTable->GetType(typeId);
+                if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
+                type = typeSymbolResult.Value();
+            }
             return Result<bool>(true);
         }
         private TypeSymbol* type;
@@ -101,7 +114,7 @@ namespace symbols
 
     public class LocalVariableSymbol : VariableSymbol
     {
-        public LocalVariableSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.localVariableSymbol, span_, name_)
+        public LocalVariableSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.localVariableSymbol, span_, name_), initialized(false)
         {
         }
         public override ustring TypeString() const
@@ -112,6 +125,15 @@ namespace symbols
         {
             return false;
         }
+        public inline bool IsInitialized() const
+        {
+            return initialized;
+        }
+        public inline void SetInitialized()
+        {
+            initialized = true;
+        }
+        private bool initialized;
     }
 
     public class MemberVariableSymbol : VariableSymbol
@@ -265,7 +287,10 @@ namespace symbols
             Result<intermediate.Type*> irTypeResult = Type()->IrType(emitter);
             if (irTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irTypeResult.GetErrorId()));
             intermediate.Type* irType = irTypeResult.Value();
-            return emitter.GetOrInsertGlobal(mangledName, irType);
+            Result<intermediate.GlobalVariable*> irObjectResult = emitter.GetOrInsertGlobal(mangledName, irType);
+            if (irObjectResult.Error()) return Result<intermediate.Value*>(ErrorId(irObjectResult.GetErrorId()));
+            intermediate.GlobalVariable* irObject = irObjectResult.Value();
+            return Result<intermediate.Value*>(irObject);
         }
         [nodiscard]
         public Result<bool> CreateIrObject(Emitter& emitter)

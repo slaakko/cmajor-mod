@@ -160,6 +160,7 @@ namespace intermediate
             }
             else
             {
+                Console.Out() << "GENERATE CODE FOR " << function.Name() << endl();
                 string fullFunctionName = function.ResolveFullName();
                 file.GetDeclarationSection()->AddPublicDataDeclaration(new assembly.PublicDataDeclaration(function.Name()));
                 currentFunction = &function;
@@ -854,7 +855,9 @@ namespace intermediate
             string hexByteStr;
             string stringValue;
             int state = 0;
-            for (char c : value.GetValue())
+            string s = value.ToString();
+            s = s.Substring(1, s.Length() - 2);
+            for (char c : s)
             {
                 switch (state)
                 {
@@ -867,6 +870,7 @@ namespace intermediate
                                 EmitDataValue(UniquePtr<assembly.Value>(new assembly.StringLiteral(stringValue)), assembly.OpCode.DB);
                                 stringValue.Clear();
                             }
+                            hexByteStr.Clear();
                             state = 1;
                         }
                         else
@@ -893,6 +897,8 @@ namespace intermediate
                         }
                         byte value = valueResult.Value();
                         EmitDataValue(UniquePtr<assembly.Value>(new assembly.IntegerLiteral(value, 1)), assembly.OpCode.DB);
+                        currentOffset = currentOffset + 1;
+                        state = 0;
                         break;
                     }
                 }
@@ -905,7 +911,7 @@ namespace intermediate
         }
         public override void Visit(StringArrayValue& value)
         {
-            for (Value* x : value.Strings())
+            for (Value* x : value.Elements())
             {
                 x->Accept(*this);
             }

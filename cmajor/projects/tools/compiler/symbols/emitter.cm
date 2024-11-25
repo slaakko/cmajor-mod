@@ -18,7 +18,7 @@ namespace symbols
         public abstract int Install(const string& str);
         public abstract int Install(const wstring& str);
         public abstract int Install(const ustring& str);
-        public abstract intermediate.Value* GetGlobalStringValue(int stringId);
+        public abstract Result<intermediate.Value*> GetGlobalStringValue(int stringId);
         public abstract Result<intermediate.Value*> GetGlobalWStringValue(int stringId);
         public abstract Result<intermediate.Value*> GetGlobalUStringValue(int stringId);
     }
@@ -49,7 +49,7 @@ namespace symbols
         {
             return emittingDelegate->Install(str);
         }
-        public inline intermediate.Value* GetGlobalStringValue(int stringId)
+        public inline Result<intermediate.Value*> GetGlobalStringValue(int stringId)
         {
             return emittingDelegate->GetGlobalStringValue(stringId);
         }
@@ -61,21 +61,29 @@ namespace symbols
         {
             return emittingDelegate->GetGlobalUStringValue(stringId);
         }
-        public inline intermediate.Value* CreateGlobalStringValue(const string& stringValue)
+        public inline Result<intermediate.Value*> CreateGlobalStringValue(const string& stringValue)
         {
-            return context.GetData()->CreateGlobalStringValue(stringValue);
+            Result<intermediate.GlobalVariable*> globalVariableResult = context.GetData()->CreateGlobalStringValue(stringValue);
+            if (globalVariableResult.Error()) return Result<intermediate.Value*>(ErrorId(globalVariableResult.GetErrorId()));
+            intermediate.GlobalVariable* globalVariable = globalVariableResult.Value();
+            intermediate.Value* value = globalVariable;
+            return Result<intermediate.Value*>(value);
         }
         public inline Result<intermediate.Value*> CreateGlobalWStringValue(const wstring& wstringValue)
         {
             Result<intermediate.GlobalVariable*> globalVariableResult = context.GetData()->CreateGlobalWStringValue(wstringValue);
             if (globalVariableResult.Error()) return Result<intermediate.Value*>(ErrorId(globalVariableResult.GetErrorId()));
-            return Result<intermediate.Value*>(globalVariableResult.Value());
+            intermediate.GlobalVariable* globalVariable = globalVariableResult.Value();
+            intermediate.Value* value = globalVariable;
+            return Result<intermediate.Value*>(value);
         }
         public inline Result<intermediate.Value*> CreateGlobalUStringValue(const ustring& ustringValue)
         {
             Result<intermediate.GlobalVariable*> globalVariableResult = context.GetData()->CreateGlobalUStringValue(ustringValue);
             if (globalVariableResult.Error()) return Result<intermediate.Value*>(ErrorId(globalVariableResult.GetErrorId()));
-            return Result<intermediate.Value*>(globalVariableResult.Value());
+            intermediate.GlobalVariable* globalVariable = globalVariableResult.Value();
+            intermediate.Value* value = globalVariable;
+            return Result<intermediate.Value*>(value);
         }
         public inline void SetFilePath(const string& filePath)
         {
@@ -192,7 +200,13 @@ namespace symbols
                     if (paramType->IsClassTypeSymbol() || paramType->IsClassDelegateTypeSymbol() || paramType->IsInterfaceTypeSymbol())
                     {
                         LockGuard<RecursiveMutex> lock(symbolsContext.RootModule()->Lock());
-                        paramType = paramType->AddConst(symbolsContext)->AddLvalueReference(symbolsContext);
+                        Result<TypeSymbol*> constTypeResult = paramType->AddConst(symbolsContext);
+                        if (constTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(constTypeResult.GetErrorId()));
+                        TypeSymbol* constType = constTypeResult.Value();
+                        Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(symbolsContext);
+                        if (refTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(refTypeResult.GetErrorId()));
+                        TypeSymbol* refType = refTypeResult.Value();
+                        paramType = refType;
                     }
                     Result<intermediate.Type*> paramIrTypeResult = paramType->IrType(*this);
                     if (paramIrTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(paramIrTypeResult.GetErrorId()));
@@ -237,7 +251,13 @@ namespace symbols
                     if (paramType->IsClassTypeSymbol() || paramType->IsClassDelegateTypeSymbol() || paramType->IsInterfaceTypeSymbol())
                     {
                         LockGuard<RecursiveMutex> lock(symbolsContext.RootModule()->Lock());
-                        paramType = paramType->AddConst(symbolsContext)->AddLvalueReference(symbolsContext);
+                        Result<TypeSymbol*> constTypeResult = paramType->AddConst(symbolsContext);
+                        if (constTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(constTypeResult.GetErrorId()));
+                        TypeSymbol* constType = constTypeResult.Value();
+                        Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(symbolsContext);
+                        if (refTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(refTypeResult.GetErrorId()));
+                        TypeSymbol* refType = refTypeResult.Value();
+                        paramType = refType;
                     }
                     Result<intermediate.Type*> paramIrTypeResult = paramType->IrType(*this);
                     if (paramIrTypeResult.Error()) return Result<intermediate.FunctionType*>(ErrorId(paramIrTypeResult.GetErrorId()));
@@ -272,7 +292,10 @@ namespace symbols
                 Result<intermediate.FunctionType*> functionTypeResult = GetFunctionType(classDelegateTypeSymbol->DelegateType());
                 if (functionTypeResult.Error()) return Result<intermediate.StructureType*>(ErrorId(functionTypeResult.GetErrorId()));
                 intermediate.FunctionType* functionType = functionTypeResult.Value();
-                elementTypes.Add(functionType);
+                Result<intermediate.Type*> functionPtrTypeResult = functionType->AddPointer(&context);
+                if (functionPtrTypeResult.Error()) return Result<intermediate.StructureType*>(functionPtrTypeResult.GetErrorId());
+                intermediate.Type* functionPtrType = functionPtrTypeResult.Value();
+                elementTypes.Add(functionPtrType);
                 Result<intermediate.StructureType*> structureTypeResult = context.GetTypes()->GetStructureType(System.Lex.Span(), elementTypes);
                 if (structureTypeResult.Error()) return structureTypeResult;
                 intermediate.StructureType* structureType = structureTypeResult.Value();
@@ -284,7 +307,7 @@ namespace symbols
         {
             return context.GetCode()->GetOrInsertFunction(name, type);
         }
-        public inline intermediate.GlobalVariable* GetOrInsertGlobal(const string& name, intermediate.Type* type)
+        public inline Result<intermediate.GlobalVariable*> GetOrInsertGlobal(const string& name, intermediate.Type* type)
         {
             return context.GetData()->GetOrInsertGlobal(name, type);
         }
@@ -390,7 +413,14 @@ namespace symbols
         }
         public inline intermediate.Value* GetIntValue(int value)
         {
-            return context.GetData()->GetIntValue(value);
+            if (substituteLineNumber)
+            {
+                return context.GetData()->GetIntValue(currentLineNumber);
+            }
+            else
+            {
+                return context.GetData()->GetIntValue(value);
+            }
         }
         public inline intermediate.Value* GetUIntValue(uint value)
         {
@@ -681,6 +711,47 @@ namespace symbols
         {
             irTypeMap[typeId] = irType;
         }
+        public string GetStaticObjectName(ClassTypeSymbol* classType) const
+        {
+            auto it = staticObjectNameMap.Find(classType);
+            if (it != staticObjectNameMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return string();
+            }
+        }
+        public void SetStaticObjectName(ClassTypeSymbol* classType, const string& staticObjectName)
+        {
+            staticObjectNameMap[classType] = staticObjectName;
+        }
+        public intermediate.StructureType* GetStaticObjectType(ClassTypeSymbol* classType) const
+        {
+            auto it = staticObjectTypeMap.Find(classType);
+            if (it != staticObjectTypeMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void SetStaticObjectType(ClassTypeSymbol* classType, intermediate.StructureType* staticObjectType)
+        {
+            staticObjectTypeMap[classType] = staticObjectType;
+        }
+        public void BeginSubstituteLineNumber(int lineNumber)
+        {
+            substituteLineNumber = true;
+            currentLineNumber = lineNumber;
+        }
+        public void EndSubstituteLineNumber()
+        {
+            substituteLineNumber = false;
+        }
         private intermediate.Context context;
         private ValueStack stack;
         private SymbolsContext& symbolsContext;
@@ -689,7 +760,11 @@ namespace symbols
         private Map<Symbol*, intermediate.FunctionType*> functionTypeMap;
         private Map<Uuid, intermediate.Type*> irTypeMap;
         private Map<ClassDelegateTypeSymbol*, intermediate.StructureType*> classDelegateTypeMap;
+        private Map<ClassTypeSymbol*, string> staticObjectNameMap;
+        private Map<ClassTypeSymbol*, intermediate.StructureType*> staticObjectTypeMap;
         private intermediate.Value* objectPointer;
         private EmittingDelegate* emittingDelegate;
+        private bool substituteLineNumber;
+        private int currentLineNumber;
     }
 }

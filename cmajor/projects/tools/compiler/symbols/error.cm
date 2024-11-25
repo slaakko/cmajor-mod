@@ -30,7 +30,7 @@ namespace symbols
 
     public int MakeError(const string& message, const List<System.Lex.FullSpan>& locations)
     {
-        string msg(message);
+        string msg = message;
         bool first = true;
         List<System.Lex.FullSpan> usedLocations;
         for (const System.Lex.FullSpan& location : locations)
@@ -63,14 +63,19 @@ namespace symbols
                                 }
                                 else
                                 {
-                                    msg.Append("\n").Append("see reference");
+                                    msg.Append("\n").Append("see reference: ");
                                 }
-                                msg.Append(": ").Append(fileMap.GetFileName(fileIndex)).Append(" line ").Append(ToString(lineColLen.line)).Append(":\n");
+                                msg.Append("\n").Append(fileMap.GetFileName(fileIndex)).Append(" line ").Append(ToString(lineColLen.line)).Append(":\n");
                                 Result<string> lineResult = sourceFile->GetLine(lineColLen.line);
                                 if (!lineResult.Error())
                                 {
-                                    msg.Append(lineResult.Value()).Append("\n");
-                                    msg.Append(string(' ', lineColLen.col - 1)).Append(string('^', lineColLen.len));
+                                    string line = Rvalue(lineResult.Value());
+                                    msg.Append(line).Append("\n");
+                                    msg.Append(string(' ', Max(cast<int>(0), lineColLen.col - 1))).Append(string('^', lineColLen.len));
+                                }
+                                else
+                                {
+                                    RtmDisposeError(lineResult.GetErrorId());
                                 }
                             }
                         }

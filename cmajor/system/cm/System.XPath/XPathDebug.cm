@@ -1,0 +1,32 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.XPath
+{
+    internal bool debug = false;
+    internal bool debugParse = false;
+
+    public void SetDebug(bool debug_)
+    {
+        debug = debug_;
+    }
+
+    public bool Debug()
+    {
+        return debug;
+    }
+
+    public void SetDebugParse(bool debugParse_)
+    {
+        debugParse = debugParse_;
+    }
+
+    public bool DebugParse() 
+    {
+        return debugParse;
+    }
+}

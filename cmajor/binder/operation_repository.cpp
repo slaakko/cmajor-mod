@@ -2177,7 +2177,7 @@ void ClassDefaultConstructorOperation::CollectViableFunctions(cmajor::symbols::C
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
     cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
-    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
+    if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -2393,7 +2393,7 @@ void ClassCopyConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
     cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
-    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
+    if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -2655,7 +2655,7 @@ void ClassMoveConstructorOperation::CollectViableFunctions(cmajor::symbols::Cont
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
     cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
-    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
+    if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -2917,7 +2917,7 @@ void ClassCopyAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
 {
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
     cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
-    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
+    if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -3142,7 +3142,7 @@ void ClassMoveAssignmentOperation::CollectViableFunctions(cmajor::symbols::Conta
     if ((flags & CollectFlags::noRvalueRef) != CollectFlags::none) return;
     cmajor::symbols::TypeSymbol* type = arguments[0]->GetType();
     cmajor::symbols::TypeSymbol* baseType = type->RemovePointer()->PlainType();
-    if (type->PointerCount() != 1 || (!baseType->IsClassTypeSymbol() && !baseType->IsClassTemplateSpecializationSymbol())) return;
+    if (type->PointerCount() != 1 || !baseType->IsClassTypeSymbol()) return;
     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(type->BaseType());
     if (classType->IsStatic())
     {
@@ -3765,15 +3765,10 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                 std::unique_ptr<BoundExpression> argument = BindExpression(argumentNode, boundCompileUnit, boundFunction, containerScope, statementBinder);
                 arguments.push_back(std::move(argument));
             }
-            OverloadResolutionFlags flags = OverloadResolutionFlags::none;
-            if (!constructorSymbol->IsMoveConstructor())
-            {
-                flags = flags | OverloadResolutionFlags::noRvalueRef;
-            }
             std::unique_ptr<cmajor::symbols::Exception> exception;
             std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
             std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, lookups, arguments, boundCompileUnit, 
-                boundFunction, node, flags, templateArgumentTypes, exception);
+                boundFunction, node, OverloadResolutionFlags::none, templateArgumentTypes, exception);
             boundFunction->MoveTemporaryDestructorCallsTo(*constructorCall);
             boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
         }
@@ -3806,15 +3801,10 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                 std::unique_ptr<BoundExpression> argument = BindExpression(argumentNode, boundCompileUnit, boundFunction, containerScope, statementBinder);
                 arguments.push_back(std::move(argument));
             }
-            OverloadResolutionFlags flags = OverloadResolutionFlags::none;
-            if (!constructorSymbol->IsMoveConstructor())
-            {
-                flags = flags | OverloadResolutionFlags::noRvalueRef;
-            }
             std::unique_ptr<cmajor::symbols::Exception> exception;
             std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
             std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, lookups, arguments, boundCompileUnit, boundFunction, 
-                node, flags, templateArgumentTypes, exception);
+                node, OverloadResolutionFlags::none, templateArgumentTypes, exception);
             boundFunction->MoveTemporaryDestructorCallsTo(*constructorCall);
             boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
         }
@@ -3850,15 +3840,10 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                     new BoundParameter(node->GetSpan(), thatParam)), thatToBaseConversion);
                 arguments.push_back(std::unique_ptr<BoundExpression>(baseClassReferenceConversion));
             }
-            OverloadResolutionFlags flags = OverloadResolutionFlags::none;
-            if (!constructorSymbol->IsMoveConstructor())
-            {
-                flags = flags | OverloadResolutionFlags::noRvalueRef;
-            }
             std::unique_ptr<cmajor::symbols::Exception> exception;
             std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
             std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, lookups, arguments, boundCompileUnit, boundFunction, 
-                node, flags, templateArgumentTypes, exception);
+                node, OverloadResolutionFlags::none, templateArgumentTypes, exception);
             boundFunction->MoveTemporaryDestructorCallsTo(*constructorCall);
             boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
         }
@@ -3978,15 +3963,10 @@ void GenerateClassInitialization(cmajor::symbols::ConstructorSymbol* constructor
                     boundMemberVariable->SetClassPtr(std::unique_ptr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                     arguments.push_back(std::unique_ptr<BoundExpression>(
                         new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(boundMemberVariable), boundMemberVariable->GetType()->AddPointer())));
-                    OverloadResolutionFlags flags = OverloadResolutionFlags::none;
-                    if (!constructorSymbol->IsMoveConstructor())
-                    {
-                        flags = flags | OverloadResolutionFlags::noRvalueRef;
-                    }
                     std::unique_ptr<cmajor::symbols::Exception> exception;
                     std::vector<cmajor::symbols::TypeSymbol*> templateArgumentTypes;
                     std::unique_ptr<BoundFunctionCall> constructorCall = ResolveOverload(U"@constructor", containerScope, lookups, arguments, boundCompileUnit, boundFunction, 
-                        node, flags, templateArgumentTypes, exception);
+                        node, OverloadResolutionFlags::none, templateArgumentTypes, exception);
                     boundFunction->MoveTemporaryDestructorCallsTo(*constructorCall);
                     boundCompoundStatement->AddStatement(std::unique_ptr<BoundStatement>(new BoundInitializationStatement(std::move(constructorCall))));
                 }

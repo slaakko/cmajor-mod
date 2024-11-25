@@ -1,0 +1,39 @@
+using System;
+using System.Collections;
+
+namespace System.RegularExpressions
+{
+    public class RuleNameMap
+    {
+        static RuleNameMap() : instance(new RuleNameMap())
+        {
+        }
+        public static RuleNameMap& Instance()
+        {
+            return *instance;
+        }
+        public Map<long, string>* GetRuleNameMap() const
+        {
+            return &ruleNameMap;
+        }
+        private RuleNameMap()
+        {
+            ruleNameMap[6105989386489298945] = "System.RegularExpressions.RegExParser.RegularExpression";
+            ruleNameMap[6105989386489298946] = "System.RegularExpressions.RegExParser.Alternative";
+            ruleNameMap[6105989386489298947] = "System.RegularExpressions.RegExParser.Catenation";
+            ruleNameMap[6105989386489298948] = "System.RegularExpressions.RegExParser.Repetition";
+            ruleNameMap[6105989386489298949] = "System.RegularExpressions.RegExParser.Primary";
+            ruleNameMap[6105989386489298950] = "System.RegularExpressions.RegExParser.Class";
+            ruleNameMap[6105989386489298951] = "System.RegularExpressions.RegExParser.Range";
+            ruleNameMap[6105989386489298952] = "System.RegularExpressions.RegExParser.Char";
+        }
+        private Map<long, string> ruleNameMap; 
+        private static UniquePtr<RuleNameMap> instance;
+    }
+
+    public Map<long, string>* GetRuleNameMapPtr()
+    {
+        return RuleNameMap.Instance().GetRuleNameMap();
+    }
+
+}

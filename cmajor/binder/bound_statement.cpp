@@ -21,19 +21,34 @@ BoundCompoundStatement* BoundStatement::Block()
     {
         return static_cast<BoundCompoundStatement*>(this);
     }
-    return StatementParent()->Block();
+    BoundStatement* parentStatement = StatementParent();
+    if (parentStatement != nullptr)
+    {
+        return parentStatement->Block();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 BoundStatement* BoundStatement::StatementParent() const
 {
     BoundNode* parent = Parent();
-    if (parent->IsBoundStatement())
+    if (parent != nullptr)
     {
-        return static_cast<BoundStatement*>(parent);
+        if (parent->IsBoundStatement())
+        {
+            return static_cast<BoundStatement*>(parent);
+        }
+        else
+        {
+            throw cmajor::symbols::Exception("statement parent expected", GetFullSpan());
+        }
     }
     else
     {
-        throw cmajor::symbols::Exception("statement parent expected", GetFullSpan());
+        return nullptr;
     }
 }
 

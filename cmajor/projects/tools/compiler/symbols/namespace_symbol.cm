@@ -26,6 +26,7 @@ namespace symbols
         {
             Result<NamespaceSymbol*> nsResult = symbolTable->BeginNamespace(that->Name(), Span(), ModuleId(), FileIndex(), context);
             if (nsResult.Error()) return Result<bool>(ErrorId(nsResult.GetErrorId()));
+            symbolTable->MapNs(that, nsResult.Value());
             for (const UniquePtr<Symbol>& symbol : that->Members())
             {
                 if (symbol->IsNamespaceSymbol())

@@ -1,0 +1,54 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    public class ProcessingInstruction : Node
+    {
+        public ProcessingInstruction(const System.Lex.Span& span_, int fileIndex_) : base(NodeKind.processingInstructionNode, span_, fileIndex_, "processing_instruction")
+        {
+        }
+        public ProcessingInstruction(const System.Lex.Span& span_, int fileIndex_, const string& target_, const string& data_) :
+            base(NodeKind.processingInstructionNode, span_, fileIndex_, "processing_instruction"), target(target_), data(data_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public override Result<bool> Write(System.Text.CodeFormatter& formatter)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            formatter << "<?" << target << " " << data << "?>" << endl();
+            return Result<bool>(true);
+        }
+        public override Node* Clone(bool deep) const
+        {
+            return new ProcessingInstruction(Span(), FileIndex(), target, data);
+        }
+        public inline const string& Target() const
+        {
+            return target;
+        }
+        public inline const string& Data() const
+        {
+            return data;
+        }
+        private string target;
+        private string data;
+    }
+
+    public ProcessingInstruction* MakeProcessingInstruction(const string& target, const string& data)
+    {
+        return new ProcessingInstruction(System.Lex.Span(), -1, target, data);
+    }
+}
+

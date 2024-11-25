@@ -1,0 +1,597 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public System.Windows.Color DefaultIconListViewTextColor()
+    {
+        return System.Windows.Color.Black();
+    }
+
+    public System.Windows.Color DefaultIconListViewIconSelectedColor()
+    {
+        return System.Windows.Color(64u, 96u, 156u, 210u);
+    }
+
+    public Padding DefaultIconListViewIconPadding()
+    {
+        return Padding(8, 8, 8, 8);
+    }
+
+    public Padding DefaultIconListViewTextPadding()
+    {
+        return Padding(4, 4, 4, 4);
+    }
+
+    public Padding DefaultIconListViewInternalPadding()
+    {
+        return Padding(4, 4, 4, 4);
+    }
+
+    public string DefaultIconListViewFontFamilyName()
+    {
+        return "Segoe UI";
+    }
+
+    public float DefaultIconListViewFontSize()
+    {
+        return 9.0f;
+    }
+
+    public class delegate void IconListViewSelectedIndexChangedEventHandler();
+    public class delegate void IconListViewIconDoubleClickedEventHandler();
+
+    public class IconListViewItem : Component
+    {
+        public enum Flags : sbyte
+        {
+            none = 0, selected = 1 << 0
+        }
+        public IconListViewItem(const string& iconName_, const string& itemName_) : index(-1), iconName(iconName_), itemName(itemName_), location(), size()
+        {
+        }
+        [nodiscard]
+        public Result<bool> Measure(Graphics& graphics, const Padding& iconPadding, const Padding& textPadding, const Font& font)
+        {
+            iconSize = Size(cast<int>(bitmap->GetWidth()), cast<int>(bitmap->GetHeight()));
+            PointF origin;
+            StringFormat format(StringAlignment.near, StringAlignment.near);
+            if (format.Error())
+            {
+                return Result<bool>(ErrorId(format.GetErrorId()));
+            }
+            auto measureResult = graphics.MeasureStringRectF(itemName, font, origin, format);
+            if (measureResult.Error())
+            {
+                return Result<bool>(ErrorId(measureResult.GetErrorId()));
+            }
+            RectF textRect = measureResult.Value();
+            textSize = textRect.size;
+            size.w = Max(cast<int>(iconSize.w + iconPadding.Horizontal()), cast<int>(textSize.w + textPadding.Horizontal()));
+            size.h = cast<int>(iconSize.h + iconPadding.Vertical() + textSize.h + textPadding.Vertical());
+            return Result<bool>(true);
+        }
+        public void SetLocations(const Point& loc, const Padding& iconPadding, const Padding& textPadding)
+        {
+            location = loc;
+            if (textSize.w > iconSize.w)
+            {
+                iconLocation = Point(cast<int>(location.x + iconPadding.left + ((textSize.w + textPadding.Horizontal()) - (iconSize.w + iconPadding.Horizontal())) / 2), location.y + iconPadding.top);
+                textLocation = PointF(location.x + textPadding.left, location.y + (size.h - textSize.h - textPadding.Vertical()) + textPadding.top);
+            }
+            else
+            {
+                iconLocation = Point(location.x + iconPadding.left, location.y + iconPadding.top);
+                textLocation = PointF(location.x + textPadding.left + ((iconSize.w + iconPadding.Horizontal()) - (textSize.w + textPadding.Horizontal())) / 2, location.y + (size.h - textSize.h - textPadding.Vertical()) + textPadding.top);
+            }
+        }
+        [nodiscard]
+        public Result<bool> Draw(Graphics& graphics, IconListView& iconListView)
+        {
+            if (IsSelected())
+            {
+                auto selectedBrushResult = iconListView.GetSelectedBrush();
+                if (selectedBrushResult.Error())
+                {
+                    return Result<bool>(ErrorId(selectedBrushResult.GetErrorId()));
+                }
+                SolidBrush* selectedBrush = selectedBrushResult.Value();
+                RectF rect(PointF(location.x, location.y), SizeF(size.w, size.h));
+                auto result = graphics.FillRectangle(*selectedBrush, rect);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            Rect r(iconLocation, iconSize);
+            auto result = graphics.DrawImage(*bitmap, r, 0, 0, iconSize.w, iconSize.h, Unit.pixel, iconListView.GetImageAttributes());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            RectF textRect(textLocation, textSize);
+            auto textBrushResult = iconListView.GetTextBrush();
+            if (textBrushResult.Error())
+            {
+                return Result<bool>(ErrorId(textBrushResult.GetErrorId()));
+            }
+            result = graphics.DrawString(itemName, iconListView.GetFont(), textRect, iconListView.GetStringFormat(), *textBrushResult.Value());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        public void SetSelected()
+        {
+            flags = cast<Flags>(flags | Flags.selected);
+        }
+        public void ResetSelected()
+        {
+            flags = cast<Flags>(flags & ~Flags.selected);
+        }
+        public bool IsSelected() const
+        {
+            return (flags & Flags.selected) != Flags.none;
+        }
+        private Flags flags;
+        public int index;
+        public string iconName;
+        public string itemName;
+        public Point location;
+        public Size size;
+        public Point iconLocation;
+        public Size iconSize;
+        public PointF textLocation;
+        public SizeF textSize;
+        public Bitmap* bitmap;
+    }
+
+    public ControlCreateParams& IconListViewControlCreateParams(ControlCreateParams& controlCreateParams)
+    {
+        controlCreateParams.SetWindowClassName("System.Windows.IconListView");
+        controlCreateParams.SetWindowClassStyle(DoubleClickWindowClassStyle());
+        controlCreateParams.SetWindowClassBackgroundColor(SystemColor.COLOR_WINDOW);
+        controlCreateParams.SetBackgroundColor(Color.White());
+        return controlCreateParams;
+    }
+
+    public class IconListViewCreateParams
+    {
+        public IconListViewCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_),
+            fontFamilyName(DefaultIconListViewFontFamilyName()),
+            fontSize(DefaultIconListViewFontSize()),
+            textColor(DefaultIconListViewTextColor()),
+            iconSelectedColor(DefaultIconListViewIconSelectedColor()),
+            bitmapTransparentColor(System.Windows.Color.DefaultBitmapTransparent()),
+            iconPadding(DefaultIconListViewIconPadding()),
+            textPadding(DefaultIconListViewTextPadding()),
+            internalPadding(DefaultIconListViewInternalPadding())
+        {
+        }
+        public IconListViewCreateParams& SetFontFamilyName(const string& fontFamilyName_)
+        {
+            fontFamilyName = fontFamilyName_;
+            return *this;
+        }
+        public IconListViewCreateParams& SetFontSize(float fontSize_)
+        {
+            fontSize = fontSize_;
+            return *this;
+        }
+        public IconListViewCreateParams& SetTextColor(const Color& textColor_)
+        {
+            textColor = textColor_;
+            return *this;
+        }
+        public IconListViewCreateParams& SetIconSelectedColor(const Color& iconSelectedColor_)
+        {
+            iconSelectedColor = iconSelectedColor_;
+            return *this;
+        }
+        public IconListViewCreateParams& SetIconPadding(const Padding& iconPadding_)
+        {
+            iconPadding = iconPadding_;
+            return *this;
+        }
+        public IconListViewCreateParams& SetTextPadding(const Padding& textPadding_)
+        {
+            textPadding = textPadding_;
+            return *this;
+        }
+        public IconListViewCreateParams& SetInternalPadding(const Padding& internalPadding_)
+        {
+            internalPadding = internalPadding_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public string fontFamilyName;
+        public float fontSize;
+        public Color textColor;
+        public Color iconSelectedColor;
+        public Color bitmapTransparentColor;
+        public Padding iconPadding;
+        public Padding textPadding;
+        public Padding internalPadding;
+    }
+
+    public class IconListView : Control
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, changed = 1 << 0
+        }
+
+        public IconListView(const System.Windows.Color& backgroundColor, const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            base("System.Windows.IconListView", DoubleClickWindowClassStyle(), DefaultChildWindowStyle(), DefaultExtendedWindowStyle(),
+            backgroundColor, "iconListView", location, size, dock, anchors), items(this), numberOfItems(0),
+            fontFamily(DefaultIconListViewFontFamilyName()),
+            fontSize(DefaultIconListViewFontSize()),
+            font(fontFamily, fontSize),
+            bitmapTransparentColor(System.Windows.Color.DefaultBitmapTransparent()),
+            iconSelectedColor(DefaultIconListViewIconSelectedColor()),
+            textColor(DefaultIconListViewTextColor()),
+            iconPadding(DefaultIconListViewIconPadding()),
+            textPadding(DefaultIconListViewTextPadding()),
+            internalPadding(DefaultIconListViewInternalPadding()),
+            imageAttributes(), stringFormat(StringAlignment.center, StringAlignment.center), selectedItem(null)
+        {
+            if (imageAttributes.Error())
+            {
+                SetErrorId(imageAttributes.GetErrorId());
+                return;
+            }
+            if (stringFormat.Error())
+            {
+                SetErrorId(stringFormat.GetErrorId());
+                return;
+            }
+            auto result = imageAttributes.SetColorKey(bitmapTransparentColor, bitmapTransparentColor, ColorAdjustType.default_);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetChanged();
+        }
+        public IconListView(const Point& location, const Size& size, Dock dock, Anchors anchors) :
+            this(System.Windows.Color.White(), location, size, dock, anchors)
+        {
+        }
+        public IconListView(IconListViewCreateParams& createParams) :
+            base(createParams.controlCreateParams),
+            items(this), numberOfItems(0),
+            fontFamily(createParams.fontFamilyName),
+            fontSize(createParams.fontSize),
+            font(fontFamily, fontSize),
+            bitmapTransparentColor(createParams.bitmapTransparentColor),
+            iconSelectedColor(createParams.iconSelectedColor),
+            textColor(createParams.textColor),
+            iconPadding(createParams.iconPadding),
+            textPadding(createParams.textPadding),
+            internalPadding(createParams.internalPadding),
+            imageAttributes(), stringFormat(StringAlignment.center, StringAlignment.center), selectedItem(null)
+        {
+            if (imageAttributes.Error())
+            {
+                SetErrorId(imageAttributes.GetErrorId());
+                return;
+            }
+            if (stringFormat.Error())
+            {
+                SetErrorId(stringFormat.GetErrorId());
+                return;
+            }
+            auto result = imageAttributes.SetColorKey(bitmapTransparentColor, bitmapTransparentColor, ColorAdjustType.default_);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetChanged();
+        }
+        [nodiscard]
+        public Result<bool> AddItem(const string& iconName, const string& itemName)
+        {
+            UniquePtr<IconListViewItem> item(new IconListViewItem(iconName, itemName));
+            if (item->Error())
+            {
+                return Result<bool>(ErrorId(item->GetErrorId()));
+            }
+            item->index = numberOfItems;
+            auto insertResult = GetOrInsertBitmap(iconName);
+            if (insertResult.Error())
+            {
+                return Result<bool>(ErrorId(insertResult.GetErrorId()));
+            }
+            item->bitmap = insertResult.Value();
+            auto result = items.AddChild(item.Release());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            ++numberOfItems;
+            SetChanged();
+            result = Invalidate();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
+        {
+            if (selectedItem != null)
+            {
+                selectedItem->ResetSelected();
+            }
+            Point loc = args.location;
+            Component* component = items.FirstChild();
+            while (component != null)
+            {
+                if (component is IconListViewItem*)
+                {
+                    IconListViewItem* item = cast<IconListViewItem*>(component);
+                    Rect rect(item->location, item->size);
+                    if (rect.Contains(loc))
+                    {
+                        item->SetSelected();
+                        selectedItem = item;
+                        OnSelectedIndexChanged();
+                        break;
+                    }
+                }
+                component = component->NextSibling();
+            }
+            return Invalidate();
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseDoubleClick(MouseEventArgs& args)
+        {
+            Point loc = args.location;
+            Component* component = items.FirstChild();
+            while (component != null)
+            {
+                if (component is IconListViewItem*)
+                {
+                    IconListViewItem* item = cast<IconListViewItem*>(component);
+                    Rect rect(item->location, item->size);
+                    if (rect.Contains(loc))
+                    {
+                        item->SetSelected();
+                        selectedItem = item;
+                        OnDoubleClicked();
+                        break;
+                    }
+                }
+                component = component->NextSibling();
+            }
+            return Invalidate();
+        }
+        [nodiscard]
+        public Result<bool> SetBitmapTransparentColor(const System.Windows.Color& bitmapTransparentColor_)
+        {
+            bitmapTransparentColor = bitmapTransparentColor_;
+            auto result = imageAttributes.SetColorKey(bitmapTransparentColor, bitmapTransparentColor, ColorAdjustType.default_);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        public void SetIconSelectedColor(const System.Windows.Color& iconSelectedColor_)
+        {
+            iconSelectedColor = iconSelectedColor_;
+        }
+        public void SetTextColor(const System.Windows.Color& textColor_)
+        {
+            textColor = textColor_;
+        }
+        public void SetIconPadding(const Padding& iconPadding_)
+        {
+            iconPadding = iconPadding_;
+        }
+        public void SetTextPadding(const Padding& textPadding_)
+        {
+            textPadding = textPadding_;
+        }
+        public void SetInternalPadding(const Padding& internalPadding_)
+        {
+            internalPadding = internalPadding_;
+        }
+        public void SetFont(const Font& font_)
+        {
+            font = font_;
+            SetChanged();
+        }
+        internal const Font& GetFont() const
+        {
+            return font;
+        }
+        internal const StringFormat& GetStringFormat() const
+        {
+            return stringFormat;
+        }
+        public Event<IconListViewSelectedIndexChangedEventHandler>& SelectedIndexChangedEvent()
+        {
+            return selectedIndexChangedEvent;
+        }
+        public Event<IconListViewIconDoubleClickedEventHandler>& IconDoubleClickedEvent()
+        {
+            return iconDoubleClickedEvent;
+        }
+        protected virtual void OnSelectedIndexChanged()
+        {
+            selectedIndexChangedEvent.Fire();
+        }
+        protected virtual void OnDoubleClicked()
+        {
+            iconDoubleClickedEvent.Fire();
+        }
+        public int GetSelectedIndex() const
+        {
+            if (selectedItem != null)
+            {
+                return selectedItem->index;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            if (Changed())
+            {
+                ResetChanged();
+                auto result = Measure(args.graphics);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            auto result = args.graphics.Clear(BackgroundColor());
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            Component* component = items.FirstChild();
+            while (component != null)
+            {
+                if (component is IconListViewItem*)
+                {
+                    IconListViewItem* item = cast<IconListViewItem*>(component);
+                    result = item->Draw(args.graphics, *this);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+                component = component->NextSibling();
+            }
+            return base->OnPaint(args);
+        }
+        private Result<bool> Measure(Graphics& graphics)
+        {
+            Point loc(internalPadding.left, internalPadding.top);
+            Size size;
+            Component* component = items.FirstChild();
+            while (component != null)
+            {
+                if (component is IconListViewItem*)
+                {
+                    IconListViewItem* item = cast<IconListViewItem*>(component);
+                    auto result = item->Measure(graphics, iconPadding, textPadding, font);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    item->SetLocations(loc, iconPadding, textPadding);
+                    loc.x = loc.x + item->size.w;
+                    size.w = size.w + item->size.w;
+                    size.h = Max(size.h, item->size.h);
+                }
+                component = component->NextSibling();
+            }
+            size.w = size.w + internalPadding.Horizontal();
+            size.h = size.h + internalPadding.Vertical();
+            auto result = SetSize(size);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        internal ImageAttributes& GetImageAttributes()
+        {
+            return imageAttributes;
+        }
+        internal Result<SolidBrush*> GetTextBrush()
+        {
+            return GetOrInsertSolidBrush(textColor);
+        }
+        internal Result<SolidBrush*> GetSelectedBrush()
+        {
+            return GetOrInsertSolidBrush(iconSelectedColor);
+        }
+        private Result<Bitmap*> GetOrInsertBitmap(const string& bitmapName)
+        {
+            auto it = bitmapMap.Find(bitmapName);
+            if (it != bitmapMap.End())
+            {
+                return it->second;
+            }
+            auto bitmapResult = Bitmap.FromResource(bitmapName);
+            if (bitmapResult.Error())
+            {
+                return Result<Bitmap*>(ErrorId(bitmapResult.GetErrorId()));
+            }
+            UniquePtr<Bitmap> bitmapPtr(new Bitmap(Rvalue(bitmapResult.Value())));
+            if (bitmapPtr->Error())
+            {
+                return Result<Bitmap*>(ErrorId(bitmapPtr->GetErrorId()));
+            }
+            Bitmap* bitmap = bitmapPtr.Get();
+            bitmapMap[bitmapName] = bitmap;
+            bitmaps.Add(Rvalue(bitmapPtr));
+            return Result<Bitmap*>(bitmap);
+        }
+        private Result<SolidBrush*> GetOrInsertSolidBrush(const System.Windows.Color& color)
+        {
+            auto it = brushMap.Find(color);
+            if (it != brushMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                UniquePtr<SolidBrush> solidBrushPtr(new SolidBrush(color));
+                if (solidBrushPtr->Error())
+                {
+                    return Result<SolidBrush*>(ErrorId(solidBrushPtr->GetErrorId()));
+                }
+                SolidBrush* solidBrush = solidBrushPtr.Get();
+                brushMap[color] = solidBrush;
+                brushes.Add(Rvalue(solidBrushPtr));
+                return Result<SolidBrush*>(solidBrush);
+            }
+        }
+        private void SetChanged()
+        {
+            flags = cast<Flags>(flags | Flags.changed);
+        }
+        private void ResetChanged()
+        {
+            flags = cast<Flags>(flags & ~Flags.changed);
+        }
+        private bool Changed() const
+        {
+            return (flags & Flags.changed) != Flags.none;
+        }
+        private Flags flags;
+        private ComponentContainer items;
+        private int numberOfItems;
+        private FontFamily fontFamily;
+        private float fontSize;
+        private Font font;
+        private List<UniquePtr<Bitmap>> bitmaps;
+        private HashMap<string, Bitmap*> bitmapMap;
+        private System.Windows.Color bitmapTransparentColor;
+        private System.Windows.Color iconSelectedColor;
+        private System.Windows.Color textColor;
+        private List<UniquePtr<SolidBrush>> brushes;
+        private HashMap<System.Windows.Color, SolidBrush*> brushMap;
+        private Padding iconPadding;
+        private Padding textPadding;
+        private Padding internalPadding;
+        private ImageAttributes imageAttributes;
+        private StringFormat stringFormat;
+        private IconListViewItem* selectedItem;
+        private Event<IconListViewSelectedIndexChangedEventHandler> selectedIndexChangedEvent;
+        private Event<IconListViewIconDoubleClickedEventHandler> iconDoubleClickedEvent;
+    }
+}

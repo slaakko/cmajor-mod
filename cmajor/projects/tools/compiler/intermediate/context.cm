@@ -6,6 +6,22 @@
 using System;
 using System.Collections;
 
+bool contextMatch = false;
+
+public void SetContextMatch()
+{
+    contextMatch = true;
+}
+
+public bool ContextMatch()
+{
+    return contextMatch;
+}
+
+public void ContextBreak()
+{
+}
+
 namespace intermediate
 {
     public class Context
@@ -46,9 +62,9 @@ namespace intermediate
         {
             types.AddFunctionType(span, typeId, returnTypeRef, paramTypeRefs);
         }
-        public inline void AddGlobalVariable(const System.Lex.Span& span, Type* type, const string& name, Value* initializer)
+        public inline Result<bool> AddGlobalVariable(const System.Lex.Span& span, Type* type, const string& name, Value* initializer)
         {
-            data.AddGlobalVariable(span, type, name, initializer);
+            return data.AddGlobalVariable(span, type, name, initializer);
         }
         public inline Value* GetDefaultBool()
         {
@@ -385,10 +401,16 @@ namespace intermediate
         }
         public Result<Value*> CreateCall(FunctionType* functionType, Value* callee, const List<Value*>& args)
         {
+            int index = 0;
             for (Value* arg : args)
             {
+                if (ContextMatch() && index == 2)
+                {
+                    ContextBreak();
+                }
                 Result<Value*> argResult = CreateArg(arg);
                 if (argResult.Error()) return argResult;
+                ++index;
             }
             Instruction* inst = null;
             if (functionType->ReturnType() == types.GetVoidType())

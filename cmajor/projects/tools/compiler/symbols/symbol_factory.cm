@@ -367,6 +367,42 @@ namespace symbols
             {
                 return Result<Symbol*>(new ClassDelegateTypeEquality(span, name));
             }
+            case SymbolKind.enumTypeDefaultConstructor:
+            {
+                return Result<Symbol*>(new EnumTypeDefaultConstructor(span, name));
+            }
+            case SymbolKind.enumTypeCopyConstructor:
+            {
+                return Result<Symbol*>(new EnumTypeCopyConstructor(span, name));
+            }
+            case SymbolKind.enumTypeMoveConstructor:
+            {
+                return Result<Symbol*>(new EnumTypeMoveConstructor(span, name));
+            }
+            case SymbolKind.enumTypeCopyAssignment:
+            {
+                return Result<Symbol*>(new EnumTypeCopyAssignment(span, name));
+            }
+            case SymbolKind.enumTypeMoveAssignment:
+            {
+                return Result<Symbol*>(new EnumTypeMoveAssignment(span, name));
+            }
+            case SymbolKind.enumTypeReturn:
+            {
+                return Result<Symbol*>(new EnumTypeReturn(span, name));
+            }
+            case SymbolKind.enumTypeEquality:
+            {
+                return Result<Symbol*>(new EnumTypeEquality(span, name));
+            }
+            case SymbolKind.enumTypeToUnderlyingType:
+            {
+                return Result<Symbol*>(new EnumTypeToUnderlyingTypeConversion(span, name));
+            }
+            case SymbolKind.underlyingToEnumType:
+            {
+                return Result<Symbol*>(new UnderlyingTypeToEnumTypeConversion(span, name));
+            }
             case SymbolKind.derivedTypeSymbol:
             {
                 return Result<Symbol*>(new DerivedTypeSymbol(span, name));
@@ -410,6 +446,10 @@ namespace symbols
             case SymbolKind.namespaceSymbol:
             {
                 return Result<Symbol*>(new NamespaceSymbol(span, name));
+            }
+            case SymbolKind.arrayTypeSymbol:
+            {
+                return Result<Symbol*>(new ArrayTypeSymbol(span, name));
             }
             case SymbolKind.arrayLengthFunctionSymbol:
             {

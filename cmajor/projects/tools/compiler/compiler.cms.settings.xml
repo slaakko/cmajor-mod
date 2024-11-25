@@ -2,10 +2,21 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/evaluator.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/class_template_repository.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/concept.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/overload_resolution.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/statement_binder.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/type_binder.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/intermediate/verify.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/class_template_specialization_symbol.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/scope.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/symbol.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/symbols/symbol_table.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/binder/evaluator.cm"/>
-    <currentCursorLine value="1770"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/projects/tools/compiler/intermediate/verify.cm"/>
+    <currentCursorLine value="469"/>
     <breakpoints/>
-    <expandedProjects/>
+    <expandedProjects>
+        <item value="intermediate"/>
+    </expandedProjects>
 </solutionSettings>

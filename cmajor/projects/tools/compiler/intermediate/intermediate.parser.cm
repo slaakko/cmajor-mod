@@ -2324,7 +2324,8 @@ namespace intermediate.parser
                                         }
                                         if (match.hit)
                                         {
-                                            context->AddGlobalVariable(span, tref.GetType(), variableName, null);
+                                            Result<bool> result = context->AddGlobalVariable(span, tref.GetType(), variableName, null);
+                                            if (result.Error()) return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
                                         }
                                         *parentMatch9 = match;
                                     }
@@ -2369,7 +2370,8 @@ namespace intermediate.parser
                                                 initializer.Reset(cast<intermediate.Value*>(match.value));
                                                 if (match.hit)
                                                 {
-                                                    context->AddGlobalVariable(span, tref.GetType(), variableName, initializer.Release());
+                                                    Result<bool> result = context->AddGlobalVariable(span, tref.GetType(), variableName, initializer.Release());
+                                                    if (result.Error()) return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
                                                 }
                                                 *parentMatch12 = match;
                                             }
@@ -4347,7 +4349,9 @@ namespace intermediate.parser
                                         string id;
                                         if (result.Error()) return System.Result<System.Parsing.Match>(ErrorId(result.GetErrorId()));
                                         id = result.Value();
-                                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, context->GetData()->MakeAddressValue(lexer.GetSpan(pos), tref.GetType(), id)));
+                                        Result<intermediate.Value*> addressValueResult = context->GetData()->MakeAddressValue(lexer.GetSpan(pos), tref.GetType(), id, false);
+                                        if (addressValueResult.Error()) return System.Result<System.Parsing.Match>(ErrorId(addressValueResult.GetErrorId()));
+                                        return System.Result<System.Parsing.Match>(System.Parsing.Match(true, addressValueResult.Value()));
                                     }
                                     *parentMatch6 = match;
                                 }
@@ -4929,7 +4933,10 @@ namespace intermediate.parser
                     #endif
                     Result<string> stringValue = ToUtf8(lexer.GetToken(pos).ToString());
                     if (stringValue.Error()) return System.Result<System.Parsing.Match>(ErrorId(stringValue.GetErrorId()));
-                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, context->GetData()->MakeStringValue(span, stringValue.Value())));
+                    string s = Rvalue(stringValue.Value());
+                    Result<intermediate.Value*> valueResult = context->GetData()->MakeStringValue(span, s.Substring(1, s.Length() - 2));
+                    if (valueResult.Error()) return System.Result<System.Parsing.Match>(ErrorId(valueResult.GetErrorId()));
+                    return System.Result<System.Parsing.Match>(System.Parsing.Match(true, valueResult.Value()));
                 }
                 *parentMatch0 = match;
             }
@@ -6244,7 +6251,9 @@ namespace intermediate.parser
                             Result<string> idResult = ToUtf8(lexer.GetToken(pos).ToString());
                             if (idResult.Error()) return System.Result<System.Parsing.Match>(ErrorId(idResult.GetErrorId()));
                             string id = Rvalue(idResult.Value());
-                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, context->GetData()->MakeAddressValue(lexer.GetSpan(pos), type, id)));
+                            Result<intermediate.Value*> addressValueResult = context->GetData()->MakeAddressValue(lexer.GetSpan(pos), type, id, true);
+                            if (addressValueResult.Error()) return System.Result<System.Parsing.Match>(ErrorId(addressValueResult.GetErrorId()));
+                            return System.Result<System.Parsing.Match>(System.Parsing.Match(true, addressValueResult.Value()));
                         }
                         *parentMatch5 = match;
                     }
@@ -9224,7 +9233,7 @@ namespace intermediate.parser
                                                     System.Parsing.Match* parentMatch21 = &match;
                                                     {
                                                         System.Parsing.Match match(false);
-                                                        if (*lexer == COMMA)
+                                                        if (*lexer == COLON)
                                                         {
                                                             auto incResult3 = ++lexer;
                                                             if (incResult3.Error())

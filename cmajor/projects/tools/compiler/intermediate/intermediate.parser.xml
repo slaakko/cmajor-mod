@@ -1043,10 +1043,10 @@
      <group first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
       <sequence first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}">
        <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="Case"/>
-       <kleene first="{#, COMMA}">
-        <group first="{COMMA}">
-         <sequence first="{COMMA}">
-          <token first="{COMMA}" name="COMMA"/>
+       <kleene first="{#, COLON}">
+        <group first="{COLON}">
+         <sequence first="{COLON}">
+          <token first="{COLON}" name="COLON"/>
           <nonterminal first="{BOOL, BYTE, DOUBLE, FLOAT, INT, LONG, SBYTE, SHORT, TYPEID, UINT, ULONG, USHORT, VOID}" ruleName="Case"/>
          </sequence>
         </group>

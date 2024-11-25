@@ -39,9 +39,9 @@ namespace symbols
             #assert(false);
             return Result<intermediate.Type*>(cast<intermediate.Type*>(null));
         }
-        public override TypeSymbol* Unify(TypeSymbol* that, SymbolsContext& context)
+        public override Result<TypeSymbol*> Unify(TypeSymbol* that, SymbolsContext& context)
         {
-            return that;
+            return Result<TypeSymbol*>(that);
         }
         public override TypeSymbol* UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
         {

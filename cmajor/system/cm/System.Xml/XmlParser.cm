@@ -1,0 +1,47 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Xml
+{
+    [nodiscard]
+    public Result<bool> ParseXmlFile(const string& xmlFilePath, XmlContentHandler* contentHandler, System.Lex.FileMap& fileMap)
+    {
+        auto result = System.IO.File.ReadAllText(xmlFilePath);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        return ParseXmlContent(result.Value(), xmlFilePath, contentHandler, fileMap);
+    }
+
+    [nodiscard]
+    public Result<bool> ParseXmlContent(const string& xmlContent, const string& systemId, XmlContentHandler* contentHandler, System.Lex.FileMap& fileMap)
+    {
+        auto utf32Result = ToUtf32(xmlContent);
+        if (utf32Result.Error())
+        {
+            return Result<bool>(ErrorId(utf32Result.GetErrorId()));
+        }
+        return ParseXmlContent(Rvalue(utf32Result.Value()), systemId, contentHandler, fileMap);
+    }
+
+    [nodiscard]
+    public Result<bool> ParseXmlContent(ustring&& xmlContent, const string& systemId, XmlContentHandler* contentHandler, System.Lex.FileMap& fileMap)
+    {
+        System.Lex.TrivialLexer lexer(xmlContent.Chars(), xmlContent.Chars() + xmlContent.Length(), systemId);
+        int fileIndex = fileMap.MapFileName(systemId);
+        lexer.SetFileIndex(fileIndex);
+        XmlProcessor processor(lexer, contentHandler);
+        auto result = XmlParser<System.Lex.TrivialLexer>.Parse(lexer, &processor);
+        if (result.Error())
+        {
+            return Result<bool>(ErrorId(result.GetErrorId()));
+        }
+        fileMap.AddSourceFile(fileIndex, xmlContent, lexer.GetLineStartIndeces());
+        return Result<bool>(true);
+    }
+}

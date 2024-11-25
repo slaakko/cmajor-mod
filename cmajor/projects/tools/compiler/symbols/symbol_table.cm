@@ -177,6 +177,7 @@ namespace symbols
             Map<Uuid, TypeSymbol*> specializationMap;
             for (const auto& classTemplateSpecialization : classTemplateSpecializations)
             {
+                if (!classTemplateSpecialization->IsExportSymbol()) continue;
                 if (classTemplateSpecialization->IsProject() && classTemplateSpecialization->IsBound())
                 {
                     specializationMap[classTemplateSpecialization->TypeId()] = classTemplateSpecialization.Get(); // last wins
@@ -267,6 +268,10 @@ namespace symbols
             {
                 typeMap[t.first] = t.second;
             }
+            for (const auto& f : symbolTable->functionMap)
+            {
+                functionMap[f.first] = f.second;
+            }
             for (const auto& t : symbolTable->conceptMap)
             {
                 conceptMap[t.first] = t.second;
@@ -319,7 +324,7 @@ namespace symbols
             }
             else
             {
-                Result<Symbol*> containerScopeResult = container->GetContainerScope()->Lookup(namespaceName);
+                Result<Symbol*> containerScopeResult = container->GetContainerScope()->Lookup(namespaceName, context);
                 if (containerScopeResult.Error()) return Result<NamespaceSymbol*>(ErrorId(containerScopeResult.GetErrorId()));
                 Symbol* symbol = containerScopeResult.Value();
                 if (symbol != null)
@@ -572,7 +577,9 @@ namespace symbols
             TypeSymbol* thisParamType = null;
             if (currentClass != null)
             {
-                thisParamType = currentClass->AddPointer(context);
+                Result<TypeSymbol*> pointerTypeResult = currentClass->AddPointer(context);
+                if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                thisParamType = pointerTypeResult.Value();
                 thisParam->SetType(thisParamType);
                 thisParam->SetBound();
                 auto result = constructorSymbol->AddMember(thisParam, context);
@@ -627,7 +634,9 @@ namespace symbols
             TypeSymbol* thisParamType = null;
             if (currentClass != null)
             {
-                thisParamType = currentClass->AddPointer(context);
+                Result<TypeSymbol*> pointerTypeResult = currentClass->AddPointer(context);
+                if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                thisParamType = pointerTypeResult.Value();
                 thisParam->SetType(thisParamType);
                 thisParam->SetBound();
                 auto result = destructorSymbol->AddMember(thisParam, context);
@@ -692,16 +701,28 @@ namespace symbols
                 {
                     if (memberFunctionNode.IsConst())
                     {
-                        thisParamType = currentClass->AddConst(context)->AddPointer(context);
+                        Result<TypeSymbol*> constTypeResult = currentClass->AddConst(context);
+                        if (constTypeResult.Error()) return Result<bool>(ErrorId(constTypeResult.GetErrorId()));
+                        TypeSymbol* constType = constTypeResult.Value();
+                        Result<TypeSymbol*> pointerTypeResult = constType->AddPointer(context);
+                        if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                        TypeSymbol* pointerType = pointerTypeResult.Value();
+                        thisParamType = pointerType;
                     }
                     else
                     {
-                        thisParamType = currentClass->AddPointer(context);
+                        Result<TypeSymbol*> pointerTypeResult = currentClass->AddPointer(context);
+                        if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                        TypeSymbol* pointerType = pointerTypeResult.Value();
+                        thisParamType = pointerType;
                     }
                 }
                 else if (currentInterface != null)
                 {
-                    thisParamType = currentInterface->AddPointer(context);
+                    Result<TypeSymbol*> pointerTypeResult = currentInterface->AddPointer(context);
+                    if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                    TypeSymbol* pointerType = pointerTypeResult.Value();
+                    thisParamType = pointerType;
                 }
                 thisParam->SetType(thisParamType);
                 thisParam->SetBound();
@@ -762,11 +783,20 @@ namespace symbols
             TypeSymbol* thisParamType = null;
             if (conversionFunctionNode.IsConst())
             {
-                thisParamType = currentClass->AddConst(context)->AddPointer(context);
+                Result<TypeSymbol*> constTypeResult = currentClass->AddConst(context);
+                if (constTypeResult.Error()) return Result<bool>(ErrorId(constTypeResult.GetErrorId()));
+                TypeSymbol* constType = constTypeResult.Value();
+                Result<TypeSymbol*> pointerTypeResult = constType->AddPointer(context);
+                if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                TypeSymbol* pointerType = pointerTypeResult.Value();
+                thisParamType = pointerType;
             }
             else
             {
-                thisParamType = currentClass->AddPointer(context);
+                Result<TypeSymbol*> pointerTypeResult = currentClass->AddPointer(context);
+                if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                TypeSymbol* pointerType = pointerTypeResult.Value();
+                thisParamType = pointerType;
             }
             thisParam->SetType(thisParamType);
             thisParam->SetBound();
@@ -912,6 +942,7 @@ namespace symbols
                 auto parameterNameResult = ToUtf32("@p" + ToString(parameterIndex));
                 if (parameterNameResult.Error()) return Result<bool>(ErrorId(parameterNameResult.GetErrorId()));
                 parameterName = Rvalue(parameterNameResult.Value());
+                parameterNode.SetId(new IdentifierNode(parameterNode.GetSpan(), parameterNode.FileIndex(), parameterName));
                 artificialId = true;
             }
             ParameterSymbol* parameterSymbol = new ParameterSymbol(parameterNode.GetSpan(), parameterName);
@@ -1151,19 +1182,52 @@ namespace symbols
             return Result<bool>(true);
         }
         [nodiscard]
-        public Result<bool> Resolve(const List<Symbol*>& resolutionList)
+        public Result<bool> AddGlobalVariable(GlobalVariableNode& globalVariableNode, SymbolsContext& context)
         {
-            for (Symbol* symbol : resolutionList)
+            GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSpan(), globalVariableNode.Id()->Str());
+            if (instantiatingTemplate)
             {
-                auto result = symbol->Resolve(this);
-                if (result.Error()) return result;
+                globalVariableSymbol->SetFileIndex(currentFileIndex);
+                globalVariableSymbol->SetModuleId(currentModuleId);
+            }
+            else
+            {
+                globalVariableSymbol->SetFileIndex(currentSourceFile->FileIndex());
+                globalVariableSymbol->SetModuleId(currentSourceFile->ModuleId());
+            }
+            globalVariableSymbol->SetModule(module);
+            MapNode(&globalVariableNode, globalVariableSymbol);
+            Result<bool> result = container->AddMember(globalVariableSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Resolve(const List<Symbol*>& symbolResolutionList, const List<Value*>& valueResolutionList)
+        {
+            for (Symbol* symbol : symbolResolutionList)
+            {
+                if (!symbol->IsResolved())
+                {
+                    Result<bool> result = symbol->Resolve(this);
+                    if (result.Error()) return result;
+                    symbol->SetResolved();
+                }
+            }
+            for (Value* value : valueResolutionList)
+            {
+                if (!value->IsResolved())
+                {
+                    Result<bool> result = value->Resolve(this);
+                    if (result.Error()) return result;
+                    value->SetResolved();
+                }
             }
             return Result<bool>(true);
         }
-        public TypeSymbol* MakeDerivedType(SymbolsContext& context, TypeSymbol* baseType, Derivations derivations)
+        public Result<TypeSymbol*> MakeDerivedType(SymbolsContext& context, TypeSymbol* baseType, Derivations derivations)
         {
             #assert(baseType != null);
-            if (derivations == Derivations.none) return baseType;
+            if (derivations == Derivations.none) return Result<TypeSymbol*>(baseType);
             LockGuard<RecursiveMutex> lock(GetModule()->Lock());
             List<DerivedTypeSymbol*>& mappedDerivedTypes = derivedTypeMap[baseType->TypeId()];
             int n = cast<int>(mappedDerivedTypes.Count());
@@ -1172,7 +1236,7 @@ namespace symbols
                 DerivedTypeSymbol* derivedType = mappedDerivedTypes[i];
                 if (derivedType->GetDerivations() == derivations)
                 {
-                    return derivedType;
+                    return Result<TypeSymbol*>(derivedType);
                 }
             }
             DerivedTypeSymbol* derivedType = new DerivedTypeSymbol(baseType->Span(), MakeDerivedTypeName(baseType, derivations), baseType, derivations);
@@ -1181,7 +1245,42 @@ namespace symbols
             derivedType->ComputeTypeId(context);
             mappedDerivedTypes.Add(derivedType);
             derivedTypes.Add(UniquePtr<DerivedTypeSymbol>(derivedType));
-            return derivedType;
+            if (derivedType->IsPointerType() && !derivedType->BaseType()->IsVoidTypeSymbol() && !derivedType->IsReferenceType())
+            {
+                AliasTypeSymbol* valueType = new AliasTypeSymbol(baseType->Span(), u"ValueType");
+                valueType->SetModule(module);
+                valueType->SetAccess(SymbolAccess.public_);
+                Result<TypeSymbol*> valueTypeResult = derivedType->RemovePointer(context);
+                if (valueTypeResult.Error()) return valueTypeResult;
+                valueType->SetType(valueTypeResult.Value());
+                Result<TypeSymbol*> withoutConstResult = valueType->Type()->RemoveConst(context);
+                if (withoutConstResult.Error()) return withoutConstResult;
+                TypeSymbol* withoutConst = withoutConstResult.Value();
+                if (withoutConst->IsBasicTypeSymbol())
+                {
+                    valueType->SetType(withoutConst);
+                }
+                valueType->SetBound();
+                Result<bool> result = derivedType->AddMember(valueType, context);
+                if (result.Error()) return Result<TypeSymbol*>(ErrorId(result.GetErrorId()));
+                AliasTypeSymbol* referenceType = new AliasTypeSymbol(baseType->Span(), u"ReferenceType");
+                referenceType->SetModule(module);
+                referenceType->SetAccess(SymbolAccess.public_);
+                Result<TypeSymbol*> lvalueRefTypeResult = valueType->Type()->AddLvalueReference(context);
+                if (lvalueRefTypeResult.Error()) return lvalueRefTypeResult;
+                referenceType->SetType(lvalueRefTypeResult.Value());
+                referenceType->SetBound();
+                result = derivedType->AddMember(referenceType, context);
+                if (result.Error()) return Result<TypeSymbol*>(ErrorId(result.GetErrorId()));
+                AliasTypeSymbol* pointerType = new AliasTypeSymbol(baseType->Span(), u"PointerType");
+                pointerType->SetModule(module);
+                pointerType->SetAccess(SymbolAccess.public_);
+                pointerType->SetType(derivedType);
+                pointerType->SetBound();
+                result = derivedType->AddMember(pointerType, context);
+                if (result.Error()) return Result<TypeSymbol*>(ErrorId(result.GetErrorId()));
+            }
+            return Result<TypeSymbol*>(derivedType);
         }
         public ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const List<TypeSymbol*>& templateArgumentTypes)
         {
@@ -1278,14 +1377,23 @@ namespace symbols
             AliasTypeSymbol* iterator = new AliasTypeSymbol(elementType->Span(), u"Iterator");
             iterator->SetModule(module);
             iterator->SetAccess(SymbolAccess.public_);
-            iterator->SetType(arrayType->ElementType()->AddPointer(context));
+            Result<TypeSymbol*> elementPtrTypeResult = arrayType->ElementType()->AddPointer(context);
+            if (elementPtrTypeResult.Error()) return Result<ArrayTypeSymbol*>(ErrorId(elementPtrTypeResult.GetErrorId()));
+            TypeSymbol* elementPtrType = elementPtrTypeResult.Value();
+            iterator->SetType(elementPtrType);
             iterator->SetBound();
             result = arrayType->AddMember(iterator, context);
             if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
             AliasTypeSymbol* constIterator = new AliasTypeSymbol(elementType->Span(), u"ConstIterator");
             constIterator->SetModule(module);
             constIterator->SetAccess(SymbolAccess.public_);
-            constIterator->SetType(arrayType->ElementType()->AddConst(context)->AddPointer(context));
+            Result<TypeSymbol*> constTypeResult = arrayType->ElementType()->AddConst(context);
+            if (constTypeResult.Error()) return Result<ArrayTypeSymbol*>(ErrorId(constTypeResult.GetErrorId()));
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> pointerTypeResult = constType->AddPointer(context);
+            if (pointerTypeResult.Error()) return Result<ArrayTypeSymbol*>(ErrorId(pointerTypeResult.GetErrorId()));
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            constIterator->SetType(pointerType);
             constIterator->SetBound();
             result = arrayType->AddMember(constIterator, context);
             if (result.Error()) return Result<ArrayTypeSymbol*>(ErrorId(result.GetErrorId()));
@@ -1479,12 +1587,16 @@ namespace symbols
             polymorphicClasses.Insert(polymorphicClass);
             return Result<bool>(true);
         }
+        public inline const Set<ClassTypeSymbol*>& PolymorphicClasses() const
+        {
+            return polymorphicClasses;
+        }
         public void AddConversion(FunctionSymbol* conversion)
         {
             LockGuard<RecursiveMutex> lock(GetModule()->Lock());
             conversionTable.AddConversion(conversion);
         }
-        public FunctionSymbol* GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context)
+        public Result<FunctionSymbol*> GetConversion(TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context)
         {
             LockGuard<RecursiveMutex> lock(GetModule()->Lock());
             return conversionTable.GetConversion(sourceType, targetType, context);
@@ -1497,6 +1609,22 @@ namespace symbols
         public inline void SetCurrentClass(ClassTypeSymbol* currentClass_)
         {
             currentClass = currentClass_;
+        }
+        public void MapNs(NamespaceSymbol* fromNs, NamespaceSymbol* toNs)
+        {
+            nsMap[fromNs] = toNs;
+        }
+        public NamespaceSymbol* GetMappedNs(NamespaceSymbol* fromNs) const
+        {
+            auto it = nsMap.Find(fromNs);
+            if (it != nsMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
         }
         private Module* module;
         private List<Uuid> derivationIds;
@@ -1537,6 +1665,7 @@ namespace symbols
         private Set<ClassTypeSymbol*> polymorphicClasses;
         private ConversionTable conversionTable;
         private List<UniquePtr<FunctionSymbol>> functionSymbols;
+        private Map<NamespaceSymbol*, NamespaceSymbol*> nsMap;
     }
 
     [nodiscard]
@@ -1599,6 +1728,34 @@ namespace symbols
             boolTypeSymbol, sbyteTypeSymbol, byteTypeSymbol, shortTypeSymbol, ushortTypeSymbol, intTypeSymbol, uintTypeSymbol,
             longTypeSymbol, ulongTypeSymbol, floatTypeSymbol, doubleTypeSymbol, charTypeSymbol, wcharTypeSymbol, ucharTypeSymbol, voidTypeSymbol);
         if (result.Error()) return result;
+        if (!IntrinsicConcepts.Instance().Initialized())
+        {
+            IntrinsicConcepts.Instance().SetInitialized();
+            IntrinsicConcepts.Instance().AddIntrinsicConcept(new SameConceptNode(rootSpan, 0, true));
+            IntrinsicConcepts.Instance().AddIntrinsicConcept(new DerivedConceptNode(rootSpan, 0, true));
+            IntrinsicConcepts.Instance().AddIntrinsicConcept(new ConvertibleConceptNode(rootSpan, 0, true));
+            IntrinsicConcepts.Instance().AddIntrinsicConcept(new ExplicitlyConvertibleConceptNode(rootSpan, 0, true));
+            IntrinsicConcepts.Instance().AddIntrinsicConcept(new CommonConceptNode(rootSpan, 0, true));
+            IntrinsicConcepts.Instance().AddIntrinsicConcept(new NonreferenceTypeConceptNode(rootSpan, 0, true));
+        }
+        for (const UniquePtr<ConceptNode>& conceptNode : IntrinsicConcepts.Instance().GetIntrinsicConcepts())
+        {
+            ConceptNode* node = conceptNode.Get();
+            symbolTable->BeginConcept(*node, false);
+            ConceptSymbol* conceptSymbol = cast<ConceptSymbol*>(symbolTable->Container());
+            conceptSymbol->SetAccess(SymbolAccess.public_);
+            int n = conceptNode->TypeParameters().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                IdentifierNode* typeParamId = conceptNode->TypeParameters()[i];
+                Result<bool> result = symbolTable->AddTemplateParameter(typeParamId, context);
+                if (result.Error()) return result;
+            }
+            Result<bool> result = symbolTable->EndConcept(context);
+            if (result.Error()) return result;
+            result = conceptSymbol->ComputeName();
+            if (result.Error()) return result;
+        }
         return Result<bool>(true);
     }
 }

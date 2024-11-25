@@ -995,6 +995,7 @@ void ConstraintChecker::Visit(cmajor::ast::FunctionConstraintNode& functionConst
     std::vector<cmajor::symbols::TypeSymbol*> parameterTypes;
     std::vector<FunctionScopeLookup> lookups;
     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
+    lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes));
     lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_, firstTypeArgument->BaseType()->ClassInterfaceEnumDelegateOrNsScope()));
     int n = functionConstraintNode.Parameters().Count();
     if (firstTypeArgument->IsPointerType() &&
@@ -1043,6 +1044,7 @@ void ConstraintChecker::Visit(cmajor::ast::FunctionConstraintNode& functionConst
             arguments.clear();
             lookups.clear();
             lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::this_and_base_and_parent, containerScope));
+            lookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes));
             parameterTypes.clear();
             int n = functionConstraintNode.Parameters().Count();
             for (int i = 0; i < n; ++i)

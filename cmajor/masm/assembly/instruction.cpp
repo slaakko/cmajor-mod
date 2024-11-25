@@ -42,7 +42,7 @@ const char* opCodeStr[] =
     "xadd", "xchg", "xlat", "xlatb", "xor", 
     // floating-point support:
     "movdqa", "movq", "movss", "addsd", "addss", "subsd", "subss", "mulsd", "mulss", "divsd", "divss", "ucomisd", "ucomiss", "comisd", "comiss",
-    "xorpd", "xorps", "cvtsi2sd", "cvtsi2ss", "cvttsd2si", "cvttss2si", "cvtss2sd", "cvtsd2ss",
+    "xorpd", "xorps", "cvtsi2sd", "cvtsi2ss", "cvttss2si", "cvtss2sd", "cvtsd2ss", "cvttsd2si",
     // data definition support:
     "DB", "DW", "DD", "DQ", "REAL4", "REAL8"
 };

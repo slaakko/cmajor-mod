@@ -1,0 +1,1106 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace System.Windows
+{
+    public class delegate void WindowClosingEventHandler(bool& cancelClose);
+
+    public class delegate void WindowClosedEventHandler();
+
+    public delegate int GetDialogResultFunction(void* dialogWindowPtr);
+
+    public delegate void DialogWindowKeyPreviewFunction(void* windowPtr, uint keyCode, bool shift, bool control, bool alt, bool keyDown, bool& handled);
+
+    public delegate void ModelessWindowKeyPreviewFunction(uint keyCode, bool shift, bool control, bool alt, bool keyDown, bool& handled);
+
+    public class delegate void KeyPreviewMethod(Keys key, bool shift, bool control, bool alt, bool keyDown, bool& handled);
+
+    public Color DefaultWindowBackgroundColor()
+    {
+        return GetSystemColor(SystemColor.COLOR_WINDOW);
+    }
+
+    public string DefaultWindowFontFamilyName()
+    {
+        return "Microsoft Sans Serif";
+    }
+
+    public float DefaultWindowFontSize()
+    {
+        return 8.25f;
+    }
+
+    internal class DialogGuard
+    {
+        public DialogGuard(Window* window_) : window(window_)
+        {
+            window->SetShowingDialog();
+        }
+        public ~DialogGuard()
+        {
+            window->ResetShowingDialog();
+        }
+        private Window* window;
+    }
+
+    public ControlCreateParams& WindowControlCreateParams(ControlCreateParams& controlCreateParams,
+        const string& windowClassName, const string& caption, const Point& location, const Size& size)
+    {
+        return controlCreateParams.SetWindowClassName(windowClassName).
+            SetWindowClassStyle(cast<WindowClassStyle>(WindowClassStyle.CS_VREDRAW | WindowClassStyle.CS_HREDRAW)).
+            SetWindowStyle(WindowStyle.WS_OVERLAPPEDWINDOW).SetText(caption).SetLocation(location).SetSize(size);
+    }
+
+    public ControlCreateParams& WindowControlCreateParams(ControlCreateParams& controlCreateParams, const string& caption)
+    {
+        return WindowControlCreateParams(controlCreateParams, "System.Windows.Window", caption, Point.Default(), Size.Default());
+    }
+
+    public class WindowCreateParams
+    {
+        public WindowCreateParams(ControlCreateParams& controlCreateParams_) :
+            controlCreateParams(controlCreateParams_),
+            fontFamilyName(DefaultWindowFontFamilyName()),
+            fontSize(DefaultWindowFontSize()),
+            fontStyle(FontStyle.regular),
+            state(WindowState.normal)
+        {
+        }
+        public WindowCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public WindowCreateParams& SetFontFamilyName(const string& fontFamilyName_)
+        {
+            fontFamilyName = fontFamilyName_;
+            return *this;
+        }
+        public WindowCreateParams& SetFontSize(float fontSize_)
+        {
+            fontSize = fontSize_;
+            return *this;
+        }
+        public WindowCreateParams& SetFontStyle(FontStyle fontStyle_)
+        {
+            fontStyle = fontStyle_;
+            return *this;
+        }
+        public WindowCreateParams& SetWindowState(WindowState state_)
+        {
+            state = state_;
+            return *this;
+        }
+        public ControlCreateParams& controlCreateParams;
+        public string fontFamilyName;
+        public float fontSize;
+        public FontStyle fontStyle;
+        public WindowState state;
+    }
+
+    public class Window : ContainerControl
+    {
+        private enum Flags : sbyte
+        {
+            none = 0, mainWindow = 1 << 0, showingDialog = 1 << 1
+        }
+        public Window(const string& windowClassName, WindowClassStyle classStyle, WindowStyle style, ExtendedWindowStyle exStyle,
+            const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors,
+            const string& fontFamilyName_, float fontSize_, FontStyle fontStyle_, WindowState state_) :
+            base(windowClassName, classStyle, style, exStyle, backgroundColor, text, location, size, dock, anchors), flags(Flags.none), state(state_),
+            menuBar(null), contextMenu(null), defaultButton(null), cancelButton(null), focusedControl(null), dialogResult(DialogResult.none),
+            keyPreviewMethod(), fontFamilyName(fontFamilyName_), fontSize(fontSize_), fontStyle(fontStyle_)
+        {
+            auto initResult = Init();
+            if (initResult.Error())
+            {
+                SetErrorId(initResult.GetErrorId());
+            }
+        }
+        public Window(const string& windowClassName, WindowClassStyle classStyle, WindowStyle style, ExtendedWindowStyle exStyle,
+            const Color& backgroundColor, const string& text, const Point& location, const Size& size, Dock dock, Anchors anchors, WindowState state) :
+            this(windowClassName, classStyle, style, exStyle, backgroundColor, text, location, size, dock, anchors,
+                DefaultWindowFontFamilyName(), DefaultWindowFontSize(), FontStyle.regular, state)
+        {
+        }
+        public Window(const string& windowClassName, WindowStyle style, ExtendedWindowStyle exStyle, const string& text, const Point& location,
+            const Size& size, Dock dock, Anchors anchors,
+            const string& fontFamilyName_, float fontSize_, FontStyle fontStyle_, WindowState state) :
+            this(windowClassName, cast<WindowClassStyle>(WindowClassStyle.CS_VREDRAW | WindowClassStyle.CS_HREDRAW), style, exStyle,
+            DefaultWindowBackgroundColor(), text, location, size, dock, anchors, fontFamilyName_, fontSize_, fontStyle_, state)
+        {
+        }
+        public Window(const string& windowClassName, WindowStyle style, ExtendedWindowStyle exStyle, const string& text, const Point& location,
+            const Size& size, Dock dock, Anchors anchors, WindowState state) :
+            this(windowClassName, style, exStyle, text, location, size, dock, anchors, DefaultWindowFontFamilyName(), DefaultWindowFontSize(),
+            FontStyle.regular, state)
+        {
+        }
+        public Window(const string& caption, const string& fontFamilyName_, float fontSize_, FontStyle fontStyle_) :
+            this("System.Windows.Window", WindowStyle.WS_OVERLAPPEDWINDOW, DefaultExtendedWindowStyle(),
+            caption, Point.Default(), Size.Default(), Dock.none, Anchors.none, fontFamilyName_, fontSize_, fontStyle_, WindowState.normal)
+        {
+        }
+        public Window(const string& caption) :
+            this(caption, DefaultWindowFontFamilyName(), DefaultWindowFontSize(), FontStyle.regular)
+        {
+        }
+        public Window(WindowCreateParams& createParams) :
+            base(createParams.controlCreateParams),
+            flags(Flags.none), state(createParams.state),
+            menuBar(null), contextMenu(null), defaultButton(null), cancelButton(null), focusedControl(null), dialogResult(DialogResult.none),
+            keyPreviewMethod(), fontFamilyName(createParams.fontFamilyName), fontSize(createParams.fontSize), fontStyle(createParams.fontStyle)
+        {
+            auto initResult = Init();
+            if (initResult.Error())
+            {
+                SetErrorId(initResult.GetErrorId());
+            }
+        }
+        private Result<bool> Init()
+        {
+            SetKeyPreviewMethod(DefaultKeyPreview);
+            if (Handle() != null)
+            {
+                auto createResult = OnCreated();
+                if (createResult.Error())
+                {
+                    return Result<bool>(ErrorId(createResult.GetErrorId()));
+                }
+            }
+            if (!fontFamilyName.IsEmpty())
+            {
+                FontFamily fontFamily = FontFamily(fontFamilyName);
+                if (fontFamily.Error())
+                {
+                    return Result<bool>(ErrorId(fontFamily.GetErrorId()));
+                }
+                Font font = Font(Rvalue(fontFamily), fontSize, fontStyle, Unit.point);
+                if (font.Error())
+                {
+                    return Result<bool>(ErrorId(font.GetErrorId()));
+                }
+                SetFont(Rvalue(font));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<DialogResult> ShowDialog(Window& parentWindow)
+        {
+            DialogGuard guard(this);
+            auto parentLocResult = parentWindow.Location();
+            if (parentLocResult.Error())
+            {
+                return Result<DialogResult>(ErrorId(parentLocResult.GetErrorId()));
+            }
+            Point parentLoc = parentLocResult.Value();
+            Size parentSize = parentWindow.GetSize();
+            Size size = GetSize();
+            auto boolResult = SetLocation(Point(Max(cast<int>(0), parentLoc.x + (parentSize.w - size.w) / 2),
+                Max(cast<int>(0), parentLoc.y + (parentSize.h - size.h) / 2)));
+            if (boolResult.Error())
+            {
+                return Result<DialogResult>(ErrorId(boolResult.GetErrorId()));
+            }
+            SetDialogResult(DialogResult.none);
+            GetDialogResultFunction dialogResultFunction = System.Windows.GetDialogResult;
+            DialogWindowKeyPreviewFunction keyPreviewFunction = System.Windows.DialogWindowKeyPreview;
+            int result = WinDialogWindowMessageLoop(Handle(), parentWindow.Handle(), cast<void*>(dialogResultFunction), cast<void*>(keyPreviewFunction), this);
+            return cast<DialogResult>(result);
+        }
+        protected override Result<bool> OnCreated()
+        {
+            if (!BaseOnCreatedCalled())
+            {
+                SetBaseOnCreatedCalled();
+                auto result = base->OnCreated();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            if (!ScreenMetrics.Calculated())
+            {
+                auto graphicsResult = Graphics.FromWindowHandle(Handle());
+                if (graphicsResult.Error())
+                {
+                    return Result<bool>(ErrorId(graphicsResult.GetErrorId()));
+                }
+                Graphics& graphics = graphicsResult.Value();
+                ScreenMetrics.Calculate(graphics);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                const string& handleStr = handleResult.Value();
+                auto parentTextResult = ParentText();
+                if (parentTextResult.Error())
+                {
+                    return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                }
+                const string& parentText = parentTextResult.Value();
+                auto result = log->WriteLine(string(' ', level) + "Window." + Text() + ".handle=" + handleStr + " " + parentText +
+                    "[" + Rect(Point(), GetSize()).ToString() + "]");
+                if (result.Error()) return result;
+            }
+            Component* child = Children().FirstChild();
+            while (child != null)
+            {
+                if (child is Control*)
+                {
+                    Control* childControl = cast<Control*>(child);
+                    auto childResult = childControl->PrintWindowTree(level + 1);
+                    if (childResult.Error())
+                    {
+                        return Result<bool>(ErrorId(childResult.GetErrorId()));
+                    }
+                }
+                child = child->NextSibling();
+            }
+            return Result<bool>(true);
+        }
+        protected override Result<bool> ProcessMessage(Message& message)
+        {
+            switch (message.msg)
+            {
+                case WM_CLOSE:
+                {
+                    bool cancelClose = false;
+                    auto result = OnWindowClosing(cancelClose);
+                    if (result.Error()) return result;
+                    if (cancelClose)
+                    {
+                        message.result = 0;
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+                case WM_DESTROY:
+                {
+                    bool processed = false;
+                    OnWindowClosed(processed);
+                    if (processed)
+                    {
+                        message.result = 0;
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+                case WM_COMMAND: case WM_MOVE: case WM_SIZE: case WM_PAINT: case WM_MOUSEMOVE: case WM_MOUSELEAVE: case WM_LBUTTONDOWN:
+                case WM_LBUTTONUP: case WM_LBUTTONDBLCLK: case WM_RBUTTONDOWN: case WM_RBUTTONUP:
+                case WM_CHAR: case WM_KEYDOWN: case WM_KEYUP: case WM_SYSCOMMAND: case WM_HSCROLL: case WM_VSCROLL: case WM_MOUSEWHEEL:
+                case WM_TIMER: case WM_SETFOCUS: case WM_KILLFOCUS:
+                case WM_SHOWWINDOW: case WM_CLIPBOARDUPDATE:
+                {
+                    return base->ProcessMessage(message);
+                }
+            }
+            return Result<bool>(false);
+        }
+        [nodiscard]
+        public Result<bool> Close()
+        {
+            return PostMessage(Handle(), WM_CLOSE, 0u, 0);
+        }
+        protected virtual Result<bool> OnWindowClosing(bool& cancelClose)
+        {
+            windowClosingEvent.Fire(cancelClose);
+            return Result<bool>(true);
+        }
+        protected virtual void OnWindowClosed(bool& processed)
+        {
+            if (windowClosedEvent.Handlers().IsEmpty())
+            {
+                if (IsMainWindow())
+                {
+                    Application.Exit();
+                    processed = true;
+                }
+            }
+            else
+            {
+                windowClosedEvent.Fire();
+                processed = true;
+            }
+        }
+        [nodiscard]
+        protected override Result<bool> OnControlAdded(ControlEventArgs& args)
+        {
+            auto result = base->OnControlAdded(args);
+            if (result.Error()) return result;
+            Control* control = args.control;
+            if (control is MenuBar*)
+            {
+                menuBar = cast<MenuBar*>(control);
+            }
+            else if (control is Button*)
+            {
+                Button* button = cast<Button*>(control);
+                if (button->IsDefault())
+                {
+                    SetDefaultButton(button);
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnControlRemoved(ControlEventArgs& args)
+        {
+            auto result = base->OnControlRemoved(args);
+            if (result.Error()) return result;
+            Control* control = args.control;
+            if (control == menuBar)
+            {
+                menuBar = null;
+            }
+            else if (control == defaultButton)
+            {
+                defaultButton = null;
+            }
+            else if (control == cancelButton)
+            {
+                cancelButton = null;
+            }
+            return Result<bool>(true);
+        }
+        public void DefaultKeyPreview(Keys key, bool shift, bool control, bool alt, bool keyDown, bool& handled)
+        {
+            if (keyDown)
+            {
+                Keys modifierKeys = Keys.none;
+                if (shift)
+                {
+                    modifierKeys = cast<Keys>(modifierKeys | Keys.shiftModifier);
+                }
+                if (control)
+                {
+                    modifierKeys = cast<Keys>(modifierKeys | Keys.controlModifier);
+                }
+                if (alt)
+                {
+                    modifierKeys = cast<Keys>(modifierKeys | Keys.altModifier);
+                }
+                key = cast<Keys>(key | modifierKeys);
+                switch (key)
+                {
+                    case Keys.enter:
+                    {
+                        if (ShowingDialog())
+                        {
+                            if (focusedControl != null)
+                            {
+                                if (focusedControl is TextBox*)
+                                {
+                                    TextBox* textBox = cast<TextBox*>(focusedControl);
+                                    if (textBox->IsMultiline())
+                                    {
+                                        return;
+                                    }
+                                }
+                            }
+                            if (focusedControl != null)
+                            {
+                                if (focusedControl is Button*)
+                                {
+                                    Button* button = cast<Button*>(focusedControl);
+                                    auto result = button->OnClickInternal();
+                                    if (result.Error())
+                                    {
+                                        SetErrorId(result.GetErrorId());
+                                        return;
+                                    }
+                                    handled = true;
+                                }
+                            }
+                            if (!handled)
+                            {
+                                if (defaultButton != null && defaultButton->IsEnabled())
+                                {
+                                    auto result = defaultButton->OnClickInternal();
+                                    if (result.Error())
+                                    {
+                                        SetErrorId(result.GetErrorId());
+                                        return;
+                                    }
+                                    handled = true;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.escape:
+                    {
+                        if (ShowingDialog())
+                        {
+                            if (cancelButton != null)
+                            {
+                                auto result = cancelButton->OnClickInternal();
+                                if (result.Error())
+                                {
+                                    SetErrorId(result.GetErrorId());
+                                    return;
+                                }
+                                handled = true;
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.tab:
+                    {
+                        auto result = FocusNext();
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
+                        handled = true;
+                        break;
+                    }
+                    case cast<Keys>(Keys.shiftModifier | Keys.tab):
+                    {
+                        auto result = FocusPrev();
+                        if (result.Error())
+                        {
+                            SetErrorId(result.GetErrorId());
+                            return;
+                        }
+                        handled = true;
+                        break;
+                    }
+                }
+            }
+        }
+        [nodiscard]
+        protected override Result<bool> OnKeyDown(KeyEventArgs& args)
+        {
+            auto result = base->OnKeyDown(args);
+            if (result.Error()) return result;
+            if (!args.handled)
+            {
+                switch (args.key)
+                {
+                    case Keys.enter:
+                    {
+                        if (ShowingDialog())
+                        {
+                            if (focusedControl != null)
+                            {
+                                if (focusedControl is Button*)
+                                {
+                                    Button* button = cast<Button*>(focusedControl);
+                                    result = button->OnClickInternal();
+                                    if (result.Error()) return result;
+                                    args.handled = true;
+                                }
+                            }
+                            if (!args.handled)
+                            {
+                                if (defaultButton != null && defaultButton->IsEnabled())
+                                {
+                                    result = defaultButton->OnClickInternal();
+                                    if (result.Error()) return result;
+                                    args.handled = true;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.escape:
+                    {
+                        if (ShowingDialog())
+                        {
+                            if (cancelButton != null)
+                            {
+                                result = cancelButton->OnClickInternal();
+                                if (result.Error()) return result;
+                                args.handled = true;
+                            }
+                        }
+                        break;
+                    }
+                    case Keys.tab:
+                    {
+                        auto result = FocusNext();
+                        if (result.Error()) return result;
+                        args.handled = true;
+                        break;
+                    }
+                    case cast<Keys>(Keys.shiftModifier | Keys.tab):
+                    {
+                        auto result = FocusPrev();
+                        if (result.Error()) return result;
+                        args.handled = true;
+                        break;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseMove(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseMove(args);
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                result = menuBar->MouseMoveInternal(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseDown(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseDown(args);
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                result = menuBar->MouseDownInternal(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnMouseUp(MouseEventArgs& args)
+        {
+            auto result = base->OnMouseUp(args);
+            if (result.Error()) return result;
+            if (menuBar != null)
+            {
+                result = menuBar->MouseUpInternal(args);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected override Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            if (Debug.Paint())
+            {
+                Rect r(Point(), GetSize());
+                LogView* log = Application.GetLogView();
+                if (log != null)
+                {
+                    auto result = log->WriteLine("Window.OnPaint: " + r.ToString());
+                    if (result.Error()) return result;
+                }
+            }
+            auto clearResult = args.graphics.Clear(BackgroundColor());
+            if (clearResult.Error())
+            {
+                return Result<bool>(ErrorId(clearResult.GetErrorId()));
+            }
+            return base->OnPaint(args);
+        }
+        [nodiscard]
+        protected override Result<bool> OnGotFocus()
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                auto result = log->WriteLine("Window.OnGotFocus: " + Text());
+                if (result.Error()) return result;
+            }
+            auto result = base->OnGotFocus();
+            if (result.Error()) return result;
+            Application.SetActiveWindow(this);
+            result = FocusNext();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        protected override Result<bool> OnLostFocus()
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                auto result = log->WriteLine("Window.OnLostFocus: " + Text());
+                if (result.Error()) return result;
+            }
+            auto result = base->OnLostFocus();
+            if (result.Error()) return result;
+            Application.SetActiveWindow(null);
+            return Result<bool>(true);
+        }
+        public WindowState GetWindowState() const
+        {
+            return state;
+        }
+        [nodiscard]
+        public Result<bool> SetWindowState(WindowState newState)
+        {
+            if (state != newState)
+            {
+                switch (state)
+                {
+                    case WindowState.normal:
+                    {
+                        switch (newState)
+                        {
+                            case WindowState.minimized:
+                            {
+                                auto result = ShowWindow(ShowCommand.SW_MINIMIZE);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case WindowState.maximized:
+                            {
+                                auto result = ShowWindow(ShowCommand.SW_MAXIMIZE);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    case WindowState.minimized: case WindowState.maximized:
+                    {
+                        switch (newState)
+                        {
+                            case WindowState.normal:
+                            {
+                                auto result = ShowWindow(ShowCommand.SW_RESTORE);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case WindowState.minimized:
+                            {
+                                auto result = ShowWindow(ShowCommand.SW_MINIMIZE);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                            case WindowState.maximized:
+                            {
+                                auto result = ShowWindow(ShowCommand.SW_MAXIMIZE);
+                                if (result.Error()) return result;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                state = newState;
+            }
+            return Result<bool>(true);
+        }
+        public MenuBar* GetMenuBar() const
+        {
+            return menuBar;
+        }
+        public ContextMenu* GetContextMenu() const
+        {
+            return contextMenu;
+        }
+        [nodiscard]
+        public Result<bool> SetContextMenu(ContextMenu* contextMenu_)
+        {
+            auto result = RemoveContextMenu();
+            if (result.Error()) return result;
+            contextMenu = contextMenu_;
+            return AddChild(contextMenu);
+        }
+        [nodiscard]
+        public Result<bool> RemoveContextMenu()
+        {
+            if (contextMenu != null)
+            {
+                auto result = HideContextMenu();
+                if (result.Error()) return result;
+                Result<UniquePtr<Control>> removeResult = RemoveChild(contextMenu);
+                if (removeResult.Error())
+                {
+                    return Result<bool>(ErrorId(removeResult.GetErrorId()));
+                }
+                contextMenu = null;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> ShowContextMenu(ContextMenu* contextMenu_, const Point& ptInScreenCoords)
+        {
+            auto result = SetContextMenu(contextMenu_);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto windowLocResult = Location();
+            if (windowLocResult.Error())
+            {
+                return Result<bool>(ErrorId(windowLocResult.GetErrorId()));
+            }
+            Point windowLoc = windowLocResult.Value();
+            Size windowSize = GetSize();
+            Point windowEdgeLoc(windowLoc.x + windowSize.w, windowLoc.y + windowSize.h);
+            auto clientToScreenResult = ClientToScreen(windowEdgeLoc);
+            if (clientToScreenResult.Error())
+            {
+                return Result<bool>(ErrorId(clientToScreenResult.GetErrorId()));
+            }
+            Point screenWindowEdgeLoc = clientToScreenResult.Value();
+            result = contextMenu->CalculateSize();
+            if (result.Error()) return result;
+            Size contextMenuSize = contextMenu->GetSize();
+            if (ptInScreenCoords.x + contextMenuSize.w >= screenWindowEdgeLoc.x)
+            {
+                ptInScreenCoords.Offset(-contextMenuSize.w, 0);
+            }
+            if (ptInScreenCoords.y + contextMenuSize.h >= screenWindowEdgeLoc.y)
+            {
+                ptInScreenCoords.Offset(0, -contextMenuSize.h);
+            }
+            auto screenToClientResult = ScreenToClient(ptInScreenCoords);
+            if (screenToClientResult.Error())
+            {
+                return Result<bool>(ErrorId(screenToClientResult.GetErrorId()));
+            }
+            Point loc = screenToClientResult.Value();
+            result = contextMenu->SetLocation(loc);
+            if (result.Error()) return result;
+            result = contextMenu->BringToFront();
+            if (result.Error()) return result;
+            result = contextMenu->Show();
+            if (result.Error()) return result;
+            result = contextMenu->Invalidate();
+            if (result.Error()) return result;
+            contextMenu->Update();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> HideContextMenu()
+        {
+            if (contextMenu != null)
+            {
+                auto locationResult = contextMenu->Location();
+                if (locationResult.Error())
+                {
+                    return Result<bool>(ErrorId(locationResult.GetErrorId()));
+                }
+                Rect rect(locationResult.Value(), contextMenu->GetSize());
+                auto result = contextMenu->Hide();
+                if (result.Error()) return result;
+                result = Invalidate(rect);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public Event<WindowClosingEventHandler, bool>& WindowClosingEvent()
+        {
+            return windowClosingEvent;
+        }
+        public Event<WindowClosedEventHandler>& WindowClosedEvent()
+        {
+            return windowClosedEvent;
+        }
+        [nodiscard]
+        public Result<bool> SetIcon(const Icon& icon)
+        {
+            auto result = SetClassLong(Handle(), ClassLongIndex.GCL_HICON, cast<long>(cast<ulong>(icon.Handle())));
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetSmallIcon(const Icon& icon)
+        {
+            auto result = SetClassLong(Handle(), ClassLongIndex.GCL_HICONSM, cast<long>(cast<ulong>(icon.Handle())));
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        internal inline int GetDialogResult() const
+        {
+            return cast<int>(dialogResult);
+        }
+        public inline void SetDialogResult(DialogResult dialogResult_)
+        {
+            dialogResult = dialogResult_;
+        }
+        [nodiscard]
+        public Result<bool> FocusNext()
+        {
+            LogView* logView = Application.GetLogView();
+            if (focusedControl == null)
+            {
+                Component* child = Children().FirstChild();
+                while (child != null)
+                {
+                    if (child is Control*)
+                    {
+                        Control* control = cast<Control*>(child);
+                        Control* tabStopChild = control->GetFirstEnabledTabStopControl();
+                        if (tabStopChild != null)
+                        {
+                            tabStopChild->SetFocus();
+                            focusedControl = tabStopChild;
+                            if (logView != null)
+                            {
+                                auto result = logView->WriteLine("focused: " + string(typename(*focusedControl)) + ": " + focusedControl->Text());
+                                if (result.Error()) return result;
+                            }
+                            return Result<bool>(true);
+                        }
+                    }
+                    child = child->NextSibling();
+                }
+            }
+            else
+            {
+                Component* parent = null;
+                Component* child = focusedControl;
+                ComponentContainer* container = child->GetContainer();
+                if (container != null)
+                {
+                    parent = container->Parent();
+                }
+                while (child != null)
+                {
+                    child = child->NextSibling();
+                    while (child != null)
+                    {
+                        if (child is Control*)
+                        {
+                            Control* control = cast<Control*>(child);
+                            Control* tabStopChild = control->GetFirstEnabledTabStopControl();
+                            if (tabStopChild != null)
+                            {
+                                tabStopChild->SetFocus();
+                                focusedControl = tabStopChild;
+                                return Result<bool>(true);
+                            }
+                        }
+                        child = child->NextSibling();
+                    }
+                    child = parent;
+                    if (parent != null)
+                    {
+                        container = parent->GetContainer();
+                        if (container != null)
+                        {
+                            parent = container->Parent();
+                        }
+                        else
+                        {
+                            parent = null;
+                        }
+                    }
+                }
+                focusedControl = null;
+                auto result = FocusNext();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> FocusPrev()
+        {
+            LogView* logView = Application.GetLogView();
+            if (focusedControl == null)
+            {
+                Component* child = Children().LastChild();
+                while (child != null)
+                {
+                    if (child is Control*)
+                    {
+                        Control* control = cast<Control*>(child);
+                        Control* tabStopChild = control->GetLastEnabledTabStopControl();
+                        if (tabStopChild != null)
+                        {
+                            tabStopChild->SetFocus();
+                            focusedControl = tabStopChild;
+                            if (logView != null)
+                            {
+                                auto result = logView->WriteLine("focused: " + string(typename(*focusedControl)) + ": " + focusedControl->Text());
+                                if (result.Error()) return result;
+                            }
+                            return Result<bool>(true);
+                        }
+                    }
+                    child = child->PrevSibling();
+                }
+            }
+            else
+            {
+                Component* parent = null;
+                Component* child = focusedControl;
+                ComponentContainer* container = child->GetContainer();
+                if (container != null)
+                {
+                    parent = container->Parent();
+                }
+                while (child != null)
+                {
+                    child = child->PrevSibling();
+                    while (child != null)
+                    {
+                        if (child is Control*)
+                        {
+                            Control* control = cast<Control*>(child);
+                            Control* tabStopChild = control->GetLastEnabledTabStopControl();
+                            if (tabStopChild != null)
+                            {
+                                tabStopChild->SetFocus();
+                                focusedControl = tabStopChild;
+                                return Result<bool>(true);
+                            }
+                        }
+                        child = child->PrevSibling();
+                    }
+                    child = parent;
+                    if (parent != null)
+                    {
+                        container = parent->GetContainer();
+                        if (container != null)
+                        {
+                            parent = container->Parent();
+                        }
+                        else
+                        {
+                            parent = null;
+                        }
+                    }
+                }
+                focusedControl = null;
+                auto result = FocusPrev();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public inline Control* GetFocusedControl() const
+        {
+            return focusedControl;
+        }
+        public void ResetFocusedControl()
+        {
+            focusedControl = null;
+        }
+        internal inline void SetFocusedControl(Control* focusedControl_)
+        {
+            focusedControl = focusedControl_;
+        }
+        public inline const KeyPreviewMethod& GetKeyPreviewMethod() const
+        {
+            return keyPreviewMethod;
+        }
+        public void SetKeyPreviewMethod(const KeyPreviewMethod& keyPreviewMethod_)
+        {
+            keyPreviewMethod = keyPreviewMethod_;
+        }
+        public inline bool IsMainWindow() const
+        {
+            return (flags & Flags.mainWindow) != Flags.none;
+        }
+        public inline void SetAsMainWindow()
+        {
+            flags = cast<Flags>(flags | Flags.mainWindow);
+        }
+        public inline Button* DefaultButton() const
+        {
+            return defaultButton;
+        }
+        public void SetDefaultButton(Button* defaultButton_)
+        {
+            if (defaultButton != defaultButton_)
+            {
+                if (defaultButton != null)
+                {
+                    defaultButton->ResetDefault();
+                }
+                defaultButton = defaultButton_;
+                if (defaultButton != null)
+                {
+                    defaultButton->SetDefault();
+                }
+            }
+        }
+        public inline Button* CancelButton() const
+        {
+            return cancelButton;
+        }
+        public void SetCancelButton(Button* cancelButton_)
+        {
+            cancelButton = cancelButton_;
+        }
+        [nodiscard]
+        internal Result<bool> MouseUpNotificationInternal(MouseEventArgs& args)
+        {
+            return MouseUpNotification(args);
+        }
+        [nodiscard]
+        protected virtual Result<bool> MouseUpNotification(MouseEventArgs& args)
+        {
+            return Result<bool>(true);
+        }
+        private inline bool ShowingDialog() const
+        {
+            return (flags & Flags.showingDialog) != Flags.none;
+        }
+        internal inline void SetShowingDialog()
+        {
+            flags = cast<Flags>(flags | Flags.showingDialog);
+        }
+        internal inline void ResetShowingDialog()
+        {
+            flags = cast<Flags>(flags & ~Flags.showingDialog);
+        }
+        private Flags flags;
+        private WindowState state;
+        private MenuBar* menuBar;
+        private ContextMenu* contextMenu;
+        private Button* defaultButton;
+        private Button* cancelButton;
+        private Control* focusedControl;
+        private string fontFamilyName;
+        private float fontSize;
+        private FontStyle fontStyle;
+        private Event<WindowClosingEventHandler, bool> windowClosingEvent;
+        private Event<WindowClosedEventHandler> windowClosedEvent;
+        private DialogResult dialogResult;
+        private KeyPreviewMethod keyPreviewMethod;
+    }
+
+    internal int GetDialogResult(void* dialogWindowPtr)
+    {
+        Window* dialogWindow = cast<Window*>(dialogWindowPtr);
+        return dialogWindow->GetDialogResult();
+    }
+
+    internal void DialogWindowKeyPreview(void* dialogWindowPtr, uint keyCode, bool shift, bool control, bool alt, bool keyDown, bool& handled)
+    {
+        Window* dialogWindow = cast<Window*>(dialogWindowPtr);
+        Keys key = cast<Keys>(cast<int>(keyCode));
+        KeyPreviewMethod keyPreview = dialogWindow->GetKeyPreviewMethod();
+        if (keyPreview != KeyPreviewMethod())
+        {
+            keyPreview(key, shift, control, alt, keyDown, handled);
+        }
+    }
+
+    internal void ModelessWindowKeyPreview(uint keyCode, bool shift, bool control, bool alt, bool keyDown, bool& handled)
+    {
+        Window* activeWindow = Application.GetActiveWindow();
+        if (activeWindow != null)
+        {
+            Keys key = cast<Keys>(cast<int>(keyCode));
+            KeyPreviewMethod keyPreview = activeWindow->GetKeyPreviewMethod();
+            if (keyPreview != KeyPreviewMethod())
+            {
+                keyPreview(key, shift, control, alt, keyDown, handled);
+            }
+        }
+    }
+}

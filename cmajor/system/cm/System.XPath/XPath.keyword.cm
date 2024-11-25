@@ -1,0 +1,57 @@
+// this file has been generated from 'C:/work/cmajor-mod/cmajor/masm/system/System.XPath/XPath.keyword' using SoulCm lexer generator scmlg version 5.0.0
+
+using System;
+using System.Collections;
+using System.XPath.Token;
+
+namespace System.XPath.Keyword
+{
+    public class Keywords
+    {
+        static Keywords() : instance(new Keywords())
+        {
+        }
+        public static Keywords& Instance()
+        {
+            return *instance;
+        }
+        public System.Lex.KeywordMap* GetKeywords() const
+        {
+            return &keywordMap;
+        }
+        private Keywords()
+        {
+            keywords.Add(System.Lex.Keyword(u"or", OR));
+            keywords.Add(System.Lex.Keyword(u"and", AND));
+            keywords.Add(System.Lex.Keyword(u"div", DIV));
+            keywords.Add(System.Lex.Keyword(u"mod", MOD));
+            keywords.Add(System.Lex.Keyword(u"ancestor", ANCESTOR));
+            keywords.Add(System.Lex.Keyword(u"ancestor-or-self", ANCESTOR_OR_SELF));
+            keywords.Add(System.Lex.Keyword(u"attribute", ATTRIBUTE));
+            keywords.Add(System.Lex.Keyword(u"child", CHILD));
+            keywords.Add(System.Lex.Keyword(u"descendant", DESCENDANT));
+            keywords.Add(System.Lex.Keyword(u"descendant-or-self", DESCENDANT_OR_SELF));
+            keywords.Add(System.Lex.Keyword(u"following", FOLLOWING));
+            keywords.Add(System.Lex.Keyword(u"following-sibling", FOLLOWING_SIBLING));
+            keywords.Add(System.Lex.Keyword(u"namespace", NAMESPACE));
+            keywords.Add(System.Lex.Keyword(u"parent", PARENT));
+            keywords.Add(System.Lex.Keyword(u"preceding", PRECEDING));
+            keywords.Add(System.Lex.Keyword(u"preceding-sibling", PRECEDING_SIBLING));
+            keywords.Add(System.Lex.Keyword(u"self", SELF));
+            keywords.Add(System.Lex.Keyword(u"processing-instruction", PROCESSING_INSTRUCTION));
+            keywords.Add(System.Lex.Keyword(u"comment", COMMENT));
+            keywords.Add(System.Lex.Keyword(u"text", TEXT));
+            keywords.Add(System.Lex.Keyword(u"node", NODE));
+            keywordMap.SetKeywords(keywords);
+        }
+        private List<System.Lex.Keyword> keywords;
+        private System.Lex.KeywordMap keywordMap;
+        private static UniquePtr<Keywords> instance;
+    }
+
+    public System.Lex.KeywordMap* GetKeywords()
+    {
+        return Keywords.Instance().GetKeywords();
+    }
+
+} // System.XPath.Keyword

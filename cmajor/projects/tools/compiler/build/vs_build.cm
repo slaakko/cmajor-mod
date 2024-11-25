@@ -1,0 +1,23 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace build
+{
+    [nodiscard]
+    public Result<bool> VSBuild(Project* project, Module* module, const List<string>& asmFilePaths, const List<string>& cppFilePaths, const List<string>& resourceScriptFiles,
+        const string& classIndexFilePath, const string& traceDataFilePath, bool verbose)
+    {
+        Result<string> vsProjectFilePathResult = MakeVSProjectFile(project, module, asmFilePaths, cppFilePaths, resourceScriptFiles, classIndexFilePath, traceDataFilePath, verbose);
+        if (vsProjectFilePathResult.Error()) return Result<bool>(ErrorId(vsProjectFilePathResult.GetErrorId()));
+        string vsProjectFilePath = Rvalue(vsProjectFilePathResult.Value());
+        return MSBuild(vsProjectFilePath, GetConfig(), project->LogStreamId());
+    }
+}
+

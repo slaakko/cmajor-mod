@@ -229,7 +229,7 @@ namespace binder
         }
         public bool IsGeneratedDestructorInstantiated(DestructorSymbol* destructorSymbol) const
         {
-            return instantiatedGeneratedDestructors.Find(destructorSymbol) == instantiatedGeneratedDestructors.End();
+            return instantiatedGeneratedDestructors.Find(destructorSymbol) != instantiatedGeneratedDestructors.End();
         }
         public void SetGeneratedDestructorInstantiated(DestructorSymbol* destructorSymbol)
         {
@@ -246,6 +246,22 @@ namespace binder
         public void AddGlobalNs(UniquePtr<NamespaceNode>&& globalNs)
         {
             globalNamespaceNodes.Add(globalNs);
+        }
+        public inline TypeSymbol* GetSystemRuntimeTraceEntryTypeSymbol() const
+        {
+            return traceEntryTypeSymbol;
+        }
+        public inline void SetSystemRuntimeTraceEntryTypeSymbol(TypeSymbol* traceEntryTypeSymbol_)
+        {
+            traceEntryTypeSymbol = traceEntryTypeSymbol_;
+        }
+        public inline TypeSymbol* GetSystemRuntimeTraceGuardTypeSymbol() const
+        {
+            return traceGuardTypeSymbol;
+        }
+        public inline void SetSystemRuntimeTraceGuardTypeSymbol(TypeSymbol* traceGuardTypeSymbol_)
+        {
+            traceGuardTypeSymbol = traceGuardTypeSymbol_;
         }
         private SymbolsContext& context;
         private Module* module;
@@ -277,6 +293,8 @@ namespace binder
         private string objectFilePath;
         private string asmFilePath;
         private Set<FunctionSymbol*> codeGenerated;
+        private TypeSymbol* traceEntryTypeSymbol;
+        private TypeSymbol* traceGuardTypeSymbol;
     }
 }
 

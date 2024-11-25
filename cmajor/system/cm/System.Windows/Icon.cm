@@ -1,0 +1,89 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public enum StandardIconId : int
+    {
+        IDI_APPLICATION = 32512,
+        IDI_ASTERISK = 32516,
+        IDI_ERROR= 32513,
+        IDI_EXCLAMATION = 32515,
+        IDI_HAND = 32513,
+        IDI_INFORMATION = 32516,
+        IDI_QUESTION = 32514,
+        IDI_SHIELD = 32518,
+        IDI_WARNING = 32515,
+        IDI_WINLOGO = 32517
+    }
+
+    public class Icon : Resource
+    {
+        public Icon() : iconHandle(null), standard(false)
+        {
+        }
+        public Icon(void* iconHandle_) : iconHandle(iconHandle_), standard(false)
+        {
+        }
+        public Icon(void* iconHandle_, bool standard_) : iconHandle(iconHandle_), standard(standard_)
+        {
+        }
+        public Icon(Icon&& that) : iconHandle(that.iconHandle), standard(that.standard)
+        {
+            that.iconHandle = null;
+            that.standard = false;
+        }
+        public ~Icon()
+        {
+            if (iconHandle != null && !standard)
+            {
+                WinDestroyIcon(iconHandle);
+            }
+        }
+        public default void operator=(Icon&&);
+        suppress Icon(const Icon&);
+        suppress void operator=(const Icon&);
+        public void* Handle() const
+        {
+            return iconHandle;
+        }
+        public bool IsStandard() const
+        {
+            return standard;
+        }
+        public void SetStandard()
+        {
+            standard = true;
+        }
+        private void* iconHandle;
+        private bool standard;
+    }
+
+    [nodiscard]
+    public Result<Icon> LoadStandardIcon(StandardIconId iconId)
+    {
+        void* iconHandle = WinLoadStandardIcon(cast<int>(iconId));
+        if (iconHandle == null)
+        {
+            int errorId = WinAllocateWindowsError("could not load standard icon", WinGetLastError());
+            return Result<Icon>(ErrorId(errorId));
+        }
+        return Result<Icon>(Icon(iconHandle, true));
+    }
+
+    [nodiscard]
+    public Result<Icon> LoadIcon(const string& iconName)
+    {
+        auto iconResult = LoadIcon(iconName.Chars());
+        if (iconResult.Error())
+        {
+            return Result<Icon>(ErrorId(iconResult.GetErrorId()));
+        }
+        return Result<Icon>(Icon(iconResult.Value()));
+    }
+}

@@ -3,10 +3,34 @@
 // Distributed under the MIT license
 // =================================
 
+using System.Collections;
 using System.Threading;
 
 namespace System
 {
+    public List<string> SplitMessageIntoLines(const string& text)
+    {
+        string line;
+        List<string> lines;
+        for (char c : text)
+        {
+            if (c == '\n')
+            {
+                lines.Add(line);
+                line.Clear();
+            }
+            else if (c != '\r')
+            {
+                line.Append(c);
+            }
+        }
+        if (!line.IsEmpty() || text.IsEmpty())
+        {
+            lines.Add(line);
+        }
+        return lines;
+    }
+    
     public class Log
     {
         static Log() : instance(new Log())
@@ -37,7 +61,11 @@ namespace System
 
     public void LogMessage(int logStreamId, const string& message)
     {
-        Log.Instance().LogMessage(logStreamId, message);
+        List<string> lines = SplitMessageIntoLines(message);
+        for (const string& line : lines)
+        {
+            Log.Instance().LogMessage(logStreamId, line);
+        }
     }
 }
 

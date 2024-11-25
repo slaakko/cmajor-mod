@@ -405,12 +405,14 @@ namespace binder
             if (groupName == u"@constructor" && arity == 1 && arguments[0]->Type()->IsReferenceType())
             {
                 string message = "overload resolution failed: '" + overloadName + "' not found. Note: reference must be initialized.";
+                int errorId = MakeError(message, node->GetFullSpan());
+                string mainMessage = RtmGetErrorMessageWithoutStackTrace(errorId);
                 if (!collectMessage.IsEmpty())
                 {
-                    message.Append("\ncollect errors: ").Append(collectMessage);
+                    mainMessage.Append("\ncollect errors: ").Append(collectMessage);
                 }
-                int errorId = MakeError(message, node->GetFullSpan());
-                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+                int finalErrorId = AllocateError(mainMessage);
+                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(finalErrorId));
             }
             else
             {
@@ -419,12 +421,14 @@ namespace binder
                 string functionGroupName = Rvalue(functionGroupNameResult.Value());
                 string message = "overload resolution failed: '" + overloadName + "' not found. No viable functions taking " + ToString(arity) + " arguments found in " +
                     "function group '" + functionGroupName + "'";
+                int errorId = MakeError(message, node->GetFullSpan());
+                string mainMessage = RtmGetErrorMessageWithoutStackTrace(errorId);
                 if (!collectMessage.IsEmpty())
                 {
-                    message.Append("\ncollect errors: ").Append(collectMessage);
+                    mainMessage.Append("\ncollect errors: ").Append(collectMessage);
                 }
-                int errorId = MakeError(message, node->GetFullSpan());
-                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
+                int finalErrorId = AllocateError(mainMessage);
+                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(finalErrorId));
             }
         }
         else
@@ -442,6 +446,7 @@ namespace binder
         bool result = false;
         Set<ContainerScope*> scopesLookedUp;
         bool fileScopesLookedUp = false;
+        SymbolsContext& context = boundCompileUnit->Context();
         for (const FunctionScopeLookup& functionScopeLookup : functionScopeLookups)
         {
             if (functionScopeLookup.Lookup() == ScopeLookup.fileScopes && !fileScopesLookedUp)
@@ -449,14 +454,14 @@ namespace binder
                 fileScopesLookedUp = true;
                 for (const UniquePtr<FileScope>& fileScope : boundCompileUnit->FileScopes())
                 {
-                    Result<bool> scopeResult = fileScope->CollectViableFunctions(arity, groupName, scopesLookedUp, viableFunctions);
+                    Result<bool> scopeResult = fileScope->CollectViableFunctions(arity, groupName, scopesLookedUp, viableFunctions, context);
                     if (scopeResult.Value()) result = true;
                 }
             }
             else
             {
                 ContainerScope* scope = functionScopeLookup.GetScope();
-                Result<bool> scopeResult = scope->CollectViableFunctions(arity, groupName, scopesLookedUp, functionScopeLookup.Lookup(), viableFunctions);
+                Result<bool> scopeResult = scope->CollectViableFunctions(arity, groupName, scopesLookedUp, functionScopeLookup.Lookup(), viableFunctions, context);
                 if (scopeResult.Value()) result = true;
             }
         }
@@ -933,14 +938,26 @@ namespace binder
         {
             BoundExpression* argument = arguments[i].Get();
             TypeSymbol* sourceType = argument->Type();
-            if (sourceType->RemoveConst(context)->IsBasicTypeSymbol())
+            Result<TypeSymbol*> nonConstTypeResult = sourceType->RemoveConst(context);
+            if (nonConstTypeResult.Error()) return Result<bool>(ErrorId(nonConstTypeResult.GetErrorId()));
+            TypeSymbol* nonConstType = nonConstTypeResult.Value();
+            if (nonConstType->IsBasicTypeSymbol())
             {
-                sourceType = sourceType->RemoveConst(context);
+                sourceType = nonConstType;
             }
             ParameterSymbol* parameter = function->Parameters()[i];
             TypeSymbol* targetType = parameter->Type();
             if (arity == 2 && function->GroupName() == u"operator=")
             {
+                Result<TypeSymbol*> sourceNonRefTypeResult = sourceType->RemoveReference(context);
+                if (sourceNonRefTypeResult.Error()) return Result<bool>(ErrorId(sourceNonRefTypeResult.GetErrorId()));
+                TypeSymbol* sourceNonRefType = sourceNonRefTypeResult.Value();
+                Result<TypeSymbol*> sourceNonConstRefTypeResult = sourceNonRefType->RemoveConst(context);
+                if (sourceNonConstRefTypeResult.Error()) return Result<bool>(ErrorId(sourceNonConstRefTypeResult.GetErrorId()));
+                TypeSymbol* sourceNonConstRefType = sourceNonConstRefTypeResult.Value();
+                Result<TypeSymbol*> targetNonRefTypeResult = targetType->RemoveReference(context);
+                if (targetNonRefTypeResult.Error()) return Result<bool>(ErrorId(targetNonRefTypeResult.GetErrorId()));
+                TypeSymbol* targetNonRefType = targetNonRefTypeResult.Value();
                 if (targetType->IsRvalueReferenceType() && !sourceType->IsRvalueReferenceType() && !argument->GetFlag(BoundExpressionFlags.bindToRvalueReference))
                 {
                     functionMatch.IncNumQualifyingConversions();
@@ -963,7 +980,7 @@ namespace binder
                     }
                 }
                 else if (i == 1 && sourceType->IsReferenceType() && targetType->IsLvalueReferenceType() &&
-                    TypesEqual(sourceType->RemoveReference(context)->RemoveConst(context), targetType->RemoveReference(context)))
+                    TypesEqual(sourceNonConstRefType, targetNonRefType))
                 {
                     if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
                     {
@@ -973,7 +990,7 @@ namespace binder
                     }
                 }
                 else if (i == 1 && sourceType->IsReferenceType() && targetType->IsRvalueReferenceType() &&
-                    TypesEqual(sourceType->RemoveReference(context), targetType->RemoveReference(context)))
+                    TypesEqual(sourceNonRefType, targetNonRefType))
                 {
                     if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
                     {
@@ -982,7 +999,7 @@ namespace binder
                     }
                 }
                 else if (i == 1 && !sourceType->IsReferenceType() && argument->IsLvalueExpression() && targetType->IsReferenceType() &&
-                    TypesEqual(sourceType, targetType->RemoveReference(context)))
+                    TypesEqual(sourceType, targetNonRefType))
                 {
                     if (!function->IsConstructorDestructorOrNonstaticMemberFunction())
                     {
@@ -990,7 +1007,7 @@ namespace binder
                         continue;
                     }
                 }
-                else if (i == 1 && function->IsLvalueReferenceCopyAssignment() && TypesEqual(sourceType, targetType->RemoveReference(context)))
+                else if (i == 1 && function->IsLvalueReferenceCopyAssignment() && TypesEqual(sourceType, targetNonRefType))
                 {
                     functionMatch.AddArgumentMatch(ArgumentMatch(OperationFlags.none, null, OperationFlags.none, 0));
                     continue;
@@ -998,7 +1015,7 @@ namespace binder
                 else if (i == 1 && function->IsLvalueReferenceCopyAssignment())
                 {
                     ArgumentMatch argumentMatch;
-                    Result<FunctionSymbol*> conversionResult = GetConversion(sourceType, targetType->RemoveReference(context), containerScope, boundCompileUnit, currentFunction,
+                    Result<FunctionSymbol*> conversionResult = GetConversion(sourceType, targetNonRefType, containerScope, boundCompileUnit, currentFunction,
                         argumentMatch, node);
                     if (!conversionResult.Error())
                     {
@@ -1027,7 +1044,13 @@ namespace binder
                 }
                 bool qualificationConversionMatch = false;
                 ArgumentMatch argumentMatch;
-                if (TypesEqual(sourceType->PlainType(context), targetType->PlainType(context)))
+                Result<TypeSymbol*> sourcePlainTypeResult = sourceType->PlainType(context);
+                if (sourcePlainTypeResult.Error()) return Result<bool>(ErrorId(sourcePlainTypeResult.GetErrorId()));
+                TypeSymbol* sourcePlainType = sourcePlainTypeResult.Value();
+                Result<TypeSymbol*> targetPlainTypeResult = targetType->PlainType(context);
+                if (targetPlainTypeResult.Error()) return Result<bool>(ErrorId(targetPlainTypeResult.GetErrorId()));
+                TypeSymbol* targetPlainType = targetPlainTypeResult.Value();
+                if (TypesEqual(sourcePlainType, targetPlainType))
                 {
                     qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
                     functionMatch.AddArgumentMatch(argumentMatch);
@@ -1039,13 +1062,19 @@ namespace binder
                     {
                         if (function->IsFunctionTemplate())
                         {
-                            if (FindTemplateParameterMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope,
-                                currentFunction, node))
+                            Result<bool> templateParamMatchResult = FindTemplateParameterMatch(sourceType, targetType, conversionType, argument, boundCompileUnit,
+                                functionMatch, containerScope,currentFunction, node);
+                            if (templateParamMatchResult.Error()) return templateParamMatchResult;
+                            bool templateParamMatch = templateParamMatchResult.Value();
+                            if (templateParamMatch)
                             {
                                 continue;
                             }
-                            if (FindClassTemplateSpecializationMatch(sourceType, targetType, conversionType, argument, boundCompileUnit, functionMatch, containerScope,
-                                currentFunction, node))
+                            Result<bool> classTemplateParamMatchResult = FindClassTemplateSpecializationMatch(sourceType, targetType, conversionType, argument,
+                                boundCompileUnit, functionMatch, containerScope, currentFunction, node);
+                            if (classTemplateParamMatchResult.Error()) return classTemplateParamMatchResult;
+                            bool classTemplateParamMatch = classTemplateParamMatchResult.Value();
+                            if (classTemplateParamMatch)
                             {
                                 continue;
                             }
@@ -1238,52 +1267,62 @@ namespace binder
         return false;
     }
 
-    public bool FindTemplateParameterMatch(TypeSymbol* sourceType, TypeSymbol* targetType, ConversionType conversionType, BoundExpression* argument,
+    public Result<bool> FindTemplateParameterMatch(TypeSymbol* sourceType, TypeSymbol* targetType, ConversionType conversionType, BoundExpression* argument,
         BoundCompileUnit* boundCompileUnit, FunctionMatch& functionMatch, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
     {
-        if (!targetType->BaseType()->IsTemplateParameterSymbol()) return false;
+        if (!targetType->BaseType()->IsTemplateParameterSymbol()) return Result<bool>(false);
         TemplateParameterSymbol* templateParameter = cast<TemplateParameterSymbol*>(targetType->BaseType());
         TypeSymbol* templateArgumentType = null;
         auto it = functionMatch.TemplateParameterMap().Find(templateParameter);
         if (it == functionMatch.TemplateParameterMap().End())
         {
-            templateArgumentType = sourceType->RemoveDerivations(targetType->GetDerivations(), boundCompileUnit->Context());
+            Result<TypeSymbol*> result = sourceType->RemoveDerivations(targetType->GetDerivations(), boundCompileUnit->Context());
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            templateArgumentType = result.Value();
             if (templateArgumentType != null)
             {
                 functionMatch.MapTemplateParameter(templateParameter, templateArgumentType);
             }
             else
             {
-                return false;
+                return Result<bool>(false);
             }
         }
         else
         {
             templateArgumentType = it->second;
         }
-        targetType = targetType->Unify(templateArgumentType, boundCompileUnit->Context());
+        Result<TypeSymbol*> result = targetType->Unify(templateArgumentType, boundCompileUnit->Context());
+        if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+        targetType = result.Value();
         if (targetType == null)
         {
-            return false;
+            return Result<bool>(false);
         }
         if (TypesEqual(sourceType, targetType))
         {
             functionMatch.AddArgumentMatch(ArgumentMatch());
-            return true;
+            return Result<bool>(true);
         }
         else
         {
             bool qualificationConversionMatch = false;
             ArgumentMatch argumentMatch;
             SymbolsContext& context = boundCompileUnit->Context();
-            if (TypesEqual(sourceType->PlainType(context), targetType->PlainType(context)))
+            Result<TypeSymbol*> sourcePlainTypeResult = sourceType->PlainType(context);
+            if (sourcePlainTypeResult.Error()) return Result<bool>(ErrorId(sourcePlainTypeResult.GetErrorId()));
+            TypeSymbol* sourcePlainType = sourcePlainTypeResult.Value();
+            Result<TypeSymbol*> targetPlainTypeResult = targetType->PlainType(context);
+            if (targetPlainTypeResult.Error()) return Result<bool>(ErrorId(targetPlainTypeResult.GetErrorId()));
+            TypeSymbol* targetPlainType = targetPlainTypeResult.Value();
+            if (TypesEqual(sourcePlainType, targetPlainType))
             {
                 qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
             }
             if (qualificationConversionMatch)
             {
                 functionMatch.AddArgumentMatch(argumentMatch);
-                return true;
+                return Result<bool>(true);
             }
             else
             {
@@ -1302,11 +1341,11 @@ namespace binder
                                 if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
                                 {
                                     functionMatch.AddArgumentMatch(argumentMatch);
-                                    return true;
+                                    return Result<bool>(true);
                                 }
                                 else
                                 {
-                                    return false;
+                                    return Result<bool>(false);
                                 }
                             }
                             else
@@ -1314,33 +1353,33 @@ namespace binder
                                 if (FindQualificationConversion(conversionFn->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
                                 {
                                     functionMatch.AddArgumentMatch(argumentMatch);
-                                    return true;
+                                    return Result<bool>(true);
                                 }
                                 else
                                 {
-                                    return false;
+                                    return Result<bool>(false);
                                 }
                             }
                         }
                         else
                         {
-                            return false;
+                            return Result<bool>(false);
                         }
                     }
                     else
                     {
-                        return false;
+                        return Result<bool>(false);
                     }
                 }
             }
         }
-        return false;
+        return Result<bool>(false);
     }
 
-    public bool FindClassTemplateSpecializationMatch(TypeSymbol* sourceType, TypeSymbol* targetType, ConversionType conversionType, BoundExpression* argument,
+    public Result<bool> FindClassTemplateSpecializationMatch(TypeSymbol* sourceType, TypeSymbol* targetType, ConversionType conversionType, BoundExpression* argument,
         BoundCompileUnit* boundCompileUnit, FunctionMatch& functionMatch, ContainerScope* containerScope, BoundFunction* currentFunction, Node* node)
     {
-        if (!targetType->BaseType()->IsClassTemplateSpecializationSymbol()) return false;
+        if (!targetType->BaseType()->IsClassTemplateSpecializationSymbol()) return Result<bool>(false);
         SymbolsContext& context = boundCompileUnit->Context();
         ClassTemplateSpecializationSymbol* targetClassTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(targetType->BaseType());
         int n = cast<int>(targetClassTemplateSpecialization->TemplateArgumentTypes().Count());
@@ -1349,24 +1388,33 @@ namespace binder
         {
             ClassTemplateSpecializationSymbol* sourceClassTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(sourceType->BaseType());
             int m = cast<int>(sourceClassTemplateSpecialization->TemplateArgumentTypes().Count());
-            if (n != m) return false;
+            if (n != m) return Result<bool>(false);
             for (int i = 0; i < n; ++i)
             {
                 TypeSymbol* sourceArgumentType = sourceClassTemplateSpecialization->TemplateArgumentTypes()[i];
                 TypeSymbol* targetArgumentType = targetClassTemplateSpecialization->TemplateArgumentTypes()[i];
-                if (FindTemplateParameterMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch,
-                    containerScope, currentFunction, node))
-                {
-                    continue;
-                }
-                else if (FindClassTemplateSpecializationMatch(sourceArgumentType, targetArgumentType, conversionType, argument, boundCompileUnit, functionMatch,
-                    containerScope, currentFunction, node))
+                Result<bool> templateParamMatchResult = FindTemplateParameterMatch(sourceArgumentType, targetArgumentType, conversionType, argument,
+                    boundCompileUnit, functionMatch, containerScope, currentFunction, node);
+                if (templateParamMatchResult.Error()) return templateParamMatchResult;
+                bool templateParamMatch = templateParamMatchResult.Value();
+                if (templateParamMatch)
                 {
                     continue;
                 }
                 else
                 {
-                    return false;
+                    Result<bool> classTemplateParamMatchResult = FindClassTemplateSpecializationMatch(sourceArgumentType, targetArgumentType, conversionType,
+                        argument, boundCompileUnit, functionMatch,containerScope, currentFunction, node);
+                    if (classTemplateParamMatchResult.Error()) return classTemplateParamMatchResult;
+                    bool classTemplateParamMatch = classTemplateParamMatchResult.Value();
+                    if (classTemplateParamMatch)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        return Result<bool>(false);
+                    }
                 }
             }
         }
@@ -1383,29 +1431,40 @@ namespace binder
             }
             else
             {
-                return false;
+                return Result<bool>(false);
             }
         }
         TypeSymbol* plainTargetType = boundCompileUnit->GetSymbolTable()->MakeClassTemplateSpecialization(targetClassTemplateSpecialization->ClassTemplate(),
             targetTemplateArguments);
-        targetType = boundCompileUnit->GetSymbolTable()->MakeDerivedType(context, plainTargetType, targetType->GetDerivations());
+        Result<TypeSymbol*> derivedTypeResult = boundCompileUnit->GetSymbolTable()->MakeDerivedType(context, plainTargetType, targetType->GetDerivations());
+        if (derivedTypeResult.Error())
+        {
+            return Result<bool>(false);
+        }
+        targetType = derivedTypeResult.Value();
         if (TypesEqual(sourceType, targetType))
         {
             functionMatch.AddArgumentMatch(ArgumentMatch());
-            return true;
+            return Result<bool>(true);
         }
         else
         {
             bool qualificationConversionMatch = false;
             ArgumentMatch argumentMatch;
-            if (TypesEqual(sourceType->PlainType(context), targetType->PlainType(context)))
+            Result<TypeSymbol*> sourcePlainTypeResult = sourceType->PlainType(context);
+            if (sourcePlainTypeResult.Error()) return Result<bool>(ErrorId(sourcePlainTypeResult.GetErrorId()));
+            TypeSymbol* sourcePlainType = sourcePlainTypeResult.Value();
+            Result<TypeSymbol*> targetPlainTypeResult = targetType->PlainType(context);
+            if (targetPlainTypeResult.Error()) return Result<bool>(ErrorId(targetPlainTypeResult.GetErrorId()));
+            TypeSymbol* targetPlainType = targetPlainTypeResult.Value();
+            if (TypesEqual(sourcePlainType, targetPlainType))
             {
                 qualificationConversionMatch = FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch);
             }
             if (qualificationConversionMatch)
             {
                 functionMatch.AddArgumentMatch(argumentMatch);
-                return true;
+                return Result<bool>(true);
             }
             else
             {
@@ -1424,11 +1483,11 @@ namespace binder
                                 if (FindQualificationConversion(sourceType, targetType, argument, conversionType, functionMatch, argumentMatch))
                                 {
                                     functionMatch.AddArgumentMatch(argumentMatch);
-                                    return true;
+                                    return Result<bool>(true);
                                 }
                                 else
                                 {
-                                    return false;
+                                    return Result<bool>(false);
                                 }
                             }
                             else
@@ -1436,27 +1495,27 @@ namespace binder
                                 if (FindQualificationConversion(conversionFn->ConversionSourceType(), targetType, argument, conversionType, functionMatch, argumentMatch))
                                 {
                                     functionMatch.AddArgumentMatch(argumentMatch);
-                                    return true;
+                                    return Result<bool>(true);
                                 }
                                 else
                                 {
-                                    return false;
+                                    return Result<bool>(false);
                                 }
                             }
                         }
                         else
                         {
-                            return false;
+                            return Result<bool>(false);
                         }
                     }
                     else
                     {
-                        return false;
+                        return Result<bool>(false);
                     }
                 }
             }
         }
-        return false;
+        return Result<bool>(false);
     }
 
     public int FailWithOverloadNotFound(const ViableFunctionSet& viableFunctions, const ustring& groupName, const List<UniquePtr<BoundExpression>>& arguments,
@@ -1571,10 +1630,6 @@ namespace binder
             locations.Add(arguments[0]->FullSpan());
             message = "overload resolution failed: '";
             message.Append(overloadName).Append("' not found. Note: reference must be initialized.");
-            if (!collectMessage.IsEmpty())
-            {
-                message.Append("\ncollect errors: ").Append(collectMessage);
-            }
             if (viableFunctions.Count() == 1)
             {
                 FunctionSymbol* candidate = *viableFunctions.Get().Begin();
@@ -1589,7 +1644,13 @@ namespace binder
                     message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
                 }
             }
-            return MakeError(message, locations);
+            int errorId = MakeError(message, locations);
+            string mainMessage = RtmGetErrorMessageWithoutStackTrace(errorId);
+            if (!collectMessage.IsEmpty())
+            {
+                mainMessage.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            return AllocateError(mainMessage);
         }
         else if (castRequired)
         {
@@ -1605,10 +1666,6 @@ namespace binder
                 Append(ToString(viableFunctions.Count())).Append(" viable functions examined. Note: cannot convert implicitly from '").
                 Append(sourceTypeFullName).Append("' to '").
                 Append(targetTypeFullName).Append("' but explicit conversion (cast) exists.");
-            if (!collectMessage.IsEmpty())
-            {
-                message.Append("\ncollect errors: ").Append(collectMessage);
-            }
             if (viableFunctions.Count() == 1)
             {
                 FunctionSymbol* candidate = *viableFunctions.Get().Begin();
@@ -1623,7 +1680,13 @@ namespace binder
                     message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
                 }
             }
-            return MakeError(message, locations);
+            int errorId = MakeError(message, locations);
+            string mainMessage = RtmGetErrorMessageWithoutStackTrace(errorId);
+            if (!collectMessage.IsEmpty())
+            {
+                mainMessage.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            return AllocateError(mainMessage);
         }
         else if (cannotBindConstArgToNonConstParam)
         {
@@ -1639,10 +1702,6 @@ namespace binder
                 Append(ToString(viableFunctions.Count())).Append(" viable functions examined. Note: cannot bind constant '").
                 Append(sourceTypeFullName).Append("' argument to nonconstant '").
                 Append(targetTypeFullName).Append("' parameter.");
-            if (!collectMessage.IsEmpty())
-            {
-                message.Append("\ncollect errors: ").Append(collectMessage);
-            }
             if (viableFunctions.Count() == 1)
             {
                 FunctionSymbol* candidate = *viableFunctions.Get().Begin();
@@ -1657,17 +1716,19 @@ namespace binder
                     message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
                 }
             }
-            return MakeError(message, locations);
+            int errorId = MakeError(message, locations);
+            string mainMessage = RtmGetErrorMessageWithoutStackTrace(errorId);
+            if (!collectMessage.IsEmpty())
+            {
+                mainMessage.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            return AllocateError(mainMessage);
         }
         else if (cannotAssignToConstObject)
         {
             message = "overload resolution failed: '";
             message.Append(overloadName).Append("' not found, or there are no acceptable conversions for all argument types. ").
                 Append(ToString(viableFunctions.Count())).Append(" viable functions examined. Note: cannot assign to constant object.");
-            if (!collectMessage.IsEmpty())
-            {
-                message.Append("\ncollect errors: ").Append(collectMessage);
-            }
             if (viableFunctions.Count() == 1)
             {
                 FunctionSymbol* candidate = *viableFunctions.Get().Begin();
@@ -1682,25 +1743,19 @@ namespace binder
                     message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
                 }
             }
-            return MakeError(message, locations);
+            int errorId = MakeError(message, locations);
+            string mainMessage = RtmGetErrorMessageWithoutStackTrace(errorId);
+            if (!collectMessage.IsEmpty())
+            {
+                mainMessage.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            return AllocateError(mainMessage);
         }
         else
         {
             message = "overload resolution failed: '";
             message.Append(overloadName).Append("' not found, or there are no acceptable conversions for all argument types. ").
                 Append(ToString(viableFunctions.Count())).Append(" viable functions examined.");
-            if (!note.IsEmpty())
-            {
-                message.Append("\n").Append(note);
-            }
-            if (!collectMessage.IsEmpty())
-            {
-                message.Append("\ncollect errors: ").Append(collectMessage);
-            }
-            if (!matchError.IsEmpty())
-            {
-                message.Append("\nmatch error: ").Append(matchError);
-            }
             if (viableFunctions.Count() == 1)
             {
                 FunctionSymbol* candidate = *viableFunctions.Get().Begin();
@@ -1715,7 +1770,21 @@ namespace binder
                     message.Append("\nNote: candidate is '").Append(candidateFullName).Append("'.");
                 }
             }
-            return MakeError(message, locations);
+            int errorId = MakeError(message, locations);
+            string mainMessage = RtmGetErrorMessageWithoutStackTrace(errorId);
+            if (!note.IsEmpty())
+            {
+                mainMessage.Append("\n").Append(note);
+            }
+            if (!collectMessage.IsEmpty())
+            {
+                mainMessage.Append("\ncollect errors: ").Append(collectMessage);
+            }
+            if (!matchError.IsEmpty())
+            {
+                mainMessage.Append("\nmatch error: ").Append(matchError);
+            }
+            return AllocateError(mainMessage);
         }
     }
 
@@ -1799,18 +1868,24 @@ namespace binder
                     TypeSymbol* type = null;
                     if (argument->Type()->IsClassTypeSymbol() && argument->GetFlag(BoundExpressionFlags.bindToRvalueReference))
                     {
-                        type = argument->Type()->AddRvalueReference(context);
+                        Result<TypeSymbol*> rvalueRefTypeResult = argument->Type()->AddRvalueReference(context);
+                        if (rvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+                        type = rvalueRefTypeResult.Value();
                     }
                     else
                     {
-                        type = argument->Type()->AddLvalueReference(context);
+                        Result<TypeSymbol*> lvalueRefTypeResult = argument->Type()->AddLvalueReference(context);
+                        if (lvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                        type = lvalueRefTypeResult.Value();
                     }
                     BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type);
                     argument.Reset(addressOfExpression);
                 }
                 else if (argumentMatch.PreReferenceFlags() == OperationFlags.deref)
                 {
-                    TypeSymbol* type = argument->Type()->RemoveReference(context);
+                    Result<TypeSymbol*> nonRefTypeResult = argument->Type()->RemoveReference(context);
+                    if (nonRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(nonRefTypeResult.GetErrorId()));
+                    TypeSymbol* type = nonRefTypeResult.Value();
                     BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(node->GetSpan(), Rvalue(argument), type);
                     argument.Reset(dereferenceExpression);
                 }
@@ -1835,8 +1910,11 @@ namespace binder
                     Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), argument->Type(), context);
                     if (temporaryResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryResult.GetErrorId()));
                     LocalVariableSymbol* temporary = temporaryResult.Value();
+                    Result<TypeSymbol*> ptrTypeResult = conversionTargetType->AddPointer(context);
+                    if (ptrTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(ptrTypeResult.GetErrorId()));
+                    TypeSymbol* ptrType = ptrTypeResult.Value();
                     constructorCall->AddArgument(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
-                        new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer(context))));
+                        new BoundLocalVariable(node->GetSpan(), temporary)), ptrType)));
                     if (conversionTargetType->IsClassTypeSymbol())
                     {
                         ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(conversionTargetType);
@@ -1844,7 +1922,11 @@ namespace binder
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(constructorCall->Arguments()[0]->Clone()));
-                            currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                            Result<bool> result = currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                            if (result.Error())
+                            {
+                                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                            }
                         }
                     }
                     constructorCall->AddArgument(Rvalue(argument));
@@ -1876,8 +1958,11 @@ namespace binder
                     Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), conversionTargetType, context);
                     if (temporaryResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryResult.GetErrorId()));
                     LocalVariableSymbol* temporary = temporaryResult.Value();
+                    Result<TypeSymbol*> ptrTypeResult = conversionTargetType->AddPointer(context);
+                    if (ptrTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(ptrTypeResult.GetErrorId()));
+                    TypeSymbol* ptrType = ptrTypeResult.Value();
                     conversionFunctionCall->AddArgument(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
-                        new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer(context))));
+                        new BoundLocalVariable(node->GetSpan(), temporary)), ptrType)));
                     Result<List<LocalVariableSymbol*>> temporariesResult = conversionFn->CreateTemporariesTo(currentFunction->GetFunctionSymbol(), context);
                     if (temporariesResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporariesResult.GetErrorId()));
                     for (LocalVariableSymbol* temporaryLocalVariable : temporariesResult.Value())
@@ -1891,10 +1976,17 @@ namespace binder
                         if (classType->Destructor() != null)
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
-                            TypeSymbol* type = conversionResult->Type()->AddPointer(context);
+                            Result<TypeSymbol*> ptrTypeResult = conversionResult->Type()->AddPointer(context);
+                            if (ptrTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(ptrTypeResult.GetErrorId()));
+                            TypeSymbol* ptrType = ptrTypeResult.Value();
+                            TypeSymbol* type = ptrType;
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(),
                                 UniquePtr<BoundExpression>(conversionResult->Clone()), type)));
-                            currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                            Result<bool> result = currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                            if (result.Error())
+                            {
+                                return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
+                            }
                         }
                     }
                     BoundClassOrClassDelegateConversionResult* conversion = new BoundClassOrClassDelegateConversionResult(node->GetSpan(),
@@ -1929,18 +2021,24 @@ namespace binder
                     TypeSymbol* type = null;
                     if (argument->Type()->IsClassTypeSymbol() && argument->GetFlag(BoundExpressionFlags.bindToRvalueReference))
                     {
-                        type = argument->Type()->AddRvalueReference(context);
+                        Result<TypeSymbol*> rvalueRefTypeResult = argument->Type()->AddRvalueReference(context);
+                        if (rvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(rvalueRefTypeResult.GetErrorId()));
+                        type = rvalueRefTypeResult.Value();
                     }
                     else
                     {
-                        type = argument->Type()->AddLvalueReference(context);
+                        Result<TypeSymbol*> lvalueRefTypeResult = argument->Type()->AddLvalueReference(context);
+                        if (lvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                        type = lvalueRefTypeResult.Value();
                     }
                     BoundAddressOfExpression* addressOfExpression = new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type);
                     argument.Reset(addressOfExpression);
                 }
                 else if (argumentMatch.PostReferenceFlags() == OperationFlags.deref)
                 {
-                    TypeSymbol* type = argument->Type()->RemoveReference(context);
+                    Result<TypeSymbol*> typeResult = argument->Type()->RemoveReference(context);
+                    if (typeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(typeResult.GetErrorId()));
+                    TypeSymbol* type = typeResult.Value();
                     BoundDereferenceExpression* dereferenceExpression = new BoundDereferenceExpression(node->GetSpan(), Rvalue(argument), type);
                     argument.Reset(dereferenceExpression);
                 }
@@ -1954,9 +2052,18 @@ namespace binder
                     {
                         ViableFunctionSet viableFunctions;
                         List<UniquePtr<BoundExpression>> args;
-                        UniquePtr<BoundExpression> firstArg(new BoundTypeExpression(node->GetSpan(), classType->AddPointer(context)));
+                        Result<TypeSymbol*> classPtrTypeResult = classType->AddPointer(context);
+                        if (classPtrTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(classPtrTypeResult.GetErrorId()));
+                        TypeSymbol* classPtrType = classPtrTypeResult.Value();
+                        UniquePtr<BoundExpression> firstArg(new BoundTypeExpression(node->GetSpan(), classPtrType));
                         args.Add(Rvalue(firstArg));
-                        UniquePtr<BoundExpression> secondArg(new BoundTypeExpression(node->GetSpan(), classType->AddConst(context)->AddLvalueReference(context)));
+                        Result<TypeSymbol*> constTypeResult = classType->AddConst(context);
+                        if (constTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(constTypeResult.GetErrorId()));
+                        TypeSymbol* constType = constTypeResult.Value();
+                        Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                        if (lvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                        TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                        UniquePtr<BoundExpression> secondArg(new BoundTypeExpression(node->GetSpan(), lvalueRefType));
                         args.Add(Rvalue(secondArg));
                         Result<bool> collectResult = boundCompileUnit->GetOperationRepository()->CollectViableFunctions(u"@constructor", containerScope, args,
                             currentFunction, node, CollectFlags.none, viableFunctions);
@@ -1965,12 +2072,24 @@ namespace binder
                             return Result<UniquePtr<BoundFunctionCall>>(ErrorId(collectResult.GetErrorId()));
                         }
                     }
-                    TypeSymbol* type = classType->AddConst(context)->AddLvalueReference(context);
+                    Result<TypeSymbol*> constTypeResult = classType->AddConst(context);
+                    if (constTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(constTypeResult.GetErrorId()));
+                    TypeSymbol* constType = constTypeResult.Value();
+                    Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                    if (lvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                    TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                    TypeSymbol* type = lvalueRefType;
                     argument.Reset(new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type));
                 }
                 else if (argument->Type()->IsClassDelegateTypeSymbol())
                 {
-                    TypeSymbol* type = argument->Type()->AddConst(context)->AddLvalueReference(context);
+                    Result<TypeSymbol*> constTypeResult = argument->Type()->AddConst(context);
+                    if (constTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(constTypeResult.GetErrorId()));
+                    TypeSymbol* constType = constTypeResult.Value();
+                    Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                    if (lvalueRefTypeResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                    TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
+                    TypeSymbol* type = lvalueRefType;
                     argument.Reset(new BoundAddressOfExpression(node->GetSpan(), Rvalue(argument), type));
                 }
                 else if (argument->Type()->IsInterfaceTypeSymbol())

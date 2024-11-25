@@ -27,8 +27,8 @@ namespace symbols
         {
         }
         public default virtual ~Scope();
-        public abstract Result<Symbol*> Lookup(const ustring& name) const;
-        public abstract Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup) const;
+        public abstract Result<Symbol*> Lookup(const ustring& name, SymbolsContext& context) const;
+        public abstract Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup, SymbolsContext& context) const;
     }
 
     public class ContainerScope : Scope
@@ -60,25 +60,35 @@ namespace symbols
             }
             return null;
         }
-        public ContainerScope* ParentScope() const
+        public ContainerScope* ParentScope(SymbolsContext& context) const
         {
             if (container != null)
             {
                 Symbol* parent = container->Parent();
                 if (parent != null)
                 {
+                    Module* rootModule = context.RootModule();
+                    if (parent->GetModule() != rootModule && parent->IsNamespaceSymbol())
+                    {
+                        NamespaceSymbol* ns = cast<NamespaceSymbol*>(parent);
+                        NamespaceSymbol* mappedNs = rootModule->GetSymbolTable()->GetMappedNs(ns);
+                        if (mappedNs != null)
+                        {
+                            return mappedNs->GetContainerScope();
+                        }
+                    }
                     return parent->GetContainerScope();
                 }
             }
             return null;
         }
-        public Result<NamespaceSymbol*> Ns() const
+        public Result<NamespaceSymbol*> Ns(SymbolsContext& context) const
         {
-            return container->Ns();
+            return container->Ns(context);
         }
         [nodiscard]
         public Result<bool> CollectViableFunctions(int arity, const ustring& groupName, Set<ContainerScope*>& scopesLookedUp, ScopeLookup scopeLookup,
-            ViableFunctionSet& viableFunctions)
+            ViableFunctionSet& viableFunctions, SymbolsContext& context)
         {
             bool result = false;
             if ((scopeLookup & ScopeLookup.this_) != ScopeLookup.none)
@@ -86,7 +96,7 @@ namespace symbols
                 if (scopesLookedUp.Find(this) == scopesLookedUp.End())
                 {
                     scopesLookedUp.Insert(this);
-                    Result<Symbol*> symbolResult = Lookup(groupName);
+                    Result<Symbol*> symbolResult = Lookup(groupName, context);
                     if (symbolResult.Error())
                     {
                         return Result<bool>(ErrorId(symbolResult.GetErrorId()));
@@ -108,16 +118,16 @@ namespace symbols
                 ContainerScope* baseScope = BaseScope();
                 if (baseScope != null)
                 {
-                    Result<bool> scopeResult = baseScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions);
+                    Result<bool> scopeResult = baseScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions, context);
                     if (scopeResult.Value()) result = true;
                 }
             }
             if ((scopeLookup& ScopeLookup.parent) != ScopeLookup.none)
             {
-                ContainerScope* parentScope = ParentScope();
+                ContainerScope* parentScope = ParentScope(context);
                 if (parentScope != null)
                 {
-                    Result<bool> scopeResult = parentScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions);
+                    Result<bool> scopeResult = parentScope->CollectViableFunctions(arity, groupName, scopesLookedUp, scopeLookup, viableFunctions, context);
                     if (scopeResult.Value()) return true;
                 }
             }
@@ -127,13 +137,13 @@ namespace symbols
             SymbolsContext& context)
         {
             ContainerScope* scope = this;
-            Result<NamespaceSymbol*> parentNsResult = scope->Ns();
+            Result<NamespaceSymbol*> parentNsResult = scope->Ns(context);
             if (parentNsResult.Error()) return parentNsResult;
             NamespaceSymbol* parentNs = parentNsResult.Value();
             List<ustring> components = qualifiedNamespaceName.Split('.');
             for (const ustring& component : components)
             {
-                Result<Symbol*> result = scope->Lookup(component);
+                Result<Symbol*> result = scope->Lookup(component, context);
                 if (result.Error()) return Result<NamespaceSymbol*>(ErrorId(result.GetErrorId()));
                 Symbol* s = result.Value();
                 if (s != null)
@@ -141,7 +151,7 @@ namespace symbols
                     if (s->IsNamespaceSymbol())
                     {
                         scope = s->GetContainerScope();
-                        parentNsResult = scope->Ns();
+                        parentNsResult = scope->Ns(context);
                         if (parentNsResult.Error()) return parentNsResult;
                         parentNs = parentNsResult.Value();
                     }
@@ -167,17 +177,17 @@ namespace symbols
             }
             return Result<NamespaceSymbol*>(parentNs);
         }
-        public override Result<Symbol*> Lookup(const ustring& name) const
+        public override Result<Symbol*> Lookup(const ustring& name, SymbolsContext& context) const
         {
-            return Lookup(name, ScopeLookup.this_);
+            return Lookup(name, ScopeLookup.this_, context);
         }
-        public override Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup) const
+        public override Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup, SymbolsContext& context) const
         {
             int numQualifiedNameComponents = CountQualifiedNameComponents(name);
             if (numQualifiedNameComponents > 1)
             {
                 List<ustring> components = ParseQualifiedName(name);
-                return LookupQualified(components, lookup);
+                return LookupQualified(components, lookup, context);
             }
             else
             {
@@ -192,7 +202,7 @@ namespace symbols
                     ContainerScope* baseScope = BaseScope();
                     if (baseScope != null)
                     {
-                        Result<Symbol*> baseResult = baseScope->Lookup(name, lookup);
+                        Result<Symbol*> baseResult = baseScope->Lookup(name, lookup, context);
                         if (baseResult.Error()) return Result<Symbol*>(ErrorId(baseResult.GetErrorId()));
                         Symbol* s = baseResult.Value();
                         if (s != null)
@@ -203,10 +213,10 @@ namespace symbols
                 }
                 if ((lookup & ScopeLookup.parent) != ScopeLookup.none)
                 {
-                    ContainerScope* parentScope = ParentScope();
+                    ContainerScope* parentScope = ParentScope(context);
                     if (parentScope != null)
                     {
-                        Result<Symbol*> parentResult = parentScope->Lookup(name, lookup);
+                        Result<Symbol*> parentResult = parentScope->Lookup(name, lookup, context);
                         if (parentResult.Error()) return Result<Symbol*>(ErrorId(parentResult.GetErrorId()));
                         Symbol* s = parentResult.Value();
                         if (s != null)
@@ -218,7 +228,7 @@ namespace symbols
                 return Result<Symbol*>(cast<Symbol*>(null));
             }
         }
-        public Result<Symbol*> LookupQualified(const List<ustring>& components, ScopeLookup lookup) const
+        public Result<Symbol*> LookupQualified(const List<ustring>& components, ScopeLookup lookup, SymbolsContext& context) const
         {
             ContainerScope* scope = this;
             Symbol* s = null;
@@ -229,7 +239,7 @@ namespace symbols
                 const ustring& component = components[i];
                 if (scope != null)
                 {
-                    Result<Symbol*> scopeResult = scope->Lookup(component, ScopeLookup.this_);
+                    Result<Symbol*> scopeResult = scope->Lookup(component, ScopeLookup.this_, context);
                     if (scopeResult.Error()) return Result<Symbol*>(ErrorId(scopeResult.GetErrorId()));
                     s = scopeResult.Value();
                     if (s != null)
@@ -246,10 +256,10 @@ namespace symbols
             {
                 if ((lookup & ScopeLookup.parent) != ScopeLookup.none)
                 {
-                    ContainerScope* parentScope = ParentScope();
+                    ContainerScope* parentScope = ParentScope(context);
                     if (parentScope != null)
                     {
-                        return parentScope->LookupQualified(components, lookup);
+                        return parentScope->LookupQualified(components, lookup, context);
                     }
                     else
                     {
@@ -416,11 +426,11 @@ namespace symbols
             aliasMap[aliasNode->Id()->Str()] = type;
         }
         [nodiscard]
-        public Result<bool> InstallNamespaceImport(ContainerScope* containerScope, NamespaceImportNode* namespaceImportNode)
+        public Result<bool> InstallNamespaceImport(ContainerScope* containerScope, NamespaceImportNode* namespaceImportNode, SymbolsContext& context)
         {
             #assert(containerScope != null);
             const ustring& importedNamespaceName = namespaceImportNode->Ns()->Str();
-            Result<Symbol*> symbolResult = containerScope->Lookup(importedNamespaceName, ScopeLookup.this_and_parent);
+            Result<Symbol*> symbolResult = containerScope->Lookup(importedNamespaceName, ScopeLookup.this_and_parent, context);
             if (symbolResult.Error()) return Result<bool>(ErrorId(symbolResult.GetErrorId()));
             Symbol* symbol = symbolResult.Value();
             if (symbol != null)
@@ -442,7 +452,7 @@ namespace symbols
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            else 
+            else
             {
                 auto nsNameResult = ToUtf8(importedNamespaceName);
                 if (nsNameResult.Error()) return Result<bool>(ErrorId(nsNameResult.GetErrorId()));
@@ -452,11 +462,11 @@ namespace symbols
             }
             return Result<bool>(true);
         }
-        public override Result<Symbol*> Lookup(const ustring& name) const
+        public override Result<Symbol*> Lookup(const ustring& name, SymbolsContext& context) const
         {
-            return Lookup(name, ScopeLookup.this_);
+            return Lookup(name, ScopeLookup.this_, context);
         }
-        public override Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup) const
+        public override Result<Symbol*> Lookup(const ustring& name, ScopeLookup lookup, SymbolsContext& context) const
         {
             Set<Symbol*> foundSymbols;
             auto it = aliasMap.Find(name);
@@ -469,7 +479,7 @@ namespace symbols
             {
                 for (ContainerScope* containerScope : containerScopes)
                 {
-                    Result<Symbol*> containerScopeResult = containerScope->Lookup(name, ScopeLookup.this_);
+                    Result<Symbol*> containerScopeResult = containerScope->Lookup(name, ScopeLookup.this_, context);
                     if (containerScopeResult.Error()) return Result<Symbol*>(ErrorId(containerScopeResult.GetErrorId()));
                     Symbol* symbol = containerScopeResult.Value();
                     if (symbol != null)
@@ -515,14 +525,15 @@ namespace symbols
             }
         }
         [nodiscard]
-        public Result<bool> CollectViableFunctions(int arity, const ustring& groupName, Set<ContainerScope*>& scopesLookedUp, ViableFunctionSet& viableFunctions)
+        public Result<bool> CollectViableFunctions(int arity, const ustring& groupName, Set<ContainerScope*>& scopesLookedUp, ViableFunctionSet& viableFunctions,
+            SymbolsContext& context)
         {
             bool result = false;
             for (ContainerScope* containerScope : containerScopes)
             {
                 if (scopesLookedUp.Find(containerScope) == scopesLookedUp.End())
                 {
-                    Result<bool> scopeResult = containerScope->CollectViableFunctions(arity, groupName, scopesLookedUp, ScopeLookup.this_, viableFunctions);
+                    Result<bool> scopeResult = containerScope->CollectViableFunctions(arity, groupName, scopesLookedUp, ScopeLookup.this_, viableFunctions, context);
                     if (scopeResult.Value()) result = true;
                     scopesLookedUp.Insert(containerScope);
                 }

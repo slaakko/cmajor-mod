@@ -1,0 +1,40 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace symbols
+{
+    public Result<bool> MakeClassIndexFile(const Set<ClassTypeSymbol*>& polymorphicClasses, const string& classIndexFilePath)
+    {
+        Result<System.IO.BinaryWriter> writerResult = System.IO.File.CreateBinary(classIndexFilePath);
+        if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+        System.IO.BinaryWriter& writer = writerResult.Value();
+        Uuid nilUuid;
+        Result<bool> result = writer.Write(cast<int>(polymorphicClasses.Count()));
+        if (result.Error()) return result;
+        for (ClassTypeSymbol* cls : polymorphicClasses)
+        {
+            result = writer.Write(cls->TypeId());
+            if (result.Error()) return result;
+            ClassTypeSymbol* baseClass = cls->BaseClass();
+            if (baseClass != null)
+            {
+                result = writer.Write(baseClass->TypeId());
+                if (result.Error()) return result;
+            }
+            else
+            {
+                result = writer.Write(nilUuid);
+                if (result.Error()) return result;
+            }
+            result = writer.Write(cls->FullName());
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+}
+

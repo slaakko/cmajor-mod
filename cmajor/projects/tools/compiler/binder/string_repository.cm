@@ -24,6 +24,7 @@ namespace binder
             {
                 int id = cast<int>(strings.Count());
                 stringMap[str] = id;
+                strings.Add(str);
                 return id;
             }
         }

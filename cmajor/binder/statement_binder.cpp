@@ -760,6 +760,10 @@ void StatementBinder::Visit(cmajor::ast::MemberFunctionNode& memberFunctionNode)
     {
         memberFunctionSymbol->FunctionGroup()->CheckDuplicateFunctionSymbols();
     }
+    if (memberFunctionSymbol->GroupName() == U"CreateText")
+    {
+        int x = 0;
+    }
     cmajor::symbols::MemberFunctionSymbol* prevMemberFunctionSymbol = currentMemberFunctionSymbol;
     currentMemberFunctionSymbol = memberFunctionSymbol;
     containerScope = symbol->GetContainerScope();
@@ -1436,6 +1440,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
     }
     BoundConstructionStatement* boundConstructionStatement = new BoundConstructionStatement(std::move(constructorCall), constructionStatementNode.GetSpan());
     boundConstructionStatement->SetLocalVariable(localVariableSymbol);
+    localVariableSymbol->SetInitialized();
     AddStatement(boundConstructionStatement);
 }
 

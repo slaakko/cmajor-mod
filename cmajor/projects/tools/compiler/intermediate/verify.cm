@@ -161,7 +161,7 @@ namespace intermediate
                 if (inst.Callee()->IsSymbolValue())
                 {
                     SymbolValue* calleeSymbolValue = cast<SymbolValue*>(inst.Callee());
-                    Result<Function*> functionResult = context->GetCode()->AddFunctionDeclaration(inst.Span(), calleeType, calleeSymbolValue->Symbol());
+                    Result<Function*> functionResult = context->GetCode()->AddFunctionDeclaration(inst.Span(), inst.Callee()->GetType(), calleeSymbolValue->Symbol());
                     if (functionResult.Error())
                     {
                         SetErrorId(functionResult.GetErrorId());
@@ -185,9 +185,14 @@ namespace intermediate
         public override void Visit(RetInstruction& inst)
         {
             Type* type = currentFunction->GetType();
+            if (type != null && type->IsPointerType())
+            {
+                type = cast<PointerType*>(type)->BaseType();
+            }
             if (type == null || !type->IsFunctionType())
             {
-                SetErrorId(Error("type check error: current function '" + currentFunction->Name() + "' has invalid type (not a function type)", currentFunction->Span(), context));
+                SetErrorId(Error("type check error: current function '" + currentFunction->Name() + "' has invalid type (not a function type or function pointer type)",
+                    currentFunction->Span(), context));
                 return;
             }
             FunctionType* functionType = cast<FunctionType*>(type);
@@ -459,9 +464,9 @@ namespace intermediate
         {
             CheckBinaryInstructionTypes(&inst);
             if (Error()) return;
-            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            CheckIntegerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.Span());
             if (Error()) return;
-            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            CheckIntegerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.Span());
             if (Error()) return;
             CheckBinaryInstuction(&inst);
             if (Error()) return;
@@ -472,9 +477,9 @@ namespace intermediate
         {
             CheckBinaryInstructionTypes(&inst);
             if (Error()) return;
-            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            CheckIntegerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.Span());
             if (Error()) return;
-            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            CheckIntegerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.Span());
             if (Error()) return;
             CheckBinaryInstuction(&inst);
             if (Error()) return;
@@ -485,9 +490,9 @@ namespace intermediate
         {
             CheckBinaryInstructionTypes(&inst);
             if (Error()) return;
-            CheckIntegerType(inst.Left()->GetType(), "left operand type", inst.Span());
+            CheckIntegerOrBooleanType(inst.Left()->GetType(), "left operand type", inst.Span());
             if (Error()) return;
-            CheckIntegerType(inst.Right()->GetType(), "right operand type", inst.Span());
+            CheckIntegerOrBooleanType(inst.Right()->GetType(), "right operand type", inst.Span());
             if (Error()) return;
             CheckBinaryInstuction(&inst);
             if (Error()) return;
@@ -693,7 +698,7 @@ namespace intermediate
                 if (inst.Callee()->IsSymbolValue())
                 {
                     SymbolValue* calleeSymbolValue = cast<SymbolValue*>(inst.Callee());
-                    Result<Function*> functionResult = context->GetCode()->AddFunctionDeclaration(inst.Span(), calleeType, calleeSymbolValue->Symbol());
+                    Result<Function*> functionResult = context->GetCode()->AddFunctionDeclaration(inst.Span(), inst.Callee()->GetType(), calleeSymbolValue->Symbol());
                     if (functionResult.Error())
                     {
                         SetErrorId(functionResult.GetErrorId());
@@ -775,7 +780,7 @@ namespace intermediate
             }
             if (asserted != expected)
             {
-                SetErrorId(Error("type check error: " + expectedTypeDescription + "'" + expected->Name() + "' expected but " + typeDescription + " '" + type->Name() +
+                SetErrorId(Error("type check error: " + expectedTypeDescription + "' " + expected->Name() + "' expected but " + typeDescription + " '" + type->Name() +
                     "' and '" + asserted->Name() + "' seen", span, context));
             }
         }
@@ -923,7 +928,7 @@ namespace intermediate
         {
             if (type == null)
             {
-                SetErrorId(Error("type check error: pointer type expected but but type is null",
+                SetErrorId(Error("type check error: pointer type expected but type is null",
                     span, context));
                 return;
             }

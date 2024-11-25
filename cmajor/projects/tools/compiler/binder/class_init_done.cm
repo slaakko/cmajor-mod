@@ -54,7 +54,7 @@ namespace binder
         TypeSymbol* staticInitCriticalSectionClassType = staticInitCriticalSectionClassTypeResult.Value();
         List<FunctionScopeLookup> constructorLookups;
         constructorLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-        Result<ContainerScope*> scopeResult = staticInitCriticalSectionClassType->ClassInterfaceOrNsScope();
+        Result<ContainerScope*> scopeResult = staticInitCriticalSectionClassType->ClassInterfaceOrNsScope(context);
         ContainerScope* scope = scopeResult.Value();
         constructorLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
         constructorLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
@@ -62,8 +62,11 @@ namespace binder
         Result<LocalVariableSymbol*> temporaryResult = staticConstructorSymbol->CreateTemporary(node->GetSpan(), staticInitCriticalSectionClassType, context);
         if (temporaryResult.Error()) return Result<bool>(ErrorId(temporaryResult.GetErrorId()));
         LocalVariableSymbol* temporary = temporaryResult.Value();
+        Result<TypeSymbol*> staticInitCriticalSectionPtrTypeResult = staticInitCriticalSectionClassType->AddPointer(context);
+        if (staticInitCriticalSectionPtrTypeResult.Error()) return Result<bool>(ErrorId(staticInitCriticalSectionPtrTypeResult.GetErrorId()));
+        TypeSymbol* staticInitCriticalSectionPtrType = staticInitCriticalSectionPtrTypeResult.Value();
         constructorArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
-            new BoundLocalVariable(node->GetSpan(), temporary)), staticInitCriticalSectionClassType->AddPointer(context))));
+            new BoundLocalVariable(node->GetSpan(), temporary)), staticInitCriticalSectionPtrType)));
         Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, constructorLookups, constructorArguments,
             boundCompileUnit, boundFunction, node);
         if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
@@ -81,8 +84,11 @@ namespace binder
         assignmentLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
         assignmentLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
         List<UniquePtr<BoundExpression>> assignmentArguments;
+        Result<TypeSymbol*> initVarPtrTypeResult = classType->InitializedVar()->Type()->AddPointer(context);
+        if (initVarPtrTypeResult.Error()) return Result<bool>(ErrorId(initVarPtrTypeResult.GetErrorId()));
+        TypeSymbol* initVarPtrType = initVarPtrTypeResult.Value();
         assignmentArguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(
-            new BoundMemberVariable(node->GetSpan(), classType->InitializedVar())), classType->InitializedVar()->Type()->AddPointer(context))));
+            new BoundMemberVariable(node->GetSpan(), classType->InitializedVar())), initVarPtrType)));
         assignmentArguments.Add(UniquePtr<BoundExpression>(new BoundLiteral(node->GetSpan(), UniquePtr<Value>(new BoolValue(node->GetSpan(), true)), boolType)));
         Result<UniquePtr<BoundFunctionCall>> assignmentCallResult = ResolveOverload(u"operator=", containerScope, assignmentLookups, assignmentArguments,
             boundCompileUnit, boundFunction, node);
@@ -146,8 +152,11 @@ namespace binder
                 lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                 List<UniquePtr<BoundExpression>> arguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                Result<TypeSymbol*> memberVarPtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                if (memberVarPtrTypeResult.Error()) return Result<bool>(ErrorId(memberVarPtrTypeResult.GetErrorId()));
+                TypeSymbol* memberVarPtrType = memberVarPtrTypeResult.Value();
                 UniquePtr<BoundExpression> addrOfBoundMemberVariable(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
-                    boundMemberVariable->Type()->AddPointer(context)));
+                    memberVarPtrType));
                 UniquePtr<BoundExpression> addrOfBoundMemberVariable2;
                 ClassTypeSymbol* memberVariableClassTypeWithDestructor = null;
                 if (memberVariableSymbol->Type()->HasNontrivialDestructor())
@@ -164,7 +173,7 @@ namespace binder
                     if (argumentResult.Error()) return Result<bool>(ErrorId(argumentResult.GetErrorId()));
                     arguments.Add(Rvalue(argumentResult.Value()));
                 }
-                Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"constructor", containerScope, lookups, arguments,
+                Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments,
                     boundCompileUnit, boundFunction, node);
                 if (constructorCallResult.Error()) return Result<bool>(ErrorId(constructorCallResult.GetErrorId()));
                 boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
@@ -174,7 +183,9 @@ namespace binder
                     Result<TypeSymbol*> voidTypeResult = boundCompileUnit->GetSymbolTable()->GetTypeByName(u"void");
                     if (voidTypeResult.Error()) return Result<bool>(ErrorId(voidTypeResult.GetErrorId()));
                     TypeSymbol* voidType = voidTypeResult.Value();
-                    TypeSymbol* voidPtrType = voidType->AddPointer(context);
+                    Result<TypeSymbol*> voidPtrTypeResult = voidType->AddPointer(context);
+                    if (voidPtrTypeResult.Error()) return Result<bool>(ErrorId(voidPtrTypeResult.GetErrorId()));
+                    TypeSymbol* voidPtrType = voidPtrTypeResult.Value();
                     List<FunctionScopeLookup> enqueueLookups;
                     enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
                     enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
@@ -201,8 +212,11 @@ namespace binder
                 lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                 List<UniquePtr<BoundExpression>> arguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                Result<TypeSymbol*> memberVariablePtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                if (memberVariablePtrTypeResult.Error()) return Result<bool>(ErrorId(memberVariablePtrTypeResult.GetErrorId()));
+                TypeSymbol* memberVariablePtrType = memberVariablePtrTypeResult.Value();
                 UniquePtr<BoundExpression> addrOfBoundMemberVariable(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
-                    boundMemberVariable->Type()->AddPointer(context)));
+                    memberVariablePtrType));
                 UniquePtr<BoundExpression> addrOfBoundMemberVariable2;
                 ClassTypeSymbol* memberVariableClassTypeWithDestructor = null;
                 if (memberVariableSymbol->Type()->HasNontrivialDestructor())
@@ -220,7 +234,9 @@ namespace binder
                     Result<TypeSymbol*> voidTypeResult = boundCompileUnit->GetSymbolTable()->GetTypeByName(u"void");
                     if (voidTypeResult.Error()) return Result<bool>(ErrorId(voidTypeResult.GetErrorId()));
                     TypeSymbol* voidType = voidTypeResult.Value();
-                    TypeSymbol* voidPtrType = voidType->AddPointer(context);
+                    Result<TypeSymbol*> voidPtrTypeResult = voidType->AddPointer(context);
+                    if (voidPtrTypeResult.Error()) return Result<bool>(ErrorId(voidPtrTypeResult.GetErrorId()));
+                    TypeSymbol* voidPtrType = voidPtrTypeResult.Value();
                     List<FunctionScopeLookup> enqueueLookups;
                     enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
                     enqueueLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
@@ -253,6 +269,7 @@ namespace binder
     public Result<bool> GenerateClassInitialization(ConstructorSymbol* constructorSymbol, ConstructorNode* constructorNode, BoundCompoundStatement* boundCompoundStatement,
         BoundFunction* boundFunction, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope, StatementBinder* statementBinder, bool generateDefault, Node* node)
     {
+        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(constructorSymbol->Parent());
         Result<bool> result = GenerateClassInitializationContent(constructorSymbol, constructorNode, boundCompoundStatement, boundFunction,
             boundCompileUnit, containerScope, statementBinder, generateDefault, node);
         if (result.Error())
@@ -363,14 +380,9 @@ namespace binder
                 if (argumentResult.Error()) return Result<bool>(ErrorId(argumentResult.GetErrorId()));
                 arguments.Add(Rvalue(argumentResult.Value()));
             }
-            OverloadResolutionFlags flags = OverloadResolutionFlags.none;
-            if (!constructorSymbol->IsMoveConstructor(context))
-            {
-                flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
-            }
             List<TypeSymbol*> templateArgumentTypes;
             Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments, boundCompileUnit,
-                boundFunction, node, flags, templateArgumentTypes);
+                boundFunction, node, OverloadResolutionFlags.none, templateArgumentTypes);
             if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
             boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
                 resolutionResult.Value().Release()))));
@@ -391,7 +403,10 @@ namespace binder
             lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
             List<UniquePtr<BoundExpression>> arguments;
             ArgumentMatch argumentMatch;
-            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+            Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+            if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+            TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType,
                 containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
             if (thisToBaseConversionResult.Error())
             {
@@ -409,14 +424,9 @@ namespace binder
                 if (argumentResult.Error()) return Result<bool>(ErrorId(argumentResult.GetErrorId()));
                 arguments.Add(Rvalue(argumentResult.Value()));
             }
-            OverloadResolutionFlags flags = OverloadResolutionFlags.none;
-            if (!constructorSymbol->IsMoveConstructor(context))
-            {
-                flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
-            }
             List<TypeSymbol*> templateArgumentTypes;
             Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments, boundCompileUnit,
-                boundFunction, node, flags, templateArgumentTypes);
+                boundFunction, node, OverloadResolutionFlags.none, templateArgumentTypes);
             if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
             boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
                 resolutionResult.Value().Release()))));
@@ -429,7 +439,10 @@ namespace binder
             lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
             List<UniquePtr<BoundExpression>> arguments;
             ArgumentMatch argumentMatch;
-            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+            Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+            if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+            TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType,
                 containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
             if (thisToBaseConversionResult.Error())
             {
@@ -444,22 +457,23 @@ namespace binder
             {
                 ParameterSymbol* thatParam = constructorSymbol->Parameters()[1];
                 ArgumentMatch argumentMatch;
+                Result<TypeSymbol*> constTypeResult = classType->BaseClass()->AddConst(context);
+                if (constTypeResult.Error()) return Result<bool>(ErrorId(constTypeResult.GetErrorId()));
+                TypeSymbol* constType = constTypeResult.Value();
+                Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                if (lvalueRefTypeResult.Error()) return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
                 Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(),
-                    classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                    lvalueRefType, containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
                 if (thatToBaseConversionResult.Error()) return Result<bool>(ErrorId(thatToBaseConversionResult.GetErrorId()));
                 FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
                 BoundExpression* baseClassReferenceConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
                     new BoundParameter(node->GetSpan(), thatParam)), thatToBaseConversion);
                 arguments.Add(UniquePtr<BoundExpression>(baseClassReferenceConversion));
             }
-            OverloadResolutionFlags flags = OverloadResolutionFlags.none;
-            if (!constructorSymbol->IsMoveConstructor(context))
-            {
-                flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
-            }
             List<TypeSymbol*> templateArgumentTypes;
             Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments, boundCompileUnit,
-                boundFunction, node, flags, templateArgumentTypes);
+                boundFunction, node, OverloadResolutionFlags.none, templateArgumentTypes);
             if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
             boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(), UniquePtr<BoundExpression>(
                 resolutionResult.Value().Release()))));
@@ -477,7 +491,10 @@ namespace binder
             else
             {
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context),
+                Result<TypeSymbol*> vmtPtrClassPtrResult = vmtPtrHolderClass->AddPointer(context);
+                if (vmtPtrClassPtrResult.Error()) return Result<bool>(ErrorId(vmtPtrClassPtrResult.GetErrorId()));
+                TypeSymbol* vmtPtrClassPtr = vmtPtrClassPtrResult.Value();
+                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrClassPtr,
                     containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
                 if (thisToHolderConversionResult.Error()) return Result<bool>(ErrorId(thisToHolderConversionResult.GetErrorId()));
                 FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
@@ -501,8 +518,11 @@ namespace binder
                 List<UniquePtr<BoundExpression>> arguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                 boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                Result<TypeSymbol*> memberVarPtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                if (memberVarPtrTypeResult.Error()) return Result<bool>(ErrorId(memberVarPtrTypeResult.GetErrorId()));
+                TypeSymbol* memberVarPtrType = memberVarPtrTypeResult.Value();
                 arguments.Add(UniquePtr<BoundExpression>(
-                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), memberVarPtrType)));
                 int n = cast<int>(memberInitializer->Arguments().Count());
                 for (int i = 0; i < n; ++i)
                 {
@@ -528,8 +548,11 @@ namespace binder
                     List<UniquePtr<BoundExpression>> arguments;
                     BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                    Result<TypeSymbol*> memberVarPtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                    if (memberVarPtrTypeResult.Error()) return Result<bool>(ErrorId(memberVarPtrTypeResult.GetErrorId()));
+                    TypeSymbol* memberVarPtrType = memberVarPtrTypeResult.Value();
                     arguments.Add(UniquePtr<BoundExpression>(
-                        new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                        new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), memberVarPtrType)));
                     CloneContext cloneContext;
                     DotNode thatMemberVarNode(node->GetSpan(), node->FileIndex(), constructorNode->Parameters()[0]->Clone(cloneContext),
                         new IdentifierNode(node->GetSpan(), node->FileIndex(), memberVariableSymbol->Name()));
@@ -554,9 +577,12 @@ namespace binder
                     boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                     ParameterSymbol* thatParam = constructorSymbol->Parameters()[1];
                     UniquePtr<BoundMemberVariable> thatBoundMemberVariable(new BoundMemberVariable(node->GetSpan(), memberVariableSymbol));
+                    Result<TypeSymbol*> thatParamBasePtrTypeResult = thatParam->Type()->BaseType()->AddPointer(context);
+                    if (thatParamBasePtrTypeResult.Error()) return Result<bool>(ErrorId(thatParamBasePtrTypeResult.GetErrorId()));
+                    TypeSymbol* thatParamBasePtrType = thatParamBasePtrTypeResult.Value();
                     thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(
                         new BoundReferenceToPointerExpression(node->GetSpan(), UniquePtr<BoundExpression>(
-                            new BoundParameter(node->GetSpan(), thatParam)), thatParam->Type()->BaseType()->AddPointer(context))));
+                            new BoundParameter(node->GetSpan(), thatParam)), thatParamBasePtrType)));
                     List<FunctionScopeLookup> rvalueLookups;
                     rvalueLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
                     rvalueLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
@@ -577,16 +603,14 @@ namespace binder
                     List<UniquePtr<BoundExpression>> arguments;
                     BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                    Result<TypeSymbol*> memberVarPtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                    if (memberVarPtrTypeResult.Error()) return Result<bool>(ErrorId(memberVarPtrTypeResult.GetErrorId()));
+                    TypeSymbol* memberVarPtrType = memberVarPtrTypeResult.Value();
                     arguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
-                        boundMemberVariable->Type()->AddPointer(context))));
-                    OverloadResolutionFlags flags = OverloadResolutionFlags.none;
-                    if (!constructorSymbol->IsMoveConstructor(context))
-                    {
-                        flags = cast<OverloadResolutionFlags>(flags | OverloadResolutionFlags.noRvalueRef);
-                    }
+                        memberVarPtrType)));
                     List<TypeSymbol*> templateArgumentTypes;
                     Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments,
-                        boundCompileUnit, boundFunction, node, flags, templateArgumentTypes);
+                        boundCompileUnit, boundFunction, node, OverloadResolutionFlags.none, templateArgumentTypes);
                     if (constructorCallResult.Error()) return Result<bool>(ErrorId(constructorCallResult.GetErrorId()));
                     boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
                         UniquePtr<BoundExpression>(constructorCallResult.Value().Release()))));
@@ -660,7 +684,10 @@ namespace binder
                 lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                 List<UniquePtr<BoundExpression>> arguments;
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context),
+                Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+                if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+                TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType,
                     containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
                 if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
                 FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -668,8 +695,14 @@ namespace binder
                     new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
                 arguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
                 ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
+                Result<TypeSymbol*> constTypeResult = classType->BaseClass()->AddConst(context);
+                if (constTypeResult.Error()) return Result<bool>(ErrorId(constTypeResult.GetErrorId()));
+                TypeSymbol* constType = constTypeResult.Value();
+                Result<TypeSymbol*> lvalueRefTypeResult = constType->AddLvalueReference(context);
+                if (lvalueRefTypeResult.Error()) return Result<bool>(ErrorId(lvalueRefTypeResult.GetErrorId()));
+                TypeSymbol* lvalueRefType = lvalueRefTypeResult.Value();
                 Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(),
-                    classType->BaseClass()->AddConst(context)->AddLvalueReference(context), containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                    lvalueRefType, containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
                 if (thatToBaseConversionResult.Error()) return Result<bool>(ErrorId(thatToBaseConversionResult.GetErrorId()));
                 FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
                 BoundExpression* baseClassReferenceConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
@@ -693,9 +726,12 @@ namespace binder
                     lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                     List<UniquePtr<BoundExpression>> arguments;
                     BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                    Result<TypeSymbol*> memberVarPtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                    if (memberVarPtrTypeResult.Error()) return Result<bool>(ErrorId(memberVarPtrTypeResult.GetErrorId()));
+                    TypeSymbol* memberVarPtrType = memberVarPtrTypeResult.Value();
                     boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                     arguments.Add(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable),
-                        boundMemberVariable->Type()->AddPointer(context))));
+                        memberVarPtrType)));
                     CloneContext cloneContext;
                     DotNode thatMemberVarNode(node->GetSpan(), node->FileIndex(), assignmentNode->Parameters()[0]->Clone(cloneContext),
                         new IdentifierNode(node->GetSpan(), node->FileIndex(), memberVariableSymbol->Name()));
@@ -721,7 +757,10 @@ namespace binder
                 lookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                 List<UniquePtr<BoundExpression>> arguments;
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context), containerScope,
+                Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+                if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+                TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType, containerScope,
                     boundCompileUnit, boundFunction, argumentMatch, node);
                 if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
                 FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -729,8 +768,11 @@ namespace binder
                     new BoundParameter(node->GetSpan(), thisParam)), thisToBaseConversion);
                 arguments.Add(UniquePtr<BoundExpression>(baseClassPointerConversion));
                 ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
+                Result<TypeSymbol*> baseClassRvalueRefTypeResult = classType->BaseClass()->AddRvalueReference(context);
+                if (baseClassRvalueRefTypeResult.Error()) return Result<bool>(ErrorId(baseClassRvalueRefTypeResult.GetErrorId()));
+                TypeSymbol* baseClassRvalueRefType = baseClassRvalueRefTypeResult.Value();
                 Result<FunctionSymbol*> thatToBaseConversionResult = GetConversion(thatParam->Type(),
-                    classType->BaseClass()->AddRvalueReference(context), containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
+                    baseClassRvalueRefType, containerScope, boundCompileUnit, boundFunction, argumentMatch, node);
                 if (thatToBaseConversionResult.Error()) return Result<bool>(ErrorId(thatToBaseConversionResult.GetErrorId()));
                 FunctionSymbol* thatToBaseConversion = thatToBaseConversionResult.Value();
                 BoundExpression* baseClassReferenceConversion = new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(
@@ -758,7 +800,13 @@ namespace binder
                     arguments.Add(UniquePtr<BoundExpression>(boundMemberVariable));
                     BoundMemberVariable* thatBoundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                     ParameterSymbol* thatParam = assignmentFunctionSymbol->Parameters()[1];
-                    TypeSymbol* thatPtrType = thatParam->Type()->RemoveReference(context)->AddPointer(context);
+                    Result<TypeSymbol*> thatParamBaseTypeResult = thatParam->Type()->RemoveReference(context);
+                    if (thatParamBaseTypeResult.Error()) return Result<bool>(ErrorId(thatParamBaseTypeResult.GetErrorId()));
+                    TypeSymbol* thatParamBaseType = thatParamBaseTypeResult.Value();
+                    Result<TypeSymbol*> thatParamPtrTypeResult = thatParamBaseType->AddPointer(context);
+                    if (thatParamPtrTypeResult.Error()) return Result<bool>(ErrorId(thatParamPtrTypeResult.GetErrorId()));
+                    TypeSymbol* thatParamPtrType = thatParamPtrTypeResult.Value();
+                    TypeSymbol* thatPtrType = thatParamPtrType;
                     thatBoundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundReferenceToPointerExpression(node->GetSpan(),
                         UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thatParam)), thatPtrType)));
                     arguments.Add(UniquePtr<BoundExpression>(thatBoundMemberVariable));
@@ -818,7 +866,10 @@ namespace binder
             else
             {
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context), containerScope,
+                Result<TypeSymbol*> vmtPtrPtrTypeResult = vmtPtrHolderClass->AddPointer(context);
+                if (vmtPtrPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrPtrTypeResult.GetErrorId()));
+                TypeSymbol* vmtPtrPtrType = vmtPtrPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrPtrType, containerScope,
                     boundCompileUnit, boundFunction, argumentMatch, node);
                 if (thisToHolderConversionResult.Error()) return Result<bool>(ErrorId(thisToHolderConversionResult.GetErrorId()));
                 FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
@@ -835,7 +886,7 @@ namespace binder
             {
                 List<FunctionScopeLookup> memberDestructorCallLookups;
                 memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                 if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
                 ContainerScope* scope = scopeResult.Value();
                 memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
@@ -843,8 +894,11 @@ namespace binder
                 List<UniquePtr<BoundExpression>> memberDestructorCallArguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
                 boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
+                Result<TypeSymbol*> memberVarPtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                if (memberVarPtrTypeResult.Error()) return Result<bool>(ErrorId(memberVarPtrTypeResult.GetErrorId()));
+                TypeSymbol* memberVarPtrType = memberVarPtrTypeResult.Value();
                 memberDestructorCallArguments.Add(UniquePtr<BoundExpression>(
-                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), memberVarPtrType)));
                 Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
                     boundCompileUnit, boundFunction, node);
                 if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
@@ -860,7 +914,10 @@ namespace binder
             baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
             List<UniquePtr<BoundExpression>> baseDestructorCallArguments;
             ArgumentMatch argumentMatch;
-            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context), containerScope,
+            Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+            if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+            TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType, containerScope,
                 boundCompileUnit, boundFunction, argumentMatch, node);
             if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
             FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();
@@ -901,6 +958,7 @@ namespace binder
         SymbolsContext& context = boundCompileUnit->Context();
         ClassTypeSymbol* classType = boundClass->GetClassTypeSymbol();
         UniquePtr<BoundFunction> boundFunction(new BoundFunction(node->GetSpan(), destructorSymbol, node->ModuleId(), node->FileIndex()));
+        boundFunction->SetBoundCompileUnit(boundCompileUnit);
         boundFunction->SetNode(node);
         boundFunction->SetBody(UniquePtr<BoundCompoundStatement>(new BoundCompoundStatement(node->GetSpan())));
         ParameterSymbol* thisParam = destructorSymbol->Parameters()[0];
@@ -917,7 +975,10 @@ namespace binder
             else
             {
                 ArgumentMatch argumentMatch;
-                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrHolderClass->AddPointer(context), containerScope,
+                Result<TypeSymbol*> vmtPtrPtrTypeResult = vmtPtrHolderClass->AddPointer(context);
+                if (vmtPtrPtrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrPtrTypeResult.GetErrorId()));
+                TypeSymbol* vmtPtrPtrType = vmtPtrPtrTypeResult.Value();
+                Result<FunctionSymbol*> thisToHolderConversionResult = GetConversion(thisParam->Type(), vmtPtrPtrType, containerScope,
                     boundCompileUnit, boundFunction.Get(), argumentMatch, node);
                 if (thisToHolderConversionResult.Error()) return Result<bool>(ErrorId(thisToHolderConversionResult.GetErrorId()));
                 FunctionSymbol* thisToHolderConversion = thisToHolderConversionResult.Value();
@@ -934,16 +995,19 @@ namespace binder
             {
                 List<FunctionScopeLookup> memberDestructorCallLookups;
                 memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
-                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope();
+                Result<ContainerScope*> scopeResult = memberVariableSymbol->Type()->BaseType()->ClassInterfaceEnumDelegateOrNsScope(context);
                 if (scopeResult.Error()) return Result<bool>(ErrorId(scopeResult.GetErrorId()));
                 ContainerScope* scope = scopeResult.Value();
                 memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.this_, scope));
                 memberDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
                 List<UniquePtr<BoundExpression>> memberDestructorCallArguments;
                 BoundMemberVariable* boundMemberVariable = new BoundMemberVariable(node->GetSpan(), memberVariableSymbol);
+                Result<TypeSymbol*> memberVarPtrTypeResult = memberVariableSymbol->Type()->AddPointer(context);
+                if (memberVarPtrTypeResult.Error()) return Result<bool>(ErrorId(memberVarPtrTypeResult.GetErrorId()));
+                TypeSymbol* memberVarPtrType = memberVarPtrTypeResult.Value();
                 boundMemberVariable->SetClassPtr(UniquePtr<BoundExpression>(new BoundParameter(node->GetSpan(), thisParam)));
                 memberDestructorCallArguments.Add(UniquePtr<BoundExpression>(
-                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), boundMemberVariable->Type()->AddPointer(context))));
+                    new BoundAddressOfExpression(node->GetSpan(), UniquePtr<BoundExpression>(boundMemberVariable), memberVarPtrType)));
                 Result<UniquePtr<BoundFunctionCall>> resolutionResult = ResolveOverload(u"@destructor", containerScope, memberDestructorCallLookups, memberDestructorCallArguments,
                     boundCompileUnit, boundFunction.Get(), node);
                 if (resolutionResult.Error()) return Result<bool>(ErrorId(resolutionResult.GetErrorId()));
@@ -959,7 +1023,10 @@ namespace binder
             baseDestructorCallLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
             List<UniquePtr<BoundExpression>> baseDestructorCallArguments;
             ArgumentMatch argumentMatch;
-            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), classType->BaseClass()->AddPointer(context), containerScope,
+            Result<TypeSymbol*> baseClassPtrTypeResult = classType->BaseClass()->AddPointer(context);
+            if (baseClassPtrTypeResult.Error()) return Result<bool>(ErrorId(baseClassPtrTypeResult.GetErrorId()));
+            TypeSymbol* baseClassPtrType = baseClassPtrTypeResult.Value();
+            Result<FunctionSymbol*> thisToBaseConversionResult = GetConversion(thisParam->Type(), baseClassPtrType, containerScope,
                 boundCompileUnit, boundFunction.Get(), argumentMatch, node);
             if (thisToBaseConversionResult.Error()) return Result<bool>(ErrorId(thisToBaseConversionResult.GetErrorId()));
             FunctionSymbol* thisToBaseConversion = thisToBaseConversionResult.Value();

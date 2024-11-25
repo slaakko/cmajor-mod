@@ -16,6 +16,10 @@ namespace System.IO
         public MemoryStream(byte* data, long count) : content(), readPos(0)
         {
             auto result = this->Write(data, count);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+            }
         }
         suppress MemoryStream(const MemoryStream&);
         suppress void operator=(const MemoryStream&);

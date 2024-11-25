@@ -129,7 +129,7 @@ namespace binder
                 globalNs->AddMember(usingNode->Clone(cloneContext));
             }
             bool fileScopeAdded = false;
-            Result<NamespaceSymbol*> nsResult = functionTemplate->Ns();
+            Result<NamespaceSymbol*> nsResult = functionTemplate->Ns(context);
             if (nsResult.Error()) return Result<FunctionSymbol*>(ErrorId(nsResult.GetErrorId()));
             NamespaceSymbol* ns = nsResult.Value();
             if (!ns->IsGlobalNamespace())

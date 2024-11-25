@@ -282,6 +282,7 @@ namespace symbols
             id(Uuid.Random()),
             config(cm.ast.Config.debug),
             originalFilePath(filePath_),
+            libraryFilePath(System.IO.Path.ChangeExtension(originalFilePath, ".lib")),
             symbolTablePos(0),
             symbolTable(new SymbolTable(this)),
             logStreamId(-1),
@@ -396,6 +397,7 @@ namespace symbols
                 config = Config.trace;
             }
             string moduleDirectory = System.IO.Path.GetDirectoryName(originalFilePath);
+            libraryFilePath = System.IO.Path.ChangeExtension(originalFilePath, ".lib");
             auto moduleDirectoryResult = GetFullPath(moduleDirectory);
             if (moduleDirectoryResult.Error()) return Result<bool>(ErrorId(moduleDirectoryResult.GetErrorId()));
             string fpModuleDirectory = Rvalue(moduleDirectoryResult.Value());
@@ -451,6 +453,10 @@ namespace symbols
         public inline const string& FilePathReadFrom() const
         {
             return filePathReadFrom;
+        }
+        public inline const string& LibraryFilePath() const
+        {
+            return libraryFilePath;
         }
         [nodiscard]
         public Result<bool> ReadHeader(Target target, SymbolReader& reader, Module* rootModule, Set<string>& importSet, List<Module*>& modules,
@@ -532,6 +538,7 @@ namespace symbols
             auto fullPathResult = GetFullPath(reader.GetAstReader().FileName());
             if (fullPathResult.Error()) return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
             filePathReadFrom = Rvalue(fullPathResult.Value());
+            libraryFilePath = System.IO.Path.ChangeExtension(filePathReadFrom, ".lib");
             referenceFilePaths.Clear();
             auto referenceCountResult = reader.GetBinaryReader().ReadInt();
             if (referenceCountResult.Error()) return Result<bool>(ErrorId(referenceCountResult.GetErrorId()));
@@ -699,6 +706,30 @@ namespace symbols
             }
             return Result<bool>(true);
         }
+        [nodiscard]
+        public Result<bool> WriteTraceData(const string& traceFilePath)
+        {
+            Result<System.IO.BinaryWriter> writerResult = System.IO.File.CreateBinary(traceFilePath);
+            if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+            System.IO.BinaryWriter& writer = writerResult.Value();
+            int ns = cast<int>(allSourceFileInfoList.Count());
+            Result<bool> result = writer.Write(ns);
+            if (result.Error()) return result;
+            for (SourceFileInfo* sourceFileInfo : allSourceFileInfoList)
+            {
+                result = sourceFileInfo->Write(writer);
+                if (result.Error()) return result;
+            }
+            int nt = cast<int>(allTraceInfoList.Count());
+            result = writer.Write(nt);
+            if (result.Error()) return result;
+            for (FunctionTraceInfo* traceInfo : allTraceInfoList)
+            {
+                result = traceInfo->Write(writer);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
         public inline const List<string>& ReferenceFilePaths() const
         {
             return referenceFilePaths;
@@ -745,7 +776,20 @@ namespace symbols
         }
         public void ImportTraceData(Module* module)
         {
-            // todo
+            if (name == "System.Core" || name == "System.Runtime") return;
+            if (GetGlobalFlag(GlobalFlags.release)) return;
+            if (traceDataImported.Find(module->Name()) != traceDataImported.End()) return;
+            traceDataImported.Insert(module->Name());
+            for (const auto& sourceFileInfo : module->sourceFileInfoList)
+            {
+                allSourceFileInfoList.Add(sourceFileInfo.Get());
+                sourceFileInfoMap[sourceFileInfo->SourceFilePath()] = sourceFileInfo.Get();
+            }
+            for (const auto& functionTraceInfo : module->traceInfoList)
+            {
+                allTraceInfoList.Add(functionTraceInfo.Get());
+                traceInfoMap[functionTraceInfo->FunctionFullName()] = functionTraceInfo.Get();
+            }
         }
         [nodiscard]
         public Result<bool> AddResourceScriptFilePath(const string& resourceScriptFilePath)
@@ -806,13 +850,40 @@ namespace symbols
             }
             return false;
         }
-        public CompileWarningCollection& WarningCollection()
-        {
-            return warningCollection;
-        }
         public RecursiveMutex& Lock()
         {
             return lock;
+        }
+        public int MakeFunctionId(const string& fullFunctionName, const string& sourceFilePath)
+        {
+            LockGuard<RecursiveMutex> lock(Lock());
+            SourceFileInfo* sourceFileInfo = null;
+            auto sit = sourceFileInfoMap.Find(sourceFilePath);
+            if (sit != sourceFileInfoMap.End())
+            {
+                sourceFileInfo = sit->second;
+            }
+            else
+            {
+                sourceFileInfo = new SourceFileInfo(cast<int>(allSourceFileInfoList.Count()), sourceFilePath);
+                sourceFileInfoList.Add(UniquePtr<SourceFileInfo>(sourceFileInfo));
+                allSourceFileInfoList.Add(sourceFileInfo);
+                sourceFileInfoMap[sourceFilePath] = sourceFileInfo;
+            }
+            FunctionTraceInfo* functionTraceInfo = null;
+            auto fit = traceInfoMap.Find(fullFunctionName);
+            if (fit != traceInfoMap.End())
+            {
+                functionTraceInfo = fit->second;
+            }
+            else
+            {
+                functionTraceInfo = new FunctionTraceInfo(cast<int>(allTraceInfoList.Count()), fullFunctionName, sourceFileInfo->SourceFileId());
+                traceInfoList.Add(UniquePtr<FunctionTraceInfo>(functionTraceInfo));
+                allTraceInfoList.Add(functionTraceInfo);
+                traceInfoMap[fullFunctionName] = functionTraceInfo;
+            }
+            return functionTraceInfo->FunctionId();
         }
         private byte format;
         private ModuleFlags flags;
@@ -844,9 +915,8 @@ namespace symbols
         private List<UniquePtr<FunctionTraceInfo>> traceInfoList;
         private List<FunctionTraceInfo*> allTraceInfoList;
         private Map<string, FunctionTraceInfo*> traceInfoMap;
-        private Set<ustring> traceDataImported;
+        private Set<string> traceDataImported;
         private Set<ustring> defines;
-        private CompileWarningCollection warningCollection;
         private RecursiveMutex lock;
     }
 
@@ -1088,7 +1158,7 @@ namespace symbols
                     rootModule->ImportTraceData(referencedModule);
                     rootModule->ImportResourceScriptFilePaths(referencedModule);
                 }
-                result = module->GetSymbolTable()->Resolve(reader.ResolutionList());
+                result = module->GetSymbolTable()->Resolve(reader.SymbolResolutionList(), reader.ValueResolutionList());
                 if (result.Error()) return result;
                 if (rootModule == module)
                 {

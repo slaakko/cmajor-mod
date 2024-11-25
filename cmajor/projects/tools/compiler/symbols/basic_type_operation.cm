@@ -203,7 +203,14 @@ namespace symbols
             SetGroupName(u"@constructor");
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             auto result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -418,7 +425,14 @@ namespace symbols
             SetGroupName(u"@constructor");
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             auto result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -477,7 +491,14 @@ namespace symbols
             SetGroupName(u"@constructor");
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             auto result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -485,7 +506,14 @@ namespace symbols
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(type->AddRvalueReference(context));
+            Result<TypeSymbol*> refTypeResult = type->AddRvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -540,7 +568,14 @@ namespace symbols
             SetGroupName(u"operator=");
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             auto result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -594,7 +629,14 @@ namespace symbols
             SetGroupName(u"operator=");
             SetAccess(SymbolAccess.public_);
             ParameterSymbol* thisParam = new ParameterSymbol(span_, u"this");
-            thisParam->SetType(type->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = type->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             auto result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -602,7 +644,14 @@ namespace symbols
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(span_, u"that");
-            thatParam->SetType(type->AddRvalueReference(context));
+            Result<TypeSymbol*> refTypeResult = type->AddRvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -633,6 +682,8 @@ namespace symbols
             intermediate.Value* rvalueRefValue = emitter.Stack().Pop();
             Result<intermediate.Value*> instResult = emitter.CreateLoad(rvalueRefValue);
             if (instResult.Error()) return Result<bool>(ErrorId(instResult.GetErrorId()));
+            intermediate.Value* inst = instResult.Value();
+            emitter.Stack().Push(inst);
             Result<bool> storeResult = object0->Store(emitter, OperationFlags.none);
             if (storeResult.Error()) return storeResult;
             return Result<bool>(true);
@@ -668,7 +719,7 @@ namespace symbols
             if (type->IsBasicTypeSymbol())
             {
                 BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(type);
-                basicTypeSymbol->SetReturnFun(this);
+                basicTypeSymbol->SetReturnFn(this);
             }
         }
         [nodiscard]
@@ -1392,8 +1443,20 @@ namespace symbols
                 SetImplicitConversion();
             }
             SetConversionDistance(conversionDistance_);
-            SetConversionSourceType(sourceType_->PlainType(context));
-            SetConversionTargetType(targetType_->PlainType(context));
+            Result<TypeSymbol*> sourceTypeResult = sourceType_->PlainType(context);
+            if (sourceTypeResult.Error())
+            {
+                SetErrorId(sourceTypeResult.GetErrorId());
+                return;
+            }
+            SetConversionSourceType(sourceTypeResult.Value());
+            Result<TypeSymbol*> targetTypeResult = targetType_->PlainType(context);
+            if (targetTypeResult.Error())
+            {
+                SetErrorId(targetTypeResult.GetErrorId());
+                return;
+            }
+            SetConversionTargetType(targetTypeResult.Value());
         }
         [nodiscard]
         public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)

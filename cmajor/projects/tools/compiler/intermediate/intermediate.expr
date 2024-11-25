@@ -14,7 +14,7 @@ expressions intermediate.expr
     typeidentifier = "$T{digit}+";
     hexdigit = "[0-9a-fA-F]";
     clsid = "clsid\(([-]|{hexdigit})+\)";
-    string = "\"[^\"\r\n]*\"";
+    string = "\"([^\"\r\n\\]|\\{hexdigit}{hexdigit})*\"";
     sign = "[+-]";
     fraction = "{digit}*\.{digit}+|{digit}+\.";
     number = "{sign}?({fraction}|{digit}+)([eE]{sign}?{digit}+)?";

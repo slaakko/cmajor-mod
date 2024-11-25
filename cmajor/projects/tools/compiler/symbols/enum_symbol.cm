@@ -14,6 +14,10 @@ namespace symbols
         public EnumTypeSymbol(const System.Lex.Span& span_, const ustring& name_) : base(SymbolKind.enumTypeSymbol, span_, name_), underlyingType(null)
         {
         }
+        public override bool IsSwitchConditionType() const
+        {
+            return true;
+        }
         public override ustring TypeString() const
         {
              return u"enum_type";
@@ -29,6 +33,40 @@ namespace symbols
         public override Result<intermediate.Type*> IrType(Emitter& emitter)
         {
             return underlyingType->IrType(emitter);
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            return underlyingType->CreateDefaultIrValue(emitter);
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.GetBinaryWriter().Write(underlyingType->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> underlyingTypeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (underlyingTypeIdResult.Error()) return Result<bool>(ErrorId(underlyingTypeIdResult.GetErrorId()));
+            underlyingTypeId = underlyingTypeIdResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<TypeSymbol*> underlyingTypeResult = symbolTable->GetType(underlyingTypeId);
+            if (underlyingTypeResult.Error()) return Result<bool>(ErrorId(underlyingTypeResult.GetErrorId()));
+            underlyingType = underlyingTypeResult.Value();
+            return Result<bool>(true);
         }
         [nodiscard]
         public Result<bool> SetSpecifiers(Specifiers specifiers)
@@ -119,6 +157,7 @@ namespace symbols
             return Result<bool>(true);
         }
         private TypeSymbol* underlyingType;
+        private Uuid underlyingTypeId;
     }
 
     public class EnumConstantSymbol : Symbol
@@ -150,6 +189,25 @@ namespace symbols
         {
             return strValue;
         }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            result = writer.Write(value.Get());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Value*> valueResult = reader.ReadValue();
+            if (valueResult.Error()) return Result<bool>(ErrorId(valueResult.GetErrorId()));
+            value.Reset(valueResult.Value());
+            return Result<bool>(true);
+        }
         public inline bool Evaluating() const
         {
             return evaluating;
@@ -165,6 +223,695 @@ namespace symbols
         private UniquePtr<Value> value;
         private bool evaluating;
         private string strValue;
+    }
+
+    public class EnumTypeDefaultConstructor : FunctionSymbol
+    {
+        public EnumTypeDefaultConstructor(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeDefaultConstructor, span_, name_), underlyingTypeDefaultConstructor(null)
+        {
+        }
+        public EnumTypeDefaultConstructor(EnumTypeSymbol* enumType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeDefaultConstructor, enumType->Span(), u"@enumTypeDefaultConstructor"), underlyingTypeDefaultConstructor(null)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(enumType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = enumType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* underlyingType = enumType->UnderlyingType();
+            #assert(underlyingType->IsBasicTypeSymbol());
+            BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(underlyingType);
+            underlyingTypeDefaultConstructor = basicTypeSymbol->DefaultConstructor();
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(underlyingTypeDefaultConstructor != null);
+            result = writer.GetBinaryWriter().Write(underlyingTypeDefaultConstructor->FunctionId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            underlyingTypeDefaultConstructorId = uuidResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<FunctionSymbol*> fnResult = symbolTable->GetFunction(underlyingTypeDefaultConstructorId);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            underlyingTypeDefaultConstructor = fnResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(underlyingTypeDefaultConstructor != null);
+            return underlyingTypeDefaultConstructor->GenerateCall(emitter, irObjects, flags);
+        }
+        private FunctionSymbol* underlyingTypeDefaultConstructor;
+        private Uuid underlyingTypeDefaultConstructorId;
+    }
+
+    public class EnumTypeCopyConstructor : FunctionSymbol
+    {
+        public EnumTypeCopyConstructor(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeCopyConstructor, span_, name_), underlyingTypeCopyConstructor(null)
+        {
+        }
+        public EnumTypeCopyConstructor(EnumTypeSymbol* enumType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeCopyConstructor, enumType->Span(), u"@enumTypeCopyConstructor"), underlyingTypeCopyConstructor(null)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(enumType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = enumType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(enumType->Span(), u"that");
+            thatParam->SetType(enumType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* underlyingType = enumType->UnderlyingType();
+            #assert(underlyingType->IsBasicTypeSymbol());
+            BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(underlyingType);
+            underlyingTypeCopyConstructor = basicTypeSymbol->CopyConstructor();
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(underlyingTypeCopyConstructor != null);
+            result = writer.GetBinaryWriter().Write(underlyingTypeCopyConstructor->FunctionId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            underlyingTypeCopyConstructorId = uuidResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<FunctionSymbol*> fnResult = symbolTable->GetFunction(underlyingTypeCopyConstructorId);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            underlyingTypeCopyConstructor = fnResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(underlyingTypeCopyConstructor != null);
+            return underlyingTypeCopyConstructor->GenerateCall(emitter, irObjects, flags);
+        }
+        private FunctionSymbol* underlyingTypeCopyConstructor;
+        private Uuid underlyingTypeCopyConstructorId;
+    }
+
+    public class EnumTypeMoveConstructor : FunctionSymbol
+    {
+        public EnumTypeMoveConstructor(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeMoveConstructor, span_, name_), underlyingTypeMoveConstructor(null)
+        {
+        }
+        public EnumTypeMoveConstructor(EnumTypeSymbol* enumType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeMoveConstructor, enumType->Span(), u"@enumTypeMoveConstructor"), underlyingTypeMoveConstructor(null)
+        {
+            SetGroupName(u"@constructor");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(enumType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = enumType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(enumType->Span(), u"that");
+            Result<TypeSymbol*> refTypeResult = enumType->AddRvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* underlyingType = enumType->UnderlyingType();
+            #assert(underlyingType->IsBasicTypeSymbol());
+            BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(underlyingType);
+            underlyingTypeMoveConstructor = basicTypeSymbol->MoveConstructor();
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(underlyingTypeMoveConstructor != null);
+            result = writer.GetBinaryWriter().Write(underlyingTypeMoveConstructor->FunctionId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            underlyingTypeMoveConstructorId = uuidResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<FunctionSymbol*> fnResult = symbolTable->GetFunction(underlyingTypeMoveConstructorId);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            underlyingTypeMoveConstructor = fnResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(underlyingTypeMoveConstructor != null);
+            return underlyingTypeMoveConstructor->GenerateCall(emitter, irObjects, flags);
+        }
+        private FunctionSymbol* underlyingTypeMoveConstructor;
+        private Uuid underlyingTypeMoveConstructorId;
+    }
+
+    public class EnumTypeCopyAssignment : FunctionSymbol
+    {
+        public EnumTypeCopyAssignment(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeCopyAssignment, span_, name_), underlyingTypeCopyAssignment(null)
+        {
+        }
+        public EnumTypeCopyAssignment(EnumTypeSymbol* enumType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeCopyAssignment, enumType->Span(), u"@enumTypeCopyAssignment"), underlyingTypeCopyAssignment(null)
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(enumType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = enumType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(enumType->Span(), u"that");
+            thatParam->SetType(enumType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* underlyingType = enumType->UnderlyingType();
+            #assert(underlyingType->IsBasicTypeSymbol());
+            BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(underlyingType);
+            underlyingTypeCopyAssignment = basicTypeSymbol->CopyAssignment();
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(underlyingTypeCopyAssignment != null);
+            result = writer.GetBinaryWriter().Write(underlyingTypeCopyAssignment->FunctionId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            underlyingTypeCopyAssignmentId = uuidResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<FunctionSymbol*> fnResult = symbolTable->GetFunction(underlyingTypeCopyAssignmentId);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            underlyingTypeCopyAssignment = fnResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(underlyingTypeCopyAssignment != null);
+            return underlyingTypeCopyAssignment->GenerateCall(emitter, irObjects, flags);
+        }
+        private FunctionSymbol* underlyingTypeCopyAssignment;
+        private Uuid underlyingTypeCopyAssignmentId;
+    }
+
+    public class EnumTypeMoveAssignment : FunctionSymbol
+    {
+        public EnumTypeMoveAssignment(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeMoveAssignment, span_, name_), underlyingTypeMoveAssignment(null)
+        {
+        }
+        public EnumTypeMoveAssignment(EnumTypeSymbol* enumType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeMoveAssignment, enumType->Span(), u"@enumTypeMoveAssignment"), underlyingTypeMoveAssignment(null)
+        {
+            SetGroupName(u"operator=");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* thisParam = new ParameterSymbol(enumType->Span(), u"this");
+            Result<TypeSymbol*> pointerTypeResult = enumType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
+            Result<bool> result = AddMember(thisParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* thatParam = new ParameterSymbol(enumType->Span(), u"that");
+            Result<TypeSymbol*> refTypeResult = enumType->AddRvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
+            result = AddMember(thatParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
+            if (voidTypeResult.Error())
+            {
+                SetErrorId(voidTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* voidType = voidTypeResult.Value();
+            SetReturnType(voidType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* underlyingType = enumType->UnderlyingType();
+            #assert(underlyingType->IsBasicTypeSymbol());
+            BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(underlyingType);
+            underlyingTypeMoveAssignment = basicTypeSymbol->MoveAssignment();
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(underlyingTypeMoveAssignment != null);
+            result = writer.GetBinaryWriter().Write(underlyingTypeMoveAssignment->FunctionId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            underlyingTypeMoveAssignmentId = uuidResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<FunctionSymbol*> fnResult = symbolTable->GetFunction(underlyingTypeMoveAssignmentId);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            underlyingTypeMoveAssignment = fnResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(underlyingTypeMoveAssignment != null);
+            return underlyingTypeMoveAssignment->GenerateCall(emitter, irObjects, flags);
+        }
+        private FunctionSymbol* underlyingTypeMoveAssignment;
+        private Uuid underlyingTypeMoveAssignmentId;
+    }
+
+    public class EnumTypeReturn : FunctionSymbol
+    {
+        public EnumTypeReturn(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeReturn, span_, name_), underlyingTypeReturn(null)
+        {
+        }
+        public EnumTypeReturn(EnumTypeSymbol* enumType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeReturn, enumType->Span(), u"@enumTypeReturn"), underlyingTypeReturn(null)
+        {
+            SetGroupName(u"@return");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* valueParam = new ParameterSymbol(enumType->Span(), u"value");
+            valueParam->SetType(enumType);
+            Result<bool> result = AddMember(valueParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            SetReturnType(enumType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* underlyingType = enumType->UnderlyingType();
+            #assert(underlyingType->IsBasicTypeSymbol());
+            BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(underlyingType);
+            underlyingTypeReturn = basicTypeSymbol->ReturnFn();
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(underlyingTypeReturn != null);
+            result = writer.GetBinaryWriter().Write(underlyingTypeReturn->FunctionId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            underlyingTypeReturnId = uuidResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<FunctionSymbol*> fnResult = symbolTable->GetFunction(underlyingTypeReturnId);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            underlyingTypeReturn = fnResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(underlyingTypeReturn != null);
+            return underlyingTypeReturn->GenerateCall(emitter, irObjects, flags);
+        }
+        private FunctionSymbol* underlyingTypeReturn;
+        private Uuid underlyingTypeReturnId;
+    }
+
+    public class EnumTypeEquality : FunctionSymbol
+    {
+        public EnumTypeEquality(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeEquality, span_, name_), underlyingTypeEquality(null)
+        {
+        }
+        public EnumTypeEquality(EnumTypeSymbol* enumType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeEquality, enumType->Span(), u"@enumTypeEquality"), underlyingTypeEquality(null)
+        {
+            SetGroupName(u"operator==");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            ParameterSymbol* leftParam = new ParameterSymbol(enumType->Span(), u"left");
+            leftParam->SetType(enumType);
+            Result<bool> result = AddMember(leftParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            ParameterSymbol* rightParam = new ParameterSymbol(enumType->Span(), u"right");
+            rightParam->SetType(enumType);
+            result = AddMember(rightParam, context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            Result<TypeSymbol*> boolTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"bool");
+            if (boolTypeResult.Error())
+            {
+                SetErrorId(boolTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* boolType = boolTypeResult.Value();
+            SetReturnType(boolType);
+            result = ComputeName(context);
+            if (result.Error())
+            {
+                SetErrorId(result.GetErrorId());
+                return;
+            }
+            TypeSymbol* underlyingType = enumType->UnderlyingType();
+            #assert(underlyingType->IsBasicTypeSymbol());
+            BasicTypeSymbol* basicTypeSymbol = cast<BasicTypeSymbol*>(underlyingType);
+            underlyingTypeEquality = basicTypeSymbol->EqualityOp();
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = base->Write(writer);
+            if (result.Error()) return result;
+            #assert(underlyingTypeEquality != null);
+            result = writer.GetBinaryWriter().Write(underlyingTypeEquality->FunctionId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = base->Read(reader);
+            if (result.Error()) return result;
+            Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
+            if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
+            underlyingTypeEqualityId = uuidResult.Value();
+            reader.AddToSymbolResolutionList(this);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
+            Result<FunctionSymbol*> fnResult = symbolTable->GetFunction(underlyingTypeEqualityId);
+            if (fnResult.Error()) return Result<bool>(ErrorId(fnResult.GetErrorId()));
+            underlyingTypeEquality = fnResult.Value();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            #assert(underlyingTypeEquality != null);
+            return underlyingTypeEquality->GenerateCall(emitter, irObjects, flags);
+        }
+        private FunctionSymbol* underlyingTypeEquality;
+        private Uuid underlyingTypeEqualityId;
+    }
+
+    public class EnumTypeToUnderlyingTypeConversion : FunctionSymbol
+    {
+        public EnumTypeToUnderlyingTypeConversion(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.enumTypeToUnderlyingType, span_, name_)
+        {
+        }
+        public EnumTypeToUnderlyingTypeConversion(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context) :
+            base(SymbolKind.enumTypeToUnderlyingType, span_, name_)
+        {
+            SetGroupName(u"@conversion");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            SetImplicitConversion();
+            Result<TypeSymbol*> sourceTypeResult = sourceType->PlainType(context);
+            if (sourceTypeResult.Error())
+            {
+                SetErrorId(sourceTypeResult.GetErrorId());
+                return;
+            }
+            SetConversionSourceType(sourceTypeResult.Value());
+            Result<TypeSymbol*> targetTypeResult = targetType->PlainType(context);
+            if (targetTypeResult.Error())
+            {
+                SetErrorId(targetTypeResult.GetErrorId());
+                return;
+            }
+            SetConversionTargetType(targetTypeResult.Value());
+            SetConversionDistance(1u);
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            return Result<bool>(true);
+        }
+    }
+
+    public class UnderlyingTypeToEnumTypeConversion : FunctionSymbol
+    {
+        public UnderlyingTypeToEnumTypeConversion(const System.Lex.Span& span_, const ustring& name_) :
+            base(SymbolKind.underlyingToEnumType, span_, name_)
+        {
+        }
+        public UnderlyingTypeToEnumTypeConversion(const System.Lex.Span& span_, const ustring& name_, TypeSymbol* sourceType, TypeSymbol* targetType, SymbolsContext& context) :
+            base(SymbolKind.underlyingToEnumType, span_, name_)
+        {
+            SetGroupName(u"@conversion");
+            SetAccess(SymbolAccess.public_);
+            SetBasicTypeOperation();
+            SetExplicitConversion();
+            Result<TypeSymbol*> sourceTypeResult = sourceType->PlainType(context);
+            if (sourceTypeResult.Error())
+            {
+                SetErrorId(sourceTypeResult.GetErrorId());
+                return;
+            }
+            SetConversionSourceType(sourceTypeResult.Value());
+            Result<TypeSymbol*> targetTypeResult = targetType->PlainType(context);
+            if (targetTypeResult.Error())
+            {
+                SetErrorId(targetTypeResult.GetErrorId());
+                return;
+            }
+            SetConversionTargetType(targetTypeResult.Value());
+        }
+        [nodiscard]
+        public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)
+        {
+            return Result<bool>(true);
+        }
     }
 }
 

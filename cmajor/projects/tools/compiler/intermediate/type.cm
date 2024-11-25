@@ -235,7 +235,7 @@ namespace intermediate
             if (IsPointerType())
             {
                 PointerType* pointerType = cast<PointerType*>(this);
-                return pointerType->BaseType();
+                return Result<Type*>(pointerType->BaseType());
             }
             else
             {

@@ -55,7 +55,11 @@ namespace symbols
             }
             else if (member->IsConceptSymbol())
             {
-                // todo
+                ConceptSymbol* conceptSymbol = cast<ConceptSymbol*>(member);
+                Result<ConceptGroupSymbol*> conceptGroupResult = MakeConceptGroupSymbol(conceptSymbol->GroupName(), conceptSymbol->Span(), context);
+                if (conceptGroupResult.Error()) return Result<bool>(ErrorId(conceptGroupResult.GetErrorId()));
+                ConceptGroupSymbol* conceptGroupSymbol = conceptGroupResult.Value();
+                conceptGroupSymbol->AddConcept(conceptSymbol);
             }
             else if (member->IsClassTypeSymbol())
             {
@@ -100,7 +104,11 @@ namespace symbols
             }
             else if (ownedMember->IsConceptSymbol())
             {
-                // todo
+                ConceptSymbol* conceptSymbol = cast<ConceptSymbol*>(ownedMember);
+                Result<ConceptGroupSymbol*> conceptGroupResult = MakeConceptGroupSymbol(conceptSymbol->GroupName(), conceptSymbol->Span(), context);
+                if (conceptGroupResult.Error()) return Result<bool>(ErrorId(conceptGroupResult.GetErrorId()));
+                ConceptGroupSymbol* conceptGroupSymbol = conceptGroupResult.Value();
+                conceptGroupSymbol->AddConcept(conceptSymbol);
             }
             else if (ownedMember->IsClassTypeSymbol())
             {
@@ -173,12 +181,13 @@ namespace symbols
             }
             else
             {
+                #assert(false);
                 return null;
             }
         }
         private Result<FunctionGroupSymbol*> MakeFunctionGroupSymbol(const ustring& groupName, const System.Lex.Span& span, SymbolsContext& context)
         {
-            Result<Symbol*> symbolResult = containerScope.Lookup(groupName);
+            Result<Symbol*> symbolResult = containerScope.Lookup(groupName, context);
             if (symbolResult.Error()) return Result<FunctionGroupSymbol*>(ErrorId(symbolResult.GetErrorId()));
             Symbol* symbol = symbolResult.Value();
             if (symbol == null)
@@ -204,9 +213,37 @@ namespace symbols
                 return Result<FunctionGroupSymbol*>(ErrorId(errorId));
             }
         }
+        private Result<ConceptGroupSymbol*> MakeConceptGroupSymbol(const ustring& groupName, const System.Lex.Span& span, SymbolsContext& context)
+        {
+            Result<Symbol*> symbolResult = containerScope.Lookup(groupName, context);
+            if (symbolResult.Error()) return Result<ConceptGroupSymbol*>(ErrorId(symbolResult.GetErrorId()));
+            Symbol* symbol = symbolResult.Value();
+            if (symbol == null)
+            {
+                ConceptGroupSymbol* conceptGroupSymbol = new ConceptGroupSymbol(span, groupName);
+                Result<bool> result = AddMember(conceptGroupSymbol, context);
+                if (result.Error()) return Result<ConceptGroupSymbol*>(ErrorId(result.GetErrorId()));
+                return Result<ConceptGroupSymbol*>(conceptGroupSymbol);
+            }
+            if (symbol->IsConceptGroupSymbol())
+            {
+                return Result<ConceptGroupSymbol*>(cast<ConceptGroupSymbol*>(symbol));
+            }
+            else
+            {
+                auto symbolFullNameResult = ToUtf8(symbol->FullName());
+                if (symbolFullNameResult.Error()) return Result<ConceptGroupSymbol*>(ErrorId(symbolFullNameResult.GetErrorId()));
+                string symbolFullNameStr = Rvalue(symbolFullNameResult.Value());
+                auto groupNameResult = ToUtf8(groupName);
+                if (groupNameResult.Error()) return Result<ConceptGroupSymbol*>(ErrorId(groupNameResult.GetErrorId()));
+                string groupNameStr = Rvalue(groupNameResult.Value());
+                int errorId = MakeError("name of symbol '" + symbolFullNameStr + "' conflicts with a concept group '" + groupNameStr + "'", symbol->FullSpan(), FullSpan());
+                return Result<ConceptGroupSymbol*>(ErrorId(errorId));
+            }
+        }
         private Result<ClassGroupSymbol*> MakeClassGroupSymbol(const ustring& groupName, const System.Lex.Span& span, SymbolsContext& context)
         {
-            Result<Symbol*> symbolResult = containerScope.Lookup(groupName);
+            Result<Symbol*> symbolResult = containerScope.Lookup(groupName, context);
             if (symbolResult.Error()) return Result<ClassGroupSymbol*>(ErrorId(symbolResult.GetErrorId()));
             Symbol* symbol = symbolResult.Value();
             if (symbol == null)

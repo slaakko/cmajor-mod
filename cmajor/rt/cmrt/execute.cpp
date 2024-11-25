@@ -4,6 +4,7 @@
 // =================================
 
 #include <cmrt/execute.hpp>
+#include <cmrt/error.hpp>
 #include <string>
 #include <vector>
 #include <mutex>
@@ -16,6 +17,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <Windows.h>
 
 namespace cmajor::rt {
 
@@ -151,7 +153,29 @@ int32_t Executor::EndExecute(int32_t execHandle)
 
 int32_t RtmExecute(const char* command)
 {
-    return system(command);
+    STARTUPINFOA startupInfo;
+    ZeroMemory(&startupInfo, sizeof(startupInfo));
+    startupInfo.cb = sizeof(startupInfo);
+    PROCESS_INFORMATION processInfo;
+    ZeroMemory(&processInfo, sizeof(processInfo));
+    bool succeeded = CreateProcessA(NULL, (LPSTR)command, NULL, NULL, false, CREATE_NO_WINDOW, NULL, NULL, &startupInfo, &processInfo);
+    if (!succeeded)
+    {
+        int errorId = cmajor::rt::AllocateError("could not run '" + std::string(command) + "'");
+        return errorId;
+    }
+    WaitForSingleObject(processInfo.hProcess, INFINITE);
+    DWORD buildExitCode = 0;
+    GetExitCodeProcess(processInfo.hProcess, &buildExitCode);
+    CloseHandle(processInfo.hProcess);
+    CloseHandle(processInfo.hThread);
+    if (buildExitCode != 0)
+    {
+        int errorId = cmajor::rt::AllocateError("command '" + std::string(command) + "' failed with error code " + std::to_string(buildExitCode));
+        return errorId;
+    }
+    return 0;
+
 }
 
 int32_t RtmBeginExec(const char* command)

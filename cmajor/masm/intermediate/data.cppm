@@ -262,14 +262,14 @@ private:
 class StringArrayValue : public Value
 {
 public:
-    StringArrayValue(const soul::ast::Span& span_, char prefix_, const std::vector<Value*>& strings_);
+    StringArrayValue(const soul::ast::Span& span_, char prefix_, const std::vector<Value*>& elements_);
     char Prefix() const { return prefix; }
-    const std::vector<Value*>& Strings() const { return strings; }
+    const std::vector<Value*>& Elements() const { return elements; }
     void Accept(Visitor& visitor) override;
     std::string ToString() const override;
 private:
     char prefix;
-    std::vector<Value*> strings;
+    std::vector<Value*> elements;
 };
 
 class ConversionValue : public Value

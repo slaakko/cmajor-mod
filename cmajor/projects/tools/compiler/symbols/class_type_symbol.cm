@@ -304,7 +304,34 @@ namespace symbols
                 result = writer.GetBinaryWriter().Write(moveAssignment->FunctionId());
                 if (result.Error()) return result;
             }
-            // todo
+            result = writer.GetBinaryWriter().Write(vmtPtrIndex);
+            if (result.Error()) return result;
+            result = usingNodes.Write(writer.GetAstWriter());
+            if (result.Error()) return result;
+            int vmtCount = cast<int>(vmt.Count());
+            result = writer.GetBinaryWriter().Write(vmtCount);
+            if (result.Error()) return result;
+            for (FunctionSymbol* virtualFunction : vmt)
+            {
+                result = writer.GetBinaryWriter().Write(virtualFunction->FunctionId());
+                if (result.Error()) return result;
+            }
+            int objectLayoutCount = cast<int>(objectLayout.Count());
+            result = writer.GetBinaryWriter().Write(objectLayoutCount);
+            if (result.Error()) return result;
+            for (TypeSymbol* type : objectLayout)
+            {
+                result = writer.GetBinaryWriter().Write(type->TypeId());
+                if (result.Error()) return result;
+            }
+            int staticLayoutCount = cast<int>(staticLayout.Count());
+            result = writer.GetBinaryWriter().Write(staticLayoutCount);
+            if (result.Error()) return result;
+            for (TypeSymbol* type : staticLayout)
+            {
+                result = writer.GetBinaryWriter().Write(type->TypeId());
+                if (result.Error()) return result;
+            }
             return Result<bool>(true);
         }
         [nodiscard]
@@ -381,13 +408,53 @@ namespace symbols
                 if (moveAssignmentIdResult.Error()) return Result<bool>(ErrorId(moveAssignmentIdResult.GetErrorId()));
                 moveAssignmentId = moveAssignmentIdResult.Value();
             }
-            // todo
-            reader.AddToResolutionList(this);
+            Result<int> vmtPtrIndexResult = reader.GetBinaryReader().ReadInt();
+            if (vmtPtrIndexResult.Error()) return Result<bool>(ErrorId(vmtPtrIndexResult.GetErrorId()));
+            vmtPtrIndex = vmtPtrIndexResult.Value();
+            Result<bool> usingResult = usingNodes.Read(reader.GetAstReader());
+            if (usingResult.Error()) return usingResult;
+            Result<int> vmtCountResult = reader.GetBinaryReader().ReadInt();
+            if (vmtCountResult.Error()) return Result<bool>(ErrorId(vmtCountResult.GetErrorId()));
+            int vmtCount = vmtCountResult.Value();
+            for (int i = 0; i < vmtCount; ++i)
+            {
+                Result<Uuid> functionIdResult = reader.GetBinaryReader().ReadUuid();
+                if (functionIdResult.Error()) return Result<bool>(ErrorId(functionIdResult.GetErrorId()));
+                vmtIds.Add(functionIdResult.Value());
+            }
+            Result<int> objectLayoutCountResult = reader.GetBinaryReader().ReadInt();
+            if (objectLayoutCountResult.Error()) return Result<bool>(ErrorId(objectLayoutCountResult.GetErrorId()));
+            int objectLayoutCount = objectLayoutCountResult.Value();
+            for (int i = 0; i < objectLayoutCount; ++i)
+            {
+                Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+                if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+                objectLayoutIds.Add(typeIdResult.Value());
+            }
+            Result<int> staticLayoutCountResult = reader.GetBinaryReader().ReadInt();
+            if (staticLayoutCountResult.Error()) return Result<bool>(ErrorId(staticLayoutCountResult.GetErrorId()));
+            int staticLayoutCount = staticLayoutCountResult.Value();
+            for (int i = 0; i < staticLayoutCount; ++i)
+            {
+                Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+                if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+                staticLayoutIds.Add(typeIdResult.Value());
+            }
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             Uuid nilUuid;
+            if (baseClassId != nilUuid)
+            {
+                Result<TypeSymbol*> baseClassResult = symbolTable->GetType(baseClassId);
+                if (baseClassResult.Error()) return Result<bool>(ErrorId(baseClassResult.GetErrorId()));
+                #assert(baseClassResult.Value()->IsClassTypeSymbol());
+                baseClass = cast<ClassTypeSymbol*>(baseClassResult.Value());
+            }
             if (defaultConstructorId != nilUuid)
             {
                 Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(defaultConstructorId);
@@ -433,21 +500,6 @@ namespace symbols
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            if (destructorId != nilUuid)
-            {
-                Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(destructorId);
-                if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
-                FunctionSymbol* function = functionResult.Value();
-                if (function->IsDestructorSymbol())
-                {
-                    destructor = cast<DestructorSymbol*>(function);
-                }
-                else
-                {
-                    int errorId = MakeError("destructor symbol expected", function->FullSpan());
-                    return Result<bool>(ErrorId(errorId));
-                }
-            }
             if (copyAssignmentId != nilUuid)
             {
                 Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(copyAssignmentId);
@@ -477,6 +529,31 @@ namespace symbols
                     int errorId = MakeError("member function symbol expected", function->FullSpan());
                     return Result<bool>(ErrorId(errorId));
                 }
+            }
+            for (const Uuid& functionId : vmtIds)
+            {
+                Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(functionId);
+                if (!functionResult.Error())
+                {
+                    vmt.Add(functionResult.Value());
+                }
+                else
+                {
+                    vmt.Add(cast<FunctionSymbol*>(null));
+                    RtmDisposeError(functionResult.GetErrorId());
+                }
+            }
+            for (const Uuid& typeId : objectLayoutIds)
+            {
+                Result<TypeSymbol*> typeResult = symbolTable->GetType(typeId);
+                if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                objectLayout.Add(typeResult.Value());
+            }
+            for (const Uuid& typeId : staticLayoutIds)
+            {
+                Result<TypeSymbol*> typeResult = symbolTable->GetType(typeId);
+                if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+                staticLayout.Add(typeResult.Value());
             }
             return Result<bool>(true);
         }
@@ -612,6 +689,14 @@ namespace symbols
         {
             SetFlag(ClassTypeSymbolFlags.vmtEmitted);
         }
+        public inline bool StaticsEmitted() const
+        {
+            return GetFlag(ClassTypeSymbolFlags.staticsEmitted);
+        }
+        public inline void SetStaticsEmitted()
+        {
+            SetFlag(ClassTypeSymbolFlags.staticsEmitted);
+        }
         public inline bool IsLayoutsComputed() const
         {
             return GetFlag(ClassTypeSymbolFlags.layoutsComputed);
@@ -693,7 +778,13 @@ namespace symbols
             destructorSymbol->SetGenerated();
             destructorSymbol->SetCannotInline();
             ParameterSymbol* thisParam = new ParameterSymbol(Span(), u"this");
-            thisParam->SetType(AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             destructorSymbol->SetAccess(SymbolAccess.public_);
             auto result = destructorSymbol->AddMember(thisParam, context);
             if (result.Error()) return result;
@@ -1004,7 +1095,9 @@ namespace symbols
                     Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
                     if (voidTypeResult.Error()) return Result<bool>(ErrorId(voidTypeResult.GetErrorId()));
                     TypeSymbol* voidType = voidTypeResult.Value();
-                    TypeSymbol* voidPtrType = voidType->AddPointer(context);
+                    Result<TypeSymbol*> pointerTypeResult = voidType->AddPointer(context);
+                    if (pointerTypeResult.Error()) return Result<bool>(ErrorId(pointerTypeResult.GetErrorId()));
+                    TypeSymbol* voidPtrType = pointerTypeResult.Value();
                     objectLayout.Add(voidPtrType);
                 }
                 else if (memberVariables.IsEmpty())
@@ -1094,6 +1187,23 @@ namespace symbols
             }
             return Result<intermediate.Type*>(cast<intermediate.Type*>(irType));
         }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            Result<intermediate.Type*> irTypeResult = IrType(emitter);
+            if (irTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            #assert(irType->IsStructureType());
+            intermediate.StructureType* structureType = cast<intermediate.StructureType*>(irType);
+            List<intermediate.Value*> arrayOfDefaults;
+            for (TypeSymbol* type : objectLayout)
+            {
+                Result<intermediate.Value*> defaultValueResult = type->CreateDefaultIrValue(emitter);
+                if (defaultValueResult.Error()) return defaultValueResult;
+                arrayOfDefaults.Add(defaultValueResult.Value());
+            }
+            intermediate.Value* defaultValue = emitter.GetStructureValue(arrayOfDefaults, structureType);
+            return Result<intermediate.Value*>(defaultValue);
+        }
         public bool IsRecursive()
         {
             if (IsRecursiveComputed())
@@ -1143,10 +1253,76 @@ namespace symbols
             }
             return false;
         }
-        public intermediate.Value* StaticObject(Emitter& emitter, bool create)
+        public Result<intermediate.Value*> StaticObject(Emitter& emitter, bool create)
         {
-            // todo
-            return null;
+            if (staticLayout.IsEmpty()) return Result<intermediate.Value*>(cast<intermediate.Value*>(null));
+            Result<string> staticObjectNameResult = StaticObjectName(emitter);
+            if (staticObjectNameResult.Error()) return Result<intermediate.Value*>(ErrorId(staticObjectNameResult.GetErrorId()));
+            string staticObjectName = Rvalue(staticObjectNameResult.Value());
+            Result<intermediate.StructureType*> staticObjectTypeResult = StaticObjectType(emitter);
+            if (staticObjectTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(staticObjectTypeResult.GetErrorId()));
+            intermediate.StructureType* staticObjectType = staticObjectTypeResult.Value();
+            Result<intermediate.GlobalVariable*> staticObjectResult = emitter.GetOrInsertGlobal(staticObjectName, staticObjectType);
+            if (staticObjectResult.Error()) return Result<intermediate.Value*>(ErrorId(staticObjectResult.GetErrorId()));
+            intermediate.GlobalVariable* staticObject = staticObjectResult.Value();
+            if (create && !StaticsEmitted())
+            {
+                SetStaticsEmitted();
+                List<intermediate.Value*> arrayOfStatics;
+                for (TypeSymbol* type : staticLayout)
+                {
+                    Result<intermediate.Value*> defaultValueResult = type->CreateDefaultIrValue(emitter);
+                    if (defaultValueResult.Error()) return defaultValueResult;
+                    intermediate.Value* defaultValue = defaultValueResult.Value();
+                    arrayOfStatics.Add(defaultValue);
+                }
+                staticObject->SetInitializer(emitter.GetStructureValue(arrayOfStatics, staticObjectType));
+            }
+            return Result<intermediate.Value*>(staticObject);
+        }
+        public Result<string> StaticObjectName(Emitter& emitter)
+        {
+            string staticObjectName = emitter.GetStaticObjectName(this);
+            if (staticObjectName.IsEmpty())
+            {
+                Result<string> simpleNameResult = ToUtf8(SimpleName());
+                if (simpleNameResult.Error()) return simpleNameResult;
+                string simpleName = Rvalue(simpleNameResult.Value());
+                Result<ustring> fnspResult = FullNameWithSpecifiers();
+                if (fnspResult.Error()) return Result<string>(ErrorId(fnspResult.GetErrorId()));
+                ustring fnsp = Rvalue(fnspResult.Value());
+                Result<string> fullNameWithSpecifiersResult = ToUtf8(fnsp);
+                if (fullNameWithSpecifiersResult.Error()) return fullNameWithSpecifiersResult;
+                string fullNameWithSpecifiers = Rvalue(fullNameWithSpecifiersResult.Value());
+                Result<string> digestResult = System.Security.GetSha1MessageDigest(fullNameWithSpecifiers);
+                if (digestResult.Error()) return digestResult;
+                string digest = digestResult.Value();
+                staticObjectName = "statics_@" + simpleName + "_" + digest;
+                emitter.SetStaticObjectName(this, staticObjectName);
+            }
+            return staticObjectName;
+        }
+        public Result<intermediate.StructureType*> StaticObjectType(Emitter& emitter)
+        {
+            intermediate.StructureType* staticObjectType = emitter.GetStaticObjectType(this);
+            if (staticObjectType == null)
+            {
+                List<intermediate.Type*> memberTypes;
+                int n = cast<int>(staticLayout.Count());
+                for (int i = 0; i < n; ++i)
+                {
+                    TypeSymbol* type = staticLayout[i];
+                    Result<intermediate.Type*> irTypeResult = type->IrType(emitter);
+                    if (irTypeResult.Error()) return Result<intermediate.StructureType*>(ErrorId(irTypeResult.GetErrorId()));;
+                    intermediate.Type* memberType = irTypeResult.Value();
+                    memberTypes.Add(memberType);
+                }
+                Result<intermediate.StructureType*> staticObjectTypeResult = emitter.GetStructureType(memberTypes);
+                if (staticObjectTypeResult.Error()) return staticObjectTypeResult;
+                staticObjectType = staticObjectTypeResult.Value();
+                emitter.SetStaticObjectType(this, staticObjectType);
+            }
+            return Result<intermediate.StructureType*>(staticObjectType);
         }
         public Result<intermediate.Value*> VmtObject(Emitter& emitter, bool create)
         {
@@ -1161,7 +1337,9 @@ namespace symbols
             Result<string> vmtObjectNameResult = VmtObjectName();
             if (vmtObjectNameResult.Error()) return Result<intermediate.Value*>(ErrorId(vmtObjectNameResult.GetErrorId()));
             string vmtObjectName = Rvalue(vmtObjectNameResult.Value());
-            intermediate.GlobalVariable* vmtObject = emitter.GetOrInsertGlobal(vmtObjectName, vmtArrayType);
+            Result<intermediate.GlobalVariable*> vmtObjectResult = emitter.GetOrInsertGlobal(vmtObjectName, vmtArrayType);
+            if (vmtObjectResult.Error()) return Result<intermediate.Value*>(ErrorId(vmtObjectResult.GetErrorId()));
+            intermediate.GlobalVariable* vmtObject = vmtObjectResult.Value();
             if (create && !VmtEmitted())
             {
                 SetVmtEmitted();
@@ -1189,7 +1367,7 @@ namespace symbols
                         Result<intermediate.Function*> functionValueResult = emitter.GetOrInsertFunction(instantiatedName, virtualFunctionType);
                         if (functionValueResult.Error()) return Result<intermediate.Value*>(ErrorId(functionValueResult.GetErrorId()));
                         intermediate.Value* functionValue = functionValueResult.Value();
-                        intermediate.Value* symbolValue = emitter.MakeSymbolValue(virtualFunctionType, functionValue->ToString());
+                        intermediate.Value* symbolValue = emitter.MakeSymbolValue(functionValue->GetType(), functionValue->ToString());
                         vmtArray.Add(emitter.GetConversionValue(emitter.GetVoidPtrType(), symbolValue));
                     }
                 }
@@ -1200,7 +1378,7 @@ namespace symbols
         }
         public Result<string> VmtObjectName() const
         {
-            string vmtObjectName = "vmt_";
+            string vmtObjectName = "vmt_@";
             Result<string> simpleNameResult = ToUtf8(SimpleName());
             if (simpleNameResult.Error()) return simpleNameResult;
             string simpleName = Rvalue(simpleNameResult.Value());
@@ -1263,6 +1441,10 @@ namespace symbols
             if (BaseClass() != null) return false;
             return true;
         }
+        public inline const List<TypeSymbol*>& ObjectLayout() const
+        {
+            return objectLayout;
+        }
         private ustring groupName;
         private int minArity;
         private ClassTypeSymbol* baseClass;
@@ -1281,7 +1463,6 @@ namespace symbols
         private ConstructorSymbol* moveConstructor;
         private Uuid moveConstructorId;
         private DestructorSymbol* destructor;
-        private Uuid destructorId;
         private MemberFunctionSymbol* copyAssignment;
         private Uuid copyAssignmentId;
         private MemberFunctionSymbol* moveAssignment;
@@ -1293,8 +1474,11 @@ namespace symbols
         private int vmtPtrIndex;
         private NodeList<Node> usingNodes;
         private List<FunctionSymbol*> vmt;
+        private List<Uuid> vmtIds;
         private List<TypeSymbol*> objectLayout;
+        private List<Uuid> objectLayoutIds;
         private List<TypeSymbol*> staticLayout;
+        private List<Uuid> staticLayoutIds;
     }
 }
 

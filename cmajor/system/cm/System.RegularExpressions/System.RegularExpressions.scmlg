@@ -1,0 +1,9 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+project System.RegularExpressions;
+tokens <System.RegularExpressions.token>;
+expressions <System.RegularExpressions.expr>;
+lexer <System.RegularExpressions.lexer>;

@@ -1,0 +1,495 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace build
+{
+    public Result<bool> MakeResourceFile(const string& resourceFilePath, const string& classIndexFilePath, const string& traceDataFilePath)
+    {
+        Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(resourceFilePath);
+        if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+        System.IO.StreamWriter& writer = writerResult.Value();
+        System.Text.CodeFormatter formatter(writer);
+        Result<bool> result = formatter.WriteLine("CLASS_INDEX RCDATA \"" + classIndexFilePath + "\"");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("TRACE_DATA RCDATA \"" + traceDataFilePath + "\"");
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    public Result<string> MakeVSProjectFile(Project* project, Module* module, const List<string>& asmFilePaths, const List<string>& cppFilePaths,
+        const List<string>& resourceScriptFiles, const string& classIndexFilePath, const string& traceDataFilePath, bool verbose)
+    {
+        string vsProjectFilePath = System.IO.Path.ChangeExtension(project->ModuleFilePath(), ".vcxproj");
+        Target target = project->GetTarget();
+        if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
+        {
+            if (!classIndexFilePath.IsEmpty() && !traceDataFilePath.IsEmpty())
+            {
+                string resourceFilePath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(project->ModuleFilePath()), "runtime_info.rc");
+                Result<bool> resourceFileResult = MakeResourceFile(resourceFilePath, classIndexFilePath, traceDataFilePath);
+                if (resourceFileResult.Error())
+                {
+                    return Result<string>(ErrorId(resourceFileResult.GetErrorId()));
+                }
+            }
+        }
+        string libraryDirs;
+        Result<string> cmajorRootDirResult = CmajorRootDir();
+        if (cmajorRootDirResult.Error()) return cmajorRootDirResult;
+        string cmajorRootDir = Rvalue(cmajorRootDirResult.Value());
+        Result<string> cmajorLibDirResult = System.IO.GetFullPath(System.IO.Path.Combine(cmajorRootDir, "lib"));
+        if (cmajorLibDirResult.Error()) return cmajorLibDirResult;
+        string cmajorLibDir = Rvalue(cmajorLibDirResult.Value());
+        libraryDirs.Append(cmajorLibDir);
+
+        string references;
+        bool first = true;
+        for (Module* ref : module->AllReferencedModules())
+        {
+            if (first)
+            {
+                first = false;
+            }
+            else
+            {
+                references.Append(";");
+            }
+            Result<string> fullPathResult = System.IO.GetFullPath(ref->LibraryFilePath());
+            if (fullPathResult.Error()) return fullPathResult;
+            references.Append(fullPathResult.Value());
+        }
+
+        Uuid projectUuid = Uuid.Random();
+
+        System.Xml.Document projectDoc;
+        System.Xml.Element* rootElement = System.Xml.MakeElement("Project");
+        rootElement->SetAttribute("DefaultTargets", "Build");
+        rootElement->SetAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+        projectDoc.AppendChild(rootElement);
+
+        System.Xml.Element* configurationItemGroup = System.Xml.MakeElement("ItemGroup");
+        configurationItemGroup->SetAttribute("Label", "ProjectConfigurations");
+
+        System.Xml.Element* projectDebugConfig = System.Xml.MakeElement("ProjectConfiguration");
+        projectDebugConfig->SetAttribute("Include", "Debug|x64");
+        System.Xml.Element* debugConfig = System.Xml.MakeElement("Configuration");
+        System.Xml.Text* debugText = System.Xml.MakeText("Debug");
+        debugConfig->AppendChild(debugText);
+        projectDebugConfig->AppendChild(debugConfig);
+        System.Xml.Element* debugPlatform = System.Xml.MakeElement("Platform");
+        System.Xml.Text* debugPlatformText = System.Xml.MakeText("x64");
+        debugPlatform->AppendChild(debugPlatformText);
+        projectDebugConfig->AppendChild(debugPlatform);
+        configurationItemGroup->AppendChild(projectDebugConfig);
+
+        System.Xml.Element* projectReleaseConfig = System.Xml.MakeElement("ProjectConfiguration");
+        projectReleaseConfig->SetAttribute("Include", "Release|x64");
+        System.Xml.Element* releaseConfig = System.Xml.MakeElement("Configuration");
+        System.Xml.Text* releaseText = System.Xml.MakeText("Release");
+        releaseConfig->AppendChild(releaseText);
+        projectReleaseConfig->AppendChild(releaseConfig);
+        System.Xml.Element* releasePlatform = System.Xml.MakeElement("Platform");
+        System.Xml.Text* releasePlatformText = System.Xml.MakeText("x64");
+        releasePlatform->AppendChild(releasePlatformText);
+        projectReleaseConfig->AppendChild(releasePlatform);
+        configurationItemGroup->AppendChild(projectReleaseConfig);
+
+        rootElement->AppendChild(configurationItemGroup);
+
+        System.Xml.Element* globalsPropertyGroup = System.Xml.MakeElement("PropertyGroup");
+        globalsPropertyGroup->SetAttribute("Label", "Globals");
+        System.Xml.Element* vcProjectVersion = System.Xml.MakeElement("VCProjectVersion");
+        System.Xml.Text* vcProjectVersionText = System.Xml.MakeText("16.0");
+        vcProjectVersion->AppendChild(vcProjectVersionText);
+        globalsPropertyGroup->AppendChild(vcProjectVersion);
+        System.Xml.Element* keyword = System.Xml.MakeElement("Keyword");
+        System.Xml.Text* keywordText = System.Xml.MakeText("Win32Proj");
+        keyword->AppendChild(keywordText);
+        globalsPropertyGroup->AppendChild(keyword);
+        System.Xml.Element* projectGuid = System.Xml.MakeElement("ProjectGuid");
+        Result<string> projectUuidStrResult = ToString(projectUuid);
+        if (projectUuidStrResult.Error()) return projectUuidStrResult;
+        string projectUuidStr = Rvalue(projectUuidStrResult.Value());
+        System.Xml.Text* projectGuildText = System.Xml.MakeText(projectUuidStr);
+        projectGuid->AppendChild(projectGuildText);
+        globalsPropertyGroup->AppendChild(projectGuid);
+        System.Xml.Element* rootNamespace = System.Xml.MakeElement("RootNamespace");
+        Result<string> projectNameResult = ToUtf8(project->Name());
+        if (projectNameResult.Error()) return projectNameResult;
+        string projectName = Rvalue(projectNameResult.Value());
+        System.Xml.Text* rootNamespaceText = System.Xml.MakeText(projectName);
+        rootNamespace->AppendChild(rootNamespaceText);
+        globalsPropertyGroup->AppendChild(rootNamespace);
+        System.Xml.Element* targetPlatformVersion = System.Xml.MakeElement("WindowsTargetPlatformVersion");
+        System.Xml.Text* targetPlatformVersionText = System.Xml.MakeText("10.0");
+        targetPlatformVersion->AppendChild(targetPlatformVersionText);
+        globalsPropertyGroup->AppendChild(targetPlatformVersion);
+
+        rootElement->AppendChild(globalsPropertyGroup);
+
+        System.Xml.Element* importProject = System.Xml.MakeElement("Import");
+        importProject->SetAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.Default.props");
+        rootElement->AppendChild(importProject);
+
+        System.Xml.Element* debugPropertyGroup = System.Xml.MakeElement("PropertyGroup");
+        debugPropertyGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Debug|x64'");
+        debugPropertyGroup->SetAttribute("Label", "Configuration");
+        System.Xml.Element* debugConfigurationType = System.Xml.MakeElement("ConfigurationType");
+        if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
+        {
+            System.Xml.Text* debugConfigurationTypeText = System.Xml.MakeText("Application");
+            debugConfigurationType->AppendChild(debugConfigurationTypeText);
+            debugPropertyGroup->AppendChild(debugConfigurationType);
+        }
+        else if (target == Target.library || target == Target.winlib)
+        {
+            System.Xml.Text* debugConfigurationTypeText = System.Xml.MakeText("StaticLibrary");
+            debugConfigurationType->AppendChild(debugConfigurationTypeText);
+            debugPropertyGroup->AppendChild(debugConfigurationType);
+        }
+        System.Xml.Element* debugUseDebugLibraries = System.Xml.MakeElement("UseDebugLibraries");
+        System.Xml.Text* debugUseDebugLibrariesText = System.Xml.MakeText("true");
+        debugUseDebugLibraries->AppendChild(debugUseDebugLibrariesText);
+        debugPropertyGroup->AppendChild(debugUseDebugLibraries);
+        System.Xml.Element* debugPlatformToolset = System.Xml.MakeElement("PlatformToolset");
+        System.Xml.Text* debugPlatformToolsetText = System.Xml.MakeText("v143");
+        debugPlatformToolset->AppendChild(debugPlatformToolsetText);
+        debugPropertyGroup->AppendChild(debugPlatformToolset);
+        System.Xml.Element* debugCharacterSet = System.Xml.MakeElement("CharacterSet");
+        System.Xml.Text* debugCharacterSetText = System.Xml.MakeText("Unicode");
+        debugCharacterSet->AppendChild(debugCharacterSetText);
+        debugPropertyGroup->AppendChild(debugCharacterSet);
+        rootElement->AppendChild(debugPropertyGroup);
+
+        System.Xml.Element* releasePropertyGroup = System.Xml.MakeElement("PropertyGroup");
+        releasePropertyGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
+        releasePropertyGroup->SetAttribute("Label", "Configuration");
+        System.Xml.Element* releaseConfigurationType = System.Xml.MakeElement("ConfigurationType");
+        if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
+        {
+            System.Xml.Text* releaseConfigurationTypeText = System.Xml.MakeText("Application");
+            releaseConfigurationType->AppendChild(releaseConfigurationTypeText);
+            releasePropertyGroup->AppendChild(releaseConfigurationType);
+        }
+        else if (target == Target.library || target == Target.winlib)
+        {
+            System.Xml.Text* releaseConfigurationTypeText = System.Xml.MakeText("StaticLibrary");
+            releaseConfigurationType->AppendChild(releaseConfigurationTypeText);
+            releasePropertyGroup->AppendChild(releaseConfigurationType);
+        }
+        System.Xml.Element* releaseUseDebugLibraries = System.Xml.MakeElement("UseDebugLibraries");
+        System.Xml.Text* releaseUseDebugLibrariesText = System.Xml.MakeText("false");
+        releaseUseDebugLibraries->AppendChild(releaseUseDebugLibrariesText);
+        releasePropertyGroup->AppendChild(releaseUseDebugLibraries);
+        System.Xml.Element* releasePlatformToolset = System.Xml.MakeElement("PlatformToolset");
+        System.Xml.Text* releasePlatformToolsetText = System.Xml.MakeText("v143");
+        releasePlatformToolset->AppendChild(releasePlatformToolsetText);
+        releasePropertyGroup->AppendChild(releasePlatformToolset);
+        System.Xml.Element* releaseCharacterSet = System.Xml.MakeElement("CharacterSet");
+        System.Xml.Text* releaseCharacterSetText = System.Xml.MakeText("Unicode");
+        releaseCharacterSet->AppendChild(releaseCharacterSetText);
+        releasePropertyGroup->AppendChild(releaseCharacterSet);
+        System.Xml.Element* wholeProgramOptimization = System.Xml.MakeElement("WholeProgramOptimization");
+        System.Xml.Text* wholeProgramOptimizationText = System.Xml.MakeText("true");
+        wholeProgramOptimization->AppendChild(wholeProgramOptimizationText);
+        releasePropertyGroup->AppendChild(wholeProgramOptimization);
+        rootElement->AppendChild(releasePropertyGroup);
+
+        System.Xml.Element* importCppProject = System.Xml.MakeElement("Import");
+        importCppProject->SetAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.props");
+        rootElement->AppendChild(importCppProject);
+
+        System.Xml.Element* masmGroup = System.Xml.MakeElement("ImportGroup");
+        masmGroup->SetAttribute("Label", "ExtensionSettings");
+        System.Xml.Element* masmProps = System.Xml.MakeElement("Import");
+        masmProps->SetAttribute("Project", "$(VCTargetsPath)\\BuildCustomizations\\masm.props");
+        masmGroup->AppendChild(masmProps);
+        rootElement->AppendChild(masmGroup);
+
+        System.Xml.Element* importSharedGroup = System.Xml.MakeElement("ImportGroup");
+        importSharedGroup->SetAttribute("Label", "Shared");
+        rootElement->AppendChild(importSharedGroup);
+
+        System.Xml.Element* debugImportPropertySheets = System.Xml.MakeElement("ImportGroup");
+        debugImportPropertySheets->SetAttribute("Label", "PropertySheets");
+        debugImportPropertySheets->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Debug|x64'");
+        System.Xml.Element* debugPropertySheet = System.Xml.MakeElement("Import");
+        debugPropertySheet->SetAttribute("Project", "$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props");
+        debugPropertySheet->SetAttribute("Condition", "exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')");
+        debugPropertySheet->SetAttribute("Label", "LocalAppDataPlatform");
+        debugImportPropertySheets->AppendChild(debugPropertySheet);
+        rootElement->AppendChild(debugImportPropertySheets);
+
+        System.Xml.Element* releaseImportPropertySheets = System.Xml.MakeElement("ImportGroup");
+        releaseImportPropertySheets->SetAttribute("Label", "PropertySheets");
+        releaseImportPropertySheets->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
+        System.Xml.Element* releasePropertySheet = System.Xml.MakeElement("Import");
+        releasePropertySheet->SetAttribute("Project", "$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props");
+        releasePropertySheet->SetAttribute("Condition", "exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')");
+        releasePropertySheet->SetAttribute("Label", "LocalAppDataPlatform");
+        releaseImportPropertySheets->AppendChild(releasePropertySheet);
+        rootElement->AppendChild(releaseImportPropertySheets);
+
+        System.Xml.Element* userMacros = System.Xml.MakeElement("PropertyGroup");
+        userMacros->SetAttribute("Label", "UserMacros");
+        rootElement->AppendChild(userMacros);
+
+        System.Xml.Element* debugOutDirPropertyGroup = System.Xml.MakeElement("PropertyGroup");
+        debugOutDirPropertyGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)' == 'Debug|x64'");
+        System.Xml.Element* debugOutDir = System.Xml.MakeElement("OutDir");
+        System.Xml.Text* debugOutDirText = System.Xml.MakeText("./");
+        debugOutDir->AppendChild(debugOutDirText);
+        debugOutDirPropertyGroup->AppendChild(debugOutDir);
+        rootElement->AppendChild(debugOutDirPropertyGroup);
+
+        System.Xml.Element* releaseOutDirPropertyGroup = System.Xml.MakeElement("PropertyGroup");
+        releaseOutDirPropertyGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
+        System.Xml.Element* releaseOutDir = System.Xml.MakeElement("OutDir");
+        System.Xml.Text* releaseOutDirText = System.Xml.MakeText("./");
+        releaseOutDir->AppendChild(releaseOutDirText);
+        releaseOutDirPropertyGroup->AppendChild(releaseOutDir);
+        rootElement->AppendChild(releaseOutDirPropertyGroup);
+
+        System.Xml.Element* debugItemDefinitionGroup = System.Xml.MakeElement("ItemDefinitionGroup");
+        debugItemDefinitionGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Debug|x64'");
+        System.Xml.Element* debugClCompile = System.Xml.MakeElement("ClCompile");
+        System.Xml.Element* debugWarningLevel = System.Xml.MakeElement("WarningLevel");
+        System.Xml.Text* debugWarningLevelText = System.Xml.MakeText("Level3");
+        debugWarningLevel->AppendChild(debugWarningLevelText);
+        debugClCompile->AppendChild(debugWarningLevel);
+        System.Xml.Element* debugSdlCheck = System.Xml.MakeElement("SDLCheck");
+        System.Xml.Text* debugSdlCheckText = System.Xml.MakeText("true");
+        debugSdlCheck->AppendChild(debugSdlCheckText);
+        debugClCompile->AppendChild(debugSdlCheck);
+        System.Xml.Element* debugPreprocessor = System.Xml.MakeElement("PreprocessorDefinitions");
+        System.Xml.Text* debugPreprocessorText = System.Xml.MakeText("WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)");
+        debugPreprocessor->AppendChild(debugPreprocessorText);
+        debugClCompile->AppendChild(debugPreprocessor);
+        System.Xml.Element* debugConformanceMode = System.Xml.MakeElement("ConformanceMode");
+        System.Xml.Text* debugConformanceModeText = System.Xml.MakeText("true");
+        debugConformanceMode->AppendChild(debugConformanceModeText);
+        debugClCompile->AppendChild(debugConformanceMode);
+        debugItemDefinitionGroup->AppendChild(debugClCompile);
+        System.Xml.Element* debugLink = System.Xml.MakeElement("Link");
+        System.Xml.Element* debugSubSystem = System.Xml.MakeElement("SubSystem");
+        if (target == Target.program || target == Target.winapp)
+        {
+            System.Xml.Text* debugSubSystemText = System.Xml.MakeText("Console");
+            debugSubSystem->AppendChild(debugSubSystemText);
+        }
+        else if (target == Target.winguiapp)
+        {
+            System.Xml.Text* debugSubSystemText = System.Xml.MakeText("Windows");
+            debugSubSystem->AppendChild(debugSubSystemText);
+        }
+        debugLink->AppendChild(debugSubSystem);
+        System.Xml.Element* debugGenDebugInfo = System.Xml.MakeElement("GenerateDebugInformation");
+        System.Xml.Text* debugGenDebugInfoText = System.Xml.MakeText("true");
+        debugGenDebugInfo->AppendChild(debugGenDebugInfoText);
+        debugLink->AppendChild(debugGenDebugInfo);
+        string cmrtmasmwin_release = "cmrtmasmwin.lib";
+        string cmrtmasm_release = "cmrtmasm.lib";
+        string xpath_release = "soul.xml.xpath.lib";
+        string dom_parser_release = "soul.dom.parser.lib";
+        string dom_release = "soul.xml.dom.lib";
+        string xml_parser_release = "soul.xml.parser.lib";
+        string xml_processor_release = "soul.xml.processor.lib";
+        string soul_lexer_release = "soul.lexer.lib";
+        string soul_ast_release = "soul.ast.lib";
+        string soul_common_release = "soul.common.lib";
+        string util_release = "util.lib";
+        string cmrtmasmwin_debug = "cmrtmasmwind.lib";
+        string cmrtmasm_debug = "cmrtmasmd.lib";
+        string xpath_debug = "soul.xml.xpathd.lib";
+        string dom_parser_debug = "soul.dom.parserd.lib";
+        string dom_debug = "soul.xml.domd.lib";
+        string xml_parser_debug = "soul.xml.parserd.lib";
+        string xml_processor_debug = "soul.xml.processord.lib";
+        string soul_lexer_debug = "soul.lexerd.lib";
+        string soul_common_debug = "soul.commond.lib";
+        string soul_ast_debug = "soul.astd.lib";
+        string util_debug = "utild.lib";
+        if (target == Target.program)
+        {
+            System.Xml.Element* debugLibraryDirs = System.Xml.MakeElement("AdditionalLibraryDirectories");
+            System.Xml.Text* debugLibraryDirsText = System.Xml.MakeText(libraryDirs);
+            debugLibraryDirs->AppendChild(debugLibraryDirsText);
+            debugLink->AppendChild(debugLibraryDirs);
+            System.Xml.Element* debugDependencies = System.Xml.MakeElement("AdditionalDependencies");
+            System.Xml.Text* debugDependenciesText = System.Xml.MakeText(
+                cmrtmasm_debug + ";" + xpath_debug + ";" + xml_parser_debug + ";" + xml_processor_debug + ";" + dom_parser_debug + ";" + dom_debug + ";" +
+                soul_lexer_debug + ";" + soul_common_debug + ";" + soul_ast_debug + ";" + util_debug + ";" + references);
+            debugDependencies->AppendChild(debugDependenciesText);
+            debugLink->AppendChild(debugDependencies);
+        }
+        else if (target == Target.winguiapp || target ==  Target.winapp)
+        {
+            System.Xml.Element* debugLibraryDirs = System.Xml.MakeElement("AdditionalLibraryDirectories");
+            System.Xml.Text* debugLibraryDirsText = System.Xml.MakeText(libraryDirs);
+            debugLibraryDirs->AppendChild(debugLibraryDirsText);
+            debugLink->AppendChild(debugLibraryDirs);
+            System.Xml.Element* debugDependencies = System.Xml.MakeElement("AdditionalDependencies");
+            System.Xml.Text* debugDependenciesText = System.Xml.MakeText(
+                cmrtmasmwin_debug + ";" + cmrtmasm_debug + ";" + xpath_debug + ";" + xml_parser_debug + ";" + xml_processor_debug + ";" + dom_parser_debug + ";" + dom_debug + ";" +
+                soul_lexer_debug + ";" + soul_common_debug + ";" + soul_ast_debug + ";" + util_debug + ";" + references);
+            debugDependencies->AppendChild(debugDependenciesText);
+            debugLink->AppendChild(debugDependencies);
+        }
+        debugItemDefinitionGroup->AppendChild(debugLink);
+
+        rootElement->AppendChild(debugItemDefinitionGroup);
+
+        System.Xml.Element* releaseItemDefinitionGroup = System.Xml.MakeElement("ItemDefinitionGroup");
+        releaseItemDefinitionGroup->SetAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
+        System.Xml.Element* releaseClCompile = System.Xml.MakeElement("ClCompile");
+        System.Xml.Element* releaseWarningLevel = System.Xml.MakeElement("WarningLevel");
+        System.Xml.Text* releaseWarningLevelText = System.Xml.MakeText("Level3");
+        releaseWarningLevel->AppendChild(releaseWarningLevelText);
+        releaseClCompile->AppendChild(releaseWarningLevel);
+        System.Xml.Element* releaseFunctionLevelLinking = System.Xml.MakeElement("FunctionLevelLinking");
+        System.Xml.Text* releaseFunctionLevelLinkingText = System.Xml.MakeText("true");
+        releaseFunctionLevelLinking->AppendChild(releaseFunctionLevelLinkingText);
+        releaseClCompile->AppendChild(releaseFunctionLevelLinking);
+        System.Xml.Element* releaseIntrinsics = System.Xml.MakeElement("IntrinsicFunctions");
+        System.Xml.Text* releaseIntrinsicsText = System.Xml.MakeText("true");
+        releaseIntrinsics->AppendChild(releaseIntrinsicsText);
+        releaseClCompile->AppendChild(releaseIntrinsics);
+        System.Xml.Element* releaseSdlCheck = System.Xml.MakeElement("SDLCheck");
+        System.Xml.Text* releaseSdlCheckText = System.Xml.MakeText("true");
+        releaseSdlCheck->AppendChild(releaseSdlCheckText);
+        releaseClCompile->AppendChild(releaseSdlCheck);
+        System.Xml.Element* releasePreprocessor = System.Xml.MakeElement("PreprocessorDefinitions");
+        System.Xml.Text* releasePreprocessorText = System.Xml.MakeText("WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)");
+        releasePreprocessor->AppendChild(releasePreprocessorText);
+        releaseClCompile->AppendChild(releasePreprocessor);
+        System.Xml.Element* releaseConformanceMode = System.Xml.MakeElement("ConformanceMode");
+        System.Xml.Text* releaseConformanceModeText = System.Xml.MakeText("true");
+        releaseConformanceMode->AppendChild(releaseConformanceModeText);
+        releaseClCompile->AppendChild(releaseConformanceMode);
+        releaseItemDefinitionGroup->AppendChild(releaseClCompile);
+        System.Xml.Element* releaseLink = System.Xml.MakeElement("Link");
+        System.Xml.Element* releaseSubSystem = System.Xml.MakeElement("SubSystem");
+        if (target == Target.program || target == Target.winapp)
+        {
+            System.Xml.Text* releaseSubSystemText = System.Xml.MakeText("Console");
+            releaseSubSystem->AppendChild(releaseSubSystemText);
+        }
+        else if (target == Target.winguiapp)
+        {
+            System.Xml.Text* releaseSubSystemText = System.Xml.MakeText("Windows");
+            releaseSubSystem->AppendChild(releaseSubSystemText);
+        }
+        releaseLink->AppendChild(releaseSubSystem);
+        System.Xml.Element* releaseComdatFolding = System.Xml.MakeElement("EnableCOMDATFolding");
+        System.Xml.Text* releaseComdatFoldingText = System.Xml.MakeText("true");
+        releaseComdatFolding->AppendChild(releaseComdatFoldingText);
+        releaseLink->AppendChild(releaseComdatFolding);
+        System.Xml.Element* releaseOptimizeRefs = System.Xml.MakeElement("OptimizeReferences");
+        System.Xml.Text* releaseOptimizeRefsText = System.Xml.MakeText("true");
+        releaseOptimizeRefs->AppendChild(releaseOptimizeRefsText);
+        releaseLink->AppendChild(releaseOptimizeRefs);
+        System.Xml.Element* releaseGenDebugInfo = System.Xml.MakeElement("GenerateDebugInformation");
+        System.Xml.Text* releaseGenDebugInfoText = System.Xml.MakeText("true");
+        releaseGenDebugInfo->AppendChild(releaseGenDebugInfoText);
+        releaseLink->AppendChild(releaseGenDebugInfo);
+        if (target == Target.program)
+        {
+            System.Xml.Element* releaseLibraryDirs = System.Xml.MakeElement("AdditionalLibraryDirectories");
+            System.Xml.Text* releaseLibraryDirsText = System.Xml.MakeText(libraryDirs);
+            releaseLibraryDirs->AppendChild(releaseLibraryDirsText);
+            releaseLink->AppendChild(releaseLibraryDirs);
+            System.Xml.Element* releaseDependencies = System.Xml.MakeElement("AdditionalDependencies");
+            System.Xml.Text* releaseDepenciesText = System.Xml.MakeText(
+                cmrtmasm_release + ";" + xpath_release + ";" + xml_parser_release + ";" + xml_processor_release + ";" + dom_parser_release + ";" + dom_release + ";" +
+                soul_lexer_release + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
+            releaseDependencies->AppendChild(releaseDepenciesText);
+            releaseLink->AppendChild(releaseDependencies);
+        }
+        else if (target == Target.winguiapp || target == Target.winapp)
+        {
+            System.Xml.Element* releaseLibraryDirs = System.Xml.MakeElement("AdditionalLibraryDirectories");
+            System.Xml.Text* releaseLibraryDirsText = System.Xml.MakeText(libraryDirs);
+            releaseLibraryDirs->AppendChild(releaseLibraryDirsText);
+            releaseLink->AppendChild(releaseLibraryDirs);
+            System.Xml.Element* releaseDependencies = System.Xml.MakeElement("AdditionalDependencies");
+            System.Xml.Text* releaseDepenciesText = System.Xml.MakeText(
+                cmrtmasmwin_release + ";" + cmrtmasm_release + ";" + xpath_release + ";" + xml_parser_release + ";" + xml_processor_release + ";" + dom_parser_release + ";" +
+                dom_release + ";" + soul_lexer_release + ";" + soul_common_release + ";" + soul_ast_release + ";" + util_release + ";" + references);
+            releaseDependencies->AppendChild(releaseDepenciesText);
+            releaseLink->AppendChild(releaseDependencies);
+        }
+        releaseItemDefinitionGroup->AppendChild(releaseLink);
+
+        rootElement->AppendChild(releaseItemDefinitionGroup);
+
+        System.Xml.Element* masmItemGroup = System.Xml.MakeElement("ItemGroup");
+        for (const auto& asmFile : asmFilePaths)
+        {
+            System.Xml.Element* masm = System.Xml.MakeElement("MASM");
+            masm->SetAttribute("Include", asmFile);
+            masmItemGroup->AppendChild(masm);
+        }
+        rootElement->AppendChild(masmItemGroup);
+
+        System.Xml.Element* clItemGroup = System.Xml.MakeElement("ItemGroup");
+        for (const auto& cppFile : cppFilePaths)
+        {
+            System.Xml.Element* clCompile = System.Xml.MakeElement("ClCompile");
+            clCompile->SetAttribute("Include", cppFile);
+            clItemGroup->AppendChild(clCompile);
+        }
+        rootElement->AppendChild(clItemGroup);
+
+        if (target == Target.program || target == Target.winguiapp || target == Target.winapp)
+        {
+            System.Xml.Element* rcItemGroup = System.Xml.MakeElement("ItemGroup");
+            System.Xml.Element* rcCompile = System.Xml.MakeElement("ResourceCompile");
+            if (!classIndexFilePath.IsEmpty() && !traceDataFilePath.IsEmpty())
+            {
+                rcCompile->SetAttribute("Include", "runtime_info.rc");
+                rcItemGroup->AppendChild(rcCompile);
+            }
+            for (const auto& resourceScriptFile : resourceScriptFiles)
+            {
+                System.Xml.Element* rcCompile = System.Xml.MakeElement("ResourceCompile");
+                rcCompile->SetAttribute("Include", resourceScriptFile);
+                rcItemGroup->AppendChild(rcCompile);
+            }
+            rootElement->AppendChild(rcItemGroup);
+        }
+
+        System.Xml.Element* cppTargets = System.Xml.MakeElement("Import");
+        cppTargets->SetAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
+        rootElement->AppendChild(cppTargets);
+
+        System.Xml.Element* extensionTargets = System.Xml.MakeElement("ImportGroup");
+        extensionTargets->SetAttribute("Label", "ExtensionTargets");
+        System.Xml.Element* importMasm = System.Xml.MakeElement("Import");
+        importMasm->SetAttribute("Project", "$(VCTargetsPath)\\BuildCustomizations\\masm.targets");
+        extensionTargets->AppendChild(importMasm);
+        rootElement->AppendChild(extensionTargets);
+
+        Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(vsProjectFilePath);
+        if (writerResult.Error()) return Result<string>(ErrorId(writerResult.GetErrorId()));
+        System.IO.StreamWriter& writer = writerResult.Value();
+        System.Text.CodeFormatter formatter(writer);
+        formatter.SetIndentSize(1);
+        Result<bool> result = projectDoc.Write(formatter);
+        if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
+
+        if (verbose)
+        {
+            LogMessage(project->LogStreamId(), "==> " + vsProjectFilePath);
+        }
+
+        return Result<string>(vsProjectFilePath);
+    }
+}
+

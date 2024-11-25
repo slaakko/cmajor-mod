@@ -41,9 +41,61 @@ namespace binder
         {
             return labeledStatements;
         }
-        public void AddTemporaryDestructorCall(UniquePtr<BoundFunctionCall>&& destructorCall, BoundFunction* currentFunction, ContainerScope* currentContainerScope, Node* node)
+        [nodiscard]
+        public Result<bool> AddTemporaryDestructorCall(UniquePtr<BoundFunctionCall>&& destructorCall, BoundFunction* currentFunction,
+            ContainerScope* currentContainerScope, Node* node)
         {
-            // todo
+            FunctionSymbol* functionSymbol = destructorCall->GetFunctionSymbol();
+            if (functionSymbol->IsDestructorSymbol())
+            {
+                DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(functionSymbol);
+                if (destructorSymbol->IsGenerated())
+                {
+                    if (destructorSymbol->Parent()->IsClassTypeSymbol())
+                    {
+                        ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(destructorSymbol->Parent());
+                        if (!compileUnit->IsGeneratedDestructorInstantiated(destructorSymbol))
+                        {
+                            compileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
+                            Result<FunctionSymbol*> copyResult = destructorSymbol->Copy();
+                            if (copyResult.Error()) return Result<bool>(ErrorId(copyResult.GetErrorId()));
+                            DestructorSymbol* copy = cast<DestructorSymbol*>(copyResult.Value());
+                            compileUnit->GetSymbolTable()->AddFunctionSymbol(UniquePtr<FunctionSymbol>(copy));
+                            SourceFileNode* sourceFile = compileUnit->SourceFile();
+                            Result<string> sourceFileIdResult = sourceFile->Id();
+                            if (sourceFileIdResult.Error())
+                            {
+                                return Result<bool>(ErrorId(sourceFileIdResult.GetErrorId()));
+                            }
+                            string sourceFileId = Rvalue(sourceFileIdResult.Value());
+                            copy->SetSourceFileId(sourceFileId);
+                            Result<bool> result = copy->ComputeMangledName();
+                            if (result.Error()) return result;
+                            destructorSymbol->SetInstantiatedName(copy->MangledName());
+                            destructorSymbol = copy;
+                            destructorCall->SetFunctionSymbol(destructorSymbol);
+                            UniquePtr<BoundClass> boundClass(new BoundClass(classType->Span(), classType, classType->ModuleId(), classType->FileIndex()));
+                            result = GenerateDestructorImplementation(boundClass.Get(), destructorSymbol, compileUnit, currentContainerScope, currentFunction, node);
+                            if (result.Error()) return result;
+                            compileUnit->AddBoundNode(UniquePtr<BoundNode>(boundClass.Release()));
+                        }
+                    }
+                }
+            }
+            temporaryDestructorCalls.Add(destructorCall);
+            return Result<bool>(true);
+        }
+        public inline bool HasTemporaryDestructorCalls() const
+        {
+            return !temporaryDestructorCalls.IsEmpty();
+        }
+        public List<UniquePtr<BoundFunctionCall>> GetTemporaryDestructorCalls()
+        {
+            return Rvalue(temporaryDestructorCalls);
+        }
+        public void ClearTemporaryDestructorCalls()
+        {
+            temporaryDestructorCalls.Clear();
         }
         [nodiscard]
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
@@ -81,14 +133,41 @@ namespace binder
         {
             node = node_;
         }
+        public inline BoundCompileUnit* GetBoundCompileUnit() const
+        {
+            return compileUnit;
+        }
+        public inline void SetBoundCompileUnit(BoundCompileUnit* compileUnit_)
+        {
+            compileUnit = compileUnit_;
+        }
+        public void SetLineCode(UniquePtr<BoundStatement>&& lineCode_)
+        {
+            lineCode = lineCode_;
+        }
+        public inline BoundStatement* GetLineCode() const
+        {
+            return lineCode.Get();
+        }
+        public void SetEnterCode(List<UniquePtr<BoundStatement>>&& enterCode_)
+        {
+            enterCode = enterCode_;
+        }
+        public inline const List<UniquePtr<BoundStatement>>& EnterCode() const
+        {
+            return enterCode;
+        }
         private FunctionSymbol* functionSymbol;
         private UniquePtr<BoundCompoundStatement> body;
         private Uuid moduleId;
+        private BoundCompileUnit* compileUnit;
         private int fileIndex;
         private bool hasGotos;
         private List<UniquePtr<BoundFunctionCall>> temporaryDestructorCalls;
         private List<BoundStatement*> labeledStatements;
         private Node* node;
+        private UniquePtr<BoundStatement> lineCode;
+        private List<UniquePtr<BoundStatement>> enterCode;
     }
 }
 

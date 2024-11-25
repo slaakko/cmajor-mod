@@ -618,7 +618,58 @@ namespace intermediate
         public override string ToString() const
         {
             string s('"');
-            s.Append(value);
+            for (char c : value)
+            {
+                if (c == '"')
+                {
+                    Result<string> hex = ToHexString(cast<byte>(c));
+                    if (hex.Error())
+                    {
+                        s.Append("<ERROR>");
+                    }
+                    else
+                    {
+                        s.Append("\\").Append(hex.Value());
+                    }
+                }
+                else if (c == '\\')
+                {
+                    Result<string> hex = ToHexString(cast<byte>(c));
+                    if (hex.Error())
+                    {
+                        s.Append("<ERROR>");
+                    }
+                    else
+                    {
+                        s.Append("\\").Append(hex.Value());
+                    }
+                }
+                else if (cast<byte>(c) >= 32u && cast<byte>(c) < 127u)
+                {
+                    s.Append(c);
+                }
+                else
+                {
+                    Result<string> hex = ToHexString(cast<byte>(c));
+                    if (hex.Error())
+                    {
+                        s.Append("<ERROR>");
+                    }
+                    else
+                    {
+                        s.Append("\\").Append(hex.Value());
+                    }
+                }
+            }
+            Result<string> hex = ToHexString(cast<byte>(0));
+            if (hex.Error())
+            {
+                s.Append("<ERROR>");
+            }
+            else
+            {
+                s.Append("\\").Append(hex.Value());
+            }
             s.Append('"');
             return s;
         }
@@ -627,7 +678,8 @@ namespace intermediate
 
     public class StringArrayValue : Value
     {
-        public StringArrayValue(const System.Lex.Span& span_, char prefix_, const List<Value*>& strings_) : base(ValueKind.stringArrayValue, span_, null)
+        public StringArrayValue(const System.Lex.Span& span_, char prefix_, const List<Value*>& elements_) :
+            base(ValueKind.stringArrayValue, span_, null), prefix(prefix_), elements(elements_)
         {
         }
         public override void Accept(Visitor& visitor)
@@ -638,16 +690,16 @@ namespace intermediate
         {
             return prefix;
         }
-        public inline const List<Value*>& Strings() const
+        public inline const List<Value*>& Elements() const
         {
-            return strings;
+            return elements;
         }
         public override string ToString() const
         {
             string s(prefix);
             s.Append("[ ");
             bool first = true;
-            for (Value* string : strings)
+            for (Value* element : elements)
             {
                 if (first)
                 {
@@ -657,13 +709,13 @@ namespace intermediate
                 {
                     s.Append(", ");
                 }
-                s.Append(string->GetType()->Name()).Append(" ").Append(string->ToString());
+                s.Append(element->GetType()->Name()).Append(' ').Append(element->ToString());
             }
             s.Append(" ]");
             return s;
         }
         private char prefix;
-        private List<Value*> strings;
+        private List<Value*> elements;
     }
 
     public class ConversionValue : Value
@@ -732,10 +784,6 @@ namespace intermediate
         public GlobalVariable(const System.Lex.Span& span_, Type* type_, const string& name_, Value* initializer_) :
             base(ValueKind.globalVariable, span_, type_), name(name_), initializer(initializer_)
         {
-            if (initializer != null)
-            {
-                initializer->SetType(GetType());
-            }
         }
         public override void Accept(Visitor& visitor)
         {
@@ -760,7 +808,8 @@ namespace intermediate
         [nodiscard]
         public Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
-            auto result = formatter.Write(GetType()->Name());
+            #assert(GetType()->IsPointerType());
+            auto result = formatter.Write(cast<PointerType*>(GetType())->BaseType()->Name());
             if (result.Error()) return result;
             result = formatter.Write(" ");
             if (result.Error()) return result;
@@ -803,20 +852,27 @@ namespace intermediate
         {
         }
         [nodiscard]
+        public Result<bool> ResolveAddressValue(AddressValue* addressValue)
+        {
+            auto it = globalVariableMap.Find(addressValue->Id());
+            if (it != globalVariableMap.End())
+            {
+                GlobalVariable* globalVariable = it->second;
+                addressValue->SetValue(globalVariable);
+            }
+            else
+            {
+                return Result<bool>(ErrorId(Error("error resolving address literal: global variable id '" + addressValue->Id() + "' not found", addressValue->Span(), context)));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
         public Result<bool> ResolveAddressValues()
         {
             for (AddressValue* addressValue : addressValues)
             {
-                auto it = globalVariableMap.Find(addressValue->Id());
-                if (it != globalVariableMap.End())
-                {
-                    GlobalVariable* globalVariable = it->second;
-                    addressValue->SetValue(globalVariable);
-                }
-                else
-                {
-                    return Result<bool>(ErrorId(Error("error resolving address literal: global variable id '" + addressValue->Id() + "' not found", addressValue->Span(), context)));
-                }
+                Result<bool> result = ResolveAddressValue(addressValue);
+                if (result.Error()) return result;
             }
             return Result<bool>(true);
         }
@@ -972,15 +1028,57 @@ namespace intermediate
             values.Add(UniquePtr<Value>(structureValue));
             return structureValue;
         }
-        public Value* MakeStringValue(const System.Lex.Span& span, const string& value)
+        public Result<Value*> MakeStringValue(const System.Lex.Span& span, const string& value)
         {
-            StringValue* stringValue = new StringValue(span, value);
+            string s;
+            int state = 0;
+            string hex;
+            for (char c : value)
+            {
+                switch (state)
+                {
+                    case 0:
+                    {
+                        if (c == '\\')
+                        {
+                            hex.Clear();
+                            state = 1;
+                        }
+                        else
+                        {
+                            s.Append(c);
+                        }
+                        break;
+                    }
+                    case 1:
+                    {
+                        hex.Append(c);
+                        state = 2;
+                        break;
+                    }
+                    case 2:
+                    {
+                        hex.Append(c);
+                        Result<byte> hexResult = ParseHexByte(hex);
+                        if (hexResult.Error())
+                        {
+                            return Result<Value*>(ErrorId(hexResult.GetErrorId()));
+                        }
+                        byte x = hexResult.Value();
+                        char ch = cast<char>(x);
+                        s.Append(ch);
+                        state = 0;
+                        break;
+                    }
+                }
+            }
+            StringValue* stringValue = new StringValue(span, s);
             values.Add(UniquePtr<Value>(stringValue));
-            return stringValue;
+            return Result<Value*>(stringValue);
         }
-        public Value* MakeStringArrayValue(const System.Lex.Span& span, char prefix, const List<Value*>& strings)
+        public Value* MakeStringArrayValue(const System.Lex.Span& span, char prefix, const List<Value*>& elements)
         {
-            StringArrayValue* stringArrayValue = new StringArrayValue(span, prefix, strings);
+            StringArrayValue* stringArrayValue = new StringArrayValue(span, prefix, elements);
             values.Add(UniquePtr<Value>(stringArrayValue));
             return stringArrayValue;
         }
@@ -990,33 +1088,47 @@ namespace intermediate
             values.Add(UniquePtr<Value>(conversionValue));
             return conversionValue;
         }
-        public GlobalVariable* GetOrInsertGlobal(const string& name, Type* type)
+        public Result<GlobalVariable*> GetOrInsertGlobal(const string& name, Type* type)
         {
             auto it = globalVariableMap.Find(name);
             if (it != globalVariableMap.End())
             {
-                return it->second;
+                return Result<GlobalVariable*>(it->second);
             }
             else
             {
-                GlobalVariable* globalVariable = new GlobalVariable(System.Lex.Span(), type, name, null);
+                Result<Type*> ptrTypeResult = type->AddPointer(context);
+                if (ptrTypeResult.Error()) return Result<GlobalVariable*>(ErrorId(ptrTypeResult.GetErrorId()));
+                Type* ptrType = ptrTypeResult.Value();
+                GlobalVariable* globalVariable = new GlobalVariable(System.Lex.Span(), ptrType, name, null);
                 values.Add(UniquePtr<Value>(globalVariable));
                 globalVariables.Add(globalVariable);
                 globalVariableMap[name] = globalVariable;
-                return globalVariable;
+                return Result<GlobalVariable*>(globalVariable);
             }
         }
-        public void AddGlobalVariable(const System.Lex.Span& span, Type* type, const string& name, Value* initializer)
+        [nodiscard]
+        public Result<bool> AddGlobalVariable(const System.Lex.Span& span, Type* type, const string& name, Value* initializer)
         {
-            GlobalVariable* globalVariable = new GlobalVariable(span, type, name, initializer);
+            Result<Type*> ptrTypeResult = type->AddPointer(context);
+            if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+            Type* ptrType = ptrTypeResult.Value();
+            GlobalVariable* globalVariable = new GlobalVariable(span, ptrType, name, initializer);
             values.Add(UniquePtr<Value>(globalVariable));
             globalVariables.Add(globalVariable);
+            globalVariableMap[name] = globalVariable;
+            return Result<bool>(true);
         }
-        public GlobalVariable* CreateGlobalStringValue(const string& stringValue)
+        public Result<GlobalVariable*> CreateGlobalStringValue(const string& stringValue)
         {
-            GlobalVariable* globalVariable = GetOrInsertGlobal("string" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetByteType());
-            globalVariable->SetInitializer(MakeStringValue(System.Lex.Span(), stringValue));
-            return globalVariable;
+            Result<GlobalVariable*> globalVariableResult = GetOrInsertGlobal(
+                "string" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetByteType());
+            if (globalVariableResult.Error()) return globalVariableResult;
+            GlobalVariable* globalVariable = globalVariableResult.Value();
+            Value* initializer = new StringValue(System.Lex.Span(), stringValue);
+            values.Add(UniquePtr<Value>(initializer));
+            globalVariable->SetInitializer(initializer);
+            return Result<GlobalVariable*>(globalVariable);
         }
         public Result<GlobalVariable*> CreateGlobalWStringValue(const wstring& wstringValue)
         {
@@ -1029,11 +1141,11 @@ namespace intermediate
             }
             Value* z = GetUShortValue(0u);
             elementValues.Add(z);
-            Result<ArrayType*> arrayTypeResult = context->GetTypes()->GetArrayType(System.Lex.Span(), context->GetTypes()->GetUShortType(), elementValues.Count());
-            if (arrayTypeResult.Error()) return Result<GlobalVariable*>(ErrorId(arrayTypeResult.GetErrorId()));
-            ArrayType* arrayType = arrayTypeResult.Value();
-            Value* initializer = MakeArrayValue(System.Lex.Span(), elementValues, arrayType);
-            GlobalVariable* globalVariable = GetOrInsertGlobal("wstring" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetUShortType());
+            Value* initializer = MakeStringArrayValue(System.Lex.Span(), 'w', elementValues);
+            Result<GlobalVariable*> globalVariableResult = GetOrInsertGlobal(
+                "wstring" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetUShortType());
+            if (globalVariableResult.Error()) return globalVariableResult;
+            GlobalVariable* globalVariable = globalVariableResult.Value();
             globalVariable->SetInitializer(initializer);
             return Result<GlobalVariable*>(globalVariable);
         }
@@ -1048,20 +1160,25 @@ namespace intermediate
             }
             Value* z = GetUIntValue(0u);
             elementValues.Add(z);
-            Result<ArrayType*> arrayTypeResult = context->GetTypes()->GetArrayType(System.Lex.Span(), context->GetTypes()->GetUIntType(), elementValues.Count());
-            if (arrayTypeResult.Error()) return Result<GlobalVariable*>(ErrorId(arrayTypeResult.GetErrorId()));
-            ArrayType* arrayType = arrayTypeResult.Value();
-            Value* initializer = MakeArrayValue(System.Lex.Span(), elementValues, arrayType);
-            GlobalVariable* globalVariable = GetOrInsertGlobal("ustring" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetUIntType());
+            Value* initializer = MakeStringArrayValue(System.Lex.Span(), 'u', elementValues);
+            Result<GlobalVariable*> globalVariableResult = GetOrInsertGlobal(
+                "ustring" + ToString(nextStringId++) + "_" + context->GetCompileUnit()->Id(), context->GetTypes()->GetUIntType());
+            if (globalVariableResult.Error()) return globalVariableResult;
+            GlobalVariable* globalVariable = globalVariableResult.Value();
             globalVariable->SetInitializer(initializer);
             return Result<GlobalVariable*>(globalVariable);
         }
-        public Value* MakeAddressValue(const System.Lex.Span& span, Type* type, const string& id)
+        public Result<Value*> MakeAddressValue(const System.Lex.Span& span, Type* type, const string& id, bool resolve)
         {
             AddressValue* addressValue = new AddressValue(span, id, type);
+            if (resolve)
+            {
+                Result<bool> result = ResolveAddressValue(addressValue);
+                if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            }
             values.Add(UniquePtr<Value>(addressValue));
             addressValues.Add(addressValue);
-            return addressValue;
+            return Result<Value*>(addressValue);
         }
         public Value* MakeConversionValue(const System.Lex.Span& span, Type* type, Value* from)
         {

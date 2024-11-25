@@ -39,22 +39,25 @@ namespace build
             {
                 LogMessage(systemInstallModule->LogStreamId(), from + " -> " + to);
             }
-/*            
             if (!systemModule->LibraryFilePath().IsEmpty())
             {
                 from = systemModule->LibraryFilePath();
-                to = systemLibDir / from.filename();
-                if (std::filesystem::exists(to))
+                to = System.IO.Path.Combine(systemLibDir, System.IO.Path.GetFileName(from));
+                auto existsResult = System.IO.File.Exists(to);
+                if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                bool exists = existsResult.Value();
+                if (exists)
                 {
-                    std::filesystem::remove(to);
+                    auto removeResult = File.Remove(to);
+                    if (removeResult.Error()) return removeResult;
                 }
-                std::filesystem::copy(from, to);
-                if (cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::verbose))
+                auto copyResult = System.IO.File.Copy(from, to);
+                if (copyResult.Error()) return copyResult;
+                if (GetGlobalFlag(GlobalFlags.verbose))
                 {
-                    util::LogMessage(systemInstallModule->LogStreamId(), from.generic_string() + " -> " + to.generic_string());
+                    LogMessage(systemInstallModule->LogStreamId(), from + " -> " + to);
                 }
             }
-*/            
         }
         if (GetGlobalFlag(GlobalFlags.verbose))
         {

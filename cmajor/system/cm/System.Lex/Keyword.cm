@@ -1,0 +1,60 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace System.Lex
+{
+    public class Keyword
+    {
+        public Keyword() : str(null), tokenID(INVALID_TOKEN)
+        {
+        }
+        public Keyword(const uchar* str_, long tokenID_) : str(str_), tokenID(tokenID_)
+        {
+        }
+        public const uchar* str;
+        public long tokenID;
+    }
+
+    public class KeywordMap
+    {
+        public KeywordMap()
+        {
+        }
+        public void SetKeywords(const List<Keyword>& keywords)
+        {
+            for (const auto& kw : keywords)
+            {
+                Lexeme lexeme(kw.str, StrEnd(kw.str));
+                keywordMap[lexeme] = kw.tokenID;
+            }
+        }
+        public long GetKeywordToken(const Lexeme& lexeme) const
+        {
+            auto it = keywordMap.CFind(lexeme);
+            if (it != keywordMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return INVALID_TOKEN;
+            }
+        }
+        private Map<Lexeme, long> keywordMap;
+    }
+
+    public inline const uchar* StrEnd(const uchar* s)
+    {
+        while (*s != u'\0')
+        {
+            ++s;
+        }
+        return s;
+    }
+
+} // namespace System.Lex

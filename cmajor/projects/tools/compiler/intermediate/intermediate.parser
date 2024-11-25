@@ -134,8 +134,16 @@ parser intermediate.parser.intermediate_parser
                 auto result = intermediate.GetString(s);
                 if (result.Error()) return ErrorId(result.GetErrorId()); else variableName = result.Value();
             }
-            (   SEMICOLON{ context->AddGlobalVariable(span, tref.GetType(), variableName, null); }
-            |   ASSIGN Constant(context, tref.GetType()):initializer{ context->AddGlobalVariable(span, tref.GetType(), variableName, initializer); }
+            (   SEMICOLON
+                {
+                    Result<bool> result = context->AddGlobalVariable(span, tref.GetType(), variableName, null);
+                    if (result.Error()) return ErrorId(result.GetErrorId());
+                }
+            |   ASSIGN Constant(context, tref.GetType()):initializer
+                {
+                    Result<bool> result = context->AddGlobalVariable(span, tref.GetType(), variableName, initializer);
+                    if (result.Error()) return ErrorId(result.GetErrorId());
+                }
             )
             {
                 return true;
@@ -277,14 +285,22 @@ parser intermediate.parser.intermediate_parser
                 string id;
                 if (result.Error()) return ErrorId(result.GetErrorId());
                 id = result.Value();
-                return context->GetData()->MakeAddressValue(lexer.GetSpan(pos), tref.GetType(), id);
+                Result<intermediate.Value*> addressValueResult = context->GetData()->MakeAddressValue(lexer.GetSpan(pos), tref.GetType(), id, false);
+                if (addressValueResult.Error()) return ErrorId(addressValueResult.GetErrorId());
+                return addressValueResult.Value();
             }
         )
         ;
 
     ArrayConstant(Context* context, Type* type, var intermediate.ArrayType* arrayType, var intermediate.Type* elementType, var System.Lex.Span span,
         var List<intermediate.Value*> elements) : intermediate.Value*
-        ::= LBRACKET{ span = lexer.GetSpan(pos); #assert(type->IsArrayType()); arrayType = cast<intermediate.ArrayType*>(type); elementType = arrayType->ElementType(); }
+        ::= LBRACKET
+            {
+                span = lexer.GetSpan(pos);
+                #assert(type->IsArrayType());
+                arrayType = cast<intermediate.ArrayType*>(type);
+                elementType = arrayType->ElementType();
+            }
             (Constant(context, elementType):first{ elements.Add(first); }
             (COMMA Constant(context, elementType):next{ elements.Add(next); })*)?
             RBRACKET
@@ -295,7 +311,12 @@ parser intermediate.parser.intermediate_parser
 
     StructureConstant(Context* context, Type* type, var int index, var intermediate.StructureType* structureType, var System.Lex.Span span, var List<intermediate.Value*> fieldValues) :
         intermediate.Value*
-        ::= LBRACE{ span = lexer.GetSpan(pos); #assert(type->IsStructureType()); structureType = cast<intermediate.StructureType*>(type); }
+        ::= LBRACE
+            {
+                span = lexer.GetSpan(pos);
+                #assert(type->IsStructureType());
+                structureType = cast<intermediate.StructureType*>(type);
+            }
             (Constant(context, structureType->FieldType(index++)):first{ fieldValues.Add(first); }
             (COMMA Constant(context, structureType->FieldType(index++)):next{ fieldValues.Add(next); })*)?
             RBRACE
@@ -312,7 +333,10 @@ parser intermediate.parser.intermediate_parser
         {
             Result<string> stringValue = ToUtf8(lexer.GetToken(pos).ToString());
             if (stringValue.Error()) return ErrorId(stringValue.GetErrorId());
-            return context->GetData()->MakeStringValue(span, stringValue.Value());
+            string s = Rvalue(stringValue.Value());
+            Result<intermediate.Value*> valueResult = context->GetData()->MakeStringValue(span, s.Substring(1, s.Length() - 2));
+            if (valueResult.Error()) return ErrorId(valueResult.GetErrorId());
+            return valueResult.Value();
         }
         ;
 
@@ -420,7 +444,9 @@ parser intermediate.parser.intermediate_parser
                 Result<string> idResult = ToUtf8(lexer.GetToken(pos).ToString());
                 if (idResult.Error()) return ErrorId(idResult.GetErrorId());
                 string id = Rvalue(idResult.Value());
-                return context->GetData()->MakeAddressValue(lexer.GetSpan(pos), type, id);
+                Result<intermediate.Value*> addressValueResult = context->GetData()->MakeAddressValue(lexer.GetSpan(pos), type, id, true);
+                if (addressValueResult.Error()) return ErrorId(addressValueResult.GetErrorId());
+                return addressValueResult.Value();
             }
         ;
 
@@ -664,7 +690,7 @@ parser intermediate.parser.intermediate_parser
             (
                 Case(context, inst):first
                 (
-                    COMMA
+                    COLON
                     Case(context, inst):next
                 )*
             )

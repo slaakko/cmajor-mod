@@ -1,0 +1,16 @@
+0x0000021e311295b0 {backend=masm (3 '\x3') name=U"System.Core" filePath="C:/work/cmajor-mod/cmajor/system/System.Core/System.Core.cmp" ...}
+0x0000021e3115c620 {backend=masm (3 '\x3') name=U"System.Runtime" filePath="C:/work/cmajor-mod/cmajor/system/System.Runtime/System.Runtime.cmp" ...}
+0x0000021e31129100 {backend=masm (3 '\x3') name=U"System.Base" filePath="C:/work/cmajor-mod/cmajor/system/System.Base/System.Base.cmp" ...}
+0x0000021e3115b2e0 {backend=masm (3 '\x3') name=U"System.Lex" filePath="C:/work/cmajor-mod/cmajor/system/System.Lex/System.Lex.cmp" ...}
+0x0000021e3115de30 {backend=masm (3 '\x3') name=U"System.Net.Sockets" filePath="C:/work/cmajor-mod/cmajor/system/System.Net.Sockets/System.Net.Sockets.cmp" ...}
+0x0000021e3115b7b0 {backend=masm (3 '\x3') name=U"System.Parsing" filePath="C:/work/cmajor-mod/cmajor/system/System.Parsing/System.Parsing.cmp" ...}
+0x0000021e3115d490 {backend=masm (3 '\x3') name=U"System.IO.Compression" filePath="C:/work/cmajor-mod/cmajor/system/System.IO.Compression/System.IO.Compression.cmp" ...}
+0x0000021e3115c150 {backend=masm (3 '\x3') name=U"System.Xml" filePath="C:/work/cmajor-mod/cmajor/system/System.Xml/System.Xml.cmp" ...}
+0x0000021e3115cfc0 {backend=masm (3 '\x3') name=U"System.Dom" filePath="C:/work/cmajor-mod/cmajor/system/System.Dom/System.Dom.cmp" ...}
+0x0000021e3115d960 {backend=masm (3 '\x3') name=U"System.Json" filePath="C:/work/cmajor-mod/cmajor/system/System.Json/System.Json.cmp" ...}
+0x0000021e3115e300 {backend=masm (3 '\x3') name=U"System.RegularExpressions" filePath="C:/work/cmajor-mod/cmajor/system/System.RegularExpressions/System.RegularExpressions.cmp" ...}
+0x0000021e3115bc80 {backend=masm (3 '\x3') name=U"System.XPath" filePath="C:/work/cmajor-mod/cmajor/system/System.XPath/System.XPath.cmp" ...}
+0x0000021e3115caf0 {backend=masm (3 '\x3') name=U"System.Xml.Serialization" filePath="C:/work/cmajor-mod/cmajor/system/System.Xml.Serialization/System.Xml.Serialization.cmp" ...}
+0x0000021e31120170 {backend=masm (3 '\x3') name=U"System" filePath="C:/work/cmajor-mod/cmajor/system/System/System.cmp" ...}
+0x0000021e3115a940 {backend=masm (3 '\x3') name=U"System.Windows" filePath="C:/work/cmajor-mod/cmajor/system/System.Windows/System.Windows.cmp" ...}
+0x0000021e3115ae10 {backend=masm (3 '\x3') name=U"System.Windows.Install" filePath="C:/work/cmajor-mod/cmajor/system/System.Windows.Install/System.Windows.Install.cmp" ...}

@@ -21,8 +21,9 @@ namespace binder
 
     public abstract class BoundExpression : BoundNode
     {
-        public BoundExpression(const System.Lex.Span& span_, BoundNodeKind kind_, TypeSymbol* type_) : base(span_, kind_), type(type_), flags(BoundExpressionFlags.none)
+        public BoundExpression(const System.Lex.Span& span_, BoundNodeKind kind_, TypeSymbol* type_) : base(span_, kind_), flags(BoundExpressionFlags.none)
         {
+            SetType(type_);
         }
         public abstract BoundExpression* Clone() const;
         public virtual bool IsComplete() const
@@ -40,10 +41,6 @@ namespace binder
         public virtual FunctionSymbol* GetFunctionSymbol() const
         {
             return null;
-        }
-        public inline TypeSymbol* Type() const
-        {
-            return type;
         }
         public virtual string TypeString() const
         {
@@ -66,7 +63,6 @@ namespace binder
             int errorId = MakeError("cannot convert argument to value", node->GetFullSpan());
             return Result<UniquePtr<Value>>(ErrorId(errorId));
         }
-        private TypeSymbol* type;
         private BoundExpressionFlags flags;
     }
 
@@ -200,7 +196,8 @@ namespace binder
             {
                 Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
                 if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
-                emitter.Stack().Push(irObjectResult.Value());
+                intermediate.Value* irObject = irObjectResult.Value();
+                emitter.Stack().Push(irObject);
             }
             else if (GetFlag(flags, OperationFlags.deref))
             {
@@ -319,7 +316,10 @@ namespace binder
                         if (loadResult.Error()) return loadResult;
                     }
                 }
-                emitter.Stack().Push(classType->StaticObject(emitter, false));
+                Result<intermediate.Value*> staticObjectResult = classType->StaticObject(emitter, false);
+                if (staticObjectResult.Error()) return Result<bool>(ErrorId(staticObjectResult.GetErrorId()));
+                intermediate.Value* staticObject = staticObjectResult.Value();
+                emitter.Stack().Push(staticObject);
             }
             else
             {
@@ -382,7 +382,10 @@ namespace binder
                             if (loadResult.Error()) return loadResult;
                         }
                     }
-                    emitter.Stack().Push(classType->StaticObject(emitter, false));
+                    Result<intermediate.Value*> staticObjectResult = classType->StaticObject(emitter, false);
+                    if (staticObjectResult.Error()) return Result<bool>(ErrorId(staticObjectResult.GetErrorId()));
+                    intermediate.Value* staticObject = staticObjectResult.Value();
+                    emitter.Stack().Push(staticObject);
                 }
                 else
                 {
@@ -567,6 +570,14 @@ namespace binder
         [nodiscard]
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
         {
+            if (constantSymbol->GetValue()->IsArrayValue() && GetFlag(flags, OperationFlags.addr))
+            {
+                Result<intermediate.Value*> irValueResult = constantSymbol->ArrayIrObject(emitter, false);
+                if (irValueResult.Error()) return Result<bool>(ErrorId(irValueResult.GetErrorId()));
+                intermediate.Value* irValue = irValueResult.Value();
+                emitter.Stack().Push(irValue);
+                return Result<bool>(true);
+            }
             if (GetFlag(flags, OperationFlags.addr))
             {
                 int errorId = MakeError("cannot take address of a constant", FullSpan());
@@ -692,6 +703,7 @@ namespace binder
                 Result<intermediate.Value*> irValueResult = value->IrValue(emitter);
                 if (irValueResult.Error()) return Result<bool>(ErrorId(irValueResult.GetErrorId()));
                 intermediate.Value* irValue = irValueResult.Value();
+                #assert(irValue->GetType() != null);
                 emitter.Stack().Push(irValue);
             }
             return Result<bool>(true);
@@ -708,7 +720,7 @@ namespace binder
         }
         public override Result<UniquePtr<Value>> ToValue(Node* node) const
         {
-            return Result<UniquePtr<Value>>(value->Clone());
+            return Result<UniquePtr<Value>>(UniquePtr<Value>(value->Clone()));
         }
         private UniquePtr<Value> value;
     }
@@ -1059,17 +1071,34 @@ namespace binder
         [nodiscard]
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
         {
+            if (GetFlag(flags, OperationFlags.addr))
+            {
+                if (functionSymbol->IsArrayElementAccess())
+                {
+                    List<IrObject*> args;
+                    for (const auto& arg : arguments)
+                    {
+                        IrObject* irArg = arg.Get();
+                        args.Add(irArg);
+                    }
+                    Result<bool> callResult = functionSymbol->GenerateCall(emitter, args, flags);
+                    if (callResult.Error()) return callResult;
+                }
+                else
+                {
+                    int errorId = MakeError("cannot take address of a function call", FullSpan(), functionSymbol->FullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
             List<IrObject*> args;
             for (const auto& arg : arguments)
             {
                 IrObject* irArg = arg.Get();
-                irArg->SetType(arg->Type());
                 args.Add(irArg);
             }
             for (const auto& temporary : temporaries)
             {
                 IrObject* irTemporary = temporary.Get();
-                irTemporary->SetType(temporary->Type());
                 args.Add(irTemporary);
             }
             OperationFlags callFlags = cast<OperationFlags>(flags & OperationFlags.functionCallFlags);
@@ -1106,7 +1135,6 @@ namespace binder
             for (const auto& arg : arguments)
             {
                 IrObject* irArg = arg.Get();
-                irArg->SetType(arg->Type());
                 args.Add(irArg);
             }
             OperationFlags callFlags = OperationFlags.none;
@@ -1114,29 +1142,39 @@ namespace binder
             {
                 callFlags = cast<OperationFlags>(callFlags | OperationFlags.virtualCall);
             }
-            Result<bool> callResult = functionSymbol->GenerateCall(emitter, args, callFlags);
-            if (callResult.Error()) return Result<bool>(ErrorId(callResult.GetErrorId()));
-            intermediate.Value* ptr = emitter.Stack().Pop();
-            if (GetFlag(flags, OperationFlags.leaveFirstArg))
+            if (functionSymbol->IsArrayElementAccess())
             {
-                emitter.SaveObjectPointer(ptr);
-            }
-            if (GetFlag(flags, OperationFlags.deref) || GetFlag(BoundExpressionFlags.deref))
-            {
-                byte n = GetDerefCount(flags);
-                for (byte i = 1u; i < n; ++i)
-                {
-                    Result<intermediate.Value*> loadResult = emitter.CreateLoad(ptr);
-                    if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));;
-                    ptr = loadResult.Value();
-                }
-                Result<bool> storeResult = emitter.CreateStore(value, ptr);
-                if (storeResult.Error()) return storeResult;
+                Result<bool> callResult = functionSymbol->GenerateCall(emitter, args, cast<OperationFlags>(callFlags | OperationFlags.addr));
+                if (callResult.Error()) return Result<bool>(ErrorId(callResult.GetErrorId()));
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                emitter.CreateStore(value, ptr);
             }
             else
             {
-                Result<bool> storeResult = emitter.CreateStore(value, ptr);
-                if (storeResult.Error()) return storeResult;
+                Result<bool> callResult = functionSymbol->GenerateCall(emitter, args, callFlags);
+                if (callResult.Error()) return Result<bool>(ErrorId(callResult.GetErrorId()));
+                intermediate.Value* ptr = emitter.Stack().Pop();
+                if (GetFlag(flags, OperationFlags.leaveFirstArg))
+                {
+                    emitter.SaveObjectPointer(ptr);
+                }
+                if (GetFlag(flags, OperationFlags.deref) || GetFlag(BoundExpressionFlags.deref))
+                {
+                    byte n = GetDerefCount(flags);
+                    for (byte i = 1u; i < n; ++i)
+                    {
+                        Result<intermediate.Value*> loadResult = emitter.CreateLoad(ptr);
+                        if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));;
+                        ptr = loadResult.Value();
+                    }
+                    Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                    if (storeResult.Error()) return storeResult;
+                }
+                else
+                {
+                    Result<bool> storeResult = emitter.CreateStore(value, ptr);
+                    if (storeResult.Error()) return storeResult;
+                }
             }
             return Result<bool>(true);
         }
@@ -1164,6 +1202,7 @@ namespace binder
         }
         public override bool IsLvalueExpression() const
         {
+            if (functionSymbol->IsArrayElementAccess()) return true;
             TypeSymbol* returnType = functionSymbol->ReturnType();
             if (returnType != null && !returnType->IsVoidTypeSymbol())
             {
@@ -1220,7 +1259,6 @@ namespace binder
             for (const auto& arg : arguments)
             {
                 IrObject* irArg = arg.Get();
-                irArg->SetType(arg->Type());
                 args.Add(irArg);
             }
             OperationFlags callFlags = cast<OperationFlags>(flags & OperationFlags.functionCallFlags);
@@ -1253,7 +1291,6 @@ namespace binder
             for (const auto& arg : arguments)
             {
                 IrObject* irArg = arg.Get();
-                irArg->SetType(arg->Type());
                 args.Add(irArg);
             }
             Result<bool> callResult = delegateTypeSymbol->GenerateCall(emitter, args, OperationFlags.none);
@@ -1334,7 +1371,6 @@ namespace binder
             for (const auto& arg : arguments)
             {
                 IrObject* irArg = arg.Get();
-                irArg->SetType(arg->Type());
                 args.Add(irArg);
             }
             OperationFlags callFlags = cast<OperationFlags>(flags & OperationFlags.functionCallFlags);
@@ -1367,7 +1403,6 @@ namespace binder
             for (const auto& arg : arguments)
             {
                 IrObject* irArg = arg.Get();
-                irArg->SetType(arg->Type());
                 args.Add(irArg);
             }
             Result<bool> callResult = classDelegateTypeSymbol->GenerateCall(emitter, args, OperationFlags.none);
@@ -1533,6 +1568,10 @@ namespace binder
         {
             return true;
         }
+        public override bool IsBoundConstructAndReturnTemporaryExpression() const
+        {
+            return true;
+        }
         private UniquePtr<BoundExpression> constructorCall;
         private UniquePtr<BoundExpression> boundTemporary;
     }
@@ -1623,8 +1662,6 @@ namespace binder
             for (const UniquePtr<BoundLocalVariable>& temporary : temporaries)
             {
                 irObjects.Add(temporary.Get());
-                IrObject* irObject = irObjects.Back();
-                irObject->SetType(temporary->Type());
             }
             Result<bool> callResult = conversionFn->GenerateCall(emitter, irObjects, OperationFlags.none);
             if (callResult.Error()) return callResult;
@@ -1651,7 +1688,7 @@ namespace binder
         {
             Result<UniquePtr<Value>> valueResult = sourceExpr->ToValue(node);
             if (valueResult.Error()) return valueResult;
-            Value*value = valueResult.Value().Get();
+            Value* value = valueResult.Value().Get();
             return conversionFn->ConvertValue(value, node);
         }
         private UniquePtr<BoundExpression> sourceExpr;
@@ -1693,7 +1730,10 @@ namespace binder
             intermediate.Value* thisPtr = emitter.Stack().Pop();
             TypeSymbol* exprType = expr->Type();
             #assert(exprType->IsPointerType());
-            TypeSymbol* leftType = exprType->RemovePointer(emitter.GetSymbolsContext());
+            Result<TypeSymbol*> baseTypResult = exprType->RemovePointer(emitter.GetSymbolsContext());
+            if (baseTypResult.Error()) return Result<bool>(ErrorId(baseTypResult.GetErrorId()));
+            TypeSymbol* baseType = baseTypResult.Value();
+            TypeSymbol* leftType = baseType;
             #assert(leftType->IsClassTypeSymbol());
             ClassTypeSymbol* leftClassType = cast<ClassTypeSymbol*>(leftType);
             Result<ClassTypeSymbol*> leftVmtPtrHolderClassResult = leftClassType->VmtPtrHolderClass();
@@ -1701,7 +1741,9 @@ namespace binder
             ClassTypeSymbol* leftVmtPtrHolderClass = leftVmtPtrHolderClassResult.Value();
             if (leftClassType != leftVmtPtrHolderClass)
             {
-                TypeSymbol* leftVmtPtrType = leftVmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext());
+                Result<TypeSymbol*> ptrTypeResult = leftVmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext());
+                if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                TypeSymbol* leftVmtPtrType = ptrTypeResult.Value();
                 Result<intermediate.Type*> leftVmtPtrIrTypeResult = leftVmtPtrType->IrType(emitter);
                 if (leftVmtPtrIrTypeResult.Error()) return Result<bool>(ErrorId(leftVmtPtrIrTypeResult.GetErrorId()));
                 intermediate.Type* leftVmtPtrIrType = leftVmtPtrIrTypeResult.Value();
@@ -1730,7 +1772,7 @@ namespace binder
             Result<intermediate.Function*> isFunctionResult = emitter.GetOrInsertFunction("RtmIs", isFunctionType);
             if (isFunctionResult.Error()) return Result<bool>(ErrorId(isFunctionResult.GetErrorId()));
             intermediate.Function* isFunction = isFunctionResult.Value();
-            intermediate.Value* callee = emitter.MakeSymbolValue(isFunctionType, isFunction->ToString());
+            intermediate.Value* callee = emitter.MakeSymbolValue(isFunction->GetType(), isFunction->ToString());
             List<intermediate.Value*> args;
             Result<intermediate.Value*> leftResult = emitter.CreateBitcast(leftClassIdPtr, emitter.GetVoidPtrType());
             if (leftResult.Error()) return Result<bool>(ErrorId(leftResult.GetErrorId()));
@@ -1797,7 +1839,10 @@ namespace binder
             intermediate.Value* thisPtr = emitter.Stack().Pop();
             TypeSymbol* exprType = expr->Type();
             #assert(exprType->IsPointerType());
-            TypeSymbol* leftType = exprType->RemovePointer(emitter.GetSymbolsContext());
+            Result<TypeSymbol*> baseTypResult = exprType->RemovePointer(emitter.GetSymbolsContext());
+            if (baseTypResult.Error()) return Result<bool>(ErrorId(baseTypResult.GetErrorId()));
+            TypeSymbol* baseType = baseTypResult.Value();
+            TypeSymbol* leftType = baseType;
             #assert(leftType->IsClassTypeSymbol());
             ClassTypeSymbol* leftClassType = cast<ClassTypeSymbol*>(leftType);
             Result<ClassTypeSymbol*> leftVmtPtrHolderClassResult = leftClassType->VmtPtrHolderClass();
@@ -1805,7 +1850,10 @@ namespace binder
             ClassTypeSymbol* leftVmtPtrHolderClass = leftVmtPtrHolderClassResult.Value();
             if (leftClassType != leftVmtPtrHolderClass)
             {
-                Result<intermediate.Type*> leftVmtPtrHolderClassIrTypeResult = leftVmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+                Result<TypeSymbol*> ptrTypeResult = leftVmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext());
+                if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                TypeSymbol* leftVmtPtrType = ptrTypeResult.Value();
+                Result<intermediate.Type*> leftVmtPtrHolderClassIrTypeResult = leftVmtPtrType->IrType(emitter);
                 if (leftVmtPtrHolderClassIrTypeResult.Error()) return Result<bool>(ErrorId(leftVmtPtrHolderClassIrTypeResult.GetErrorId()));
                 intermediate.Type* leftVmtPtrHolderClassIrType = leftVmtPtrHolderClassIrTypeResult.Value();
                 Result<intermediate.Value*> castResult = emitter.CreateBitcast(thisPtr, leftVmtPtrHolderClassIrType);
@@ -1833,7 +1881,7 @@ namespace binder
             Result<intermediate.Function*> isFunctionResult = emitter.GetOrInsertFunction("RtmIs", isFunctionType);
             if (isFunctionResult.Error()) return Result<bool>(ErrorId(isFunctionResult.GetErrorId()));
             intermediate.Function* isFunction = isFunctionResult.Value();
-            intermediate.Value* callee = emitter.MakeSymbolValue(isFunctionType, isFunction->ToString());
+            intermediate.Value* callee = emitter.MakeSymbolValue(isFunction->GetType(), isFunction->ToString());
             List<intermediate.Value*> args;
             Result<intermediate.Value*> leftResult = emitter.CreateBitcast(leftClassIdPtr, emitter.GetVoidPtrType());
             if (leftResult.Error()) return Result<bool>(ErrorId(leftResult.GetErrorId()));
@@ -1850,7 +1898,10 @@ namespace binder
             Result<bool> branchResult = emitter.CreateBranch(isResult, trueBlock, falseBlock);
             if (branchResult.Error()) return branchResult;
             emitter.SetCurrentBasicBlock(trueBlock);
-            Result<intermediate.Type*> rightClassTypeIrTypeResult = rightClassType->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+            Result<TypeSymbol*> rightPtrTypeResult = rightClassType->AddPointer(emitter.GetSymbolsContext());
+            if (rightPtrTypeResult.Error()) return Result<bool>(ErrorId(rightPtrTypeResult.GetErrorId()));
+            TypeSymbol* rightPtrType = rightPtrTypeResult.Value();
+            Result<intermediate.Type*> rightClassTypeIrTypeResult = rightPtrType->IrType(emitter);
             if (rightClassTypeIrTypeResult.Error()) return Result<bool>(ErrorId(rightClassTypeIrTypeResult.GetErrorId()));
             intermediate.Type* rightClassTypeIrType = rightClassTypeIrTypeResult.Value();
             Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(thisPtr, rightClassTypeIrType);
@@ -1918,7 +1969,9 @@ namespace binder
             intermediate.Value* thisPtr = emitter.Stack().Pop();
             TypeSymbol* classPtrType = classPtr->Type();
             #assert(classPtrType->IsPointerType());
-            TypeSymbol* type = classPtrType->RemovePointer(emitter.GetSymbolsContext());
+            Result<TypeSymbol*> baseTypeResult = classPtrType->BaseType();
+            if (baseTypeResult.Error()) return Result<bool>(ErrorId(baseTypeResult.GetErrorId()));
+            TypeSymbol* type = baseTypeResult.Value();
             #assert(type->IsClassTypeSymbol());
             ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(type);
             Result<ClassTypeSymbol*> vmtPtrHolderClassResult = classType->VmtPtrHolderClass();
@@ -1926,7 +1979,10 @@ namespace binder
             ClassTypeSymbol* vmtPtrHolderClass = vmtPtrHolderClassResult.Value();
             if (classType != vmtPtrHolderClass)
             {
-                Result<intermediate.Type*> vmtPtrHolderClassIrTypeResult = vmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext())->IrType(emitter);
+                Result<TypeSymbol*> ptrTypeResult = vmtPtrHolderClass->AddPointer(emitter.GetSymbolsContext());
+                if (ptrTypeResult.Error()) return Result<bool>(ErrorId(ptrTypeResult.GetErrorId()));
+                TypeSymbol* vmtPtrType = ptrTypeResult.Value();
+                Result<intermediate.Type*> vmtPtrHolderClassIrTypeResult = vmtPtrType->IrType(emitter);
                 if (vmtPtrHolderClassIrTypeResult.Error()) return Result<bool>(ErrorId(vmtPtrHolderClassIrTypeResult.GetErrorId()));
                 intermediate.Type* vmtPtrHolderClassIrType = vmtPtrHolderClassIrTypeResult.Value();
                 Result<intermediate.Value*> castResult = emitter.CreateBitcast(thisPtr, vmtPtrHolderClassIrType);
@@ -1948,7 +2004,7 @@ namespace binder
             Result<intermediate.Function*> classNameFunctionResult = emitter.GetOrInsertFunction("RtmClassName", classNameFunctionType);
             if (classNameFunctionResult.Error()) return Result<bool>(ErrorId(classNameFunctionResult.GetErrorId()));
             intermediate.Function* classNameFunction = classNameFunctionResult.Value();
-            intermediate.Value* callee = emitter.MakeSymbolValue(classNameFunctionType, classNameFunction->ToString());
+            intermediate.Value* callee = emitter.MakeSymbolValue(classNameFunction->GetType(), classNameFunction->ToString());
             List<intermediate.Value*> args;
             Result<intermediate.Value*> bitcastResult = emitter.CreateBitcast(classIdPtr, emitter.GetVoidPtrType());
             if (bitcastResult.Error()) return Result<bool>(ErrorId(bitcastResult.GetErrorId()));
@@ -2058,7 +2114,7 @@ namespace binder
             Result<intermediate.Function*> functionResult = emitter.GetOrInsertFunction(instantiatedName, functionType);
             if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
             intermediate.Function* function = functionResult.Value();
-            intermediate.Value* symbol = emitter.MakeSymbolValue(functionType, function->ToString());
+            intermediate.Value* symbol = emitter.MakeSymbolValue(function->GetType(), function->ToString());
             emitter.Stack().Push(symbol);
             return Result<bool>(true);
         }

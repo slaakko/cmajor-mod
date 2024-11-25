@@ -75,6 +75,21 @@ namespace symbols
             if (result.Error()) return Result<Symbol*>(ErrorId(result.GetErrorId()));
             return Result<Symbol*>(symbol);
         }
+        public Result<Value*> ReadValue()
+        {
+            Result<byte> kindResult = GetBinaryReader().ReadByte();
+            if (kindResult.Error()) return Result<Value*>(ErrorId(kindResult.GetErrorId()));
+            ValueKind kind = cast<ValueKind>(kindResult.Value());
+            Result<System.Lex.Span> spanResult = GetAstReader().ReadSpan();
+            if (spanResult.Error()) return Result<Value*>(ErrorId(spanResult.GetErrorId()));
+            System.Lex.Span span = spanResult.Value();
+            Result<Value*> valueResult = CreateValue(kind, span);
+            if (valueResult.Error()) return valueResult;
+            Value* value = valueResult.Value();
+            Result<bool> result = value->Read(*this);
+            if (result.Error()) return Result<Value*>(ErrorId(result.GetErrorId()));
+            return Result<Value*>(value);
+        }
         public Result<ParameterSymbol*> ReadParameterSymbol(Symbol* parent)
         {
             Result<Symbol*> symbolResult = ReadSymbol(parent);
@@ -135,20 +150,29 @@ namespace symbols
                 return Result<ClassTemplateSpecializationSymbol*>(ErrorId(errorId));
             }
         }
-        public void AddToResolutionList(Symbol* symbol)
+        public void AddToSymbolResolutionList(Symbol* symbol)
         {
-            resolutionList.Add(symbol);
+            symbolResolutionList.Add(symbol);
         }
-        public const List<Symbol*>& ResolutionList() const
+        public const List<Symbol*>& SymbolResolutionList() const
         {
-            return resolutionList;
+            return symbolResolutionList;
+        }
+        public void AddToValueResolutionList(Value* value)
+        {
+            valueResolutionList.Add(value);
+        }
+        public const List<Value*>& ValueResolutionList() const
+        {
+            return valueResolutionList;
         }
         private AstReader astReader;
         private Module* module;
         private Module* rootModule;
         private SymbolTable* symbolTable;
         private SymbolsContext* context;
-        private List<Symbol*> resolutionList;
+        private List<Symbol*> symbolResolutionList;
+        private List<Value*> valueResolutionList;
     }
 }
 

@@ -190,5 +190,8 @@ namespace binder
         public virtual void Visit(BoundConcept& boundConcept)
         {
         }
+        public virtual void Visit(BoundDestroyTemporariesStatement& boundDestroyTemporariesStatement)
+        {
+        }
     }
 }

@@ -1,0 +1,3115 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Windows.API;
+
+namespace System.Windows
+{
+    public class delegate void PaintEventHandler(PaintEventArgs& paintEventArgs);
+    public class delegate void MouseEnterEventHandler(EnterLeaveEventArgs& args);
+    public class delegate void MouseEventHandler(MouseEventArgs& mouseEventargs);
+    public class delegate void MouseLeaveEventHandler(EnterLeaveEventArgs& args);
+    public class delegate void MouseWheelEventHandler(MouseWheelEventArgs& mouseWheelEventArgs);
+    public class delegate void KeyPressEventHandler(KeyPressEventArgs& keyPressEventArgs);
+    public class delegate void KeyEventHandler(KeyEventArgs& keyEventArgs);
+    public class delegate void ClickEventHandler(ClickEventArgs& clickEventArgs);
+    public class delegate void CreatedEventHandler();
+    public class delegate void DestroyedEventHandler();
+    public class delegate void ShownEventHandler();
+    public class delegate void EnabledChangedEventHandler();
+    public class delegate void VisibleChangedEventHandler();
+    public class delegate void SizeChangedEventHandler(SizeChangedEventArgs& args);
+    public class delegate void SizeChangingEventHandler(SizeChangingEventArgs& args);
+    public class delegate void ChildSizeChangedEventHandler(ControlEventArgs& controlEventArgs);
+    public class delegate void LocationChangedEventHandler();
+    public class delegate void ContentChangedEventHandler();
+    public class delegate void ChildContentChangedEventHandler(ControlEventArgs& controlEventArgs);
+    public class delegate void ContentLocationChangedEventHandler();
+    public class delegate void ChildContentLocationChangedEventHandler(ControlEventArgs& controlEventArgs);
+    public class delegate void ContentSizeChangedEventHandler();
+    public class delegate void ChildContentSizeChangedEventHandler(ControlEventArgs& controlEventArgs);
+    public class delegate void TextChangedEventHandler();
+    public class delegate void HScrollEventHandler(ScrollEventArgs& scrollEventArgs);
+    public class delegate void VScrollEventHandler(ScrollEventArgs& scrollEventArgs);
+    public class delegate void TimerEventHandler(TimerEventArgs& timerEventArgs);
+    public class delegate void GotFocusEventHandler();
+    public class delegate void LostFocusEventHandler();
+    public class delegate void ChildGotFocusEventHandler(ControlEventArgs& controlEventArgs);
+    public class delegate void ChildLostFocusEventHandler(ControlEventArgs& controlEventArgs);
+    public class delegate void ControlEventHandler(ControlEventArgs& args);
+    public class delegate void RightClickEventHandler(RightClickEventArgs& args);
+    public class delegate void ClipboardUpdateEventHandler();
+
+    public inline WindowClassStyle DefaultWindowClassStyle()
+    {
+        return WindowClassStyle.CS_DEFAULT;
+    }
+
+    public inline WindowClassStyle DoubleClickWindowClassStyle()
+    {
+        return WindowClassStyle.CS_DBLCLKS;
+    }
+
+    public inline WindowStyle DefaultChildWindowStyle()
+    {
+        return cast<WindowStyle>(WindowStyle.WS_CHILD | WindowStyle.WS_VISIBLE | WindowStyle.WS_CLIPSIBLINGS);
+    }
+
+    public inline WindowStyle HiddenChildWindowStyle()
+    {
+        return cast<WindowStyle>(WindowStyle.WS_CHILD | WindowStyle.WS_CLIPSIBLINGS);
+    }
+
+    public inline WindowStyle DialogWindowStyle()
+    {
+        return cast<WindowStyle>(WindowStyle.WS_CAPTION | WindowStyle.WS_DLGFRAME | WindowStyle.WS_CLIPSIBLINGS);
+    }
+
+    public inline ExtendedWindowStyle DefaultExtendedWindowStyle()
+    {
+        return ExtendedWindowStyle.WS_EX_DEFAULT;
+    }
+
+    public inline SystemColor DefaultWindowClassBackgroundColor()
+    {
+        return SystemColor.COLOR_WINDOW;
+    }
+
+    public Color DefaultControlBackgroundColor()
+    {
+        return GetSystemColor(SystemColor.COLOR_MENU);
+    }
+
+    public const uint mouseHoverTimerId = 2u;
+
+    public uint DefaultMouseHoverMs()
+    {
+        return 300u;
+    }
+
+    public Size DefaultMouseHoverRectSize()
+    {
+        return Size(8, 8);
+    }
+
+    public class ControlCreateParams
+    {
+        public ControlCreateParams() :
+            windowClassName(),
+            windowClassStyle(DefaultWindowClassStyle()),
+            windowStyle(DefaultChildWindowStyle()),
+            extendedWindowStyle(DefaultExtendedWindowStyle()),
+            windowClassBackgroundColor(DefaultWindowClassBackgroundColor()),
+            backgroundColor(DefaultControlBackgroundColor()),
+            text(),
+            location(),
+            size(),
+            anchors(cast<Anchors>(Anchors.left | Anchors.top)),
+            dock(Dock.none)
+        {
+        }
+        public ControlCreateParams& Defaults()
+        {
+            return *this;
+        }
+        public ControlCreateParams& SetWindowClassName(const string& windowClassName_)
+        {
+            windowClassName = windowClassName_;
+            return *this;
+        }
+        public ControlCreateParams& SetWindowClassStyle(WindowClassStyle windowClassStyle_)
+        {
+            windowClassStyle = windowClassStyle_;
+            return *this;
+        }
+        public ControlCreateParams& SetWindowStyle(WindowStyle windowStyle_)
+        {
+            windowStyle = windowStyle_;
+            return *this;
+        }
+        public ControlCreateParams& SetExtendedWindowStyle(ExtendedWindowStyle extendedWindowStyle_)
+        {
+            extendedWindowStyle = extendedWindowStyle_;
+            return *this;
+        }
+        public ControlCreateParams& SetWindowClassBackgroundColor(SystemColor systemColor)
+        {
+            windowClassBackgroundColor = systemColor;
+            return *this;
+        }
+        public ControlCreateParams& SetBackgroundColor(const Color& backgroundColor_)
+        {
+            backgroundColor = backgroundColor_;
+            return *this;
+        }
+        public ControlCreateParams& SetText(const string& text_)
+        {
+            text = text_;
+            return *this;
+        }
+        public ControlCreateParams& SetLocation(const Point& location_)
+        {
+            location = location_;
+            return *this;
+        }
+        public ControlCreateParams& SetSize(const Size& size_)
+        {
+            size = size_;
+            return *this;
+        }
+        public ControlCreateParams& SetDock(Dock dock_)
+        {
+            dock = dock_;
+            return *this;
+        }
+        public ControlCreateParams& SetAnchors(Anchors anchors_)
+        {
+            anchors = anchors_;
+            return *this;
+        }
+        public string windowClassName;
+        public WindowClassStyle windowClassStyle;
+        public WindowStyle windowStyle;
+        public ExtendedWindowStyle extendedWindowStyle;
+        public SystemColor windowClassBackgroundColor;
+        public Color backgroundColor;
+        public string text;
+        public Point location;
+        public Size size;
+        public Dock dock;
+        public Anchors anchors;
+    }
+
+    public abstract class Control : Component
+    {
+        private enum Flags : short
+        {
+            none = 0, mouseInClient = 1 << 0, lbuttonPressed = 1 << 1, menuWantsKeys = 1 << 2, keyDownHandled = 1 << 3, focused = 1 << 4,
+            caretCreated = 1 << 5, caretShown = 1 << 6, disabled = 1 << 7, hidden = 1 << 8, tabStop = 1 << 9, baseOnCreatedCalled = 1 << 10,
+            mouseHoverTimerStarted = 1 << 11, doubleBuffered = 1 << 12, scrollSubject = 1 << 13
+        }
+        public Control(const string& windowClassName_, WindowClassStyle windowClassStyle_, WindowStyle style_, ExtendedWindowStyle exStyle_,
+            const Color& backgroundColor_, const string& text_, const Point& location_, const Size& size_, Dock dock_, Anchors anchors_) :
+            windowClassName(windowClassName_), windowClassStyle(windowClassStyle_), style(style_), exStyle(exStyle_),
+            windowClassBackgroundColor(DefaultWindowClassBackgroundColor()), backgroundColor(backgroundColor_), handle(null), text(text_),
+            location(location_), size(size_), contentLocation(0, 0), contentSize(), dock(dock_), anchors(anchors_), flags(Flags.none),
+            arrowCursor(), caretShowCount(0), font(null), fontHandle(null), originalWndProc(null),
+            mouseHoverMs(0u), mouseHoverRectSize(DefaultMouseHoverRectSize())
+        {
+            Init();
+        }
+        public Control(ControlCreateParams& createParams) :
+            windowClassName(createParams.windowClassName), windowClassStyle(createParams.windowClassStyle), style(createParams.windowStyle),
+            exStyle(createParams.extendedWindowStyle), windowClassBackgroundColor(createParams.windowClassBackgroundColor),
+            backgroundColor(createParams.backgroundColor), handle(null), text(createParams.text), location(createParams.location),
+            size(createParams.size), contentLocation(0, 0), contentSize(), dock(createParams.dock), anchors(createParams.anchors), flags(Flags.none),
+            arrowCursor(), caretShowCount(0), font(null), fontHandle(null), originalWndProc(null),
+            mouseHoverMs(0u), mouseHoverRectSize(DefaultMouseHoverRectSize())
+        {
+            Init();
+        }
+        private void Init()
+        {
+            auto cursorResult = LoadStandardCursor(StandardCursorId.IDC_ARROW);
+            if (cursorResult.Error())
+            {
+                SetErrorId(cursorResult.GetErrorId());
+                return;
+            }
+            arrowCursor = Rvalue(cursorResult.Value());
+            if ((style & WindowStyle.WS_DISABLED) != 0)
+            {
+                SetDisabled();
+            }
+            if ((style & WindowStyle.WS_VISIBLE) == 0)
+            {
+                SetHidden();
+            }
+            if ((style & WindowStyle.WS_TABSTOP) != 0)
+            {
+                SetTabStop();
+            }
+            Application.Init();
+            if ((style & WindowStyle.WS_CHILD) == 0)
+            {
+                auto result = CreateWindow();
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+            }
+            SetScrollUnits(10, 10);
+        }
+        public ~Control()
+        {
+            if (handle != null)
+            {
+                Application.GetWindowManager().RemoveWindow(this);
+                WinDestroyWindow(handle);
+            }
+        }
+        protected Result<bool> CreateWindow()
+        {
+            return CreateWindowInternal();
+        }
+        public Control* ParentControl() const
+        {
+            Control* parentControl = null;
+            ComponentContainer* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null && (parent is Control*))
+                {
+                    parentControl = cast<Control*>(parent);
+                }
+            }
+            return parentControl;
+        }
+        [nodiscard]
+        public Result<string> ParentText() const
+        {
+            string parentText;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                auto handleResult = ToHexString(cast<ulong>(parentControl->Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<string>(ErrorId(handleResult.GetErrorId()));
+                }
+                const string& handleStr = handleResult.Value();
+                parentText = "parent:" + string(typename(*parentControl)) + "." + parentControl->Text() + ".parentHandle=" + handleStr;
+            }
+            return Result<string>(parentText);
+        }
+        internal void SetWindowCreateStyleFromFlags()
+        {
+            if (IsDisabled())
+            {
+                style = cast<WindowStyle>(style | WindowStyle.WS_DISABLED);
+            }
+            else
+            {
+                style = cast<WindowStyle>(style & ~WindowStyle.WS_DISABLED);
+            }
+            if (Hidden())
+            {
+                style = cast<WindowStyle>(style & ~WindowStyle.WS_VISIBLE);
+            }
+            else
+            {
+                style = cast<WindowStyle>(style | WindowStyle.WS_VISIBLE);
+            }
+        }
+        internal Result<bool> CreateWindowInternal()
+        {
+            if (handle != null) return Result<bool>(true);
+            Control* parentControl = ParentControl();
+            SetWindowCreateStyleFromFlags();
+            if (Application.GetWindowManager().IsSystemClassName(windowClassName.Chars()))
+            {
+                auto handleResult = CreateWindowByClassName(windowClassName.Chars(), text.Chars(), style, exStyle, location, size, parentControl);
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                else
+                {
+                    handle = handleResult.Value();
+                }
+            }
+            else
+            {
+                Result<ushort> windowClassResult = Application.GetWindowManager().RegisterWindowClass(
+                    windowClassName.Chars(), windowClassStyle, windowClassBackgroundColor);
+                if (windowClassResult.Error())
+                {
+                    return Result<bool>(ErrorId(windowClassResult.GetErrorId()));
+                }
+                ushort windowClass = windowClassResult.Value();
+                auto handleResult = CreateWindowByClassAtom(windowClass, text.Chars(), style, exStyle, location, size, parentControl);
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                else
+                {
+                    handle = handleResult.Value();
+                }
+            }
+            if (!createList.IsEmpty())
+            {
+                for (Control* childControl : createList)
+                {
+                    auto createResult = childControl->CreateWindowInternal();
+                    if (createResult.Error())
+                    {
+                        return Result<bool>(ErrorId(createResult.GetErrorId()));
+                    }
+                }
+                createList.Clear();
+            }
+            Application.GetWindowManager().AddWindow(this);
+            auto createResult = OnCreated();
+            if (createResult.Error())
+            {
+                return Result<bool>(ErrorId(createResult.GetErrorId()));
+            }
+            Result<WinRect> clientRectResult = GetClientRect();
+            if (clientRectResult.Error())
+            {
+                return Result<bool>(ErrorId(clientRectResult.GetErrorId()));
+            }
+            else
+            {
+                const WinRect& clientRect = clientRectResult.Value();
+                if ((style & WindowStyle.WS_CHILD) == 0)
+                {
+                    Result<WinRect> windowRectResult = GetWindowRect();
+                    if (windowRectResult.Error())
+                    {
+                        return Result<bool>(ErrorId(windowRectResult.GetErrorId()));
+                    }
+                    else
+                    {
+                        const WinRect& windowRect = windowRectResult.Value();
+                        location.x = windowRect.left;
+                        location.y = windowRect.top;
+                    }
+                }
+                size.w = clientRect.right - clientRect.left;
+                size.h = clientRect.bottom - clientRect.top;
+                if (parentControl != null && parentControl->createList.IsEmpty())
+                {
+                    auto result = DockWindow();
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        internal Result<bool> AddChildVisual(Control* child)
+        {
+            if (handle != null)
+            {
+                if (child->Handle() == null)
+                {
+                    auto createResult = child->CreateWindowInternal();
+                    if (createResult.Error())
+                    {
+                        return Result<bool>(ErrorId(createResult.GetErrorId()));
+                    }
+                }
+                else
+                {
+                    auto result = child->SetParentWindow(this);
+                    if (result.Error())
+                    {
+                        return result;
+                    }
+                }
+                if ((child->GetWindowStyle() & WindowStyle.WS_VISIBLE) != 0)
+                {
+                    auto result = child->Show();
+                    if (result.Error()) return result;
+                    child->Update();
+                }
+            }
+            else
+            {
+                createList.Add(child);
+            }
+            return Result<bool>(true);
+        }
+        public virtual ContainerControl* GetContainerControl() const
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                return parentControl->GetContainerControl();
+            }
+            return null;
+        }
+        public Window* GetWindow() const
+        {
+            Control* thisControl = this;
+            if (thisControl is Window*)
+            {
+                return cast<Window*>(this);
+            }
+            ComponentContainer* container = GetContainer();
+            if (container != null)
+            {
+                Component* parent = container->Parent();
+                if (parent != null)
+                {
+                    if (parent is Window*)
+                    {
+                        return cast<Window*>(parent);
+                    }
+                    else if (parent is Control*)
+                    {
+                        Control* control = cast<Control*>(parent);
+                        return control->GetWindow();
+                    }
+                }
+            }
+            return null;
+        }
+        [nodiscard]
+        internal Result<bool> SetParentWindow(Control* parentWindow)
+        {
+            auto result = SetParentWindow(handle, parentWindow->handle);
+            if (result.Error()) return result;
+            result = DockWindow();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        public inline bool IsEnabled() const
+        {
+            return !IsDisabled();
+        }
+        public void Enable()
+        {
+            if (IsDisabled())
+            {
+                ResetDisabled();
+                style = cast<WindowStyle>(style & ~WindowStyle.WS_DISABLED);
+                if (handle != null)
+                {
+                    EnableWindow(true);
+                }
+                OnEnabledChanged();
+            }
+        }
+        public void Disable()
+        {
+            if (!IsDisabled())
+            {
+                SetDisabled();
+                style = cast<WindowStyle>(style | WindowStyle.WS_DISABLED);
+                if (handle != null)
+                {
+                    EnableWindow(false);
+                }
+                OnEnabledChanged();
+            }
+        }
+        protected virtual void OnEnabledChanged()
+        {
+            enabledChangedEvent.Fire();
+        }
+        internal void EnableWindow(bool enable)
+        {
+            WinEnableWindow(handle, enable);
+        }
+        [nodiscard]
+        public Result<bool> BringToFront()
+        {
+            return BringWindowToTop(handle);
+        }
+        public Control* TopControl() const
+        {
+            void* topWindowHandle = GetTopWindow(handle);
+            if (topWindowHandle != null)
+            {
+                return Application.GetWindowManager().GetWindow(topWindowHandle);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public inline bool IsVisible() const
+        {
+            return !Hidden();
+        }
+        [nodiscard]
+        public Result<bool> Show()
+        {
+            if (Hidden())
+            {
+                ResetHidden();
+                style = cast<WindowStyle>(style | WindowStyle.WS_VISIBLE);
+                auto result = OnVisibleChanged();
+                if (result.Error()) return result;
+            }
+            if (handle != null)
+            {
+                auto result = ShowWindow(ShowCommand.SW_SHOW);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Hide()
+        {
+            if (handle != null)
+            {
+                auto result = ShowWindow(ShowCommand.SW_HIDE);
+                if (result.Error()) return result;
+            }
+            if (!Hidden())
+            {
+                SetHidden();
+                style = cast<WindowStyle>(style & ~WindowStyle.WS_VISIBLE);
+                auto result = OnVisibleChanged();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> ShowWindow(ShowCommand showCommand)
+        {
+            WinShowWindow(handle, showCommand);
+            if (showCommand == ShowCommand.SW_HIDE)
+            {
+                if (!Hidden())
+                {
+                    SetHidden();
+                    style = cast<WindowStyle>(style & ~WindowStyle.WS_VISIBLE);
+                    auto result = OnVisibleChanged();
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected virtual Result<bool> OnVisibleChanged()
+        {
+            visibleChangedEvent.Fire();
+            return Result<bool>(true);
+        }
+        public void Update()
+        {
+            WinUpdateWindow(handle);
+        }
+        internal virtual Control* GetFirstEnabledTabStopControl() const
+        {
+            if (IsTabStop() && IsEnabled())
+            {
+                return this;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        internal virtual Control* GetLastEnabledTabStopControl() const
+        {
+            if (IsTabStop() && IsEnabled())
+            {
+                return this;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void SetFocus()
+        {
+            Control* focusedControl = Application.GetFocusedControl();
+            if (focusedControl != null)
+            {
+                currentModifierKeys = focusedControl->currentModifierKeys;
+                Keys emptyModifierKeys;
+                focusedControl->currentModifierKeys = emptyModifierKeys;
+            }
+            WinSetFocus(Handle());
+            Window* window = GetWindow();
+            if (window != null)
+            {
+                window->SetFocusedControl(this);
+            }
+        }
+        public const string& Text() const
+        {
+            return text;
+        }
+        [nodiscard]
+        public Result<bool> SetText(const string& text_)
+        {
+            if (text != text_)
+            {
+                text = text_;
+                auto result = SetWindowText(handle, text);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                result = OnTextChanged();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> SetTextInternal(const string& text_)
+        {
+            if (text != text_)
+            {
+                text = text_;
+                auto result = OnTextChanged();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<int> GetWindowTextLength() const
+        {
+            return GetWindowTextLength(handle);
+        }
+        [nodiscard]
+        public Result<string> GetWindowText()
+        {
+            return GetWindowText(handle);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnTextChanged()
+        {
+            textChangedEvent.Fire();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<Point> Location()
+        {
+            if ((style & WindowStyle.WS_CHILD) == 0)
+            {
+                Result<WinRect> windowRectResult = GetWindowRect();
+                if (windowRectResult.Error())
+                {
+                    return Result<Point>(ErrorId(windowRectResult.GetErrorId()));
+                }
+                const WinRect& windowRect = windowRectResult.Value();
+                location.x = windowRect.left;
+                location.y = windowRect.top;
+            }
+            return Result<Point>(location);
+        }
+        [nodiscard]
+        public Result<bool> SetLocation(const Point& loc)
+        {
+            if (location != loc)
+            {
+                location = loc;
+                if (handle != null)
+                {
+                    auto result = MoveWindow(handle, location, size, true);
+                    if (result.Error()) return result;
+                }
+                auto result = OnLocationChanged();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> SetLocationInternal(const Point& loc)
+        {
+            if (location != loc)
+            {
+                location = loc;
+                auto result = OnLocationChanged();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnLocationChanged()
+        {
+            locationChangedEvent.Fire();
+            return Result<bool>(true);
+        }
+        public const Size& GetSize() const
+        {
+            return size;
+        }
+        [nodiscard]
+        internal Result<bool> SetSizeInternal(const Size& sz, uint windowState)
+        {
+            if (size != sz)
+            {
+                size = sz;
+                auto result = OnSizeChanged(windowState);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetSize(const Size& sz)
+        {
+            if (size != sz)
+            {
+                SizeChangingEventArgs sizeChangingArgs(size, sz);
+                auto result = OnSizeChanging(sizeChangingArgs);
+                if (result.Error()) return result;
+                if (sizeChangingArgs.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(sizeChangingArgs.errorId));
+                }
+                result = SetSizeInternal(sz, SIZE_RESTORED);
+                if (result.Error()) return result;
+                if (handle != null)
+                {
+                    result = MoveWindow(handle, location, size, true);
+                    if (result.Error()) return result;
+                }
+                if (IsScrollSubject())
+                {
+                    Control* parentControl = ParentControl();
+                    if (parentControl != null)
+                    {
+                        ControlEventArgs args(this);
+                        result = parentControl->OnChildSizeChanged(args);
+                        if (result.Error()) return result;
+                        if (args.errorId != 0)
+                        {
+                            return Result<bool>(ErrorId(args.errorId));
+                        }
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        public void SendSetFontMessage(const FontHandle& fontHandle)
+        {
+            if (Handle() != null)
+            {
+                WinSendMessage(Handle(), WM_SETFONT, cast<uint>(cast<ulong>(fontHandle.HFont())), 0);
+            }
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnSizeChanged(SizeChangedEventArgs& args)
+        {
+            sizeChangedEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnSizeChanging(SizeChangingEventArgs& args)
+        {
+            sizeChangingEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> FireChildSizeChanged(ControlEventArgs& args)
+        {
+            return OnChildSizeChanged(args);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnChildSizeChanged(ControlEventArgs& args)
+        {
+            childSizeChangedEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        public void SetContentChanged()
+        {
+            OnContentChanged();
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                ControlEventArgs args(this);
+                parentControl->OnChildContentChanged(args);
+            }
+        }
+        protected virtual void OnContentChanged()
+        {
+            contentChangedEvent.Fire();
+        }
+        protected virtual void OnChildContentChanged(ControlEventArgs& args)
+        {
+            childContentChangedEvent.Fire(args);
+        }
+        public inline const Point& ContentLocation() const
+        {
+            return contentLocation;
+        }
+        internal virtual void SetContentLocationInternal(const Point& contentLocation_)
+        {
+            contentLocation = contentLocation_;
+            OnContentLocationChanged();
+        }
+        public void SetContentLocation(const Point& contentLocation_)
+        {
+            if (contentLocation != contentLocation_)
+            {
+                contentLocation = contentLocation_;
+                OnContentLocationChanged();
+                Control* parentControl = ParentControl();
+                if (parentControl != null)
+                {
+                    ControlEventArgs args(this);
+                    parentControl->OnChildContentLocationChanged(args);
+                }
+            }
+        }
+        protected virtual void OnContentLocationChanged()
+        {
+            contentLocationChangedEvent.Fire();
+        }
+        protected virtual void OnChildContentLocationChanged(ControlEventArgs& args)
+        {
+            childContentLocationChangedEvent.Fire(args);
+        }
+        public inline const Size& ContentSize() const
+        {
+            return contentSize;
+        }
+        [nodiscard]
+        public Result<bool> SetContentSize(const Size& contentSize_)
+        {
+            if (contentSize != contentSize_)
+            {
+                contentSize = contentSize_;
+                OnContentSizeChanged();
+                Control* parentControl = ParentControl();
+                if (parentControl != null)
+                {
+                    ControlEventArgs args(this);
+                    auto result = parentControl->OnChildContentSizeChanged(args);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected virtual void OnContentSizeChanged()
+        {
+            contentSizeChangedEvent.Fire();
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnChildContentSizeChanged(ControlEventArgs& args)
+        {
+            childContentSizeChangedEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        public void SetScrollUnits(int verticalScrollUnit_, int horizontalScrollUnit_)
+        {
+            verticalScrollUnit = verticalScrollUnit_;
+            horizontalScrollUnit = horizontalScrollUnit_;
+        }
+        public Pair<int, int> GetScrollUnits() const
+        {
+            return MakePair(verticalScrollUnit, horizontalScrollUnit);
+        }
+        [nodiscard]
+        protected virtual Result<bool> SetCaretLocation()
+        {
+            return SetCaretPos(Point(0, 0));
+        }
+        public inline Dock GetDock() const
+        {
+            return dock;
+        }
+        [nodiscard]
+        public Result<bool> SetDock(Dock dock_)
+        {
+            dock = dock_;
+            if (dock != Dock.none)
+            {
+                auto result = DockWindow();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DockWindow()
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                if (parentControl is ContainerControl*)
+                {
+                    ContainerControl* containerParent = cast<ContainerControl*>(parentControl);
+                    auto result = containerParent->DockChildren();
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> DockWindow(Rect& parentRect)
+        {
+            if (dock == Dock.none) return Result<bool>(true);
+            if (handle == null) return Result<bool>(false);
+            LogView* logView = Application.GetLogView();
+            Point parentLoc = parentRect.location;
+            Size parentSize = parentRect.size;
+            Point newLocation = location;
+            Size newSize = size;
+            switch (dock)
+            {
+                case Dock.left:
+                {
+                    newLocation = parentLoc;
+                    newSize.h = parentSize.h;
+                    parentRect.location = Point(parentLoc.x + size.w, parentLoc.y);
+                    parentRect.size = Size(parentSize.w - size.w, parentSize.h);
+                    if (Debug.Docking())
+                    {
+                        if (logView != null)
+                        {
+                            auto result = logView->WriteLine("Dock.left " + text + ": [" + Rect(newLocation, newSize).ToString() + "], [" + parentRect.ToString() + "]");
+                            if (result.Error()) return result;
+                        }
+                    }
+                    break;
+                }
+                case Dock.top:
+                {
+                    newLocation = parentLoc;
+                    newSize.w = parentSize.w;
+                    parentRect.location = Point(parentLoc.x, parentLoc.y + size.h);
+                    parentRect.size = Size(parentSize.w, parentSize.h - size.h);
+                    if (Debug.Docking())
+                    {
+                        if (logView != null)
+                        {
+                            auto result = logView->WriteLine("Dock.top " + text + ": [" + Rect(newLocation, newSize).ToString() + "], [" + parentRect.ToString() + "]");
+                            if (result.Error()) return result;
+                        }
+                    }
+                    break;
+                }
+                case Dock.right:
+                {
+                    newLocation = Point(parentLoc.x + parentSize.w - size.w, parentLoc.y);
+                    newSize.h = parentSize.h;
+                    parentRect.size = Size(parentSize.w - size.w, parentSize.h);
+                    if (Debug.Docking())
+                    {
+                        if (logView != null)
+                        {
+                            auto result = logView->WriteLine("Dock.right " + text + ": [" + Rect(newLocation, newSize).ToString() + "], [" + parentRect.ToString() + "]");
+                            if (result.Error()) return result;
+                        }
+                    }
+                    break;
+                }
+                case Dock.bottom:
+                {
+                    newLocation = Point(parentLoc.x, parentLoc.y + parentSize.h - size.h);
+                    newSize.w = parentSize.w;
+                    parentRect.size = Size(parentSize.w, parentSize.h - size.h);
+                    if (Debug.Docking())
+                    {
+                        if (logView != null)
+                        {
+                            auto result = logView->WriteLine("Dock.bottom " + text + ": [" + Rect(newLocation, newSize).ToString() + "], [" + parentRect.ToString() + "]");
+                            if (result.Error()) return result;
+                        }
+                    }
+                    break;
+                }
+                case Dock.fill:
+                {
+                    newLocation = parentLoc;
+                    newSize = parentSize;
+                    parentRect.location = Point();
+                    parentRect.size = Size();
+                    if (Debug.Docking())
+                    {
+                        if (logView != null)
+                        {
+                            auto result = logView->WriteLine("Dock.fill " + text + ": [" + Rect(newLocation, newSize).ToString() + "], [" + parentRect.ToString() + "]");
+                            if (result.Error()) return result;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (location != newLocation || size != newSize)
+            {
+                auto result = SetLocation(newLocation);
+                if (result.Error()) return result;
+                result = SetSize(newSize);
+                if (result.Error()) return result;
+                result = MoveWindow(handle, location, size, true);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal Result<bool> MoveWindow(int dx, int dy)
+        {
+            Point newLocation = location;
+            Size newSize = size;
+            bool leftAnchored = cast<Anchors>(anchors & Anchors.left) != Anchors.none;
+            bool rightAnchored = cast<Anchors>(anchors & Anchors.right) != Anchors.none;
+            if (!leftAnchored)
+            {
+                newLocation.x = newLocation.x + dx;
+            }
+            else if (rightAnchored)
+            {
+                newSize.w = newSize.w + dx;
+            }
+            bool topAnchored = cast<Anchors>(anchors & Anchors.top) != Anchors.none;
+            bool bottomAnchored = cast<Anchors>(anchors & Anchors.bottom) != Anchors.none;
+            if (!topAnchored)
+            {
+                newLocation.y = newLocation.y + dy;
+            }
+            else if (bottomAnchored)
+            {
+                newSize.h = newSize.h + dy;
+            }
+            if (location != newLocation || size != newSize)
+            {
+                auto result = SetLocation(newLocation);
+                if (result.Error()) return result;
+                result = SetSize(newSize);
+                if (result.Error()) return result;
+                result = MoveWindow(handle, location, size, true);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public inline Anchors GetAnchors() const
+        {
+            return anchors;
+        }
+        public inline void SetAnchors(Anchors anchors_)
+        {
+            anchors = anchors_;
+        }
+        public virtual Padding DefaultPadding() const
+        {
+            return Padding();
+        }
+        [nodiscard]
+        public Result<WinRect> GetClientRect() const
+        {
+            return GetClientRect(handle);
+        }
+        [nodiscard]
+        public Result<WinRect> GetWindowRect() const
+        {
+            return GetWindowRect(handle);
+        }
+        [nodiscard]
+        public Result<Point> ClientToScreen(const Point& point) const
+        {
+            return ClientToScreen(handle, point);
+        }
+        [nodiscard]
+        public Result<Point> ScreenToClient(const Point& point) const
+        {
+            return ScreenToClient(handle, point);
+        }
+        [nodiscard]
+        internal Result<bool> ProcessMessageInternal(Message& message)
+        {
+            return ProcessMessage(message);
+        }
+        [nodiscard]
+        public virtual Result<bool> PrintWindowTree(int level)
+        {
+            LogView* log = Application.GetLogView();
+            if (log != null)
+            {
+                auto handleResult = ToHexString(cast<ulong>(Handle()));
+                if (handleResult.Error())
+                {
+                    return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                }
+                else
+                {
+                    const string& handleStr = handleResult.Value();
+                    auto parentTextResult = ParentText();
+                    if (parentTextResult.Error())
+                    {
+                        return Result<bool>(ErrorId(parentTextResult.GetErrorId()));
+                    }
+                    else
+                    {
+                        const string& parentText = parentTextResult.Value();
+                        auto result = log->WriteLine(string(' ', level) + "Control." + Text() + ".handle=" + handleStr + " " + parentText + "[" +
+                            Rect(Point(), GetSize()).ToString() + "]");
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> ScrollLineDown()
+        {
+            Control* parent = ParentControl();
+            if (parent != null)
+            {
+                auto result = parent->ScrollLineDown();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> ScrollLineUp()
+        {
+            Control* parent = ParentControl();
+            if (parent != null)
+            {
+                auto result = parent->ScrollLineUp();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected void SubClassCommandWndProc()
+        {
+            if (originalWndProc == null && handle != null)
+            {
+                originalWndProc = WinSubClassCommandWndProc(handle);
+            }
+        }
+        [nodiscard]
+        protected virtual Result<bool> ProcessMessage(Message& message)
+        {
+            if (originalWndProc != null)
+            {
+                // If this control has subclassed a standard Windows control for receiving WM_COMMAND notifications, first set address of original window procedure in the message:
+                // Currently only GroupBox does this.
+                if (message.originalWndProc == null)
+                {
+                    message.originalWndProc = originalWndProc;
+                }
+                // If this message is not a WM_COMMAND and not a WM_DESTROY message, return without processing the message.
+                // Original window procedure will be called in all cases after returning from Application.ProcessMessage.
+                if (message.msg != WM_COMMAND && message.msg != WM_DESTROY)
+                {
+                    return Result<bool>(false);
+                }
+                // otherwise proceed to process the WM_COMMAND notification or WM_DESTROY message...
+            }
+            switch (message.msg)
+            {
+                case WM_PAINT:
+                {
+                    auto paintResult = DoPaint();
+                    if (paintResult.Error())
+                    {
+                        return Result<bool>(ErrorId(paintResult.GetErrorId()));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_MOUSEMOVE:
+                {
+                    MouseEventArgs args(Point(message.LParamX(), message.LParamY()), cast<MouseButtons>(message.wparam), 0);
+                    auto result = DoMouseMove(args);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_MOUSELEAVE:
+                {
+                    auto result = DoMouseLeave();
+                    if (result.Error()) return result;
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_LBUTTONDOWN:
+                {
+                    MouseEventArgs args(Point(message.LParamX(), message.LParamY()), cast<MouseButtons>(message.wparam | MouseButtons.lbutton), 1);
+                    auto result = DoMouseDown(args);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_LBUTTONUP:
+                {
+                    MouseEventArgs args(Point(message.LParamX(), message.LParamY()), cast<MouseButtons>(message.wparam | MouseButtons.lbutton), 1);
+                    auto result = DoMouseUp(args);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_LBUTTONDBLCLK:
+                {
+                    MouseEventArgs args(Point(message.LParamX(), message.LParamY()), cast<MouseButtons>(message.wparam | MouseButtons.lbutton), 2);
+                    auto result = DoMouseDoubleClick(args);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_RBUTTONDOWN:
+                {
+                    MouseEventArgs args(Point(message.LParamX(), message.LParamY()), cast<MouseButtons>(message.wparam | MouseButtons.rbutton), 1);
+                    auto result = DoMouseDown(args);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_RBUTTONUP:
+                {
+                    MouseEventArgs args(Point(message.LParamX(), message.LParamY()), cast<MouseButtons>(message.wparam | MouseButtons.rbutton), 1);
+                    auto result = DoMouseUp(args);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_CHAR:
+                {
+                    wchar ch = cast<wchar>(message.wparam);
+                    KeyPressEventArgs args(ch);
+                    auto keyPressResult = DoKeyPress(args);
+                    if (keyPressResult.Error())
+                    {
+                        return Result<bool>(ErrorId(keyPressResult.GetErrorId()));
+                    }
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    if (args.handled)
+                    {
+                        message.result = 0;
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+                case WM_KEYDOWN:
+                {
+                    int virtualKeyCode = cast<int>(message.wparam);
+                    auto doKeyDownResult = DoKeyDown(virtualKeyCode);
+                    if (doKeyDownResult.Error())
+                    {
+                        return Result<bool>(ErrorId(doKeyDownResult.GetErrorId()));
+                    }
+                    bool keyDownHandled = doKeyDownResult.Value();
+                    if (keyDownHandled)
+                    {
+                        message.result = 0;
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+                case WM_KEYUP:
+                {
+                    int virtualKeyCode = cast<int>(message.wparam);
+                    auto doKeyUpResult = DoKeyUp(virtualKeyCode);
+                    if (doKeyUpResult.Error())
+                    {
+                        return Result<bool>(ErrorId(doKeyUpResult.GetErrorId()));
+                    }
+                    bool keyUpHandled = doKeyUpResult.Value();
+                    if (keyUpHandled)
+                    {
+                        message.result = 0;
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+                case WM_SYSCOMMAND:
+                {
+                    auto sysCommandResult = DoSysCommand(message.wparam, message.lparam);
+                    if (sysCommandResult.Error())
+                    {
+                        return Result<bool>(ErrorId(sysCommandResult.GetErrorId()));
+                    }
+                    bool sysCommandHandled = sysCommandResult.Value();
+                    if (sysCommandHandled)
+                    {
+                        message.result = 0;
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+                case WM_HSCROLL:
+                {
+                    ushort request = message.WParamLoWord();
+                    auto result = DoHScroll(request);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_VSCROLL:
+                {
+                    ushort request = message.WParamLoWord();
+                    auto result = DoVScroll(request);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_MOUSEWHEEL:
+                {
+                    MouseWheelEventArgs args(Point(message.LParamX(), message.LParamY()),
+                        cast<MouseButtons>(cast<ulong>(cast<ushort>(message.wparam))), cast<short>(message.wparam >> 16u));
+                    auto result = DoMouseWheel(args);
+                    if (result.Error()) return result;
+                    if (args.errorId != 0) return Result<bool>(ErrorId(args.errorId));
+                    if (args.handled)
+                    {
+                        message.result = 0;
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+                case WM_SETFOCUS:
+                {
+                    auto result = DoSetFocus();
+                    if (result.Error()) return result;
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_KILLFOCUS:
+                {
+                    auto result = DoKillFocus();
+                    if (result.Error()) return result;
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_SHOWWINDOW:
+                {
+                    if (message.wparam == 1)
+                    {
+                        auto result = OnShown();
+                        if (result.Error()) return result;
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_TIMER:
+                {
+                    auto result = DoTimer(message.wparam);
+                    if (result.Error()) return result;
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_DESTROY:
+                {
+                    DoDestroy();
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_CLIPBOARDUPDATE:
+                {
+                    auto result = DoClipboardUpdate();
+                    if (result.Error()) return result;
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_MOVE:
+                {
+                    Point newLocation = message.LParamLocation();
+                    Result<Point> oldLocationResult = Location();
+                    if (oldLocationResult.Error())
+                    {
+                        return Result<bool>(ErrorId(oldLocationResult.GetErrorId()));
+                    }
+                    const Point& oldLocation = oldLocationResult.Value();
+                    if (newLocation != oldLocation)
+                    {
+                        auto result = SetLocationInternal(newLocation);
+                        if (result.Error()) return result;
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_SIZE:
+                {
+                    Size newSize = message.LParamSize();
+                    Size oldSize = GetSize();
+                    uint windowState = cast<uint>(message.wparam);
+                    if (newSize != oldSize)
+                    {
+                        auto result = SetSizeInternal(newSize, windowState);
+                        if (result.Error()) return result;
+                    }
+                    message.result = 0;
+                    return Result<bool>(true);
+                }
+                case WM_COMMAND:
+                {
+                    void* childWindowHandle = message.LParamHandle();
+                    ushort notificationCode = message.WParamHiWord();
+                    ushort controlId = message.WParamLoWord();
+                    Control* child = Application.GetWindowManager().GetWindow(childWindowHandle);
+                    if (child != null)
+                    {
+                        switch (notificationCode)
+                        {
+                            case BN_CLICKED:
+                            {
+                                ClickEventArgs args;
+                                auto result = child->OnClick(args);
+                                if (result.Error()) return result;
+                                if (args.errorId != 0)
+                                {
+                                    return Result<bool>(ErrorId(args.errorId));
+                                }
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case BN_SETFOCUS:
+                            {
+                                auto result = child->DoGotFocus();
+                                if (result.Error()) return result;
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case BN_KILLFOCUS:
+                            {
+                                auto result = child->DoLostFocus();
+                                if (result.Error()) return result;
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case EN_CHANGE:
+                            {
+                                auto windowTextResult = child->GetWindowText();
+                                if (windowTextResult.Error())
+                                {
+                                    return Result<bool>(ErrorId(windowTextResult.GetErrorId()));
+                                }
+                                const string& windowText = windowTextResult.Value();
+                                auto result = child->SetTextInternal(windowText);
+                                if (result.Error()) return result;
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case EN_SETFOCUS:
+                            {
+                                auto result = child->DoGotFocus();
+                                if (result.Error()) return result;
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case EN_KILLFOCUS:
+                            {
+                                auto result = child->DoLostFocus();
+                                if (result.Error()) return result;
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case LBN_SETFOCUS:
+                            {
+                                auto result = child->DoGotFocus();
+                                if (result.Error()) return result;
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case LBN_KILLFOCUS:
+                            {
+                                auto result = child->DoLostFocus();
+                                if (result.Error()) return result;
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                            case LBN_SELCHANGE:
+                            {
+                                if (child is ListBox*)
+                                {
+                                    ListBox* listBox = cast<ListBox*>(child);
+                                    auto result = listBox->SelectedIndexChangedInternal();
+                                    if (result.Error()) return result;
+                                }
+                                message.result = 0;
+                                return Result<bool>(true);
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+            return Result<bool>(false);
+        }
+        private void DoDestroy()
+        {
+            OnDestroyed();
+            if (originalWndProc != null)
+            {
+                WinRestoreOriginalWndProc(handle, originalWndProc);
+            }
+        }
+        private Result<bool> DoClipboardUpdate()
+        {
+            return OnClipboardUpdate();
+        }
+        protected virtual Result<bool> OnClipboardUpdate()
+        {
+            clipboardUpdateEvent.Fire();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoSysCommand(ulong wparam, long lparam)
+        {
+            switch (wparam)
+            {
+                case SC_KEYMENU:
+                {
+                    auto upperResult = ToUpper(cast<uchar>(cast<wchar>(lparam)));
+                    if (upperResult.Error())
+                    {
+                        return Result<bool>(ErrorId(upperResult.GetErrorId()));
+                    }
+                    uchar upper = upperResult.Value();
+                    wchar accessKey = cast<wchar>(upper);
+                    auto doMenuResult = DoMenu(accessKey, Keys.none);
+                    if (doMenuResult.Error())
+                    {
+                        return Result<bool>(ErrorId(doMenuResult.GetErrorId()));
+                    }
+                    bool menuHandled = doMenuResult.Value();
+                    if (menuHandled)
+                    {
+                        return Result<bool>(true);
+                    }
+                    else
+                    {
+                        if (lparam == VK_F10)
+                        {
+                            auto doKeyDownResult = DoKeyDown(cast<int>(lparam));
+                            if (doKeyDownResult.Error())
+                            {
+                                return Result<bool>(ErrorId(doKeyDownResult.GetErrorId()));
+                            }
+                            bool keyDownHandled = doKeyDownResult.Value();
+                            if (keyDownHandled)
+                            {
+                                return Result<bool>(true);
+                            }
+                        }
+                        else
+                        {
+                            currentModifierKeys = cast<Keys>(currentModifierKeys | Keys.altModifier);
+                        }
+                        auto doKeyDownResult = DoKeyDown(cast<int>(accessKey));
+                        if (doKeyDownResult.Error())
+                        {
+                            return Result<bool>(ErrorId(doKeyDownResult.GetErrorId()));
+                        }
+                        bool keyDownHandled = doKeyDownResult.Value();
+                        if (keyDownHandled)
+                        {
+                            currentModifierKeys = cast<Keys>(currentModifierKeys & ~Keys.altModifier);
+                            return Result<bool>(true);
+                        }
+                        currentModifierKeys = cast<Keys>(currentModifierKeys & ~Keys.altModifier);
+                    }
+                    break;
+                }
+                case SC_CLOSE:
+                {
+                    KeyEventArgs args(cast<Keys>(Keys.f4 | Keys.altModifier));
+                    auto result = DoMenu(args);
+                    if (result.Error()) return result;
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                    if (args.handled)
+                    {
+                        return Result<bool>(true);
+                    }
+                    break;
+                }
+            }
+            return Result<bool>(false);
+        }
+        public void ResetModifierKeys()
+        {
+            currentModifierKeys = Keys.none;
+        }
+        [nodiscard]
+        private Result<bool> DoKeyDown(int virtualKeyCode)
+        {
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                auto hexStringResult = ToHexString(cast<uint>(virtualKeyCode));
+                if (hexStringResult.Error())
+                {
+                    return Result<bool>(ErrorId(hexStringResult.GetErrorId()));
+                }
+                string s = "DoKeyDown: " + ToString(cast<Keys>(virtualKeyCode)) + " " + hexStringResult.Value();
+                auto result = logView->WriteLine(s);
+                if (result.Error()) return result;
+            }
+            ResetKeyDownHandled();
+            if (MenuWantsKeys())
+            {
+                auto doMenuResult = DoMenu('\0', cast<Keys>(virtualKeyCode));
+                if (doMenuResult.Error())
+                {
+                    return Result<bool>(ErrorId(doMenuResult.GetErrorId()));
+                }
+                bool menuHandled = doMenuResult.Value();
+                if (menuHandled)
+                {
+                    SetKeyDownHandled();
+                    return Result<bool>(true);
+                }
+            }
+            Keys key = cast<Keys>(virtualKeyCode);
+            if (WinKeyPressed(VK_SHIFT))
+            {
+                key = cast<Keys>(key | Keys.shiftModifier);
+            }
+            if (WinKeyPressed(VK_CONTROL))
+            {
+                key = cast<Keys>(key | Keys.controlModifier);
+            }
+            if (WinKeyPressed(VK_MENU))
+            {
+                key = cast<Keys>(key | Keys.altModifier);
+            }
+            KeyEventArgs args(key);
+            auto result = DoMenu(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            if (args.handled)
+            {
+                SetKeyDownHandled();
+                return Result<bool>(true);
+            }
+            else
+            {
+                auto result = DispatchKeyDown(args);
+                if (result.Error()) return result;
+                if (args.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(args.errorId));
+                }
+                if (args.handled)
+                {
+                    SetKeyDownHandled();
+                    return Result<bool>(true);
+                }
+            }
+            return Result<bool>(false);
+        }
+        [nodiscard]
+        private Result<bool> DoKeyUp(int virtualKeyCode)
+        {
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                auto hexStringResult = ToHexString(cast<uint>(virtualKeyCode));
+                if (hexStringResult.Error())
+                {
+                    return Result<bool>(ErrorId(hexStringResult.GetErrorId()));
+                }
+                string s = "DoKeyUp: " + ToString(cast<Keys>(virtualKeyCode)) + " " + hexStringResult.Value();
+                auto result = logView->WriteLine(s);
+                if (result.Error()) return result;
+            }
+            Keys key = cast<Keys>(virtualKeyCode);
+            if (KeyDownHandled() || MenuWantsKeys())
+            {
+                return Result<bool>(KeyDownHandled());
+            }
+            KeyEventArgs args(key);
+            auto result = DispatchKeyUp(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            if (args.handled)
+            {
+                return Result<bool>(true);
+            }
+            return Result<bool>(false);
+        }
+        [nodiscard]
+        private Result<bool> DoKeyPress(KeyPressEventArgs& args)
+        {
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                auto hexStringResult = ToHexString(cast<uint>(args.keyChar));
+                if (hexStringResult.Error())
+                {
+                    return Result<bool>(ErrorId(hexStringResult.GetErrorId()));
+                }
+                auto keyCharResult = ToString(args.keyChar);
+                if (keyCharResult.Error())
+                {
+                    return Result<bool>(ErrorId(keyCharResult.GetErrorId()));
+                }
+                const string& keyCharStr = keyCharResult.Value();
+                string s = "DoKeyPress: " + keyCharStr + " " + hexStringResult.Value();
+                auto result = logView->WriteLine(s);
+                if (result.Error()) return result;
+            }
+            if (KeyDownHandled() || MenuWantsKeys())
+            {
+                args.handled = KeyDownHandled();
+                return Result<bool>(true);
+            }
+            ResetModifierKeys();
+            auto result = DispatchKeyPress(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DispatchKeyPress(KeyPressEventArgs& args)
+        {
+            auto result = OnKeyPress(args);
+            if (result.Error()) return result;
+            if (!args.handled)
+            {
+                Control* parent = ParentControl();
+                if (parent != null)
+                {
+                    result = parent->DispatchKeyPress(args);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DispatchKeyDown(KeyEventArgs& args)
+        {
+            auto result = OnKeyDown(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0) return Result<bool>(ErrorId(args.errorId));
+            if (!args.handled)
+            {
+                Control* parent = ParentControl();
+                if (parent != null)
+                {
+                    result = parent->DispatchKeyDown(args);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DispatchKeyUp(KeyEventArgs& args)
+        {
+            auto result = OnKeyUp(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0) return Result<bool>(ErrorId(args.errorId));
+            if (!args.handled)
+            {
+                Control* parent = ParentControl();
+                if (parent != null)
+                {
+                    result = parent->DispatchKeyUp(args);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMenu(wchar accessKey, Keys keyCode)
+        {
+            ResetKeyDownHandled();
+            LogView* logView = Application.GetLogView();
+            if (logView != null)
+            {
+                auto hexStringResult = ToHexString(cast<ushort>(accessKey));
+                if (hexStringResult.Error())
+                {
+                    return Result<bool>(ErrorId(hexStringResult.GetErrorId()));
+                }
+                auto accessKeyResult = ToString(accessKey);
+                if (accessKeyResult.Error())
+                {
+                    return Result<bool>(ErrorId(accessKeyResult.GetErrorId()));
+                }
+                string s = "MENU: " + accessKeyResult.Value() + " " + hexStringResult.Value();
+                auto result = logView->WriteLine(s);
+                if (result.Error()) return result;
+            }
+            Window* window = GetWindow();
+            if (window != null)
+            {
+                MenuBar* menuBar = window->GetMenuBar();
+                if (menuBar != null)
+                {
+                    bool menuWantsKeys = false;
+                    auto handleResult = menuBar->HandleAccessKey(accessKey, keyCode, menuWantsKeys);
+                    if (handleResult.Error())
+                    {
+                        return Result<bool>(ErrorId(handleResult.GetErrorId()));
+                    }
+                    bool handled = handleResult.Value();
+                    if (handled)
+                    {
+                        SetKeyDownHandled();
+                    }
+                    if (menuWantsKeys)
+                    {
+                        SetMenuWantsKeys();
+                    }
+                    else
+                    {
+                        ResetMenuWantsKeys();
+                    }
+                    return Result<bool>(handled);
+                }
+            }
+            return Result<bool>(false);
+        }
+        [nodiscard]
+        private Result<bool> DoMenu(KeyEventArgs& args)
+        {
+            Window* window = GetWindow();
+            if (window != null)
+            {
+                MenuBar* menuBar = window->GetMenuBar();
+                if (menuBar != null)
+                {
+                    auto result = menuBar->DoKeyDown(args);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoVScroll(ushort request)
+        {
+            ScrollEventArgs args(request);
+            auto result = OnVScroll(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoHScroll(ushort request)
+        {
+            ScrollEventArgs args(request);
+            auto result = OnHScroll(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseWheel(MouseWheelEventArgs& args)
+        {
+            return OnMouseWheel(args);
+        }
+        [nodiscard]
+        private Result<bool> DoSetFocus()
+        {
+            if (this is Window*)
+            {
+                Window* thisWindow = cast<Window*>(this);
+                if (thisWindow->IsMainWindow())
+                {
+                    auto result = OnGotFocus();
+                    if (result.Error()) return result;
+                    return Result<bool>(true);
+                }
+            }
+            SetFocused();
+            auto result = DoGotFocus();
+            if (result.Error()) return result;
+            result = DoCreateAndShowCaret();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoGotFocus()
+        {
+            auto result = OnGotFocus();
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                ControlEventArgs args(this);
+                auto result = parentControl->OnChildGotFocus(args);
+                if (result.Error()) return result;
+                if (args.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(args.errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnGotFocus()
+        {
+            gotFocusEvent.Fire();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnChildGotFocus(ControlEventArgs& args)
+        {
+            childGotFocusEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoKillFocus()
+        {
+            ResetFocused();
+            auto result = DoLostFocus();
+            if (result.Error()) return result;
+            result = DoDestroyCaret();
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoLostFocus()
+        {
+            auto result = OnLostFocus();
+            if (result.Error()) return result;
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                ControlEventArgs args(this);
+                auto result = parentControl->OnChildLostFocus(args);
+                if (result.Error()) return result;
+                if (args.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(args.errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnLostFocus()
+        {
+            lostFocusEvent.Fire();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnChildLostFocus(ControlEventArgs& args)
+        {
+            childLostFocusEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        protected virtual bool IsDecoratorControl() const
+        {
+            return false;
+        }
+        [nodiscard]
+        protected virtual Result<bool> TranslateChildGraphics(Graphics& graphics)
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                auto result = parentControl->TranslateChildGraphics(graphics);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        protected virtual void TranslateMousePos(Point& location)
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->TranslateMousePos(location);
+            }
+        }
+        protected virtual void TranslateContentLocation(Point& location)
+        {
+            Control* parentControl = ParentControl();
+            if (parentControl != null)
+            {
+                parentControl->TranslateContentLocation(location);
+            }
+        }
+        [nodiscard]
+        private Result<bool> DoPaint()
+        {
+            if (handle == null) return Result<bool>(false);
+            void* paintStruct = null;
+            Result<void*> hdcResult = BeginPaint(handle, paintStruct);
+            if (hdcResult.Error())
+            {
+                return Result<bool>(ErrorId(hdcResult.GetErrorId()));
+            }
+            void* hdc = hdcResult.Value();
+            Rect clipRect;
+            WinGetClipRect(paintStruct, clipRect.location.x, clipRect.location.y, clipRect.size.w, clipRect.size.h);
+            PaintGuard paintGuard(hdc, paintStruct);
+            Graphics graphics(hdc);
+            if (graphics.Error())
+            {
+                return Result<bool>(ErrorId(graphics.GetErrorId()));
+            }
+            PaintEventArgs args(graphics, clipRect);
+            PaintEventArgs* argsPtr = &args;
+            if (!IsDecoratorControl())
+            {
+                auto result = TranslateChildGraphics(graphics);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            if (Focused())
+            {
+                --caretShowCount;
+            }
+            UniquePtr<PaintEventArgs> bufferPaintArgs;
+            if (IsDoubleBuffered())
+            {
+                if (buffer.IsNull() || buffer->GetSize() != GetSize())
+                {
+                    buffer.Reset(new Buffer(GetSize(), graphics));
+                    if (buffer->Error())
+                    {
+                        return Result<bool>(ErrorId(buffer->GetErrorId()));
+                    }
+                }
+                auto clearResult = buffer->BitmapGraphics().Clear(BackgroundColor());
+                if (clearResult.Error())
+                {
+                    return Result<bool>(ErrorId(clearResult.GetErrorId()));
+                }
+                bufferPaintArgs.Reset(new PaintEventArgs(buffer->BitmapGraphics(), clipRect));
+                argsPtr = bufferPaintArgs.Get();
+                Matrix matrix;
+                auto transformResult = graphics.GetTransform(matrix);
+                if (transformResult.Error())
+                {
+                    return Result<bool>(ErrorId(transformResult.GetErrorId()));
+                }
+                auto setTransformResult = buffer->BitmapGraphics().SetTransform(matrix);
+                if (setTransformResult.Error())
+                {
+                    return Result<bool>(ErrorId(setTransformResult.GetErrorId()));
+                }
+            }
+            auto paintResult = OnPaint(*argsPtr);
+            if (paintResult.Error())
+            {
+                return Result<bool>(ErrorId(paintResult.GetErrorId()));
+            }
+            if (argsPtr->errorId != 0)
+            {
+                return Result<bool>(ErrorId(argsPtr->errorId));
+            }
+            if (IsDoubleBuffered())
+            {
+                Graphics windowGraphics(hdc);
+                if (windowGraphics.Error())
+                {
+                    return Result<bool>(ErrorId(windowGraphics.GetErrorId()));
+                }
+                auto drawResult = buffer->Draw(windowGraphics);
+                if (drawResult.Error())
+                {
+                    return Result<bool>(ErrorId(drawResult.GetErrorId()));
+                }
+            }
+            if (Focused() && CaretCreated())
+            {
+                auto result = ShowCaret();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnPaint(PaintEventArgs& args)
+        {
+            paintEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        internal virtual Result<bool> PaintAll(PaintEventArgs& args, bool skipMenuBar)
+        {
+            auto paintResult = OnPaint(args);
+            if (paintResult.Error())
+            {
+                return Result<bool>(ErrorId(paintResult.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoCreateAndShowCaret()
+        {
+            if (Focused())
+            {
+                auto result = CreateCaret();
+                if (result.Error()) return result;
+                SetCaretCreated();
+                result = SetCaretLocation();
+                if (result.Error()) return result;
+                result = ShowCaret();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> CreateCaret()
+        {
+            auto result = System.Windows.API.CreateCaret(Handle(), null, 1, 15);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoDestroyCaret()
+        {
+            if (CaretCreated())
+            {
+                auto result = HideCaret();
+                if (result.Error()) return result;
+                ResetCaretCreated();
+                result = DestroyCaret();
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> DestroyCaret()
+        {
+            auto result = System.Windows.API.DestroyCaret();
+            if (result.Error()) return result;
+            caretShowCount = 0;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> ShowCaret()
+        {
+            auto result = System.Windows.API.ShowCaret(Handle());
+            if (result.Error()) return result;
+            ++caretShowCount;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> HideCaret()
+        {
+            auto result = System.Windows.API.HideCaret(Handle());
+            if (result.Error()) return result;
+            --caretShowCount;
+            return Result<bool>(true);
+        }
+        public inline int CaretShowCount() const
+        {
+            return caretShowCount;
+        }
+        public Result<Point> GetCaretPos() const
+        {
+            return System.Windows.API.GetCaretPos();
+        }
+        [nodiscard]
+        public Result<bool> SetCaretPos(const Point& caretPos)
+        {
+            if (CaretCreated())
+            {
+                auto result = System.Windows.API.SetCaretPos(caretPos);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseMove(MouseEventArgs& args)
+        {
+            if (!MouseInClient())
+            {
+                SetMouseInClient();
+                auto result = SetCursor();
+                if (result.Error()) return result;
+                EnterLeaveEventArgs enterArgs;
+                result = OnMouseEnter(enterArgs);
+                if (result.Error()) return result;
+                if (enterArgs.errorId != 0)
+                {
+                    return Result<bool>(ErrorId(enterArgs.errorId));
+                }
+                if (result.Error()) return result;
+                WinTrackMouseEvent(handle, TME_LEAVE, HOVER_DEFAULT);
+            }
+            else
+            {
+                if (!IsDecoratorControl())
+                {
+                    TranslateMousePos(args.location);
+                }
+                auto result = SetCursor();
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                result = OnMouseMove(args);
+                if (result.Error()) return result;
+            }
+            if (mouseHoverMs != 0u && !MouseHoverTimerStarted())
+            {
+                Point pt = args.location;
+                int dx = Abs(mouseHoverLocation.x - pt.x);
+                int dy = Abs(mouseHoverLocation.y - pt.y);
+                if (dx > mouseHoverRectSize.w || dy > mouseHoverRectSize.h)
+                {
+                    SetMouseHoverTimerStarted();
+                    mouseHoverLocation = pt;
+                    auto result = SetTimer(mouseHoverTimerId, mouseHoverMs);
+                    if (result.Error()) return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public void SetMouseHoverMs(uint mouseHoverMs_)
+        {
+            mouseHoverMs = mouseHoverMs_;
+        }
+        public uint MouseHoverMs() const
+        {
+            return mouseHoverMs;
+        }
+        public void SetMouseHoverRectSize(const Size& mouseHoverRectSize_)
+        {
+            mouseHoverRectSize = mouseHoverRectSize_;
+        }
+        public const Size& MouseHoverRectSize() const
+        {
+            return mouseHoverRectSize;
+        }
+        [nodiscard]
+        private Result<bool> DoMouseHover()
+        {
+            ResetMouseHoverTimerStarted();
+            auto result = KillTimer(mouseHoverTimerId);
+            if (result.Error()) return result;
+            Point pt;
+            result = GetCursorPos(pt.x, pt.y);
+            if (result.Error()) return result;
+            auto ptResult = ScreenToClient(pt);
+            if (ptResult.Error())
+            {
+                return Result<bool>(ErrorId(ptResult.GetErrorId()));
+            }
+            pt = ptResult.Value();
+            if (!IsDecoratorControl())
+            {
+                TranslateMousePos(pt);
+            }
+            int dx = Abs(mouseHoverLocation.x - pt.x);
+            int dy = Abs(mouseHoverLocation.y - pt.y);
+            if (dx <= mouseHoverRectSize.w && dy <= mouseHoverRectSize.h)
+            {
+                MouseEventArgs args;
+                args.location = pt;
+                OnMouseHover(args);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseLeave()
+        {
+            ResetMouseInClient();
+            ResetLButtonPressed();
+            EnterLeaveEventArgs leaveArgs;
+            auto result = OnMouseLeave(leaveArgs);
+            if (leaveArgs.errorId != 0)
+            {
+                return Result<bool>(ErrorId(leaveArgs.errorId));
+            }
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseDown(MouseEventArgs& args)
+        {
+            if (!IsDecoratorControl())
+            {
+                TranslateMousePos(args.location);
+            }
+            auto result = OnMouseDown(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            if ((args.buttons & MouseButtons.lbutton) != 0)
+            {
+                SetLButtonPressed();
+            }
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseUp(MouseEventArgs& args)
+        {
+            if (!IsDecoratorControl())
+            {
+                TranslateMousePos(args.location);
+            }
+            auto result = OnMouseUp(args);
+            if (result.Error()) return result;
+            if ((args.buttons & MouseButtons.lbutton) != 0)
+            {
+                if (LButtonPressed())
+                {
+                    ResetLButtonPressed();
+                    ClickEventArgs args;
+                    result = this->OnClick(args);
+                    if (result.Error()) return result;
+                    if (args.errorId != 0)
+                    {
+                        return Result<bool>(ErrorId(args.errorId));
+                    }
+                }
+            }
+            Window* mainWindow = Application.MainWindow();
+            if (mainWindow != null)
+            {
+                auto result = mainWindow->MouseUpNotificationInternal(args);
+                if (result.Error()) return result;
+            }
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoMouseDoubleClick(MouseEventArgs& args)
+        {
+            if (!IsDecoratorControl())
+            {
+                TranslateMousePos(args.location);
+            }
+            auto result = OnMouseDoubleClick(args);
+            if (result.Error()) return result;
+            if (args.errorId != 0)
+            {
+                return Result<bool>(ErrorId(args.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> SetTimer(uint timerId, uint elapseMs)
+        {
+            auto result = SetTimer(Handle(), timerId, elapseMs);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> KillTimer(uint timerId)
+        {
+            auto result = KillTimer(Handle(), timerId);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        private Result<bool> DoTimer(ulong timerId)
+        {
+            TimerEventArgs timerEventArgs(timerId);
+            auto result = OnTimer(timerEventArgs);
+            if (result.Error()) return result;
+            if (timerEventArgs.errorId != 0)
+            {
+                return Result<bool>(ErrorId(timerEventArgs.errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnTimer(TimerEventArgs& args)
+        {
+            if (args.timerId == mouseHoverTimerId)
+            {
+                auto result = DoMouseHover();
+                if (result.Error()) return result;
+            }
+            else
+            {
+                timerEvent.Fire(args);
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> SetCursor()
+        {
+            SetCursor(&arrowCursor);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseEnter(EnterLeaveEventArgs& args)
+        {
+            mouseEnterEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseMove(MouseEventArgs& args)
+        {
+            mouseMoveEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        protected virtual void OnMouseHover(MouseEventArgs& args)
+        {
+            mouseHoverEvent.Fire(args);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseLeave(EnterLeaveEventArgs& args)
+        {
+            mouseLeaveEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseDown(MouseEventArgs& args)
+        {
+            mouseDownEvent.Fire(args);
+            if (!(this is MenuItem*) && !(this is MenuControl*))
+            {
+                Window* window = GetWindow();
+                if (window != null)
+                {
+                    MenuBar* menuBar = window->GetMenuBar();
+                    if (menuBar != null)
+                    {
+                        auto result = menuBar->CloseMenu();
+                        if (result.Error()) return result;
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseUp(MouseEventArgs& args)
+        {
+            mouseUpEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseDoubleClick(MouseEventArgs& args)
+        {
+            mouseDoubleClickEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnKeyPress(KeyPressEventArgs& args)
+        {
+            keyPressEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnKeyDown(KeyEventArgs& args)
+        {
+            keyDownEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnKeyUp(KeyEventArgs& args)
+        {
+            keyUpEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnClick(ClickEventArgs& args)
+        {
+            clickEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnRightClick(RightClickEventArgs& args)
+        {
+            rightClickEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnCreated()
+        {
+            SetBaseOnCreatedCalled();
+            createdEvent.Fire();
+            return Result<bool>(true);
+        }
+        protected virtual void OnDestroyed()
+        {
+            destroyedEvent.Fire();
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnShown()
+        {
+            shownEvent.Fire();
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnHScroll(ScrollEventArgs& args)
+        {
+            hscrollEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnVScroll(ScrollEventArgs& args)
+        {
+            vscrollEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnMouseWheel(MouseWheelEventArgs& args)
+        {
+            mouseWheelEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        protected virtual Result<bool> OnControlAdded(ControlEventArgs& args)
+        {
+            controlAddedEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> OnControlRemoved(ControlEventArgs& args)
+        {
+            controlRemovedEvent.Fire(args);
+            return Result<bool>(true);
+        }
+        public void* GetDC()
+        {
+            return GetDC(handle);
+        }
+        [nodiscard]
+        public Result<bool> Invalidate()
+        {
+            return InvalidateRect(handle, null, false);
+        }
+        [nodiscard]
+        public Result<bool> Invalidate(const WinRect& rect)
+        {
+            return InvalidateRect(handle, &rect, false);
+        }
+        [nodiscard]
+        public Result<bool> Invalidate(const WinRect& rect, bool eraseBackground)
+        {
+            return InvalidateRect(handle, &rect, eraseBackground);
+        }
+        [nodiscard]
+        public Result<bool> Invalidate(const Rect& rect)
+        {
+            return Invalidate(rect.ToWinRect());
+        }
+        [nodiscard]
+        public Result<bool> Invalidate(const Rect& rect, bool eraseBackground)
+        {
+            return Invalidate(rect.ToWinRect(), eraseBackground);
+        }
+        public inline const Color& BackgroundColor() const
+        {
+            return backgroundColor;
+        }
+        [nodiscard]
+        public Result<bool> SetBackgroundColor(const Color& backgroundColor_)
+        {
+            backgroundColor = backgroundColor_;
+            return Invalidate();
+        }
+        public const Font& GetFont() const
+        {
+            if (!font.IsNull())
+            {
+                return font;
+            }
+            else
+            {
+                Control* parent = ParentControl();
+                if (parent != null)
+                {
+                    return parent->GetFont();
+                }
+                else
+                {
+                    return font;
+                }
+            }
+        }
+        public void SetFont(const Font& font_)
+        {
+            font = font_;
+        }
+        public void SetFont(Font&& font_)
+        {
+            font = Rvalue(font_);
+        }
+        [nodiscard]
+        public Result<FontHandle*> GetFontHandle(Graphics& graphics)
+        {
+            if (!fontHandle.IsNull())
+            {
+                return Result<FontHandle*>(&fontHandle);
+            }
+            if (!font.IsNull())
+            {
+                auto fontHandleResult = font.ToHFont(graphics);
+                if (fontHandleResult.Error())
+                {
+                    return Result<FontHandle*>(ErrorId(fontHandleResult.GetErrorId()));
+                }
+                fontHandle = Rvalue(fontHandleResult.Value());
+                return Result<FontHandle*>(&fontHandle);
+            }
+            Control* parent = ParentControl();
+            if (parent != null)
+            {
+                return parent->GetFontHandle(graphics);
+            }
+            else
+            {
+                return Result<FontHandle*>(&fontHandle); // fontHandle.IsNull() will be true
+            }
+        }
+        public inline void* Handle() const
+        {
+            return handle;
+        }
+        public inline WindowStyle GetWindowStyle() const
+        {
+            return style;
+        }
+        public inline ExtendedWindowStyle GetExtendedWindowStyle() const
+        {
+            return exStyle;
+        }
+        public Event<PaintEventHandler, PaintEventArgs>& PaintEvent()
+        {
+            return paintEvent;
+        }
+        public Event<MouseEnterEventHandler, EnterLeaveEventArgs>& MouseEnterEvent() const
+        {
+            return mouseEnterEvent;
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseMoveEvent() const
+        {
+            return mouseMoveEvent;
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseHoverEvent() const
+        {
+            return mouseHoverEvent;
+        }
+        public Event<MouseLeaveEventHandler, EnterLeaveEventArgs>& MouseLeaveEvent() const
+        {
+            return mouseLeaveEvent;
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseDownEvent() const
+        {
+            return mouseDownEvent;
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseUpEvent() const
+        {
+            return mouseUpEvent;
+        }
+        public Event<MouseEventHandler, MouseEventArgs>& MouseDoubleClickEvent() const
+        {
+            return mouseDoubleClickEvent;
+        }
+        public Event<KeyPressEventHandler, KeyPressEventArgs>& KeyPressEvent() const
+        {
+            return keyPressEvent;
+        }
+        public Event<KeyEventHandler, KeyEventArgs>& KeyDownEvent() const
+        {
+            return keyDownEvent;
+        }
+        public Event<KeyEventHandler, KeyEventArgs>& KeyUpEvent() const
+        {
+            return keyUpEvent;
+        }
+        public Event<CreatedEventHandler>& CreatedEvent() const
+        {
+            return createdEvent;
+        }
+        public Event<DestroyedEventHandler>& DestroyedEvent() const
+        {
+            return destroyedEvent;
+        }
+        public Event<ShownEventHandler>& ShownEvent() const
+        {
+            return shownEvent;
+        }
+        public Event<EnabledChangedEventHandler>& EnabledChangedEvent() const
+        {
+            return enabledChangedEvent;
+        }
+        public Event<VisibleChangedEventHandler>& VisibleChangedEvent() const
+        {
+            return visibleChangedEvent;
+        }
+        public Event<ClickEventHandler, ClickEventArgs>& ClickEvent() const
+        {
+            return clickEvent;
+        }
+        public Event<SizeChangedEventHandler, SizeChangedEventArgs>& SizeChangedEvent() const
+        {
+            return sizeChangedEvent;
+        }
+        public Event<SizeChangingEventHandler, SizeChangingEventArgs> SizeChangingEvent() const
+        {
+            return sizeChangingEvent;
+        }
+        public Event<ChildSizeChangedEventHandler, ControlEventArgs>& ChildSizeChangedEvent() const
+        {
+            return childSizeChangedEvent;
+        }
+        public Event<LocationChangedEventHandler>& LocationChangedEvent() const
+        {
+            return locationChangedEvent;
+        }
+        public Event<ContentChangedEventHandler>& ContentChangedEvent() const
+        {
+            return contentChangedEvent;
+        }
+        public Event<ChildContentChangedEventHandler, ControlEventArgs>& ChildContentChangedEvent() const
+        {
+            return childContentChangedEvent;
+        }
+        public Event<ContentLocationChangedEventHandler>& ContentLocationChangedEvent() const
+        {
+            return contentLocationChangedEvent;
+        }
+        public Event<ChildContentLocationChangedEventHandler, ControlEventArgs>& ChildContentLocationChangedEvent() const
+        {
+            return childContentLocationChangedEvent;
+        }
+        public Event<ContentSizeChangedEventHandler>& ContentSizeChangedEvent() const
+        {
+            return contentSizeChangedEvent;
+        }
+        public Event<ChildContentSizeChangedEventHandler, ControlEventArgs>& ChildContentSizeChangedEvent() const
+        {
+            return childContentSizeChangedEvent;
+        }
+        public Event<TextChangedEventHandler>& TextChangedEvent() const
+        {
+            return textChangedEvent;
+        }
+        public Event<HScrollEventHandler, ScrollEventArgs>& HScrollEvent() const
+        {
+            return hscrollEvent;
+        }
+        public Event<VScrollEventHandler, ScrollEventArgs>& VScrollEvent() const
+        {
+            return vscrollEvent;
+        }
+        public Event<MouseWheelEventHandler, MouseWheelEventArgs>& MouseWheelEvent() const
+        {
+            return mouseWheelEvent;
+        }
+        public Event<TimerEventHandler, TimerEventArgs>& TimerEvent() const
+        {
+            return timerEvent;
+        }
+        public Event<GotFocusEventHandler>& GotFocusEvent() const
+        {
+            return gotFocusEvent;
+        }
+        public Event<LostFocusEventHandler>& LostFocusEvent() const
+        {
+            return lostFocusEvent;
+        }
+        public Event<ControlEventHandler, ControlEventArgs>& ControlAddedEvent() const
+        {
+            return controlAddedEvent;
+        }
+        public Event<ControlEventHandler, ControlEventArgs>& ControlRemovedEvent() const
+        {
+            return controlRemovedEvent;
+        }
+        public Event<RightClickEventHandler, RightClickEventArgs>& RightClickEvent() const
+        {
+            return rightClickEvent;
+        }
+        public Event<ClipboardUpdateEventHandler>& ClipboadUpdateEvent() const
+        {
+            return clipboardUpdateEvent;
+        }
+        private inline bool MouseInClient() const
+        {
+            return (flags & Flags.mouseInClient) != 0;
+        }
+        private inline void SetMouseInClient()
+        {
+            flags = cast<Flags>(flags | Flags.mouseInClient);
+        }
+        private inline void ResetMouseInClient()
+        {
+            flags = cast<Flags>(flags & ~Flags.mouseInClient);
+        }
+        private inline bool LButtonPressed() const
+        {
+            return (flags & flags.lbuttonPressed) != 0;
+        }
+        private inline void SetLButtonPressed()
+        {
+            flags = cast<Flags>(flags | Flags.lbuttonPressed);
+        }
+        private inline void ResetLButtonPressed()
+        {
+            flags = cast<Flags>(flags & ~Flags.lbuttonPressed);
+        }
+        private inline bool MenuWantsKeys() const
+        {
+            return (flags & flags.menuWantsKeys) != 0;
+        }
+        private inline void SetMenuWantsKeys()
+        {
+            flags = cast<Flags>(flags | Flags.menuWantsKeys);
+        }
+        private inline void ResetMenuWantsKeys()
+        {
+            flags = cast<Flags>(flags & ~Flags.menuWantsKeys);
+        }
+        private inline bool KeyDownHandled() const
+        {
+            return (flags & Flags.keyDownHandled) != 0;
+        }
+        private inline void SetKeyDownHandled()
+        {
+            flags = cast<Flags>(flags | Flags.keyDownHandled);
+        }
+        private inline void ResetKeyDownHandled()
+        {
+            flags = cast<Flags>(flags & ~Flags.keyDownHandled);
+        }
+        public inline bool Focused() const
+        {
+            return (flags & Flags.focused) != 0;
+        }
+        private inline void SetFocused()
+        {
+            flags = cast<Flags>(flags | Flags.focused);
+        }
+        private inline void ResetFocused()
+        {
+            flags = cast<Flags>(flags & ~Flags.focused);
+        }
+        public inline bool CaretCreated() const
+        {
+            return (flags & Flags.caretCreated) != 0;
+        }
+        private inline void SetCaretCreated()
+        {
+            flags = cast<Flags>(flags | Flags.caretCreated);
+        }
+        private inline void ResetCaretCreated()
+        {
+            flags = cast<Flags>(flags & ~Flags.caretCreated);
+        }
+        private inline bool CaretShown() const
+        {
+            return (flags & Flags.caretShown) != 0;
+        }
+        private inline void SetCaretShown()
+        {
+            flags = cast<Flags>(flags | Flags.caretShown);
+        }
+        private inline void ResetCaretShown()
+        {
+            flags = cast<Flags>(flags & ~Flags.caretShown);
+        }
+        public inline bool IsDisabled() const
+        {
+            return (flags & Flags.disabled) != 0;
+        }
+        private inline void SetDisabled()
+        {
+            flags = cast<Flags>(flags | Flags.disabled);
+        }
+        private inline void ResetDisabled()
+        {
+            flags = cast<Flags>(flags & ~Flags.disabled);
+        }
+        private inline bool Hidden() const
+        {
+            return (flags & Flags.hidden) != 0;
+        }
+        private inline void SetHidden()
+        {
+            flags = cast<Flags>(flags | Flags.hidden);
+        }
+        private inline void ResetHidden()
+        {
+            flags = cast<Flags>(flags & ~Flags.hidden);
+        }
+        public inline bool IsTabStop() const
+        {
+            return (flags & Flags.tabStop) != Flags.none;
+        }
+        public inline void SetTabStop()
+        {
+            flags = cast<Flags>(flags | Flags.tabStop);
+        }
+        public inline void ResetTabStop()
+        {
+            flags = cast<Flags>(flags & ~Flags.tabStop);
+        }
+        internal inline bool BaseOnCreatedCalled() const
+        {
+            return (flags & Flags.baseOnCreatedCalled) != Flags.none;
+        }
+        internal inline void SetBaseOnCreatedCalled()
+        {
+            flags = cast<Flags>(flags | Flags.baseOnCreatedCalled);
+        }
+        private inline void ResetBaseOnCreatedCalled()
+        {
+            flags = cast<Flags>(flags & ~Flags.baseOnCreatedCalled);
+        }
+        private inline bool MouseHoverTimerStarted() const
+        {
+            return (flags & Flags.mouseHoverTimerStarted) != Flags.none;
+        }
+        private inline void SetMouseHoverTimerStarted()
+        {
+            flags = cast<Flags>(flags | Flags.mouseHoverTimerStarted);
+        }
+        private inline void ResetMouseHoverTimerStarted()
+        {
+            flags = cast<Flags>(flags & ~Flags.mouseHoverTimerStarted);
+        }
+        public inline bool IsDoubleBuffered() const
+        {
+            return (flags & Flags.doubleBuffered) != Flags.none;
+        }
+        public inline void SetDoubleBuffered()
+        {
+            flags = cast<Flags>(flags | Flags.doubleBuffered);
+        }
+        public inline void ResetDoubleBuffered()
+        {
+            flags = cast<Flags>(flags & ~Flags.doubleBuffered);
+        }
+        public inline bool IsScrollSubject() const
+        {
+            return (flags & Flags.scrollSubject) != Flags.none;
+        }
+        public inline void SetScrollSubject()
+        {
+            flags = cast<Flags>(flags | Flags.scrollSubject);
+        }
+        public inline void ResetScrollSubject()
+        {
+            flags = cast<Flags>(flags & ~Flags.scrollSubject);
+        }
+        private string windowClassName;
+        private int windowClassBackgroundColor;
+        private WindowClassStyle windowClassStyle;
+        private Color backgroundColor;
+        private WindowStyle style;
+        private ExtendedWindowStyle exStyle;
+        private void* handle;
+        private string text;
+        private Point location;
+        private Size size;
+        private Point contentLocation;
+        private Size contentSize;
+        private int verticalScrollUnit;
+        private int horizontalScrollUnit;
+        private Dock dock;
+        private Anchors anchors;
+        private Flags flags;
+        private Keys currentModifierKeys;
+        private List<Control*> createList;
+        private Cursor arrowCursor;
+        private int caretShowCount;
+        private Font font;
+        private FontHandle fontHandle;
+        private void* originalWndProc;
+        private Size mouseHoverRectSize;
+        private uint mouseHoverMs;
+        private Point mouseHoverLocation;
+        private UniquePtr<Buffer> buffer;
+        private Event<PaintEventHandler, PaintEventArgs> paintEvent;
+        private Event<MouseEnterEventHandler, EnterLeaveEventArgs> mouseEnterEvent;
+        private Event<MouseEventHandler, MouseEventArgs> mouseMoveEvent;
+        private Event<MouseEventHandler, MouseEventArgs> mouseHoverEvent;
+        private Event<MouseLeaveEventHandler, EnterLeaveEventArgs> mouseLeaveEvent;
+        private Event<MouseEventHandler, MouseEventArgs> mouseDownEvent;
+        private Event<MouseEventHandler, MouseEventArgs> mouseUpEvent;
+        private Event<MouseEventHandler, MouseEventArgs> mouseDoubleClickEvent;
+        private Event<KeyPressEventHandler, KeyPressEventArgs> keyPressEvent;
+        private Event<KeyEventHandler, KeyEventArgs> keyDownEvent;
+        private Event<KeyEventHandler, KeyEventArgs> keyUpEvent;
+        private Event<ClickEventHandler, ClickEventArgs> clickEvent;
+        private Event<CreatedEventHandler> createdEvent;
+        private Event<DestroyedEventHandler> destroyedEvent;
+        private Event<ShownEventHandler> shownEvent;
+        private Event<EnabledChangedEventHandler> enabledChangedEvent;
+        private Event<VisibleChangedEventHandler> visibleChangedEvent;
+        private Event<SizeChangedEventHandler, SizeChangedEventArgs> sizeChangedEvent;
+        private Event<SizeChangingEventHandler, SizeChangingEventArgs> sizeChangingEvent;
+        private Event<ChildSizeChangedEventHandler, ControlEventArgs> childSizeChangedEvent;
+        private Event<LocationChangedEventHandler> locationChangedEvent;
+        private Event<ContentChangedEventHandler> contentChangedEvent;
+        private Event<ChildContentChangedEventHandler, ControlEventArgs> childContentChangedEvent;
+        private Event<ContentLocationChangedEventHandler> contentLocationChangedEvent;
+        private Event<ChildContentLocationChangedEventHandler, ControlEventArgs> childContentLocationChangedEvent;
+        private Event<ContentSizeChangedEventHandler> contentSizeChangedEvent;
+        private Event<ChildContentSizeChangedEventHandler, ControlEventArgs> childContentSizeChangedEvent;
+        private Event<TextChangedEventHandler> textChangedEvent;
+        private Event<HScrollEventHandler, ScrollEventArgs> hscrollEvent;
+        private Event<VScrollEventHandler, ScrollEventArgs> vscrollEvent;
+        private Event<MouseWheelEventHandler, MouseWheelEventArgs> mouseWheelEvent;
+        private Event<TimerEventHandler, TimerEventArgs> timerEvent;
+        private Event<GotFocusEventHandler> gotFocusEvent;
+        private Event<LostFocusEventHandler> lostFocusEvent;
+        private Event<ChildGotFocusEventHandler, ControlEventArgs> childGotFocusEvent;
+        private Event<ChildLostFocusEventHandler, ControlEventArgs> childLostFocusEvent;
+        private Event<ControlEventHandler, ControlEventArgs> controlAddedEvent;
+        private Event<ControlEventHandler, ControlEventArgs> controlRemovedEvent;
+        private Event<RightClickEventHandler, RightClickEventArgs> rightClickEvent;
+        private Event<ClipboardUpdateEventHandler> clipboardUpdateEvent;
+    }
+}

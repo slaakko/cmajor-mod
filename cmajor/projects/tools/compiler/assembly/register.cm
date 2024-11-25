@@ -26,6 +26,46 @@ namespace assembly
         max
     }
 
+    public string RegisterGroupName(RegisterGroupKind kind)
+    {
+        switch (kind)
+        {
+            case RegisterGroupKind.rax: return "rax";
+            case RegisterGroupKind.rbx: return "rbx";
+            case RegisterGroupKind.rcx: return "rcx";
+            case RegisterGroupKind.rdx: return "rdx";
+            case RegisterGroupKind.rsi: return "rsi";
+            case RegisterGroupKind.rdi: return "rdi";
+            case RegisterGroupKind.rbp: return "rbp";
+            case RegisterGroupKind.rsp: return "rsp";
+            case RegisterGroupKind.r8: return "r8";
+            case RegisterGroupKind.r9: return "r9";
+            case RegisterGroupKind.r10: return "r10";
+            case RegisterGroupKind.r11: return "r11";
+            case RegisterGroupKind.r12: return "r12";
+            case RegisterGroupKind.r13: return "r13";
+            case RegisterGroupKind.r14: return "r14";
+            case RegisterGroupKind.r15: return "r15";
+            case RegisterGroupKind.xmm0: return "xmm0";
+            case RegisterGroupKind.xmm1: return "xmm1";
+            case RegisterGroupKind.xmm2: return "xmm2";
+            case RegisterGroupKind.xmm3: return "xmm3";
+            case RegisterGroupKind.xmm4: return "xmm4";
+            case RegisterGroupKind.xmm5: return "xmm5";
+            case RegisterGroupKind.xmm6: return "xmm6";
+            case RegisterGroupKind.xmm7: return "xmm7";
+            case RegisterGroupKind.xmm8: return "xmm8";
+            case RegisterGroupKind.xmm9: return "xmm9";
+            case RegisterGroupKind.xmm10: return "xmm10";
+            case RegisterGroupKind.xmm11: return "xmm11";
+            case RegisterGroupKind.xmm12: return "xmm12";
+            case RegisterGroupKind.xmm13: return "xmm13";
+            case RegisterGroupKind.xmm14: return "xmm14";
+            case RegisterGroupKind.xmm15: return "xmm15";
+        }
+        return "<INVALID REGISTER GROUP " + ToString(cast<int>(kind)) + ">";
+    }
+
     public string RegName(RegisterKind kind)
     {
         switch (kind)
@@ -115,16 +155,20 @@ namespace assembly
             case RegisterKind.xmm14: return "xmm14";
             case RegisterKind.xmm15: return "xmm15";
         }
-        return string();
+        return "<INVALID REGISTER " + ToString(cast<int>(kind)) + ">";
     }
 
     public class Register : Value
     {
-        public Register() : base(ValueKind.reg, string()), kind(), group(), size()
+        public Register() : base(ValueKind.reg, "<EMPTY REGISTER>"), kind(RegisterKind.max), group(RegisterGroupKind.max), size(0)
         {
         }
         public Register(RegisterKind kind_, RegisterGroupKind group_, int size_) : base(ValueKind.reg, RegName(kind_)), kind(kind_), group(group_), size(size_)
         {
+        }
+        public void Print()
+        {
+            Console.Out() << "REGISTER " << Name() << " : GROUP " << RegisterGroupName(group) << " : SIZE " << size << endl();
         }
         public inline RegisterKind RegKind() const
         {
@@ -156,6 +200,22 @@ namespace assembly
         }
         public RegisterGroup(RegisterGroupKind kind_) : kind(kind_), nonvolatile(false)
         {
+        }
+        public void Print()
+        {
+            Console.Out() << "REGISTER GROUP " << RegisterGroupName(kind) << " : LOCAL " << IsLocal() << " : FLOATING POINT " << IsFloatingPointReg() <<
+                " : VOLATILE " << IsVolatile() << endl();
+            for (int size = 1; size < 16; ++size)
+            {
+                if (size >= 1 && size <= 8 || size == highByteRegSize || size == 16)
+                {
+                    Register* reg = GetReg(size);
+                    if (reg->RegKind() != RegisterKind.max)
+                    {
+                        reg->Print();
+                    }
+                }
+            }
         }
         public inline RegisterGroupKind Kind() const
         {
@@ -206,7 +266,21 @@ namespace assembly
 
     public class Registers
     {
-        public Registers()
+        static Registers() : instance(new Registers())
+        {
+        }
+        public static Registers& Instance()
+        {
+            return *instance;
+        }
+        public void Print()
+        {
+            for (const auto& regGroup : regGroups)
+            {
+                regGroup->Print();
+            }
+        }
+        private Registers()
         {
             RegisterGroup* rax = new RegisterGroup(RegisterGroupKind.rax);
             rax->SetNonvolatile(false);
@@ -450,6 +524,7 @@ namespace assembly
         {
             return regGroups[cast<int>(kind)].Get();
         }
+        private static UniquePtr<Registers> instance;
         private List<UniquePtr<RegisterGroup>> regGroups;
     }
 
@@ -463,7 +538,7 @@ namespace assembly
 
     public class RegisterPool
     {
-        public RegisterPool(Registers& registers_) : registers(registers_), localRegisterCount(0), localXMMRegisterCount(0)
+        public RegisterPool() : registers(Registers.Instance()), localRegisterCount(0), localXMMRegisterCount(0)
         {
             AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind.rsi));
             AddLocalRegisterGroup(registers.GetRegisterGroup(RegisterGroupKind.rdi));

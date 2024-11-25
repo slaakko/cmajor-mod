@@ -1,0 +1,99 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace symbols
+{
+    public Result<Value*> CreateValue(ValueKind kind, const System.Lex.Span& span)
+    {
+        switch (kind)
+        {
+            case ValueKind.boolValue:
+            {
+                return Result<Value*>(new BoolValue(span));
+            }
+            case ValueKind.sbyteValue:
+            {
+                return Result<Value*>(new SByteValue(span));
+            }
+            case ValueKind.byteValue:
+            {
+                return Result<Value*>(new ByteValue(span));
+            }
+            case ValueKind.shortValue:
+            {
+                return Result<Value*>(new ShortValue(span));
+            }
+            case ValueKind.ushortValue:
+            {
+                return Result<Value*>(new UShortValue(span));
+            }
+            case ValueKind.intValue:
+            {
+                return Result<Value*>(new IntValue(span));
+            }
+            case ValueKind.uintValue:
+            {
+                return Result<Value*>(new UIntValue(span));
+            }
+            case ValueKind.longValue:
+            {
+                return Result<Value*>(new LongValue(span));
+            }
+            case ValueKind.ulongValue:
+            {
+                return Result<Value*>(new ULongValue(span));
+            }
+            case ValueKind.floatValue:
+            {
+                return Result<Value*>(new FloatValue(span));
+            }
+            case ValueKind.doubleValue:
+            {
+                return Result<Value*>(new DoubleValue(span));
+            }
+            case ValueKind.charValue:
+            {
+                return Result<Value*>(new CharValue(span));
+            }
+            case ValueKind.wcharValue:
+            {
+                return Result<Value*>(new WCharValue(span));
+            }
+            case ValueKind.ucharValue:
+            {
+                return Result<Value*>(new UCharValue(span));
+            }
+            case ValueKind.stringValue:
+            {
+                return Result<Value*>(new StringValue(span));
+            }
+            case ValueKind.wstringValue:
+            {
+                return Result<Value*>(new WStringValue(span));
+            }
+            case ValueKind.ustringValue:
+            {
+                return Result<Value*>(new UStringValue(span));
+            }
+            case ValueKind.nullValue:
+            {
+                return Result<Value*>(new NullValue(span));
+            }
+            case ValueKind.arrayValue:
+            {
+                return Result<Value*>(new ArrayValue(span));
+            }
+            case ValueKind.structuredValue:
+            {
+                return Result<Value*>(new StructureValue(span));
+            }
+        }
+        int errorId = AllocateError("no case to create value '" + ValueKindStr(kind) + "'");
+        return Result<Value*>(ErrorId(errorId));
+    }
+}
+

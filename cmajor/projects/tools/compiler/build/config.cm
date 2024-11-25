@@ -1,0 +1,84 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using cm.ast;
+
+namespace build
+{
+    public Result<string> GetVCVars64Path()
+    {
+        Result<string> cmajorRootDirResult = CmajorRootDir();
+        if (cmajorRootDirResult.Error()) return cmajorRootDirResult;
+        string cmajorRootDir = Rvalue(cmajorRootDirResult.Value());
+        Result<string> configFilePathResult = System.IO.GetFullPath(System.IO.Path.Combine(System.IO.Path.Combine(cmajorRootDir, "config"), "masm.config.xml"));
+        if (configFilePathResult.Error()) return configFilePathResult;
+        string configFilePath = Rvalue(configFilePathResult.Value());
+        string configDirPath = System.IO.Path.GetDirectoryName(configFilePath);
+        if (!System.IO.Directory.Exists(configDirPath))
+        {
+            System.IO.Directory.CreateDirectories(configDirPath);
+        }
+        Result<bool> configFileExistsResult = System.IO.File.Exists(configFilePath);
+        if (configFileExistsResult.Error())
+        {
+            return Result<string>(ErrorId(configFileExistsResult.GetErrorId()));
+        }
+        bool configFileExists = configFileExistsResult.Value();
+        if (!configFileExists)
+        {
+            System.Xml.Document configDoc;
+            System.Xml.Element* configurationElement = System.Xml.MakeElement("configuration");
+            configDoc.AppendChild(configurationElement);
+            System.Xml.Element* vcvars64Element = System.Xml.MakeElement("vcvars64");
+            configurationElement->AppendChild(vcvars64Element);
+            vcvars64Element->SetAttribute("path", "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat");
+            Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(configFilePath);
+            if (writerResult.Error())
+            {
+                return Result<string>(ErrorId(writerResult.GetErrorId()));
+            }
+            System.Text.CodeFormatter formatter(writerResult.Value());
+            formatter.SetIndentSize(1);
+            Result<bool> result = configDoc.Write(formatter);
+            if (result.Error())
+            {
+                return Result<string>(ErrorId(result.GetErrorId()));
+            }
+        }
+        System.Lex.FileMap fileMap;
+        Result<UniquePtr<System.Xml.Document>> configDocResult = System.Xml.ParseXmlDocument(configFilePath, fileMap);
+        if (configDocResult.Error())
+        {
+            return Result<string>(ErrorId(configDocResult.GetErrorId()));
+        }
+        System.Xml.Document* configDoc = configDocResult.Value().Get();
+        Result<UniquePtr<System.XPath.NodeSet>> nodeSetResult = System.XPath.EvaluateToNodeSet("/configuration/vcvars64", configDoc);
+        if (nodeSetResult.Error())
+        {
+            return Result<string>(ErrorId(nodeSetResult.GetErrorId()));
+        }
+        System.XPath.NodeSet* nodeSet = nodeSetResult.Value().Get();
+        int n = nodeSet->Count();
+        for (int i = 0; i < n; ++i)
+        {
+            System.Xml.Node* node = nodeSet->GetNode(i);
+            if (node->IsElementNode())
+            {
+                System.Xml.Element* element = cast<System.Xml.Element*>(node);
+                string path = element->GetAttribute("path");
+                if (path.IsEmpty())
+                {
+                    int errorId = AllocateError("/configuration/vcvars64 element has no 'path' attribute in " + configFilePath);
+                    return Result<string>(ErrorId(errorId));
+                }
+                return path;
+            }
+        }
+        int errorId = AllocateError("/configuration/vcvars64 element not found in " + configFilePath);
+        return Result<string>(ErrorId(errorId));
+    }
+}
+

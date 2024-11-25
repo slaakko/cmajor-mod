@@ -50,14 +50,12 @@ namespace build
         UniquePtr<BoundCompileUnit> boundCompileUnit(new BoundCompileUnit(context, module, sourceFile, attributeBinder));
         boundCompileUnit->PushBindingTypes();
         TypeBinder typeBinder(boundCompileUnit.Get());
-        Console.Out() << "> " << sourceFile->FilePath() << endl();
         sourceFile->Accept(typeBinder);
         if (typeBinder.Error())
         {
             return Result<UniquePtr<BoundCompileUnit>>(ErrorId(typeBinder.GetErrorId()));
         }
         boundCompileUnit->PopBindingTypes();
-        Console.Out() << "< " << sourceFile->FilePath() << endl();
         return Result<UniquePtr<BoundCompileUnit>>(Rvalue(boundCompileUnit));
     }
 
@@ -101,7 +99,8 @@ namespace build
 
     public Result<bool> GenerateCode(BoundCompileUnit* boundCompileUnit)
     {
-        return codegen.GenerateCode(boundCompileUnit);
+        Result<bool> result = codegen.GenerateCode(boundCompileUnit);
+        return result;
     }
 
     public Result<bool> CompileSingleThreaded(Project* project, Module* module, List<UniquePtr<BoundCompileUnit>>& boundCompileUnits,
@@ -130,6 +129,7 @@ namespace build
             }
             result = GenerateCode(boundCompileUnit.Get());
             if (result.Error()) return result;
+            asmFilePaths.Add(boundCompileUnit->AsmFilePath());
         }
         return Result<bool>(true);
     }
@@ -274,6 +274,10 @@ namespace build
         for (const auto& compileResult : compileData.results)
         {
             if (compileResult.Error()) return compileResult;
+        }
+        for (BoundCompileUnit* compileUnit : compileUnits)
+        {
+            asmFilePaths.Add(compileUnit->AsmFilePath());
         }
         return Result<bool>(true);
     }

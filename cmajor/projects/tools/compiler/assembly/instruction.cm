@@ -34,7 +34,7 @@ namespace assembly
         XADD, XCHG, XLAT, XLATB, XOR,
         // floating-point support:
         MOVDQA, MOVQ, MOVSS, ADDSD, ADDSS, SUBSD, SUBSS, MULSD, MULSS, DIVSD, DIVSS, UCOMISD, UCOMISS, COMISD, COMISS,
-        XORPD, XORPS, CVTSI2SD, CVTSI2SS, CVTTSD2SO, CVTTSS2SI, CVTSS2SD, CVTSD2SS,
+        XORPD, XORPS, CVTSI2SD, CVTSI2SS, CVTTSS2SI, CVTSS2SD, CVTSD2SS, CVTTSD2SI,
         // data definition support:
         DB, DW, DD, DQ, REAL4, REAL8
     }
@@ -336,20 +336,20 @@ namespace assembly
             case OpCode.XORPS: return "xorps";
             case OpCode.CVTSI2SD: return "cvtsi2sd";
             case OpCode.CVTSI2SS: return "cvtsi2ss";
-            case OpCode.CVTTSD2SO: return "cvttsd2so";
             case OpCode.CVTTSS2SI: return "cvttss2si";
             case OpCode.CVTSS2SD: return "cvttss2sd";
-            case OpCode.CVTSD2SS: return "cvttsd2ss";
-            case OpCode.DB: return "db";
-            case OpCode.DW: return "dw";
-            case OpCode.DD: return "dd";
-            case OpCode.DQ: return "dq";
-            case OpCode.REAL4: return "real4";
-            case OpCode.REAL8: return "real8";
+            case OpCode.CVTSD2SS: return "cvtsd2ss";
+            case OpCode.CVTTSD2SI: return "cvttsd2si";
+            case OpCode.DB: return "DB";
+            case OpCode.DW: return "DW";
+            case OpCode.DD: return "DD";
+            case OpCode.DQ: return "DQ";
+            case OpCode.REAL4: return "REAL4";
+            case OpCode.REAL8: return "REAL8";
         }
         return string();
     }
-    
+
     public class Instruction
     {
         public Instruction(OpCode opCode_) : opCode(opCode_), nocolon(false), writeln(false)
@@ -398,9 +398,14 @@ namespace assembly
         [nodiscard]
         public Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
+            bool indentDecreased = false;
             if (!label.IsEmpty())
             {
-                formatter.DecIndent();
+                if (formatter.Indent() > 0)
+                {
+                    formatter.DecIndent();
+                    indentDecreased = true;
+                }
                 string c(":");
                 if (nocolon)
                 {
@@ -437,7 +442,10 @@ namespace assembly
             if (result.Error()) return result;
             if (!label.IsEmpty() && !writeln)
             {
-                formatter.IncIndent();
+                if (indentDecreased)
+                {
+                    formatter.IncIndent();
+                }
             }
             return Result<bool>(true);
         }

@@ -121,62 +121,64 @@ namespace symbols
         {
             return false;
         }
-        public virtual TypeSymbol* PlainType(SymbolsContext& context) const
+        public virtual Result<TypeSymbol*> PlainType(SymbolsContext& context) const
         {
-            return this;
+            return Result<TypeSymbol*>(this);
         }
-        public virtual TypeSymbol* RemoveConst(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> RemoveConst(SymbolsContext& context)
         {
-            return this;
+            return Result<TypeSymbol*>(this);
         }
-        public virtual TypeSymbol* RemoveReference(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> RemoveReference(SymbolsContext& context)
         {
-            return this;
+            return Result<TypeSymbol*>(this);
         }
-        public virtual TypeSymbol* RemovePointer(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> RemovePointer(SymbolsContext& context)
         {
-            return this;
+            return Result<TypeSymbol*>(this);
         }
-        public virtual TypeSymbol* RemovePtrOrRef(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> RemovePtrOrRef(SymbolsContext& context)
         {
-            return this;
+            return Result<TypeSymbol*>(this);
         }
         public virtual Derivations GetDerivations() const
         {
             return Derivations();
         }
-        public virtual TypeSymbol* RemoveDerivations(Derivations sourceDerivations, SymbolsContext& context) const
+        public virtual Result<TypeSymbol*> RemoveDerivations(Derivations sourceDerivations, SymbolsContext& context) const
         {
-            if (HasPointerDerivation(sourceDerivations)) return null;
-            return this;
+            if (HasPointerDerivation(sourceDerivations)) return Result<TypeSymbol*>(cast<TypeSymbol*>(null));
+            return Result<TypeSymbol*>(this);
         }
-        public virtual TypeSymbol* Unify(TypeSymbol* that, SymbolsContext& context)
+        public virtual Result<TypeSymbol*> Unify(TypeSymbol* that, SymbolsContext& context)
         {
-            return null;
+            return Result<TypeSymbol*>(cast<TypeSymbol*>(null));
         }
         public virtual TypeSymbol* UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
         {
             return null;
         }
-        public virtual TypeSymbol* AddConst(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> AddConst(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, Derivations.constDerivation);
         }
-        public virtual TypeSymbol* AddLvalueReference(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> AddLvalueReference(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, Derivations.lvalueRefDerivation);
         }
-        public virtual TypeSymbol* AddRvalueReference(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> AddRvalueReference(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, Derivations.rvalueRefDerivation);
         }
-        public virtual TypeSymbol* AddPointer(SymbolsContext& context)
+        public virtual Result<TypeSymbol*> AddPointer(SymbolsContext& context)
         {
             return context.RootModule()->GetSymbolTable()->MakeDerivedType(context, this, SetPointerDerivations(1));
         }
         public virtual Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
         {
-            int errorId = MakeError("default IR value not implemented for this kind of type", FullSpan());
+            Result<string> fullNameResult = ToUtf8(FullName());
+            string fullName = Rvalue(fullNameResult.Value());
+            int errorId = MakeError("default IR value not implemented for '" + fullName + "'", FullSpan());
             return Result<intermediate.Value*>(ErrorId(errorId));
         }
         [nodiscard]

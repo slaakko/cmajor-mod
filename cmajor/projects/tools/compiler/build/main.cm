@@ -1,0 +1,136 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using symbols;
+using cm.ast;
+
+namespace build
+{
+    [nodiscard]
+    public Result<bool> GenerateMainUnitConsole(Module* rootModule, List<string>& cppFilePaths, SymbolsContext& context)
+    {
+        string libDir = System.IO.Path.GetDirectoryName(rootModule->OriginalFilePath());
+        string mainFilePath = System.IO.Path.Combine(libDir, "__main__.cpp");
+        cppFilePaths.Add(mainFilePath);
+        FunctionSymbol* userMainFunctionSymbol = rootModule->GetSymbolTable()->MainFunctionSymbol();
+        if (userMainFunctionSymbol == null)
+        {
+            int errorId = AllocateError("program has no main function");
+            return Result<bool>(ErrorId(errorId));
+        }
+        TypeSymbol* returnType = userMainFunctionSymbol->ReturnType();
+        Result<System.IO.StreamWriter> writerResult = System.IO.File.CreateText(mainFilePath);
+        if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+        System.IO.StreamWriter& writer = writerResult.Value();
+        System.Text.CodeFormatter formatter(writer);
+        string returnTypeName;
+        string retval;
+        if (returnType->IsVoidTypeSymbol())
+        {
+            returnTypeName = "void";
+        }
+        else if (returnType->IsIntTypeSymbol())
+        {
+            returnTypeName = "int";
+            retval = "retval = ";
+        }
+        else
+        {
+            int errorId = MakeError("'void' or 'int' return type expected", userMainFunctionSymbol->FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        string parameters;
+        string arguments;
+        if (userMainFunctionSymbol->Parameters().Count() == 0)
+        {
+            parameters = "()";
+            arguments = "()";
+        }
+        else if (userMainFunctionSymbol->Parameters().Count() == 2)
+        {
+            parameters.Append("(");
+            if (userMainFunctionSymbol->Parameters()[0]->Type()->IsIntTypeSymbol())
+            {
+                parameters.Append("int argc");
+            }
+            else
+            {
+                int errorId = MakeError("'int' parameter type expected", userMainFunctionSymbol->Parameters()[0]->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            Result<TypeSymbol*> charTypeSymbolResult = rootModule->GetSymbolTable()->GetTypeByName(u"char");
+            if (charTypeSymbolResult.Error()) return Result<bool>(ErrorId(charTypeSymbolResult.GetErrorId()));
+            TypeSymbol* charTypeSymbol = charTypeSymbolResult.Value();
+            Result<TypeSymbol*> constCharTypeSymbolResult = charTypeSymbol->AddConst(context);
+            if (constCharTypeSymbolResult.Error()) return Result<bool>(ErrorId(constCharTypeSymbolResult.GetErrorId()));
+            TypeSymbol* constCharTypeSymbol = constCharTypeSymbolResult.Value();
+            Result<TypeSymbol*> constCharPtrTypeSymbolResult = constCharTypeSymbol->AddPointer(context);
+            if (constCharPtrTypeSymbolResult.Error()) return Result<bool>(ErrorId(constCharPtrTypeSymbolResult.GetErrorId()));
+            TypeSymbol* constCharPtrTypeSymbol = constCharPtrTypeSymbolResult.Value();
+            if (TypesEqual(userMainFunctionSymbol->Parameters()[1]->Type(), constCharPtrTypeSymbol))
+            {
+                parameters.Append(", const char** argv");
+            }
+            else
+            {
+                int errorId = MakeError("'const char*' parameter type expected", userMainFunctionSymbol->Parameters()[1]->FullSpan());
+                return Result<bool>(ErrorId(errorId));
+            }
+            parameters.Append(")");
+            arguments = "(argc, argv)";
+        }
+        else
+        {
+            int errorId = MakeError("either 0 or 2 parameters expected", userMainFunctionSymbol->FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        Result<string> mangledNameResult = ToUtf8(userMainFunctionSymbol->MangledName());
+        if (mangledNameResult.Error()) return Result<bool>(ErrorId(mangledNameResult.GetErrorId()));
+        string mangledName = Rvalue(mangledNameResult.Value());
+        Result<bool> result = formatter.WriteLine("extern \"C\" " + returnTypeName + " " + mangledName + parameters + ";");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("extern \"C\" void RtmInit();");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("extern \"C\" void RtmDone();");
+        if (result.Error()) return result;
+        result = formatter.WriteLine();
+        if (result.Error()) return result;
+        result = formatter.WriteLine("int main(int argc, const char** argv)");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("{");
+        if (result.Error()) return result;
+        formatter.IncIndent();
+        result = formatter.WriteLine("RtmInit();");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("int retval = 0;");
+        if (result.Error()) return result;
+        result = formatter.WriteLine(retval + mangledName + arguments + ";");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("RtmDone();");
+        if (result.Error()) return result;
+        result = formatter.WriteLine("return retval;");
+        if (result.Error()) return result;
+        formatter.DecIndent();
+        result = formatter.WriteLine("}");
+        if (result.Error()) return result;
+        return Result<bool>(true);
+    }
+
+    [nodiscard]
+    public Result<bool> GenerateMainUnit(Project* project, Module* rootModule, List<string>& cppFilePaths, SymbolsContext& context)
+    {
+        if (project->GetTarget() == Target.program || project->GetTarget() == Target.winapp)
+        {
+            return GenerateMainUnitConsole(rootModule, cppFilePaths, context);
+        }
+        else if (project->GetTarget() == Target.winguiapp)
+        {
+        }
+        return Result<bool>(true);
+    }
+}
+

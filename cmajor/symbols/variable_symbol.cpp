@@ -155,7 +155,7 @@ std::string ParameterSymbol::GetSymbolHelp() const
 }
 
 LocalVariableSymbol::LocalVariableSymbol(const soul::ast::Span&  span_, const std::u32string& name_) :
-    VariableSymbol(SymbolType::localVariableSymbol, span_, name_)
+    VariableSymbol(SymbolType::localVariableSymbol, span_, name_), initialized(false)
 {
 }
 

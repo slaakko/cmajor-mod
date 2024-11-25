@@ -86,12 +86,14 @@ namespace symbols
             Result<long> sizeResult = reader.GetBinaryReader().ReadLong();
             if (sizeResult.Error()) return Result<bool>(ErrorId(sizeResult.GetErrorId()));
             size = sizeResult.Value();
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             Result<TypeSymbol*> typeResult = symbolTable->GetType(elementTypeId);
             if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
             elementType = typeResult.Value();
@@ -107,6 +109,29 @@ namespace symbols
             Result<intermediate.ArrayType*> arrayTypeResult = emitter.GetArrayType(elementIrType, size);
             if (arrayTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(arrayTypeResult.GetErrorId()));
             return Result<intermediate.Type*>(arrayTypeResult.Value());
+        }
+        public override Result<intermediate.Value*> CreateDefaultIrValue(Emitter& emitter) const
+        {
+            if (size == -1)
+            {
+                int errorId = MakeError("array size not set", FullSpan());
+                return Result<intermediate.Value*>(ErrorId(errorId));
+            }
+            Result<intermediate.Type*> irTypeResult = IrType(emitter);
+            if (irTypeResult.Error()) return Result<intermediate.Value*>(ErrorId(irTypeResult.GetErrorId()));
+            intermediate.Type* irType = irTypeResult.Value();
+            #assert(irType->IsArrayType());
+            intermediate.ArrayType* arrayType = cast<intermediate.ArrayType*>(irType);
+            List<intermediate.Value*> arrayOfDefaults;
+            for (long i = 0; i < size; ++i)
+            {
+                Result<intermediate.Value*> elementTypeValueResult = elementType->CreateDefaultIrValue(emitter);
+                if (elementTypeValueResult.Error()) return elementTypeValueResult;
+                intermediate.Value* defaultValue = elementTypeValueResult.Value();
+                arrayOfDefaults.Add(defaultValue);
+            }
+            intermediate.Value* arrayValue = emitter.GetArrayValue(arrayOfDefaults, arrayType);
+            return Result<intermediate.Value*>(arrayValue);
         }
         public override ValueKind GetValueKind() const
         {
@@ -168,12 +193,14 @@ namespace symbols
             Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
             if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
             arrayTypeId = arrayTypeIdResult.Value();
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
             if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
             TypeSymbol* type = arrayTypeResult.Value();
@@ -212,7 +239,13 @@ namespace symbols
                 SetErrorId(result.GetErrorId());
                 return;
             }
-            TypeSymbol* returnType = arrayType->ElementType()->AddPointer(context);
+            Result<TypeSymbol*> returnTypeResult = arrayType->ElementType()->AddPointer(context);
+            if (returnTypeResult.Error())
+            {
+                SetErrorId(returnTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* returnType = returnTypeResult.Value();
             SetReturnType(returnType);
             result = ComputeName(context);
             if (result.Error())
@@ -238,12 +271,14 @@ namespace symbols
             Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
             if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
             arrayTypeId = arrayTypeIdResult.Value();
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
             if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
             TypeSymbol* type = arrayTypeResult.Value();
@@ -288,7 +323,13 @@ namespace symbols
                 SetErrorId(result.GetErrorId());
                 return;
             }
-            TypeSymbol* returnType = arrayType->ElementType()->AddPointer(context);
+            Result<TypeSymbol*> returnTypeResult = arrayType->ElementType()->AddPointer(context);
+            if (returnTypeResult.Error())
+            {
+                SetErrorId(returnTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* returnType = returnTypeResult.Value();
             SetReturnType(returnType);
             result = ComputeName(context);
             if (result.Error())
@@ -314,12 +355,14 @@ namespace symbols
             Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
             if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
             arrayTypeId = arrayTypeIdResult.Value();
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
             if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
             TypeSymbol* type = arrayTypeResult.Value();
@@ -364,7 +407,21 @@ namespace symbols
                 SetErrorId(result.GetErrorId());
                 return;
             }
-            TypeSymbol* returnType = arrayType->ElementType()->AddConst(context)->AddPointer(context);
+            Result<TypeSymbol*> constTypeResult = arrayType->ElementType()->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> pointerTypeResult = constType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            TypeSymbol* returnType = pointerType;
             SetReturnType(returnType);
             result = ComputeName(context);
             if (result.Error())
@@ -390,12 +447,14 @@ namespace symbols
             Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
             if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
             arrayTypeId = arrayTypeIdResult.Value();
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
             if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
             TypeSymbol* type = arrayTypeResult.Value();
@@ -440,7 +499,21 @@ namespace symbols
                 SetErrorId(result.GetErrorId());
                 return;
             }
-            TypeSymbol* returnType = arrayType->ElementType()->AddConst(context)->AddPointer(context);
+            Result<TypeSymbol*> constTypeResult = arrayType->ElementType()->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> pointerTypeResult = constType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            TypeSymbol* returnType = pointerType;
             SetReturnType(returnType);
             result = ComputeName(context);
             if (result.Error())
@@ -466,12 +539,14 @@ namespace symbols
             Result<Uuid> arrayTypeIdResult = reader.GetBinaryReader().ReadUuid();
             if (arrayTypeIdResult.Error()) return Result<bool>(ErrorId(arrayTypeIdResult.GetErrorId()));
             arrayTypeId = arrayTypeIdResult.Value();
-            reader.AddToResolutionList(this);
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         [nodiscard]
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             Result<TypeSymbol*> arrayTypeResult = symbolTable->GetType(arrayTypeId);
             if (arrayTypeResult.Error()) return Result<bool>(ErrorId(arrayTypeResult.GetErrorId()));
             TypeSymbol* type = arrayTypeResult.Value();
@@ -506,7 +581,14 @@ namespace symbols
             SetAccess(SymbolAccess.public_);
             SetBasicTypeOperation();
             ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
-            thisParam->SetType(arrayType->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = arrayType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -603,7 +685,14 @@ namespace symbols
             SetAccess(SymbolAccess.public_);
             SetBasicTypeOperation();
             ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
-            thisParam->SetType(arrayType->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = arrayType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -611,7 +700,21 @@ namespace symbols
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
-            thatParam->SetType(arrayType->AddConst(context)->AddLvalueReference(context));
+            Result<TypeSymbol*> constTypeResult = arrayType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -725,7 +828,14 @@ namespace symbols
             SetAccess(SymbolAccess.public_);
             SetBasicTypeOperation();
             ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
-            thisParam->SetType(arrayType->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = arrayType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -733,7 +843,14 @@ namespace symbols
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
-            thatParam->SetType(arrayType->AddRvalueReference(context));
+            Result<TypeSymbol*> refTypeResult = arrayType->AddRvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -839,7 +956,14 @@ namespace symbols
             SetAccess(SymbolAccess.public_);
             SetBasicTypeOperation();
             ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
-            thisParam->SetType(arrayType->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = arrayType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -847,7 +971,21 @@ namespace symbols
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
-            thatParam->SetType(arrayType->AddConst(context)->AddLvalueReference(context));
+            Result<TypeSymbol*> constTypeResult = arrayType->AddConst(context);
+            if (constTypeResult.Error())
+            {
+                SetErrorId(constTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* constType = constTypeResult.Value();
+            Result<TypeSymbol*> refTypeResult = constType->AddLvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
             result = AddMember(thatParam, context);
             if (result.Error())
             {
@@ -969,7 +1107,14 @@ namespace symbols
             SetAccess(SymbolAccess.public_);
             SetBasicTypeOperation();
             ParameterSymbol* thisParam = new ParameterSymbol(arrayType->Span(), u"this");
-            thisParam->SetType(arrayType->AddPointer(context));
+            Result<TypeSymbol*> pointerTypeResult = arrayType->AddPointer(context);
+            if (pointerTypeResult.Error())
+            {
+                SetErrorId(pointerTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* pointerType = pointerTypeResult.Value();
+            thisParam->SetType(pointerType);
             Result<bool> result = AddMember(thisParam, context);
             if (result.Error())
             {
@@ -977,7 +1122,14 @@ namespace symbols
                 return;
             }
             ParameterSymbol* thatParam = new ParameterSymbol(arrayType->Span(), u"that");
-            thatParam->SetType(arrayType->AddRvalueReference(context));
+            Result<TypeSymbol*> refTypeResult = arrayType->AddRvalueReference(context);
+            if (refTypeResult.Error())
+            {
+                SetErrorId(refTypeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* refType = refTypeResult.Value();
+            thatParam->SetType(refType);
             result = AddMember(thatParam, context);
             Result<TypeSymbol*> voidTypeResult = context.RootModule()->GetSymbolTable()->GetTypeByName(u"void");
             if (voidTypeResult.Error())
@@ -1115,7 +1267,13 @@ namespace symbols
             TypeSymbol* returnType = arrayType->ElementType();
             if (!returnType->IsBasicTypeSymbol() && !returnType->IsPointerType() && !returnType->IsDelegateTypeSymbol())
             {
-                returnType = returnType->AddLvalueReference(context);
+                Result<TypeSymbol*> returnTypeResult = returnType->AddLvalueReference(context);
+                if (returnTypeResult.Error())
+                {
+                    SetErrorId(returnTypeResult.GetErrorId());
+                    return;
+                }
+                returnType = returnTypeResult.Value();
             }
             SetReturnType(returnType);
             result = ComputeName(context);
@@ -1124,6 +1282,10 @@ namespace symbols
                 SetErrorId(result.GetErrorId());
                 return;
             }
+        }
+        public override bool IsArrayElementAccess() const
+        {
+            return true;
         }
         [nodiscard]
         public override Result<bool> GenerateCall(Emitter& emitter, const List<IrObject*>& irObjects, OperationFlags flags)

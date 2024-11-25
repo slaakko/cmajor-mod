@@ -25,7 +25,7 @@ namespace intermediate
                 }
                 else
                 {
-                    errorMessage.Append("see reference: ");
+                    errorMessage.Append("\nsee reference: ");
                 }
                 errorMessage.Append("file=").Append(context->FileMap().GetFileName(context->FileIndex())).Append(", line=").Append(ToString(lineColLen.line)).
                     Append(":\n").Append(line).Append("\n").Append(string(' ', lineColLen.col - 1)).Append(string('^', lineColLen.len));

@@ -193,7 +193,7 @@ namespace symbols
         private_ = 0u, protected_ = 1u, internal_ = 2u, public_ = 3u
     }
 
-    public enum SymbolFlags : byte
+    public enum SymbolFlags : ushort
     {
         none = 0u,
         access = (1u << 0u) | (1u << 1u),
@@ -202,13 +202,14 @@ namespace symbols
         project = 1u << 4u,
         bound = 1u << 5u,
         installed = 1u << 6u,
-        basicTypeSymbol = 1u << 7u
+        basicTypeSymbol = 1u << 7u,
+        resolved = 1u << 8u
     }
 
     public string SymbolFlagStr(SymbolFlags flags)
     {
         string s;
-        SymbolAccess access = cast<SymbolAccess>(flags & SymbolFlags.access);
+        SymbolAccess access = cast<SymbolAccess>(cast<byte>(flags & SymbolFlags.access));
         switch (access)
         {
             case SymbolAccess.private_:
@@ -272,12 +273,20 @@ namespace symbols
             }
             s.Append("installed");
         }
+        if ((flags & SymbolFlags.resolved) != SymbolFlags.none)
+        {
+            if (!s.IsEmpty())
+            {
+                s.Append(' ');
+            }
+            s.Append("resolved");
+        }
         return s;
     }
 
     public inline SymbolFlags GetStableSymbolFlags(SymbolFlags flags)
     {
-        return cast<SymbolFlags>(flags & ~(SymbolFlags.project | SymbolFlags.bound | SymbolFlags.installed));
+        return cast<SymbolFlags>(flags & ~(SymbolFlags.project | SymbolFlags.bound | SymbolFlags.installed | SymbolFlags.resolved));
     }
 
     public abstract class Symbol
@@ -615,11 +624,11 @@ namespace symbols
         }
         public inline SymbolAccess Access() const
         {
-            return SymbolAccess(cast<SymbolAccess>(flags & SymbolFlags.access));
+            return SymbolAccess(cast<SymbolAccess>(cast<byte>(flags & SymbolFlags.access)));
         }
         public inline void SetAccess(SymbolAccess access)
         {
-            flags = cast<SymbolFlags>(flags | cast<byte>(access));
+            flags = cast<SymbolFlags>(flags | cast<ushort>(cast<byte>(access)));
         }
         [nodiscard]
         public Result<bool> SetAccess(Specifiers accessSpecifiers)
@@ -725,6 +734,14 @@ namespace symbols
         {
             SetFlag(SymbolFlags.bound);
         }
+        public inline bool IsResolved() const
+        {
+            return GetFlag(SymbolFlags.resolved);
+        }
+        public inline void SetResolved()
+        {
+            SetFlag(SymbolFlags.resolved);
+        }
         public virtual bool IsExportSymbol() const
         {
             return IsProject();
@@ -750,7 +767,7 @@ namespace symbols
             parent = that->parent;
             module = that->module;
             sourceFile = that->sourceFile;
-            if (that->attributes != null)
+            if (!that->attributes.IsNull())
             {
                 CloneContext cloneContext;
                 attributes.Reset(cast<AttributesNode*>(that->attributes->Clone(cloneContext)));
@@ -858,17 +875,26 @@ namespace symbols
             }
             return null;
         }
-        public Result<NamespaceSymbol*> Ns() const
+        public Result<NamespaceSymbol*> Ns(SymbolsContext& context) const
         {
             if (IsNamespaceSymbol())
             {
+                Module* rootModule = context.RootModule();
+                if (GetModule() != rootModule)
+                {
+                    NamespaceSymbol* mappedNs = rootModule->GetSymbolTable()->GetMappedNs(cast<NamespaceSymbol*>(this));
+                    if (mappedNs != null)
+                    {
+                        return mappedNs;
+                    }
+                }
                 return Result<NamespaceSymbol*>(cast<NamespaceSymbol*>(this));
             }
             else
             {
                 if (parent != null)
                 {
-                    return parent->Ns();
+                    return parent->Ns(context);
                 }
                 else
                 {
@@ -896,12 +922,25 @@ namespace symbols
                 }
             }
         }
-        public Result<ContainerSymbol*> ClassInterfaceEnumDelegateOrNs() const
+        public Result<ContainerSymbol*> ClassInterfaceEnumDelegateOrNs(SymbolsContext& context) const
         {
             switch (kind)
             {
                 case SymbolKind.namespaceSymbol:
+                {
+                    Module* rootModule = context.RootModule();
+                    if (GetModule() != rootModule)
+                    {
+                        NamespaceSymbol* mappedNs = rootModule->GetSymbolTable()->GetMappedNs(cast<NamespaceSymbol*>(this));
+                        if (mappedNs != null)
+                        {
+                            return Result<ContainerSymbol*>(mappedNs);
+                        }
+                    }
+                    return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
+                }
                 case SymbolKind.classTypeSymbol:
+                case SymbolKind.classTemplateSpecializationSymbol:
                 case SymbolKind.interfaceTypeSymbol:
                 case SymbolKind.enumTypeSymbol:
                 case SymbolKind.delegateTypeSymbol:
@@ -913,7 +952,7 @@ namespace symbols
                 {
                     if (parent != null)
                     {
-                        return parent->ClassInterfaceEnumDelegateOrNs();
+                        return parent->ClassInterfaceEnumDelegateOrNs(context);
                     }
                     else
                     {
@@ -924,19 +963,32 @@ namespace symbols
             }
             return Result<ContainerSymbol*>(cast<ContainerSymbol*>(null));
         }
-        public Result<ContainerScope*> ClassInterfaceEnumDelegateOrNsScope() const
+        public Result<ContainerScope*> ClassInterfaceEnumDelegateOrNsScope(SymbolsContext& context) const
         {
-            Result<ContainerSymbol*> containerSymbolResult = ClassInterfaceEnumDelegateOrNs();
+            Result<ContainerSymbol*> containerSymbolResult = ClassInterfaceEnumDelegateOrNs(context);
             if (containerSymbolResult.Error()) return Result<ContainerScope*>(ErrorId(containerSymbolResult.GetErrorId()));
             ContainerSymbol* containerSymbol = containerSymbolResult.Value();
             return Result<ContainerScope*>(containerSymbol->GetContainerScope());
         }
-        public Result<ContainerSymbol*> ClassInterfaceOrNs() const
+        public Result<ContainerSymbol*> ClassInterfaceOrNs(SymbolsContext& context) const
         {
             switch (kind)
             {
                 case SymbolKind.namespaceSymbol:
+                {
+                    Module* rootModule = context.RootModule();
+                    if (GetModule() != rootModule)
+                    {
+                        NamespaceSymbol* mappedNs = rootModule->GetSymbolTable()->GetMappedNs(cast<NamespaceSymbol*>(this));
+                        if (mappedNs != null)
+                        {
+                            return Result<ContainerSymbol*>(mappedNs);
+                        }
+                    }
+                    return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
+                }
                 case SymbolKind.classTypeSymbol:
+                case SymbolKind.classTemplateSpecializationSymbol:
                 case SymbolKind.interfaceTypeSymbol:
                 {
                     return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
@@ -945,7 +997,7 @@ namespace symbols
                 {
                     if (parent != null)
                     {
-                        return parent->ClassInterfaceOrNs();
+                        return parent->ClassInterfaceOrNs(context);
                     }
                     else
                     {
@@ -956,19 +1008,32 @@ namespace symbols
             }
             return Result<ContainerSymbol*>(cast<ContainerSymbol*>(null));
         }
-        public Result<ContainerScope*> ClassInterfaceOrNsScope() const
+        public Result<ContainerScope*> ClassInterfaceOrNsScope(SymbolsContext& context) const
         {
-            Result<ContainerSymbol*> containerSymbolResult = ClassInterfaceOrNs();
+            Result<ContainerSymbol*> containerSymbolResult = ClassInterfaceOrNs(context);
             if (containerSymbolResult.Error()) return Result<ContainerScope*>(ErrorId(containerSymbolResult.GetErrorId()));
             ContainerSymbol* containerSymbol = containerSymbolResult.Value();
             return Result<ContainerScope*>(containerSymbol->GetContainerScope());
         }
-        public Result<ContainerSymbol*> ClassOrNs() const
+        public Result<ContainerSymbol*> ClassOrNs(SymbolsContext& context) const
         {
             switch (kind)
             {
                 case SymbolKind.namespaceSymbol:
+                {
+                    Module* rootModule = context.RootModule();
+                    if (GetModule() != rootModule)
+                    {
+                        NamespaceSymbol* mappedNs = rootModule->GetSymbolTable()->GetMappedNs(cast<NamespaceSymbol*>(this));
+                        if (mappedNs != null)
+                        {
+                            return Result<ContainerSymbol*>(mappedNs);
+                        }
+                    }
+                    return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
+                }
                 case SymbolKind.classTypeSymbol:
+                case SymbolKind.classTemplateSpecializationSymbol:
                 {
                     return Result<ContainerSymbol*>(cast<ContainerSymbol*>(this));
                 }
@@ -976,7 +1041,7 @@ namespace symbols
                 {
                     if (parent != null)
                     {
-                        return parent->ClassOrNs();
+                        return parent->ClassOrNs(context);
                     }
                     else
                     {
@@ -987,9 +1052,9 @@ namespace symbols
             }
             return Result<ContainerSymbol*>(cast<ContainerSymbol*>(null));
         }
-        public Result<ContainerScope*> ClassOrNsScope() const
+        public Result<ContainerScope*> ClassOrNsScope(SymbolsContext& context) const
         {
-            Result<ContainerSymbol*> containerSymbolResult = ClassOrNs();
+            Result<ContainerSymbol*> containerSymbolResult = ClassOrNs(context);
             if (containerSymbolResult.Error()) return Result<ContainerScope*>(ErrorId(containerSymbolResult.GetErrorId()));
             ContainerSymbol* containerSymbol = containerSymbolResult.Value();
             return Result<ContainerScope*>(containerSymbol->GetContainerScope());
@@ -1028,8 +1093,8 @@ namespace symbols
             if (result.Error()) return result;
             result = writer.GetBinaryWriter().Write(moduleId);
             if (result.Error()) return result;
-            SymbolFlags f = cast<SymbolFlags>(flags & ~(SymbolFlags.project | SymbolFlags.installed));
-            result = writer.GetBinaryWriter().Write(cast<byte>(f));
+            SymbolFlags f = cast<SymbolFlags>(flags & ~(SymbolFlags.project | SymbolFlags.installed | SymbolFlags.resolved));
+            result = writer.GetBinaryWriter().Write(cast<ushort>(f));
             if (result.Error()) return result;
             result = writer.GetBinaryWriter().Write(mangledName);
             if (result.Error()) return result;
@@ -1052,7 +1117,7 @@ namespace symbols
             Result<Uuid> uuidResult = reader.GetBinaryReader().ReadUuid();
             if (uuidResult.Error()) return Result<bool>(ErrorId(uuidResult.GetErrorId()));
             moduleId = uuidResult.Value();
-            Result<byte> flagsResult = reader.GetBinaryReader().ReadByte();
+            Result<ushort> flagsResult = reader.GetBinaryReader().ReadUShort();
             if (flagsResult.Error()) return Result<bool>(ErrorId(flagsResult.GetErrorId()));
             flags = cast<SymbolFlags>(flagsResult.Value());
             Result<ustring> mangledNameResult = reader.GetBinaryReader().ReadUString();

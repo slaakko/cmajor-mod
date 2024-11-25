@@ -19,7 +19,7 @@ namespace assembly
 
     public class AssemblyContext
     {
-        public AssemblyContext() : registers(), file(null), registerPool(new RegisterPool(registers)), currentFunction(null), floatingLiteralCounter(0), jumpTabLabelCounter(0)
+        public AssemblyContext() : file(null), registerPool(new RegisterPool()), currentFunction(null), floatingLiteralCounter(0), jumpTabLabelCounter(0)
         {
         }
         public inline void SetFile(File* file_)
@@ -36,7 +36,7 @@ namespace assembly
         }
         public void ResetRegisterPool()
         {
-            registerPool.Reset(new RegisterPool(registers));
+            registerPool.Reset(new RegisterPool());
         }
         public inline void SetCurrentFunction(Function* currentFunction_)
         {
@@ -153,7 +153,6 @@ namespace assembly
         {
             return jumpTabLabelCounter++;
         }
-        private Registers registers;
         private File* file;
         private UniquePtr<RegisterPool> registerPool;
         private List<UniquePtr<Value>> values;

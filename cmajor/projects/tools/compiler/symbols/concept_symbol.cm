@@ -9,6 +9,39 @@ using cm.ast;
 
 namespace symbols
 {
+    public class IntrinsicConcepts
+    {
+        static IntrinsicConcepts() : instance(new IntrinsicConcepts())
+        {
+        }
+        public static IntrinsicConcepts& Instance()
+        {
+            return *instance;
+        }
+        public void AddIntrinsicConcept(ConceptNode* intrinsicConcept)
+        {
+            intrinsicConcepts.Add(UniquePtr<ConceptNode>(intrinsicConcept));
+        }
+        public inline const List<UniquePtr<ConceptNode>>& GetIntrinsicConcepts() const
+        {
+            return intrinsicConcepts;
+        }
+        private IntrinsicConcepts() : initialized(false)
+        {
+        }
+        public inline bool Initialized() const
+        {
+            return initialized;
+        }
+        public inline void SetInitialized()
+        {
+            initialized = true;
+        }
+        private static UniquePtr<IntrinsicConcepts> instance;
+        private bool initialized;
+        private List<UniquePtr<ConceptNode>> intrinsicConcepts;
+    }
+
     public class ConceptGroupSymbol : Symbol
     {
         public ConceptGroupSymbol(const System.Lex.Span& span_,  const ustring& name_) : base(SymbolKind.conceptGroupSymbol, span_, name_)
@@ -162,16 +195,6 @@ namespace symbols
             }
             result = writer.GetBinaryWriter().Write(refinedConceptId);
             if (result.Error()) return result;
-            int n = cast<int>(templateParameters.Count());
-            result = writer.GetBinaryWriter().Write(n);
-            if (result.Error()) return result;
-            for (int i = 0; i < n; ++i)
-            {
-                TemplateParameterSymbol* templateParameter = templateParameters[i];
-                #assert(templateParameter->TypeId() != Uuid());
-                result = writer.GetBinaryWriter().Write(templateParameter->TypeId());
-                if (result.Error()) return result;
-            }
             Node* node = writer.Context().RootModule()->GetSymbolTable()->GetNode(this);
             #assert(node != null && node->IsConceptNode());
             result = writer.GetAstWriter().Write(node);
@@ -194,23 +217,19 @@ namespace symbols
             Result<Uuid> refinedConceptIdResult = reader.GetBinaryReader().ReadUuid();
             if (refinedConceptIdResult.Error()) return Result<bool>(ErrorId(refinedConceptIdResult.GetErrorId()));
             refinedConceptId = refinedConceptIdResult.Value();
-            Result<int> nResult = reader.GetBinaryReader().ReadInt();
-            if (nResult.Error()) return Result<bool>(ErrorId(nResult.GetErrorId()));
-            int n = nResult.Value();
-            for (int i = 0; i < n; ++i)
-            {
-                Result<Uuid> templateParameterIdResult = reader.GetBinaryReader().ReadUuid();
-                if (templateParameterIdResult.Error()) return Result<bool>(ErrorId(templateParameterIdResult.GetErrorId()));
-                templateParameterIds.Add(templateParameterIdResult.Value());
-            }
             Result<ConceptNode*> conceptNodeResult = reader.GetAstReader().ReadConceptNode();
             if (conceptNodeResult.Error()) return Result<bool>(ErrorId(conceptNodeResult.GetErrorId()));
             conceptNode.Reset(conceptNodeResult.Value());
-            reader.AddToResolutionList(this);
+            Result<bool> hasSourceResult = reader.GetBinaryReader().ReadBool();
+            if (hasSourceResult.Error()) return Result<bool>(ErrorId(hasSourceResult.GetErrorId()));
+            hasSource = hasSourceResult.Value();
+            reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
         public override Result<bool> Resolve(SymbolTable* symbolTable)
         {
+            Result<bool> baseResolveResult = base->Resolve(symbolTable);
+            if (baseResolveResult.Error()) return baseResolveResult;
             for (const Uuid& templateParameterId : templateParameterIds)
             {
                 Result<TypeSymbol*> typeResult = symbolTable->GetType(templateParameterId);

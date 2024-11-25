@@ -63,12 +63,42 @@ namespace symbols
             MakeError("cannot convert " + ValueKindStr(from) + " to " + ValueKindStr(to) + " without a cast", fullSpan)));
     }
 
+    public enum ValueFlags : byte
+    {
+        none = 0u, resolved = 1u << 0u
+    }
+    
     public abstract class Value
     {
-        public Value(const System.Lex.Span& span_, ValueKind kind_) : span(span_), kind(kind_)
+        public Value(const System.Lex.Span& span_, ValueKind kind_) : span(span_), kind(kind_), flags(ValueFlags.none)
         {
         }
         public default virtual ~Value();
+        [nodiscard]
+        public virtual Result<bool> Write(SymbolWriter& writer)
+        {    
+            int errorId = AllocateError("cannot write " + ValueKindStr(kind));
+            return Result<bool>(ErrorId(errorId));
+        }
+        [nodiscard]
+        public virtual Result<bool> Read(SymbolReader& reader)
+        {    
+            int errorId = AllocateError("cannot read " + ValueKindStr(kind));
+            return Result<bool>(ErrorId(errorId));
+        }
+        public inline void SetResolved()
+        {
+            flags = cast<ValueFlags>(flags | ValueFlags.resolved);
+        }
+        public inline bool IsResolved() const
+        {
+            return (flags & ValueFlags.resolved) != ValueFlags.none;
+        }
+        [nodiscard]
+        public virtual Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            return Result<bool>(true);
+        }
         public inline const System.Lex.Span& Span() const
         {
             return span;
@@ -80,6 +110,10 @@ namespace symbols
         public inline bool IsBoolValue() const
         {
             return kind == ValueKind.boolValue;
+        }
+        public inline bool IsByteValue() const
+        {
+            return kind == ValueKind.byteValue;
         }
         public inline bool IsLongValue() const
         {
@@ -136,17 +170,36 @@ namespace symbols
         }
         private System.Lex.Span span;
         private ValueKind kind;
+        private ValueFlags flags;
     }
 
     public class BoolValue : Value
     {
         public using OperandType = bool;
+        public BoolValue(const System.Lex.Span& span_) : base(span_, ValueKind.boolValue), value(false)
+        {
+        }
         public BoolValue(const System.Lex.Span& span_, bool value_) : base(span_, ValueKind.boolValue), value(value_)
         {
         }
         public override Value* Clone() const
         {
             return new BoolValue(Span(), value);
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<bool> result = reader.GetBinaryReader().ReadBool();
+            if (result.Error()) return result;
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
         {
@@ -324,12 +377,30 @@ namespace symbols
     public class SByteValue : Value
     {
         public using OperandType = sbyte;
+        public SByteValue(const System.Lex.Span& span_) : base(span_, ValueKind.sbyteValue), value(0)
+        {
+        }
         public SByteValue(const System.Lex.Span& span_, sbyte value_) : base(span_, ValueKind.sbyteValue), value(value_)
         {
         }
         public override Value* Clone() const
         {
             return new SByteValue(Span(), value);
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<sbyte> result = reader.GetBinaryReader().ReadSByte();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Result<Value*> As(TypeSymbol* targetType, bool doCast, Node* node) const
         {
@@ -472,8 +543,26 @@ namespace symbols
     public class ByteValue : Value
     {
         public using OperandType = byte;
+        public ByteValue(const System.Lex.Span& span_) : base(span_, ValueKind.byteValue), value(0u)
+        {
+        }
         public ByteValue(const System.Lex.Span& span_, byte value_) : base(span_, ValueKind.byteValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<byte> result = reader.GetBinaryReader().ReadByte();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -599,8 +688,26 @@ namespace symbols
     public class ShortValue : Value
     {
         public using OperandType = short;
+        public ShortValue(const System.Lex.Span& span_) : base(span_, ValueKind.shortValue), value(0)
+        {
+        }
         public ShortValue(const System.Lex.Span& span_, short value_) : base(span_, ValueKind.shortValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<short> result = reader.GetBinaryReader().ReadShort();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -754,8 +861,26 @@ namespace symbols
     public class UShortValue : Value
     {
         public using OperandType = ushort;
+        public UShortValue(const System.Lex.Span& span_) : base(span_, ValueKind.ushortValue), value(0u)
+        {
+        }
         public UShortValue(const System.Lex.Span& span_, ushort value_) : base(span_, ValueKind.ushortValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<ushort> result = reader.GetBinaryReader().ReadUShort();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -895,8 +1020,26 @@ namespace symbols
     public class IntValue : Value
     {
         public using OperandType = int;
+        public IntValue(const System.Lex.Span& span_) : base(span_, ValueKind.intValue), value(0)
+        {
+        }
         public IntValue(const System.Lex.Span& span_, int value_) : base(span_, ValueKind.intValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<int> result = reader.GetBinaryReader().ReadInt();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -1057,8 +1200,26 @@ namespace symbols
     public class UIntValue : Value
     {
         public using OperandType = uint;
+        public UIntValue(const System.Lex.Span& span_) : base(span_, ValueKind.uintValue), value(0u)
+        {
+        }
         public UIntValue(const System.Lex.Span& span_, uint value_) : base(span_, ValueKind.uintValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<uint> result = reader.GetBinaryReader().ReadUInt();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -1212,8 +1373,26 @@ namespace symbols
     public class LongValue : Value
     {
         public using OperandType = long;
+        public LongValue(const System.Lex.Span& span_) : base(span_, ValueKind.longValue), value(0)
+        {
+        }
         public LongValue(const System.Lex.Span& span_, long value_) : base(span_, ValueKind.longValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<long> result = reader.GetBinaryReader().ReadLong();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -1381,8 +1560,26 @@ namespace symbols
     public class ULongValue : Value
     {
         public using OperandType = ulong;
+        public ULongValue(const System.Lex.Span& span_) : base(span_, ValueKind.ulongValue), value(0u)
+        {
+        }
         public ULongValue(const System.Lex.Span& span_, ulong value_) : base(span_, ValueKind.ulongValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<ulong> result = reader.GetBinaryReader().ReadULong();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -1550,8 +1747,26 @@ namespace symbols
     public class FloatValue : Value
     {
         public using OperandType = float;
+        public FloatValue(const System.Lex.Span& span_) : base(span_, ValueKind.floatValue), value(0.0f)
+        {
+        }
         public FloatValue(const System.Lex.Span& span_, float value_) : base(span_, ValueKind.floatValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<float> result = reader.GetBinaryReader().ReadFloat();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -1726,8 +1941,26 @@ namespace symbols
     public class DoubleValue : Value
     {
         public using OperandType = double;
+        public DoubleValue(const System.Lex.Span& span_) : base(span_, ValueKind.doubleValue), value(0.0)
+        {
+        }
         public DoubleValue(const System.Lex.Span& span_, double value_) : base(span_, ValueKind.doubleValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<double> result = reader.GetBinaryReader().ReadDouble();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -1909,8 +2142,26 @@ namespace symbols
     public class CharValue : Value
     {
         public using OperandType = char;
+        public CharValue(const System.Lex.Span& span_) : base(span_, ValueKind.charValue), value()
+        {
+        }
         public CharValue(const System.Lex.Span& span_, char value_) : base(span_, ValueKind.charValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<char> result = reader.GetBinaryReader().ReadChar();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2078,8 +2329,26 @@ namespace symbols
     public class WCharValue : Value
     {
         public using OperandType = wchar;
+        public WCharValue(const System.Lex.Span& span_) : base(span_, ValueKind.wcharValue), value()
+        {
+        }
         public WCharValue(const System.Lex.Span& span_, wchar value_) : base(span_, ValueKind.wcharValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<wchar> result = reader.GetBinaryReader().ReadWChar();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2254,8 +2523,26 @@ namespace symbols
     public class UCharValue : Value
     {
         public using OperandType = uchar;
+        public UCharValue(const System.Lex.Span& span_) : base(span_, ValueKind.ucharValue), value()
+        {
+        }
         public UCharValue(const System.Lex.Span& span_, uchar value_) : base(span_, ValueKind.ucharValue), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<uchar> result = reader.GetBinaryReader().ReadUChar();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2437,8 +2724,26 @@ namespace symbols
     public class StringValue : Value
     {
         public using OperandType = string;
+        public StringValue(const System.Lex.Span& span_) : base(span_, ValueKind.stringValue), stringId(-1), value()
+        {
+        }
         public StringValue(const System.Lex.Span& span_, int stringId_, const string& value_) : base(span_, ValueKind.stringValue), stringId(stringId_), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<string> result = reader.GetBinaryReader().ReadString();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2461,7 +2766,10 @@ namespace symbols
             {
                 stringId = emitter.Install(value);
             }
-            return Result<intermediate.Value*>(emitter.GetGlobalStringValue(stringId));
+            Result<intermediate.Value*> irValueResult = emitter.GetGlobalStringValue(stringId);
+            intermediate.Value* irValue = irValueResult.Value();
+            #assert(irValue->GetType() != null);
+            return irValueResult;
         }
         public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
         {
@@ -2485,8 +2793,26 @@ namespace symbols
     public class WStringValue : Value
     {
         public using OperandType = wstring;
+        public WStringValue(const System.Lex.Span& span_) : base(span_, ValueKind.wstringValue), stringId(-1), value()
+        {
+        }
         public WStringValue(const System.Lex.Span& span_, int stringId_, const wstring& value_) : base(span_, ValueKind.wstringValue), stringId(stringId_), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<wstring> result = reader.GetBinaryReader().ReadWString();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2533,8 +2859,26 @@ namespace symbols
     public class UStringValue : Value
     {
         public using OperandType = ustring;
+        public UStringValue(const System.Lex.Span& span_) : base(span_, ValueKind.ustringValue), stringId(-1), value()
+        {
+        }
         public UStringValue(const System.Lex.Span& span_, int stringId_, const ustring& value_) : base(span_, ValueKind.ustringValue), stringId(stringId_), value(value_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            Result<bool> result = writer.GetBinaryWriter().Write(value);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<ustring> result = reader.GetBinaryReader().ReadUString();
+            if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            value = result.Value();
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2583,6 +2927,16 @@ namespace symbols
         public NullValue(const System.Lex.Span& span_) : base(span_, ValueKind.nullValue)
         {
         }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            return Result<bool>(true);
+        }
         public override Value* Clone() const
         {
             return new NullValue(Span());
@@ -2603,9 +2957,45 @@ namespace symbols
 
     public class ArrayValue : Value
     {
+        public ArrayValue(const System.Lex.Span& span_) : base(span_, ValueKind.arrayValue)
+        {
+        }
         public ArrayValue(const System.Lex.Span& span_, TypeSymbol* type_, List<UniquePtr<Value>>&& elementValues_) :
             base(span_, ValueKind.arrayValue), elementValues(elementValues_), type(type_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            int n = cast<int>(elementValues.Count());
+            Result<bool> result = writer.GetBinaryWriter().Write(n);
+            if (result.Error()) return result;
+            for (const auto& elementValue : elementValues)
+            {
+                result = writer.Write(elementValue.Get());
+                if (result.Error()) return result;
+            }
+            result = writer.GetBinaryWriter().Write(type->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<int> nResult = reader.GetBinaryReader().ReadInt();
+            if (nResult.Error()) return Result<bool>(ErrorId(nResult.GetErrorId()));
+            int n = nResult.Value();
+            for (int i = 0; i < n; ++i)
+            {
+                Result<Value*> valueResult = reader.ReadValue();
+                if (valueResult.Error()) return Result<bool>(ErrorId(valueResult.GetErrorId()));
+                elementValues.Add(UniquePtr<Value>(valueResult.Value()));
+            }
+            Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+            typeId = typeIdResult.Value();
+            reader.AddToValueResolutionList(this);
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2647,13 +3037,50 @@ namespace symbols
         }
         private List<UniquePtr<Value>> elementValues;
         private TypeSymbol* type;
+        private Uuid typeId;
     }
 
     public class StructureValue : Value
     {
+        public StructureValue(const System.Lex.Span& span_) : base(span_, ValueKind.structuredValue)
+        {
+        }
         public StructureValue(const System.Lex.Span& span_, TypeSymbol* type_, List<UniquePtr<Value>>&& memberValues_) :
             base(span_, ValueKind.structuredValue), memberValues(memberValues_), type(type_)
         {
+        }
+        [nodiscard]
+        public override Result<bool> Write(SymbolWriter& writer)
+        {
+            int n = cast<int>(memberValues.Count());
+            Result<bool> result = writer.GetBinaryWriter().Write(n);
+            if (result.Error()) return result;
+            for (const auto& memberValue : memberValues)
+            {
+                result = writer.Write(memberValue.Get());
+                if (result.Error()) return result;
+            }
+            result = writer.GetBinaryWriter().Write(type->TypeId());
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public override Result<bool> Read(SymbolReader& reader)
+        {
+            Result<int> nResult = reader.GetBinaryReader().ReadInt();
+            if (nResult.Error()) return Result<bool>(ErrorId(nResult.GetErrorId()));
+            int n = nResult.Value();
+            for (int i = 0; i < n; ++i)
+            {
+                Result<Value*> valueResult = reader.ReadValue();
+                if (valueResult.Error()) return Result<bool>(ErrorId(valueResult.GetErrorId()));
+                memberValues.Add(UniquePtr<Value>(valueResult.Value()));
+            }
+            Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
+            if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+            typeId = typeIdResult.Value();
+            reader.AddToValueResolutionList(this);
+            return Result<bool>(true);
         }
         public override Value* Clone() const
         {
@@ -2691,6 +3118,7 @@ namespace symbols
         }
         private List<UniquePtr<Value>> memberValues;
         private TypeSymbol* type;
+        private Uuid typeId;
     }
 
     public class ScopedValue : Value

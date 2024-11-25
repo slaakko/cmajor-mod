@@ -1,0 +1,170 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using System.Text;
+
+namespace System.Lex
+{
+    public class XmlParsingLog : ParsingLog
+    {
+        public XmlParsingLog(StreamWriter& stream_) : base(), formatter(stream_)
+        {
+            formatter.SetIndentSize(1);
+        }
+        public XmlParsingLog(StreamWriter& stream_, int maxLineLength_) : base(maxLineLength_), formatter(stream_)
+        {
+            formatter.SetIndentSize(1);
+        }
+        public inline CodeFormatter& Formatter()
+        {
+            return formatter;
+        }
+        [nodiscard]
+        public Result<bool> WriteElement(const ustring& elementName, const ustring& elementContent)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            auto convertedResult = XmlEscape(elementContent);
+            if (convertedResult.Error())
+            {
+                return Result<bool>(ErrorId(convertedResult.GetErrorId()));
+            }
+            ustring converted = convertedResult.Value();
+            int convertedLength = cast<int>(converted.Length());
+            int lineLength = 2 * cast<int>(elementName.Length()) + 5 + convertedLength;
+            ustring s = converted;
+            if (lineLength > MaxLineLength())
+            {
+                lineLength = lineLength + 3;
+                s = converted.Substring(0, Max(cast<int>(0), convertedLength - (lineLength - MaxLineLength()))) + u"...";
+            }
+            return Write(u"<" + elementName + u">" + s + u"</" + elementName + u">");
+        }
+        [nodiscard]
+        public Result<bool> Write(const ustring& s)
+        {
+            if (formatter.Error())
+            {
+                return Result<bool>(ErrorId(formatter.GetErrorId()));
+            }
+            auto utf8Result = ToUtf8(s);
+            if (utf8Result.Error())
+            {
+                return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+            }
+            return formatter.WriteLine(utf8Result.Value());
+        }
+        public override void IncIndent()
+        {
+            formatter.IncIndent();
+        }
+        public override void DecIndent()
+        {
+            formatter.DecIndent();
+        }
+        [nodiscard]
+        public override Result<bool> WriteBeginRule(const ustring& ruleName)
+        {
+            return Write(u"<" + ruleName + u">");
+        }
+        [nodiscard]
+        public override Result<bool> WriteEndRule(const ustring& ruleName)
+        {
+            return Write(u"</" + ruleName + u">");
+        }
+        [nodiscard]
+        public override Result<bool> WriteTry(const ustring& s)
+        {
+            return WriteElement(u"try", s);
+        }
+        [nodiscard]
+        public override Result<bool> WriteSuccess(const ustring& match)
+        {
+            return WriteElement(u"success", match);
+        }
+        [nodiscard]
+        public override Result<bool> WriteFail()
+        {
+            return Write(u"<fail/>");
+        }
+        private CodeFormatter formatter;
+    }
+
+    [nodiscard]
+    public Result<ustring> XmlHexEscape(uchar c)
+    {
+        StringWriter writer;
+        auto hex = ToHexString(cast<uint>(c));
+        if (hex.Error())
+        {
+            return Result<ustring>(ErrorId(hex.GetErrorId()));
+        }
+        writer << "&#x" << hex.Value() << ";";
+        if (writer.Error())
+        {
+            return Result<ustring>(ErrorId(writer.GetErrorId()));
+        }
+        auto result = ToUtf32(writer.GetString());
+        if (result.Error())
+        {
+            return Result<ustring>(ErrorId(result.GetErrorId()));
+        }
+        return Result<ustring>(result.Value());
+    }
+
+    [nodiscard]
+    public Result<ustring> XmlCharStr(uchar c)
+    {
+        switch (c)
+        {
+            case '&': return Result<ustring>(u"&amp;");
+            case '<': return Result<ustring>(u"&lt;");
+            case '>': return Result<ustring>(u"&gt;");
+            case '\a': return Result<ustring>(u"\\a");
+            case '\b': return Result<ustring>(u"\\b");
+            case '\f': return Result<ustring>(u"\\f");
+            case '\n': return Result<ustring>(u"\\n");
+            case '\r': return Result<ustring>(u"\\r");
+            case '\t': return Result<ustring>(u"\\t");
+            case '\v': return Result<ustring>(u"\\v");
+            default:
+            {
+                if (cast<int>(c) >= 32 && cast<int>(c) <= 126)
+                {
+                    return Result<ustring>(ustring(c, 1));
+                }
+                else
+                {
+                    return XmlHexEscape(c);
+                }
+            }
+        }
+        return Result<ustring>();
+    }
+
+    [nodiscard]
+    public Result<ustring> XmlEscape(const ustring& s)
+    {
+        ustring result;
+        result.Reserve(2 * s.Length());
+        auto  e = s.CEnd();
+        for (auto i = s.CBegin(); i != e; ++i)
+        {
+            auto xmlCharStr = XmlCharStr(*i);
+            if (xmlCharStr.Error())
+            {
+                return Result<ustring>(ErrorId(xmlCharStr.GetErrorId()));
+            }
+            result.Append(xmlCharStr.Value());
+        }
+        return Result<ustring>(result);
+    }
+
+} // namespace System.Lex

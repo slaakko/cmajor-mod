@@ -38,6 +38,11 @@ namespace symbols
             }
             symbolTable->EndNamespace();
         }
+        public override void Visit(DotNode& dotNode)
+        {
+            dotNode.Subject()->Accept(*this);
+            dotNode.MemberId()->Accept(*this);
+        }
         public override void Visit(AliasNode& aliasNode)
         {
             auto result = symbolTable->AddAliasType(aliasNode, context);
@@ -647,6 +652,15 @@ namespace symbols
                     }
                     break;
                 }
+            }
+        }
+        public override void Visit(GlobalVariableNode& globalVariableNode)
+        {
+            Result<bool> result = symbolTable->AddGlobalVariable(globalVariableNode, context);
+            if (result.Error())
+            {
+                errorId = result.GetErrorId();
+                return;
             }
         }
         public inline bool Error() const

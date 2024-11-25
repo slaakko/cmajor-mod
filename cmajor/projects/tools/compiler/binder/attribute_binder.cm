@@ -4,29 +4,110 @@
 // =================================
 
 using System;
+using System.Collections;
 using symbols;
 using cm.ast;
 
 namespace binder
 {
+    public class AttributeProcessor
+    {
+        public AttributeProcessor(const ustring& attributeName_) : attributeName(attributeName_)
+        {
+        }
+        public default virtual ~AttributeProcessor();
+        public inline const ustring& AttributeName() const
+        {
+            return attributeName;
+        }
+        [nodiscard]
+        public virtual Result<bool> TypeCheck(AttributeNode* attribute, Symbol* symbol)
+        {
+            Result<string> attributeNameResult = ToUtf8(attribute->Name());
+            if (attributeNameResult.Error()) return Result<bool>(ErrorId(attributeNameResult.GetErrorId()));
+            string attributeName = Rvalue(attributeNameResult.Value());
+            Result<string> typeStringResult = ToUtf8(symbol->TypeString());
+            if (typeStringResult.Error()) return Result<bool>(ErrorId(typeStringResult.GetErrorId()));
+            string typeString = Rvalue(typeStringResult.Value());
+            int errorId = MakeError("attribute '" + attributeName + "' for symbol type '" + typeString + "' not supported",
+                attribute->GetFullSpan(), symbol->FullSpan());
+            return Result<bool>(ErrorId(errorId));
+        }
+        public virtual void GenerateSymbols(AttributeNode* attribute, Symbol* symbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
+        {
+        }
+        public virtual void GenerateImplementation(AttributeNode* attribute, Symbol* symbol, StatementBinder* statementBinder)
+        {
+        }
+        private ustring attributeName;
+    }
+
     public class AttributeBinder
     {
         public AttributeBinder(Module* module_) : module(module_)
         {
+            NoDiscardAttributeProcessor* nodiscardAttributeProcessor = new NoDiscardAttributeProcessor();
+            attributeProcessors.Add(UniquePtr<AttributeProcessor>(nodiscardAttributeProcessor));
+            SystemDefaultAttributeProcessor* systemDefaultAttributeProcessor = new SystemDefaultAttributeProcessor();
+            attributeProcessors.Add(UniquePtr<AttributeProcessor>(systemDefaultAttributeProcessor));
+            for (const auto& attributeProcessor : attributeProcessors)
+            {
+                attributeProcessorMap[attributeProcessor->AttributeName()] = attributeProcessor.Get();
+            }
         }
         [nodiscard]
         public Result<bool> BindAttributes(AttributesNode* attrs, Symbol* symbol, BoundCompileUnit* boundCompileUnit, ContainerScope* containerScope)
         {
-            // todo
+            if (attrs == null) return Result<bool>(false);
+            for (const auto& attribute : attrs->GetAttributes())
+            {
+                auto it = attributeProcessorMap.Find(attribute->Name());
+                if (it != attributeProcessorMap.End())
+                {
+                    AttributeProcessor* processor = it->second;
+                    Result<bool> result = processor->TypeCheck(attribute.Get(), symbol);
+                    if (result.Error()) return result;
+                    processor->GenerateSymbols(attribute.Get(), symbol, boundCompileUnit, containerScope);
+                }
+                else
+                {
+                    Result<string> attributeNameResult = ToUtf8(attribute->Name());
+                    if (attributeNameResult.Error()) return Result<bool>(ErrorId(attributeNameResult.GetErrorId()));
+                    string attributeName = Rvalue(attributeNameResult.Value());
+                    int errorId = MakeError("unknown attribute '" + attributeName + "'", attribute->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            CloneContext cloneContext;
+            symbol->SetAttributes(UniquePtr<AttributesNode>(cast<AttributesNode*>(attrs->Clone(cloneContext))));
             return Result<bool>(true);
         }
         [nodiscard]
         public Result<bool> GenerateImplementation(AttributesNode* attrs, Symbol* symbol, StatementBinder* statementBinder)
         {
-            // todo
+            if (attrs == null) return Result<bool>(false);
+            for (const auto& attribute : attrs->GetAttributes())
+            {
+                auto it = attributeProcessorMap.Find(attribute->Name());
+                if (it != attributeProcessorMap.End())
+                {
+                    AttributeProcessor* processor = it->second;
+                    processor->GenerateImplementation(attribute.Get(), symbol, statementBinder);
+                }
+                else
+                {
+                    Result<string> attributeNameResult = ToUtf8(attribute->Name());
+                    if (attributeNameResult.Error()) return Result<bool>(ErrorId(attributeNameResult.GetErrorId()));
+                    string attributeName = Rvalue(attributeNameResult.Value());
+                    int errorId = MakeError("unknown attribute '" + attributeName + "'", attribute->GetFullSpan());
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
             return Result<bool>(true);
         }
         private Module* module;
+        private List<UniquePtr<AttributeProcessor>> attributeProcessors;
+        private Map<ustring, AttributeProcessor*> attributeProcessorMap;
     }
 }
 

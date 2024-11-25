@@ -7,11 +7,16 @@ using System.Collections;
 
 namespace System
 {
-    public int Execute(const string& command)
+    public Result<bool> Execute(const string& command)
     {
-        return RtmExecute(command.Chars());
+        int errorId = RtmExecute(command.Chars());
+        if (errorId != 0)
+        {
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
     }
-    
+
     public int Execute(const string& command, const List<Pair<int, string>>& redirections)
     {
         int execHandle = RtmBeginExec(command.Chars());
@@ -23,7 +28,7 @@ namespace System
         }
         return RtmEndExec(execHandle);
     }
-    
+
     public string GetPathToExecutable()
     {
         int pathHandle = RtmBeginGetPathToExecutable();

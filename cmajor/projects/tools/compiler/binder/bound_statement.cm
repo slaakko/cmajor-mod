@@ -121,14 +121,21 @@ namespace binder
         public Result<BoundStatement*> StatementParent() const
         {
             BoundNode* parent = Parent();
-            if (parent->IsBoundStatement())
+            if (parent != null)
             {
-                return Result<BoundStatement*>(cast<BoundStatement*>(parent));
+                if (parent->IsBoundStatement())
+                {
+                    return Result<BoundStatement*>(cast<BoundStatement*>(parent));
+                }
+                else
+                {
+                    int errorId = MakeError("statement parent expected", FullSpan());
+                    return Result<BoundStatement*>(ErrorId(errorId));
+                }
             }
             else
             {
-                int errorId = MakeError("statement parent expected", FullSpan());
-                return Result<BoundStatement*>(ErrorId(errorId));
+                return Result<BoundStatement*>(cast<BoundStatement*>(null));
             }
         }
         public Result<BoundCompoundStatement*> Block() const
@@ -142,7 +149,14 @@ namespace binder
                 Result<BoundStatement*> statementParentResult = StatementParent();
                 if (statementParentResult.Error()) return Result<BoundCompoundStatement*>(ErrorId(statementParentResult.GetErrorId()));
                 BoundStatement* statementParent = statementParentResult.Value();
-                return statementParent->Block();
+                if (statementParent != null)
+                {
+                    return statementParent->Block();
+                }
+                else
+                {
+                    return Result<BoundCompoundStatement*>(cast<BoundCompoundStatement*>(null));
+                }
             }
         }
         private BoundStatementFlags flags;
@@ -659,6 +673,31 @@ namespace binder
         }
         private UniquePtr<BoundExpression> classPtr;
         private ClassTypeSymbol* classType;
+    }
+
+    public class BoundDestroyTemporariesStatement : BoundStatement
+    {
+        public BoundDestroyTemporariesStatement(List<UniquePtr<BoundFunctionCall>>&& temporaryDestructorCalls_)
+        {
+            temporaryDestructorCalls = temporaryDestructorCalls_;
+        }
+        public override void Accept(BoundNodeVisitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        [nodiscard]
+        public Result<bool> Execute(Emitter& emitter)
+        {
+            int n = cast<int>(temporaryDestructorCalls.Count());
+            for (int i = n - 1; i >= 0; --i)
+            {
+                UniquePtr<BoundFunctionCall>& temporaryDestructorCall = temporaryDestructorCalls[i];
+                Result<bool> result = temporaryDestructorCall->Load(emitter, OperationFlags.none);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        private List<UniquePtr<BoundFunctionCall>> temporaryDestructorCalls;
     }
 
     public Result<bool> InDirectSwitchStatement(BoundStatement* statement)

@@ -1017,7 +1017,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                 cmajor::symbols::LocalVariableSymbol* temporary = boundFunction->GetFunctionSymbol()->CreateTemporary(conversionTargetType, node->GetSpan());
                 constructorCall->AddArgument(std::unique_ptr<BoundExpression>(new BoundAddressOfExpression(std::unique_ptr<BoundExpression>(
                     new BoundLocalVariable(node->GetSpan(), temporary)), conversionTargetType->AddPointer())));
-                if (conversionTargetType->IsClassTypeSymbol() || conversionTargetType->IsClassTemplateSpecializationSymbol())
+                if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())
@@ -1063,7 +1063,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
                     conversionFunctionCall->AddTemporary(std::unique_ptr<BoundLocalVariable>(new BoundLocalVariable(node->GetSpan(), temporaryLocalVariable)));
                 }
                 BoundLocalVariable* conversionResult = new BoundLocalVariable(node->GetSpan(), temporary);
-                if (conversionTargetType->IsClassTypeSymbol() || conversionTargetType->IsClassTemplateSpecializationSymbol())
+                if (conversionTargetType->IsClassTypeSymbol())
                 {
                     cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(conversionTargetType);
                     if (classType->Destructor())
@@ -1183,7 +1183,7 @@ std::unique_ptr<BoundFunctionCall> CreateBoundFunctionCall(cmajor::symbols::Func
         cmajor::symbols::DestructorSymbol* destructorSymbol = static_cast<cmajor::symbols::DestructorSymbol*>(functionSymbol);
         if (destructorSymbol->IsGeneratedFunction() && !GetGlobalFlag(cmajor::symbols::GlobalFlags::info))
         {
-            if (destructorSymbol->Parent()->IsClassTypeSymbol() || destructorSymbol->Parent()->IsClassTemplateSpecializationSymbol())
+            if (destructorSymbol->Parent()->IsClassTypeSymbol())
             {
                 cmajor::symbols::ClassTypeSymbol* classType = static_cast<cmajor::symbols::ClassTypeSymbol*>(destructorSymbol->Parent());
                 if (!boundCompileUnit.IsGeneratedDestructorInstantiated(destructorSymbol))

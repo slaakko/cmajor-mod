@@ -8,6 +8,7 @@ namespace System
     public class ErrorId
     {
         public ErrorId(int value_) : value(value_) {}
+        public default ErrorId(const ErrorId&);
         public int value;
     }
 
