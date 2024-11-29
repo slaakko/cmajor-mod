@@ -39,6 +39,8 @@ namespace symbols
     {
         public void AddConversion(FunctionSymbol* conversion)
         {
+            #assert(conversion->ConversionSourceType() != null);
+            #assert(conversion->ConversionTargetType() != null);
             ConversionTableEntry entry(conversion->ConversionSourceType(), conversion->ConversionTargetType());
             conversionMap[entry] = conversion;
         }

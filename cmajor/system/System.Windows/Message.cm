@@ -113,7 +113,7 @@ namespace System.Windows
         }
         public int errorId;
     }
-    
+
     public enum MouseButtons : ulong
     {
         none = 0x0u,
@@ -148,7 +148,7 @@ namespace System.Windows
 
     public class KeyPressEventArgs
     {
-        public KeyPressEventArgs(wchar keyChar_) : keyChar(keyChar_), handled(false), errorId(0)
+        public explicit KeyPressEventArgs(wchar keyChar_) : keyChar(keyChar_), handled(false), errorId(0)
         {
         }
         public wchar keyChar;
@@ -158,7 +158,7 @@ namespace System.Windows
 
     public class KeyEventArgs
     {
-        public KeyEventArgs(Keys key_) : key(key_), handled(false), suppressKeyPress(false), errorId(0)
+        public explicit KeyEventArgs(Keys key_) : key(key_), handled(false), suppressKeyPress(false), errorId(0)
         {
         }
         public Keys key;
@@ -182,7 +182,7 @@ namespace System.Windows
 
     public class TreeViewNodeEventArgs
     {
-        public TreeViewNodeEventArgs(TreeViewNode* node_) : node(node_), errorId(0)
+        public explicit TreeViewNodeEventArgs(TreeViewNode* node_) : node(node_), errorId(0)
         {
         }
         public TreeViewNode* node;
@@ -191,7 +191,7 @@ namespace System.Windows
 
     public class ControlEventArgs
     {
-        public ControlEventArgs(Control* control_) : control(control_), errorId(0)
+        public explicit ControlEventArgs(Control* control_) : control(control_), errorId(0)
         {
         }
         public Control* control;
@@ -200,7 +200,7 @@ namespace System.Windows
 
     public class SizeChangedEventArgs
     {
-        public SizeChangedEventArgs(uint windowState_) : windowState(windowState_), errorId(0)
+        public explicit SizeChangedEventArgs(uint windowState_) : windowState(windowState_), errorId(0)
         {
         }
         public uint windowState;
@@ -237,7 +237,7 @@ namespace System.Windows
 
     public class ScrollEventArgs
     {
-        public ScrollEventArgs(ushort request_) : request(request_), errorId(0)
+        public explicit ScrollEventArgs(ushort request_) : request(request_), errorId(0)
         {
         }
         public ushort request;
@@ -246,7 +246,7 @@ namespace System.Windows
 
     public class TimerEventArgs
     {
-        public TimerEventArgs(ulong timerId_) : timerId(timerId_), errorId(0)
+        public explicit TimerEventArgs(ulong timerId_) : timerId(timerId_), errorId(0)
         {
         }
         public ulong timerId;

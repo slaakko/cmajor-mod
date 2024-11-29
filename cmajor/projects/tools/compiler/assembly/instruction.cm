@@ -337,7 +337,7 @@ namespace assembly
             case OpCode.CVTSI2SD: return "cvtsi2sd";
             case OpCode.CVTSI2SS: return "cvtsi2ss";
             case OpCode.CVTTSS2SI: return "cvttss2si";
-            case OpCode.CVTSS2SD: return "cvttss2sd";
+            case OpCode.CVTSS2SD: return "cvtss2sd";
             case OpCode.CVTSD2SS: return "cvtsd2ss";
             case OpCode.CVTTSD2SI: return "cvttsd2si";
             case OpCode.DB: return "DB";

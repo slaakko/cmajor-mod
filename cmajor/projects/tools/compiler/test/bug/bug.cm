@@ -1,0 +1,19 @@
+using System;
+
+public enum Keys : int
+{
+    controlModifier = 131072, // 0x0002 0000 CTRL modifier key
+    f4 = 115
+}
+
+void main()
+{
+    Keys key;
+    switch (key)
+    {
+        case cast<Keys>(Keys.controlModifier | Keys.f4):
+        {
+            break;
+        }
+    }
+}

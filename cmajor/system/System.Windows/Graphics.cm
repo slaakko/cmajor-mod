@@ -1572,11 +1572,11 @@ namespace System.Windows
                 WinGraphicsDeleteImage(nativeImage);
             }
         }
-        public uint GetHeight() const
+        public int GetHeight() const
         {
             return WinGraphicsImageGetHeight(nativeImage);
         }
-        public uint GetWidth() const
+        public int GetWidth() const
         {
             return WinGraphicsImageGetWidth(nativeImage);
         }

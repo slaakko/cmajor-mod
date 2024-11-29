@@ -299,7 +299,7 @@ namespace symbols
             if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
             intermediate.Value* irObject = irObjectResult.Value();
             intermediate.Value* init = null;
-            if (initializer == null)
+            if (initializer.IsNull())
             {
                 Result<intermediate.Value*> defaultIdValueResult = Type()->CreateDefaultIrValue(emitter);
                 if (defaultIdValueResult.Error()) return Result<bool>(ErrorId(defaultIdValueResult.GetErrorId()));

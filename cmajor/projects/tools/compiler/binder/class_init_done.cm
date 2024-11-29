@@ -227,6 +227,7 @@ namespace binder
                 arguments.Add(Rvalue(addrOfBoundMemberVariable));
                 Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, lookups, arguments,
                     boundCompileUnit, boundFunction, node);
+                if (constructorCallResult.Error()) return Result<bool>(ErrorId(constructorCallResult.GetErrorId()));
                 boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(new BoundInitializationStatement(node->GetSpan(),
                     UniquePtr<BoundExpression>(constructorCallResult.Value().Release()))));
                 if (memberVariableClassTypeWithDestructor != null)

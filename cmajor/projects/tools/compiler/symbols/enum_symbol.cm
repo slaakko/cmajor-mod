@@ -38,6 +38,10 @@ namespace symbols
         {
             return underlyingType->CreateDefaultIrValue(emitter);
         }
+        public override ValueKind GetValueKind() const
+        {
+            return underlyingType->GetValueKind();
+        }
         [nodiscard]
         public override Result<bool> Write(SymbolWriter& writer)
         {

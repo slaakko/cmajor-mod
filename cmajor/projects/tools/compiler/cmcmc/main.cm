@@ -21,6 +21,7 @@ void PrintHelp()
 
 int main(int argc, const char** argv)
 {
+    SetPrintFn(symbols.PrintConversion);
     Set<string> builtProjects;
     UniquePtr<Module> rootModule;
     List<UniquePtr<Module>> rootModules;

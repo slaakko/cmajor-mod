@@ -262,7 +262,8 @@ namespace System.Windows
                         if (result.Error()) return result;
                         result = DockChildren();
                         if (result.Error()) return result;
-                        result = OnSizeChanged(windowState);
+                        SizeChangedEventArgs args(windowState);
+                        result = OnSizeChanged(args);
                         if (result.Error()) return result;
                     }
                     message.result = 0;

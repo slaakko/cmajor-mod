@@ -1,0 +1,14 @@
+using System;
+
+void main()
+{
+    UniquePtr<int> x;
+    if (x == null) 
+    {
+        Console.Out() << "x is null" << endl();
+    }
+    else
+    {
+        Console.Out() << "x is not null" << endl();
+    }
+}

@@ -7,6 +7,10 @@ using System;
 using System.Collections;
 using cm.ast;
 
+void Break()
+{
+}
+
 namespace symbols
 {
     public class DelegateTypeSymbol : TypeSymbol
@@ -1792,7 +1796,12 @@ namespace symbols
             result = emitter.CreateStore(delegateValue, delegatePtr);
             if (result.Error()) return result;
             emitter.Stack().Push(ptr);
+            Break();
             return Result<bool>(true);
+        }
+        public override bool IsMemberFunctionToClassDelegateConversion() const
+        {
+            return true;
         }
         private ClassDelegateTypeSymbol* classDelegateType;
         private FunctionSymbol* function;

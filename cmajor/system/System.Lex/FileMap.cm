@@ -95,6 +95,9 @@ namespace System.Lex
 
     public class FileMap
     {
+        public FileMap()
+        {
+        }
         public int MapFileName(const string& fileName)
         {
             int fileIndex = cast<int>(fileNames.Count());

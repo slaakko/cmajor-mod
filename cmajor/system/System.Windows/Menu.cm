@@ -1700,7 +1700,7 @@ namespace System.Windows
         {
             none = 0, disabled = 1 << 0, selected = 1 << 1, mouseInClient = 1 << 2, lbuttonPressed = 1 << 3
         }
-        public MenuItem(const string& text_) :
+        public explicit MenuItem(const string& text_) :
             base(), text(text_), children(this), state(State.closed), childRect(), unionRect(), flags(Flags.none), accessKey('\0'), shortcut(Keys.none), shortcutFieldWidth(0)
         {
             SetAccessKey();

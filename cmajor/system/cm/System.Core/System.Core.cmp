@@ -1,3 +1,0 @@
-project System.Core;
-target=library;
-source <Core.cm>;

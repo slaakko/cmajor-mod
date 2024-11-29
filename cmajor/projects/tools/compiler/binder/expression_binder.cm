@@ -424,7 +424,7 @@ namespace binder
         }
         public override void Visit(NullLiteralNode& nullLiteralNode)
         {
-            Result<TypeSymbol*> nullPtrTypeResult = symbolTable->GetTypeByName(u"@nullptr_type");
+            Result<TypeSymbol*> nullPtrTypeResult = symbolTable->GetTypeByName(u"System.NullPtrType");
             if (nullPtrTypeResult.Error())
             {
                 SetErrorId(nullPtrTypeResult.GetErrorId());
@@ -4002,7 +4002,7 @@ namespace binder
             binaryNode->Right()->Accept(*this);
             if (Error()) return;
             BoundExpression* right = expression.Release();
-            BindBinaryOp(left, right, binaryNode, groupName); 
+            BindBinaryOp(left, right, binaryNode, groupName);
         }
         public void BindBinaryOp(BoundExpression* left, BoundExpression* right, Node* node, const ustring& groupName)
         {

@@ -1,6 +1,0 @@
-project system.xpath.lexer;
-tokens <XPath.token>;
-keywords <XPath.keyword>;
-expressions <XPath.expr>;
-lexer <XPath.lexer>;
-

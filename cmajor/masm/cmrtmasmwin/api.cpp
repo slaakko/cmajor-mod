@@ -1722,14 +1722,14 @@ void WinGraphicsDeleteImage(void* image)
     delete static_cast<Gdiplus::Image*>(image);
 }
 
-uint32_t WinGraphicsImageGetHeight(void* image)
+int32_t WinGraphicsImageGetHeight(void* image)
 {
-    return static_cast<Gdiplus::Image*>(image)->GetHeight();
+    return static_cast<int32_t>(static_cast<Gdiplus::Image*>(image)->GetHeight());
 }
 
-uint32_t WinGraphicsImageGetWidth(void* image)
+int32_t WinGraphicsImageGetWidth(void* image)
 {
-    return static_cast<Gdiplus::Image*>(image)->GetWidth();
+    return static_cast<int32_t>(static_cast<Gdiplus::Image*>(image)->GetWidth());
 }
 
 void* WinGraphicsCreateBitmap(const char* fileName, bool useEmbeddedColorManagement)

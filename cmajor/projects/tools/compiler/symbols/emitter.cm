@@ -287,18 +287,11 @@ namespace symbols
             }
             else
             {
-                List<intermediate.Type*> elementTypes;
-                elementTypes.Add(GetVoidPtrType());
-                Result<intermediate.FunctionType*> functionTypeResult = GetFunctionType(classDelegateTypeSymbol->DelegateType());
-                if (functionTypeResult.Error()) return Result<intermediate.StructureType*>(ErrorId(functionTypeResult.GetErrorId()));
-                intermediate.FunctionType* functionType = functionTypeResult.Value();
-                Result<intermediate.Type*> functionPtrTypeResult = functionType->AddPointer(&context);
-                if (functionPtrTypeResult.Error()) return Result<intermediate.StructureType*>(functionPtrTypeResult.GetErrorId());
-                intermediate.Type* functionPtrType = functionPtrTypeResult.Value();
-                elementTypes.Add(functionPtrType);
-                Result<intermediate.StructureType*> structureTypeResult = context.GetTypes()->GetStructureType(System.Lex.Span(), elementTypes);
-                if (structureTypeResult.Error()) return structureTypeResult;
-                intermediate.StructureType* structureType = structureTypeResult.Value();
+                Result<intermediate.Type*> irTypeResult = classDelegateTypeSymbol->ObjectDelegatePairType()->IrType(*this);
+                if (irTypeResult.Error()) return Result<intermediate.StructureType*>(ErrorId(irTypeResult.GetErrorId()));
+                intermediate.Type* irType = irTypeResult.Value();
+                #assert(irType->IsStructureType());
+                intermediate.StructureType* structureType = cast<intermediate.StructureType*>(irType);
                 classDelegateTypeMap[classDelegateTypeSymbol] = structureType;
                 return Result<intermediate.StructureType*>(structureType);
             }

@@ -223,7 +223,7 @@ namespace System.Xml
         [nodiscard]
         private Result<bool> AddTextContent(bool addSpace)
         {
-            if (currentElement != null)
+            if (!currentElement.IsNull())
             {
                 auto utf32Result = ToUtf32(textContent);
                 if (utf32Result.Error())

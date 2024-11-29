@@ -1806,6 +1806,8 @@ namespace codegen
         public override void Visit(BoundGlobalVariable& boundGlobalVariable)
         {
             GlobalVariableSymbol* globalVariableSymbol = boundGlobalVariable.GetGlobalVariableSymbol();
+            #assert(globalVariableSymbol != null);
+            Console.Out() << "GLOBAL VARIABLE " << globalVariableSymbol->Name() << endl();
             Result<bool> result = globalVariableSymbol->CreateIrObject(emitter);
             if (result.Error())
             {

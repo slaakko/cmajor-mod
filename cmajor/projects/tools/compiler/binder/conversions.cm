@@ -286,7 +286,7 @@ namespace binder
                 return Result<FunctionSymbol*>(ErrorId(ulongTypeResult.GetErrorId()));
             }
             TypeSymbol* ulongType = ulongTypeResult.Value();
-            Result<TypeSymbol*> nullPtrTypeResult = symbolTable->GetTypeByName(u"@nullptr_type");
+            Result<TypeSymbol*> nullPtrTypeResult = symbolTable->GetTypeByName(u"System.NullPtrType");
             if (nullPtrTypeResult.Error())
             {
                 return Result<FunctionSymbol*>(ErrorId(nullPtrTypeResult.GetErrorId()));

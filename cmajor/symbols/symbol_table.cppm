@@ -146,6 +146,7 @@ public:
     void EndEnumType();
     void AddEnumConstant(cmajor::ast::EnumConstantNode& enumConstantNode);
     void AddTypeSymbolToGlobalScope(TypeSymbol* typeSymbol);
+    void AddTypeSymbol(TypeSymbol* typeSymbol);
     void AddFunctionSymbolToGlobalScope(FunctionSymbol* functionSymbol);
     void MapNode(cmajor::ast::Node* node, Symbol* symbol);
     Symbol* GetSymbolNoThrow(cmajor::ast::Node* node) const;

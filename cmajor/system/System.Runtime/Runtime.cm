@@ -363,8 +363,8 @@ public extern cdecl void* WinGraphicsCreateImage(const char* fileName, bool useE
 public extern cdecl int WinGraphicsImageGetLastStatus(void* image);
 public extern cdecl void* WinGraphicsCloneImage(void* image);
 public extern cdecl void WinGraphicsDeleteImage(void* image);
-public extern cdecl uint WinGraphicsImageGetHeight(void* image);
-public extern cdecl uint WinGraphicsImageGetWidth(void* image);
+public extern cdecl int WinGraphicsImageGetHeight(void* image);
+public extern cdecl int WinGraphicsImageGetWidth(void* image);
 public extern cdecl void* WinGraphicsCreateBitmap(const char* fileName, bool useEmbeddedColorManagement);
 public extern cdecl void* WinGraphicsCreateBitmapWidthHeight(int w, int h, void* graphics);
 public extern cdecl void* WinGraphicsCreateBitmapWinBitmap(void* winBitmap, void* palette);

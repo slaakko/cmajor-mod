@@ -240,7 +240,7 @@ TypeSymbol* GetTypeFor(ValueType valueType, SymbolTable* symbolTable)
     case ValueType::charValue: return symbolTable->GetTypeByName(U"char");
     case ValueType::wcharValue: return symbolTable->GetTypeByName(U"wchar");
     case ValueType::ucharValue: return symbolTable->GetTypeByName(U"uchar");
-    case ValueType::nullValue: return symbolTable->GetTypeByName(U"@nullptr_type");
+    case ValueType::nullValue: return symbolTable->GetTypeByName(U"System.NullPtrType");
     }
     return nullptr;
 }

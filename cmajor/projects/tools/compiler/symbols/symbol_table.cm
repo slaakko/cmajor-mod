@@ -10,6 +10,8 @@ using cm.ast;
 
 namespace symbols
 {
+    public Module* m = null;
+
     public class SymbolTable
     {
         public SymbolTable(Module* module_) :
@@ -62,6 +64,19 @@ namespace symbols
             SetTypeIdFor(typeSymbol);
             typeNameMap[typeSymbol->FullName()] = typeSymbol;
             auto result = globalNs.AddMember(typeSymbol, context);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> AddTypeSymbol(TypeSymbol* typeSymbol, SymbolsContext& context)
+        {
+            typeSymbol->SetFileIndex(currentSourceFile->FileIndex());
+            typeSymbol->SetModuleId(currentSourceFile->ModuleId());
+            typeSymbol->SetSourceFile(currentSourceFile);
+            typeSymbol->SetModule(module);
+            SetTypeIdFor(typeSymbol);
+            typeNameMap[typeSymbol->FullName()] = typeSymbol;
+            auto result = container->AddMember(typeSymbol, context);
             if (result.Error()) return result;
             return Result<bool>(true);
         }
@@ -1593,6 +1608,7 @@ namespace symbols
         }
         public void AddConversion(FunctionSymbol* conversion)
         {
+            m = GetModule();
             LockGuard<RecursiveMutex> lock(GetModule()->Lock());
             conversionTable.AddConversion(conversion);
         }
@@ -1722,7 +1738,11 @@ namespace symbols
         result = symbolTable->AddTypeSymbolToGlobalScope(autoTypeSymbol, context);
         if (result.Error()) return result;
         NullPtrTypeSymbol* nullPtrTypeSymbol = new NullPtrTypeSymbol(rootSpan);
-        result = symbolTable->AddTypeSymbolToGlobalScope(nullPtrTypeSymbol, context);
+        Result<NamespaceSymbol*> nsResult = symbolTable->BeginNamespace(u"System", rootSpan, symbolTable->GlobalNs().ModuleId(), symbolTable->GlobalNs().FileIndex(), context);
+        if (nsResult.Error()) return Result<bool>(ErrorId(nsResult.GetErrorId()));
+        result = symbolTable->AddTypeSymbol(nullPtrTypeSymbol, context);
+        if (result.Error()) return result;
+        symbolTable->EndNamespace();
         if (result.Error()) return result;
         result = MakeBasicTypeOperations(context, symbolTable, rootSpan,
             boolTypeSymbol, sbyteTypeSymbol, byteTypeSymbol, shortTypeSymbol, ushortTypeSymbol, intTypeSymbol, uintTypeSymbol,

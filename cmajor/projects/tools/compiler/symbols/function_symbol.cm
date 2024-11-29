@@ -10,6 +10,20 @@ using cm.ast;
 
 namespace symbols
 {
+    public FunctionSymbol* f = null;
+
+    public void PrintConversion()
+    {
+        if (m != null)
+        {
+            Console.Out() << "MODULE=" << m->Name() << endl();
+        }
+        if (f != null)
+        {
+            Console.Out() << "FUNCTION=" << f->Name() << endl();
+        }
+    }
+
     public const int typeIdVmtIndexOffset = 0;
     public const int methodVmtIndexOffset = 3;
 
@@ -944,12 +958,15 @@ namespace symbols
             }
             if (IsConversion())
             {
+                f = this;
                 auto typeSymbolResult = symbolTable->GetType(conversionSourceTypeId);
                 if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
                 conversionSourceType = typeSymbolResult.Value();
+                #assert(conversionSourceType != null);
                 typeSymbolResult = symbolTable->GetType(conversionTargetTypeId);
                 if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
                 conversionTargetType = typeSymbolResult.Value();
+                #assert(conversionTargetType != null);
                 symbolTable->AddConversion(this);
             }
             return Result<bool>(true);

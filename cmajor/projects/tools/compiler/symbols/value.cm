@@ -67,7 +67,7 @@ namespace symbols
     {
         none = 0u, resolved = 1u << 0u
     }
-    
+
     public abstract class Value
     {
         public Value(const System.Lex.Span& span_, ValueKind kind_) : span(span_), kind(kind_), flags(ValueFlags.none)
@@ -76,13 +76,13 @@ namespace symbols
         public default virtual ~Value();
         [nodiscard]
         public virtual Result<bool> Write(SymbolWriter& writer)
-        {    
+        {
             int errorId = AllocateError("cannot write " + ValueKindStr(kind));
             return Result<bool>(ErrorId(errorId));
         }
         [nodiscard]
         public virtual Result<bool> Read(SymbolReader& reader)
-        {    
+        {
             int errorId = AllocateError("cannot read " + ValueKindStr(kind));
             return Result<bool>(ErrorId(errorId));
         }
@@ -2943,7 +2943,7 @@ namespace symbols
         }
         public override Result<TypeSymbol*> Type(SymbolTable* symbolTable, SymbolsContext& context) const
         {
-            return symbolTable->GetTypeByName(u"@nullptr_type");
+            return symbolTable->GetTypeByName(u"System.NullPtrType");
         }
         public override Result<intermediate.Value*> IrValue(Emitter& emitter) const
         {
@@ -3863,7 +3863,7 @@ namespace symbols
             }
             case ValueKind.nullValue:
             {
-                return symbolTable->GetTypeByName(u"@nullptr_type");
+                return symbolTable->GetTypeByName(u"System.NullPtrType");
             }
         }
         int errorId = MakeError("type for value kind '" + ValueKindStr(valueKind) + "' not found", node->GetFullSpan());

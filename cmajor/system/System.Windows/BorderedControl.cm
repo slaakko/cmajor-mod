@@ -124,7 +124,7 @@ namespace System.Windows
             this(child, BorderStyle.single, location, size, dock, anchors)
         {
         }
-        public BorderedControl(Control* child) : this(child, Point(), Size(), Dock.none, Anchors.none)
+        public explicit BorderedControl(Control* child) : this(child, Point(), Size(), Dock.none, Anchors.none)
         {
         }
         public BorderedControl(BorderedControlCreateParams& createParams) :

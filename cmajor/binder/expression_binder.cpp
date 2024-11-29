@@ -826,7 +826,7 @@ void ExpressionBinder::Visit(cmajor::ast::UStringLiteralNode& ustringLiteralNode
 
 void ExpressionBinder::Visit(cmajor::ast::NullLiteralNode& nullLiteralNode)
 {
-    cmajor::symbols::TypeSymbol* nullPtrType = symbolTable.GetTypeByName(U"@nullptr_type");
+    cmajor::symbols::TypeSymbol* nullPtrType = symbolTable.GetTypeByName(U"System.NullPtrType");
     expression.reset(new BoundLiteral(std::unique_ptr<cmajor::symbols::Value>(new cmajor::symbols::NullValue(nullLiteralNode.GetSpan(),
         nullPtrType)), nullPtrType));
 }

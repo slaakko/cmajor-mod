@@ -2,14 +2,10 @@
     <callStackOpen value="false"/>
     <localsViewOpen value="false"/>
     <openFiles>
-        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/RandomAccessIterator.cm"/>
-        <item value="C:/work/cmajor-mod/cmajor/system/System.Windows/Event.cm"/>
+        <item value="C:/work/cmajor-mod/cmajor/system/System.Base/UniquePtr.cm"/>
     </openFiles>
-    <currentOpenFile value="C:/work/cmajor-mod/cmajor/system/System.Windows/Event.cm"/>
-    <currentCursorLine value="25"/>
+    <currentOpenFile value="C:/work/cmajor-mod/cmajor/system/System.Base/UniquePtr.cm"/>
+    <currentCursorLine value="114"/>
     <breakpoints/>
-    <expandedProjects>
-        <item value="System.Base"/>
-        <item value="System.Windows"/>
-    </expandedProjects>
+    <expandedProjects/>
 </solutionSettings>

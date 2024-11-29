@@ -5,6 +5,23 @@
 
 using System.IO;
 
+public delegate void PrintFn();
+
+public PrintFn printFn;
+
+public void SetPrintFn(PrintFn fn)
+{
+    printFn = fn;
+}
+
+public void Print()
+{
+    if (printFn != PrintFn())
+    {
+        printFn();
+    }
+}
+
 namespace System
 {
     public class Uuid
@@ -94,8 +111,22 @@ namespace System
         public byte[size] data;
     }
 
-    public inline bool operator==(const Uuid& left, const Uuid& right)
+    public bool operator==(const Uuid& left, const Uuid& right)
     {
+        void* l = cast<void*>(&left);
+        ulong lx = cast<ulong>(l);
+        if (lx <= 0x0000000000000100u)
+        {
+            Print();
+        }
+        void* r = cast<void*>(&right);
+        ulong rx = cast<ulong>(r);
+        if (rx <= 0x0000000000000100u)
+        {
+            Print();
+        }
+        #assert(lx > 0x0000000000000100u);
+        #assert(rx > 0x0000000000000100u);
         for (long i = 0; i < Uuid.size; ++i)
         {
             if (left.data[i] != right.data[i]) return false;

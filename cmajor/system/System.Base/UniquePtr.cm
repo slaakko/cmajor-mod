@@ -111,6 +111,11 @@ namespace System
         return left.Get() == right.Get();
     }
 
+    public inline bool operator==<T>(const UniquePtr<T>& left, NullPtrType)
+    {
+        return left.Get() == null;
+    }
+
     public inline bool operator<<T>(const UniquePtr<T>& left, const UniquePtr<T>& right)
     {
         return left.Get() < right.Get();

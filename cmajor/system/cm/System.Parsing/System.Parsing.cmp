@@ -1,6 +1,0 @@
-project System.Parsing;
-target=library;
-reference <../System.Base/System.Base.cmp>;
-source <Match.cm>;
-source <Range.cm>;
-source <Value.cm>;

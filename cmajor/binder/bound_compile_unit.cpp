@@ -381,7 +381,7 @@ cmajor::symbols::FunctionSymbol* BoundCompileUnit::GetConversion(cmajor::symbols
         {
             if (sourceType->IsNullPtrType() && targetType->IsPointerType() && !targetType->IsReferenceType())
             {
-                std::unique_ptr<cmajor::symbols::FunctionSymbol> nullPtrToPtrConversion(new NullPtrToPtrConversion(symbolTable.GetTypeByName(U"@nullptr_type"), targetType));
+                std::unique_ptr<cmajor::symbols::FunctionSymbol> nullPtrToPtrConversion(new NullPtrToPtrConversion(symbolTable.GetTypeByName(U"System.NullPtrType"), targetType));
                 nullPtrToPtrConversion->SetParent(&symbolTable.GlobalNs());
                 conversion = nullPtrToPtrConversion.get();
                 conversionTable.AddConversion(conversion);

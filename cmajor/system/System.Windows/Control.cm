@@ -738,7 +738,8 @@ namespace System.Windows
             if (size != sz)
             {
                 size = sz;
-                auto result = OnSizeChanged(windowState);
+                SizeChangedEventArgs args(windowState);
+                auto result = OnSizeChanged(args);
                 if (result.Error()) return result;
             }
             return Result<bool>(true);

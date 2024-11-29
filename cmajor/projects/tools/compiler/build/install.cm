@@ -67,9 +67,58 @@ namespace build
     }
 
     [nodiscard]
-    public Result<bool> InstallSystemWindowsLibraries(Module* systemInstallModule)
+    public Result<bool> InstallSystemWindowsLibraries(Module* systemInstallWindowsModule)
     {
-        // todo
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(systemInstallWindowsModule->LogStreamId(), "Installing system libraries (Windows)...");
+        }
+        auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm");
+        if (systemLibDirResult.Error()) return Result<bool>(ErrorId(systemLibDirResult.GetErrorId()));
+        string systemLibDir = Rvalue(systemLibDirResult.Value());
+        System.IO.Directory.CreateDirectories(systemLibDir);
+        for (Module* systemModule : systemInstallWindowsModule->AllReferencedModules())
+        {
+            string from = systemModule->OriginalFilePath();
+            string to = System.IO.Path.Combine(systemLibDir, System.IO.Path.GetFileName(from));
+            auto existsResult = System.IO.File.Exists(to);
+            if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+            bool exists = existsResult.Value();
+            if (exists)
+            {
+                auto removeResult = File.Remove(to);
+                if (removeResult.Error()) return removeResult;
+            }
+            auto copyResult = System.IO.File.Copy(from, to);
+            if (copyResult.Error()) return copyResult;
+            if (GetGlobalFlag(GlobalFlags.verbose))
+            {
+                LogMessage(systemInstallWindowsModule->LogStreamId(), from + " -> " + to);
+            }
+            if (!systemModule->LibraryFilePath().IsEmpty())
+            {
+                from = systemModule->LibraryFilePath();
+                to = System.IO.Path.Combine(systemLibDir, System.IO.Path.GetFileName(from));
+                auto existsResult = System.IO.File.Exists(to);
+                if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                bool exists = existsResult.Value();
+                if (exists)
+                {
+                    auto removeResult = File.Remove(to);
+                    if (removeResult.Error()) return removeResult;
+                }
+                auto copyResult = System.IO.File.Copy(from, to);
+                if (copyResult.Error()) return copyResult;
+                if (GetGlobalFlag(GlobalFlags.verbose))
+                {
+                    LogMessage(systemInstallWindowsModule->LogStreamId(), from + " -> " + to);
+                }
+            }
+        }
+        if (GetGlobalFlag(GlobalFlags.verbose))
+        {
+            LogMessage(systemInstallWindowsModule->LogStreamId(), "System libraries installed.");
+        }
         return Result<bool>(true);
     }
 }

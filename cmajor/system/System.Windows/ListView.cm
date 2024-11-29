@@ -924,7 +924,7 @@ namespace System.Windows
         {
             enabled, disabled
         }
-        public ListViewItem(ListView* view_) : view(view_), flags(Flags.none), imageIndex(-1), disabledImageIndex(-1), data(null)
+        public explicit ListViewItem(ListView* view_) : view(view_), flags(Flags.none), imageIndex(-1), disabledImageIndex(-1), data(null)
         {
         }
         [nodiscard]

@@ -470,10 +470,6 @@ namespace binder
                 MemberFunctionNode* memberFunctionNode = cast<MemberFunctionNode*>(node);
                 statementBinder.SetCurrentMemberFunction(memFnSymbol, memberFunctionNode);
             }
-            if (memberFunctionSymbol->GroupName() == u"AddHandler")
-            {
-                Foo();
-            }
             functionInstanceNode->Body()->Accept(statementBinder);
             if (statementBinder.Error()) return Result<FunctionSymbol*>(ErrorId(statementBinder.GetErrorId()));
             Result<bool> returnPathResult = CheckFunctionReturnPaths(memberFunctionSymbol, functionInstanceNode->Body(), node, containerScope, boundCompileUnit, currentFunction);

@@ -1328,8 +1328,19 @@ void SymbolTable::AddTypeSymbolToGlobalScope(TypeSymbol* typeSymbol)
     typeSymbol->SetModuleId(currentCompileUnit->ModuleId());
     typeSymbol->SetCompileUnit(currentCompileUnit);
     typeSymbol->SetModule(module);
-    globalNs.AddMember(typeSymbol);
     SetTypeIdFor(typeSymbol);
+    globalNs.AddMember(typeSymbol);
+    typeNameMap[typeSymbol->FullName()] = typeSymbol;
+}
+
+void SymbolTable::AddTypeSymbol(TypeSymbol* typeSymbol)
+{
+    typeSymbol->SetFileIndex(currentCompileUnit->FileIndex());
+    typeSymbol->SetModuleId(currentCompileUnit->ModuleId());
+    typeSymbol->SetCompileUnit(currentCompileUnit);
+    typeSymbol->SetModule(module);
+    SetTypeIdFor(typeSymbol);
+    container->AddMember(typeSymbol);
     typeNameMap[typeSymbol->FullName()] = typeSymbol;
 }
 
@@ -2254,7 +2265,9 @@ void InitCoreSymbolTable(SymbolTable& symbolTable, const soul::ast::Span& rootSp
     symbolTable.AddTypeSymbolToGlobalScope(wcharType);
     symbolTable.AddTypeSymbolToGlobalScope(ucharType);
     symbolTable.AddTypeSymbolToGlobalScope(voidType);
-    symbolTable.AddTypeSymbolToGlobalScope(new NullPtrType(rootSpan, U"@nullptr_type"));
+    symbolTable.BeginNamespace(U"System", rootSpan, symbolTable.GlobalNs().ModuleId(), symbolTable.GlobalNs().FileIndex());
+    symbolTable.AddTypeSymbol(new NullPtrType(rootSpan, U"NullPtrType"));
+    symbolTable.EndNamespace();
     MakeBasicTypeOperations(symbolTable, rootSpan, boolType, sbyteType, byteType, shortType, ushortType, intType, uintType, longType, ulongType, floatType, doubleType, charType, wcharType, ucharType, voidType);
     if (!IntrinsicConcepts::Instance().Initialized())
     {

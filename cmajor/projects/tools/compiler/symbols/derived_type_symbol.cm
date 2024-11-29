@@ -433,7 +433,7 @@ namespace symbols
 
     public class NullPtrTypeSymbol : TypeSymbol
     {
-        public NullPtrTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.nullPtrTypeSymbol, span_, u"@nullptr_type")
+        public NullPtrTypeSymbol(const System.Lex.Span& span_) : base(SymbolKind.nullPtrTypeSymbol, span_, u"NullPtrType")
         {
         }
         public override bool IsNullPtrType() const

@@ -224,8 +224,8 @@ extern "C" void* WinGraphicsCreateImage(const char* fileName, bool useEmbeddedCo
 extern "C" int WinGraphicsImageGetLastStatus(void* image);
 extern "C" void* WinGraphicsCloneImage(void* image);
 extern "C" void WinGraphicsDeleteImage(void* image);
-extern "C" uint32_t WinGraphicsImageGetHeight(void* image);
-extern "C" uint32_t WinGraphicsImageGetWidth(void* image);
+extern "C" int32_t WinGraphicsImageGetHeight(void* image);
+extern "C" int32_t WinGraphicsImageGetWidth(void* image);
 extern "C" void* WinGraphicsCreateBitmap(const char* fileName, bool useEmbeddedColorManagement);
 extern "C" void* WinGraphicsCreateBitmapWidthHeight(int w, int h, void* graphics);
 extern "C" void* WinGraphicsCreateBitmapWinBitmap(void* winBitmap, void* palette);

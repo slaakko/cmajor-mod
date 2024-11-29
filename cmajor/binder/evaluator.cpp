@@ -2807,7 +2807,7 @@ void Evaluator::Visit(cmajor::ast::UStringLiteralNode& ustringLiteralNode)
 
 void Evaluator::Visit(cmajor::ast::NullLiteralNode& nullLiteralNode)
 {
-    value.reset(new cmajor::symbols::NullValue(nullLiteralNode.GetSpan(), symbolTable->GetTypeByName(U"@nullptr_type")));
+    value.reset(new cmajor::symbols::NullValue(nullLiteralNode.GetSpan(), symbolTable->GetTypeByName(U"System.NullPtrType")));
 }
 
 void Evaluator::Visit(cmajor::ast::ArrayLiteralNode& arrayLiteralNode)
