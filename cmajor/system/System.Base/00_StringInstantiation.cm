@@ -1,0 +1,11 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+namespace System
+{
+    new class String<char>;
+    new class String<wchar>;
+    new class String<uchar>;
+}

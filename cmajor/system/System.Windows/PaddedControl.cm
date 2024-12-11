@@ -59,7 +59,7 @@ namespace System.Windows
                 return;
             }
         }
-        public PaddedControl(Control* child) : this(child, Padding(DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding()),
+        public explicit PaddedControl(Control* child) : this(child, Padding(DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding(), DefaultControlPadding()),
             Point(), Size(), Dock.none, Anchors.none)
         {
         }

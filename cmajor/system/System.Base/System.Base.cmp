@@ -1,6 +1,7 @@
 project System.Base;
 target=library;
 reference <../System.Runtime/System.Runtime.cmp>;
+source <00_StringInstantiation.cm>;
 source <Algorithm.cm>;
 source <Ansi.cm>;
 source <Ascii.cm>;

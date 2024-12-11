@@ -178,10 +178,10 @@ namespace symbols
         public SourceFileInfo() : sourceFileId(-1), sourceFilePath()
         {
         }
-        public SourceFileInfo(int sourceFileId_, const string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
+        public SourceFileInfo(long sourceFileId_, const string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
         {
         }
-        public inline int SourceFileId() const
+        public inline long SourceFileId() const
         {
             return sourceFileId;
         }
@@ -199,7 +199,7 @@ namespace symbols
         }
         public Result<bool> Read(BinaryReader& reader)
         {
-            auto sourceFileIdResult = reader.ReadInt();
+            auto sourceFileIdResult = reader.ReadLong();
             if (sourceFileIdResult.Error()) return Result<bool>(ErrorId(sourceFileIdResult.GetErrorId()));
             sourceFileId = sourceFileIdResult.Value();
             auto sourceFilePathResult = reader.ReadString();
@@ -207,7 +207,7 @@ namespace symbols
             sourceFilePath = Rvalue(sourceFilePathResult.Value());
             return Result<bool>(true);
         }
-        private int sourceFileId;
+        private long sourceFileId;
         private string sourceFilePath;
     }
 
@@ -216,11 +216,11 @@ namespace symbols
         public FunctionTraceInfo() : functionId(-1), functionFullName(), sourceFileId(-1)
         {
         }
-        public FunctionTraceInfo(int functionId_, const string& functionFullName_, int sourceFileId_) :
+        public FunctionTraceInfo(long functionId_, const string& functionFullName_, long sourceFileId_) :
             functionId(functionId_), functionFullName(functionFullName_), sourceFileId(sourceFileId_)
         {
         }
-        public inline int FunctionId() const
+        public inline long FunctionId() const
         {
             return functionId;
         }
@@ -228,7 +228,7 @@ namespace symbols
         {
             return functionFullName;
         }
-        public inline int SourceFileId() const
+        public inline long SourceFileId() const
         {
             return sourceFileId;
         }
@@ -244,20 +244,20 @@ namespace symbols
         }
         public Result<bool> Read(BinaryReader& reader)
         {
-            Result<int> functionIdResult = reader.ReadInt();
+            Result<long> functionIdResult = reader.ReadLong();
             if (functionIdResult.Error()) return Result<bool>(ErrorId(functionIdResult.GetErrorId()));
             functionId = functionIdResult.Value();
             Result<string> functionFullNameResult = reader.ReadString();
             if (functionFullNameResult.Error()) return Result<bool>(ErrorId(functionFullNameResult.GetErrorId()));
             functionFullName = Rvalue(functionFullNameResult.Value());
-            Result<int> sourceFileIdResult = reader.ReadInt();
+            Result<long> sourceFileIdResult = reader.ReadLong();
             if (sourceFileIdResult.Error()) return Result<bool>(ErrorId(sourceFileIdResult.GetErrorId()));
             sourceFileId = sourceFileIdResult.Value();
             return Result<bool>(true);
         }
-        private int functionId;
+        private long functionId;
         private string functionFullName;
-        private int sourceFileId;
+        private long sourceFileId;
     }
 
     public class Module
@@ -305,6 +305,11 @@ namespace symbols
         public inline const Uuid& Id() const
         {
             return id;
+        }
+        public long ModuleId() const
+        {
+            ulong hash = GetHashCode(name);
+            return cast<long>(hash % 0x80000000u);
         }
         public inline int SymbolTablePos() const
         {
@@ -854,7 +859,7 @@ namespace symbols
         {
             return lock;
         }
-        public int MakeFunctionId(const string& fullFunctionName, const string& sourceFilePath)
+        public long MakeFunctionId(const string& fullFunctionName, const string& sourceFilePath)
         {
             LockGuard<RecursiveMutex> lock(Lock());
             SourceFileInfo* sourceFileInfo = null;
@@ -865,7 +870,7 @@ namespace symbols
             }
             else
             {
-                sourceFileInfo = new SourceFileInfo(cast<int>(allSourceFileInfoList.Count()), sourceFilePath);
+                sourceFileInfo = new SourceFileInfo((ModuleId() << 32) | allSourceFileInfoList.Count(), sourceFilePath);
                 sourceFileInfoList.Add(UniquePtr<SourceFileInfo>(sourceFileInfo));
                 allSourceFileInfoList.Add(sourceFileInfo);
                 sourceFileInfoMap[sourceFilePath] = sourceFileInfo;
@@ -878,7 +883,7 @@ namespace symbols
             }
             else
             {
-                functionTraceInfo = new FunctionTraceInfo(cast<int>(allTraceInfoList.Count()), fullFunctionName, sourceFileInfo->SourceFileId());
+                functionTraceInfo = new FunctionTraceInfo((ModuleId() << 32) | allTraceInfoList.Count(), fullFunctionName, sourceFileInfo->SourceFileId());
                 traceInfoList.Add(UniquePtr<FunctionTraceInfo>(functionTraceInfo));
                 allTraceInfoList.Add(functionTraceInfo);
                 traceInfoMap[fullFunctionName] = functionTraceInfo;
@@ -950,8 +955,15 @@ namespace symbols
                     bool exists = existsResult.Value();
                     if (!exists)
                     {
-                        int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
-                        return Result<bool>(ErrorId(errorId));
+                        moduleFilePath = reference;
+                        existsResult = System.IO.File.Exists(moduleFilePath);
+                        if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                        exists = existsResult.Value();
+                        if (!exists)
+                        {
+                            int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
+                            return Result<bool>(ErrorId(errorId));
+                        }
                     }
                 }
                 else
@@ -1004,8 +1016,15 @@ namespace symbols
                     bool exists = existsResult.Value();
                     if (!exists)
                     {
-                        int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
-                        return Result<bool>(ErrorId(errorId));
+                        moduleFilePath = reference;
+                        existsResult = System.IO.File.Exists(moduleFilePath);
+                        if (existsResult.Error()) return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                        exists = existsResult.Value();
+                        if (!exists)
+                        {
+                            int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
+                            return Result<bool>(ErrorId(errorId));
+                        }
                     }
                 }
                 else
@@ -1016,7 +1035,7 @@ namespace symbols
                     bool exists = existsResult.Value();
                     if (!exists)
                     {
-                        int errorId = AllocateError("could not find module reference '" + moduleFileName + "'");
+                        int errorId = AllocateError("could not find module reference '" + moduleFileName);
                         return Result<bool>(ErrorId(errorId));
                     }
                 }

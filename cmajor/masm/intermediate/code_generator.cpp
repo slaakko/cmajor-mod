@@ -2674,6 +2674,11 @@ void CodeGenerator::Visit(Function& function)
         std::unique_ptr<RegisterAllocator> linearScanRregisterAllocator = CreateLinearScanRegisterAllocator(function, Ctx());
         registerAllocator = linearScanRregisterAllocator.get();
         function.VisitBasicBlocks(*this);
+        if (function.Name() == "constructor_CmajorLexer_88A94EF725A832C0952C250BA62D8C4E646AB874")
+        {
+            registerAllocator->GetFrame().Dump();
+            int x = 0;
+        }
         assemblyFunction->SetActiveFunctionPart(cmajor::masm::assembly::FunctionPart::prologue);
         EmitPrologue(*this);
         assemblyFunction->SetActiveFunctionPart(cmajor::masm::assembly::FunctionPart::epilogue);

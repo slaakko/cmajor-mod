@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections;
+using System.Threading;
 using symbols;
 using cm.ast;
 
@@ -43,20 +44,70 @@ namespace binder
         }
         [nodiscard]
         public Result<bool> AddTemporaryDestructorCall(UniquePtr<BoundFunctionCall>&& destructorCall, BoundFunction* currentFunction,
-            ContainerScope* currentContainerScope, Node* node)
+            ContainerScope* currentContainerScope, Node* node, SymbolsContext& context)
         {
             FunctionSymbol* functionSymbol = destructorCall->GetFunctionSymbol();
             if (functionSymbol->IsDestructorSymbol())
             {
                 DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(functionSymbol);
-                if (destructorSymbol->IsGenerated())
+                if (destructorSymbol->IsGenerated() || (destructorSymbol->IsTemplateSpecialization() && !destructorSymbol->Parent()->SpecializationHasFullInstantiation()))
                 {
                     if (destructorSymbol->Parent()->IsClassTypeSymbol())
                     {
                         ClassTypeSymbol* classType = cast<ClassTypeSymbol*>(destructorSymbol->Parent());
-                        if (!compileUnit->IsGeneratedDestructorInstantiated(destructorSymbol))
+                        if (destructorSymbol->IsGenerated() && !compileUnit->IsGeneratedDestructorInstantiated(destructorSymbol) || destructorSymbol->IsTemplateSpecialization())
                         {
-                            compileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
+                            if (destructorSymbol->IsGenerated())
+                            {
+                                compileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);
+                            }
+                            else if (destructorSymbol->IsTemplateSpecialization())
+                            {
+                                if (destructorSymbol->Parent()->IsClassTemplateSpecializationSymbol())
+                                {
+                                    ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(destructorSymbol->Parent());
+                                    if (!specialization->IsBound())
+                                    {
+                                        Result<bool> result = compileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(specialization,
+                                            currentContainerScope, node);
+                                        if (result.Error()) return result;
+                                    }
+                                    Result<FunctionSymbol*> instanceResult = compileUnit->GetClassTemplateRepository()->Instantiate(
+                                        destructorSymbol, currentContainerScope, currentFunction, node);
+                                    if (instanceResult.Error())
+                                    {
+                                        LockGuard<RecursiveMutex> lock(compileUnit->GetModule()->Lock());
+                                        ClassTemplateSpecializationSymbol* copy = compileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization);
+                                        Result<bool> bindResult = compileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
+                                            copy, compileUnit->GetSymbolTable()->GlobalNs().GetContainerScope(), node);
+                                        if (bindResult.Error()) return Result<bool>(ErrorId(bindResult.GetErrorId()));
+                                        int index = destructorSymbol->Index();
+                                        FunctionSymbol* fn = copy->GetFunctionByIndex(index);
+                                        if (fn == null)
+                                        {
+                                            Result<string> fullNameResult = ToUtf8(copy->FullName());
+                                            if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
+                                            string fullName = Rvalue(fullNameResult.Value());
+                                            int errorId = MakeError("function by index " + ToString(index) + " not found in class template specialization '" + fullName + "'",
+                                                node->GetFullSpan());
+                                            return Result<bool>(ErrorId(errorId));
+                                        }
+                                        #assert(fn->IsDestructorSymbol());
+                                        destructorSymbol = cast<DestructorSymbol*>(fn);
+                                        instanceResult = compileUnit->GetClassTemplateRepository()->Instantiate(destructorSymbol, currentContainerScope, currentFunction, node);
+                                    }
+                                    if (instanceResult.Error())
+                                    {
+                                        return Result<bool>(ErrorId(instanceResult.GetErrorId()));
+                                    }
+                                    else
+                                    {
+                                        FunctionSymbol* instance = instanceResult.Value();
+                                        destructorCall->SetFunctionSymbol(instance);
+                                        return Result<bool>(true);
+                                    }
+                                }
+                            }
                             Result<FunctionSymbol*> copyResult = destructorSymbol->Copy();
                             if (copyResult.Error()) return Result<bool>(ErrorId(copyResult.GetErrorId()));
                             DestructorSymbol* copy = cast<DestructorSymbol*>(copyResult.Value());
@@ -71,13 +122,16 @@ namespace binder
                             copy->SetSourceFileId(sourceFileId);
                             Result<bool> result = copy->ComputeMangledName();
                             if (result.Error()) return result;
-                            destructorSymbol->SetInstantiatedName(copy->MangledName());
+                            destructorSymbol->SetInstantiatedName(copy->MangledName(), context);
                             destructorSymbol = copy;
                             destructorCall->SetFunctionSymbol(destructorSymbol);
-                            UniquePtr<BoundClass> boundClass(new BoundClass(classType->Span(), classType, classType->ModuleId(), classType->FileIndex()));
-                            result = GenerateDestructorImplementation(boundClass.Get(), destructorSymbol, compileUnit, currentContainerScope, currentFunction, node);
-                            if (result.Error()) return result;
-                            compileUnit->AddBoundNode(UniquePtr<BoundNode>(boundClass.Release()));
+                            if (destructorSymbol->IsGenerated())
+                            {
+                                UniquePtr<BoundClass> boundClass(new BoundClass(classType->Span(), classType, classType->ModuleId(), classType->FileIndex()));
+                                result = GenerateDestructorImplementation(boundClass.Get(), destructorSymbol, compileUnit, currentContainerScope, currentFunction, node);
+                                if (result.Error()) return result;
+                                compileUnit->AddBoundNode(UniquePtr<BoundNode>(boundClass.Release()));
+                            }
                         }
                     }
                 }

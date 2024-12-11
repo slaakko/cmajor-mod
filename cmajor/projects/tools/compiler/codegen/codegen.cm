@@ -206,6 +206,7 @@ namespace codegen
             FunctionSymbol* functionSymbol = boundFunction.GetFunctionSymbol();
             if (compileUnit->CodeGenerated(functionSymbol)) return;
             compileUnit->SetCodeGenerated(functionSymbol);
+            SetCurrentFunctionSymbol(functionSymbol);
             Console.Out() << ">>> " << functionSymbol->FullName() << endl();
             destructorCallGenerated = false;
             lastInstructionWasRet = false;
@@ -243,6 +244,7 @@ namespace codegen
                 return;
             }
             intermediate.Function* function = functionResult.Value();
+            emitter.SetCurrentFunction(function);
             function->SetDefined();
             if (GetGlobalFlag(GlobalFlags.release))
             {
@@ -269,6 +271,7 @@ namespace codegen
             mdStruct->AddItem("fullName", fullNameItem);
             intermediate.MetadataRef* mdRef = emitter.CreateMetadataRef(mdStruct->Id());
             function->SetMetadataRef(mdRef);
+            function->SetComment(fullFunctionName);
             emitter.SetCurrentFunction(function);
             intermediate.BasicBlock* entryBlock = emitter.CreateBasicBlock();
             emitter.SetCurrentBasicBlock(entryBlock);
@@ -1259,7 +1262,7 @@ namespace codegen
                                 DestructorSymbol* destructor = classType->Destructor();
                                 if (destructor != null)
                                 {
-                                    if (destructor->IsGenerated() || destructor->IsTemplateSpecialization())
+                                    if (destructor->IsGenerated() || (destructor->IsTemplateSpecialization() && !destructor->Parent()->SpecializationHasFullInstantiation()))
                                     {
                                         Result<FunctionSymbol*> copyResult = classType->Destructor()->Copy();
                                         if (copyResult.Error())

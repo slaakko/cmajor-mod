@@ -682,6 +682,10 @@ namespace symbols
             SetAccess(access);
             return Result<bool>(true);
         }
+        public bool SpecializationHasFullInstantiation() const
+        {
+            return IsClassTemplateSpecializationSymbol() && cast<ClassTemplateSpecializationSymbol*>(this)->HasFullInstantiation();
+        }
         public inline bool GetFlag(SymbolFlags flag) const
         {
             return (flags & flag) != SymbolFlags.none;

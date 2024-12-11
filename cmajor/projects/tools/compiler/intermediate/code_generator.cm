@@ -176,6 +176,11 @@ namespace intermediate
                 Result<bool> result = function.VisitBasicBlocks(*this);
                 if (result.Error()) return;
                 assemblyFunction->SetActivePart(assembly.FunctionPart.prologue);
+                if (function.Name() == "constructor_CmajorLexer_194A926F6047E157C0EDFBA2C0E4AE3208F307BF")
+                {
+                    linearScanRregisterAllocator->GetFrame().Dump();
+                    Break();
+                }
                 result = EmitPrologue(*this);
                 if (result.Error())
                 {

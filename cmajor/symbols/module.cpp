@@ -279,7 +279,7 @@ SourceFileInfo::SourceFileInfo() : sourceFileId(-1), sourceFilePath()
 {
 }
 
-SourceFileInfo::SourceFileInfo(int32_t sourceFileId_, const std::string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
+SourceFileInfo::SourceFileInfo(int64_t sourceFileId_, const std::string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
 {
 }
 
@@ -291,7 +291,7 @@ void SourceFileInfo::Write(util::BinaryStreamWriter& writer)
 
 void SourceFileInfo::Read(util::BinaryStreamReader& reader)
 {
-    sourceFileId = reader.ReadInt();
+    sourceFileId = reader.ReadLong();
     sourceFilePath = reader.ReadUtf8String();
 }
 
@@ -299,7 +299,7 @@ FunctionTraceInfo::FunctionTraceInfo() : functionId(-1), functionFullName(), sou
 {
 }
 
-FunctionTraceInfo::FunctionTraceInfo(int32_t functionId_, const std::string& functionFullName_, int32_t sourceFileId_) :
+FunctionTraceInfo::FunctionTraceInfo(int64_t functionId_, const std::string& functionFullName_, int64_t sourceFileId_) :
     functionId(functionId_), functionFullName(functionFullName_), sourceFileId(sourceFileId_)
 {
 }
@@ -313,9 +313,9 @@ void FunctionTraceInfo::Write(util::BinaryStreamWriter& writer)
 
 void FunctionTraceInfo::Read(util::BinaryStreamReader& reader)
 {
-    functionId = reader.ReadInt();
+    functionId = reader.ReadLong();
     functionFullName = reader.ReadUtf8String();
-    sourceFileId = reader.ReadInt();
+    sourceFileId = reader.ReadLong();
 }
 
 void Visit(std::vector<Module*>& finishReadOrder, Module* module, std::unordered_set<Module*>& visited, std::unordered_set<Module*>& tempVisit,
@@ -2069,7 +2069,13 @@ std::string Module::GetParamHelpList(const std::string& sourceFilePath, int symb
     return std::string();
 }
 
-int32_t Module::MakeFunctionId(const std::string& fullFunctionName, const std::string& sourceFilePath)
+int64_t Module::ModuleId() const
+{
+    uint64_t hash = std::hash<std::u32string>()(name);
+    return static_cast<int64_t>(hash % 0x80000000);
+}
+
+int64_t Module::MakeFunctionId(const std::string& fullFunctionName, const std::string& sourceFilePath)
 {
     std::lock_guard<std::recursive_mutex> lck(lock);
     SourceFileInfo* sourceFileInfo = nullptr;
@@ -2080,7 +2086,7 @@ int32_t Module::MakeFunctionId(const std::string& fullFunctionName, const std::s
     }
     else
     {
-        sourceFileInfo = new SourceFileInfo(allSourceFileInfoVec.size(), sourceFilePath);
+        sourceFileInfo = new SourceFileInfo((ModuleId() << 32) | allSourceFileInfoVec.size(), sourceFilePath);
         sourceFileInfoVec.push_back(std::unique_ptr<SourceFileInfo>(sourceFileInfo));
         allSourceFileInfoVec.push_back(sourceFileInfo);
         sourceFileInfoMap[sourceFilePath] = sourceFileInfo;
@@ -2093,7 +2099,7 @@ int32_t Module::MakeFunctionId(const std::string& fullFunctionName, const std::s
     }
     else
     {
-        functionTraceInfo = new FunctionTraceInfo(allTraceInfoVec.size(), fullFunctionName, sourceFileInfo->SourceFileId());
+        functionTraceInfo = new FunctionTraceInfo((ModuleId() << 32) | allTraceInfoVec.size(), fullFunctionName, sourceFileInfo->SourceFileId());
         traceInfoVec.push_back(std::unique_ptr<FunctionTraceInfo>(functionTraceInfo));
         allTraceInfoVec.push_back(functionTraceInfo);
         traceInfoMap[fullFunctionName] = functionTraceInfo;

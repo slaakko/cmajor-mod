@@ -11,8 +11,8 @@ export namespace cmajor::masm::rt {
 
 struct FunctionLine
 {
-    FunctionLine(int32_t fn_, int32_t line_) : fn(fn_), line(line_) {}
-    int32_t fn;
+    FunctionLine(int64_t fn_, int32_t line_) : fn(fn_), line(line_) {}
+    int64_t fn;
     int32_t line;
 };
 

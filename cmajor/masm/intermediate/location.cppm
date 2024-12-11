@@ -34,6 +34,7 @@ struct FrameLocation
 {
     FrameLocation() : reg(masm::assembly::RegisterGroupKind::rbp), index(-1), offset(0), size(0), macro(nullptr) {}
     FrameLocation(masm::assembly::RegisterGroupKind reg_, int index_, int64_t offset_, int64_t size_) : reg(reg_), index(index_), offset(offset_), size(size_), macro(nullptr) {}
+    void Dump();
     bool Valid() const { return index != -1; }
     masm::assembly::RegisterGroupKind reg;
     int index;
@@ -66,6 +67,7 @@ public:
     void SetMacroValues(cmajor::masm::assembly::Context* assemblyContext);
     void SetNumUsedXMMRegs(int numUsedXMMRegs_) { numUsedXMMRegs = numUsedXMMRegs_; }
     int GetNumUsedXMMRegs() const { return numUsedXMMRegs; }
+    void Dump();
 private:
     std::vector<FrameLocation> paramLocations;
     std::vector<FrameLocation> frameLocations;

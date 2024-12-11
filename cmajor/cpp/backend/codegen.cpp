@@ -1201,7 +1201,8 @@ void CppCodeGenerator::Visit(cmajor::binder::BoundConstructionStatement& boundCo
 */
 
                         cmajor::symbols::DestructorSymbol* destructor = classType->Destructor();
-                        if (destructor->IsGeneratedFunction() || destructor->IsTemplateSpecialization())
+                        if (destructor->IsGeneratedFunction() || 
+                            (destructor->IsTemplateSpecialization() && !destructor->Parent()->SpecializationHasFullInstantiation()))
                         {
                             destructor = static_cast<cmajor::symbols::DestructorSymbol*>(classType->Destructor()->Copy());
                             compileUnit->GetSymbolTable().AddFunctionSymbol(std::unique_ptr<cmajor::symbols::FunctionSymbol>(destructor));

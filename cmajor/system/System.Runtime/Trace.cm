@@ -7,9 +7,9 @@ namespace System.Runtime
 {
     public class TraceEntry
     {
-        public TraceEntry(int fn_) : next(null), fn(fn_), line(0) {}
+        public TraceEntry(long fn_) : next(null), fn(fn_), line(0) {}
         public TraceEntry* next;
-        public int fn;
+        public long fn;
         public int line;
     }
 

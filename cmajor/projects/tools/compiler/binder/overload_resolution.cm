@@ -822,6 +822,10 @@ namespace binder
                             return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
                         }
                         singleBest = fn;
+                        if (GetCallIndex() == 2776)
+                        {
+                            Console.Out() << "SINGLE BEST " << singleBest->FullName() << endl();
+                        }
                     }
                     Result<FunctionSymbol*> result = boundCompileUnit->GetClassTemplateRepository()->Instantiate(singleBest, containerScope, currentFunction, node);
                     if (result.Error())
@@ -1826,6 +1830,7 @@ namespace binder
             matchedFunctionNames.Append(functionName);
             locations.Add(match.Fn()->FullSpan());
         }
+        locations.Add(node->GetFullSpan());
         string message = "overload resolution for overload name '" + overloadName + "' failed: call is ambiguous:\n" + matchedFunctionNames;
         int errorId = MakeError(message, locations);
         return errorId;
@@ -1907,7 +1912,7 @@ namespace binder
                         }
                     }
                     #assert(currentFunction != null);
-                    Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), argument->Type(), context);
+                    Result<LocalVariableSymbol*> temporaryResult = currentFunction->GetFunctionSymbol()->CreateTemporary(node->GetSpan(), conversionTargetType, context);
                     if (temporaryResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(temporaryResult.GetErrorId()));
                     LocalVariableSymbol* temporary = temporaryResult.Value();
                     Result<TypeSymbol*> ptrTypeResult = conversionTargetType->AddPointer(context);
@@ -1922,7 +1927,7 @@ namespace binder
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(constructorCall->Arguments()[0]->Clone()));
-                            Result<bool> result = currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                            Result<bool> result = currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node, context);
                             if (result.Error())
                             {
                                 return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
@@ -1982,7 +1987,7 @@ namespace binder
                             TypeSymbol* type = ptrType;
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(new BoundAddressOfExpression(node->GetSpan(),
                                 UniquePtr<BoundExpression>(conversionResult->Clone()), type)));
-                            Result<bool> result = currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node);
+                            Result<bool> result = currentFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), currentFunction, containerScope, node, context);
                             if (result.Error())
                             {
                                 return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
@@ -2138,7 +2143,7 @@ namespace binder
                         copy->SetSourceFileId(idResult.Value());
                         Result<bool> result = copy->ComputeMangledName();
                         if (result.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(result.GetErrorId()));
-                        destructorSymbol->SetInstantiatedName(copy->MangledName());
+                        destructorSymbol->SetInstantiatedName(copy->MangledName(), context);
                         destructorSymbol = copy;
                         boundFunctionCall->SetFunctionSymbol(destructorSymbol);
                         boundCompileUnit->SetGeneratedDestructorInstantiated(destructorSymbol);

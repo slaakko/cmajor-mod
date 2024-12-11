@@ -9,6 +9,11 @@ import util;
 
 namespace cmajor::masm::intermediate {
 
+void FrameLocation::Dump()
+{
+    std::cout << "index=" << index << ", offset=" << offset << ", size=" << size << "\n";
+}
+
 Frame::Frame() : calleeParamAreaSize(32), numUsedXMMRegs(0), rbxPushed(false)
 {
 }
@@ -66,6 +71,14 @@ int64_t Frame::Size() const
     {
         const FrameLocation& last = frameLocations.back();
         return util::Align(calleeParamAreaSize + last.offset + last.size + numUsedXMMRegs * 16, 16);
+    }
+}
+
+void Frame::Dump()
+{
+    for (auto& frameLocation : frameLocations)
+    {
+        frameLocation.Dump();
     }
 }
 

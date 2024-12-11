@@ -260,6 +260,7 @@ public:
     void ResetInstalled() { ResetFlag(SymbolFlags::installed); }
     bool IsInstalled() const { return GetFlag(SymbolFlags::installed); }
     bool IsDestructorSymbol() const { return symbolType == SymbolType::destructorSymbol; }
+    bool SpecializationHasFullInstantiation() const;
 private:
     SymbolType symbolType;
     soul::ast::Span span;

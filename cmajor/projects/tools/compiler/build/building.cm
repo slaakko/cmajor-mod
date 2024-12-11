@@ -2,7 +2,7 @@
 // Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
 // =================================
- 
+
 using System;
 using System.Collections;
 using System.Threading;
@@ -160,6 +160,15 @@ namespace build
             stop = true;
             return compileResult;
         }
+        for (const auto& rcFilePath : project->ResourceScriptFilePaths())
+        {
+            Result<bool> result = rootModule->AddResourceScriptFilePath(rcFilePath);
+            if (result.Error())
+            {
+                stop = true;
+                return result;
+            }
+        }
         List<string> resourceScriptFiles;
         Result<string> cmajorRootDirResult = CmajorRootDir();
         if (cmajorRootDirResult.Error())
@@ -290,7 +299,7 @@ namespace build
             if (result.Error())
             {
                 LogMessage(project->LogStreamId(), result.GetErrorMessage());
-                return Result<bool>(false);
+                return Result<bool>(ErrorId(-1));
             }
         }
         else
@@ -300,7 +309,7 @@ namespace build
             if (result.Error())
             {
                 LogMessage(project->LogStreamId(), result.GetErrorMessage());
-                return Result<bool>(false);
+                return Result<bool>(ErrorId(-1));
             }
         }
         return Result<bool>(true);

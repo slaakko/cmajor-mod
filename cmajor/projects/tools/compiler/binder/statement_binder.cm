@@ -114,7 +114,7 @@ namespace binder
                             return;
                         }
                     }
-                    destructorSymbol->SetInstantiatedName(copy->MangledName());
+                    destructorSymbol->SetInstantiatedName(copy->MangledName(), context);
                     destructorSymbol = copy;
                 }
                 Result<bool> destructorResult = GenerateDestructorImplementation(currentClass, destructorSymbol, boundCompileUnit, containerScope, currentFunction, &classNode);
@@ -139,6 +139,7 @@ namespace binder
             Symbol* symbol = symbolResult.Value();
             #assert(symbol->IsFunctionSymbol());
             FunctionSymbol* functionSymbol = cast<FunctionSymbol*>(symbol);
+            SetCurrentFunctionSymbol(functionSymbol);
             if (!dontCheckDuplicateFunctionSymbols)
             {
                 Result<bool> duplicateResult = functionSymbol->GetFunctionGroup()->CheckDuplicateFunctionSymbols();
@@ -202,6 +203,7 @@ namespace binder
             Symbol* symbol = symbolResult.Value();
             #assert(symbol->IsStaticConstructorSymbol());
             StaticConstructorSymbol* staticConstructorSymbol = cast<StaticConstructorSymbol*>(symbol);
+            SetCurrentFunctionSymbol(staticConstructorSymbol);
             if (!dontCheckDuplicateFunctionSymbols)
             {
                 Result<bool> duplicateResult = staticConstructorSymbol->GetFunctionGroup()->CheckDuplicateFunctionSymbols();
@@ -268,6 +270,7 @@ namespace binder
             Symbol* symbol = symbolResult.Value();
             #assert(symbol->IsConstructorSymbol());
             ConstructorSymbol* constructorSymbol = cast<ConstructorSymbol*>(symbol);
+            SetCurrentFunctionSymbol(constructorSymbol);
             if (!dontCheckDuplicateFunctionSymbols)
             {
                 Result<bool> duplicateResult = constructorSymbol->GetFunctionGroup()->CheckDuplicateFunctionSymbols();
@@ -353,6 +356,7 @@ namespace binder
             Symbol* symbol = symbolResult.Value();
             #assert(symbol->IsDestructorSymbol());
             DestructorSymbol* destructorSymbol = cast<DestructorSymbol*>(symbol);
+            SetCurrentFunctionSymbol(destructorSymbol);
             if (!dontCheckDuplicateFunctionSymbols)
             {
                 Result<bool> duplicateResult = destructorSymbol->GetFunctionGroup()->CheckDuplicateFunctionSymbols();
@@ -437,6 +441,7 @@ namespace binder
             Symbol* symbol = symbolResult.Value();
             #assert(symbol->IsMemberFunctionSymbol());
             MemberFunctionSymbol* memberFunctionSymbol = cast<MemberFunctionSymbol*>(symbol);
+            SetCurrentFunctionSymbol(memberFunctionSymbol);
             if (!dontCheckDuplicateFunctionSymbols)
             {
                 Result<bool> duplicateResult = memberFunctionSymbol->GetFunctionGroup()->CheckDuplicateFunctionSymbols();
@@ -527,6 +532,7 @@ namespace binder
             Symbol* symbol = symbolResult.Value();
             #assert(symbol->IsConversionFunctionSymbol());
             ConversionFunctionSymbol* conversionFunctionSymbol = cast<ConversionFunctionSymbol*>(symbol);
+            SetCurrentFunctionSymbol(conversionFunctionSymbol);
             if (!dontCheckDuplicateFunctionSymbols)
             {
                 Result<bool> duplicateResult = conversionFunctionSymbol->GetFunctionGroup()->CheckDuplicateFunctionSymbols();
@@ -1281,6 +1287,7 @@ namespace binder
             #assert(symbol->IsLocalVariableSymbol());
             LocalVariableSymbol* localVariableSymbol = cast<LocalVariableSymbol*>(symbol);
             bool constructDelegateOrClassDelegateType = localVariableSymbol->Type()->IsDelegateTypeSymbol() || localVariableSymbol->Type()->IsClassDelegateTypeSymbol();
+            UniquePtr<BoundExpression> firstArg;
             if (localVariableSymbol->Type()->BaseType()->IsAutoTypeSymbol())
             {
                 int n = cast<int>(constructionStatementNode.Arguments().Count());
@@ -1317,6 +1324,7 @@ namespace binder
                 {
                     localVariableSymbol->SetType(initializerType);
                 }
+                firstArg = Rvalue(argument);
             }
             List<UniquePtr<BoundExpression>> arguments;
             BoundExpression* localVariable = new BoundLocalVariable(constructionStatementNode.GetSpan(), localVariableSymbol);
@@ -1341,7 +1349,13 @@ namespace binder
             functionScopeLookups.Add(FunctionScopeLookup(ScopeLookup.this_and_base_and_parent, containerScope));
             functionScopeLookups.Add(FunctionScopeLookup(ScopeLookup.fileScopes));
             int n = cast<int>(constructionStatementNode.Arguments().Count());
-            for (int i = 0; i < n; ++i)
+            int startArgIndex = 0;
+            if (!firstArg.IsNull())
+            {
+                arguments.Add(Rvalue(firstArg));
+                ++startArgIndex;
+            }
+            for (int i = startArgIndex; i < n; ++i)
             {
                 if (Error()) return;
                 Node* argumentNode = constructionStatementNode.Arguments()[i];
@@ -1352,8 +1366,7 @@ namespace binder
                     SetErrorId(argumentResult.GetErrorId());
                     return;
                 }
-                UniquePtr<BoundExpression>& argument = argumentResult.Value();
-                arguments.Add(Rvalue(argument));
+                arguments.Add(Rvalue(argumentResult.Value()));
             }
             Result<UniquePtr<BoundFunctionCall>> constructorCallResult = ResolveOverload(u"@constructor", containerScope, functionScopeLookups, arguments, boundCompileUnit,
                 currentFunction, &constructionStatementNode);
@@ -1362,7 +1375,7 @@ namespace binder
                 SetErrorId(constructorCallResult.GetErrorId());
                 return;
             }
-            UniquePtr<BoundFunctionCall>& constructorCall = constructorCallResult.Value();
+            UniquePtr<BoundFunctionCall> constructorCall = Rvalue(constructorCallResult.Value());
             FunctionSymbol* functionSymbol = constructorCall->GetFunctionSymbol();
             Result<bool> result = CheckAccess(currentFunction->GetFunctionSymbol(), functionSymbol);
             if (result.Error())
@@ -1408,7 +1421,7 @@ namespace binder
                                 return;
                             }
                         }
-                        destructorSymbol->SetInstantiatedName(copy->MangledName());
+                        destructorSymbol->SetInstantiatedName(copy->MangledName(), context);
                         destructorSymbol = copy;
                         Result<bool> destructorResult = GenerateDestructorImplementation(
                             boundClass.Get(), destructorSymbol, boundCompileUnit, containerScope, currentFunction, &constructionStatementNode);
@@ -2241,6 +2254,47 @@ namespace binder
                 }
             }
         }
+        public override void Visit(FullInstantiationRequestNode& fullInstantiationRequestNode)
+        {
+            Result<TypeSymbol*> typeResult = ResolveType(fullInstantiationRequestNode.TemplateId(), boundCompileUnit, containerScope);
+            if (typeResult.Error())
+            {
+                SetErrorId(typeResult.GetErrorId());
+                return;
+            }
+            TypeSymbol* type = typeResult.Value();
+            if (type->IsClassTemplateSpecializationSymbol())
+            {
+                ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(type);
+                if (specialization->HasFullInstantiation()) return;
+                if (GetGlobalFlag(GlobalFlags.verbose))
+                {
+                    Result<string> specializationFullNameResult = ToUtf8(specialization->FullName());
+                    if (specializationFullNameResult.Error())
+                    {
+                        SetErrorId(specializationFullNameResult.GetErrorId());
+                        return;
+                    }
+                    string specializationFullName = Rvalue(specializationFullNameResult.Value());
+                    LogMessage(module->LogStreamId(), "generating full instantiation of '" + specializationFullName + "'");
+                }
+                Result<bool> result = boundCompileUnit->GetClassTemplateRepository()->InstantiateAll(specialization, containerScope, currentFunction,
+                    &fullInstantiationRequestNode);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                specialization->SetHasFullInstantiation();
+            }
+            else
+            {
+                int errorId = MakeError("full instantiation request expects subject template identifier to be a class template specialization",
+                    fullInstantiationRequestNode.GetFullSpan());
+                SetErrorId(errorId);
+                return;
+            }
+        }
         public void AddStatement(BoundStatement* boundStatement)
         {
             if (postfix)
@@ -2289,7 +2343,7 @@ namespace binder
             return errorId;
         }
         [nodiscard]
-        public  Result<bool> GenerateEnterAndExitFunctionCode(BoundFunction* function)
+        public Result<bool> GenerateEnterAndExitFunctionCode(BoundFunction* function)
         {
             if (GetGlobalFlag(GlobalFlags.release)) return Result<bool>(false);
             Module* currentModule = function->GetBoundCompileUnit()->GetModule();
@@ -2300,87 +2354,95 @@ namespace binder
             Result<string> fullFunctionNameResult = ToUtf8(function->GetFunctionSymbol()->FullName());
             if (fullFunctionNameResult.Error()) return Result<bool>(ErrorId(fullFunctionNameResult.GetErrorId()));
             string fullFunctionName = Rvalue(fullFunctionNameResult.Value());
-            int fileIndex = fullSpan.fileIndex;
-            const System.Lex.FileMap& fileMap = module->GetFileMap();
-            if (fileMap.HasFileName(fileIndex))
+            Module* m = GetModuleById(fullSpan.moduleId);
+            if (m != null)
             {
-                string sourceFileName = fileMap.GetFileName(fileIndex);
-                if (sourceFileName.IsEmpty()) return Result<bool>(false);
-                int functionId = currentModule->MakeFunctionId(fullFunctionName, sourceFileName);
-                System.Lex.Span span = fullSpan.span;
-                TypeSymbol* traceEntryTypeSymbol = boundCompileUnit->GetSystemRuntimeTraceEntryTypeSymbol();
-                if (traceEntryTypeSymbol == null)
+                int fileIndex = fullSpan.fileIndex;
+                const System.Lex.FileMap& fileMap = m->GetFileMap();
+                if (fileMap.HasFileName(fileIndex))
                 {
-                    IdentifierNode systemRuntimeTraceEntryNode(span, fileIndex, u"System.Runtime.TraceEntry");
-                    Result<TypeSymbol*> traceEntryTypeSymbolResult = ResolveType(&systemRuntimeTraceEntryNode, boundCompileUnit, containerScope);
-                    if (traceEntryTypeSymbolResult.Error()) return Result<bool>(ErrorId(traceEntryTypeSymbolResult.GetErrorId()));
-                    traceEntryTypeSymbol = traceEntryTypeSymbolResult.Value();
-                    boundCompileUnit->SetSystemRuntimeTraceEntryTypeSymbol(traceEntryTypeSymbol);
+                    string sourceFileName = fileMap.GetFileName(fileIndex);
+                    if (sourceFileName.IsEmpty()) return Result<bool>(false);
+                    long functionId = currentModule->MakeFunctionId(fullFunctionName, sourceFileName);
+                    System.Lex.Span span = fullSpan.span;
+                    TypeSymbol* traceEntryTypeSymbol = boundCompileUnit->GetSystemRuntimeTraceEntryTypeSymbol();
+                    if (traceEntryTypeSymbol == null)
+                    {
+                        IdentifierNode systemRuntimeTraceEntryNode(span, fileIndex, u"System.Runtime.TraceEntry");
+                        Result<TypeSymbol*> traceEntryTypeSymbolResult = ResolveType(&systemRuntimeTraceEntryNode, boundCompileUnit, containerScope);
+                        if (traceEntryTypeSymbolResult.Error()) return Result<bool>(ErrorId(traceEntryTypeSymbolResult.GetErrorId()));
+                        traceEntryTypeSymbol = traceEntryTypeSymbolResult.Value();
+                        boundCompileUnit->SetSystemRuntimeTraceEntryTypeSymbol(traceEntryTypeSymbol);
+                    }
+                    TypeSymbol* traceGuardTypeSymbol = boundCompileUnit->GetSystemRuntimeTraceGuardTypeSymbol();
+                    if (traceGuardTypeSymbol == null)
+                    {
+                        IdentifierNode systemRuntimeTraceGuardNode(span, fileIndex, u"System.Runtime.TraceGuard");
+                        Result<TypeSymbol*> traceGuardTypeSymbolResult = ResolveType(&systemRuntimeTraceGuardNode, boundCompileUnit, containerScope);
+                        if (traceGuardTypeSymbolResult.Error()) return Result<bool>(ErrorId(traceGuardTypeSymbolResult.GetErrorId()));
+                        traceGuardTypeSymbol = traceGuardTypeSymbolResult.Value();
+                        boundCompileUnit->SetSystemRuntimeTraceGuardTypeSymbol(traceGuardTypeSymbol);
+                    }
+                    UniquePtr<IdentifierNode> traceEntryNode(new IdentifierNode(span, fileIndex, u"@traceEntry"));
+                    CloneContext cloneContext;
+                    UniquePtr<ConstructionStatementNode> constructTraceEntry(new ConstructionStatementNode(span, fileIndex,
+                        new IdentifierNode(span, fileIndex, u"System.Runtime.TraceEntry"), cast<IdentifierNode*>(traceEntryNode->Clone(cloneContext))));
+                    symbolTable->BeginContainer(currentFunction->GetFunctionSymbol());
+                    Result<bool> result = symbolTable->AddLocalVariable(*constructTraceEntry, context);
+                    if (result.Error()) return result;
+                    symbolTable->EndContainer();
+                    Result<Symbol*> traceEntrySymbolResult = symbolTable->GetSymbol(constructTraceEntry.Get());
+                    if (traceEntrySymbolResult.Error()) return Result<bool>(ErrorId(traceEntrySymbolResult.GetErrorId()));
+                    Symbol* traceEntrySymbol = traceEntrySymbolResult.Value();
+                    #assert(traceEntrySymbol->IsLocalVariableSymbol());
+                    LocalVariableSymbol* traceEntryVariableSymbol = cast<LocalVariableSymbol*>(traceEntrySymbol);
+                    function->GetFunctionSymbol()->SetTraceEntryVar(traceEntryVariableSymbol);
+                    traceEntryVariableSymbol->SetType(traceEntryTypeSymbol);
+                    constructTraceEntry->AddArgument(new LongLiteralNode(span, fileIndex, functionId));
+                    constructTraceEntry->Accept(*this);
+                    #assert(!statement.IsNull());
+                    UniquePtr<BoundStatement> constructTraceEntryStatement(statement.Release());
+
+                    // @traceEntry.line = LINE
+
+                    UniquePtr<DotNode> lineDotNode(new DotNode(span, fileIndex, traceEntryNode->Clone(cloneContext), new IdentifierNode(span, fileIndex, u"line")));
+                    UniquePtr<AssignmentStatementNode> assignTraceEntryLine(new AssignmentStatementNode(span, fileIndex, lineDotNode.Release(),
+                        new IntLiteralNode(span, fileIndex, 0)));
+                    assignTraceEntryLine->Accept(*this);
+                    #assert(!statement.IsNull());
+                    UniquePtr<BoundStatement> assignTraceEntryLineStatement(statement.Release());
+                    function->SetLineCode(Rvalue(assignTraceEntryLineStatement));
+
+                    UniquePtr<IdentifierNode> traceGuardNode(new IdentifierNode(span, fileIndex, u"@traceGuard"));
+
+                    // System.Runtime.TraceGuard @traceGuard(&@traceEntry);
+
+                    UniquePtr<ConstructionStatementNode> constructTraceGuard(new ConstructionStatementNode(span, fileIndex, new IdentifierNode(span, fileIndex,
+                        u"System.Runtime.TraceGuard"), cast<IdentifierNode*>(traceGuardNode->Clone(cloneContext))));
+                    symbolTable->BeginContainer(function->GetFunctionSymbol());
+                    result = symbolTable->AddLocalVariable(*constructTraceGuard, context);
+                    if (result.Error()) return result;
+                    symbolTable->EndContainer();
+                    Result<Symbol*> traceGuardSymbolResult = symbolTable->GetSymbol(constructTraceGuard.Get());
+                    if (traceGuardSymbolResult.Error()) return Result<bool>(ErrorId(traceGuardSymbolResult.GetErrorId()));
+                    Symbol* traceGuardSymbol = traceGuardSymbolResult.Value();
+                    #assert(traceGuardSymbol->IsLocalVariableSymbol());
+                    LocalVariableSymbol* traceGuardVariableSymbol = cast<LocalVariableSymbol*>(traceGuardSymbol);
+                    function->GetFunctionSymbol()->SetTraceGuardVar(traceGuardVariableSymbol);
+                    traceGuardVariableSymbol->SetType(traceGuardTypeSymbol);
+                    constructTraceGuard->AddArgument(new AddrOfNode(span, fileIndex, traceEntryNode->Clone(cloneContext)));
+                    constructTraceGuard->Accept(*this);
+                    #assert(!statement.IsNull());
+                    UniquePtr<BoundStatement> constructTraceGuardStatement(statement.Release());
+                    List<UniquePtr<BoundStatement>> enterCode;
+                    enterCode.Add(Rvalue(constructTraceEntryStatement));
+                    enterCode.Add(Rvalue(constructTraceGuardStatement));
+                    function->SetEnterCode(Rvalue(enterCode));
                 }
-                TypeSymbol* traceGuardTypeSymbol = boundCompileUnit->GetSystemRuntimeTraceGuardTypeSymbol();
-                if (traceGuardTypeSymbol == null)
+                else
                 {
-                    IdentifierNode systemRuntimeTraceGuardNode(span, fileIndex, u"System.Runtime.TraceGuard");
-                    Result<TypeSymbol*> traceGuardTypeSymbolResult = ResolveType(&systemRuntimeTraceGuardNode, boundCompileUnit, containerScope);
-                    if (traceGuardTypeSymbolResult.Error()) return Result<bool>(ErrorId(traceGuardTypeSymbolResult.GetErrorId()));
-                    traceGuardTypeSymbol = traceGuardTypeSymbolResult.Value();
-                    boundCompileUnit->SetSystemRuntimeTraceGuardTypeSymbol(traceGuardTypeSymbol);
+                    return Result<bool>(false);
                 }
-                UniquePtr<IdentifierNode> traceEntryNode(new IdentifierNode(span, fileIndex, u"@traceEntry"));
-                CloneContext cloneContext;
-                UniquePtr<ConstructionStatementNode> constructTraceEntry(new ConstructionStatementNode(span, fileIndex,
-                    new IdentifierNode(span, fileIndex, u"System.Runtime.TraceEntry"), cast<IdentifierNode*>(traceEntryNode->Clone(cloneContext))));
-                symbolTable->BeginContainer(currentFunction->GetFunctionSymbol());
-                Result<bool> result = symbolTable->AddLocalVariable(*constructTraceEntry, context);
-                if (result.Error()) return result;
-                symbolTable->EndContainer();
-                Result<Symbol*> traceEntrySymbolResult = symbolTable->GetSymbol(constructTraceEntry.Get());
-                if (traceEntrySymbolResult.Error()) return Result<bool>(ErrorId(traceEntrySymbolResult.GetErrorId()));
-                Symbol* traceEntrySymbol = traceEntrySymbolResult.Value();
-                #assert(traceEntrySymbol->IsLocalVariableSymbol());
-                LocalVariableSymbol* traceEntryVariableSymbol = cast<LocalVariableSymbol*>(traceEntrySymbol);
-                function->GetFunctionSymbol()->SetTraceEntryVar(traceEntryVariableSymbol);
-                traceEntryVariableSymbol->SetType(traceEntryTypeSymbol);
-                constructTraceEntry->AddArgument(new IntLiteralNode(span, fileIndex, functionId));
-                constructTraceEntry->Accept(*this);
-                #assert(!statement.IsNull());
-                UniquePtr<BoundStatement> constructTraceEntryStatement(statement.Release());
-
-                // @traceEntry.line = LINE
-
-                UniquePtr<DotNode> lineDotNode(new DotNode(span, fileIndex, traceEntryNode->Clone(cloneContext), new IdentifierNode(span, fileIndex, u"line")));
-                UniquePtr<AssignmentStatementNode> assignTraceEntryLine(new AssignmentStatementNode(span, fileIndex, lineDotNode.Release(),
-                    new IntLiteralNode(span, fileIndex, 0)));
-                assignTraceEntryLine->Accept(*this);
-                #assert(!statement.IsNull());
-                UniquePtr<BoundStatement> assignTraceEntryLineStatement(statement.Release());
-                function->SetLineCode(Rvalue(assignTraceEntryLineStatement));
-
-                UniquePtr<IdentifierNode> traceGuardNode(new IdentifierNode(span, fileIndex, u"@traceGuard"));
-
-                // System.Runtime.TraceGuard @traceGuard(&@traceEntry);
-
-                UniquePtr<ConstructionStatementNode> constructTraceGuard(new ConstructionStatementNode(span, fileIndex, new IdentifierNode(span, fileIndex,
-                    u"System.Runtime.TraceGuard"), cast<IdentifierNode*>(traceGuardNode->Clone(cloneContext))));
-                symbolTable->BeginContainer(function->GetFunctionSymbol());
-                result = symbolTable->AddLocalVariable(*constructTraceGuard, context);
-                if (result.Error()) return result;
-                symbolTable->EndContainer();
-                Result<Symbol*> traceGuardSymbolResult = symbolTable->GetSymbol(constructTraceGuard.Get());
-                if (traceGuardSymbolResult.Error()) return Result<bool>(ErrorId(traceGuardSymbolResult.GetErrorId()));
-                Symbol* traceGuardSymbol = traceGuardSymbolResult.Value();
-                #assert(traceGuardSymbol->IsLocalVariableSymbol());
-                LocalVariableSymbol* traceGuardVariableSymbol = cast<LocalVariableSymbol*>(traceGuardSymbol);
-                function->GetFunctionSymbol()->SetTraceGuardVar(traceGuardVariableSymbol);
-                traceGuardVariableSymbol->SetType(traceGuardTypeSymbol);
-                constructTraceGuard->AddArgument(new AddrOfNode(span, fileIndex, traceEntryNode->Clone(cloneContext)));
-                constructTraceGuard->Accept(*this);
-                #assert(!statement.IsNull());
-                UniquePtr<BoundStatement> constructTraceGuardStatement(statement.Release());
-                List<UniquePtr<BoundStatement>> enterCode;
-                enterCode.Add(Rvalue(constructTraceEntryStatement));
-                enterCode.Add(Rvalue(constructTraceGuardStatement));
-                function->SetEnterCode(Rvalue(enterCode));
             }
             else
             {

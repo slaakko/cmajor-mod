@@ -274,6 +274,7 @@ namespace symbols
                 if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
                 fn.Append('.').Append(fullNameResult.Value());
             }
+            digestSource = fn;
             auto digestResult = System.Security.GetSha1MessageDigest(fn);
             if (digestResult.Error()) return Result<bool>(ErrorId(digestResult.GetErrorId()));
             auto udigestResult = ToUtf32(digestResult.Value());
@@ -288,6 +289,7 @@ namespace symbols
         private List<Uuid> templateArgumentTypeTypeIds;
         private UniquePtr<NamespaceNode> globalNs;
         private UniquePtr<FileScope> fileScope;
+        private string digestSource;
     }
 
     public ustring MakeClassTemplateSpecializationName(ClassTypeSymbol* classTemplate, const List<TypeSymbol*>& templateArgumentTypes)

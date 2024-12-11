@@ -9,5 +9,5 @@ project <cmcmc/cmcmc.cmp>;
 project <codegen/codegen.cmp>;
 project <intermediate/intermediate.cmp>;
 project <symbols/symbols.cmp>;
-activeProject intermediate;
+activeProject cm.ast;
 activeBackEnd=masm;

@@ -24,6 +24,11 @@ namespace symbols
         return cast<OperationFlags>(flags & flag) != OperationFlags.none;
     }
 
+    public inline void SetFlag(OperationFlags& flags, OperationFlags flag)
+    {
+        flags = cast<OperationFlags>(flags | flag);
+    }
+
     public inline byte GetDerefCount(OperationFlags flags)
     {
         return cast<byte>(cast<ushort>(flags & OperationFlags.derefCount) >> 8u);
@@ -53,6 +58,10 @@ namespace symbols
             type = type_;
         }
         public virtual bool IsBoundConstructAndReturnTemporaryExpression() const
+        {
+            return false;
+        }
+        public virtual bool IsBoundAddressOfExpression() const
         {
             return false;
         }

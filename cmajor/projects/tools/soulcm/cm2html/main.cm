@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 using cm.token;
 
 public List<ustring> GetLines(const ustring& content)

@@ -1,3 +1,4 @@
+
 // =================================
 // Copyright (c) 2024 Seppo Laakko
 // Distributed under the MIT license
@@ -10,6 +11,20 @@ using cm.ast;
 
 namespace binder
 {
+    internal int callIndex = 0;
+
+    public inline int GetCallIndex()
+    {
+        return callIndex;
+    }
+
+    public int AllocateCallIndex()
+    {
+        int i = callIndex;
+        callIndex = callIndex + 1;
+        return i;
+    }
+
     public enum BoundExpressionFlags : byte
     {
         none = 0u,
@@ -192,6 +207,10 @@ namespace binder
         [nodiscard]
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
         {
+            if (localVariableSymbol->Type()->IsClassTypeSymbol())
+            {
+                SetFlag(flags, OperationFlags.addr);
+            }
             if (GetFlag(flags, OperationFlags.addr))
             {
                 Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
@@ -217,6 +236,22 @@ namespace binder
             }
             else
             {
+                if (localVariableSymbol->Type()->IsClassTypeSymbol())
+                {
+                    List<System.Lex.FullSpan> spanList;
+                    spanList.Add(FullSpan());
+                    spanList.Add(localVariableSymbol->FullSpan());
+                    FunctionSymbol* fn = GetCurrentFunctionSymbol();
+                    if (fn != null)
+                    {
+                        spanList.Add(fn->FullSpan());
+                    }
+                    Result<string> localVarNameResult = ToUtf8(localVariableSymbol->Name());
+                    if (localVarNameResult.Error()) return Result<bool>(ErrorId(localVarNameResult.GetErrorId()));
+                    string localVarName = Rvalue(localVarNameResult.Value());
+                    int errorId = MakeError("tried to load from a class type local variable '" + localVarName + "'", spanList);
+                    return Result<bool>(ErrorId(errorId));
+                }
                 Result<intermediate.Value*> irObjectResult = localVariableSymbol->GetIrObject(emitter);
                 if (irObjectResult.Error()) return Result<bool>(ErrorId(irObjectResult.GetErrorId()));
                 Result<intermediate.Value*> loadResult = emitter.CreateLoad(irObjectResult.Value());
@@ -331,6 +366,10 @@ namespace binder
             Result<intermediate.Value*> memberVariablePtrResult = emitter.GetMemberVariablePtr(ptr, memberVariableSymbol->LayoutIndex());
             if (memberVariablePtrResult.Error()) return Result<bool>(ErrorId(memberVariablePtrResult.GetErrorId()));
             intermediate.Value* memberVariablePtr = memberVariablePtrResult.Value();
+            if (memberVariableSymbol->Type()->IsClassTypeSymbol())
+            {
+                SetFlag(flags, OperationFlags.addr);
+            }
             if (GetFlag(flags, OperationFlags.addr))
             {
                 emitter.Stack().Push(memberVariablePtr);
@@ -872,6 +911,10 @@ namespace binder
         {
             return subject->GetFunctionSymbol();
         }
+        public override bool IsBoundAddressOfExpression() const
+        {
+            return true;
+        }
         [nodiscard]
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
         {
@@ -1036,7 +1079,7 @@ namespace binder
     public class BoundFunctionCall : BoundExpression
     {
         public BoundFunctionCall(const System.Lex.Span& span_, FunctionSymbol* functionSymbol_) :
-            base(span_, BoundNodeKind.boundFunctionCall, functionSymbol_->ReturnType()), functionSymbol(functionSymbol_)
+            base(span_, BoundNodeKind.boundFunctionCall, functionSymbol_->ReturnType()), functionSymbol(functionSymbol_), callIndex(AllocateCallIndex())
         {
         }
         public override string TypeString() const
@@ -1071,6 +1114,7 @@ namespace binder
         [nodiscard]
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
         {
+            emitter.SetCallIndex(callIndex);
             if (GetFlag(flags, OperationFlags.addr))
             {
                 if (functionSymbol->IsArrayElementAccess())
@@ -1227,6 +1271,7 @@ namespace binder
         private FunctionSymbol* functionSymbol;
         private List<UniquePtr<BoundExpression>> arguments;
         private List<UniquePtr<BoundLocalVariable>> temporaries;
+        private int callIndex;
     }
 
     public class BoundDelegateCall : BoundExpression
@@ -2105,7 +2150,7 @@ namespace binder
         [nodiscard]
         public override Result<bool> Load(Emitter& emitter, OperationFlags flags)
         {
-            Result<string> instantiatedNameResult = ToUtf8(functionSymbol->InstantiatedName());
+            Result<string> instantiatedNameResult = ToUtf8(functionSymbol->InstantiatedName(emitter.GetSymbolsContext()));
             if (instantiatedNameResult.Error()) return Result<bool>(ErrorId(instantiatedNameResult.GetErrorId()));
             string instantiatedName = Rvalue(instantiatedNameResult.Value());
             Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(functionSymbol);
@@ -2207,7 +2252,7 @@ namespace binder
         }
         public inline BoundExpression* Right() const
         {
-            return left.Get();
+            return right.Get();
         }
         private UniquePtr<BoundExpression> left;
         private UniquePtr<BoundExpression> right;
@@ -2290,7 +2335,7 @@ namespace binder
         }
         public inline BoundExpression* Right() const
         {
-            return left.Get();
+            return right.Get();
         }
         private UniquePtr<BoundExpression> left;
         private UniquePtr<BoundExpression> right;

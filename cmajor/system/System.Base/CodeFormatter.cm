@@ -190,6 +190,62 @@ namespace System.Text
         return formatter;
     }
 
+    public CodeFormatter& operator<<(CodeFormatter& formatter, bool x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, sbyte x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, byte x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, short x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, ushort x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, int x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, uint x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
     public CodeFormatter& operator<<(CodeFormatter& formatter, long x)
     {
         if (formatter.Error()) return formatter;
@@ -199,6 +255,22 @@ namespace System.Text
     }
 
     public CodeFormatter& operator<<(CodeFormatter& formatter, ulong x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, float x)
+    {
+        if (formatter.Error()) return formatter;
+        string s = ToString(x);
+        auto result = formatter.Write(s);
+        return formatter;
+    }
+
+    public CodeFormatter& operator<<(CodeFormatter& formatter, double x)
     {
         if (formatter.Error()) return formatter;
         string s = ToString(x);

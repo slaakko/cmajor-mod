@@ -203,22 +203,26 @@ namespace symbols
                 case SymbolKind.staticConstructorSymbol:
                 {
                     staticConstructor = cast<StaticConstructorSymbol*>(member);
+                    allMemberFunctions.Add(staticConstructor);
                     break;
                 }
                 case SymbolKind.constructorSymbol:
                 {
                     ConstructorSymbol* constructor = cast<ConstructorSymbol*>(member);
                     constructors.Add(constructor);
+                    allMemberFunctions.Add(constructor);
                     break;
                 }
                 case SymbolKind.destructorSymbol:
                 {
                     destructor = cast<DestructorSymbol*>(member);
+                    allMemberFunctions.Add(destructor);
                     break;
                 }
                 case SymbolKind.memberFunctionSymbol:
                 {
                     memberFunctions.Add(cast<MemberFunctionSymbol*>(member));
+                    allMemberFunctions.Add(cast<MemberFunctionSymbol*>(member));
                     break;
                 }
             }
@@ -1358,7 +1362,7 @@ namespace symbols
                     }
                     else
                     {
-                        Result<string> instantiatedNameResult = ToUtf8(virtualFunction->InstantiatedName());
+                        Result<string> instantiatedNameResult = ToUtf8(virtualFunction->InstantiatedName(emitter.GetSymbolsContext()));
                         if (instantiatedNameResult.Error()) return Result<intermediate.Value*>(ErrorId(instantiatedNameResult.GetErrorId()));
                         string instantiatedName = Rvalue(instantiatedNameResult.Value());
                         Result<intermediate.FunctionType*> virtualFunctionTypeResult = emitter.GetFunctionType(virtualFunction);
@@ -1445,6 +1449,10 @@ namespace symbols
         {
             return objectLayout;
         }
+        public inline const List<FunctionSymbol*>& AllMemberFunctions() const
+        {
+            return allMemberFunctions;
+        }
         private ustring groupName;
         private int minArity;
         private ClassTypeSymbol* baseClass;
@@ -1468,6 +1476,7 @@ namespace symbols
         private MemberFunctionSymbol* moveAssignment;
         private Uuid moveAssignmentId;
         private List<MemberFunctionSymbol*> memberFunctions;
+        private List<FunctionSymbol*> allMemberFunctions;
         private ClassGroupSymbol* classGroup;
         private UniquePtr<ConstraintNode> constraint;
         private UniquePtr<ClassNode> classNode;

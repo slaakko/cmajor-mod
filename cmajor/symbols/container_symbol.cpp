@@ -3,6 +3,9 @@
 // Distributed under the MIT license
 // =================================
 
+module;
+#include <util/assert.hpp>
+
 module cmajor.symbols.container.symbol;
 
 import cmajor.symbols.symbol.writer;
@@ -78,7 +81,7 @@ void ContainerSymbol::AddMember(Symbol* member)
         FunctionSymbol* functionSymbol = static_cast<FunctionSymbol*>(member);
         FunctionGroupSymbol* functionGroupSymbol = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->GetSpan());
         functionGroupSymbol->AddFunction(functionSymbol);
-        functionIndexMap[functionSymbol->GetIndex()] = functionSymbol;
+        MapFunctionByIndex(functionSymbol);
     }
     else if (member->GetSymbolType() == SymbolType::conceptSymbol)
     {
@@ -111,7 +114,7 @@ void ContainerSymbol::AddOwnedMember(Symbol* ownedMember)
         FunctionSymbol* functionSymbol = static_cast<FunctionSymbol*>(ownedMember);
         FunctionGroupSymbol* functionGroupSymbol = MakeFunctionGroupSymbol(functionSymbol->GroupName(), functionSymbol->GetSpan());
         functionGroupSymbol->AddFunction(functionSymbol);
-        functionIndexMap[functionSymbol->GetIndex()] = functionSymbol;
+        MapFunctionByIndex(functionSymbol);
     }
     else if (ownedMember->GetSymbolType() == SymbolType::conceptSymbol)
     {
@@ -306,6 +309,7 @@ bool ContainerSymbol::HasProjectMembers() const
 
 FunctionSymbol* ContainerSymbol::GetFunctionByIndex(int32_t functionIndex) const
 {
+    Assert(functionIndex != -1, "invalid function index");
     auto it = functionIndexMap.find(functionIndex);
     if (it != functionIndexMap.cend())
     {
@@ -315,6 +319,13 @@ FunctionSymbol* ContainerSymbol::GetFunctionByIndex(int32_t functionIndex) const
     {
         return nullptr;
     }
+}
+
+void ContainerSymbol::MapFunctionByIndex(FunctionSymbol* fn)
+{
+    int32_t index = fn->GetIndex();
+    if (index == -1) return;
+    functionIndexMap[index] = fn;
 }
 
 void ContainerSymbol::Check()

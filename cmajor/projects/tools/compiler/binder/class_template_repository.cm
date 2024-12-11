@@ -291,11 +291,12 @@ namespace binder
             {
                 return GetCopy(memberFunctionSymbol);
             }
+            if (memberFunctionSymbol->IsGenerated()) return GetCopy(memberFunctionSymbol);
             instantiatedMemberFunctions.Insert(memberFunctionSymbol);
             Symbol* parent = memberFunctionSymbol->Parent();
             #assert(parent->IsClassTemplateSpecializationSymbol());
             ClassTemplateSpecializationSymbol* classTemplateSpecialization = cast<ClassTemplateSpecializationSymbol*>(parent);
-            if (classTemplateSpecialization->HasFullInstantiation())
+            if (classTemplateSpecialization->HasFullInstantiation() && !(GetGlobalFlag(GlobalFlags.release) && memberFunctionSymbol->IsInline()))
             {
                 return memberFunctionSymbol;
             }
@@ -303,15 +304,15 @@ namespace binder
             SymbolsContext& context = boundCompileUnit->Context();
             SymbolTable* symbolTable = boundCompileUnit->GetSymbolTable();
             Node* memberFunctionNode = symbolTable->GetNode(memberFunctionSymbol);
-            if (memberFunctionNode == null)
-            {
-                int errorId = MakeError("node not found in symbol table", node->GetFullSpan());
-                return Result<FunctionSymbol*>(ErrorId(errorId));
-            }
             Result<bool> result = boundCompileUnit->FinalizeBinding(classTemplateSpecialization);
             if (result.Error())
             {
                 return Result<FunctionSymbol*>(ErrorId(result.GetErrorId()));
+            }
+            if (memberFunctionNode == null)
+            {
+                int errorId = MakeError("node not found in symbol table", node->GetFullSpan());
+                return Result<FunctionSymbol*>(ErrorId(errorId));
             }
             ClassTypeSymbol* classTemplate = classTemplateSpecialization->ClassTemplate();
             Map<TemplateParameterSymbol*, TypeSymbol*> templateParameterMap;
@@ -421,7 +422,7 @@ namespace binder
             memberFunctionSymbol->SetFlag(FunctionSymbolFlags.dontReuse);
             Result<bool> mangleResult = memberFunctionSymbol->ComputeMangledName();
             if (mangleResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangleResult.GetErrorId()));
-            master->SetInstantiatedName(memberFunctionSymbol->MangledName());
+            master->SetInstantiatedName(memberFunctionSymbol->MangledName(), context);
             boundCompileUnit->SetCanReuse(memberFunctionSymbol);
             symbolTable->BeginContainer(memberFunctionSymbol);
             symbolTable->MapNode(functionInstanceNode, memberFunctionSymbol);
@@ -519,6 +520,39 @@ namespace binder
                         return Result<bool>(ErrorId(result.GetErrorId()));
                     }
                 }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> InstantiateAll(ClassTemplateSpecializationSymbol* classTemplateSpecialization, ContainerScope* containerScope, BoundFunction* currentFunction,
+            Node* node)
+        {
+            Result<bool> result = DoInstantiateAll(classTemplateSpecialization, containerScope, currentFunction, node);
+            if (result.Error())
+            {
+                string reasonMessage = RtmGetErrorMessageWithoutStackTrace(result.GetErrorId());
+                Result<string> specializationFullNameResult = ToUtf8(classTemplateSpecialization->FullName());
+                if (specializationFullNameResult.Error())
+                {
+                    return Result<bool>(ErrorId(specializationFullNameResult.GetErrorId()));
+                }
+                string specializationFullName = Rvalue(specializationFullNameResult.Value());
+                int errorId = MakeError("Full instantiation request for class template specialization '" + specializationFullName + "' failed. Reason: " +
+                    reasonMessage);
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> DoInstantiateAll(ClassTemplateSpecializationSymbol* classTemplateSpecialization, ContainerScope* containerScope, BoundFunction* currentFunction,
+            Node* node)
+        {
+            Result<bool> result = BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, node);
+            if (result.Error()) return result;
+            for (FunctionSymbol* memberFunction : classTemplateSpecialization->AllMemberFunctions())
+            {
+                Result<FunctionSymbol*> instantiationResult = Instantiate(memberFunction, containerScope, currentFunction, node);
+                if (instantiationResult.Error()) return Result<bool>(ErrorId(instantiationResult.GetErrorId()));
             }
             return Result<bool>(true);
         }

@@ -141,16 +141,6 @@ namespace System
         return left.RightHalf() < right.RightHalf();
     }
 
-    public ulong GetHashCode(const Uuid& uuid)
-    {
-        ulong seed = 0u;
-        for (byte x : uuid)
-        {
-            seed = seed ^ cast<ulong>(x) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
-        }
-        return seed;
-    }
-
     [nodiscard]
     public Result<string> ToString(const Uuid& uuid)
     {

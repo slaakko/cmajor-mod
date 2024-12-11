@@ -71,13 +71,16 @@ namespace build
             Result<TypeSymbol*> constCharPtrTypeSymbolResult = constCharTypeSymbol->AddPointer(context);
             if (constCharPtrTypeSymbolResult.Error()) return Result<bool>(ErrorId(constCharPtrTypeSymbolResult.GetErrorId()));
             TypeSymbol* constCharPtrTypeSymbol = constCharPtrTypeSymbolResult.Value();
-            if (TypesEqual(userMainFunctionSymbol->Parameters()[1]->Type(), constCharPtrTypeSymbol))
+            Result<TypeSymbol*> constCharPtrPtrTypeSymbolResult = constCharPtrTypeSymbol->AddPointer(context);
+            if (constCharPtrPtrTypeSymbolResult.Error()) return Result<bool>(ErrorId(constCharPtrPtrTypeSymbolResult.GetErrorId()));
+            TypeSymbol* constCharPtrPtrTypeSymbol = constCharPtrPtrTypeSymbolResult.Value();
+            if (TypesEqual(userMainFunctionSymbol->Parameters()[1]->Type(), constCharPtrPtrTypeSymbol))
             {
                 parameters.Append(", const char** argv");
             }
             else
             {
-                int errorId = MakeError("'const char*' parameter type expected", userMainFunctionSymbol->Parameters()[1]->FullSpan());
+                int errorId = MakeError("'const char**' parameter type expected", userMainFunctionSymbol->Parameters()[1]->FullSpan());
                 return Result<bool>(ErrorId(errorId));
             }
             parameters.Append(")");

@@ -1796,7 +1796,6 @@ namespace symbols
             result = emitter.CreateStore(delegateValue, delegatePtr);
             if (result.Error()) return result;
             emitter.Stack().Push(ptr);
-            Break();
             return Result<bool>(true);
         }
         public override bool IsMemberFunctionToClassDelegateConversion() const

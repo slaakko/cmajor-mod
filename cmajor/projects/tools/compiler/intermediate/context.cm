@@ -404,10 +404,6 @@ namespace intermediate
             int index = 0;
             for (Value* arg : args)
             {
-                if (ContextMatch() && index == 2)
-                {
-                    ContextBreak();
-                }
                 Result<Value*> argResult = CreateArg(arg);
                 if (argResult.Error()) return argResult;
                 ++index;
@@ -503,6 +499,10 @@ namespace intermediate
         {
             return &assemblyContext;
         }
+        public inline void SetCallIndex(int callIndex_)
+        {
+            callIndex = callIndex_;
+        }
         private CompileUnit compileUnit;
         private Types types;
         private Data data;
@@ -514,6 +514,7 @@ namespace intermediate
         private System.Lex.FileMap fileMap;
         private int fileIndex;
         private assembly.AssemblyContext assemblyContext;
+        private int callIndex;
     }
 }
 

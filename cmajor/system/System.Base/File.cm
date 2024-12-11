@@ -163,14 +163,14 @@ namespace System.IO
             {
                 return Result<string>(ErrorId(content.GetErrorId()));
             }
-            const string& contentValue = content.Value();
+            string contentValue = Rvalue(content.Value());
             if (contentValue.Length() >= 3 && cast<byte>(contentValue[0]) == 0xEFu && cast<byte>(contentValue[1]) == 0xBBu && cast<byte>(contentValue[2]) == 0xBFu)
             {
                 return Result<string>(contentValue.Substring(3));
             }
             else
             {
-                return Result<string>(contentValue);
+                return Result<string>(Rvalue(contentValue));
             }
         }
         public static Result<List<string>> ReadAllLines(const string& filePath)
@@ -188,27 +188,28 @@ namespace System.IO
             {
                 return Result<List<string>>(ErrorId(line.GetErrorId()));
             }
-            const string& lineValue = line.Value();
+            string lineValue = Rvalue(line.Value());
             while (!reader.EndOfStream())
             {
                 if (start)
                 {
                     if (lineValue.Length() >= 3 && cast<byte>(lineValue[0]) == 0xEFu && cast<byte>(lineValue[1]) == 0xBBu && cast<byte>(lineValue[2]) == 0xBFu)
                     {
-                        line = Result<string>(lineValue.Substring(3));
+                        lineValue = lineValue.Substring(3);
                     }
                     start = false;
                 }
-                lines.Add(line.Value());
+                lines.Add(Rvalue(lineValue));
                 line = reader.ReadLine();
                 if (line.Error())
                 {
                     return Result<List<string>>(ErrorId(line.GetErrorId()));
                 }
+                lineValue = Rvalue(line.Value());
             }
-            if (!line.Value().IsEmpty())
+            if (!lineValue.IsEmpty())
             {
-                lines.Add(line.Value());
+                lines.Add(Rvalue(lineValue));
             }
             return Result<List<string>>(lines);
         }

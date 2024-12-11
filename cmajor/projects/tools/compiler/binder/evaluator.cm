@@ -1801,7 +1801,6 @@ namespace binder
         }
         public override void Visit(CastNode& castNode)
         {
-            Foo();
             Result<TypeSymbol*> typeResult = ResolveType(castNode.TargetTypeExpr(), boundCompileUnit, containerScope);
             if (typeResult.Error())
             {

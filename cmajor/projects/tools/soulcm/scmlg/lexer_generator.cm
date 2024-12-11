@@ -569,7 +569,7 @@ namespace scmlg
         formatter.DecIndent();
         formatter << "{" << endl();
         formatter.IncIndent();
-        formatter << "auto classMapResult = System.Lex.GetClassMap(ClassMapName());" << endl();
+        formatter << "Result<int*> classMapResult = System.Lex.GetClassMap(ClassMapName());" << endl();
         formatter << "if (classMapResult.Error())" << endl();
         formatter << "{" << endl();
         formatter.IncIndent();

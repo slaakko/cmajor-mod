@@ -17,4 +17,4 @@ project <scmpg.ast/scmpg.ast.cmp>;
 project <scmpg.parser/scmpg.parser.cmp>;
 project <soul2html/soul2html.cmp>;
 activeProject cml;
-activeBackEnd=cpp;
+activeBackEnd=masm;

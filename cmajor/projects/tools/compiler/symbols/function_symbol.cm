@@ -12,6 +12,18 @@ namespace symbols
 {
     public FunctionSymbol* f = null;
 
+    internal FunctionSymbol* currentFunctionSymbol = null;
+
+    public inline FunctionSymbol* GetCurrentFunctionSymbol()
+    {
+        return currentFunctionSymbol;
+    }
+
+    public void SetCurrentFunctionSymbol(FunctionSymbol* fn)
+    {
+        currentFunctionSymbol = fn;
+    }
+
     public void PrintConversion()
     {
         if (m != null)
@@ -180,11 +192,13 @@ namespace symbols
     public class FunctionSymbol : ContainerSymbol
     {
         public FunctionSymbol(const System.Lex.Span& span_, const ustring& name_) :
-            base(SymbolKind.functionSymbol, span_, name_), conversionDistance(0u), functionGroup(null), nextTemporaryIndex(0), master(null)
+            base(SymbolKind.functionSymbol, span_, name_), conversionDistance(0u), functionGroup(null), nextTemporaryIndex(0), master(null),
+            flags(FunctionSymbolFlags.none), index(-1), vmtIndex(-1), imtIndex(-1)
         {
         }
         public FunctionSymbol(SymbolKind kind_, const System.Lex.Span& span_, const ustring& name_) :
-            base(kind_, span_, name_), conversionDistance(0u), functionGroup(null), nextTemporaryIndex(0), master(null)
+            base(kind_, span_, name_), conversionDistance(0u), functionGroup(null), nextTemporaryIndex(0), master(null),
+            flags(FunctionSymbolFlags.none), index(-1), vmtIndex(-1), imtIndex(-1)
         {
         }
         public override ustring TypeString() const
@@ -386,12 +400,14 @@ namespace symbols
                 usingNodes.Add(usingNode->Clone(cloneContext));
             }
         }
-        public inline const ustring& InstantiatedName() const
+        public inline const ustring& InstantiatedName(SymbolsContext& context) const
         {
+            System.Threading.LockGuard<System.Threading.Mutex> lock(context.InstantiationNameMutex());
             if (instantiatedName.IsEmpty()) return MangledName(); else return instantiatedName;
         }
-        public void SetInstantiatedName(const ustring& instantiatedName_)
+        public void SetInstantiatedName(const ustring& instantiatedName_, SymbolsContext& context)
         {
+            System.Threading.LockGuard<System.Threading.Mutex> lock(context.InstantiationNameMutex());
             instantiatedName = instantiatedName_;
         }
         public Result<LocalVariableSymbol*> CreateTemporary(const System.Lex.Span& span, TypeSymbol* type, SymbolsContext& context)
@@ -416,7 +432,7 @@ namespace symbols
             {
                 return GenerateVirtualCall(emitter, irObjects, flags);
             }
-            Result<string> instantiatedNameResult = ToUtf8(InstantiatedName());
+            Result<string> instantiatedNameResult = ToUtf8(InstantiatedName(emitter.GetSymbolsContext()));
             if (instantiatedNameResult.Error()) return Result<bool>(ErrorId(instantiatedNameResult.GetErrorId()));
             Result<intermediate.FunctionType*> functionTypeResult = emitter.GetFunctionType(this);
             if (functionTypeResult.Error()) return Result<bool>(ErrorId(functionTypeResult.GetErrorId()));
@@ -603,12 +619,17 @@ namespace symbols
                 {
                     Symbol* parentClass = Parent();
                     mangledName.Append('_').Append(parentClass->SimpleName());
-                    Result<string> mangledNameResult = ToUtf8(parentClass->MangledName());
-                    if (mangledNameResult.Error())
+                    Result<ustring> fnwsResult = parentClass->FullNameWithSpecifiers();
+                    if (fnwsResult.Error())
                     {
-                        return Result<bool>(ErrorId(mangledNameResult.GetErrorId()));
+                        return Result<bool>(ErrorId(fnwsResult.GetErrorId()));
                     }
-                    parentClassStr.Append('.').Append(Rvalue(mangledNameResult.Value()));
+                    Result<string> sfnwsResult = ToUtf8(fnwsResult.Value());
+                    if (sfnwsResult.Error())
+                    {
+                        return Result<bool>(ErrorId(sfnwsResult.GetErrorId()));
+                    }
+                    parentClassStr.Append('.').Append(Rvalue(sfnwsResult.Value()));
                     break;
                 }
             }

@@ -987,7 +987,7 @@ namespace System.Collections
             delete toRemove;
             --count;
         }
-        private void Init()
+        public void Init()
         {
             header.Reset(new RedBlackTreeNode<ValueType>(ValueType(), null));
             header->SetColor(RedBlackTreeNodeBase.Color.red);

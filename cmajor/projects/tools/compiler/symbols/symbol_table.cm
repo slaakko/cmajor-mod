@@ -1337,6 +1337,10 @@ namespace symbols
             copy->SetFileIndex(source->FileIndex());
             copy->SetModuleId(source->ModuleId());
             copy->SetModule(module);
+            if (source->VmtEmitted())
+            {
+                copy->SetVmtEmitted();
+            }
             classTemplateSpecializations.Add(UniquePtr<ClassTemplateSpecializationSymbol>(copy));
             derivedTypeMap[copy->TypeId()].Clear();
             specializationCopyMap[source] = copy;

@@ -2192,7 +2192,7 @@ namespace binder
                     {
                         UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(invokeNode.GetSpan(), classType->Destructor()));
                         destructorCall->AddArgument(UniquePtr<BoundExpression>(arguments.Back()->Clone()));
-                        Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode);
+                        Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode, context);
                         if (result.Error())
                         {
                             SetErrorId(result.GetErrorId());
@@ -2401,7 +2401,7 @@ namespace binder
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(invokeNode.GetSpan(), classType->Destructor()));
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(delegateCall->Arguments().Back()->Clone()));
-                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode);
+                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode, context);
                             if (result.Error())
                             {
                                 SetErrorId(result.GetErrorId());
@@ -2596,7 +2596,7 @@ namespace binder
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(invokeNode.GetSpan(), classType->Destructor()));
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(classDelegateCall->Arguments().Back()->Clone()));
-                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode);
+                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode, context);
                             if (result.Error())
                             {
                                 SetErrorId(result.GetErrorId());
@@ -2762,7 +2762,7 @@ namespace binder
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(invokeNode.GetSpan(), classType->Destructor()));
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(functionCall->Arguments().Back()->Clone()));
-                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode);
+                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &invokeNode, context);
                             if (result.Error())
                             {
                                 SetErrorId(result.GetErrorId());
@@ -3241,7 +3241,7 @@ namespace binder
                             {
                                 UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(castNode.GetSpan(), classType->Destructor()));
                                 destructorCall->AddArgument(UniquePtr<BoundExpression>(constructorCall->Arguments()[0]->Clone()));
-                                Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &castNode);
+                                Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, &castNode, context);
                                 if (result.Error())
                                 {
                                     SetErrorId(result.GetErrorId());
@@ -3957,7 +3957,7 @@ namespace binder
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(operatorFunctionCall->Arguments().Back()->Clone()));
-                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, node);
+                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, node, context);
                             if (result.Error())
                             {
                                 SetErrorId(result.GetErrorId());
@@ -4132,7 +4132,7 @@ namespace binder
                         {
                             UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
                             destructorCall->AddArgument(UniquePtr<BoundExpression>(operatorFunctionCall->Arguments().Back()->Clone()));
-                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, node);
+                            Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, node, context);
                             if (result.Error())
                             {
                                 SetErrorId(result.GetErrorId());
@@ -4447,7 +4447,7 @@ namespace binder
                     {
                         UniquePtr<BoundFunctionCall> destructorCall(new BoundFunctionCall(node->GetSpan(), classType->Destructor()));
                         destructorCall->AddArgument(UniquePtr<BoundExpression>(boundFunctionCall->Arguments().Back()->Clone()));
-                        Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, node);
+                        Result<bool> result = boundFunction->AddTemporaryDestructorCall(Rvalue(destructorCall), boundFunction, containerScope, node, context);
                         if (result.Error())
                         {
                             SetErrorId(result.GetErrorId());

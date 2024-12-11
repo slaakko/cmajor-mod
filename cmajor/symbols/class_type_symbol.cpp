@@ -348,7 +348,7 @@ ClassTypeSymbol::ClassTypeSymbol(const soul::ast::Span& span_, const std::u32str
     TypeSymbol(SymbolType::classTypeSymbol, span_, name_),
     minArity(0), baseClass(), flags(ClassTypeSymbolFlags::none), implementedInterfaces(), templateParameters(), memberVariables(), staticMemberVariables(),
     staticConstructor(nullptr), defaultConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr), copyAssignment(nullptr), moveAssignment(nullptr),
-    constructors(), destructor(nullptr), memberFunctions(), vmtPtrIndex(-1), prototype(nullptr), classGroup(nullptr)
+    constructors(), destructor(nullptr), memberFunctions(), allMemberFunctions(), vmtPtrIndex(-1), prototype(nullptr), classGroup(nullptr)
 {
 }
 
@@ -356,7 +356,7 @@ ClassTypeSymbol::ClassTypeSymbol(SymbolType symbolType_, const soul::ast::Span& 
     TypeSymbol(symbolType_, span_, name_),
     minArity(0), baseClass(), flags(ClassTypeSymbolFlags::none), implementedInterfaces(), templateParameters(), memberVariables(), staticMemberVariables(),
     staticConstructor(nullptr), defaultConstructor(nullptr), copyConstructor(nullptr), moveConstructor(nullptr), copyAssignment(nullptr), moveAssignment(nullptr),
-    constructors(), destructor(nullptr), memberFunctions(), vmtPtrIndex(-1), prototype(nullptr), classGroup(nullptr)
+    constructors(), destructor(nullptr), memberFunctions(), allMemberFunctions(), vmtPtrIndex(-1), prototype(nullptr), classGroup(nullptr)
 {
 }
 
@@ -697,6 +697,7 @@ void ClassTypeSymbol::AddMember(Symbol* member)
         else
         {
             staticConstructor = static_cast<StaticConstructorSymbol*>(member);
+            allMemberFunctions.push_back(staticConstructor);
         }
         break;
     }
@@ -704,6 +705,7 @@ void ClassTypeSymbol::AddMember(Symbol* member)
     {
         ConstructorSymbol* constructor = static_cast<ConstructorSymbol*>(member);
         constructors.push_back(constructor);
+        allMemberFunctions.push_back(constructor);
         break;
     }
     case SymbolType::destructorSymbol:
@@ -715,12 +717,14 @@ void ClassTypeSymbol::AddMember(Symbol* member)
         else
         {
             destructor = static_cast<DestructorSymbol*>(member);
+            allMemberFunctions.push_back(destructor);
         }
         break;
     }
     case SymbolType::memberFunctionSymbol:
     {
         memberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
+        allMemberFunctions.push_back(static_cast<MemberFunctionSymbol*>(member));
         break;
     }
     }

@@ -108,6 +108,10 @@ namespace symbols
         {
             return false;
         }
+        public bool IsClassPtrType() const
+        {
+            return IsPointerType() && PointerCount() == 1 && BaseType()->IsClassTypeSymbol();
+        }
         public virtual bool IsRecursive(TypeSymbol* type, HashSet<Uuid>& tested)
         {
             if (tested.Find(TypeId()) != tested.End())

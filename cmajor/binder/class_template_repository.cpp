@@ -262,7 +262,7 @@ cmajor::symbols::FunctionSymbol* ClassTemplateRepository::Instantiate(cmajor::sy
                 return memberFunction;
             }
         }
-        if (classTemplateSpecialization->HasFullInstantiation())
+        if (classTemplateSpecialization->HasFullInstantiation() && !(cmajor::symbols::GetGlobalFlag(cmajor::symbols::GlobalFlags::release) && memberFunction->IsInline()))
         {
             instantiatedMemberFunctions.insert(memberFunction);
             return memberFunction;
@@ -497,7 +497,7 @@ void ClassTemplateRepository::InstantiateAll(cmajor::symbols::ClassTemplateSpeci
     try
     {
         BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, node);
-        for (cmajor::symbols::MemberFunctionSymbol* memberFunction : classTemplateSpecialization->MemberFunctions())
+        for (cmajor::symbols::FunctionSymbol* memberFunction : classTemplateSpecialization->AllMemberFunctions())
         {
             if (!Instantiate(memberFunction, containerScope, currentFunction, node))
             {

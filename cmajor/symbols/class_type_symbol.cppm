@@ -189,6 +189,7 @@ public:
     const std::vector<MemberVariableSymbol*>& MemberVariables() const { return memberVariables; }
     const std::vector<MemberVariableSymbol*>& StaticMemberVariables() const { return staticMemberVariables; }
     const std::vector<MemberFunctionSymbol*>& MemberFunctions() const { return memberFunctions; }
+    const std::vector<FunctionSymbol*>& AllMemberFunctions() const { return allMemberFunctions; }
     MemberVariableSymbol* InitializedVar() { return initializedVar.get(); }
     void SetInitializedVar(MemberVariableSymbol* initializedVar_);
     bool IsAbstract() { return GetFlag(ClassTypeSymbolFlags::abstract_); }
@@ -271,6 +272,7 @@ private:
     MemberFunctionSymbol* copyAssignment;
     MemberFunctionSymbol* moveAssignment;
     std::vector<MemberFunctionSymbol*> memberFunctions;
+    std::vector<FunctionSymbol*> allMemberFunctions;
     std::vector<FunctionSymbol*> vmt;
     std::vector<std::vector<FunctionSymbol*>> imts;
     std::vector<TypeSymbol*> objectLayout;

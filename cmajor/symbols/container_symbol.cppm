@@ -44,6 +44,7 @@ private:
     std::vector<std::unique_ptr<Symbol>> members;
     ContainerScope containerScope;
     std::unordered_map<int32_t, FunctionSymbol*> functionIndexMap;
+    void MapFunctionByIndex(FunctionSymbol* fn);
     FunctionGroupSymbol* MakeFunctionGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span);
     ConceptGroupSymbol* MakeConceptGroupSymbol(const std::u32string& groupName, const soul::ast::Span& span);
     ClassGroupTypeSymbol* MakeClassGroupTypeSymbol(const std::u32string& groupName, const soul::ast::Span& span);

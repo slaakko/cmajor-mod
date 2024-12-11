@@ -25,8 +25,13 @@ namespace symbols
         {
             return coreModule;
         }
+        public inline System.Threading.Mutex& InstantiationNameMutex()
+        {
+            return instantiationNameMutex;
+        }
         private Module* rootModule;
         private Module* coreModule;
+        private System.Threading.Mutex instantiationNameMutex;
     }
 }
 

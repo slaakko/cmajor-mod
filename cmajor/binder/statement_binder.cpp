@@ -475,7 +475,7 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
         {
             return;
         }
-        int32_t functionId = currentModule.MakeFunctionId(fullFunctionName, sourceFileName);
+        int64_t functionId = currentModule.MakeFunctionId(fullFunctionName, sourceFileName);
 
         soul::ast::Span span = boundFunction->GetSpan();
         cmajor::symbols::TypeSymbol* traceEntryTypeSymbol = boundCompileUnit.GetSystemRuntimeTraceEntryTypeSymbol();
@@ -511,7 +511,7 @@ void StatementBinder::GenerateEnterAndExitFunctionCode(BoundFunction* boundFunct
             boundFunction->GetFunctionSymbol()->SetTraceEntryVar(traceEntryVariableSymbol);
             traceEntryVariableSymbol->SetType(traceEntryTypeSymbol);
         }
-        constructTraceEntry->AddArgument(new cmajor::ast::IntLiteralNode(span, functionId));
+        constructTraceEntry->AddArgument(new cmajor::ast::LongLiteralNode(span, functionId));
         constructTraceEntry->Accept(*this);
         std::unique_ptr<BoundStatement> constructTraceEntryStatement(statement.release());
 
@@ -1361,6 +1361,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
     bool constructDelegateOrClassDelegateType =
         localVariableSymbol->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::delegateTypeSymbol ||
         localVariableSymbol->GetType()->GetSymbolType() == cmajor::symbols::SymbolType::classDelegateTypeSymbol;
+    std::unique_ptr<BoundExpression> firstArg;
     if (localVariableSymbol->GetType()->BaseType()->IsAutoType())
     {
         int n = constructionStatementNode.Arguments().Count();
@@ -1381,6 +1382,7 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
             initializerType = boundCompileUnit.GetSymbolTable().MakeDerivedType(initializerType->BaseType(), derivations);
             localVariableSymbol->SetType(initializerType);
         }
+        firstArg = std::move(argument);
     }
     std::vector<std::unique_ptr<BoundExpression>> arguments;
     BoundExpression* localVariable = new BoundLocalVariable(constructionStatementNode.GetSpan(), localVariableSymbol);
@@ -1392,7 +1394,13 @@ void StatementBinder::Visit(cmajor::ast::ConstructionStatementNode& construction
     functionScopeLookups.push_back(FunctionScopeLookup(cmajor::symbols::ScopeLookup::fileScopes, nullptr));
     bool exceptionCapture = false;
     int n = constructionStatementNode.Arguments().Count();
-    for (int i = 0; i < n; ++i)
+    int startArgIndex = 0;
+    if (firstArg)
+    {
+        arguments.push_back(std::move(firstArg));
+        ++startArgIndex;
+    }
+    for (int i = startArgIndex; i < n; ++i)
     {
         cmajor::ast::Node* argumentNode = constructionStatementNode.Arguments()[i];
         std::unique_ptr<BoundExpression> argument = BindExpression(argumentNode, boundCompileUnit, currentFunction, containerScope, this, false, constructDelegateOrClassDelegateType);

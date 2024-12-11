@@ -6,20 +6,20 @@ int main(int argc, const char** argv)
     for (int i = 1; i < argc; ++i)
     {
         string cmFile = argv[i];
-        auto cmFileContentResult = System.IO.File.ReadAllText(cmFile);
+        Result<string> cmFileContentResult = System.IO.File.ReadAllText(cmFile);
         if (cmFileContentResult.Error())
         {
             Console.Error() << cmFileContentResult.GetErrorMessage() << endl();
             return 1;
         }
-        const string& cmFileContent = cmFileContentResult.Value();
-        auto utf32Result = ToUtf32(cmFileContent);
+        string cmFileContent = Rvalue(cmFileContentResult.Value());
+        Result<ustring> utf32Result = ToUtf32(cmFileContent);
         if (utf32Result.Error())
         {
             Console.Error() << utf32Result.GetErrorMessage() << endl();
             return 1;
         }
-        const ustring& content = utf32Result.Value();
+        ustring content = Rvalue(utf32Result.Value());
         uchar* begin = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(begin, end, cmFile);

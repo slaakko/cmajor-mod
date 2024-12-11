@@ -1163,6 +1163,11 @@ bool Symbol::IsNothrow() const
     }
 }
 
+bool Symbol::SpecializationHasFullInstantiation() const
+{
+    return IsClassTemplateSpecializationSymbol() && static_cast<const ClassTemplateSpecializationSymbol*>(this)->HasFullInstantiation();
+}
+
 SymbolCreator::~SymbolCreator()
 {
 }

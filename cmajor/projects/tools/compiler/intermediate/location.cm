@@ -8,6 +8,10 @@ using System.Collections;
 
 namespace intermediate
 {
+    internal void Break()
+    {
+    }
+
     public enum Locations
     {
         none = 0, reg = 1 << 0, frame = 1 << 1
@@ -48,6 +52,10 @@ namespace intermediate
         public inline void SetMacro(assembly.Macro* macro_)
         {
             macro = macro_;
+        }
+        public void Dump()
+        {
+            Console.Out() << "index=" << index << ", offset=" << offset << ", size=" << size << endl();
         }
         private assembly.RegisterGroupKind reg;
         private int index;
@@ -183,7 +191,7 @@ namespace intermediate
                 {
                     long value = (paramLocation.Index() - 4) * 8 + paramOffset + frameSize;
                     value = value - XMMSaveRegSize();
-                    value = value - calleeParamAreaSize - 4 * 8;
+                    value = value - (calleeParamAreaSize - 4 * 8);
                     Result<assembly.IntegerLiteral*> literalResult = assemblyContext->MakeIntegerLiteral(value, 8);
                     if (literalResult.Error()) return Result<bool>(ErrorId(literalResult.GetErrorId()));
                     assembly.IntegerLiteral* literal = literalResult.Value();
@@ -191,6 +199,15 @@ namespace intermediate
                 }
             }
             return Result<bool>(true);
+        }
+        public void Dump()
+        {
+            int n = cast<int>(frameLocations.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                const FrameLocation& loc = frameLocations[i];
+                loc.Dump();
+            }
         }
         public inline void SetNumUsedXMMRegs(int numUsedXMMRegs_)
         {

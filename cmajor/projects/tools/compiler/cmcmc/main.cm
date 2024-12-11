@@ -212,7 +212,10 @@ int main(int argc, const char** argv)
                 auto result = BuildSolution(file, rootModules);
                 if (result.Error())
                 {
-                    LogMessage(-1, result.GetErrorMessage());
+                    if (result.GetErrorId() != -1)
+                    {
+                        LogMessage(-1, result.GetErrorMessage());
+                    }
                     return 1;
                 }
             }
@@ -230,10 +233,13 @@ int main(int argc, const char** argv)
                     LogMessage(-1, "project  file '" + file + "' not found");
                     return 1;
                 }
-                auto result = BuildProject(file, rootModule, builtProjects);
+                Result<bool> result = BuildProject(file, rootModule, builtProjects);
                 if (result.Error())
                 {
-                    LogMessage(-1, result.GetErrorMessage());
+                    if (result.GetErrorId() != -1)
+                    {
+                        LogMessage(-1, result.GetErrorMessage());
+                    }
                     return 1;
                 }
             }

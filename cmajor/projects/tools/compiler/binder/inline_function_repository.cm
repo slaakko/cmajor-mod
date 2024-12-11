@@ -166,7 +166,7 @@ namespace binder
                 result->SetFlag(FunctionSymbolFlags.dontReuse);
                 Result<bool> mangledNameResult = result->ComputeMangledName();
                 if (mangledNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangledNameResult.GetErrorId()));
-                master->SetInstantiatedName(result->MangledName());
+                master->SetInstantiatedName(result->MangledName(), context);
                 boundCompileUnit->SetCanReuse(result);
                 inlineFunctionMap[inlineFunction] = result;
                 result->SetFunctionId(inlineFunction->FunctionId());
@@ -253,7 +253,7 @@ namespace binder
                 result->SetFlag(FunctionSymbolFlags.dontReuse);
                 Result<bool> mangledNameResult = result->ComputeMangledName();
                 if (mangledNameResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangledNameResult.GetErrorId()));
-                master->SetInstantiatedName(result->MangledName());
+                master->SetInstantiatedName(result->MangledName(), context);
                 boundCompileUnit->SetCanReuse(result);
                 inlineFunctionMap[inlineFunction] = result;
                 result->SetFunctionId(inlineFunction->FunctionId());

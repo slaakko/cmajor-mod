@@ -899,7 +899,7 @@ namespace System.Windows
 
     public class ClickGuard
     {
-        public ClickGuard(ToolButton* toolButton_) : toolButton(toolButton_)
+        public explicit ClickGuard(ToolButton* toolButton_) : toolButton(toolButton_)
         {
         }
         public ~ClickGuard()

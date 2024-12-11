@@ -141,6 +141,11 @@ void BoundLocalVariable::Load(cmajor::ir::Emitter& emitter, cmajor::ir::Operatio
     }
     else
     {
+        if (localVariableSymbol->GetType()->IsClassTypeSymbol())
+        {
+            throw cmajor::symbols::Exception("tried to load from a class type local variable '" + util::ToUtf8(localVariableSymbol->Name()) + "'", GetFullSpan(),
+                localVariableSymbol->GetFullSpan());
+        }
         emitter.Stack().Push(emitter.CreateLoad(type->IrType(emitter), localVariableSymbol->IrObject(emitter)));
     }
     DestroyTemporaries(emitter);

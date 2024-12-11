@@ -10,7 +10,7 @@ import util;
 struct TraceEntry
 {
     TraceEntry* next;
-    int32_t fn;
+    int64_t fn;
     int32_t line;
 };
 
@@ -35,12 +35,12 @@ class SourceFileInfo
 {
 public:
     SourceFileInfo();
-    SourceFileInfo(int32_t sourceFileId_, const std::string& sourceFilePath_);
-    int32_t SourceFileId() const { return sourceFileId; }
+    SourceFileInfo(int64_t sourceFileId_, const std::string& sourceFilePath_);
+    int64_t SourceFileId() const { return sourceFileId; }
     const std::string& SourceFilePath() const { return sourceFilePath; }
     void Read(util::BinaryStreamReader& reader);
 private:
-    int32_t sourceFileId;
+    int64_t sourceFileId;
     std::string sourceFilePath;
 };
 
@@ -48,13 +48,13 @@ SourceFileInfo::SourceFileInfo() : sourceFileId(-1), sourceFilePath()
 {
 }
 
-SourceFileInfo::SourceFileInfo(int32_t sourceFileId_, const std::string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
+SourceFileInfo::SourceFileInfo(int64_t sourceFileId_, const std::string& sourceFilePath_) : sourceFileId(sourceFileId_), sourceFilePath(sourceFilePath_)
 {
 }
 
 void SourceFileInfo::Read(util::BinaryStreamReader& reader)
 {
-    sourceFileId = reader.ReadInt();
+    sourceFileId = reader.ReadLong();
     sourceFilePath = reader.ReadUtf8String();
 }
 
@@ -62,31 +62,31 @@ class FunctionTraceInfo
 {
 public:
     FunctionTraceInfo();
-    FunctionTraceInfo(int32_t functionId_, const std::string& functionFullName_, int32_t sourceFileId_);
-    int32_t FunctionId() const { return functionId; }
+    FunctionTraceInfo(int64_t functionId_, const std::string& functionFullName_, int64_t sourceFileId_);
+    int64_t FunctionId() const { return functionId; }
     const std::string& FunctionFullName() const { return functionFullName; }
-    int32_t SourceFileId() const { return sourceFileId; }
+    int64_t SourceFileId() const { return sourceFileId; }
     void Read(util::BinaryStreamReader& reader);
 private:
-    int32_t functionId;
+    int64_t functionId;
     std::string functionFullName;
-    int32_t sourceFileId;
+    int64_t sourceFileId;
 };
 
 FunctionTraceInfo::FunctionTraceInfo() : functionId(-1), functionFullName(), sourceFileId(-1)
 {
 }
 
-FunctionTraceInfo::FunctionTraceInfo(int32_t functionId_, const std::string& functionFullName_, int32_t sourceFileId_) : 
+FunctionTraceInfo::FunctionTraceInfo(int64_t functionId_, const std::string& functionFullName_, int64_t sourceFileId_) : 
     functionId(functionId_), functionFullName(functionFullName_), sourceFileId(sourceFileId_)
 {
 }
 
 void FunctionTraceInfo::Read(util::BinaryStreamReader& reader)
 {
-    functionId = reader.ReadInt();
+    functionId = reader.ReadLong();
     functionFullName = reader.ReadUtf8String();
-    sourceFileId = reader.ReadInt();
+    sourceFileId = reader.ReadLong();
 }
 
 std::mutex runtimeInfoMtx;
@@ -95,14 +95,14 @@ class RuntimeInfo
 {
 public:
     RuntimeInfo();
-    SourceFileInfo* GetSourceFileInfo(int32_t sourceFileId) const;
-    FunctionTraceInfo* GetFunctionTraceInfo(int32_t functionId) const;
+    SourceFileInfo* GetSourceFileInfo(int64_t sourceFileId) const;
+    FunctionTraceInfo* GetFunctionTraceInfo(int64_t functionId) const;
     void Read(util::BinaryStreamReader& reader);
 private:
     std::vector<std::unique_ptr<SourceFileInfo>> sourceFileInfoVec;
-    std::map<int32_t, SourceFileInfo*> sourceFileInfoMap;
+    std::map<int64_t, SourceFileInfo*> sourceFileInfoMap;
     std::vector<std::unique_ptr<FunctionTraceInfo>> traceInfoVec;
-    std::map<int32_t, FunctionTraceInfo*> traceInfoMap;
+    std::map<int64_t, FunctionTraceInfo*> traceInfoMap;
 };
 
 void RuntimeInfo::Read(util::BinaryStreamReader& reader)
@@ -125,7 +125,7 @@ void RuntimeInfo::Read(util::BinaryStreamReader& reader)
     }
 }
 
-SourceFileInfo* RuntimeInfo::GetSourceFileInfo(int32_t sourceFileId) const
+SourceFileInfo* RuntimeInfo::GetSourceFileInfo(int64_t sourceFileId) const
 {
     auto it = sourceFileInfoMap.find(sourceFileId);
     if (it != sourceFileInfoMap.end())
@@ -138,7 +138,7 @@ SourceFileInfo* RuntimeInfo::GetSourceFileInfo(int32_t sourceFileId) const
     }
 }
 
-FunctionTraceInfo* RuntimeInfo::GetFunctionTraceInfo(int32_t functionId) const
+FunctionTraceInfo* RuntimeInfo::GetFunctionTraceInfo(int64_t functionId) const
 {
     auto it = traceInfoMap.find(functionId);
     if (it != traceInfoMap.end())
@@ -190,7 +190,7 @@ std::string StackTrace::ToString()
             if (functionTraceInfo)
             {
                 std::string entryStr = functionTraceInfo->FunctionFullName();
-                int32_t sourceFileId = functionTraceInfo->SourceFileId();
+                int64_t sourceFileId = functionTraceInfo->SourceFileId();
                 SourceFileInfo* sourceFileInfo = runtimeInfo->GetSourceFileInfo(sourceFileId);
                 if (sourceFileInfo)
                 {
