@@ -1,0 +1,133 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class InterfaceNode : Node
+    {
+        public InterfaceNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.interfaceNode, span_, fileIndex_), specifiers(), id(), members()
+        {
+        }
+        public InterfaceNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
+            base(NodeType.interfaceNode, span_, fileIndex_), specifiers(specifiers_), id(id_), members(), attributes(attributes_)
+        {
+            id->SetParent(this);
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public const NodeList<Node>& Members() const
+        {
+            return members;
+        }
+        public AttributesNode* GetAttributes() const
+        {
+            return attributes.Get();
+        }
+        public void AddMember(Node* member)
+        {
+            member->SetParent(this);
+            members.Add(member);
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            AttributesNode* clonedAttributes = null;
+            if (!attributes.IsNull())
+            {
+                clonedAttributes = cast<AttributesNode*>(attributes->Clone(cloneContext));
+            }
+            InterfaceNode* clone = new InterfaceNode(GetSpan(), FileIndex(), specifiers, cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
+            int n = members.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddMember(members[i]->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasAttributes = attributes != null;
+            result = writer.GetBinaryWriter().Write(hasAttributes);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasAttributes)
+            {
+                result = attributes->Write(writer);
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return members.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto hasAttributesResult = reader.GetBinaryReader().ReadBool();
+            if (hasAttributesResult.Error())
+            {
+                return Result<bool>(ErrorId(hasAttributesResult.GetErrorId()));
+            }
+            bool hasAttributes = hasAttributesResult.Value();
+            if (hasAttributes)
+            {
+                attributes.Reset(new AttributesNode(GetSpan(), FileIndex()));
+                result = attributes->Read(reader);
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            result = members.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            members.SetParent(this);
+            return Result<bool>(true);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<Node> members;
+        private UniquePtr<AttributesNode> attributes;
+    }
+
+} // namespace cm.ast

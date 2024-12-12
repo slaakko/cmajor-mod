@@ -1,0 +1,2067 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class DotNode : UnaryNode
+    {
+        public DotNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.dotNode, span_, fileIndex_), memberId()
+        {
+        }
+        public DotNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_, IdentifierNode* memberId_) : base(NodeType.dotNode, span_, fileIndex_, subject_),
+            memberId(memberId_)
+        {
+            memberId->SetParent(this);
+        }
+        public const IdentifierNode* MemberId() const
+        {
+            return memberId.Get();
+        }
+        public IdentifierNode* MemberId()
+        {
+            return memberId.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DotNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext), cast<IdentifierNode*>(memberId->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(memberId.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto memberIdResult = reader.ReadIdentifierNode();
+            if (memberIdResult.Error())
+            {
+                return Result<bool>(ErrorId(memberIdResult.GetErrorId()));
+            }
+            memberId.Reset(memberIdResult.Value());
+            memberId->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            auto memberIdResult = memberId->ToString();
+            if (memberIdResult.Error())
+            {
+                return memberIdResult;
+            }
+            return Result<string>(subjectResult.Value() + "." + memberIdResult.Value());
+        }
+        private UniquePtr<IdentifierNode> memberId;
+    }
+
+    public class ArrowNode : UnaryNode
+    {
+        public ArrowNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.arrowNode, span_, fileIndex_), memberId()
+        {
+        }
+        public ArrowNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_, IdentifierNode* memberId_) : base(NodeType.arrowNode, span_, fileIndex_, subject_),
+            memberId(memberId_)
+        {
+            memberId->SetParent(this);
+        }
+        public const IdentifierNode* MemberId() const
+        {
+            return memberId.Get();
+        }
+        public IdentifierNode* MemberId()
+        {
+            return memberId.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ArrowNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext), cast<IdentifierNode*>(memberId->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.Write(memberId.Get()));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto memberIdResult = reader.ReadIdentifierNode();
+            if (memberIdResult.Error())
+            {
+                return Result<bool>(ErrorId(memberIdResult.GetErrorId()));
+            }
+            memberId.Reset(memberIdResult.Value());
+            memberId->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            auto memberIdResult = memberId->ToString();
+            if (memberIdResult.Error())
+            {
+                return memberIdResult;
+            }
+            return Result<string>(subjectResult.Value() + "->" + memberIdResult.Value());
+        }
+        private UniquePtr<IdentifierNode> memberId;
+    }
+
+    public class EquivalenceNode : BinaryNode
+    {
+        public EquivalenceNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.equivalenceNode, span_, fileIndex_)
+        {
+        }
+        public EquivalenceNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) :
+            base(NodeType.equivalenceNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new EquivalenceNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + "<=>" + rightResult.Value());
+        }
+    }
+
+    public class ImplicationNode : BinaryNode
+    {
+        public ImplicationNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.implicationNode, span_, fileIndex_)
+        {
+        }
+        public ImplicationNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) :
+            base(NodeType.implicationNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ImplicationNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + "=>" + rightResult.Value());
+        }
+    }
+
+    public class DisjunctionNode : BinaryNode
+    {
+        public DisjunctionNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.disjunctionNode, span_, fileIndex_)
+        {
+        }
+        public DisjunctionNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) :
+            base(NodeType.disjunctionNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DisjunctionNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " || " + rightResult.Value());
+        }
+    }
+
+    public class ConjunctionNode : BinaryNode
+    {
+        public ConjunctionNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.conjunctionNode, span_, fileIndex_)
+        {
+        }
+        public ConjunctionNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) :
+            base(NodeType.conjunctionNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConjunctionNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " && " + rightResult.Value());
+        }
+    }
+
+    public class BitOrNode : BinaryNode
+    {
+        public BitOrNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.bitOrNode, span_, fileIndex_)
+        {
+        }
+        public BitOrNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.bitOrNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new BitOrNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " | " + rightResult.Value());
+        }
+    }
+
+    public class BitXorNode : BinaryNode
+    {
+        public BitXorNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.bitXorNode, span_, fileIndex_)
+        {
+        }
+        public BitXorNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.bitXorNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new BitXorNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " ^ " + rightResult.Value());
+        }
+    }
+
+    public class BitAndNode : BinaryNode
+    {
+        public BitAndNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.bitAndNode, span_, fileIndex_)
+        {
+        }
+        public BitAndNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.bitAndNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new BitAndNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " & " + rightResult.Value());
+        }
+    }
+
+    public class EqualNode : BinaryNode
+    {
+        public EqualNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.equalNode, span_, fileIndex_)
+        {
+        }
+        public EqualNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.equalNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new EqualNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " == " + rightResult.Value());
+        }
+    }
+
+    public class NotEqualNode : BinaryNode
+    {
+        public NotEqualNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.notEqualNode, span_, fileIndex_)
+        {
+        }
+        public NotEqualNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.notEqualNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new NotEqualNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " != " + rightResult.Value());
+        }
+    }
+
+    public class LessNode : BinaryNode
+    {
+        public LessNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.lessNode, span_, fileIndex_)
+        {
+        }
+        public LessNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.lessNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new LessNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " < " + rightResult.Value());
+        }
+    }
+
+    public class GreaterNode : BinaryNode
+    {
+        public GreaterNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.greaterNode, span_, fileIndex_)
+        {
+        }
+        public GreaterNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.greaterNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new GreaterNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " > " + rightResult.Value());
+        }
+    }
+
+    public class LessOrEqualNode : BinaryNode
+    {
+        public LessOrEqualNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.lessOrEqualNode, span_, fileIndex_)
+        {
+        }
+        public LessOrEqualNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.lessOrEqualNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new LessOrEqualNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " <= " + rightResult.Value());
+        }
+    }
+
+    public class GreaterOrEqualNode : BinaryNode
+    {
+        public GreaterOrEqualNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.greaterOrEqualNode, span_, fileIndex_)
+        {
+        }
+        public GreaterOrEqualNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) :
+            base(NodeType.greaterOrEqualNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new GreaterOrEqualNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " >= " + rightResult.Value());
+        }
+    }
+
+    public class ShiftLeftNode : BinaryNode
+    {
+        public ShiftLeftNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.shiftLeftNode, span_, fileIndex_)
+        {
+        }
+        public ShiftLeftNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.shiftLeftNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ShiftLeftNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " << " + rightResult.Value());
+        }
+    }
+
+    public class ShiftRightNode : BinaryNode
+    {
+        public ShiftRightNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.shiftRightNode, span_, fileIndex_)
+        {
+        }
+        public ShiftRightNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.shiftRightNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ShiftRightNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " >> " + rightResult.Value());
+        }
+    }
+
+    public class AddNode : BinaryNode
+    {
+        public AddNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.addNode, span_, fileIndex_)
+        {
+        }
+        public AddNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.addNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new AddNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " + " + rightResult.Value());
+        }
+    }
+
+    public class SubNode : BinaryNode
+    {
+        public SubNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.subNode, span_, fileIndex_)
+        {
+        }
+        public SubNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.subNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new SubNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " - " + rightResult.Value());
+        }
+    }
+
+    public class MulNode : BinaryNode
+    {
+        public MulNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.mulNode, span_, fileIndex_)
+        {
+        }
+        public MulNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.mulNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new MulNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " * " + rightResult.Value());
+        }
+    }
+
+    public class DivNode : BinaryNode
+    {
+        public DivNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.divNode, span_, fileIndex_)
+        {
+        }
+        public DivNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.divNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DivNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " / " + rightResult.Value());
+        }
+    }
+
+    public class RemNode : BinaryNode
+    {
+        public RemNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.remNode, span_, fileIndex_)
+        {
+        }
+        public RemNode(const System.Lex.Span& span_, int fileIndex_, Node* left_, Node* right_) : base(NodeType.remNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new RemNode(GetSpan(), FileIndex(), Left()->Clone(cloneContext), Right()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return Result<string>(leftResult.Value() + " % " + rightResult.Value());
+        }
+    }
+
+    public class NotNode : UnaryNode
+    {
+        public NotNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.notNode, span_, fileIndex_)
+        {
+        }
+        public NotNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.notNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new NotNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("!" + subjectResult.Value());
+        }
+    }
+
+    public class UnaryPlusNode : UnaryNode
+    {
+        public UnaryPlusNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.unaryPlusNode, span_, fileIndex_)
+        {
+        }
+        public UnaryPlusNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.unaryPlusNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new UnaryPlusNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("+" + subjectResult.Value());
+        }
+    }
+
+    public class UnaryMinusNode : UnaryNode
+    {
+        public UnaryMinusNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.unaryMinusNode, span_, fileIndex_)
+        {
+        }
+        public UnaryMinusNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.unaryMinusNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new UnaryMinusNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("-" + subjectResult.Value());
+        }
+    }
+
+    public class PrefixIncrementNode : UnaryNode
+    {
+        public PrefixIncrementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.prefixIncrementNode, span_, fileIndex_)
+        {
+        }
+        public PrefixIncrementNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.prefixIncrementNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new PrefixIncrementNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("++" + subjectResult.Value());
+        }
+    }
+
+    public class PrefixDecrementNode : UnaryNode
+    {
+        public PrefixDecrementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.prefixDecrementNode, span_, fileIndex_)
+        {
+        }
+        public PrefixDecrementNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.prefixDecrementNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new PrefixDecrementNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("--" + subjectResult.Value());
+        }
+    }
+
+    public class ComplementNode : UnaryNode
+    {
+        public ComplementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.complementNode, span_, fileIndex_)
+        {
+        }
+        public ComplementNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.complementNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ComplementNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("~" + subjectResult.Value());
+        }
+    }
+
+    public class DerefNode : UnaryNode
+    {
+        public DerefNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.derefNode, span_, fileIndex_)
+        {
+        }
+        public DerefNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.derefNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DerefNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("*" + subjectResult.Value());
+        }
+    }
+
+    public class AddrOfNode : UnaryNode
+    {
+        public AddrOfNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.addrOfNode, span_, fileIndex_)
+        {
+        }
+        public AddrOfNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.addrOfNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new AddrOfNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("&" + subjectResult.Value());
+        }
+    }
+
+    public class IsNode : Node
+    {
+        public IsNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.isNode, span_, fileIndex_), expr(), targetTypeExpr()
+        {
+        }
+        public IsNode(const System.Lex.Span& span_, int fileIndex_, Node* expr_, Node* targetTypeExpr_) :
+            base(NodeType.isNode, span_, fileIndex_), expr(expr_), targetTypeExpr(targetTypeExpr_)
+        {
+            expr->SetParent(this);
+            targetTypeExpr->SetParent(this);
+        }
+        public const Node* Expr() const
+        {
+            return expr.Get();
+        }
+        public Node* Expr()
+        {
+            return expr.Get();
+        }
+        public const Node* TargetTypeExpr() const
+        {
+            return targetTypeExpr.Get();
+        }
+        public Node* TargetTypeExpr()
+        {
+            return targetTypeExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new IsNode(GetSpan(), FileIndex(), expr->Clone(cloneContext), targetTypeExpr->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(expr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(targetTypeExpr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto exprResult = reader.ReadNode();
+            if (exprResult.Error())
+            {
+                return Result<bool>(ErrorId(exprResult.GetErrorId()));
+            }
+            expr.Reset(exprResult.Value());
+            expr->SetParent(this);
+            auto targetTypeExprResult = reader.ReadNode();
+            if (targetTypeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(targetTypeExprResult.GetErrorId()));
+            }
+            targetTypeExpr.Reset(targetTypeExprResult.Value());
+            targetTypeExpr->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto exprResult = expr->ToString();
+            if (exprResult.Error())
+            {
+                return exprResult;
+            }
+            auto targetTypeExprResult = targetTypeExpr->ToString();
+            if (targetTypeExprResult.Error())
+            {
+                return targetTypeExprResult;
+            }
+            return exprResult.Value() + " is " + targetTypeExprResult.Value();
+        }
+        private UniquePtr<Node> expr;
+        private UniquePtr<Node> targetTypeExpr;
+    }
+
+    public class AsNode : Node
+    {
+        public AsNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.asNode, span_, fileIndex_), expr(), targetTypeExpr()
+        {
+        }
+        public AsNode(const System.Lex.Span& span_, int fileIndex_, Node* expr_, Node* targetTypeExpr_) :
+            base(NodeType.asNode, span_, fileIndex_), expr(expr_), targetTypeExpr(targetTypeExpr_)
+        {
+            expr->SetParent(this);
+            targetTypeExpr->SetParent(this);
+        }
+        public const Node* Expr() const
+        {
+            return expr.Get();
+        }
+        public Node* Expr()
+        {
+            return expr.Get();
+        }
+        public const Node* TargetTypeExpr() const
+        {
+            return targetTypeExpr.Get();
+        }
+        public Node* TargetTypeExpr()
+        {
+            return targetTypeExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new AsNode(GetSpan(), FileIndex(), expr->Clone(cloneContext), targetTypeExpr->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(expr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(targetTypeExpr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto exprResult = reader.ReadNode();
+            if (exprResult.Error())
+            {
+                return Result<bool>(ErrorId(exprResult.GetErrorId()));
+            }
+            expr.Reset(exprResult.Value());
+            expr->SetParent(this);
+            auto targetTypeExprResult = reader.ReadNode();
+            if (targetTypeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(targetTypeExprResult.GetErrorId()));
+            }
+            targetTypeExpr.Reset(targetTypeExprResult.Value());
+            targetTypeExpr->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto exprResult = expr->ToString();
+            if (exprResult.Error())
+            {
+                return exprResult;
+            }
+            auto targetTypeExprResult = targetTypeExpr->ToString();
+            if (targetTypeExprResult.Error())
+            {
+                return targetTypeExprResult;
+            }
+            return exprResult.Value() + " as " + targetTypeExprResult.Value();
+        }
+        private UniquePtr<Node> expr;
+        private UniquePtr<Node> targetTypeExpr;
+    }
+
+    public class IndexingNode : Node
+    {
+        public IndexingNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.indexingNode, span_, fileIndex_), subject(), index()
+        {
+        }
+        public IndexingNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_, Node* index_) :
+            base(NodeType.indexingNode, span_, fileIndex_), subject(subject_), index(index_)
+        {
+            subject->SetParent(this);
+            index->SetParent(this);
+        }
+        public const Node* Subject() const
+        {
+            return subject.Get();
+        }
+        public Node* Subject()
+        {
+            return subject.Get();
+        }
+        public const Node* Index() const
+        {
+            return index.Get();
+        }
+        public Node* Index()
+        {
+            return index.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new IndexingNode(GetSpan(), FileIndex(), subject->Clone(cloneContext), index->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(subject.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(index.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto subjectResult = reader.ReadNode();
+            if (subjectResult.Error())
+            {
+                return Result<bool>(ErrorId(subjectResult.GetErrorId()));
+            }
+            subject.Reset(subjectResult.Value());
+            subject->SetParent(this);
+            auto indexResult = reader.ReadNode();
+            if (indexResult.Error())
+            {
+                return Result<bool>(ErrorId(indexResult.GetErrorId()));
+            }
+            index.Reset(indexResult.Value());
+            index->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = subject->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            auto indexResult = index->ToString();
+            if (indexResult.Error())
+            {
+                return indexResult;
+            }
+            return Result<string>(subjectResult.Value() + "[" + indexResult.Value() + "]");
+        }
+        private UniquePtr<Node> subject;
+        private UniquePtr<Node> index;
+    }
+
+    public class InvokeNode : Node
+    {
+        public InvokeNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.invokeNode, span_, fileIndex_), subject(), arguments()
+        {
+        }
+        public InvokeNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) :
+            base(NodeType.invokeNode, span_, fileIndex_), subject(subject_), arguments()
+        {
+            subject->SetParent(this);
+        }
+        public const Node* Subject() const
+        {
+            return subject.Get();
+        }
+        public Node* Subject()
+        {
+            return subject.Get();
+        }
+        public const NodeList<Node>& Arguments() const
+        {
+            return arguments;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            InvokeNode* clone = new InvokeNode(GetSpan(), FileIndex(), subject->Clone(cloneContext));
+            int n = arguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                Node* argument = arguments[i];
+                clone->AddArgument(argument->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(subject.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return arguments.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto subjectResult = reader.ReadNode();
+            if (subjectResult.Error())
+            {
+                return Result<bool>(ErrorId(subjectResult.GetErrorId()));
+            }
+            subject.Reset(subjectResult.Value());
+            subject->SetParent(this);
+            result = arguments.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            arguments.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddArgument(Node* argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = subject->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            string s = subjectResult.Value();
+            s.Append("(");
+            int n = arguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                auto argumentResult = arguments[i]->ToString();
+                if (argumentResult.Error())
+                {
+                    return argumentResult;
+                }
+                s.Append(argumentResult.Value());
+            }
+            s.Append(")");
+            return Result<string>(s);
+        }
+        private UniquePtr<Node> subject;
+        private NodeList<Node> arguments;
+    }
+
+    public class PostfixIncrementNode : UnaryNode
+    {
+        public PostfixIncrementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.postfixIncrementNode, span_, fileIndex_)
+        {
+        }
+        public PostfixIncrementNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.postfixIncrementNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new PostfixIncrementNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>(subjectResult.Value() + "++");
+        }
+    }
+
+    public class PostfixDecrementNode : UnaryNode
+    {
+        public PostfixDecrementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.postfixDecrementNode, span_, fileIndex_)
+        {
+        }
+        public PostfixDecrementNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.postfixDecrementNode, span_, fileIndex_, subject_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new PostfixDecrementNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>(subjectResult.Value() + "--");
+        }
+    }
+
+    public class SizeOfNode : Node
+    {
+        public SizeOfNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.sizeOfNode, span_, fileIndex_), expression()
+        {
+        }
+        public SizeOfNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) : base(NodeType.sizeOfNode, span_, fileIndex_), expression(expression_)
+        {
+            expression->SetParent(this);
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new SizeOfNode(GetSpan(), FileIndex(), expression->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expression.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto expressionResult = reader.ReadNode();
+            if (expressionResult.Error())
+            {
+                return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+            }
+            expression.Reset(expressionResult.Value());
+            expression->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto expressionResult = expression->ToString();
+            if (expressionResult.Error())
+            {
+                return expressionResult;
+            }
+            return Result<string>("sizeof(" + expressionResult.Value() + ")");
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class TypeNameNode : Node
+    {
+        public TypeNameNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.typeNameNode, span_, fileIndex_), expression(), static_(false)
+        {
+        }
+        public TypeNameNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) :
+            base(NodeType.typeNameNode, span_, fileIndex_), expression(expression_), static_(false)
+        {
+            expression->SetParent(this);
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public bool Static() const
+        {
+            return static_;
+        }
+        public void SetStatic()
+        {
+            static_ = true;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            TypeNameNode* typeNameNode = new TypeNameNode(GetSpan(), FileIndex(), expression->Clone(cloneContext));
+            if (static_)
+            {
+                typeNameNode->SetStatic();
+            }
+            return typeNameNode;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(expression.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(static_);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto expressionResult = reader.ReadNode();
+            if (expressionResult.Error())
+            {
+                return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+            }
+            expression.Reset(expressionResult.Value());
+            expression->SetParent(this);
+            auto staticResult = reader.GetBinaryReader().ReadBool();
+            if (staticResult.Error())
+            {
+                return Result<bool>(ErrorId(staticResult.GetErrorId()));
+            }
+            static_ = staticResult.Value();
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto expressionResult = expression->ToString();
+            if (expressionResult.Error())
+            {
+                return expressionResult;
+            }
+            return Result<string>("typename(" + expressionResult.Value() + ")");
+        }
+        private UniquePtr<Node> expression;
+        private bool static_;
+    }
+
+    public class TypeIdNode : Node
+    {
+        public TypeIdNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.typeIdNode, span_, fileIndex_), expression()
+        {
+        }
+        public TypeIdNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) : base(NodeType.typeIdNode, span_, fileIndex_), expression(expression_)
+        {
+            expression->SetParent(this);
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new TypeIdNode(GetSpan(), FileIndex(), expression->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expression.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto expressionResult = reader.ReadNode();
+            if (expressionResult.Error())
+            {
+                return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+            }
+            expression.Reset(expressionResult.Value());
+            expression->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto expressionResult = expression->ToString();
+            if (expressionResult.Error())
+            {
+                return expressionResult;
+            }
+            return Result<string>("typeid(" + expressionResult.Value() + ")");
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class CastNode : Node
+    {
+        public CastNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.castNode, span_, fileIndex_), targetTypeExpr(), sourceExpr()
+        {
+        }
+        public CastNode(const System.Lex.Span& span_, int fileIndex_, Node* targetTypeExpr_, Node* sourceExpr_) :
+            base(NodeType.castNode, span_, fileIndex_), targetTypeExpr(targetTypeExpr_), sourceExpr(sourceExpr_)
+        {
+            targetTypeExpr->SetParent(this);
+            sourceExpr->SetParent(this);
+        }
+        public const Node* TargetTypeExpr() const
+        {
+            return targetTypeExpr.Get();
+        }
+        public Node* TargetTypeExpr()
+        {
+            return targetTypeExpr.Get();
+        }
+        public const Node* SourceExpr() const
+        {
+            return sourceExpr.Get();
+        }
+        public Node* SourceExpr()
+        {
+            return sourceExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new CastNode(GetSpan(), FileIndex(), targetTypeExpr->Clone(cloneContext), sourceExpr->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(targetTypeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(sourceExpr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto targetTypeExprResult = reader.ReadNode();
+            if (targetTypeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(targetTypeExprResult.GetErrorId()));
+            }
+            targetTypeExpr.Reset(targetTypeExprResult.Value());
+            targetTypeExpr->SetParent(this);
+            auto sourceExprResult = reader.ReadNode();
+            if (sourceExprResult.Error())
+            {
+                return Result<bool>(ErrorId(sourceExprResult.GetErrorId()));
+            }
+            sourceExpr.Reset(sourceExprResult.Value());
+            sourceExpr->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto targetTypeExprResult = targetTypeExpr->ToString();
+            if (targetTypeExprResult.Error())
+            {
+                return targetTypeExprResult;
+            }
+            auto sourceExprResult = sourceExpr->ToString();
+            if (sourceExprResult.Error())
+            {
+                return sourceExprResult;
+            }
+            return Result<string>("cast<" + targetTypeExprResult.Value() + ">(" + sourceExprResult.Value() + ")");
+        }
+        private UniquePtr<Node> targetTypeExpr;
+        private UniquePtr<Node> sourceExpr;
+    }
+
+    public class ConstructNode : Node
+    {
+        public ConstructNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.constructNode, span_, fileIndex_), typeExpr(), arguments()
+        {
+        }
+        public ConstructNode(const System.Lex.Span& span_, int fileIndex_, Node* typeExpr_) :
+            base(NodeType.constructNode, span_, fileIndex_), typeExpr(typeExpr_), arguments()
+        {
+            typeExpr->SetParent(this);
+        }
+        public const Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public Node* TypeExpr()
+        {
+            return typeExpr.Get();
+        }
+        public const NodeList<Node>& Arguments() const
+        {
+            return arguments;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConstructNode* clone = new ConstructNode(GetSpan(), FileIndex(), typeExpr->Clone(cloneContext));
+            int n = arguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                Node* argument = arguments[i];
+                clone->AddArgument(argument->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return arguments.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            result = arguments.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            arguments.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddArgument(Node* argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        public override Result<string> ToString() const
+        {
+            auto typeExprResult = typeExpr->ToString();
+            if (typeExprResult.Error())
+            {
+                return typeExprResult;
+            }
+            string s = "construct<" + typeExprResult.Value() + ">(";
+            int n = arguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                auto argumentResult = arguments[i]->ToString();
+                if (argumentResult.Error())
+                {
+                    return argumentResult;
+                }
+                s.Append(argumentResult.Value());
+            }
+            s.Append(")");
+            return Result<string>(s);
+        }
+        private UniquePtr<Node> typeExpr;
+        private NodeList<Node> arguments;
+    }
+
+    public class NewNode : Node
+    {
+        public NewNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.newNode, span_, fileIndex_), typeExpr(), arguments()
+        {
+        }
+        public NewNode(const System.Lex.Span& span_, int fileIndex_, Node* typeExpr_) :
+            base(NodeType.newNode, span_, fileIndex_), typeExpr(typeExpr_), arguments()
+        {
+            typeExpr->SetParent(this);
+        }
+        public const Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public Node* TypeExpr()
+        {
+            return typeExpr.Get();
+        }
+        public const NodeList<Node>& Arguments() const
+        {
+            return arguments;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            NewNode* clone = new NewNode(GetSpan(), FileIndex(), typeExpr->Clone(cloneContext));
+            int n = arguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                Node* argument = arguments[i];
+                clone->AddArgument(argument->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return arguments.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            result = arguments.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            arguments.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddArgument(Node* argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        public override Result<string> ToString() const
+        {
+            string s = "new ";
+            auto typeExprResult = typeExpr->ToString();
+            if (typeExprResult.Error())
+            {
+                return typeExprResult;
+            }
+            s.Append(typeExprResult.Value()).Append("(");
+            int n = arguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                auto argumentResult = arguments[i]->ToString();
+                if (argumentResult.Error())
+                {
+                    return argumentResult;
+                }
+                s.Append(argumentResult.Value());
+            }
+            s.Append(")");
+            return Result<string>(s);
+        }
+        private UniquePtr<Node> typeExpr;
+        private NodeList<Node> arguments;
+    }
+
+    public class ThisNode : Node
+    {
+        public ThisNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.thisNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ThisNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("this");
+        }
+    }
+
+    public class BaseNode : Node
+    {
+        public BaseNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.baseNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new BaseNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("base");
+        }
+    }
+
+    public class ParenthesizedExpressionNode : UnaryNode
+    {
+        public ParenthesizedExpressionNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.parenthesizedExpressionNode, span_, fileIndex_)
+        {
+        }
+        public ParenthesizedExpressionNode(const System.Lex.Span& span_, int fileIndex_, Node* child_) :
+            base(NodeType.parenthesizedExpressionNode, span_, fileIndex_, child_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ParenthesizedExpressionNode* clone = new ParenthesizedExpressionNode(GetSpan(), FileIndex(), Subject()->Clone(cloneContext));
+            return clone;
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            return base->Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            return base->Read(reader);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = Subject()->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("(" + subjectResult.Value() + ")");
+        }
+    }
+
+    public class ArgumentListNode : Node
+    {
+        public ArgumentListNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.argumentListNode, span_, fileIndex_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ArgumentListNode* clone = new ArgumentListNode(GetSpan(), FileIndex());
+            for (const auto& arg : arguments)
+            {
+                clone->AddArgument(arg->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public long Count() const
+        {
+            return arguments.Count();
+        }
+        public const List<UniquePtr<Node>>& Arguments() const
+        {
+            return arguments;
+        }
+        public override void AddArgument(Node* argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(UniquePtr<Node>(argument));
+        }
+        private List<UniquePtr<Node>> arguments;
+    }
+
+} // namespace cm.ast

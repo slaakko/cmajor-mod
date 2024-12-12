@@ -1,0 +1,153 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class NodeList<T>
+    {
+        public typedef List<UniquePtr<T>>.Iterator Iterator;
+        public typedef List<UniquePtr<T>>.ConstIterator ConstIterator;
+        public Iterator Begin()
+        {
+            return nodes.Begin();
+        }
+        public ConstIterator Begin() const
+        {
+            return nodes.CBegin();
+        }
+        public ConstIterator CBegin() const
+        {
+            return nodes.CBegin();
+        }
+        public Iterator End()
+        {
+            return nodes.End();
+        }
+        public ConstIterator End() const
+        {
+            return nodes.CEnd();
+        }
+        public ConstIterator CEnd() const
+        {
+            return nodes.CEnd();
+        }
+        public inline int Count() const
+        {
+            return cast<int>(nodes.Count());
+        }
+        public inline T* operator[](int index) const
+        {
+            return nodes[index].Get();
+        }
+        public void Add(T* node)
+        {
+            nodes.Add(UniquePtr<T>(node));
+        }
+        public T* Release(int index)
+        {
+            return nodes[index].Release();
+        }
+        public void Insert(int index, T* node)
+        {
+            if (index >= cast<int>(nodes.Count()))
+            {
+                Add(node);
+            }
+            else
+            {
+                nodes.Insert(nodes.Begin() + index, UniquePtr<T>(node));
+            }
+        }
+        public void Clear()
+        {
+            nodes.Clear();
+        }
+        public void RemoveEmpty()
+        {
+            int p = 0;
+            int n = cast<int>(nodes.Count());
+            for (int i = 0; i < n; ++i)
+            {
+                if (!nodes[i].IsNull())
+                {
+                    if (p != i)
+                    {
+                        nodes[p].Reset(nodes[i].Release());
+                    }
+                    ++p;
+                }
+            }
+            if (p != n)
+            {
+                while (nodes.Begin() + p != nodes.End()) nodes.Remove(nodes.Begin() + p);
+            }
+        }
+        public void SetParent(Node* parent)
+        {
+            for (const UniquePtr<T>& node : nodes)
+            {
+                node->SetParent(parent);
+            }
+        }
+        [nodiscard]
+        public Result<bool> Write(AstWriter& writer)
+        {
+            int n = cast<int>(nodes.Count());
+            auto result = writer.GetBinaryWriter().Write(n);
+            if (result.Error())
+            {
+                return result;
+            }
+            for (int i = 0; i < n; ++i)
+            {
+                result = writer.Write(nodes[i].Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public Result<bool> Read(AstReader& reader)
+        {
+            auto nResult = reader.GetBinaryReader().ReadInt();
+            if (nResult.Error())
+            {
+                return Result<bool>(ErrorId(nResult.GetErrorId()));
+            }
+            int n = nResult.Value();
+            for (int i = 0; i < n; ++i)
+            {
+                auto nodeResult = reader.ReadNode();
+                if (nodeResult.Error())
+                {
+                    return Result<bool>(ErrorId(nodeResult.GetErrorId()));
+                }
+                Node* node = nodeResult.Value();
+                T* asTPtrNode = cast<T*>(node);
+                nodes.Add(UniquePtr<T>(asTPtrNode));
+            }
+            return Result<bool>(true);
+        }
+        public List<UniquePtr<T>>& Nodes()
+        {
+            return nodes;
+        }
+        public List<UniquePtr<T>> Content()
+        {
+            return Rvalue(nodes);
+        }
+        public void SetContent(List<UniquePtr<T>>&& content)
+        {
+            nodes = Rvalue(content);
+        }
+        private List<UniquePtr<T>> nodes;
+    }
+
+} // namespace cm.ast

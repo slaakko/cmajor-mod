@@ -1,0 +1,842 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class ClassNode : Node
+    {
+        public ClassNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.classNode, span_, fileIndex_), specifiers(Specifiers.none), id(), templateParameters(), baseClassOrInterfaces(), members()
+        {
+        }
+        public ClassNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, IdentifierNode* id_, AttributesNode* attributes_) :
+            base(NodeType.classNode, span_, fileIndex_), specifiers(specifiers_), id(id_), templateParameters(), baseClassOrInterfaces(), members(),
+            attributes(attributes_)
+        {
+        }
+        public void SetSpecifiers(Specifiers specifiers_)
+        {
+            specifiers = specifiers_;
+        }
+        public inline IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public inline const WhereConstraintNode* WhereConstraint() const
+        {
+            return constraint.Get();
+        }
+        public inline WhereConstraintNode* WhereConstraint()
+        {
+            return constraint.Get();
+        }
+        public const NodeList<TemplateParameterNode>& TemplateParameters() const
+        {
+            return templateParameters;
+        }
+        public const NodeList<Node>& BaseClassOrInterfaces() const
+        {
+            return baseClassOrInterfaces;
+        }
+        public const NodeList<Node>& Members() const
+        {
+            return members;
+        }
+        public AttributesNode* GetAttributes() const
+        {
+            return attributes.Get();
+        }
+        public void AddBaseClassOrInterface(Node* baseClassOrInterface)
+        {
+            baseClassOrInterface->SetParent(this);
+            baseClassOrInterfaces.Add(baseClassOrInterface);
+        }
+        public void SetConstraint(WhereConstraintNode* whereConstraint)
+        {
+            constraint.Reset(whereConstraint);
+            constraint->SetParent(this);
+        }
+        public void AddMember(Node* member)
+        {
+            member->SetParent(this);
+            members.Add(member);
+        }
+        public void ArrangeMembers()
+        {
+            UniquePtr<Node> staticConstructor;
+            NodeList<Node> constructors;
+            UniquePtr<Node> destructor;
+            NodeList<Node> virtualMembers;
+            NodeList<Node> protectedMembers;
+            NodeList<Node> privateMembers;
+            int n = members.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                Node* member = members[i];
+                if (member->GetNodeType() == NodeType.staticConstructorNode)
+                {
+                    staticConstructor.Reset(members.Release(i));
+                }
+                else if (member->GetNodeType() == NodeType.constructorNode)
+                {
+                    constructors.Add(members.Release(i));
+                }
+                else if (member->GetNodeType() == NodeType.destructorNode)
+                {
+                    destructor.Reset(members.Release(i));
+                }
+                else
+                {
+                    Specifiers specifiers = member->GetSpecifiers();
+                    if ((specifiers & (Specifiers.abstract_ | Specifiers.override_ | Specifiers.virtual_)) != Specifiers.none)
+                    {
+                        virtualMembers.Add(members.Release(i));
+                    }
+                    else if ((specifiers & Specifiers.protected_) != Specifiers.none)
+                    {
+                        protectedMembers.Add(members.Release(i));
+                    }
+                    else if ((specifiers & Specifiers.private_) != Specifiers.none)
+                    {
+                        privateMembers.Add(members.Release(i));
+                    }
+                }
+            }
+            members.RemoveEmpty();
+            int index = 0;
+            if (!staticConstructor.IsNull())
+            {
+                members.Insert(index, staticConstructor.Release());
+                ++index;
+            }
+            int nc = constructors.Count();
+            if (nc > 0)
+            {
+                for (int i = 0; i < nc; ++i)
+                {
+                    members.Insert(index, constructors.Release(i));
+                    ++index;
+                }
+            }
+            if (!destructor.IsNull())
+            {
+                members.Insert(index, destructor.Release());
+                ++index;
+            }
+            if (virtualMembers.Count() > 0 || protectedMembers.Count() > 0 || privateMembers.Count() > 0)
+            {
+                for (int i = 0; i < virtualMembers.Count(); ++i)
+                {
+                    members.Add(virtualMembers.Release(i));
+                }
+                for (int i = 0; i < protectedMembers.Count(); ++i)
+                {
+                    members.Add(protectedMembers.Release(i));
+                }
+                for (int i = 0; i < privateMembers.Count(); ++i)
+                {
+                    members.Add(privateMembers.Release(i));
+                }
+            }
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            AttributesNode* clonedAttributes = null;
+            if (!attributes.IsNull())
+            {
+                clonedAttributes = cast<AttributesNode*>(attributes->Clone(cloneContext));
+            }
+            ClassNode* clone = new ClassNode(GetSpan(), FileIndex(), specifiers, cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
+            if (!cloneContext.InstantiateClassNode())
+            {
+                int tn = templateParameters.Count();
+                for (int i = 0; i < tn; ++i)
+                {
+                    clone->AddTemplateParameter(cast<TemplateParameterNode*>(templateParameters[i]->Clone(cloneContext)));
+                }
+            }
+            int bn = baseClassOrInterfaces.Count();
+            for (int i = 0; i < bn; ++i)
+            {
+                clone->AddBaseClassOrInterface(baseClassOrInterfaces[i]->Clone(cloneContext));
+            }
+            if (!constraint.IsNull())
+            {
+                clone->SetConstraint(cast<WhereConstraintNode*>(constraint->Clone(cloneContext)));
+            }
+            int mn = members.Count();
+            for (int i = 0; i < mn; ++i)
+            {
+                clone->AddMember(members[i]->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasAttributes = !attributes.IsNull();
+            result = writer.GetBinaryWriter().Write(hasAttributes);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasAttributes)
+            {
+                result = attributes->Write(writer);
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = templateParameters.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = baseClassOrInterfaces.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return members.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto hasAttributesResult = reader.GetBinaryReader().ReadBool();
+            if (hasAttributesResult.Error())
+            {
+                return Result<bool>(ErrorId(hasAttributesResult.GetErrorId()));
+            }
+            bool hasAttributes = hasAttributesResult.Value();
+            if (hasAttributes)
+            {
+                attributes.Reset(new AttributesNode());
+                attributes->Read(reader);
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto identifierNodeResult = reader.ReadIdentifierNode();
+            if (identifierNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(identifierNodeResult.GetErrorId()));
+            }
+            id.Reset(identifierNodeResult.Value());
+            id->SetParent(this);
+            result = templateParameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            templateParameters.SetParent(this);
+            result = baseClassOrInterfaces.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            baseClassOrInterfaces.SetParent(this);
+            result = members.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            members.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddTemplateParameter(TemplateParameterNode* templateParameter)
+        {
+            templateParameter->SetParent(this);
+            templateParameters.Add(templateParameter);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<TemplateParameterNode> templateParameters;
+        private NodeList<Node> baseClassOrInterfaces;
+        private UniquePtr<WhereConstraintNode> constraint;
+        private NodeList<Node> members;
+        private UniquePtr<AttributesNode> attributes;
+    }
+
+    public abstract class InitializerNode : Node
+    {
+        public InitializerNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) : base(nodeType_, span_, fileIndex_)
+        {
+        }
+        public const NodeList<Node>& Arguments() const
+        {
+            return arguments;
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return arguments.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = arguments.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            arguments.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddArgument(Node* argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        private NodeList<Node> arguments;
+    }
+
+    public class ThisInitializerNode : InitializerNode
+    {
+        public ThisInitializerNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.thisInitializerNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ThisInitializerNode* clone = new ThisInitializerNode(GetSpan(), FileIndex());
+            int n = Arguments().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddArgument(Arguments()[i]->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class BaseInitializerNode : InitializerNode
+    {
+        public BaseInitializerNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.baseInitializerNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            BaseInitializerNode* clone = new BaseInitializerNode(GetSpan(), FileIndex());
+            int n = Arguments().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddArgument(Arguments()[i]->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class MemberInitializerNode : InitializerNode
+    {
+        public MemberInitializerNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.memberInitializerNode, span_, fileIndex_), memberId()
+        {
+        }
+        public MemberInitializerNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* memberId_) :
+            base(NodeType.memberInitializerNode, span_, fileIndex_), memberId(memberId_)
+        {
+            memberId->SetParent(this);
+        }
+        public inline const IdentifierNode* MemberId() const
+        {
+            return memberId.Get();
+        }
+        public inline IdentifierNode* MemberId()
+        {
+            return memberId.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            MemberInitializerNode* clone = new MemberInitializerNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(memberId->Clone(cloneContext)));
+            int n = Arguments().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddArgument(Arguments()[i]->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.Write(memberId.Get()));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto identifierNodeResult = reader.ReadIdentifierNode();
+            if (identifierNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(identifierNodeResult.GetErrorId()));
+            }
+            memberId.Reset(identifierNodeResult.Value());
+            memberId->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<IdentifierNode> memberId;
+    }
+
+    public class StaticConstructorNode : FunctionNode
+    {
+        public StaticConstructorNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.staticConstructorNode, span_, fileIndex_, Specifiers.none, null, u"@static_constructor", null), initializers()
+        {
+        }
+        public StaticConstructorNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, AttributesNode* attributes_) :
+            base(NodeType.staticConstructorNode, span_, fileIndex_, specifiers_, null, u"@static_constructor", attributes_), initializers()
+        {
+        }
+        public const NodeList<InitializerNode>& Initializers() const
+        {
+            return initializers;
+        }
+        public void SetClassId(IdentifierNode* classId_)
+        {
+            classId.Reset(classId_);
+        }
+        public IdentifierNode* ClassId()
+        {
+            return classId.Get();
+        }
+        public void AddInitializer(InitializerNode* initializer)
+        {
+            initializer->SetParent(this);
+            initializers.Add(initializer);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            StaticConstructorNode* clone = new StaticConstructorNode(GetSpan(), FileIndex(), GetSpecifiers(), null);
+            int n = initializers.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddInitializer(cast<InitializerNode*>(initializers[i]->Clone(cloneContext)));
+            }
+            clone->classId.Reset(cast<IdentifierNode*>(classId->Clone(cloneContext)));
+            CloneContent(clone, cloneContext);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = initializers.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(classId.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = initializers.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            initializers.SetParent(this);
+            auto identifierNodeResult = reader.ReadIdentifierNode();
+            if (identifierNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(identifierNodeResult.GetErrorId()));
+            }
+            classId.Reset(identifierNodeResult.Value());
+            return Result<bool>(true);
+        }
+        private NodeList<InitializerNode> initializers;
+        private UniquePtr<IdentifierNode> classId;
+    }
+
+    public class ConstructorNode : FunctionNode
+    {
+        public ConstructorNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.constructorNode, span_, fileIndex_, Specifiers.none, null, u"@constructor", null), initializers()
+        {
+        }
+        public ConstructorNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, AttributesNode* attributes_) :
+            base(NodeType.constructorNode, span_, fileIndex_, specifiers_, null, u"@constructor", attributes_), initializers()
+        {
+        }
+        public const NodeList<InitializerNode>& Initializers() const
+        {
+            return initializers;
+        }
+        public void SetClassId(IdentifierNode* classId_)
+        {
+            classId.Reset(classId_);
+        }
+        public IdentifierNode* ClassId()
+        {
+            return classId.Get();
+        }
+        public void AddInitializer(InitializerNode* initializer)
+        {
+            initializer->SetParent(this);
+            initializers.Add(initializer);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConstructorNode* clone = new ConstructorNode(GetSpan(), FileIndex(), GetSpecifiers(), null);
+            int n = initializers.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddInitializer(cast<InitializerNode*>(initializers[i]->Clone(cloneContext)));
+            }
+            clone->classId.Reset(cast<IdentifierNode*>(classId->Clone(cloneContext)));
+            CloneContent(clone, cloneContext);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = initializers.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(classId.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = initializers.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            initializers.SetParent(this);
+            auto identifierNodeResult = reader.ReadIdentifierNode();
+            if (identifierNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(identifierNodeResult.GetErrorId()));
+            }
+            classId.Reset(identifierNodeResult.Value());
+            return Result<bool>(true);
+        }
+        private NodeList<InitializerNode> initializers;
+        private UniquePtr<IdentifierNode> classId;
+    }
+
+    public class DestructorNode : FunctionNode
+    {
+        public DestructorNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.destructorNode, span_, fileIndex_)
+        {
+        }
+        public DestructorNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, AttributesNode* attributes_) :
+            base(NodeType.destructorNode, span_, fileIndex_, specifiers_, null, u"@destructor", attributes_)
+        {
+        }
+        public void SetClassId(IdentifierNode* classId_)
+        {
+            classId.Reset(classId_);
+        }
+        public IdentifierNode* ClassId()
+        {
+            return classId.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            DestructorNode* clone = new DestructorNode(GetSpan(), FileIndex(), GetSpecifiers(), null);
+            clone->classId.Reset(cast<IdentifierNode*>(classId->Clone(cloneContext)));
+            CloneContent(clone, cloneContext);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.Write(classId.Get()));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto identifierNodeResult = reader.ReadIdentifierNode();
+            if (identifierNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(identifierNodeResult.GetErrorId()));
+            }
+            classId.Reset(identifierNodeResult.Value());
+            return Result<bool>(true);
+        }
+        private UniquePtr<IdentifierNode> classId;
+    }
+
+    public class MemberFunctionNode : FunctionNode
+    {
+        public MemberFunctionNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.memberFunctionNode, span_, fileIndex_)
+        {
+        }
+        public MemberFunctionNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, Node* returnTypeExpr_,
+            const ustring& groupId_, AttributesNode* attributes_) :
+            base(NodeType.memberFunctionNode, span_, fileIndex_, specifiers_, returnTypeExpr_, groupId_, attributes_)
+        {
+        }
+        public bool IsConst() const
+        {
+            return (GetSpecifiers() & Specifiers.const_) != Specifiers.none;
+        }
+        public void SetConst()
+        {
+            SetSpecifiers(GetSpecifiers() | Specifiers.const_);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            MemberFunctionNode* clone = new MemberFunctionNode(GetSpan(), FileIndex());
+            CloneContent(clone, cloneContext);
+            if (IsConst())
+            {
+                clone->SetConst();
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ConversionFunctionNode : FunctionNode
+    {
+        public ConversionFunctionNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.conversionFunctionNode, span_, fileIndex_)
+        {
+        }
+        public ConversionFunctionNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, Node* returnTypeExpr_, AttributesNode* attributes_) :
+            base(NodeType.conversionFunctionNode, span_, fileIndex_, specifiers_, returnTypeExpr_, u"@operator_conv", attributes_)
+        {
+        }
+        public bool IsConst() const
+        {
+            return (GetSpecifiers() & Specifiers.const_) != Specifiers.none;
+        }
+        public void SetConst()
+        {
+            SetSpecifiers(GetSpecifiers() | Specifiers.const_);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConversionFunctionNode* clone = new ConversionFunctionNode(GetSpan(), FileIndex());
+            CloneContent(clone, cloneContext);
+            if (IsConst())
+            {
+                clone->SetConst();
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class MemberVariableNode : Node
+    {
+        public MemberVariableNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.memberVariableNode, span_, fileIndex_), specifiers()
+        {
+        }
+        public MemberVariableNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, Node* typeExpr_,
+            IdentifierNode* id_, AttributesNode* attributes_) :
+            base(NodeType.memberVariableNode, span_, fileIndex_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), attributes(attributes_)
+        {
+            typeExpr->SetParent(this);
+            id->SetParent(this);
+        }
+        public inline Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public inline IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public inline AttributesNode* GetAttributes() const
+        {
+            return attributes.Get();
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            AttributesNode* clonedAttributes = null;
+            if (!attributes.IsNull())
+            {
+                clonedAttributes = cast<AttributesNode*>(attributes->Clone(cloneContext));
+            }
+            MemberVariableNode* clone = new MemberVariableNode(GetSpan(), FileIndex(), specifiers, typeExpr->Clone(cloneContext),
+                cast<IdentifierNode*>(id->Clone(cloneContext)), clonedAttributes);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasAttributes = !attributes.IsNull();
+            result = writer.GetBinaryWriter().Write(hasAttributes);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasAttributes)
+            {
+                result = attributes->Write(writer);
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(id.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto hasAttributesResult = reader.GetBinaryReader().ReadBool();
+            if (hasAttributesResult.Error())
+            {
+                return Result<bool>(ErrorId(hasAttributesResult.GetErrorId()));
+            }
+            bool hasAttributes = hasAttributesResult.Value();
+            if (hasAttributes)
+            {
+                attributes.Reset(new AttributesNode());
+                result = attributes->Read(reader);
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            auto identifierNodeResult = reader.ReadIdentifierNode();
+            if (identifierNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(identifierNodeResult.GetErrorId()));
+            }
+            id.Reset(identifierNodeResult.Value());
+            id->SetParent(this);
+            return Result<bool>(true);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<AttributesNode> attributes;
+    }
+
+} // namespace cm.ast

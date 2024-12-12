@@ -1,0 +1,328 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public enum NsFlags : sbyte
+    {
+        none = 0, isUnnamedNs = 1 << 0, hasUnnamedNs = 1 << 1
+    }
+
+    public inline constexpr NsFlags operator|(NsFlags left, NsFlags right)
+    {
+        return cast<NsFlags>(cast<sbyte>(left) | cast<sbyte>(right));
+    }
+
+    public inline constexpr NsFlags operator&(NsFlags left, NsFlags right)
+    {
+        return cast<NsFlags>(cast<sbyte>(left) & cast<sbyte>(right));
+    }
+
+    public class NamespaceNode : Node
+    {
+        public NamespaceNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.namespaceNode, span_, fileIndex_), id(), flags()
+        {
+        }
+        public NamespaceNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* id_) : base(NodeType.namespaceNode, span_, fileIndex_), id(id_), flags()
+        {
+            if (id.IsNull())
+            {
+                SetUnnamedNs();
+                System.Security.Sha1 sha1;
+                Uuid randomUuid = Uuid.Random();
+                for (byte x : randomUuid)
+                {
+                    sha1.Process(x);
+                }
+                auto digestResult = sha1.GetDigest();
+                if (digestResult.Error())
+                {
+                    string errorMessage = digestResult.GetErrorMessage();
+                    Panic("could not compute SHA-1 digest: " + errorMessage);
+                }
+                auto utf32Result = ToUtf32(digestResult.Value());
+                if (utf32Result.Error())
+                {
+                    string errorMessage = utf32Result.GetErrorMessage();
+                    Panic("could not convert to UTF-32: " + errorMessage);
+                }
+                id.Reset(new IdentifierNode(span_, fileIndex_, u"unnamed_ns_" + utf32Result.Value()));
+            }
+            id->SetParent(this);
+        }
+        public NodeList<Node>& Members()
+        {
+            return members;
+        }
+        public const NodeList<Node>& Members() const
+        {
+            return members;
+        }
+        public bool IsUnnamedNs() const
+        {
+            return (flags & NsFlags.isUnnamedNs) != NsFlags.none;
+        }
+        public void SetUnnamedNs()
+        {
+            flags = flags | NsFlags.isUnnamedNs;
+        }
+        public bool HasUnnamedNs() const
+        {
+            return (flags & NsFlags.hasUnnamedNs) != NsFlags.none;
+        }
+        public void SetHasUnnamedNs()
+        {
+            flags = flags | NsFlags.hasUnnamedNs;
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public void AddMember(Node* member)
+        {
+            member->SetParent(this);
+            members.Add(member);
+            if (member->GetNodeType() == NodeType.namespaceNode)
+            {
+                NamespaceNode* ns = cast<NamespaceNode*>(member);
+                if (ns->IsUnnamedNs() || ns->HasUnnamedNs())
+                {
+                    SetHasUnnamedNs();
+                }
+            }
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.GetBinaryWriter().Write(cast<sbyte>(flags));
+            if (result.Error())
+            {
+                return result;
+            }
+            return members.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            auto flagsResult = reader.GetBinaryReader().ReadSByte();
+            if (flagsResult.Error())
+            {
+                return Result<bool>(ErrorId(flagsResult.GetErrorId()));
+            }
+            flags = cast<NsFlags>(flagsResult.Value());
+            result = members.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            members.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            NamespaceNode* clone = new NamespaceNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int n = members.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                Node* member = members[i];
+                if (cloneContext.MakeTestUnits() && member->GetNodeType() == NodeType.functionNode &&
+                    (cast<FunctionNode*>(member)->GetSpecifiers() & Specifiers.unit_test_) != Specifiers.none)
+                {
+                    FunctionNode* unitTestFunction = cast<FunctionNode*>(member->Clone(cloneContext));
+                    unitTestFunction->SetParent(this);
+                    cloneContext.AddUnitTestFunction(unitTestFunction);
+                }
+                else
+                {
+                    clone->AddMember(member->Clone(cloneContext));
+                }
+            }
+            if (moduleId != Uuid())
+            {
+                clone->SetModuleId(moduleId);
+            }
+            return clone;
+        }
+        public void SetModuleId(const Uuid& moduleId_)
+        {
+            moduleId = moduleId_;
+        }
+        public override const Uuid& ModuleId() const
+        {
+            if (moduleId != Uuid())
+            {
+                return moduleId;
+            }
+            else
+            {
+                return base->ModuleId();
+            }
+        }
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<Node> members;
+        private NsFlags flags;
+        private Uuid moduleId;
+    }
+
+    public class AliasNode : Node
+    {
+        public AliasNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.aliasNode, span_, fileIndex_), specifiers(), id(), typeExpr()
+        {
+        }
+        public AliasNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, IdentifierNode* id_, Node* typeExpr_) :
+            base(NodeType.aliasNode, span_, fileIndex_), specifiers(specifiers_), id(id_), typeExpr(typeExpr_)
+        {
+            id->SetParent(this);
+            typeExpr->SetParent(this);
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new AliasNode(GetSpan(), FileIndex(), specifiers, cast<IdentifierNode*>(id->Clone(cloneContext)), typeExpr->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(typeExpr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            return Result<bool>(true);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<Node> typeExpr;
+    }
+
+    public class NamespaceImportNode : Node
+    {
+        public NamespaceImportNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.namespaceImportNode, span_, fileIndex_), ns()
+        {
+        }
+        public NamespaceImportNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* ns_) : base(NodeType.namespaceImportNode, span_, fileIndex_), ns(ns_)
+        {
+            ns->SetParent(this);
+        }
+        public IdentifierNode* Ns() const
+        {
+            return ns.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new NamespaceImportNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(ns->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(ns.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto nsResult = reader.ReadIdentifierNode();
+            if (nsResult.Error())
+            {
+                return Result<bool>(ErrorId(nsResult.GetErrorId()));
+            }
+            ns.Reset(nsResult.Value());
+            ns->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<IdentifierNode> ns;
+    }
+
+} // namespace cm.ast

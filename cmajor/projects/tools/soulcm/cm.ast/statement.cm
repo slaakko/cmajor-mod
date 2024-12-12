@@ -1,0 +1,2624 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class LabelNode : Node
+    {
+        public LabelNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.labelNode, span_, fileIndex_)
+        {
+        }
+        public LabelNode(const System.Lex.Span& span_, int fileIndex_, const ustring& label_) : base(NodeType.labelNode, span_, fileIndex_), label(label_)
+        {
+        }
+        public const ustring& Label() const
+        {
+            return label;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new LabelNode(GetSpan(), FileIndex(), label);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(label);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto labelResult = reader.GetBinaryReader().ReadUString();
+            if (labelResult.Error())
+            {
+                return Result<bool>(ErrorId(labelResult.GetErrorId()));
+            }
+            label = labelResult.Value();
+            return Result<bool>(true);
+        }
+        private ustring label;
+    }
+
+    public abstract class StatementNode : Node
+    {
+        public StatementNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) : base(nodeType_, span_, fileIndex_)
+        {
+        }
+        public override bool IsStatementNode() const
+        {
+            return true;
+        }
+        public virtual bool IsBreakEnclosingStatementNode() const
+        {
+            return false;
+        }
+        public virtual bool IsContinueEnclosingStatementNode() const
+        {
+            return false;
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            return base->Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            return base->Read(reader);
+        }
+    }
+
+    public class LabeledStatementNode : StatementNode
+    {
+        public LabeledStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.labeledStatementNode, span_, fileIndex_)
+        {
+        }
+        public LabeledStatementNode(const System.Lex.Span& span_, int fileIndex_, LabelNode* label_, StatementNode* stmt_) :
+            base(NodeType.labeledStatementNode, span_, fileIndex_), labelNode(label_), stmt(stmt_)
+        {
+            labelNode->SetParent(this);
+            stmt->SetParent(this);
+        }
+        public const LabelNode* Label() const
+        {
+            return labelNode.Get();
+        }
+        public LabelNode* Label()
+        {
+            return labelNode.Get();
+        }
+        public StatementNode* Stmt()
+        {
+            return stmt.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            LabeledStatementNode* clone = new LabeledStatementNode(GetSpan(), FileIndex(),
+                cast<LabelNode*>(labelNode->Clone(cloneContext)), cast<StatementNode*>(stmt->Clone(cloneContext)));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(labelNode.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(stmt.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto labelNodeResult = reader.ReadLabelNode();
+            if (labelNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(labelNodeResult.GetErrorId()));
+            }
+            labelNode.Reset(labelNodeResult.Value());
+            labelNode->SetParent(this);
+            auto statementResult = reader.ReadStatementNode();
+            if (statementResult.Error())
+            {
+                return Result<bool>(ErrorId(statementResult.GetErrorId()));
+            }
+            stmt.Reset(statementResult.Value());
+            stmt->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<LabelNode> labelNode;
+        private UniquePtr<StatementNode> stmt;
+    }
+
+    public class CompoundStatementNode : StatementNode
+    {
+        public CompoundStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.compoundStatementNode, span_, fileIndex_), statements(), endSpan()
+        {
+        }
+        public NodeList<StatementNode>& Statements()
+        {
+            return statements;
+        }
+        public void SetEndSpan(const System.Lex.Span& endSpan_)
+        {
+            endSpan = endSpan_;
+        }
+        public const System.Lex.Span& EndSpan() const
+        {
+            return endSpan;
+        }
+        public void AddStatement(StatementNode* statement)
+        {
+            statement->SetParent(this);
+            statements.Add(statement);
+        }
+        public void InsertFront(StatementNode* statement)
+        {
+            statements.Insert(0, statement);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            CompoundStatementNode* clone = new CompoundStatementNode(GetSpan(), FileIndex());
+            int n = statements.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                StatementNode* statement = statements[i];
+                clone->AddStatement(cast<StatementNode*>(statement->Clone(cloneContext)));
+            }
+            clone->endSpan = endSpan;
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = statements.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(endSpan);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = statements.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            statements.SetParent(this);
+            auto endSpanResult = reader.ReadSpan();
+            if (endSpanResult.Error())
+            {
+                return Result<bool>(ErrorId(endSpanResult.GetErrorId()));
+            }
+            endSpan = endSpanResult.Value();
+            return Result<bool>(true);
+        }
+        private NodeList<StatementNode> statements;
+        private System.Lex.Span endSpan;
+    }
+
+    public class ReturnStatementNode : StatementNode
+    {
+        public ReturnStatementNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.returnStatementNode, span_, fileIndex_), expression()
+        {
+        }
+        public ReturnStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) :
+            base(NodeType.returnStatementNode, span_, fileIndex_), expression(expression_)
+        {
+            if (!expression.IsNull())
+            {
+                expression->SetParent(this);
+            }
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public void SetExpression(Node* expresssion_)
+        {
+            expression.Reset(expresssion_);
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            Node* clonedExpression = null;
+            if (!expression.IsNull())
+            {
+                clonedExpression = expression->Clone(cloneContext);
+            }
+            ReturnStatementNode* clone = new ReturnStatementNode(GetSpan(), FileIndex(), clonedExpression);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasExpression = !expression.IsNull();
+            result = writer.GetBinaryWriter().Write(hasExpression);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasExpression)
+            {
+                result = writer.Write(expression.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto hasExpressionResult = reader.GetBinaryReader().ReadBool();
+            if (hasExpressionResult.Error())
+            {
+                return Result<bool>(ErrorId(hasExpressionResult.GetErrorId()));
+            }
+            bool hasExpression = hasExpressionResult.Value();
+            if (hasExpression)
+            {
+                auto expressionResult = reader.ReadNode();
+                if (expressionResult.Error())
+                {
+                    return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+                }
+                expression.Reset(expressionResult.Value());
+                expression->SetParent(this);
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class IfStatementNode : StatementNode
+    {
+        public IfStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.ifStatementNode, span_, fileIndex_), condition(), thenS(), elseS()
+        {
+        }
+        public IfStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* condition_, StatementNode* thenS_, StatementNode* elseS_) :
+            base(NodeType.ifStatementNode, span_, fileIndex_), condition(condition_), thenS(thenS_), elseS(elseS_)
+        {
+            condition->SetParent(this);
+            thenS->SetParent(this);
+            if (!elseS.IsNull())
+            {
+                elseS->SetParent(this);
+            }
+        }
+        public const Node* Condition() const
+        {
+            return condition.Get();
+        }
+        public Node* Condition()
+        {
+            return condition.Get();
+        }
+        public const StatementNode* ThenS() const
+        {
+            return thenS.Get();
+        }
+        public StatementNode* ThenS()
+        {
+            return thenS.Get();
+        }
+        public const StatementNode* ElseS() const
+        {
+            return elseS.Get();
+        }
+        public StatementNode* ElseS()
+        {
+            return elseS.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            StatementNode* clonedElseS = null;
+            if (!elseS.IsNull())
+            {
+                clonedElseS = cast<StatementNode*>(elseS->Clone(cloneContext));
+            }
+            IfStatementNode* clone = new IfStatementNode(GetSpan(), FileIndex(),
+                condition->Clone(cloneContext), cast<StatementNode*>(thenS->Clone(cloneContext)), clonedElseS);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(condition.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(thenS.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasElseS = !elseS.IsNull();
+            result = writer.GetBinaryWriter().Write(hasElseS);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasElseS)
+            {
+                result = writer.Write(elseS.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto conditionResult = reader.ReadNode();
+            if (conditionResult.Error())
+            {
+                return Result<bool>(ErrorId(conditionResult.GetErrorId()));
+            }
+            condition.Reset(conditionResult.Value());
+            condition->SetParent(this);
+            auto thenSResult = reader.ReadStatementNode();
+            if (thenSResult.Error())
+            {
+                return Result<bool>(ErrorId(thenSResult.GetErrorId()));
+            }
+            thenS.Reset(thenSResult.Value());
+            thenS->SetParent(this);
+            auto hasElseSResult = reader.GetBinaryReader().ReadBool();
+            if (hasElseSResult.Error())
+            {
+                return Result<bool>(ErrorId(hasElseSResult.GetErrorId()));
+            }
+            bool hasElseS = hasElseSResult.Value();
+            if (hasElseS)
+            {
+                auto elseSResult = reader.ReadStatementNode();
+                if (elseSResult.Error())
+                {
+                    return Result<bool>(ErrorId(elseSResult.GetErrorId()));
+                }
+                elseS.Reset(elseSResult.Value());
+                elseS->SetParent(this);
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> condition;
+        private UniquePtr<StatementNode> thenS;
+        private UniquePtr<StatementNode> elseS;
+    }
+
+    public class WhileStatementNode : StatementNode
+    {
+        public WhileStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.whileStatementNode, span_, fileIndex_), condition(), statement()
+        {
+        }
+        public WhileStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* condition_, StatementNode* statement_) :
+            base(NodeType.whileStatementNode, span_, fileIndex_), condition(condition_), statement(statement_)
+        {
+            condition->SetParent(this);
+            statement->SetParent(this);
+        }
+        public const Node* Condition() const
+        {
+            return condition.Get();
+        }
+        public Node* Condition()
+        {
+            return condition.Get();
+        }
+        public const StatementNode* Statement() const
+        {
+            return statement.Get();
+        }
+        public StatementNode* Statement()
+        {
+            return statement.Get();
+        }
+        public override bool IsBreakEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override bool IsContinueEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            WhileStatementNode* clone = new WhileStatementNode(GetSpan(), FileIndex(),
+                condition->Clone(cloneContext), cast<StatementNode*>(statement->Clone(cloneContext)));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(condition.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(statement.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto conditionResult = reader.ReadNode();
+            if (conditionResult.Error())
+            {
+                return Result<bool>(ErrorId(conditionResult.GetErrorId()));
+            }
+            condition.Reset(conditionResult.Value());
+            condition->SetParent(this);
+            auto statementResult = reader.ReadStatementNode();
+            if (statementResult.Error())
+            {
+                return Result<bool>(ErrorId(statementResult.GetErrorId()));
+            }
+            statement.Reset(statementResult.Value());
+            statement->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> condition;
+        private UniquePtr<StatementNode> statement;
+    }
+
+    public class DoStatementNode : StatementNode
+    {
+        public DoStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.doStatementNode, span_, fileIndex_), statement(), condition()
+        {
+        }
+        public DoStatementNode(const System.Lex.Span& span_, int fileIndex_, StatementNode* statement_, Node* condition_) :
+            base(NodeType.doStatementNode, span_, fileIndex_), statement(statement_), condition(condition_)
+        {
+            statement->SetParent(this);
+            condition->SetParent(this);
+        }
+        public const StatementNode* Statement() const
+        {
+            return statement.Get();
+        }
+        public StatementNode* Statement()
+        {
+            return statement.Get();
+        }
+        public const Node* Condition() const
+        {
+            return condition.Get();
+        }
+        public Node* Condition()
+        {
+            return condition.Get();
+        }
+        public override bool IsBreakEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override bool IsContinueEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            DoStatementNode* clone = new DoStatementNode(GetSpan(), FileIndex(), cast<StatementNode*>(statement->Clone(cloneContext)), condition->Clone(cloneContext));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(statement.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(condition.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto statementResult = reader.ReadStatementNode();
+            if (statementResult.Error())
+            {
+                return Result<bool>(ErrorId(statementResult.GetErrorId()));
+            }
+            statement.Reset(statementResult.Value());
+            statement->SetParent(this);
+            auto conditionResult = reader.ReadNode();
+            if (conditionResult.Error())
+            {
+                return Result<bool>(ErrorId(conditionResult.GetErrorId()));
+            }
+            condition.Reset(conditionResult.Value());
+            condition->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<StatementNode> statement;
+        private UniquePtr<Node> condition;
+    }
+
+    public class ForStatementNode : StatementNode
+    {
+        public ForStatementNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.forStatementNode, span_, fileIndex_), initS(), condition(), loopS(), actionS()
+        {
+        }
+        public ForStatementNode(const System.Lex.Span& span_, int fileIndex_, StatementNode* initS_, Node* condition_, StatementNode* loopS_, StatementNode* actionS_) :
+            base(NodeType.forStatementNode, span_, fileIndex_), initS(initS_), condition(condition_), loopS(loopS_), actionS(actionS_)
+        {
+            initS->SetParent(this);
+            if (!condition.IsNull())
+            {
+                condition->SetParent(this);
+            }
+            loopS->SetParent(this);
+            actionS->SetParent(this);
+        }
+        public const StatementNode* InitS() const
+        {
+            return initS.Get();
+        }
+        public StatementNode* InitS()
+        {
+            return initS.Get();
+        }
+        public const Node* Condition() const
+        {
+            return condition.Get();
+        }
+        public Node* Condition()
+        {
+            return condition.Get();
+        }
+        public const StatementNode* LoopS() const
+        {
+            return loopS.Get();
+        }
+        public StatementNode* LoopS()
+        {
+            return loopS.Get();
+        }
+        public const StatementNode* ActionS() const
+        {
+            return actionS.Get();
+        }
+        public StatementNode* ActionS()
+        {
+            return actionS.Get();
+        }
+        public override bool IsBreakEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override bool IsContinueEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            Node* clonedCondition = null;
+            if (!condition.IsNull())
+            {
+                clonedCondition = condition->Clone(cloneContext);
+            }
+            ForStatementNode* clone = new ForStatementNode(GetSpan(), FileIndex(), cast<StatementNode*>(initS->Clone(cloneContext)),
+                clonedCondition, cast<StatementNode*>(loopS->Clone(cloneContext)), cast<StatementNode*>(actionS->Clone(cloneContext)));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(initS.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasCondition = !condition.IsNull();
+            result = writer.GetBinaryWriter().Write(hasCondition);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasCondition)
+            {
+                result = writer.Write(condition.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            result = writer.Write(loopS.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(actionS.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto initSResult = reader.ReadStatementNode();
+            if (initSResult.Error())
+            {
+                return Result<bool>(ErrorId(initSResult.GetErrorId()));
+            }
+            initS.Reset(initSResult.Value());
+            initS->SetParent(this);
+            auto hasConditionResult = reader.GetBinaryReader().ReadBool();
+            if (hasConditionResult.Error())
+            {
+                return Result<bool>(ErrorId(hasConditionResult.GetErrorId()));
+            }
+            bool hasCondition = hasConditionResult.Value();
+            if (hasCondition)
+            {
+                auto conditionResult = reader.ReadNode();
+                if (conditionResult.Error())
+                {
+                    return Result<bool>(ErrorId(conditionResult.GetErrorId()));
+                }
+                condition.Reset(conditionResult.Value());
+                condition->SetParent(this);
+            }
+            auto loopSResult = reader.ReadStatementNode();
+            if (loopSResult.Error())
+            {
+                return Result<bool>(ErrorId(loopSResult.GetErrorId()));
+            }
+            loopS.Reset(loopSResult.Value());
+            loopS->SetParent(this);
+            auto actionSResult = reader.ReadStatementNode();
+            if (actionSResult.Error())
+            {
+                return Result<bool>(ErrorId(actionSResult.GetErrorId()));
+            }
+            actionS.Reset(actionSResult.Value());
+            actionS->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<StatementNode> initS;
+        private UniquePtr<Node> condition;
+        private UniquePtr<StatementNode> loopS;
+        private UniquePtr<StatementNode> actionS;
+    }
+
+    public class BreakStatementNode : StatementNode
+    {
+        public BreakStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.breakStatementNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            BreakStatementNode* clone = new BreakStatementNode(GetSpan(), FileIndex());
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ContinueStatementNode : StatementNode
+    {
+        public ContinueStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.continueStatementNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ContinueStatementNode* clone = new ContinueStatementNode(GetSpan(), FileIndex());
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class GotoStatementNode : StatementNode
+    {
+        public GotoStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.gotoStatementNode, span_, fileIndex_)
+        {
+        }
+        public GotoStatementNode(const System.Lex.Span& span_, int fileIndex_, const ustring& target_) :
+            base(NodeType.gotoStatementNode, span_, fileIndex_), target(target_)
+        {
+        }
+        public const ustring& Target() const
+        {
+            return target;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            GotoStatementNode* clone = new GotoStatementNode(GetSpan(), FileIndex(), target);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(target);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto targetResult = reader.GetBinaryReader().ReadUString();
+            if (targetResult.Error())
+            {
+                return Result<bool>(ErrorId(targetResult.GetErrorId()));
+            }
+            target = targetResult.Value();
+            return Result<bool>(true);
+        }
+        private ustring target;
+    }
+
+    public class ConstructionStatementNode : StatementNode
+    {
+        public ConstructionStatementNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.constructionStatementNode, span_, fileIndex_), typeExpr(), id(), arguments(), assignment(false), empty(false)
+        {
+        }
+        public ConstructionStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* typeExpr_, IdentifierNode* id_) :
+            base(NodeType.constructionStatementNode, span_, fileIndex_), typeExpr(typeExpr_), id(id_), arguments(), assignment(false), empty(false)
+        {
+            typeExpr->SetParent(this);
+            id->SetParent(this);
+        }
+        public const Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public Node* TypeExpr()
+        {
+            return typeExpr.Get();
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public const NodeList<Node>& Arguments() const
+        {
+            return arguments;
+        }
+        public void SetAssignment()
+        {
+            assignment = true;
+        }
+        public bool Assignment() const
+        {
+            return assignment;
+        }
+        public void SetEmpty()
+        {
+            empty = true;
+        }
+        public bool Empty() const
+        {
+            return empty;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConstructionStatementNode* clone = new ConstructionStatementNode(GetSpan(), FileIndex(),
+                typeExpr->Clone(cloneContext), cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int n = arguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddArgument(arguments[i]->Clone(cloneContext));
+            }
+            if (assignment) clone->SetAssignment();
+            if (empty) clone->SetEmpty();
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = arguments.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.GetBinaryWriter().Write(assignment);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(empty);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            result = arguments.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            arguments.SetParent(this);
+            auto assignmentResult = reader.GetBinaryReader().ReadBool();
+            if (assignmentResult.Error())
+            {
+                return Result<bool>(ErrorId(assignmentResult.GetErrorId()));
+            }
+            assignment = assignmentResult.Value();
+            auto emptyResult = reader.GetBinaryReader().ReadBool();
+            if (emptyResult.Error())
+            {
+                return Result<bool>(ErrorId(emptyResult.GetErrorId()));
+            }
+            empty = emptyResult.Value();
+            return Result<bool>(true);
+        }
+        public override void AddArgument(Node* argument)
+        {
+            argument->SetParent(this);
+            arguments.Add(argument);
+        }
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<Node> arguments;
+        private bool assignment;
+        private bool empty;
+    }
+
+    public class DeleteStatementNode : StatementNode
+    {
+        public DeleteStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.deleteStatementNode, span_, fileIndex_), expression()
+        {
+        }
+        public DeleteStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) :
+            base(NodeType.deleteStatementNode, span_, fileIndex_), expression(expression_)
+        {
+            expression->SetParent(this);
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            DeleteStatementNode* clone = new DeleteStatementNode(GetSpan(), FileIndex(), expression->Clone(cloneContext));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expression.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto expressionResult = reader.ReadNode();
+            if (expressionResult.Error())
+            {
+                return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+            }
+            expression.Reset(expressionResult.Value());
+            expression->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class DestroyStatementNode : StatementNode
+    {
+        public DestroyStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.destroyStatementNode, span_, fileIndex_), expression()
+        {
+        }
+        public DestroyStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) :
+            base(NodeType.destroyStatementNode, span_, fileIndex_), expression(expression_)
+        {
+            expression->SetParent(this);
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            DestroyStatementNode* clone = new DestroyStatementNode(GetSpan(), FileIndex(), expression->Clone(cloneContext));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expression.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto expressionResult = reader.ReadNode();
+            if (expressionResult.Error())
+            {
+                return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+            }
+            expression.Reset(expressionResult.Value());
+            expression->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class AssignmentStatementNode : StatementNode
+    {
+        public AssignmentStatementNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.assignmentStatementNode, span_, fileIndex_), targetExpr(), sourceExpr()
+        {
+        }
+        public AssignmentStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* targetExpr_, Node* sourceExpr_) :
+            base(NodeType.assignmentStatementNode, span_, fileIndex_), targetExpr(targetExpr_), sourceExpr(sourceExpr_)
+        {
+            targetExpr->SetParent(this);
+            sourceExpr->SetParent(this);
+        }
+        public const Node* TargetExpr() const
+        {
+            return targetExpr.Get();
+        }
+        public Node* TargetExpr()
+        {
+            return targetExpr.Get();
+        }
+        public const Node* SourceExpr() const
+        {
+            return sourceExpr.Get();
+        }
+        public Node* SourceExpr()
+        {
+            return sourceExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            AssignmentStatementNode* clone = new AssignmentStatementNode(GetSpan(), FileIndex(), targetExpr->Clone(cloneContext), sourceExpr->Clone(cloneContext));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(targetExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(sourceExpr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto targetExprResult = reader.ReadNode();
+            if (targetExprResult.Error())
+            {
+                return Result<bool>(ErrorId(targetExprResult.GetErrorId()));
+            }
+            targetExpr.Reset(targetExprResult.Value());
+            targetExpr->SetParent(this);
+            auto sourceExprResult = reader.ReadNode();
+            if (sourceExprResult.Error())
+            {
+                return Result<bool>(ErrorId(sourceExprResult.GetErrorId()));
+            }
+            sourceExpr.Reset(sourceExprResult.Value());
+            sourceExpr->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> targetExpr;
+        private UniquePtr<Node> sourceExpr;
+    }
+
+    public class ExpressionStatementNode : StatementNode
+    {
+        public ExpressionStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.expressionStatementNode, span_, fileIndex_), expression()
+        {
+        }
+        public ExpressionStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) :
+            base(NodeType.expressionStatementNode, span_, fileIndex_), expression(expression_)
+        {
+            expression->SetParent(this);
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ExpressionStatementNode* clone = new ExpressionStatementNode(GetSpan(), FileIndex(), expression->Clone(cloneContext));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expression.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto expressionResult = reader.ReadNode();
+            if (expressionResult.Error())
+            {
+                return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+            }
+            expression.Reset(expressionResult.Value());
+            expression->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class EmptyStatementNode : StatementNode
+    {
+        public EmptyStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.emptyStatementNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            EmptyStatementNode* clone = new EmptyStatementNode(GetSpan(), FileIndex());
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class RangeForStatementNode : StatementNode
+    {
+        public RangeForStatementNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.rangeForStatementNode, span_, fileIndex_), typeExpr(), id(), container(), action()
+        {
+        }
+        public RangeForStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* typeExpr_, IdentifierNode* id_, Node* container_, StatementNode* action_) :
+            base(NodeType.rangeForStatementNode, span_, fileIndex_), typeExpr(typeExpr_), id(id_), container(container_), action(action_)
+        {
+            typeExpr->SetParent(this);
+            id->SetParent(this);
+            container->SetParent(this);
+            action->SetParent(this);
+        }
+        public const Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public Node* TypeExpr()
+        {
+            return typeExpr.Get();
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public const Node* Container() const
+        {
+            return container.Get();
+        }
+        public Node* Container()
+        {
+            return container.Get();
+        }
+        public const StatementNode* Action() const
+        {
+            return action.Get();
+        }
+        public StatementNode* Action()
+        {
+            return action.Get();
+        }
+        public override bool IsBreakEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override bool IsContinueEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            RangeForStatementNode* clone = new RangeForStatementNode(GetSpan(), FileIndex(), typeExpr->Clone(cloneContext),
+                cast<IdentifierNode*>(id->Clone(cloneContext)), container->Clone(cloneContext), cast<StatementNode*>(action->Clone(cloneContext)));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(container.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(action.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            auto containerResult = reader.ReadNode();
+            if (containerResult.Error())
+            {
+                return Result<bool>(ErrorId(containerResult.GetErrorId()));
+            }
+            container.Reset(containerResult.Value());
+            container->SetParent(this);
+            auto actionResult = reader.ReadStatementNode();
+            if (actionResult.Error())
+            {
+                return Result<bool>(ErrorId(actionResult.GetErrorId()));
+            }
+            action.Reset(actionResult.Value());
+            action->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<Node> container;
+        private UniquePtr<StatementNode> action;
+    }
+
+    public class SwitchStatementNode : StatementNode
+    {
+        public SwitchStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.switchStatementNode, span_, fileIndex_), condition(), cases(), defaultS()
+        {
+        }
+        public SwitchStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* condition_) : base(NodeType.switchStatementNode, span_, fileIndex_),
+            condition(condition_), cases(), defaultS()
+        {
+            condition->SetParent(this);
+        }
+        public const Node* Condition() const
+        {
+            return condition.Get();
+        }
+        public Node* Condition()
+        {
+            return condition.Get();
+        }
+        public const NodeList<CaseStatementNode>& Cases() const
+        {
+            return cases;
+        }
+        public const DefaultStatementNode* Default() const
+        {
+            return defaultS.Get();
+        }
+        public DefaultStatementNode* Default()
+        {
+            return defaultS.Get();
+        }
+        public void AddCase(CaseStatementNode* caseS)
+        {
+            caseS->SetParent(this);
+            cases.Add(caseS);
+        }
+        public void SetDefault(DefaultStatementNode* defaultS_)
+        {
+            defaultS.Reset(defaultS_);
+            defaultS->SetParent(this);
+        }
+        public override bool IsBreakEnclosingStatementNode() const
+        {
+            return true;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            SwitchStatementNode* clone = new SwitchStatementNode(GetSpan(), FileIndex(), condition->Clone(cloneContext));
+            int n = cases.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddCase(cast<CaseStatementNode*>(cases[i]->Clone(cloneContext)));
+            }
+            if (!defaultS.IsNull())
+            {
+                clone->SetDefault(cast<DefaultStatementNode*>(defaultS->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(condition.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = cases.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasDefault = !defaultS.IsNull();
+            result = writer.GetBinaryWriter().Write(hasDefault);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasDefault)
+            {
+                result = writer.Write(defaultS.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto conditionResult = reader.ReadNode();
+            if (conditionResult.Error())
+            {
+                return Result<bool>(ErrorId(conditionResult.GetErrorId()));
+            }
+            condition.Reset(conditionResult.Value());
+            condition->SetParent(this);
+            result = cases.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            cases.SetParent(this);
+            auto hasDefaultResult = reader.GetBinaryReader().ReadBool();
+            if (hasDefaultResult.Error())
+            {
+                return Result<bool>(ErrorId(hasDefaultResult.GetErrorId()));
+            }
+            bool hasDefault = hasDefaultResult.Value();
+            if (hasDefault)
+            {
+                auto defaultSResult = reader.ReadDefaultStatementNode();
+                if (defaultSResult.Error())
+                {
+                    return Result<bool>(ErrorId(defaultSResult.GetErrorId()));
+                }
+                defaultS.Reset(defaultSResult.Value());
+                defaultS->SetParent(this);
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> condition;
+        private NodeList<CaseStatementNode> cases;
+        private UniquePtr<DefaultStatementNode> defaultS;
+    }
+
+    public class CaseStatementNode : StatementNode
+    {
+        public CaseStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.caseStatementNode, span_, fileIndex_), caseExprs(), statements()
+        {
+        }
+        public const NodeList<Node>& CaseExprs() const
+        {
+            return caseExprs;
+        }
+        public const NodeList<StatementNode>& Statements() const
+        {
+            return statements;
+        }
+        public void AddCaseExpr(Node* caseExpr)
+        {
+            caseExpr->SetParent(this);
+            caseExprs.Add(caseExpr);
+        }
+        public void AddStatement(StatementNode* statement)
+        {
+            statement->SetParent(this);
+            statements.Add(statement);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            CaseStatementNode* clone = new CaseStatementNode(GetSpan(), FileIndex());
+            int ne = caseExprs.Count();
+            for (int i = 0; i < ne; ++i)
+            {
+                clone->AddCaseExpr(caseExprs[i]->Clone(cloneContext));
+            }
+            int ns = statements.Count();
+            for (int i = 0; i < ns; ++i)
+            {
+                clone->AddStatement(cast<StatementNode*>(statements[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = caseExprs.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = statements.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = caseExprs.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            caseExprs.SetParent(this);
+            result = statements.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            statements.SetParent(this);
+            return Result<bool>(true);
+        }
+        private NodeList<Node> caseExprs;
+        private NodeList<StatementNode> statements;
+    }
+
+    public class DefaultStatementNode : StatementNode
+    {
+        public DefaultStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.defaultStatementNode, span_, fileIndex_), statements()
+        {
+        }
+        public const NodeList<StatementNode>& Statements() const
+        {
+            return statements;
+        }
+        public void AddStatement(StatementNode* statement)
+        {
+            statement->SetParent(this);
+            statements.Add(statement);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            DefaultStatementNode* clone = new DefaultStatementNode(GetSpan(), FileIndex());
+            int n = statements.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddStatement(cast<StatementNode*>(statements[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return statements.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = statements.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            statements.SetParent(this);
+            return Result<bool>(true);
+        }
+        private NodeList<StatementNode> statements;
+    }
+
+    public class GotoCaseStatementNode : StatementNode
+    {
+        public GotoCaseStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.gotoCaseStatementNode, span_, fileIndex_), caseExpr()
+        {
+        }
+        public GotoCaseStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* caseExpr_) :
+            base(NodeType.gotoCaseStatementNode, span_, fileIndex_), caseExpr(caseExpr_)
+        {
+            caseExpr->SetParent(this);
+        }
+        public const Node* CaseExpr() const
+        {
+            return caseExpr.Get();
+        }
+        public Node* CaseExpr()
+        {
+            return caseExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            GotoCaseStatementNode* clone = new GotoCaseStatementNode(GetSpan(), FileIndex(), caseExpr->Clone(cloneContext));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(caseExpr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto caseExprResult = reader.ReadNode();
+            if (caseExprResult.Error())
+            {
+                return Result<bool>(ErrorId(caseExprResult.GetErrorId()));
+            }
+            caseExpr.Reset(caseExprResult.Value());
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> caseExpr;
+    }
+
+    public class GotoDefaultStatementNode : StatementNode
+    {
+        public GotoDefaultStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.gotoDefaultStatementNode, span_, fileIndex_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            GotoDefaultStatementNode* clone = new GotoDefaultStatementNode(GetSpan(), FileIndex());
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ThrowStatementNode : StatementNode
+    {
+        public ThrowStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.throwStatementNode, span_, fileIndex_), expression()
+        {
+        }
+        public ThrowStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) :
+            base(NodeType.throwStatementNode, span_, fileIndex_), expression(expression_)
+        {
+            if (!expression.IsNull())
+            {
+                expression->SetParent(this);
+            }
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            Node* clonedExpression = null;
+            if (!expression.IsNull())
+            {
+                clonedExpression = expression->Clone(cloneContext);
+            }
+            ThrowStatementNode* clone = new ThrowStatementNode(GetSpan(), FileIndex(), clonedExpression);
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasExpression = !expression.IsNull();
+            result = writer.GetBinaryWriter().Write(hasExpression);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasExpression)
+            {
+                result = writer.Write(expression.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto hasExpressionResult = reader.GetBinaryReader().ReadBool();
+            if (hasExpressionResult.Error())
+            {
+                return Result<bool>(ErrorId(hasExpressionResult.GetErrorId()));
+            }
+            bool hasExpression = hasExpressionResult.Value();
+            if (hasExpression)
+            {
+                auto expressionResult = reader.ReadNode();
+                if (expressionResult.Error())
+                {
+                    return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+                }
+                expression.Reset(expressionResult.Value());
+                expression->SetParent(this);
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class TryStatementNode : StatementNode
+    {
+        public TryStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.tryStatementNode, span_, fileIndex_), tryBlock(), catches()
+        {
+        }
+        public TryStatementNode(const System.Lex.Span& span_, int fileIndex_, CompoundStatementNode* tryBlock_) : base(NodeType.tryStatementNode, span_, fileIndex_),
+            tryBlock(tryBlock_), catches()
+        {
+            tryBlock->SetParent(this);
+        }
+        public const CompoundStatementNode* TryBlock() const
+        {
+            return tryBlock.Get();
+        }
+        public CompoundStatementNode* TryBlock()
+        {
+            return tryBlock.Get();
+        }
+        public const NodeList<CatchNode>& Catches() const
+        {
+            return catches;
+        }
+        public void AddCatch(CatchNode* catch_)
+        {
+            catch_->SetParent(this);
+            catches.Add(catch_);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            TryStatementNode* clone = new TryStatementNode(GetSpan(), FileIndex(), cast<CompoundStatementNode*>(tryBlock->Clone(cloneContext)));
+            int n = catches.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddCatch(cast<CatchNode*>(catches[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(tryBlock.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return catches.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto tryBlockResult = reader.ReadCompoundStatementNode();
+            if (tryBlockResult.Error())
+            {
+                return Result<bool>(ErrorId(tryBlockResult.GetErrorId()));
+            }
+            tryBlock.Reset(tryBlockResult.Value());
+            tryBlock->SetParent(this);
+            result = catches.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            catches.SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<CompoundStatementNode> tryBlock;
+        private NodeList<CatchNode> catches;
+    }
+
+    public class CatchNode : Node
+    {
+        public CatchNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.catchNode, span_, fileIndex_), typeExpr(), id(), catchBlock()
+        {
+        }
+        public CatchNode(const System.Lex.Span& span_, int fileIndex_, Node* typeExpr_, IdentifierNode* id_, CompoundStatementNode* catchBlock_) :
+            base(NodeType.catchNode, span_, fileIndex_), typeExpr(typeExpr_), id(id_), catchBlock(catchBlock_)
+        {
+            typeExpr->SetParent(this);
+            if (!id.IsNull())
+            {
+                id->SetParent(this);
+            }
+            catchBlock->SetParent(this);
+        }
+        public const Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public Node* TypeExpr()
+        {
+            return typeExpr.Get();
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public const CompoundStatementNode* CatchBlock() const
+        {
+            return catchBlock.Get();
+        }
+        public CompoundStatementNode* CatchBlock()
+        {
+            return catchBlock.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            IdentifierNode* clonedId = null;
+            if (!id.IsNull())
+            {
+                clonedId = cast<IdentifierNode*>(id->Clone(cloneContext));
+            }
+            CatchNode* clone = new CatchNode(GetSpan(), FileIndex(),
+                typeExpr->Clone(cloneContext), clonedId, cast<CompoundStatementNode*>(catchBlock->Clone(cloneContext)));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasId = !id.IsNull();
+            result = writer.GetBinaryWriter().Write(hasId);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasId)
+            {
+                result = writer.Write(id.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return writer.Write(catchBlock.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            auto hasIdResult = reader.GetBinaryReader().ReadBool();
+            if (hasIdResult.Error())
+            {
+                return Result<bool>(ErrorId(hasIdResult.GetErrorId()));
+            }
+            bool hasId = hasIdResult.Value();
+            if (hasId)
+            {
+                auto idResult = reader.ReadIdentifierNode();
+                if (idResult.Error())
+                {
+                    return Result<bool>(ErrorId(idResult.GetErrorId()));
+                }
+                id.Reset(idResult.Value());
+                id->SetParent(this);
+            }
+            auto catchBlockResult = reader.ReadCompoundStatementNode();
+            if (catchBlockResult.Error())
+            {
+                return Result<bool>(ErrorId(catchBlockResult.GetErrorId()));
+            }
+            catchBlock.Reset(catchBlockResult.Value());
+            catchBlock->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<CompoundStatementNode> catchBlock;
+    }
+
+    public class AssertStatementNode : StatementNode
+    {
+        public AssertStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.assertStatementNode, span_, fileIndex_), assertExpr()
+        {
+        }
+        public AssertStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* assertExpr_) :
+            base(NodeType.assertStatementNode, span_, fileIndex_), assertExpr(assertExpr_)
+        {
+            assertExpr->SetParent(this);
+        }
+        public const Node* AssertExpr() const
+        {
+            return assertExpr.Get();
+        }
+        public Node* AssertExpr()
+        {
+            return assertExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            AssertStatementNode* clone = new AssertStatementNode(GetSpan(), FileIndex(), assertExpr->Clone(cloneContext));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(assertExpr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto assertExprResult = reader.ReadNode();
+            if (assertExprResult.Error())
+            {
+                return Result<bool>(ErrorId(assertExprResult.GetErrorId()));
+            }
+            assertExpr.Reset(assertExprResult.Value());
+            assertExpr->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<Node> assertExpr;
+    }
+
+    public abstract class ConditionalCompilationExpressionNode : Node
+    {
+        public ConditionalCompilationExpressionNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) : base(nodeType_, span_, fileIndex_)
+        {
+        }
+        public override bool IsConditionalCompilationExpressionNode() const
+        {
+            return true;
+        }
+    }
+
+    public abstract class ConditionalCompilationBinaryExpressionNode : ConditionalCompilationExpressionNode
+    {
+        public ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) : base(nodeType_, span_, fileIndex_)
+        {
+        }
+        public ConditionalCompilationBinaryExpressionNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_,
+            ConditionalCompilationExpressionNode* left_, ConditionalCompilationExpressionNode* right_) :
+            base(nodeType_, span_, fileIndex_), left(left_), right(right_)
+        {
+            left->SetParent(this);
+            right->SetParent(this);
+        }
+        public ConditionalCompilationExpressionNode* Left() const
+        {
+            return left.Get();
+        }
+        public ConditionalCompilationExpressionNode* Right() const
+        {
+            return right.Get();
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(left.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(right.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto leftResult = reader.ReadConditionalCompilationExpressionNode();
+            if (leftResult.Error())
+            {
+                return Result<bool>(ErrorId(leftResult.GetErrorId()));
+            }
+            left.Reset(leftResult.Value());
+            left->SetParent(this);
+            auto rightResult = reader.ReadConditionalCompilationExpressionNode();
+            if (rightResult.Error())
+            {
+                return Result<bool>(ErrorId(rightResult.GetErrorId()));
+            }
+            right.Reset(rightResult.Value());
+            right->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<ConditionalCompilationExpressionNode> left;
+        private UniquePtr<ConditionalCompilationExpressionNode> right;
+    }
+
+    public class ConditionalCompilationDisjunctionNode : ConditionalCompilationBinaryExpressionNode
+    {
+        public ConditionalCompilationDisjunctionNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.conditionalCompilationDisjunctionNode, span_, fileIndex_)
+        {
+        }
+        public ConditionalCompilationDisjunctionNode(const System.Lex.Span& span_, int fileIndex_, ConditionalCompilationExpressionNode* left_,
+            ConditionalCompilationExpressionNode* right_) :
+            base(NodeType.conditionalCompilationDisjunctionNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConditionalCompilationDisjunctionNode(GetSpan(), FileIndex(), cast<ConditionalCompilationExpressionNode*>(Left()->Clone(cloneContext)),
+                cast<ConditionalCompilationExpressionNode*>(Right()->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ConditionalCompilationConjunctionNode : ConditionalCompilationBinaryExpressionNode
+    {
+        public ConditionalCompilationConjunctionNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.conditionalCompilationConjunctionNode, span_, fileIndex_)
+        {
+        }
+        public ConditionalCompilationConjunctionNode(const System.Lex.Span& span_, int fileIndex_, ConditionalCompilationExpressionNode* left_,
+            ConditionalCompilationExpressionNode* right_) : base(NodeType.conditionalCompilationConjunctionNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConditionalCompilationConjunctionNode(GetSpan(), FileIndex(), cast<ConditionalCompilationExpressionNode*>(Left()->Clone(cloneContext)),
+                cast<ConditionalCompilationExpressionNode*>(Right()->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ConditionalCompilationNotNode : ConditionalCompilationExpressionNode
+    {
+        public ConditionalCompilationNotNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.conditionalCompilationNotNode, span_, fileIndex_)
+        {
+        }
+        public ConditionalCompilationNotNode(const System.Lex.Span& span_, int fileIndex_, ConditionalCompilationExpressionNode* expr_) :
+            base(NodeType.conditionalCompilationNotNode, span_, fileIndex_), expr(expr_)
+        {
+            expr->SetParent(this);
+        }
+        public ConditionalCompilationExpressionNode* Expr() const
+        {
+            return expr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConditionalCompilationNotNode(GetSpan(), FileIndex(), cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto exprResult = reader.ReadConditionalCompilationExpressionNode();
+            if (exprResult.Error())
+            {
+                return Result<bool>(ErrorId(exprResult.GetErrorId()));
+            }
+            expr.Reset(exprResult.Value());
+            expr->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<ConditionalCompilationExpressionNode> expr;
+    }
+
+    public class ConditionalCompilationPrimaryNode : ConditionalCompilationExpressionNode
+    {
+        public ConditionalCompilationPrimaryNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.conditionalCompilationPrimaryNode, span_, fileIndex_)
+        {
+        }
+        public ConditionalCompilationPrimaryNode(const System.Lex.Span& span_, int fileIndex_, const ustring& symbol_) :
+            base(NodeType.conditionalCompilationPrimaryNode, span_, fileIndex_), symbol(symbol_)
+        {
+        }
+        public const ustring& Symbol() const
+        {
+            return symbol;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConditionalCompilationPrimaryNode(GetSpan(), FileIndex(), symbol);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(symbol);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto symbolResult = reader.GetBinaryReader().ReadUString();
+            if (symbolResult.Error())
+            {
+                return Result<bool>(ErrorId(symbolResult.GetErrorId()));
+            }
+            symbol = symbolResult.Value();
+            return Result<bool>(true);
+        }
+        private ustring symbol;
+    }
+
+    public class ParenthesizedConditionalCompilationExpressionNode : ConditionalCompilationExpressionNode
+    {
+        public ParenthesizedConditionalCompilationExpressionNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.parenthesizedCondCompExpressionNode, span_, fileIndex_)
+        {
+        }
+        public ParenthesizedConditionalCompilationExpressionNode(const System.Lex.Span& span_, int fileIndex_, ConditionalCompilationExpressionNode* expr_) :
+            base(NodeType.parenthesizedCondCompExpressionNode, span_, fileIndex_), expr(expr_)
+        {
+        }
+        public ConditionalCompilationExpressionNode* Expr() const
+        {
+            return expr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ParenthesizedConditionalCompilationExpressionNode(GetSpan(), FileIndex(), cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expr.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto exprResult = reader.ReadConditionalCompilationExpressionNode();
+            if (exprResult.Error())
+            {
+                return Result<bool>(ErrorId(exprResult.GetErrorId()));
+            }
+            expr.Reset(exprResult.Value());
+            expr->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<ConditionalCompilationExpressionNode> expr;
+    }
+
+    public class ConditionalCompilationPartNode : Node
+    {
+        public ConditionalCompilationPartNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.conditionalCompilationPartNode, span_, fileIndex_)
+        {
+        }
+        public ConditionalCompilationPartNode(const System.Lex.Span& span_, int fileIndex_, ConditionalCompilationExpressionNode* expr_) :
+            base(NodeType.conditionalCompilationPartNode, span_, fileIndex_), expr(expr_)
+        {
+            if (!expr.IsNull())
+            {
+                expr->SetParent(this);
+            }
+        }
+        public ConditionalCompilationExpressionNode* Expr() const
+        {
+            return expr.Get();
+        }
+        public const NodeList<StatementNode>& Statements() const
+        {
+            return statements;
+        }
+        public void AddStatement(StatementNode* statement)
+        {
+            statement->SetParent(this);
+            statements.Add(statement);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConditionalCompilationExpressionNode* clonedIfExpr = null;
+            if (!expr.IsNull())
+            {
+                clonedIfExpr = cast<ConditionalCompilationExpressionNode*>(expr->Clone(cloneContext));
+            }
+            ConditionalCompilationPartNode* clone = new ConditionalCompilationPartNode(GetSpan(), FileIndex(), clonedIfExpr);
+            int n = statements.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddStatement(cast<StatementNode*>(statements[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasExpr = !expr.IsNull();
+            result = writer.GetBinaryWriter().Write(hasExpr);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasExpr)
+            {
+                result = writer.Write(expr.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return statements.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto hasExprResult = reader.GetBinaryReader().ReadBool();
+            if (hasExprResult.Error())
+            {
+                return Result<bool>(ErrorId(hasExprResult.GetErrorId()));
+            }
+            bool hasExpr = hasExprResult.Value();
+            if (hasExpr)
+            {
+                auto exprResult = reader.ReadConditionalCompilationExpressionNode();
+                if (exprResult.Error())
+                {
+                    return Result<bool>(ErrorId(exprResult.GetErrorId()));
+                }
+                expr.Reset(exprResult.Value());
+                expr->SetParent(this);
+            }
+            result = statements.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            statements.SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<ConditionalCompilationExpressionNode> expr;
+        private NodeList<StatementNode> statements;
+    }
+
+    public class ConditionalCompilationStatementNode : StatementNode
+    {
+        public ConditionalCompilationStatementNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.conditionalCompilationStatementNode, span_, fileIndex_), ifPart(null)
+        {
+        }
+        public ConditionalCompilationStatementNode(const System.Lex.Span& span_, int fileIndex_, ConditionalCompilationExpressionNode* ifExpr_) :
+            base(NodeType.conditionalCompilationStatementNode, span_, fileIndex_), ifPart(new ConditionalCompilationPartNode(span_, fileIndex_, ifExpr_))
+        {
+        }
+        public ConditionalCompilationPartNode* IfPart()
+        {
+            return ifPart.Get();
+        }
+        public const NodeList<ConditionalCompilationPartNode>& ElifParts() const
+        {
+            return elifParts;
+        }
+        public ConditionalCompilationPartNode* ElsePart()
+        {
+            return elsePart.Get();
+        }
+        public void AddIfStatement(StatementNode* statement)
+        {
+            ifPart->AddStatement(statement);
+        }
+        public void AddElifExpr(const System.Lex.Span& span, int fileIndex, ConditionalCompilationExpressionNode* expr)
+        {
+            elifParts.Add(new ConditionalCompilationPartNode(span, fileIndex, expr));
+        }
+        public void AddElifStatement(StatementNode* statement)
+        {
+            elifParts[elifParts.Count() - 1]->AddStatement(statement);
+        }
+        public void AddElseStatement(const System.Lex.Span& span, int fileIndex, StatementNode* statement)
+        {
+            if (!!elsePart.IsNull())
+            {
+                elsePart.Reset(new ConditionalCompilationPartNode(span, fileIndex));
+            }
+            elsePart->AddStatement(statement);
+        }
+        public void SetIfPart(ConditionalCompilationPartNode* ifPart_)
+        {
+            ifPart.Reset(ifPart_);
+        }
+        public void AddElifPart(ConditionalCompilationPartNode* elifPart)
+        {
+            elifParts.Add(elifPart);
+        }
+        public void SetElsePart(ConditionalCompilationPartNode* elsePart_)
+        {
+            elsePart.Reset(elsePart_);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConditionalCompilationStatementNode* clone = new ConditionalCompilationStatementNode(GetSpan(), FileIndex());
+            ConditionalCompilationPartNode* clonedIfPart = cast<ConditionalCompilationPartNode*>(ifPart->Clone(cloneContext));
+            clone->ifPart.Reset(clonedIfPart);
+            int n = elifParts.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                ConditionalCompilationPartNode* elifPart = elifParts[i];
+                ConditionalCompilationPartNode* clonedElifPart = cast<ConditionalCompilationPartNode*>(elifPart->Clone(cloneContext));
+                clone->elifParts.Add(clonedElifPart);
+            }
+            if (!elsePart.IsNull())
+            {
+                ConditionalCompilationPartNode* clonedElsePart = cast<ConditionalCompilationPartNode*>(elsePart->Clone(cloneContext));
+                clone->elsePart.Reset(clonedElsePart);
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(ifPart.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = elifParts.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasElsePart = !elsePart.IsNull();
+            result = writer.GetBinaryWriter().Write(hasElsePart);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasElsePart)
+            {
+                result = writer.Write(elsePart.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto ifPartResult = reader.ReadConditionalCompilationPartNode();
+            if (ifPartResult.Error())
+            {
+                return Result<bool>(ErrorId(ifPartResult.GetErrorId()));
+            }
+            ifPart.Reset(ifPartResult.Value());
+            ifPart->SetParent(this);
+            result = elifParts.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            elifParts.SetParent(this);
+            auto hasElsePartResult = reader.GetBinaryReader().ReadBool();
+            if (hasElsePartResult.Error())
+            {
+                return Result<bool>(ErrorId(hasElsePartResult.GetErrorId()));
+            }
+            bool hasElsePart = hasElsePartResult.Value();
+            if (hasElsePart)
+            {
+                auto elsePartResult = reader.ReadConditionalCompilationPartNode();
+                if (elsePartResult.Error())
+                {
+                    return Result<bool>(ErrorId(elsePartResult.GetErrorId()));
+                }
+                elsePart.Reset(elsePartResult.Value());
+                elsePart->SetParent(this);
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<ConditionalCompilationPartNode> ifPart;
+        private NodeList<ConditionalCompilationPartNode> elifParts;
+        private UniquePtr<ConditionalCompilationPartNode> elsePart;
+    }
+
+} // namespace cm.ast

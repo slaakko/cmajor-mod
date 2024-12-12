@@ -1,0 +1,11 @@
+project scmpg.ast;
+target=library;
+reference <../cm.ast/cm.ast.cmp>;
+source <char_set.cm>;
+source <code_evaluator.cm>;
+source <file.cm>;
+source <param_var.cm>;
+source <parser.cm>;
+source <token_set.cm>;
+source <using.cm>;
+source <visitor.cm>;

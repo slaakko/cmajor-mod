@@ -1,0 +1,119 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmlg.ast
+{
+    public class Lexer : Collection
+    {
+        public Lexer(const string& name_) : base(CollectionKind.lexer, name_)
+        {
+        }
+        public string NamespacePrefix() const
+        {
+            string s;
+            string name = Name();
+            List<string> components = name.Split('.');
+            for (long i = 0; i < components.Count() - 1; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append('.');
+                }
+                s.Append(components[i]);
+            }
+            return s;
+        }
+        public string CommonName() const
+        {
+            string name = Name();
+            List<string> components = name.Split('.');
+            return components.Back();
+        }
+        public void AddRule(Rule* rule)
+        {
+            rule->SetIndex(cast<int>(rules.Count()));
+            rule->SetCollection(this);
+            rules.Add(UniquePtr<Rule>(rule));
+        }
+        public const List<UniquePtr<Rule>>& Rules() const
+        {
+            return rules;
+        }
+        public void AddVariable(Variable* variable)
+        {
+            variables.Add(UniquePtr<Variable>(variable));
+        }
+        public const List<UniquePtr<Variable>>& Variables() const
+        {
+            return variables;
+        }
+        public void AddAction(Action* action)
+        {
+            actions.AddAction(action);
+        }
+        public const Actions& GetActions() const
+        {
+            return actions;
+        }
+        public const string& VariableClassName() const
+        {
+            return variableClassName;
+        }
+        public void SetVariableClassName(const string& variableClassName_)
+        {
+            variableClassName = variableClassName_;
+        }
+        private List<UniquePtr<Rule>> rules;
+        private List<UniquePtr<Variable>> variables;
+        private Actions actions;
+        private string variableClassName;
+    }
+
+    public class Using
+    {
+        public Using(const string& ns_, bool opaque_) : ns(ns_), opaque(opaque_)
+        {
+        }
+        public const string& Ns() const
+        {
+            return ns;
+        }
+        public inline bool IsOpaque() const
+        {
+            return opaque;
+        }
+        private string ns;
+        private bool opaque;
+    }
+
+    public class LexerFile : File
+    {
+        public LexerFile(const string& filePath_) : base(FileKind.lexerFile, filePath_)
+        {
+        }
+        public void AddUsing(const Using& using_)
+        {
+            usings.Add(using_);
+        }
+        public const List<Using>& Usings() const
+        {
+            return usings;
+        }
+        public void SetLexer(Lexer* lexer_)
+        {
+            lexer.Reset(lexer_);
+        }
+        public Lexer* GetLexer() const
+        {
+            return lexer.Get();
+        }
+        private List<Using> usings;
+        private UniquePtr<Lexer> lexer;
+    }
+}
+

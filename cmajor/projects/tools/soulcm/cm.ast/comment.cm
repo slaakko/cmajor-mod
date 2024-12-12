@@ -1,0 +1,54 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class CommentNode : Node
+    {
+        public CommentNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.commentNode, span_, fileIndex_)
+        {
+        }
+        public CommentNode(const System.Lex.Span& span_, int fileIndex_, const ustring& comment_) : base(NodeType.commentNode, span_, fileIndex_), comment(comment_)
+        {
+        }
+        public const ustring& Comment() const
+        {
+            return comment;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new CommentNode(GetSpan(), FileIndex(), comment);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.GetBinaryWriter().Write(comment));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto commentResult = reader.GetBinaryReader().ReadUString();
+            if (commentResult.Error())
+            {
+                return Result<bool>(ErrorId(commentResult.GetErrorId()));
+            }
+            comment = commentResult.Value();
+            return Result<bool>(true);
+        }
+        private ustring comment;
+    }
+
+} // namespace cm.ast

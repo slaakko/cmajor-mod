@@ -1,0 +1,215 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmlg.ast
+{
+    public enum ScmlgFileDeclarationKind
+    {
+        tokenFileDeclaration, keywordFileDeclaration, expressionFileDeclaration, lexerFileDeclaration
+    }
+
+    public class ScmlgFileDeclaration
+    {
+        public ScmlgFileDeclaration(ScmlgFileDeclarationKind kind_, const string& filePath_) : kind(kind_), filePath(filePath_)
+        {
+        }
+        public ScmlgFileDeclarationKind Kind() const
+        {
+            return kind;
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private ScmlgFileDeclarationKind kind;
+        private string filePath;
+    }
+
+    public class TokenFileDeclaration : ScmlgFileDeclaration
+    {
+        public TokenFileDeclaration(const string& filePath_, bool external_) : base(ScmlgFileDeclarationKind.tokenFileDeclaration, filePath_), external(external_)
+        {
+        }
+        public inline bool IsExternal() const
+        {
+            return external;
+        }
+        private bool external;
+    }
+
+    public class KeywordFileDeclaration : ScmlgFileDeclaration
+    {
+        public KeywordFileDeclaration(const string& filePath_) : base(ScmlgFileDeclarationKind.keywordFileDeclaration, filePath_)
+        {
+        }
+    }
+
+    public class ExpressionFileDeclaration : ScmlgFileDeclaration
+    {
+        public ExpressionFileDeclaration(const string& filePath_) : base(ScmlgFileDeclarationKind.expressionFileDeclaration, filePath_)
+        {
+        }
+    }
+
+    public class LexerFileDeclaration : ScmlgFileDeclaration
+    {
+        public LexerFileDeclaration(const string& filePath_) : base(ScmlgFileDeclarationKind.lexerFileDeclaration, filePath_)
+        {
+        }
+    }
+
+    public class ScmlgFile : File
+    {
+        public ScmlgFile(const string& filePath_, const string& projectName_) : base(FileKind.scmlgFile, filePath_), projectName(projectName_)
+        {
+        }
+        public const string& ProjectName() const
+        {
+            return projectName;
+        }
+        public List<UniquePtr<ScmlgFileDeclaration>>& Declarations() const
+        {
+            return declarations;
+        }
+        public void AddDeclaration(ScmlgFileDeclaration* declaration)
+        {
+            declarations.Add(UniquePtr<ScmlgFileDeclaration>(declaration));
+        }
+        public void AddTokenFile(TokenFile* tokenFile)
+        {
+            tokenFiles.Add(UniquePtr<TokenFile>(tokenFile));
+            collections.Add(tokenFile->GetTokenCollection());
+            collectionMap[tokenFile->GetTokenCollection()->Name()] = tokenFile->GetTokenCollection();
+        }
+        public const List<UniquePtr<TokenFile>>& TokenFiles() const
+        {
+            return tokenFiles;
+        }
+        public void AddKeywordFile(KeywordFile* keywordFile)
+        {
+            keywordFiles.Add(UniquePtr<KeywordFile>(keywordFile));
+            collections.Add(keywordFile->GetKeywordCollection());
+            collectionMap[keywordFile->GetKeywordCollection()->Name()] = keywordFile->GetKeywordCollection();
+        }
+        public const List<UniquePtr<KeywordFile>>& KeywordFiles() const
+        {
+            return keywordFiles;
+        }
+        public void AddExpressionFile(ExpressionFile* expressionFile)
+        {
+            expressionFiles.Add(UniquePtr<ExpressionFile>(expressionFile));
+            collections.Add(expressionFile->GetExpressionCollection());
+            collectionMap[expressionFile->GetExpressionCollection()->Name()] = expressionFile->GetExpressionCollection();
+        }
+        public const List<UniquePtr<ExpressionFile>>& ExpressionFiles() const
+        {
+            return expressionFiles;
+        }
+        public void AddLexerFile(LexerFile* lexerFile)
+        {
+            lexerFiles.Add(UniquePtr<LexerFile>(lexerFile));
+        }
+        public const List<UniquePtr<LexerFile>>& LexerFiles() const
+        {
+            return lexerFiles;
+        }
+        public const List<Collection*>& Collections() const
+        {
+            return collections;
+        }
+        public Result<Collection*> GetCollection(const string& collectionName) const
+        {
+            auto it = collectionMap.CFind(collectionName);
+            if (it != collectionMap.CEnd())
+            {
+                return Result<Collection*>(it->second);
+            }
+            else
+            {
+                string errorMessage = "Collection '" + collectionName + "' not found";
+                int errorId = AllocateError(errorMessage);
+                return Result<Collection*>(ErrorId(errorId));
+            }
+        }
+        private string projectName;
+        private List<UniquePtr<ScmlgFileDeclaration>> declarations;
+        private List<UniquePtr<TokenFile>> tokenFiles;
+        private List<UniquePtr<KeywordFile>> keywordFiles;
+        private List<UniquePtr<ExpressionFile>> expressionFiles;
+        private List<UniquePtr<LexerFile>> lexerFiles;
+        private List<Collection*> collections;
+        private Map<string, Collection*> collectionMap;
+    }
+
+    public class Tokens
+    {
+        public Tokens()
+        {
+        }
+        public void AddToken(Token* token)
+        {
+            tokens.Add(token);
+        }
+        public const List<Token*>& GetTokens() const
+        {
+            return tokens;
+        }
+        private List<Token*> tokens;
+    }
+
+    public class Keywords
+    {
+        public Keywords()
+        {
+        }
+        public void AddKeyword(Keyword* keyword)
+        {
+            keywords.Add(keyword);
+        }
+        public const List<Keyword*>& GetKeywords() const
+        {
+            return keywords;
+        }
+        private List<Keyword*> keywords;
+    }
+
+    public class Expressions
+    {
+        public Expressions()
+        {
+        }
+        public Result<bool> AddExpression(Expression* expression)
+        {
+            expression->SetIndex(cast<int>(expressions.Count()));
+            Expression* prevExpr = GetExpression(expression->Id());
+            if (prevExpr != null)
+            {
+                string errorMessage = "expression '" + expression->Id() + "' already defined";
+                int errorId = AllocateError(errorMessage);
+                return Result<bool>(ErrorId(errorId));
+            }
+            expressions.Add(expression);
+            expressionMap[expression->Id()] = expression;
+            return Result<bool>(true);
+        }
+        public Expression* GetExpression(const string& id) const
+        {
+            auto it = expressionMap.Find(id);
+            if (it != expressionMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private List<Expression*> expressions;
+        private Map<string, Expression*> expressionMap;
+    }
+}

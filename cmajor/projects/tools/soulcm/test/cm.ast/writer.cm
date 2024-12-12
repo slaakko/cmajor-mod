@@ -1,0 +1,70 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+
+namespace cm.ast
+{
+    public class AstWriter : IOBase
+    {
+        public AstWriter(const string& fileName_) : binaryWriter(), lexers(null)
+        {
+            auto binaryWriterResult = File.CreateBinary(fileName_);
+            if (binaryWriterResult.Error())
+            {
+                SetErrorId(binaryWriterResult.GetErrorId());
+            }
+            else
+            {
+                binaryWriter = Rvalue(binaryWriterResult.Value());
+            }
+        }
+        public inline BinaryWriter& GetBinaryWriter()
+        {
+            return binaryWriter;
+        }
+        public Result<bool> Write(Node* node)
+        {
+            auto result = binaryWriter.Write(cast<byte>(node->GetNodeType()));
+            if (result.Error())
+            {
+                return result;
+            }
+            auto spanResult = Write(node->GetSpan());
+            if (spanResult.Error())
+            {
+                return spanResult;
+            }
+            auto fileIndexResult = binaryWriter.Write(node->FileIndex());
+            if (fileIndexResult.Error())
+            {
+                return fileIndexResult;
+            }
+            return node->Write(*this);
+        }
+        public Result<bool> Write(Specifiers specifiers)
+        {
+            return binaryWriter.Write(cast<uint>(cast<int>(specifiers)));
+        }
+        public Result<bool> Write(const System.Lex.Span& span)
+        {
+            auto result = binaryWriter.Write(span.pos);
+            return result.AndThen(binaryWriter.Write(span.len));
+        }
+        public void SetLexers(List<System.Lex.Lexer*>* lexers_)
+        {
+            lexers = lexers_;
+        }
+        public inline const List<System.Lex.Lexer*>* Lexers() const
+        {
+            return lexers;
+        }
+        private BinaryWriter binaryWriter;
+        private List<System.Lex.Lexer*>* lexers;
+    }
+
+} // namespace cm.ast

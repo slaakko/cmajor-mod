@@ -1,0 +1,93 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class IdentifierNode : Node
+    {
+        public IdentifierNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.identifierNode, span_, fileIndex_), identifier()
+        {
+        }
+        public IdentifierNode(const System.Lex.Span& span_, int fileIndex_, NodeType nodeType_) : base(nodeType_, span_, fileIndex_), identifier()
+        {
+        }
+        public IdentifierNode(const System.Lex.Span& span_, int fileIndex_, const ustring& identifier_) :
+            base(NodeType.identifierNode, span_, fileIndex_), identifier(identifier_)
+        {
+        }
+        public IdentifierNode(const System.Lex.Span& span_, int fileIndex_, NodeType nodeType_, const ustring& identifier_) :
+            base(nodeType_, span_, fileIndex_), identifier(identifier_)
+        {
+            ustring result;
+            for (uchar c : identifier)
+            {
+                if (c != '`')
+                {
+                    result.Append(c, 1);
+                }
+            }
+            Swap(result, identifier);
+        }
+        public IdentifierNode(const System.Lex.Span& span_, int fileIndex_, const System.Lex.Token& token) :
+            base(NodeType.identifierNode, span_, fileIndex_)
+        {
+            identifier = ustring(token.match.begin, token.match.end);
+        }
+        public const ustring& Str() const
+        {
+            return identifier;
+        }
+        public void SetStr(const ustring& str)
+        {
+            identifier = str;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new IdentifierNode(GetSpan(), FileIndex(), identifier);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(identifier);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto identifierResult = reader.GetBinaryReader().ReadUString();
+            if (identifierResult.Error())
+            {
+                return Result<bool>(ErrorId(identifierResult.GetErrorId()));
+            }
+            identifier = identifierResult.Value();
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto utf8Result = ToUtf8(identifier);
+            if (utf8Result.Error())
+            {
+                return utf8Result;
+            }
+            return Result<string>(utf8Result.Value());
+        }
+        private ustring identifier;
+    }
+
+} // namespace cm.ast

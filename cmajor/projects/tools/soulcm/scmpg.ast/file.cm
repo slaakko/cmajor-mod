@@ -1,0 +1,178 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg.ast
+{
+    public enum FileKind
+    {
+        scmpgFile, parserFile
+    }
+
+    public abstract class File
+    {
+        public File(FileKind kind_, const string& filePath_) : kind(kind_), filePath(filePath_)
+        {
+        }
+        public inline FileKind Kind() const
+        {
+            return kind;
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        public abstract void Accept(Visitor& visitor);
+        private FileKind kind;
+        private string filePath;
+    }
+
+    public class ParserFile : File
+    {
+        public ParserFile(const string& filePath_) : base(FileKind.parserFile, filePath_)
+        {
+        }
+        public void AddUsing(const Using& u)
+        {
+            usings.Add(u);
+        }
+        public const List<Using>& Usings() const
+        {
+            return usings;
+        }
+        public void AddGrammar(GrammarParser* grammar)
+        {
+            grammars.Add(UniquePtr<GrammarParser>(grammar));
+        }
+        public const List<UniquePtr<GrammarParser>>& Grammars() const
+        {
+            return grammars;
+        }
+        public inline bool IsExternal() const
+        {
+            return external;
+        }
+        public void SetExternal()
+        {
+            external = true;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        private List<Using> usings;
+        private List<UniquePtr<GrammarParser>> grammars;
+        private bool external;
+    }
+
+    public class Declaration
+    {
+        public Declaration(const System.Lex.Span& span_, FileKind fileKind_, const string& filePath_) : span(span_), fileKind(fileKind_), filePath(filePath_)
+        {
+        }
+        public default virtual ~Declaration();
+        public const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline FileKind Kind() const
+        {
+            return fileKind;
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private System.Lex.Span span;
+        private FileKind fileKind;
+        private string filePath;
+    }
+
+    public class ParserFileDeclaration : Declaration
+    {
+        public ParserFileDeclaration(const System.Lex.Span& span_, const string& filePath_, bool external_) :
+            base(span_, FileKind.parserFile, filePath_), external(external_)
+        {
+        }
+        public inline bool External() const
+        {
+            return external;
+        }
+        private bool external;
+    }
+
+    public class ScmpgFile : File
+    {
+        public ScmpgFile(const string& filePath_, const string& projectName_) : base(FileKind.scmpgFile, filePath_), projectName(projectName_)
+        {
+        }
+        public const string& ProjectName() const
+        {
+            return projectName;
+        }
+        public void AddDeclaration(Declaration* declaration)
+        {
+            declarations.Add(UniquePtr<Declaration>(declaration));
+        }
+        public const List<UniquePtr<Declaration>>& Declarations() const
+        {
+            return declarations;
+        }
+        public void AddParserFile(ParserFile* parserFile)
+        {
+            parserFiles.Add(UniquePtr<ParserFile>(parserFile));
+        }
+        public const List<UniquePtr<ParserFile>>& ParserFiles() const
+        {
+            return parserFiles;
+        }
+        public bool AddGrammar(GrammarParser* grammar)
+        {
+            auto it = grammarMap.Find(grammar->Name());
+            if (it != grammarMap.End())
+            {
+                return false;
+            }
+            else
+            {
+                grammarMap[grammar->Name()] = grammar;
+                return true;
+            }
+        }
+        public GrammarParser* GetGrammar(const string& grammarName) const
+        {
+            auto it = grammarMap.Find(grammarName);
+            if (it != grammarMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public void AddRule(RuleParser* rule)
+        {
+            rules.Add(rule);
+        }
+        public const List<RuleParser*>& Rules() const
+        {
+            return rules;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        private string projectName;
+        private List<UniquePtr<Declaration>> declarations;
+        private List<UniquePtr<ParserFile>> parserFiles;
+        private Map<string, GrammarParser*> grammarMap;
+        private List<RuleParser*> rules;
+    }
+
+} // namespace scmpg.ast
+

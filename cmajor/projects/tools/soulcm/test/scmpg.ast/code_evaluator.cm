@@ -1,0 +1,42 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg.ast
+{
+    public class CodeEvaluator : cm.ast.DefaultVisitor 
+    {
+        public CodeEvaluator() : hasReturn(false), hasPass(false)
+        {
+        }
+        public override void Visit(cm.ast.ReturnStatementNode& returnStatement)
+        {
+            base->Visit(returnStatement);
+            hasReturn = true;
+        }
+        public override void Visit(cm.ast.IdentifierNode& identifier)
+        {
+            base->Visit(identifier);
+            if (identifier.Str() == u"pass")
+            {
+                hasPass = true;
+            }
+        }
+        public inline bool HasReturn() const
+        {
+            return hasReturn;
+        }
+        public inline bool HasPass() const
+        {
+            return hasPass;
+        }
+        private bool hasReturn;
+        private bool hasPass;
+    }
+
+} // namespace scmpg.ast
+

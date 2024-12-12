@@ -1,0 +1,79 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg.ast
+{
+    public class TokenSet
+    {
+        public TokenSet()
+        {
+        }
+        public bool AddToken(const string& token)
+        {
+            if (Contains(token))
+            {
+                return false;
+            }
+            else
+            {
+                tokens.Insert(token);
+                return true;
+            }
+        }
+        public bool Contains(const string& token) const
+        {
+            return tokens.Find(token) != tokens.End();
+        }
+        public bool Intersects(const TokenSet& that) const
+        {
+            for (const auto& token : that.tokens)
+            {
+                if (Contains(token)) return true;
+            }
+            return false;
+        }
+        public bool Merge(const TokenSet& that)
+        {
+            bool changed = false;
+            for (const auto& token : that.tokens)
+            {
+                if (AddToken(token))
+                {
+                    changed = true;
+                }
+            }
+            return changed;
+        }
+        public string ToString() const
+        {
+            string set = "{";
+            bool first = true;
+            for (const auto& token : tokens)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    set.Append(", ");
+                }
+                set.Append(token);
+            }
+            set.Append("}");
+            return set;
+        }
+        public const Set<string>& Tokens() const
+        {
+            return tokens;
+        }
+        private Set<string> tokens;
+    }
+
+} // namespace scmpg.ast
+

@@ -1,0 +1,57 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg.ast
+{
+    public class Range
+    {
+        public int first;
+        public int last;
+    }
+
+    public class CharSet
+    {
+        public CharSet() : inverse(false)
+        {
+        }
+        public CharSet* Clone() const
+        {
+            CharSet* clone = new CharSet();
+            if (inverse)
+            {
+                clone->SetInverse();
+            }
+            for (const auto& range : ranges)
+            {
+                clone->AddRange(range);
+            }
+            return clone;
+        }
+        public inline bool Inverse() const
+        {
+            return inverse;
+        }
+        public void SetInverse()
+        {
+            inverse = true;
+        }
+        public const List<Range>& Ranges() const
+        {
+            return ranges;
+        }
+        public void AddRange(const Range& range)
+        {
+            ranges.Add(range);
+        }
+        private bool inverse;
+        private List<Range> ranges;
+    }
+
+} // namespace scmpg.ast
+
+

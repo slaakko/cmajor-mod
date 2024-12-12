@@ -1,0 +1,343 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+
+namespace cm.ast
+{
+    public class AstReader : IOBase
+    {
+        public AstReader(const string& fileName_) : binaryReader(), fileName(fileName_)
+        {
+            auto binaryReaderResult = File.OpenBinary(fileName_);
+            if (binaryReaderResult.Error())
+            {
+                SetErrorId(binaryReaderResult.GetErrorId());
+            }
+            else
+            {
+                binaryReader = Rvalue(binaryReaderResult.Value());
+            }
+        }
+        public inline const string& FileName() const
+        {
+            return fileName;
+        }
+        public inline BinaryReader& GetBinaryReader()
+        {
+            return binaryReader;
+        }
+        public Result<Node*> ReadNode()
+        {
+            auto nodeTypeResult = binaryReader.ReadByte();
+            if (nodeTypeResult.Error())
+            {
+                return Result<Node*>(ErrorId(nodeTypeResult.GetErrorId()));
+            }
+            NodeType nodeType = cast<NodeType>(nodeTypeResult.Value());
+            auto spanResult = ReadSpan();
+            if (spanResult.Error())
+            {
+                return Result<Node*>(ErrorId(spanResult.GetErrorId()));
+            }
+            System.Lex.Span span = spanResult.Value();
+            auto fileIndexResult = binaryReader.ReadInt();
+            if (fileIndexResult.Error())
+            {
+                return Result<Node*>(ErrorId(fileIndexResult.GetErrorId()));
+            }
+            int fileIndex = fileIndexResult.Value();
+            Node* node = NodeFactory.Instance().CreateNode(nodeType, span, fileIndex);
+            auto readResult = node->Read(*this);
+            if (readResult.Error())
+            {
+                return Result<Node*>(ErrorId(readResult.GetErrorId()));
+            }
+            return Result<Node*>(node);
+        }
+        public Result<AttributeNode*> ReadAttributeNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<AttributeNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.attributeNode)
+            {
+                return Result<AttributeNode*>(cast<AttributeNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("attribute node expected");
+                return Result<AttributeNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<AttributesNode*> ReadAttributesNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<AttributesNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.attributesNode)
+            {
+                return Result<AttributesNode*>(cast<AttributesNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("attributes node expected");
+                return Result<AttributesNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<TemplateIdNode*> ReadTemplateIdNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<TemplateIdNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.templateIdNode)
+            {
+                return Result<TemplateIdNode*>(cast<TemplateIdNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("template id node expected");
+                return Result<TemplateIdNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<IdentifierNode*> ReadIdentifierNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<IdentifierNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.identifierNode)
+            {
+                return Result<IdentifierNode*>(cast<IdentifierNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("identifier node expected");
+                return Result<IdentifierNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<LabelNode*> ReadLabelNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<LabelNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.labelNode)
+            {
+                return Result<LabelNode*>(cast<LabelNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("label node expected");
+                return Result<LabelNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<StatementNode*> ReadStatementNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<StatementNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->IsStatementNode())
+            {
+                return Result<StatementNode*>(cast<StatementNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("statement node expected");
+                return Result<StatementNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<DefaultStatementNode*> ReadDefaultStatementNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<DefaultStatementNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.defaultStatementNode)
+            {
+                return Result<DefaultStatementNode*>(cast<DefaultStatementNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("default statement node expected");
+                return Result<DefaultStatementNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<CompoundStatementNode*> ReadCompoundStatementNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<CompoundStatementNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.compoundStatementNode)
+            {
+                return Result<CompoundStatementNode*>(cast<CompoundStatementNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("compound statement node expected");
+                return Result<CompoundStatementNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<ConstraintNode*> ReadConstraintNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<ConstraintNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->IsNodeConstraintNode())
+            {
+                return Result<ConstraintNode*>(cast<ConstraintNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("constraint node expected");
+                return Result<ConstraintNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<WhereConstraintNode*> ReadWhereConstraintNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<WhereConstraintNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.whereConstraintNode)
+            {
+                return Result<WhereConstraintNode*>(cast<WhereConstraintNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("where constraint node expected");
+                return Result<WhereConstraintNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<ConceptIdNode*> ReadConceptIdNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<ConceptIdNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.conceptIdNode)
+            {
+                return Result<ConceptIdNode*>(cast<ConceptIdNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("concept id node expected");
+                return Result<ConceptIdNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<ConceptNode*> ReadConceptNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<ConceptNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->IsConceptNode())
+            {
+                return Result<ConceptNode*>(cast<ConceptNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("concept node expected");
+                return Result<ConceptNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<ConditionalCompilationExpressionNode*> ReadConditionalCompilationExpressionNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<ConditionalCompilationExpressionNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->IsConditionalCompilationExpressionNode())
+            {
+                return Result<ConditionalCompilationExpressionNode*>(cast<ConditionalCompilationExpressionNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("conditional compilation expression node expected");
+                return Result<ConditionalCompilationExpressionNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<ConditionalCompilationPartNode*> ReadConditionalCompilationPartNode()
+        {
+            auto nodeResult = ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<ConditionalCompilationPartNode*>(ErrorId(nodeResult.GetErrorId()));
+            }
+            Node* node = nodeResult.Value();
+            if (node->GetNodeType() == NodeType.conditionalCompilationPartNode)
+            {
+                return Result<ConditionalCompilationPartNode*>(cast<ConditionalCompilationPartNode*>(node));
+            }
+            else
+            {
+                int errorId = AllocateError("conditional compilation part node expected");
+                return Result<ConditionalCompilationPartNode*>(ErrorId(errorId));
+            }
+        }
+        public Result<Specifiers> ReadSpecifiers()
+        {
+            auto result = binaryReader.ReadInt();
+            if (result.Error())
+            {
+                return Result<Specifiers>(ErrorId(result.GetErrorId()));
+            }
+            return Result<Specifiers>(cast<Specifiers>(result.Value()));
+        }
+        public Result<System.Lex.Span> ReadSpan()
+        {
+            auto startResult = binaryReader.ReadInt();
+            if (startResult.Error())
+            {
+                return Result<System.Lex.Span>(ErrorId(startResult.GetErrorId()));
+            }
+            int start = startResult.Value();
+            auto endResult = binaryReader.ReadInt();
+            if (endResult.Error())
+            {
+                return Result<System.Lex.Span>(ErrorId(endResult.GetErrorId()));
+            }
+            int end = endResult.Value();
+            return Result<System.Lex.Span>(System.Lex.Span(start, end));
+        }
+        private BinaryReader binaryReader;
+        private string fileName;
+    }
+
+} // namespace cm.ast

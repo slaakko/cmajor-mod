@@ -1,0 +1,180 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class AttributeNode : Node
+    {
+        public suppress AttributeNode(const AttributeNode& );
+        public AttributeNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.attributeNode, span_, fileIndex_), name(), value()
+        {
+        }
+        public AttributeNode(const System.Lex.Span& span_, int fileIndex_, const ustring& name_, const ustring& value_) :
+            base(NodeType.attributeNode, span_, fileIndex_), name(name_), value(value_)
+        {
+        }
+        public suppress AttributeNode& operator=(const AttributeNode& );
+        public inline const ustring& Name() const
+        {
+            return name;
+        }
+        public inline const ustring& Value() const
+        {
+            return value;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new AttributeNode(GetSpan(), FileIndex(), name, value);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            result.AndThen(writer.GetBinaryWriter().Write(name));
+            return result.AndThen(writer.GetBinaryWriter().Write(value));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto nameResult = reader.GetBinaryReader().ReadUString();
+            if (nameResult.Error())
+            {
+                return Result<bool>(ErrorId(nameResult.GetErrorId()));
+            }
+            name = nameResult.Value();
+            auto valueResult = reader.GetBinaryReader().ReadUString();
+            if (valueResult.Error())
+            {
+                return Result<bool>(ErrorId(valueResult.GetErrorId()));
+            }
+            value = valueResult.Value();
+            return Result<bool>(true);
+        }
+        private ustring name;
+        private ustring value;
+    }
+
+    public class AttributesNode : Node
+    {
+        public suppress AttributesNode(const AttributesNode& );
+        public AttributesNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.attributesNode, span_, fileIndex_)
+        {
+        }
+        public suppress AttributesNode& operator=(const AttributesNode& );
+        public inline const List<UniquePtr<AttributeNode>>& GetAttributes() const
+        {
+            return attributes;
+        }
+        public AttributeNode* GetAttribute(const ustring& name) const
+        {
+            Map<ustring, AttributeNode*>.ConstIterator it = attributeMap.CFind(name);
+            if (it != attributeMap.CEnd())
+            {
+                return it->second;
+            }
+            return null;
+        }
+        public Result<bool> AddAttribute(const System.Lex.Span& span, int fileIndex, const ustring& name)
+        {
+            return AddAttribute(span, fileIndex, name, u"true");
+        }
+        public Result<bool> AddAttribute(const System.Lex.Span& span, int fileIndex, const ustring& name, const ustring& value)
+        {
+            AttributeNode* prev = GetAttribute(name);
+            if (prev != null)
+            {
+                auto utf8Result = ToUtf8(name);
+                if (utf8Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                }
+                string utf8Name = utf8Result.Value();
+                int errorId = AllocateError("attribute \'" + utf8Name + "\' not unique");
+                return Result<bool>(ErrorId(errorId));
+            }
+            AttributeNode* attribute = new AttributeNode(span, fileIndex, name, value);
+            AddAttribute(attribute);
+            return Result<bool>(true);
+        }
+        public void AddAttribute(AttributeNode* attribute)
+        {
+            attributes.Add(UniquePtr<AttributeNode>(attribute));
+            attributeMap[attribute->Name()] = attribute;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            UniquePtr<AttributesNode> clone(new AttributesNode(GetSpan(), FileIndex()));
+            for (const UniquePtr<AttributeNode>& attribute : attributes)
+            {
+                clone->AddAttribute(attribute->GetSpan(), attribute->FileIndex(), attribute->Name(), attribute->Value());
+            }
+            return clone.Release();
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto countResult = writer.GetBinaryWriter().Write(cast<int>(attributes.Count()));
+            if (countResult.Error())
+            {
+                return countResult;
+            }
+            for (const UniquePtr<AttributeNode>& attribute : attributes)
+            {
+                auto attributeResult = writer.Write(attribute.Get());
+                if (attributeResult.Error())
+                {
+                    return attributeResult;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto readResult = base->Read(reader);
+            if (readResult.Error())
+            {
+                return readResult;
+            }
+            auto nResult = reader.GetBinaryReader().ReadInt();
+            if (nResult.Error())
+            {
+                return Result<bool>(ErrorId(nResult.GetErrorId()));
+            }
+            int n = nResult.Value();
+            for (int i = 0; i < n; ++i)
+            {
+                auto attributeResult = reader.ReadAttributeNode();
+                if (attributeResult.Error())
+                {
+                    return Result<bool>(ErrorId(attributeResult.GetErrorId()));
+                }
+                AttributeNode* attribute = attributeResult.Value();
+                AddAttribute(attribute);
+            }
+            return Result<bool>(true);
+        }
+        private List<UniquePtr<AttributeNode>> attributes;
+        private Map<ustring, AttributeNode*> attributeMap;
+    }
+
+} // namespace cm.ast

@@ -1,0 +1,55 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmlg.ast
+{
+    public class Action
+    {
+        public Action(int id_, const cm.ast.CompoundStatementNode* code_) : id(id_), code(code_)
+        {
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public inline cm.ast.CompoundStatementNode* Code() const
+        {
+            return code.Get();
+        }
+        private int id;
+        private UniquePtr<cm.ast.CompoundStatementNode> code;
+    }
+
+    public class Actions
+    {
+        public Actions()
+        {
+        }
+        public void AddAction(Action* action)
+        {
+            actions.Add(UniquePtr<Action>(action));
+            actionMap[action->Id()] = action;
+        }
+        public Action* GetAction(int id) const
+        {
+            auto it = actionMap.CFind(id);
+            if (it != actionMap.CEnd())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private List<UniquePtr<Action>> actions;
+        private Map<int, Action*> actionMap;
+    }
+}
+
+

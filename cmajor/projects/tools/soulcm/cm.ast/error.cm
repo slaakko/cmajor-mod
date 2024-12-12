@@ -1,0 +1,12 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+void Panic(const string& message)
+{
+    RtmPanic(message.Chars());
+}
+

@@ -1,0 +1,331 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class AutoNode : Node
+    {
+        public AutoNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.autoNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("auto");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new AutoNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class BoolNode : Node
+    {
+        public BoolNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.boolNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("bool");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new BoolNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class SByteNode : Node
+    {
+        public SByteNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.sbyteNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("sbyte");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new SByteNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ByteNode : Node
+    {
+        public ByteNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.byteNode, span_, fileIndex_)
+        {
+        }
+        public override bool IsUnsignedTypeNode() const
+        {
+            return true;
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("byte");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ByteNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ShortNode : Node
+    {
+        public ShortNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.shortNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("short");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ShortNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class UShortNode : Node
+    {
+        public UShortNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.ushortNode, span_, fileIndex_)
+        {
+        }
+        public override bool IsUnsignedTypeNode() const
+        {
+            return true;
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("ushort");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new UShortNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class IntNode : Node
+    {
+        public IntNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.intNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("int");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new IntNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class UIntNode : Node
+    {
+        public UIntNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.uintNode, span_, fileIndex_)
+        {
+        }
+        public override bool IsUnsignedTypeNode() const
+        {
+            return true;
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("uint");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new UIntNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class LongNode : Node
+    {
+        public LongNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.longNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("long");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new LongNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class ULongNode : Node
+    {
+        public ULongNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.ulongNode, span_, fileIndex_)
+        {
+        }
+        public override bool IsUnsignedTypeNode() const
+        {
+            return true;
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("ulong");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ULongNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class FloatNode : Node
+    {
+        public FloatNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.floatNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("float");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new FloatNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class DoubleNode : Node
+    {
+        public DoubleNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.doubleNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("double");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DoubleNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class CharNode : Node
+    {
+        public CharNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.charNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("char");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new CharNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class WCharNode : Node
+    {
+        public WCharNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.wcharNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("wchar");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new WCharNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class UCharNode : Node
+    {
+        public UCharNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.ucharNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("uchar");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new UCharNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+    public class VoidNode : Node
+    {
+        public VoidNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.voidNode, span_, fileIndex_)
+        {
+        }
+        public override Result<string> ToString() const
+        {
+            return Result<string>("void");
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new VoidNode(GetSpan(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+    }
+
+} // namespace cm.ast

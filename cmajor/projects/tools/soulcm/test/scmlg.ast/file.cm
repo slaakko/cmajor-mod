@@ -1,0 +1,41 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmlg.ast
+{
+    public enum FileKind
+    {
+        tokenFile, keywordFile, expressionFile, lexerFile, scmlgFile
+    }
+
+    public class File
+    {
+        public File(FileKind kind_, const string& filePath_) : kind(kind_), filePath(filePath_), external(false)
+        {
+        }
+        public default virtual ~File();
+        public inline FileKind Kind() const
+        {
+            return kind;
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        public inline bool IsExternal() const
+        {
+            return external;
+        }
+        public void SetExternal()
+        {
+            external = true;
+        }
+        private FileKind kind;
+        private string filePath;
+        private bool external;
+    }
+}

@@ -1,0 +1,387 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class ConstNode : Node
+    {
+        public ConstNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.constNode, span_, fileIndex_)
+        {
+        }
+        public ConstNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.constNode, span_, fileIndex_), subject(subject_)
+        {
+            subject->SetParent(this);
+        }
+        public const Node* Subject() const
+        {
+            return subject.Get();
+        }
+        public Node* Subject()
+        {
+            return subject.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConstNode(GetSpan(), FileIndex(), subject->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(subject.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto subjectResult = reader.ReadNode();
+            if (subjectResult.Error())
+            {
+                return Result<bool>(ErrorId(subjectResult.GetErrorId()));
+            }
+            subject.Reset(subjectResult.Value());
+            subject->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = subject->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>("const " + subjectResult.Value());
+        }
+        private UniquePtr<Node> subject;
+    }
+
+    public class LValueRefNode : Node
+    {
+        public LValueRefNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.lvalueRefNode, span_, fileIndex_)
+        {
+        }
+        public LValueRefNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.lvalueRefNode, span_, fileIndex_), subject(subject_)
+        {
+            subject->SetParent(this);
+        }
+        public const Node* Subject() const
+        {
+            return subject.Get();
+        }
+        public Node* Subject()
+        {
+            return subject.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new LValueRefNode(GetSpan(), FileIndex(), subject->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(subject.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto subjectResult = reader.ReadNode();
+            if (subjectResult.Error())
+            {
+                return Result<bool>(ErrorId(subjectResult.GetErrorId()));
+            }
+            subject.Reset(subjectResult.Value());
+            subject->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = subject->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>(subjectResult.Value() + "&");
+        }
+        private UniquePtr<Node> subject;
+    }
+
+    public class RValueRefNode : Node
+    {
+        public RValueRefNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.rvalueRefNode, span_, fileIndex_)
+        {
+        }
+        public RValueRefNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.rvalueRefNode, span_, fileIndex_), subject(subject_)
+        {
+            subject->SetParent(this);
+        }
+        public const Node* Subject() const
+        {
+            return subject.Get();
+        }
+        public Node* Subject()
+        {
+            return subject.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new RValueRefNode(GetSpan(), FileIndex(), subject->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(subject.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto subjectResult = reader.ReadNode();
+            if (subjectResult.Error())
+            {
+                return Result<bool>(ErrorId(subjectResult.GetErrorId()));
+            }
+            subject.Reset(subjectResult.Value());
+            subject->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = subject->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>(subjectResult.Value() + "&&");
+        }
+        private UniquePtr<Node> subject;
+    }
+
+    public class PointerNode : Node
+    {
+        public PointerNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.pointerNode, span_, fileIndex_)
+        {
+        }
+        public PointerNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_) : base(NodeType.pointerNode, span_, fileIndex_), subject(subject_)
+        {
+            subject->SetParent(this);
+        }
+        public const Node* Subject() const
+        {
+            return subject.Get();
+        }
+        public Node* Subject()
+        {
+            return subject.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new PointerNode(GetSpan(), FileIndex(), subject->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(subject.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto subjectResult = reader.ReadNode();
+            if (subjectResult.Error())
+            {
+                return Result<bool>(ErrorId(subjectResult.GetErrorId()));
+            }
+            subject.Reset(subjectResult.Value());
+            subject->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = subject->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            return Result<string>(subjectResult.Value() + "*");
+        }
+        private UniquePtr<Node> subject;
+    }
+
+    public class ArrayNode : Node
+    {
+        public ArrayNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.arrayNode, span_, fileIndex_), subject(), size()
+        {
+        }
+        public ArrayNode(const System.Lex.Span& span_, int fileIndex_, Node* subject_, Node* size_) :
+            base(NodeType.arrayNode, span_, fileIndex_), subject(subject_), size(size_)
+        {
+            subject->SetParent(this);
+            if (!size.IsNull())
+            {
+                size->SetParent(this);
+            }
+        }
+        public const Node* Subject() const
+        {
+            return subject.Get();
+        }
+        public Node* Subject()
+        {
+            return subject.Get();
+        }
+        public const Node* Size() const
+        {
+            return size.Get();
+        }
+        public Node* Size()
+        {
+            return size.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            Node* clonedSize = null;
+            if (!size.IsNull())
+            {
+                clonedSize = size->Clone(cloneContext);
+            }
+            return new ArrayNode(GetSpan(), FileIndex(), subject->Clone(cloneContext), clonedSize);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(subject.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasSize = size != null;
+            result = writer.GetBinaryWriter().Write(hasSize);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasSize)
+            {
+                result = writer.Write(size.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto subjectResult = reader.ReadNode();
+            if (subjectResult.Error())
+            {
+                return Result<bool>(ErrorId(subjectResult.GetErrorId()));
+            }
+            subject.Reset(subjectResult.Value());
+            subject->SetParent(this);
+            auto hasSizeResult = reader.GetBinaryReader().ReadBool();
+            if (hasSizeResult.Error())
+            {
+                return Result<bool>(ErrorId(hasSizeResult.GetErrorId()));
+            }
+            bool hasSize = hasSizeResult.Value();
+            if (hasSize)
+            {
+                auto sizeResult = reader.ReadNode();
+                if (sizeResult.Error())
+                {
+                    return Result<bool>(ErrorId(sizeResult.GetErrorId()));
+                }
+                size.Reset(sizeResult.Value());
+                size->SetParent(this);
+            }
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto subjectResult = subject->ToString();
+            if (subjectResult.Error())
+            {
+                return subjectResult;
+            }
+            string s = subjectResult.Value();
+            s.Append("[");
+            if (!size.IsNull())
+            {
+                auto sizeResult = size->ToString();
+                if (sizeResult.Error())
+                {
+                    return sizeResult;
+                }
+                s.Append(sizeResult.Value());
+            }
+            s.Append("]");
+            return Result<string>(s);
+        }
+        private UniquePtr<Node> subject;
+        private UniquePtr<Node> size;
+    }
+
+} // namespace cm.ast

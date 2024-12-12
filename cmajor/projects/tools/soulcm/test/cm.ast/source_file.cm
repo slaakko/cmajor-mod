@@ -1,0 +1,206 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.Security;
+
+namespace cm.ast
+{
+    public class SourceFileNode : Node
+    {
+        public SourceFileNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.sourceFileNode, span_, fileIndex_), globalNs(), isSynthesizedUnit(false)
+        {
+        }
+        public SourceFileNode(const System.Lex.Span& span_, int fileIndex_, const string& filePath_) : base(NodeType.sourceFileNode, span_, fileIndex_),
+            filePath(filePath_), globalNs(new NamespaceNode(span_, fileIndex_, new IdentifierNode(span_, fileIndex_, u""))), isSynthesizedUnit(false)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        public const NamespaceNode* GlobalNs() const
+        {
+            return globalNs.Get();
+        }
+        public NamespaceNode* GlobalNs()
+        {
+            return globalNs.Get();
+        }
+        public const List<int>& LineStarts()
+        {
+            return lineStarts;
+        }
+        public void SetSynthesizedUnit()
+        {
+            isSynthesizedUnit = true;
+        }
+        public bool IsSynthesizedUnit() const
+        {
+            return isSynthesizedUnit;
+        }
+        public void ComputeLineStarts(const ustring& sourceFileContent)
+        {
+            int index = 0;
+            bool startOfLine = true;
+            for (const uchar& c : sourceFileContent)
+            {
+                if (startOfLine)
+                {
+                    lineStarts.Add(index);
+                    startOfLine = false;
+                }
+                if (c == '\n')
+                {
+                    startOfLine = true;
+                }
+                ++index;
+            }
+        }
+        public Result<string> Id()
+        {
+            if (id.IsEmpty())
+            {
+                auto sha1Result = GetSha1MessageDigest(filePath);
+                if (sha1Result.Error())
+                {
+                    return sha1Result;
+                }
+                id = sha1Result.Value();
+            }
+            return Result<string>(id);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            SourceFileNode* clone = new SourceFileNode(GetSpan(), FileIndex(), filePath);
+            clone->globalNs.Reset(cast<NamespaceNode*>(globalNs->Clone(cloneContext)));
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public void SetModuleId(const Uuid& moduleId_)
+        {
+            moduleId = moduleId_;
+        }
+        public override const Uuid& ModuleId() const
+        {
+            return moduleId;
+        }
+        private string filePath;
+        private UniquePtr<NamespaceNode> globalNs;
+        private List<int> lineStarts;
+        private bool isSynthesizedUnit;
+        private string id;
+        private Uuid moduleId;
+    }
+
+    public class NamespaceCombiner : Visitor
+    {
+        public override void Visit(SourceFileNode& sourceFileNode)
+        {
+            sourceFileNode.GlobalNs()->Accept(*this);
+        }
+        public override void Visit(NamespaceNode& namespaceNode)
+        {
+            int n = namespaceNode.Members().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                namespaceNode.Members()[i]->Accept(*this);
+            }
+            if (n == 1 && !namespaceNode.Id()->Str().IsEmpty())
+            {
+                Node* node = namespaceNode.Members()[0];
+                if (node->GetNodeType() == NodeType.namespaceNode)
+                {
+                    UniquePtr<NamespaceNode> childNs(cast<NamespaceNode*>(namespaceNode.Members().Release(0)));
+                    namespaceNode.Id()->SetStr(namespaceNode.Id()->Str() + u"." + childNs->Id()->Str());
+                    namespaceNode.Members().Clear();
+                    namespaceNode.Members().SetContent(childNs->Members().Content());
+                    namespaceNode.Members().SetParent(&namespaceNode);
+                }
+            }
+        }
+    }
+    public void CombineNamespaces(SourceFileNode& sourceFile)
+    {
+        NamespaceCombiner combiner;
+        sourceFile.Accept(combiner);
+    }
+
+    public class ClassMemberArranger : Visitor
+    {
+        public override void Visit(SourceFileNode& sourceFileNode)
+        {
+            sourceFileNode.GlobalNs()->Accept(*this);
+        }
+        public override void Visit(NamespaceNode& namespaceNode)
+        {
+            int n = namespaceNode.Members().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                namespaceNode.Members()[i]->Accept(*this);
+            }
+        }
+        public override void Visit(ClassNode& classNode)
+        {
+            int n = classNode.Members().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                classNode.Members()[i]->Accept(*this);
+            }
+            classNode.ArrangeMembers();
+        }
+    }
+
+    public void ArrangeClassMembers(SourceFileNode& sourceFile)
+    {
+        ClassMemberArranger arranger;
+        sourceFile.Accept(arranger);
+    }
+
+    public class UnnamedNamespaceProcessor : Visitor
+    {
+        public UnnamedNamespaceProcessor()
+        {
+        }
+        public override void Visit(SourceFileNode& sourceFileNode)
+        {
+            sourceFileNode.GlobalNs()->Accept(*this);
+            int index = 0;
+            for (NamespaceNode* unnamedNs : unnamedNamespaces)
+            {
+                CloneContext cloneContext;
+                IdentifierNode* unnamedNsId = cast<IdentifierNode*>(unnamedNs->Id()->Clone(cloneContext));
+                NamespaceImportNode* import = new NamespaceImportNode(sourceFileNode.GetSpan(), sourceFileNode.FileIndex(), unnamedNsId);
+                sourceFileNode.GlobalNs()->Members().Insert(index, import);
+                ++index;
+            }
+        }
+        public override void Visit(NamespaceNode& namespaceNode)
+        {
+            if (namespaceNode.IsUnnamedNs())
+            {
+                unnamedNamespaces.Add(&namespaceNode);
+            }
+            int n = namespaceNode.Members().Count();
+            for (int i = 0; i < n; ++i)
+            {
+                namespaceNode.Members()[i]->Accept(*this);
+            }
+        }
+        private List<NamespaceNode*> unnamedNamespaces;
+    }
+
+    public void AddNamespaceImportsForUnnamedNamespaces(SourceFileNode& sourceFile)
+    {
+        UnnamedNamespaceProcessor processor;
+        sourceFile.Accept(processor);
+    }
+
+} // namespace cm.ast

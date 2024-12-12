@@ -1,0 +1,1206 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using System.Text;
+
+namespace cm.ast
+{
+    internal ModuleVersionTagVerifier* moduleVersionTagVerifier;
+
+    internal string outDir;
+
+    public enum BackEnd : byte
+    {
+        llvm = 0u, systemx = 1u, cpp = 2u, masm = 3u, cm = 4u
+    }
+
+    public string BackEndStr(BackEnd backend)
+    {
+        switch (backend)
+        {
+            case BackEnd.llvm: return "llvm";
+            case BackEnd.systemx: return "system-x";
+            case BackEnd.cpp: return "cpp";
+            case BackEnd.masm: return "masm";
+            case BackEnd.cm: return "cm";
+        }
+        return "<unknown backend>";
+    }
+
+    public enum Config : byte
+    {
+        debug = 0u, release = 1u, profile = 2u, trace = 3u
+    }
+
+    public string GetPlatform()
+    {
+    #if (WINDOWS)
+        return "windows";
+    #else
+        return "linux";
+    #endif
+        return string();
+    }
+
+    public abstract class ModuleVersionTagVerifier
+    {
+        public default virtual ~ModuleVersionTagVerifier();
+        abstract void VerifyModuleVersionTag(const string& moduleFilePath);
+    }
+
+    public void SetModuleVersionTagVerifier(ModuleVersionTagVerifier* verifier)
+    {
+        moduleVersionTagVerifier = verifier;
+    }
+
+    public Result<string> CmajorRootDir()
+    {
+        string cmajorRootDir;
+        int stringHandle = RtmGetEnvironmentVariable("CMAJOR_ROOT");
+        if (stringHandle != -1)
+        {
+            cmajorRootDir = RtmGetString(stringHandle);
+            RtmFreeString(stringHandle);
+        }
+        if (cmajorRootDir.IsEmpty())
+        {
+            int errorId = AllocateError("environment variable 'CMAJOR_ROOT' not found; please set it to contain /path/to/cmajor directory");
+            return Result<string>(ErrorId(errorId));
+        }
+        return Result<string>(cmajorRootDir);
+    }
+
+    public Result<string> CmajorSystemLibDir(const string& config, BackEnd backend, const string& toolChain)
+    {
+        auto cmajorRootDirResult = CmajorRootDir();
+        if (cmajorRootDirResult.Error())
+        {
+            return cmajorRootDirResult;
+        }
+        string cmajorRootDir = cmajorRootDirResult.Value();
+        if (backend == BackEnd.llvm)
+        {
+            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "llvm"), config));
+        }
+        else if (backend == BackEnd.systemx)
+        {
+            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system-x"), "system"), "lib"), config);
+        }
+        else if (backend == BackEnd.cpp)
+        {
+            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cpp"), config));
+        }
+        else if (backend == BackEnd.masm)
+        {
+            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "masm"), config));
+        }
+        else if (backend == BackEnd.cm)
+        {
+            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cm"), config));
+        }
+        else
+        {
+            return Result<string>(string());
+        }
+    }
+
+    public Result<string> CmajorSystemModuleFilePath(const string& config, BackEnd backend, const string& toolChain)
+    {
+        auto libDirResult = CmajorSystemLibDir(config, backend, toolChain);
+        if (libDirResult.Error())
+        {
+            return libDirResult;
+        }
+        return GetFullPath(Path.Combine(libDirResult.Value(), "System.cmm"));
+    }
+
+    public Result<string> CmajorSystemWindowsModuleFilePath(const string& config, BackEnd backend, const string& toolChain)
+    {
+        auto libDirResult = CmajorSystemLibDir(config, backend, toolChain);
+        if (libDirResult.Error())
+        {
+            return libDirResult;
+        }
+        return GetFullPath(Path.Combine(libDirResult.Value(), "System.Windows.cmm"));
+    }
+
+    public Result<string> MakeCmajorRootRelativeFilePath(const string& filePath)
+    {
+        auto cmajorRootDirResult = CmajorRootDir();
+        if (cmajorRootDirResult.Error())
+        {
+            return cmajorRootDirResult;
+        }
+        auto fullPathResult = GetFullPath(cmajorRootDirResult.Value());
+        if (fullPathResult.Error())
+        {
+            return fullPathResult;
+        }
+        string cmajorRootDir = fullPathResult.Value();
+        fullPathResult = GetFullPath(filePath);
+        if (fullPathResult.Error())
+        {
+            return fullPathResult;
+        }
+        string fullPath = fullPathResult.Value();
+        if (fullPath.StartsWith(cmajorRootDir))
+        {
+            return Result<string>("$CMAJOR_ROOT$" + fullPath.Substring(cmajorRootDir.Length()));
+        }
+        else
+        {
+            return Result<string>(fullPath);
+        }
+    }
+
+    public Result<string> ExpandCmajorRootRelativeFilePath(const string& filePath)
+    {
+        if (filePath.StartsWith("$CMAJOR_ROOT$"))
+        {
+            auto cmajorRootDirResult = CmajorRootDir();
+            if (cmajorRootDirResult.Error())
+            {
+                return cmajorRootDirResult;
+            }
+            auto fullPathResult = GetFullPath(cmajorRootDirResult.Value());
+            if (fullPathResult.Error())
+            {
+                return fullPathResult;
+            }
+            string cmajorRootDir = fullPathResult.Value();
+            return cmajorRootDir + filePath.Substring(string("$CMAJOR_ROOT$").Length());
+        }
+        else
+        {
+            return GetFullPath(filePath);
+        }
+    }
+
+    public void SetOutDir(const string& outDir_)
+    {
+        outDir = outDir_;
+    }
+
+    public const string& OutDir()
+    {
+        return outDir;
+    }
+
+    public enum ProjectDeclarationType
+    {
+        referenceDeclaration, sourceFileDeclaration, resourceFileDeclaration, resourceScriptFileDeclaration, textFileDeclaration, actionFileDeclaration, targetDeclaration
+    }
+
+    public abstract class ProjectDeclaration
+    {
+        public ProjectDeclaration(ProjectDeclarationType declarationType_) : declarationType(declarationType_)
+        {
+        }
+        public default virtual ~ProjectDeclaration();
+        public ProjectDeclarationType GetDeclarationType() const
+        {
+            return declarationType;
+        }
+        private ProjectDeclarationType declarationType;
+    }
+
+    public class ReferenceDeclaration : ProjectDeclaration
+    {
+        public ReferenceDeclaration(const string& filePath_) : base(ProjectDeclarationType.referenceDeclaration), filePath(filePath_)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private string filePath;
+    }
+
+    public class SourceFileDeclaration : ProjectDeclaration
+    {
+        public SourceFileDeclaration(const string& filePath_) : base(ProjectDeclarationType.sourceFileDeclaration), filePath(filePath_)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private string filePath;
+    }
+
+    public class ResourceFileDeclaration : ProjectDeclaration
+    {
+        public ResourceFileDeclaration(const string& filePath_) : base(ProjectDeclarationType.resourceFileDeclaration), filePath(filePath_)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private string filePath;
+    }
+
+    public class ResourceScriptFileDeclaration : ProjectDeclaration
+    {
+        public ResourceScriptFileDeclaration(const string& filePath_) : base(ProjectDeclarationType.resourceScriptFileDeclaration), filePath(filePath_)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private string filePath;
+    }
+
+    public class TextFileDeclaration : ProjectDeclaration
+    {
+        public TextFileDeclaration(const string& filePath_) : base(ProjectDeclarationType.textFileDeclaration), filePath(filePath_)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private string filePath;
+    }
+
+    public class ActionFileDeclaration : ProjectDeclaration
+    {
+        public ActionFileDeclaration(const string& filePath_) : base(ProjectDeclarationType.actionFileDeclaration), filePath(filePath_)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private string filePath;
+    }
+
+    public enum Target
+    {
+        program, winguiapp, winapp, library, winlib, unitTest
+    }
+
+    public string TargetStr(Target target)
+    {
+        switch (target)
+        {
+            case Target.program: return "program";
+            case Target.winguiapp: return "winguiapp";
+            case Target.winapp: return "winapp";
+            case Target.library: return "library";
+            case Target.winlib: return "winlib";
+            case Target.unitTest: return "unitTest";
+        }
+        return "program";
+    }
+
+    public class TargetDeclaration : ProjectDeclaration
+    {
+        public TargetDeclaration(Target target_) : base(ProjectDeclarationType.targetDeclaration), target(target_)
+        {
+        }
+        public Target GetTarget() const
+        {
+            return target;
+        }
+        private Target target;
+    }
+
+    public class Project : System.IO.IOBase
+    {
+        public Project(const ustring& name_, const string& filePath_, const string& config_, BackEnd backend_, const string& toolChain_) :
+            name(name_), filePath(Path.MakeCanonical(filePath_)), config(config_), backend(backend_), toolChain(toolChain_),
+            sourceBasePath(Path.GetDirectoryName(filePath))
+        {
+            string backEndStr = BackEndStr(backend);
+            string platform = GetPlatform();
+            if (!outDir.IsEmpty())
+            {
+                auto utf8Result = ToUtf8(name);
+                if (utf8Result.Error())
+                {
+                    SetErrorId(utf8Result.GetErrorId());
+                    return;
+                }
+                outDirBasePath = Path.Combine(outDir, utf8Result.Value());
+            }
+            else
+            {
+                outDirBasePath = sourceBasePath;
+            }
+            auto systemLibDirResult = CmajorSystemLibDir(config, backend, toolChain);
+            if (systemLibDirResult.Error())
+            {
+                SetErrorId(systemLibDirResult.GetErrorId());
+                return;
+            }
+            systemLibDir = systemLibDirResult.Value();
+            moduleFilePath = Path.GetDirectoryName(filePath);
+            if (!outDir.IsEmpty())
+            {
+                moduleFilePath = outDirBasePath;
+            }
+            auto fullPathResult = GetFullPath(Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(moduleFilePath, "lib"), backEndStr), config),
+                Path.GetFileName(filePath)), ".cmm"));
+            if (fullPathResult.Error())
+            {
+                SetErrorId(fullPathResult.GetErrorId());
+                return;
+            }
+            moduleFilePath = fullPathResult.Value();
+        #if (WINDOWS)
+            if (backend == BackEnd.systemx)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(moduleFilePath, ".a"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                libraryFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.llvm)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(moduleFilePath, ".lib"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                libraryFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.cpp)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(moduleFilePath, ".a"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                libraryFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.masm)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(moduleFilePath, ".lib"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                libraryFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.cm)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(moduleFilePath, ".lib"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                libraryFilePath = fullPathResult.Value();
+            }
+        #else
+            fullPathResult = GetFullPath(Path.ChangeExtension(moduleFilePath, ".a"));
+            if (fullPathResult.Error())
+            {
+                SetErrorId(fullPathResult.GetErrorId());
+                return;
+            }
+            libraryFilePath = fullPathResult.Value();
+        #endif
+            executableFilePath = Path.GetDirectoryName(filePath);
+            if (!outDir.IsEmpty())
+            {
+                executableFilePath = outDirBasePath;
+            }
+            executableFilePath = Path.Combine(Path.Combine(Path.Combine(Path.Combine(executableFilePath, "bin"), config), backEndStr), Path.GetFileName(filePath));
+        #if (WINDOWS)
+            if (backend == BackEnd.systemx)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(executableFilePath, string()));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                executableFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.llvm)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(executableFilePath, ".exe"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                executableFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.cpp)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(executableFilePath, ".exe"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                executableFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.masm)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(executableFilePath, ".exe"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                executableFilePath = fullPathResult.Value();
+            }
+            else if (backend == BackEnd.cm)
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(executableFilePath, ".exe"));
+                if (fullPathResult.Error())
+                {
+                    SetErrorId(fullPathResult.GetErrorId());
+                    return;
+                }
+                executableFilePath = fullPathResult.Value();
+            }
+        #else
+            fullPathResult = GetFullPath(Path.ChangeExtension(executableFilePath, string()));
+            if (fullPathResult.Error())
+            {
+                SetErrorId(fullPathResult.GetErrorId());
+                return;
+            }
+            executableFilePath = fullPathResult.Value();
+        #endif
+        }
+        public const ustring& Name() const
+        {
+            return name;
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        public Target GetTarget() const
+        {
+            return target;
+        }
+        public void SetTarget(Target target_)
+        {
+            target = target_;
+        }
+        public const string& SourceBasePath() const
+        {
+            return sourceBasePath;
+        }
+        public const string& OutDirBasePath() const
+        {
+            return outDirBasePath;
+        }
+        public const string& ModuleFilePath() const
+        {
+            return moduleFilePath;
+        }
+        public const string& LibraryFilePath() const
+        {
+            return libraryFilePath;
+        }
+        public const string& ExecutableFilePath() const
+        {
+            return executableFilePath;
+        }
+        public const List<string>& References() const
+        {
+            return references;
+        }
+        public const List<string>& ReferencedProjectFilePaths() const
+        {
+            return referencedProjectFilePaths;
+        }
+        public const List<string>& RelativeReferencedProjectFilePaths() const
+        {
+            return relativeReferencedProjectFilePaths;
+        }
+        public Result<bool> SetReferencedProjects(const List<Project*>& referencedProjects)
+        {
+            referencedProjectFilePaths.Clear();
+            relativeReferencedProjectFilePaths.Clear();
+            auto absoluteProjectDirPathResult = GetFullPath(sourceBasePath);
+            if (absoluteProjectDirPathResult.Error())
+            {
+                return Result<bool>(ErrorId(absoluteProjectDirPathResult.GetErrorId()));
+            }
+            string absoluteProjectDirPath = absoluteProjectDirPathResult.Value();
+            for (Project* referencedProject : referencedProjects)
+            {
+                referencedProjectFilePaths.Add(referencedProject->FilePath());
+                auto absoluteReferenceDirPathResult = GetFullPath(Path.GetDirectoryName(referencedProject->FilePath()));
+                if (absoluteReferenceDirPathResult.Error())
+                {
+                    return Result<bool>(ErrorId(absoluteReferenceDirPathResult.GetErrorId()));
+                }
+                string absoluteReferenceDirPath = absoluteReferenceDirPathResult.Value();
+                auto referenceProjectDirResult = MakeRelativeDirPath(absoluteReferenceDirPath, absoluteProjectDirPath);
+                if (referenceProjectDirResult.Error())
+                {
+                    return Result<bool>(ErrorId(referenceProjectDirResult.GetErrorId()));
+                }
+                string referenceProjectDir = referenceProjectDirResult.Value();
+                relativeReferencedProjectFilePaths.Add(Path.Combine(referenceProjectDir, Path.GetFileName(referencedProject->FilePath())));
+            }
+            return Result<bool>(true);
+        }
+        public const List<string>& SourceFilePaths() const
+        {
+            return sourceFilePaths;
+        }
+        public void AddSourceFileName(const string& sourceFileName, const string& sourceFilePath)
+        {
+            relativeSourceFilePaths.Add(sourceFileName);
+            Sort(relativeSourceFilePaths.Begin(), relativeSourceFilePaths.End());
+            sourceFilePaths.Add(sourceFilePath);
+            Sort(sourceFilePaths.Begin(), sourceFilePaths.End());
+        }
+        public void AddResourceFileName(const string& resourceFileName, const string& resourceFilePath)
+        {
+            relativeResourceFilePaths.Add(resourceFileName);
+            Sort(relativeResourceFilePaths.Begin(), relativeResourceFilePaths.End());
+            resourceFilePaths.Add(resourceFilePath);
+            Sort(resourceFilePaths.Begin(), resourceFilePaths.End());
+        }
+        public void AddTextFileName(const string& textFileName, const string& textFilePath)
+        {
+            relativeTextFilePaths.Add(textFileName);
+            Sort(relativeTextFilePaths.Begin(), relativeTextFilePaths.End());
+            textFilePaths.Add(textFilePath);
+            Sort(textFilePaths.Begin(), textFilePaths.End());
+        }
+        public void AddActionFileName(const string& actionFileName, const string& actionFilePath)
+        {
+            relativeActionFilePaths.Add(actionFileName);
+            Sort(relativeActionFilePaths.Begin(), relativeActionFilePaths.End());
+            actionFilePaths.Add(actionFilePath);
+            Sort(actionFilePaths.Begin(), actionFilePaths.End());
+        }
+        public void RemoveFile(const string& filePath, const string& fileName)
+        {
+            relativeSourceFilePaths.Remove(fileName);
+            sourceFilePaths.Remove(filePath);
+            relativeResourceFilePaths.Remove(fileName);
+            resourceFilePaths.Remove(filePath);
+            relativeTextFilePaths.Remove(fileName);
+            textFilePaths.Remove(filePath);
+        }
+        public const List<string>& RelativeSourceFilePaths() const
+        {
+            return relativeSourceFilePaths;
+        }
+        public const List<string>& ResourceFilePaths() const
+        {
+            return resourceFilePaths;
+        }
+        public const List<string>& RelativeResourceFilePaths() const
+        {
+            return relativeResourceFilePaths;
+        }
+        public const List<string>& ResourceScriptFilePaths() const
+        {
+            return resourceScriptFilePaths;
+        }
+        public const List<string>& RelativeResourceScriptFilePaths() const
+        {
+            return relativeResourceScriptFilePaths;
+        }
+        public const List<string>& TextFilePaths() const
+        {
+            return textFilePaths;
+        }
+        public const List<string>& RelativeTextFilePaths() const
+        {
+            return relativeTextFilePaths;
+        }
+        public const List<string>& ActionFilePaths() const
+        {
+            return actionFilePaths;
+        }
+        public const List<string>& RelativeActionFilePaths() const
+        {
+            return relativeActionFilePaths;
+        }
+        public bool DependsOn(Project* that) const
+        {
+            return Find(references.CBegin(), references.CEnd(), that->moduleFilePath) != references.CEnd();
+        }
+        public void AddDependsOnProject(Project* dependsOnProject)
+        {
+            dependsOn.Add(dependsOnProject);
+        }
+        public bool IsSystemProject() const
+        {
+            return isSystemProject;
+        }
+        public void SetSystemProject()
+        {
+            isSystemProject = true;
+        }
+        public void SetRelativeFilePath(const string& relativeFilePath_)
+        {
+            relativeFilePath = relativeFilePath_;
+        }
+        public const string& RelativeFilePath() const
+        {
+            return relativeFilePath;
+        }
+        public void SetModuleFilePath(const string& moduleFilePath_)
+        {
+            moduleFilePath = moduleFilePath_;
+        }
+        public void SetLibraryFilePath(const string& libraryFilePath_)
+        {
+            libraryFilePath = libraryFilePath_;
+        }
+        public Result<bool> Save()
+        {
+            auto writerResult = File.CreateText(filePath);
+            if (writerResult.Error())
+            {
+                return Result<bool>(ErrorId(writerResult.GetErrorId()));
+            }
+            StreamWriter& writer = writerResult.Value();
+            CodeFormatter formatter(writer);
+            auto nameResult = ToUtf8(name);
+            if (nameResult.Error())
+            {
+                return Result<bool>(ErrorId(nameResult.GetErrorId()));
+            }
+            auto result = formatter.WriteLine("project " + nameResult.Value() + ";");
+            if (result.Error()) return result;
+            result = formatter.WriteLine("target=" + TargetStr(target) + ";");
+            if (result.Error()) return result;
+            for (const string& relativeReferenceFilePath : relativeReferencedProjectFilePaths)
+            {
+                result = formatter.WriteLine("reference <" + relativeReferenceFilePath + ">;");
+                if (result.Error()) return result;
+            }
+            for (const string& relativeSourceFilePath : relativeSourceFilePaths)
+            {
+                result = formatter.WriteLine("source <" + relativeSourceFilePath + ">;");
+                if (result.Error()) return result;
+            }
+            for (const string& relativeResourceFilePath : relativeResourceFilePaths)
+            {
+                result = formatter.WriteLine("resource <" + relativeResourceFilePath + ">;");
+                if (result.Error()) return result;
+            }
+            for (const string& relativeResourceScriptFilePath : relativeResourceScriptFilePaths)
+            {
+                result = formatter.WriteLine("rc <" + relativeResourceScriptFilePath + ">;");
+                if (result.Error()) return result;
+            }
+            for (const string& relativeTextFilePath : relativeTextFilePaths)
+            {
+                result = formatter.WriteLine("text <" + relativeTextFilePath + ">;");
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
+        public Result<bool> IsUpToDate(const string& systemModuleFilePath) const
+        {
+            auto existsResult = File.Exists(moduleFilePath);
+            if (existsResult.Error())
+            {
+                return existsResult;
+            }
+            if (!existsResult.Value()) return Result<bool>(false);
+            for (const string& sourceFilePath : sourceFilePaths)
+            {
+                auto writeTimeLessResult = File.LastWriteTimeLess(moduleFilePath, sourceFilePath);
+                if (writeTimeLessResult.Error())
+                {
+                    return writeTimeLessResult;
+                }
+                if (writeTimeLessResult.Value())
+                {
+                    return Result<bool>(false);
+                }
+            }
+            for (const string& referenceFilePath : references)
+            {
+                auto writeTimeLessResult = File.LastWriteTimeLess(moduleFilePath, referenceFilePath);
+                if (writeTimeLessResult.Error())
+                {
+                    return writeTimeLessResult;
+                }
+                if (writeTimeLessResult.Value())
+                {
+                    return Result<bool>(false);
+                }
+            }
+            auto systemModuleFileExistsResult = File.Exists(systemModuleFilePath);
+            if (systemModuleFileExistsResult.Error())
+            {
+                return Result<bool>(ErrorId(systemModuleFileExistsResult.GetErrorId()));
+            }
+            bool systemModuleFileExists = systemModuleFileExistsResult.Value();
+            if (!systemModuleFilePath.IsEmpty() && !IsSystemProject() && systemModuleFileExists)
+            {
+                auto writeTimeLessResult = File.LastWriteTimeLess(moduleFilePath, systemModuleFilePath);
+                if (writeTimeLessResult.Error())
+                {
+                    return writeTimeLessResult;
+                }
+                if (writeTimeLessResult.Value())
+                {
+                    return Result<bool>(false);
+                }
+            }
+            return Result<bool>(true);
+        }
+        public int LogStreamId() const
+        {
+            return logStreamId;
+        }
+        public void SetLogStreamId(int logStreamId_)
+        {
+            logStreamId = logStreamId_;
+        }
+        public int Index() const
+        {
+            return index;
+        }
+        public void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public const List<Project*>& DependsOnProjects() const
+        {
+            return dependsOn;
+        }
+        public bool Built() const
+        {
+            return built;
+        }
+        public void SetBuilt()
+        {
+            built = true;
+        }
+        public bool Ready() const
+        {
+            for (Project* dependOn : dependsOn)
+            {
+                if (!dependOn->Built())
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public void SetExcludeSourceFilePath(const string& excludeSourceFilePath_)
+        {
+            excludeSourceFilePath = excludeSourceFilePath_;
+        }
+        public void AddDeclaration(ProjectDeclaration* declaration)
+        {
+            declarations.Add(UniquePtr<ProjectDeclaration>(declaration));
+        }
+        public Result<bool> ResolveDeclarations()
+        {
+            for (const UniquePtr<ProjectDeclaration>& declaration : declarations)
+            {
+                bool unknown = false;
+                switch (declaration->GetDeclarationType())
+                {
+                    case ProjectDeclarationType.referenceDeclaration:
+                    {
+                        ReferenceDeclaration* referenceDeclaration = cast<ReferenceDeclaration*>(declaration.Get());
+                        string filePath = Path.MakeCanonical(referenceDeclaration->FilePath());
+                        relativeReferencedProjectFilePaths.Add(filePath);
+                        if (Path.IsAbsolute(filePath))
+                        {
+                            auto fullPathResult = GetFullPath(filePath);
+                            if (fullPathResult.Error())
+                            {
+                                return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
+                            }
+                            referencedProjectFilePaths.Add(fullPathResult.Value());
+                        }
+                        else
+                        {
+                            auto fullPathResult = GetFullPath(Path.Combine(sourceBasePath, filePath));
+                            if (fullPathResult.Error())
+                            {
+                                return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
+                            }
+                            string absolutePath = fullPathResult.Value();
+                            referencedProjectFilePaths.Add(absolutePath);
+                        }
+                        string fileName = Path.GetFileName(filePath);
+                        string extension = Path.GetExtension(fileName);
+                        if (extension != ".cmp" && extension != ".cmproj" && extension != ".cmm")
+                        {
+                            string errorMessage = "invalid reference path extension '" + extension + "' (not .cmp, .cmproj or .cmm)";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        string referencePath = Path.GetDirectoryName(filePath);
+                        if (Path.IsRelative(referencePath))
+                        {
+                            referencePath = Path.Combine(systemLibDir, referencePath);
+                        }
+                        referencePath = Path.Combine(referencePath, Path.ChangeExtension(fileName, ".cmm"));
+                        auto existsResult = File.Exists(referencePath);
+                        if (existsResult.Error())
+                        {
+                            return existsResult;
+                        }
+                        if (!existsResult.Value())
+                        {
+                            referencePath = Path.GetDirectoryName(referenceDeclaration->FilePath());
+                            if (Path.IsRelative(referencePath))
+                            {
+                                referencePath = Path.Combine(outDirBasePath, referencePath);
+                            }
+                            string backEndStr = BackEndStr(backend);
+                            auto fullPathResult = GetFullPath(
+                                Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(referencePath, "lib"), backEndStr), config), fileName), ".cmm"));
+                            if (fullPathResult.Error())
+                            {
+                                return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
+                            }
+                            referencePath = fullPathResult.Value();
+                        }
+                        if (Find(references.CBegin(), references.CEnd(), referencePath) == references.CEnd())
+                        {
+                            references.Add(referencePath);
+                        }
+                        break;
+                    }
+                    case ProjectDeclarationType.sourceFileDeclaration:
+                    {
+                        SourceFileDeclaration* sourceFileDeclaration = cast<SourceFileDeclaration*>(declaration.Get());
+                        string filePath = Path.MakeCanonical(sourceFileDeclaration->FilePath());
+                        relativeSourceFilePaths.Add(filePath);
+                        if (Path.IsRelative(filePath))
+                        {
+                            filePath = Path.Combine(sourceBasePath, filePath);
+                        }
+                        string extension = Path.GetExtension(filePath);
+                        if (extension != ".cm")
+                        {
+                            string errorMessage = "invalid source file extension '" + extension + "' (not .cm)";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        auto sourceFilePathResult = GetFullPath(filePath);
+                        if (sourceFilePathResult.Error())
+                        {
+                            return Result<bool>(ErrorId(sourceFilePathResult.GetErrorId()));
+                        }
+                        string sourceFilePath = sourceFilePathResult.Value();
+                        auto existsResult = File.Exists(sourceFilePath);
+                        if (existsResult.Error())
+                        {
+                            return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                        }
+                        if (!existsResult.Value())
+                        {
+                            string errorMessage = "source file path '" + sourceFilePath + "' not found";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        if (Find(sourceFilePaths.CBegin(), sourceFilePaths.CEnd(), sourceFilePath) == sourceFilePaths.CEnd())
+                        {
+                            sourceFilePaths.Add(sourceFilePath);
+                        }
+                        break;
+                    }
+                    case ProjectDeclarationType.resourceFileDeclaration:
+                    {
+                        ResourceFileDeclaration* resourceFileDeclaration = cast<ResourceFileDeclaration*>(declaration.Get());
+                        string filePath = resourceFileDeclaration->FilePath();
+                        relativeResourceFilePaths.Add(filePath);
+                        if (Path.IsRelative(filePath))
+                        {
+                            filePath = Path.Combine(sourceBasePath, filePath);
+                        }
+                        string extension = Path.GetExtension(filePath);
+                        if (extension != ".xml")
+                        {
+                            string errorMessage = "invalid resource file extension '" + extension + "' (not .xml)";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        auto resourceFilePathResult = GetFullPath(filePath);
+                        if (resourceFilePathResult.Error())
+                        {
+                            return Result<bool>(ErrorId(resourceFilePathResult.GetErrorId()));
+                        }
+                        string resourceFilePath = resourceFilePathResult.Value();
+                        auto existsResult = File.Exists(resourceFilePath);
+                        if (existsResult.Error())
+                        {
+                            return existsResult;
+                        }
+                        if (!existsResult.Value())
+                        {
+                            string errorMessage = "resource file path '" + resourceFilePath + "' not found";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        if (Find(resourceFilePaths.CBegin(), resourceFilePaths.CEnd(), resourceFilePath) == resourceFilePaths.CEnd())
+                        {
+                            resourceFilePaths.Add(resourceFilePath);
+                        }
+                        break;
+                    }
+                    case ProjectDeclarationType.resourceScriptFileDeclaration:
+                    {
+                        ResourceScriptFileDeclaration* resourceScriptFileDeclaration = cast<ResourceScriptFileDeclaration*>(declaration.Get());
+                        string filePath = resourceScriptFileDeclaration->FilePath();
+                        relativeResourceScriptFilePaths.Add(filePath);
+                        if (Path.IsRelative(filePath))
+                        {
+                            filePath = Path.Combine(sourceBasePath, filePath);
+                        }
+                        string extension = Path.GetExtension(filePath);
+                        if (extension != ".rc")
+                        {
+                            string errorMessage = "invalid resource file extension '" + extension + "' (not .rc)";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        auto resourceSciptFilePathResult = GetFullPath(filePath);
+                        if (resourceSciptFilePathResult.Error())
+                        {
+                            return Result<bool>(ErrorId(resourceSciptFilePathResult.GetErrorId()));
+                        }
+                        string resourceScriptFilePath = resourceSciptFilePathResult.Value();
+                        auto existsResult = File.Exists(resourceScriptFilePath);
+                        if (existsResult.Error())
+                        {
+                            return existsResult;
+                        }
+                        if (!existsResult.Value())
+                        {
+                            string errorMessage = "resource script file path '" + resourceScriptFilePath + "' not found";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        if (Find(resourceScriptFilePaths.CBegin(), resourceScriptFilePaths.CEnd(), resourceScriptFilePath) == resourceScriptFilePaths.CEnd())
+                        {
+                            resourceScriptFilePaths.Add(resourceScriptFilePath);
+                        }
+                        break;
+                    }
+                    case ProjectDeclarationType.targetDeclaration:
+                    {
+                        TargetDeclaration* targetDeclaration = cast<TargetDeclaration*>(declaration.Get());
+                        target = targetDeclaration->GetTarget();
+                        break;
+                    }
+                    case ProjectDeclarationType.textFileDeclaration:
+                    {
+                        TextFileDeclaration* textFileDeclaration = cast<TextFileDeclaration*>(declaration.Get());
+                        string filePath = Path.MakeCanonical(textFileDeclaration->FilePath());
+                        relativeTextFilePaths.Add(filePath);
+                        if (Path.IsRelative(filePath))
+                        {
+                            filePath = Path.Combine(sourceBasePath, filePath);
+                        }
+                        auto textFilePathResult = GetFullPath(filePath);
+                        if (textFilePathResult.Error())
+                        {
+                            return Result<bool>(ErrorId(textFilePathResult.GetErrorId()));
+                        }
+                        string textFilePath = textFilePathResult.Value();
+                        textFilePaths.Add(textFilePath);
+                        break;
+                    }
+                    case ProjectDeclarationType.actionFileDeclaration:
+                    {
+                        ActionFileDeclaration* actionFileDeclaration = cast<ActionFileDeclaration*>(declaration.Get());
+                        string filePath = Path.MakeCanonical(actionFileDeclaration->FilePath());
+                        relativeActionFilePaths.Add(filePath);
+                        if (Path.IsRelative(filePath))
+                        {
+                            filePath = Path.Combine(sourceBasePath, filePath);
+                        }
+                        auto actionFilePathResult = GetFullPath(filePath);
+                        if (actionFilePathResult.Error())
+                        {
+                            return Result<bool>(ErrorId(actionFilePathResult.GetErrorId()));
+                        }
+                        string actionFilePath = actionFilePathResult.Value();
+                        actionFilePaths.Add(actionFilePath);
+                        break;
+                    }
+                    default:
+                    {
+                        unknown = true;
+                        break;
+                    }
+                }
+                if (unknown)
+                {
+                    int errorId = AllocateError("unknown project declaration");
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        public void AddSourceFile(SourceFileNode* sourceFile)
+        {
+            sourceFiles.Add(UniquePtr<SourceFileNode>(sourceFile));
+        }
+        public inline const List<UniquePtr<SourceFileNode>>& SourceFiles() const
+        {
+            return sourceFiles;
+        }
+        public inline List<UniquePtr<SourceFileNode>>& SourceFiles()
+        {
+            return sourceFiles;
+        }
+        public System.Lex.Span RootSpan() const
+        {
+            if (!sourceFiles.IsEmpty())
+            {
+                return sourceFiles.Front()->GlobalNsSpan();
+            }
+            else
+            {
+                return System.Lex.Span();
+            }
+        }
+        public int RootFileIndex() const
+        {
+            if (!sourceFiles.IsEmpty())
+            {
+                return sourceFiles.Front()->FileIndex();
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        public SourceFileNode* RootSourceFile() const
+        {
+            if (!sourceFiles.IsEmpty())
+            {
+                return sourceFiles.Front().Get();
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private ustring name;
+        private string filePath;
+        private string config;
+        private BackEnd backend;
+        private Target target;
+        private string toolChain;
+        private string sourceBasePath;
+        private string outDirBasePath;
+        private string systemLibDir;
+        private List<UniquePtr<ProjectDeclaration>> declarations;
+        private string relativeFilePath;
+        private string moduleFilePath;
+        private string libraryFilePath;
+        private string executableFilePath;
+        private string excludeSourceFilePath;
+        private List<string> references;
+        private List<string> referencedProjectFilePaths;
+        private List<string> sourceFilePaths;
+        private List<string> relativeSourceFilePaths;
+        private List<string> resourceFilePaths;
+        private List<string> relativeResourceFilePaths;
+        private List<string> resourceScriptFilePaths;
+        private List<string> relativeResourceScriptFilePaths;
+        private List<string> relativeReferencedProjectFilePaths;
+        private List<string> relativeTextFilePaths;
+        private List<string> textFilePaths;
+        private List<string> relativeActionFilePaths;
+        private List<string> actionFilePaths;
+        private List<Project*> dependsOn;
+        private bool built;
+        private bool isSystemProject;
+        private int logStreamId;
+        private int index;
+        private List<UniquePtr<SourceFileNode>> sourceFiles;
+    }
+
+    public Result<List<Project*>> GetReferencedProjects(Project* project, Solution* solution)
+    {
+        List<Project*> referencedProjects;
+        for (const string& referencedProjectFilePath : project->ReferencedProjectFilePaths())
+        {
+            auto rpfpResult = GetFullPath(referencedProjectFilePath);
+            if (rpfpResult.Error())
+            {
+                return Result<List<Project*>>(ErrorId(rpfpResult.GetErrorId()));
+            }
+            string rpfp = rpfpResult.Value();
+            long n = solution->Projects().Count();
+            bool found = false;
+            long i = 0;
+            while (i < n && !found)
+            {
+                Project* solutionProject = solution->Projects()[i].Get();
+                auto fpResult = GetFullPath(solutionProject->FilePath());
+                if (fpResult.Error())
+                {
+                    return Result<List<Project*>>(ErrorId(fpResult.GetErrorId()));
+                }
+                string fp = fpResult.Value();
+                if (fp == rpfp)
+                {
+                    referencedProjects.Add(solutionProject);
+                    found = true;
+                }
+                ++i;
+            }
+        }
+        return Result<List<Project*>>(referencedProjects);
+    }
+
+    public Result<Set<Project*>> GetAllReferencedProjects(Project* project, Solution* solution)
+    {
+        Set<Project*> allReferencedProjects;
+        auto addReferencedProjectsResult = AddReferencedProjects(allReferencedProjects, project, solution);
+        if (addReferencedProjectsResult.Error())
+        {
+            return Result<Set<Project*>>(ErrorId(addReferencedProjectsResult.GetErrorId()));
+        }
+        return Result<Set<Project*>>(allReferencedProjects);
+    }
+
+    internal Result<bool> AddReferencedProjects(Set<Project*>& allReferencedProjects, Project* project, Solution* solution)
+    {
+        auto referencedProjects = GetReferencedProjects(project, solution);
+        if (referencedProjects.Error())
+        {
+            return Result<bool>(ErrorId(referencedProjects.GetErrorId()));
+        }
+        for (Project* referencedProject : referencedProjects.Value())
+        {
+            if (allReferencedProjects.CFind(referencedProject) == allReferencedProjects.CEnd())
+            {
+                allReferencedProjects.Insert(referencedProject);
+                auto result = AddReferencedProjects(allReferencedProjects, referencedProject, solution);
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+        }
+        return Result<bool>(true);
+    }
+}

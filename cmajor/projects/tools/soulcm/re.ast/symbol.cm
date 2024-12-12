@@ -192,7 +192,7 @@ namespace re.ast
             {
                 SetErrorId(endResult.GetErrorId());
             }
-            SetName("(" + startResult.Value() + "-" + endResult.Value()+ ")");
+            SetName("(" + startResult.Value() + "-" + endResult.Value() + ")");
         }
         public inline bool IsEmpty() const
         {

@@ -1,0 +1,1157 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg.ast
+{
+    public enum ParserKind
+    {
+        choiceParser, sequenceParser, differenceParser, listParser, lookaheadParser, kleeneParser, positiveParser, optionalParser,
+        actionParser, nonterminalParser, emptyParser, anyParser, tokenParser, charParser, stringParser, charSetParser, groupParser,
+        switchParser, caseParser, ruleParser, grammarParser
+    }
+
+    public string ParserKindStr(ParserKind kind)
+    {
+        switch (kind)
+        {
+            case ParserKind.choiceParser:
+            {
+                return "choiceParser";
+            }
+            case ParserKind.sequenceParser:
+            {
+                return "sequenceParser";
+            }
+            case ParserKind.differenceParser:
+            {
+                return "differenceParser";
+            }
+            case ParserKind.listParser:
+            {
+                return "listParser";
+            }
+            case ParserKind.lookaheadParser:
+            {
+                return "lookaheadParser";
+            }
+            case ParserKind.kleeneParser:
+            {
+                return "kleeneParser";
+            }
+            case ParserKind.positiveParser:
+            {
+                return "positiveParser";
+            }
+            case ParserKind.optionalParser:
+            {
+                return "optionalParser";
+            }
+            case ParserKind.actionParser:
+            {
+                return "actionParser";
+            }
+            case ParserKind.nonterminalParser:
+            {
+                return "nonterminalParser";
+            }
+            case ParserKind.emptyParser:
+            {
+                return "emptyParser";
+            }
+            case ParserKind.anyParser:
+            {
+                return "anyParser";
+            }
+            case ParserKind.tokenParser:
+            {
+                return "tokenParser";
+            }
+            case ParserKind.charParser:
+            {
+                return "charParser";
+            }
+            case ParserKind.stringParser:
+            {
+                return "stringParser";
+            }
+            case ParserKind.charSetParser:
+            {
+                return "charSetParser";
+            }
+            case ParserKind.groupParser:
+            {
+                return "groupParser";
+            }
+            case ParserKind.switchParser:
+            {
+                return "switchParser";
+            }
+            case ParserKind.caseParser:
+            {
+                return "caseParser";
+            }
+            case ParserKind.ruleParser:
+            {
+                return "ruleParser";
+            }
+            case ParserKind.grammarParser:
+            {
+                return "grammarParser";
+            }
+        }
+        return "<unknown parser kind>";
+    }
+
+    public abstract class Parser
+    {
+        public Parser(ParserKind kind_, const System.Lex.Span& span_, int fileIndex_) : kind(kind_), span(span_), fileIndex(fileIndex_)
+        {
+        }
+        public default virtual ~Parser();
+        public inline ParserKind Kind() const
+        {
+            return kind;
+        }
+        public const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public Parser* Parent() const
+        {
+            return parent;
+        }
+        public void SetParent(Parser* parent_)
+        {
+            parent = parent_;
+        }
+        public abstract Parser* Clone() const;
+        public abstract void Accept(Visitor& visitor);
+        public abstract string Name() const;
+        public abstract void ComputeFirst(bool& changed, Set<Parser*>& visited);
+        public virtual bool IsTokenSwitch() const { return false; }
+        public virtual bool IsActionToken() const { return false; }
+        public inline bool IsNonterminalParser() const { return kind == ParserKind.nonterminalParser; }
+        public inline bool IsTokenParser() const { return kind == ParserKind.tokenParser; }
+        public inline bool IsListParser() const { return kind == ParserKind.listParser; }
+        public inline bool IsSwitchParser() const { return kind == ParserKind.switchParser; }
+        public inline bool IsDifferenceParser() const { return kind == ParserKind.differenceParser; }
+        public const TokenSet& First() const { return first; }
+        public TokenSet& First() { return first; }
+        private ParserKind kind;
+        private System.Lex.Span span;
+        private int fileIndex;
+        private Parser* parent;
+        private TokenSet first;
+    }
+
+    public abstract class UnaryParser : Parser
+    {
+        public UnaryParser(ParserKind kind_, const System.Lex.Span& span_, int fileIndex_, Parser* child_) : base(kind_, span_, fileIndex_), child(child_)
+        {
+            child->SetParent(this);
+        }
+        public Parser* Child() const
+        {
+            return child.Get();
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                child->ComputeFirst(changed, visited);
+                if (First().Merge(child->First()))
+                {
+                    changed = true;
+                }
+            }
+        }
+        private UniquePtr<Parser> child;
+    }
+
+    public abstract class BinaryParser : Parser
+    {
+        public BinaryParser(ParserKind kind_, const System.Lex.Span& span_, int fileIndex_, Parser* left_, Parser* right_) :
+            base(kind_, span_, fileIndex_), left(left_), right(right_)
+        {
+            left->SetParent(this);
+            right->SetParent(this);
+        }
+        public Parser* Left() const
+        {
+            return left.Get();
+        }
+        public Parser* Right() const
+        {
+            return right.Get();
+        }
+        private UniquePtr<Parser> left;
+        private UniquePtr<Parser> right;
+    }
+
+    public class ChoiceParser : BinaryParser
+    {
+        public ChoiceParser(const System.Lex.Span& span_, int fileIndex_, Parser* left_, Parser* right_) :
+            base(ParserKind.choiceParser, span_, fileIndex_, left_, right_), optimize(false)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new ChoiceParser(Span(), FileIndex(), Left()->Clone(), Right()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "choice";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                Left()->ComputeFirst(changed, visited);
+                Right()->ComputeFirst(changed, visited);
+                if (First().Merge(Left()->First()))
+                {
+                    changed = true;
+                }
+                if (First().Merge(Right()->First()))
+                {
+                    changed = true;
+                }
+            }
+        }
+        public override bool IsTokenSwitch() const
+        {
+            return Left()->IsActionToken() && Right()->IsActionToken() || Left()->IsTokenSwitch() && Right()->IsActionToken();
+        }
+        public inline bool Optimize() const
+        {
+            return optimize;
+        }
+        public void SetOptimizationFlag(int& count)
+        {
+            Parser* parent = Parent();
+            while (parent != null)
+            {
+                if (parent->IsDifferenceParser())
+                {
+                    return;
+                }
+                parent = parent->Parent();
+            }
+            if (!First().Contains("*"))
+            {
+                if (!Left()->First().Contains("#") && !Right()->First().Contains("#") &&!Left()->First().Contains("*") && !Right()->First().Contains("*"))
+                {
+                    if (!Left()->First().Intersects(Right()->First()))
+                    {
+                        optimize = true;
+                        ++count;
+                    }
+                }
+            }
+        }
+        private bool optimize;
+    }
+
+    public class CaseParser : UnaryParser
+    {
+        public CaseParser(const System.Lex.Span& span_, int fileIndex_, Parser* child_) : base(ParserKind.caseParser, span_, fileIndex_, child_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new CaseParser(Span(), FileIndex(), Child()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "case";
+        }
+    }
+
+    public class SwitchParser : Parser
+    {
+        public SwitchParser(const System.Lex.Span& span_, int fileIndex_) : base(ParserKind.switchParser, span_, fileIndex_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            SwitchParser* clone = new SwitchParser(Span(), FileIndex());
+            for (const auto& caseParser : caseParsers)
+            {
+                clone->AddCaseParser(cast<CaseParser*>(caseParser->Clone()));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "switch";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                for (const auto& caseParser : caseParsers)
+                {
+                    caseParser->ComputeFirst(changed, visited);
+                    if (First().Merge(caseParser->First()))
+                    {
+                        changed = true;
+                    }
+                }
+            }
+        }
+        public const List<UniquePtr<CaseParser>>& CaseParsers() const
+        {
+            return caseParsers;
+        }
+        public void AddCaseParser(CaseParser* caseParser)
+        {
+            caseParsers.Add(UniquePtr<CaseParser>(caseParser));
+        }
+        private List<UniquePtr<CaseParser>> caseParsers;
+    }
+
+    public class SequenceParser : BinaryParser
+    {
+        public SequenceParser(const System.Lex.Span& span_, int fileIndex_, Parser* left_, Parser* right_) :
+            base(ParserKind.sequenceParser, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new SequenceParser(Span(), FileIndex(), Left()->Clone(), Right()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "sequence";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                Left()->ComputeFirst(changed, visited);
+                Right()->ComputeFirst(changed, visited);
+                if (First().Merge(Left()->First()))
+                {
+                    changed = true;
+                }
+                if (First().Contains("#"))
+                {
+                    if (First().Merge(Right()->First()))
+                    {
+                        changed = true;
+                    }
+                }
+            }
+        }
+    }
+
+    public class DifferenceParser : BinaryParser
+    {
+        public DifferenceParser(const System.Lex.Span& span_, int fileIndex_, Parser* left_, Parser* right_) :
+            base(ParserKind.differenceParser, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new DifferenceParser(Span(), FileIndex(), Left()->Clone(), Right()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "difference";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                Left()->ComputeFirst(changed, visited);
+                if (First().Merge(Left()->First()))
+                {
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    public class ListParser : UnaryParser
+    {
+        public ListParser(const System.Lex.Span& span_, int fileIndex_, Parser* left_, Parser* right_) :
+            base(ParserKind.listParser, span_, fileIndex_,
+                new SequenceParser(span_, fileIndex_, left_,
+                    new KleeneParser(span_, fileIndex_,
+                        new SequenceParser(span_, fileIndex_, right_, left_->Clone())))),
+            left(left_), right(right_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new ListParser(Span(), FileIndex(), left->Clone(), right->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "list";
+        }
+        public Parser* Left() const
+        {
+            return left;
+        }
+        public Parser* Right() const
+        {
+            return right;
+        }
+        private Parser* left;
+        private Parser* right;
+    }
+
+    public class LookaheadParser : UnaryParser
+    {
+        public LookaheadParser(const System.Lex.Span& span_, int fileIndex_, Parser* child_) : base(ParserKind.lookaheadParser, span_, fileIndex_, child_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new LookaheadParser(Span(), FileIndex(), Child()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "lookahead";
+        }
+    }
+
+    public class KleeneParser : UnaryParser
+    {
+        public KleeneParser(const System.Lex.Span& span_, int fileIndex_, Parser* child_) : base(ParserKind.kleeneParser, span_, fileIndex_, child_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new KleeneParser(Span(), FileIndex(), Child()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "kleene";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                Child()->ComputeFirst(changed, visited);
+                if (First().Merge(Child()->First()))
+                {
+                    changed = true;
+                }
+                bool epsilonAdded = First().AddToken("#");
+                if (epsilonAdded)
+                {
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    public class PositiveParser : UnaryParser
+    {
+        public PositiveParser(const System.Lex.Span& span_, int fileIndex_, Parser* child_) : base(ParserKind.positiveParser, span_, fileIndex_, child_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new PositiveParser(Span(), FileIndex(), Child()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "positive";
+        }
+    }
+
+    public class OptionalParser : UnaryParser
+    {
+        public OptionalParser(const System.Lex.Span& span_, int fileIndex_, Parser* child_) : base(ParserKind.optionalParser, span_, fileIndex_, child_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new OptionalParser(Span(), FileIndex(), Child()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "optional";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                Child()->ComputeFirst(changed, visited);
+                if (First().Merge(Child()->First()))
+                {
+                    changed = true;
+                }
+                bool epsilonAdded = First().AddToken("#");
+                if (epsilonAdded)
+                {
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    public class ActionParser : UnaryParser
+    {
+        public ActionParser(const System.Lex.Span& span_, int fileIndex_, Parser* child_,
+            cm.ast.CompoundStatementNode* successCode_, cm.ast.CompoundStatementNode* failureCode_) :
+            base(ParserKind.actionParser, span_, fileIndex_, child_), successCode(successCode_), failureCode(failureCode_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            cm.ast.CloneContext cloneContext;
+            cm.ast.CompoundStatementNode* clonedSuccessCode = cast<cm.ast.CompoundStatementNode*>(successCode->Clone(cloneContext));
+            cm.ast.CompoundStatementNode* clonedFailureCode = null;
+            if (!failureCode.IsNull())
+            {
+                clonedFailureCode = cast<cm.ast.CompoundStatementNode*>(failureCode->Clone(cloneContext));
+            }
+            return new ActionParser(Span(), FileIndex(), Child()->Clone(), clonedSuccessCode, clonedFailureCode);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "action";
+        }
+        public override bool IsActionToken() const
+        {
+            CodeEvaluator evaluator;
+            if (!successCode.IsNull())
+            {
+                successCode->Accept(evaluator);
+                if (!evaluator.HasReturn()) return false;
+                if (evaluator.HasPass()) return false;
+            }
+            return Child()->IsTokenParser();
+        }
+        public cm.ast.CompoundStatementNode* SuccessCode() const
+        {
+            return successCode.Get();
+        }
+        public cm.ast.CompoundStatementNode* FailureCode() const
+        {
+            return failureCode.Get();
+        }
+        private UniquePtr<cm.ast.CompoundStatementNode> successCode;
+        private UniquePtr<cm.ast.CompoundStatementNode> failureCode;
+    }
+
+    public class NonterminalParser : Parser
+    {
+        public NonterminalParser(const System.Lex.Span& span_, int fileIndex_, const string& ruleName_, const string& instanceName_, cm.ast.ArgumentListNode* args_) :
+            base(ParserKind.nonterminalParser, span_, fileIndex_), ruleName(ruleName_), instanceName(instanceName_), args(args_), rule(null)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            cm.ast.ArgumentListNode* clonedArgs = null;
+            if (!args.IsNull())
+            {
+                cm.ast.CloneContext cloneContext;
+                clonedArgs = cast<cm.ast.ArgumentListNode*>(args->Clone(cloneContext));
+            }
+            return new NonterminalParser(Span(), FileIndex(), ruleName, instanceName, clonedArgs);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "nonterminal";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                rule->ComputeFirst(changed, visited);
+                if (First().Merge(rule->First()))
+                {
+                    changed = true;
+                }
+            }
+        }
+        public const string& RuleName() const
+        {
+            return ruleName;
+        }
+        public const string& InstanceName() const
+        {
+            return instanceName;
+        }
+        public cm.ast.ArgumentListNode* Args() const
+        {
+            return args.Get();
+        }
+        public RuleParser* Rule() const
+        {
+            return rule;
+        }
+        public void SetRule(RuleParser* rule_)
+        {
+            rule = rule_;
+        }
+        private string ruleName;
+        private string instanceName;
+        private UniquePtr<cm.ast.ArgumentListNode> args;
+        private RuleParser* rule;
+    }
+
+    public class EmptyParser : Parser
+    {
+        public EmptyParser(const System.Lex.Span& span_, int fileIndex_) : base(ParserKind.emptyParser, span_, fileIndex_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new EmptyParser(Span(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "empty";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                if (First().AddToken("#"))
+                {
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    public class AnyParser : Parser
+    {
+        public AnyParser(const System.Lex.Span& span_, int fileIndex_) : base(ParserKind.anyParser, span_, fileIndex_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new AnyParser(Span(), FileIndex());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "any";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                if (First().AddToken("*"))
+                {
+                    changed = true;
+                }
+            }
+        }
+    }
+
+    public class TokenParser : Parser
+    {
+        public TokenParser(const System.Lex.Span& span_, int fileIndex_, const string& tokenName_) :
+            base(ParserKind.tokenParser, span_, fileIndex_), tokenName(tokenName_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new TokenParser(Span(), FileIndex(), tokenName);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "token";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                if (First().AddToken(tokenName))
+                {
+                    changed = true;
+                }
+            }
+        }
+        public const string& TokenName() const
+        {
+            return tokenName;
+        }
+        private string tokenName;
+    }
+
+    public class CharParser : Parser
+    {
+        public CharParser(const System.Lex.Span& span_, int fileIndex_, uchar chr_) : base(ParserKind.charParser, span_, fileIndex_), chr(chr_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new CharParser(Span(), FileIndex(), chr);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "char";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+        }
+        public inline uchar Chr() const
+        {
+            return chr;
+        }
+        private uchar chr;
+    }
+
+    public class StringParser : Parser
+    {
+        public StringParser(const System.Lex.Span& span_, int fileIndex_, const ustring& str_) : base(ParserKind.stringParser, span_, fileIndex_), str(str_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new StringParser(Span(), FileIndex(), str);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "string";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+        }
+        public inline const ustring& Str() const
+        {
+            return str;
+        }
+        public const string& ArrayName() const
+        {
+            return arrayName;
+        }
+        public void SetArrayName(const string& arrayName_)
+        {
+            arrayName = arrayName_;
+        }
+        private ustring str;
+        private string arrayName;
+    }
+
+    public class CharSetParser : Parser
+    {
+        public CharSetParser(const System.Lex.Span& span_, int fileIndex_, CharSet* charSet_) : base(ParserKind.charSetParser, span_, fileIndex_), charSet(charSet_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new CharSetParser(Span(), FileIndex(), charSet->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "charSet";
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+        }
+        public CharSet* GetCharSet() const
+        {
+            return charSet.Get();
+        }
+        public const string& ArrayName() const
+        {
+            return arrayName;
+        }
+        public void SetArrayName(const string& arrayName_)
+        {
+            arrayName = arrayName_;
+        }
+        private UniquePtr<CharSet> charSet;
+        private string arrayName;
+    }
+
+    public class GroupParser : UnaryParser
+    {
+        public GroupParser(const System.Lex.Span& span_, int fileIndex_, Parser* child_) : base(ParserKind.groupParser, span_, fileIndex_, child_)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            return new GroupParser(Span(), FileIndex(), Child()->Clone());
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return "group";
+        }
+    }
+
+    public class RuleParser : Parser
+    {
+        public RuleParser(const System.Lex.Span& span_, int fileIndex_, const string& name_) :
+            base(ParserKind.ruleParser, span_, fileIndex_), name(name_), index(-1), id(-1), grammar(null), hasReturn(false), computingFirst(false)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            RuleParser* clone = new RuleParser(Span(), FileIndex(), name);
+            clone->SetId(id);
+            clone->SetInfo(info);
+            for (const auto& parameter : parameters)
+            {
+                Parameter* clonedParam = cast<Parameter*>(parameter->Clone());
+                clone->AddParameter(clonedParam);
+            }
+            for (const auto& variable : variables)
+            {
+                Variable* clonedVariable = cast<Variable*>(variable->Clone());
+                clone->AddVariable(clonedVariable);
+            }
+            clone->SetDefinition(definition->Clone());
+            if (!returnType.IsNull())
+            {
+                cm.ast.CloneContext cloneContext;
+                clone->SetReturnType(returnType->Clone(cloneContext));
+            }
+            for (NonterminalParser* nonterminal : nonterminals)
+            {
+                clone->AddNonterminal(cast<NonterminalParser*>(nonterminal->Clone()));
+            }
+            if (hasReturn)
+            {
+                clone->SetHasReturn();
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return name;
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                definition->ComputeFirst(changed, visited);
+                if (First().Merge(definition->First()))
+                {
+                    changed = true;
+                }
+            }
+        }
+        public void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        public void SetId(long id_)
+        {
+            id = id_;
+        }
+        public inline long Id() const
+        {
+            return id;
+        }
+        public void SetInfo(const string& info_)
+        {
+            info = info_;
+        }
+        public const string& Info() const
+        {
+            return info;
+        }
+        public void AddParameter(Parameter* parameter)
+        {
+            parameters.Add(UniquePtr<Parameter>(parameter));
+        }
+        public void AddVariable(Variable* variable)
+        {
+            variables.Add(UniquePtr<Variable>(variable));
+        }
+        public const List<UniquePtr<Parameter>>& Parameters() const
+        {
+            return parameters;
+        }
+        public const List<UniquePtr<Variable>>& Variables() const
+        {
+            return variables;
+        }
+        public void SetDefinition(Parser* definition_)
+        {
+            definition.Reset(definition_);
+        }
+        public Parser* Definition() const
+        {
+            return definition.Get();
+        }
+        public void SetReturnType(cm.ast.Node* returnType_)
+        {
+            returnType.Reset(returnType_);
+        }
+        public cm.ast.Node* ReturnType() const
+        {
+            return returnType.Get();
+        }
+        public void AddNonterminal(NonterminalParser* nonterminal)
+        {
+            nonterminals.Add(nonterminal);
+        }
+        public const List<NonterminalParser*>& Nonterminals() const
+        {
+            return nonterminals;
+        }
+        public void SetGrammar(GrammarParser* grammar_)
+        {
+            grammar = grammar_;
+        }
+        public GrammarParser* Grammar() const
+        {
+            return grammar;
+        }
+        public inline bool HasReturn() const
+        {
+            return hasReturn;
+        }
+        public void SetHasReturn() const
+        {
+            hasReturn = true;
+        }
+        private string name;
+        private int index;
+        private long id;
+        private string info;
+        private List<UniquePtr<Parameter>> parameters;
+        private List<UniquePtr<Variable>> variables;
+        private UniquePtr<Parser> definition;
+        private UniquePtr<cm.ast.Node> returnType;
+        private List<NonterminalParser*> nonterminals;
+        private GrammarParser* grammar;
+        private bool hasReturn;
+        private bool computingFirst;
+    }
+
+    public class GrammarParser : Parser
+    {
+        public GrammarParser(const System.Lex.Span& span_, int fileIndex_, const string& name_) :
+            base(ParserKind.grammarParser, span_, fileIndex_), name(name_), main(false), id(-1), parserFile(null)
+        {
+        }
+        public override Parser* Clone() const
+        {
+            #assert(false); // grammar parser cannot be cloned
+            return null;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override string Name() const
+        {
+            return name;
+        }
+        public string CommonName() const
+        {
+            List<string> components = name.Split('.');
+            return components.Back();
+        }
+        public string NamespaceName() const
+        {
+            string namespaceName;
+            List<string> components = name.Split('.');
+            for (long i = 0; i < components.Count() - 1; ++i)
+            {
+                if (i > 0)
+                {
+                    namespaceName.Append(".");
+                }
+                namespaceName.Append(components[i]);
+            }
+            return namespaceName;
+        }
+        public override void ComputeFirst(bool& changed, Set<Parser*>& visited)
+        {
+            if (visited.Find(this) == visited.End())
+            {
+                visited.Insert(this);
+                for (const auto& rule : rules)
+                {
+                    rule->ComputeFirst(changed, visited);
+                }
+            }
+        }
+        public inline bool Main() const
+        {
+            return main;
+        }
+        public void SetMain()
+        {
+            main = true;
+        }
+        public inline long Id() const
+        {
+            return id;
+        }
+        public void SetId(long id_)
+        {
+            id = id_;
+        }
+        public ParserFile* GetParserFile() const
+        {
+            return parserFile;
+        }
+        public void AddLexer(cm.ast.Node* lexer)
+        {
+            lexers.Add(UniquePtr<cm.ast.Node>(lexer));
+        }
+        public const List<UniquePtr<cm.ast.Node>>& Lexers() const
+        {
+            return lexers;
+        }
+        public void AddUsing(const Using& u)
+        {
+            usings.Add(u);
+        }
+        public const List<Using>& Usings() const
+        {
+            return usings;
+        }
+        public bool AddRule(RuleParser* rule)
+        {
+            rule->SetGrammar(this);
+            rule->SetIndex(cast<int>(rules.Count()));
+            rules.Add(UniquePtr<RuleParser>(rule));
+            return MapRule(rule);
+        }
+        public List<UniquePtr<RuleParser>>& Rules() const
+        {
+            return rules;
+        }
+        public bool MapRule(RuleParser* rule)
+        {
+            auto it = ruleMap.Find(rule->Name());
+            if (it != ruleMap.End())
+            {
+                return false;
+            }
+            ruleMap[rule->Name()] = rule;
+            return true;
+        }
+        public RuleParser* GetRule(const string& ruleName) const
+        {
+            auto it = ruleMap.Find(ruleName);
+            if (it != ruleMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        private string name;
+        private bool main;
+        private long id;
+        private ParserFile* parserFile;
+        private List<UniquePtr<cm.ast.Node>> lexers;
+        private List<Using> usings;
+        private List<UniquePtr<RuleParser>> rules;
+        private Map<string, RuleParser*> ruleMap;
+    }
+
+} // namespace scmpg.ast

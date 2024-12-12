@@ -1,0 +1,95 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class TypedefNode : Node
+    {
+        public TypedefNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.typedefNode, span_, fileIndex_), specifiers(Specifiers.none), typeExpr(), id()
+        {
+        }
+        public TypedefNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_) :
+            base(NodeType.typedefNode, span_, fileIndex_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_)
+        {
+            typeExpr->SetParent(this);
+            id->SetParent(this);
+        }
+        public Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new TypedefNode(GetSpan(), FileIndex(), specifiers, typeExpr->Clone(cloneContext), cast<IdentifierNode*>(id->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(id.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            return Result<bool>(true);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<IdentifierNode> id;
+    }
+
+} // namespace cm.ast

@@ -1,0 +1,1807 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public abstract class ConstraintNode : Node
+    {
+        public ConstraintNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) : base(nodeType_, span_, fileIndex_)
+        {
+        }
+        public override bool IsNodeConstraintNode() const
+        {
+            return true;
+        }
+        public virtual bool IsHeaderConstraint() const
+        {
+            return false;
+        }
+    }
+    public class ParenthesizedConstraintNode : ConstraintNode
+    {
+        public ParenthesizedConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.parenthesizedConstraintNode, span_, fileIndex_)
+        {
+        }
+        public ParenthesizedConstraintNode(const System.Lex.Span& span_, int fileIndex_, ConstraintNode* constraint_) :
+            base(NodeType.parenthesizedConstraintNode, span_, fileIndex_), constraint(constraint_)
+        {
+        }
+        public const ConstraintNode* Constraint() const
+        {
+            return constraint.Get();
+        }
+        public ConstraintNode* Constraint()
+        {
+            return constraint.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ParenthesizedConstraintNode(GetSpan(), FileIndex(), cast<ConstraintNode*>(constraint->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.Write(constraint.Get()));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto constraintNodeResult = reader.ReadConstraintNode();
+            if (constraintNodeResult.Error())
+            {
+                return Result<bool>(ErrorId(constraintNodeResult.GetErrorId()));
+            }
+            constraint.Reset(constraintNodeResult.Value());
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto constraintResult = constraint->ToString();
+            if (constraintResult.Error())
+            {
+                return constraintResult;
+            }
+            return Result<string>("(" + constraintResult.Value() + ")");
+        }
+        private UniquePtr<ConstraintNode> constraint;
+    }
+
+    public abstract class BinaryConstraintNode : ConstraintNode
+    {
+        public BinaryConstraintNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) :
+            base(nodeType_, span_, fileIndex_), left(), right()
+        {
+        }
+        public BinaryConstraintNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_, ConstraintNode* left_, ConstraintNode* right_) :
+            base(nodeType_, span_, fileIndex_), left(left_), right(right_)
+        {
+            left->SetParent(this);
+            right->SetParent(this);
+        }
+        public const ConstraintNode* Left() const
+        {
+            return left.Get();
+        }
+        public ConstraintNode* Left()
+        {
+            return left.Get();
+        }
+        public const ConstraintNode* Right() const
+        {
+            return right.Get();
+        }
+        public ConstraintNode* Right()
+        {
+            return right.Get();
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(left.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(right.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto leftResult = reader.ReadConstraintNode();
+            if (leftResult.Error())
+            {
+                return Result<bool>(ErrorId(leftResult.GetErrorId()));
+            }
+            left.Reset(leftResult.Value());
+            left->SetParent(this);
+            auto rightResult = reader.ReadConstraintNode();
+            if (rightResult.Error())
+            {
+                return Result<bool>(ErrorId(rightResult.GetErrorId()));
+            }
+            right.Reset(rightResult.Value());
+            right->SetParent(this);
+            return Result<bool>(true);
+        }
+        private UniquePtr<ConstraintNode> left;
+        private UniquePtr<ConstraintNode> right;
+    }
+
+    public class DisjunctiveConstraintNode : BinaryConstraintNode
+    {
+        public DisjunctiveConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.disjunctiveConstraintNode, span_, fileIndex_)
+        {
+        }
+        public DisjunctiveConstraintNode(const System.Lex.Span& span_, int fileIndex_, ConstraintNode* left_, ConstraintNode* right_) :
+            base(NodeType.disjunctiveConstraintNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DisjunctiveConstraintNode(GetSpan(), FileIndex(),
+                cast<ConstraintNode*>(Left()->Clone(cloneContext)),
+                cast<ConstraintNode*>(Right()->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return leftResult.Value() + " or " + rightResult.Value();
+        }
+    }
+
+    public class ConjunctiveConstraintNode : BinaryConstraintNode
+    {
+        public ConjunctiveConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.conjunctiveConstraintNode, span_, fileIndex_)
+        {
+        }
+        public ConjunctiveConstraintNode(const System.Lex.Span& span_, int fileIndex_, ConstraintNode* left_, ConstraintNode* right_) :
+            base(NodeType.conjunctiveConstraintNode, span_, fileIndex_, left_, right_)
+        {
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConjunctiveConstraintNode(GetSpan(), FileIndex(),
+                cast<ConstraintNode*>(Left()->Clone(cloneContext)),
+                cast<ConstraintNode*>(Right()->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<string> ToString() const
+        {
+            auto leftResult = Left()->ToString();
+            if (leftResult.Error())
+            {
+                return leftResult;
+            }
+            auto rightResult = Right()->ToString();
+            if (rightResult.Error())
+            {
+                return rightResult;
+            }
+            return leftResult.Value() + " and " + rightResult.Value();
+        }
+    }
+    public class WhereConstraintNode : ConstraintNode
+    {
+        public WhereConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.whereConstraintNode, span_, fileIndex_), constraint(), headerConstraint(false), semicolon(false)
+        {
+        }
+        public WhereConstraintNode(const System.Lex.Span& span_, int fileIndex_, ConstraintNode* constraint_) :
+            base(NodeType.whereConstraintNode, span_, fileIndex_), constraint(constraint_), headerConstraint(false), semicolon(false)
+        {
+            constraint->SetParent(this);
+        }
+        public const ConstraintNode* Constraint() const
+        {
+            return constraint.Get();
+        }
+        public ConstraintNode* Constraint()
+        {
+            return constraint.Get();
+        }
+        public void SetHeaderConstraint()
+        {
+            headerConstraint = true;
+        }
+        public void SetSemicolon()
+        {
+            semicolon = true;
+        }
+        public bool Semicolon() const
+        {
+            return semicolon;
+        }
+        public override bool IsHeaderConstraint() const
+        {
+            return headerConstraint;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            WhereConstraintNode* clone = new WhereConstraintNode(GetSpan(), FileIndex(), cast<ConstraintNode*>(constraint->Clone(cloneContext)));
+            if (headerConstraint)
+            {
+                clone->SetHeaderConstraint();
+            }
+            if (semicolon)
+            {
+                clone->SetSemicolon();
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(constraint.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.GetBinaryWriter().Write(headerConstraint);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(semicolon);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto constraintResult = reader.ReadConstraintNode();
+            if (constraintResult.Error())
+            {
+                return Result<bool>(ErrorId(constraintResult.GetErrorId()));
+            }
+            constraint.Reset(constraintResult.Value());
+            constraint->SetParent(this);
+            auto headerConstraintResult = reader.GetBinaryReader().ReadBool();
+            if (headerConstraintResult.Error())
+            {
+                return Result<bool>(ErrorId(headerConstraintResult.GetErrorId()));
+            }
+            headerConstraint = headerConstraintResult.Value();
+            auto semicolonResult = reader.GetBinaryReader().ReadBool();
+            if (semicolonResult.Error())
+            {
+                return Result<bool>(ErrorId(semicolonResult.GetErrorId()));
+            }
+            semicolon = semicolonResult.Value();
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto constraintResult = constraint->ToString();
+            if (constraintResult.Error())
+            {
+                return constraintResult;
+            }
+            return "where " + constraintResult.Value();
+        }
+        private UniquePtr<ConstraintNode> constraint;
+        private bool headerConstraint;
+        private bool semicolon;
+    }
+
+    public class PredicateConstraintNode : ConstraintNode
+    {
+        public PredicateConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.predicateConstraintNode, span_, fileIndex_), invokeExpr()
+        {
+        }
+        public PredicateConstraintNode(const System.Lex.Span& span_, int fileIndex_, Node* invokeExpr_) :
+            base(NodeType.predicateConstraintNode, span_, fileIndex_), invokeExpr(invokeExpr_)
+        {
+            invokeExpr->SetParent(this);
+        }
+        public const Node* InvokeExpr() const
+        {
+            return invokeExpr.Get();
+        }
+        public Node* InvokeExpr()
+        {
+            return invokeExpr.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new PredicateConstraintNode(GetSpan(), FileIndex(), invokeExpr->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.Write(invokeExpr.Get()));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto nodeResult = reader.ReadNode();
+            if (nodeResult.Error())
+            {
+                return Result<bool>(ErrorId(nodeResult.GetErrorId()));
+            }
+            invokeExpr.Reset(nodeResult.Value());
+            invokeExpr->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            return invokeExpr->ToString();
+        }
+        private UniquePtr<Node> invokeExpr;
+    }
+
+    public class IsConstraintNode : ConstraintNode
+    {
+        public IsConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.isConstraintNode, span_, fileIndex_), typeExpr(), conceptOrTypeName()
+        {
+        }
+        public IsConstraintNode(const System.Lex.Span& span_, int fileIndex_, Node* typeExpr_, Node* conceptOrTypeName_) :
+            base(NodeType.isConstraintNode, span_, fileIndex_), typeExpr(typeExpr_), conceptOrTypeName(conceptOrTypeName_)
+        {
+            typeExpr->SetParent(this);
+            conceptOrTypeName->SetParent(this);
+        }
+        public const Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public Node* TypeExpr()
+        {
+            return typeExpr.Get();
+        }
+        public const Node* ConceptOrTypeName() const
+        {
+            return conceptOrTypeName.Get();
+        }
+        public Node* ConceptOrTypeName()
+        {
+            return conceptOrTypeName.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new IsConstraintNode(GetSpan(), FileIndex(), typeExpr->Clone(cloneContext), conceptOrTypeName->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(conceptOrTypeName.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            auto conceptOrTypeNameResult = reader.ReadNode();
+            if (conceptOrTypeNameResult.Error())
+            {
+                return Result<bool>(ErrorId(conceptOrTypeNameResult.GetErrorId()));
+            }
+            conceptOrTypeName.Reset(conceptOrTypeNameResult.Value());
+            conceptOrTypeName->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto typeExprResult = typeExpr->ToString();
+            if (typeExprResult.Error())
+            {
+                return typeExprResult;
+            }
+            auto conceptOrTypeNameResult = conceptOrTypeName->ToString();
+            if (conceptOrTypeNameResult.Error())
+            {
+                return conceptOrTypeNameResult;
+            }
+            return typeExprResult.Value() + " is " + conceptOrTypeNameResult.Value();
+        }
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<Node> conceptOrTypeName;
+    }
+
+    public class MultiParamConstraintNode : ConstraintNode
+    {
+        public MultiParamConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.multiParamConstraintNode, span_, fileIndex_), conceptId(), typeExprs()
+        {
+        }
+        public MultiParamConstraintNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* conceptId_) :
+            base(NodeType.multiParamConstraintNode, span_, fileIndex_), conceptId(conceptId_), typeExprs()
+        {
+            conceptId->SetParent(this);
+        }
+        public const IdentifierNode* ConceptId() const
+        {
+            return conceptId.Get();
+        }
+        public IdentifierNode* ConceptId()
+        {
+            return conceptId.Get();
+        }
+        public const NodeList<Node>& TypeExprs() const
+        {
+            return typeExprs;
+        }
+        public void AddTypeExpr(Node* typeExpr)
+        {
+            typeExpr->SetParent(this);
+            typeExprs.Add(typeExpr);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            MultiParamConstraintNode* clone = new MultiParamConstraintNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(conceptId->Clone(cloneContext)));
+            int n = typeExprs.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddTypeExpr(typeExprs[i]->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(conceptId.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return typeExprs.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto conceptIdResult = reader.ReadIdentifierNode();
+            if (conceptIdResult.Error())
+            {
+                return Result<bool>(ErrorId(conceptIdResult.GetErrorId()));
+            }
+            conceptId.Reset(conceptIdResult.Value());
+            conceptId->SetParent(this);
+            result = typeExprs.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            typeExprs.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto conceptIdResult = conceptId->ToString();
+            if (conceptIdResult.Error())
+            {
+                return conceptIdResult;
+            }
+            string s = conceptIdResult.Value();
+            s.Append('<', 1);
+            int n = typeExprs.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                auto typeExprResult = typeExprs[i]->ToString();
+                if (typeExprResult.Error())
+                {
+                    return typeExprResult;
+                }
+                s.Append(typeExprResult.Value());
+            }
+            s.Append('>', 1);
+            return Result<string>(s);
+        }
+        private UniquePtr<IdentifierNode> conceptId;
+        private NodeList<Node> typeExprs;
+    }
+
+    public class TypeNameConstraintNode : ConstraintNode
+    {
+        public TypeNameConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.typeNameConstraintNode, span_, fileIndex_), typeId()
+        {
+        }
+        public TypeNameConstraintNode(const System.Lex.Span& span_, int fileIndex_, Node* typeId_) :
+            base(NodeType.typeNameConstraintNode, span_, fileIndex_), typeId(typeId_)
+        {
+            typeId->SetParent(this);
+        }
+        public const Node* TypeId() const
+        {
+            return typeId.Get();
+        }
+        public Node* TypeId()
+        {
+            return typeId.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new TypeNameConstraintNode(GetSpan(), FileIndex(), typeId->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.Write(typeId.Get()));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeIdResult = reader.ReadNode();
+            if (typeIdResult.Error())
+            {
+                return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
+            }
+            typeId.Reset(typeIdResult.Value());
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto typeIdResult = typeId->ToString();
+            if (typeIdResult.Error())
+            {
+                return typeIdResult;
+            }
+            return Result<string>("typename " + typeIdResult.Value());
+        }
+        private UniquePtr<Node> typeId;
+    }
+
+    public abstract class SignatureConstraintNode : ConstraintNode
+    {
+        public SignatureConstraintNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) : base(nodeType_, span_, fileIndex_)
+        {
+        }
+    }
+
+    public class ConstructorConstraintNode : SignatureConstraintNode
+    {
+        public ConstructorConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.constructorConstraintNode, span_, fileIndex_), typeParamId(), parameters()
+        {
+        }
+        public ConstructorConstraintNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* typeParamId_) :
+            base(NodeType.constructorConstraintNode, span_, fileIndex_), typeParamId(typeParamId_), parameters()
+        {
+            typeParamId->SetParent(this);
+        }
+        public const IdentifierNode* TypeParamId() const
+        {
+            return typeParamId.Get();
+        }
+        public IdentifierNode* TypeParamId()
+        {
+            return typeParamId.Get();
+        }
+        public const NodeList<ParameterNode>& Parameters() const
+        {
+            return parameters;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConstructorConstraintNode* clone = new ConstructorConstraintNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(typeParamId->Clone(cloneContext)));
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddParameter(cast<ParameterNode*>(parameters[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeParamId.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return parameters.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeParamIdResult = reader.ReadNode();
+            if (typeParamIdResult.Error())
+            {
+                return Result<bool>(ErrorId(typeParamIdResult.GetErrorId()));
+            }
+            typeParamId.Reset(cast<IdentifierNode*>(typeParamIdResult.Value()));
+            typeParamId->SetParent(this);
+            result = parameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            parameters.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto typeParamIdResult = typeParamId->ToString();
+            if (typeParamIdResult.Error())
+            {
+                return typeParamIdResult;
+            }
+            string s = typeParamIdResult.Value();
+            s.Append('(', 1);
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                ParameterNode* p = parameters[i];
+                auto typeExprResult = p->TypeExpr()->ToString();
+                if (typeExprResult.Error())
+                {
+                    return typeExprResult;
+                }
+                s.Append(typeExprResult.Value());
+            }
+            s.Append(')', 1);
+            return Result<string>(s);
+        }
+        public override void AddParameter(ParameterNode* parameter)
+        {
+            parameter->SetParent(this);
+            parameters.Add(parameter);
+        }
+        private UniquePtr<IdentifierNode> typeParamId;
+        private NodeList<ParameterNode> parameters;
+    }
+
+    public class DestructorConstraintNode : SignatureConstraintNode
+    {
+        public DestructorConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.destructorConstraintNode, span_, fileIndex_), typeParamId()
+        {
+        }
+        public DestructorConstraintNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* typeParamId_) :
+            base(NodeType.destructorConstraintNode, span_, fileIndex_), typeParamId(typeParamId_)
+        {
+            typeParamId->SetParent(this);
+        }
+        public IdentifierNode* TypeParamId()
+        {
+            return typeParamId.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DestructorConstraintNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(typeParamId->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            return result.AndThen(writer.Write(typeParamId.Get()));
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto typeParamIdResult = reader.ReadIdentifierNode();
+            if (typeParamIdResult.Error())
+            {
+                return Result<bool>(ErrorId(typeParamIdResult.GetErrorId()));
+            }
+            typeParamId.Reset(typeParamIdResult.Value());
+            typeParamId->SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto typeParamIdResult = typeParamId->ToString();
+            if (typeParamIdResult.Error())
+            {
+                return typeParamIdResult;
+            }
+            string s = "~" + typeParamIdResult.Value();
+            s.Append("()");
+            return Result<string>(s);
+        }
+        private UniquePtr<IdentifierNode> typeParamId;
+    }
+
+    public class MemberFunctionConstraintNode : SignatureConstraintNode
+    {
+        public MemberFunctionConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.memberFunctionConstraintNode, span_, fileIndex_), returnTypeExpr(), typeParamId(), groupId(), parameters()
+        {
+        }
+        public MemberFunctionConstraintNode(const System.Lex.Span& span_, int fileIndex_, Node* returnTypeExpr_, IdentifierNode* typeParamId_, const ustring& groupId_) :
+            base(NodeType.memberFunctionConstraintNode, span_, fileIndex_), returnTypeExpr(returnTypeExpr_), typeParamId(typeParamId_), groupId(groupId_), parameters()
+        {
+            returnTypeExpr->SetParent(this);
+            typeParamId->SetParent(this);
+        }
+        public const Node* ReturnTypeExpr() const
+        {
+            return returnTypeExpr.Get();
+        }
+        public Node* ReturnTypeExpr()
+        {
+            return returnTypeExpr.Get();
+        }
+        public const IdentifierNode* TypeParamId() const
+        {
+            return typeParamId.Get();
+        }
+        public IdentifierNode* TypeParamId()
+        {
+            return typeParamId.Get();
+        }
+        public const ustring& GroupId() const
+        {
+            return groupId;
+        }
+        public const NodeList<ParameterNode>& Parameters() const
+        {
+            return parameters;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            MemberFunctionConstraintNode* clone = new MemberFunctionConstraintNode(GetSpan(), FileIndex(), returnTypeExpr->Clone(cloneContext),
+                cast<IdentifierNode*>(typeParamId->Clone(cloneContext)), groupId);
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddParameter(cast<ParameterNode*>(parameters[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(returnTypeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeParamId.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.GetBinaryWriter().Write(groupId);
+            if (result.Error())
+            {
+                return result;
+            }
+            return parameters.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto returnTypeExprResult = reader.ReadNode();
+            if (returnTypeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(returnTypeExprResult.GetErrorId()));
+            }
+            returnTypeExpr.Reset(returnTypeExprResult.Value());
+            returnTypeExpr->SetParent(this);
+            auto typeParamIdResult = reader.ReadIdentifierNode();
+            if (typeParamIdResult.Error())
+            {
+                return Result<bool>(ErrorId(typeParamIdResult.GetErrorId()));
+            }
+            typeParamId.Reset(typeParamIdResult.Value());
+            typeParamId->SetParent(this);
+            auto groupIdResult = reader.GetBinaryReader().ReadUString();
+            if (groupIdResult.Error())
+            {
+                return Result<bool>(ErrorId(groupIdResult.GetErrorId()));
+            }
+            groupId = groupIdResult.Value();
+            result = parameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            parameters.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddParameter(ParameterNode* parameter)
+        {
+            parameter->SetParent(this);
+            parameters.Add(parameter);
+        }
+        public override Result<string> ToString() const
+        {
+            string s;
+            if (!returnTypeExpr.IsNull())
+            {
+                auto returnTypeExprResult = returnTypeExpr->ToString();
+                if (returnTypeExprResult.Error())
+                {
+                    return returnTypeExprResult;
+                }
+                s.Append(returnTypeExprResult.Value()).Append(" ");
+            }
+            auto typeParamIdResult = typeParamId->ToString();
+            if (typeParamIdResult.Error())
+            {
+                return typeParamIdResult;
+            }
+            s.Append(typeParamIdResult.Value());
+            auto utf8Result = ToUtf8(groupId);
+            if (utf8Result.Error())
+            {
+                return Result<string>(ErrorId(utf8Result.GetErrorId()));
+            }
+            s.Append(".").Append(utf8Result.Value());
+            s.Append('(', 1);
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                ParameterNode* p = parameters[i];
+                auto typeExprResult = p->TypeExpr()->ToString();
+                if (typeExprResult.Error())
+                {
+                    return typeExprResult;
+                }
+                s.Append(typeExprResult.Value());
+            }
+            s.Append(')', 1);
+            return Result<string>(s);
+        }
+        private UniquePtr<Node> returnTypeExpr;
+        private UniquePtr<IdentifierNode> typeParamId;
+        private ustring groupId;
+        private NodeList<ParameterNode> parameters;
+    }
+
+    public class FunctionConstraintNode : SignatureConstraintNode
+    {
+        public FunctionConstraintNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.functionConstraintNode, span_, fileIndex_), returnTypeExpr(), groupId(), parameters()
+        {
+        }
+        public FunctionConstraintNode(const System.Lex.Span& span_, int fileIndex_, Node* returnTypeExpr_, const ustring& groupId_) :
+            base(NodeType.functionConstraintNode, span_, fileIndex_), returnTypeExpr(returnTypeExpr_), groupId(groupId_), parameters()
+        {
+            returnTypeExpr->SetParent(this);
+        }
+        public const Node* ReturnTypeExpr() const
+        {
+            return returnTypeExpr.Get();
+        }
+        public Node* ReturnTypeExpr()
+        {
+            return returnTypeExpr.Get();
+        }
+        public const ustring& GroupId() const
+        {
+            return groupId;
+        }
+        public const NodeList<ParameterNode>& Parameters() const
+        {
+            return parameters;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            FunctionConstraintNode* clone = new FunctionConstraintNode(GetSpan(), FileIndex(), returnTypeExpr->Clone(cloneContext), groupId);
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddParameter(cast<ParameterNode*>(parameters[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(returnTypeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.GetBinaryWriter().Write(groupId);
+            if (result.Error())
+            {
+                return result;
+            }
+            return parameters.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto returnTypeExprResult = reader.ReadNode();
+            if (returnTypeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(returnTypeExprResult.GetErrorId()));
+            }
+            returnTypeExpr.Reset(returnTypeExprResult.Value());
+            returnTypeExpr->SetParent(this);
+            auto groupIdResult = reader.GetBinaryReader().ReadUString();
+            if (groupIdResult.Error())
+            {
+                return Result<bool>(ErrorId(groupIdResult.GetErrorId()));
+            }
+            groupId = groupIdResult.Value();
+            result = parameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            parameters.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddParameter(ParameterNode* parameter)
+        {
+            parameter->SetParent(this);
+            parameters.Add(parameter);
+        }
+        public override Result<string> ToString() const
+        {
+            string s;
+            if (!returnTypeExpr.IsNull())
+            {
+                auto returnTypeExprResult = returnTypeExpr->ToString();
+                if (returnTypeExprResult.Error())
+                {
+                    return returnTypeExprResult;
+                }
+                s.Append(returnTypeExprResult.Value()).Append(" ");
+            }
+            auto utf8Result = ToUtf8(groupId);
+            if (utf8Result.Error())
+            {
+                return utf8Result;
+            }
+            s.Append(utf8Result.Value());
+            s.Append('(', 1);
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                ParameterNode* p = parameters[i];
+                auto typeExprResult = p->TypeExpr()->ToString();
+                if (typeExprResult.Error())
+                {
+                    return typeExprResult;
+                }
+                s.Append(typeExprResult.Value());
+            }
+            s.Append(')', 1);
+            return Result<string>(s);
+        }
+        private UniquePtr<Node> returnTypeExpr;
+        private ustring groupId;
+        private NodeList<ParameterNode> parameters;
+    }
+
+    public class AxiomStatementNode : Node
+    {
+        public AxiomStatementNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.axiomStatementNode, span_, fileIndex_), expression()
+        {
+        }
+        public AxiomStatementNode(const System.Lex.Span& span_, int fileIndex_, Node* expression_) :
+            base(NodeType.axiomStatementNode, span_, fileIndex_), expression(expression_)
+        {
+            expression->SetParent(this);
+        }
+        public const Node* Expression() const
+        {
+            return expression.Get();
+        }
+        public Node* Expression()
+        {
+            return expression.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new AxiomStatementNode(GetSpan(), FileIndex(), expression->Clone(cloneContext));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.Write(expression.Get());
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto expressionResult = reader.ReadNode();
+            if (expressionResult.Error())
+            {
+                return Result<bool>(ErrorId(expressionResult.GetErrorId()));
+            }
+            expression.Reset(expressionResult.Value());
+            expression->SetParent(this);
+            auto textResult = reader.GetBinaryReader().ReadUString();
+            if (textResult.Error())
+            {
+                return Result<bool>(ErrorId(textResult.GetErrorId()));
+            }
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            return expression->ToString();
+        }
+        private UniquePtr<Node> expression;
+    }
+
+    public class AxiomNode : Node
+    {
+        public AxiomNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.axiomNode, span_, fileIndex_), id(), parameters(), statements()
+        {
+        }
+        public AxiomNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* id_) :
+            base(NodeType.axiomNode, span_, fileIndex_), id(id_), parameters(), statements()
+        {
+            id->SetParent(this);
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public const NodeList<ParameterNode>& Parameters() const
+        {
+            return parameters;
+        }
+        public const NodeList<AxiomStatementNode>& Statements() const
+        {
+            return statements;
+        }
+        public void AddStatement(AxiomStatementNode* statement)
+        {
+            statement->SetParent(this);
+            statements.Add(statement);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            AxiomNode* clone = new AxiomNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int np = parameters.Count();
+            for (int i = 0; i < np; ++i)
+            {
+                clone->AddParameter(cast<ParameterNode*>(parameters[i]->Clone(cloneContext)));
+            }
+            int ns = statements.Count();
+            for (int i = 0; i < ns; ++i)
+            {
+                clone->AddStatement(cast<AxiomStatementNode*>(statements[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = parameters.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return statements.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            result = parameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            parameters.SetParent(this);
+            result = statements.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            statements.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddParameter(ParameterNode* parameter)
+        {
+            parameter->SetParent(this);
+            parameters.Add(parameter);
+        }
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<ParameterNode> parameters;
+        private NodeList<AxiomStatementNode> statements;
+    }
+
+    public class ConceptIdNode : Node
+    {
+        public ConceptIdNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.conceptIdNode, span_, fileIndex_), id(), typeParameters()
+        {
+        }
+        public ConceptIdNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* id_) :
+            base(NodeType.conceptIdNode, span_, fileIndex_), id(id_), typeParameters()
+        {
+            id->SetParent(this);
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public const NodeList<Node>& TypeParameters() const
+        {
+            return typeParameters;
+        }
+        public int Arity() const
+        {
+            return typeParameters.Count();
+        }
+        public void AddTypeParameter(Node* typeParameter)
+        {
+            typeParameter->SetParent(this);
+            typeParameters.Add(typeParameter);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConceptIdNode* clone = new ConceptIdNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int n = typeParameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddTypeParameter(typeParameters[i]->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return typeParameters.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            result = typeParameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            typeParameters.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto idResult = id->ToString();
+            if (idResult.Error())
+            {
+                return idResult;
+            }
+            string s = idResult.Value();
+            s.Append('<', 1);
+            int n = typeParameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                auto typeParamResult = typeParameters[i]->ToString();
+                if (typeParamResult.Error())
+                {
+                    return typeParamResult;
+                }
+                s.Append(typeParamResult.Value());
+            }
+            s.Append('>', 1);
+            return Result<string>(s);
+        }
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<Node> typeParameters;
+    }
+
+    public class ConceptNode : Node
+    {
+        public ConceptNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.conceptNode, span_, fileIndex_), specifiers(Specifiers.none), id(), typeParameters(), refinement(), constraints(), axioms()
+        {
+        }
+        public ConceptNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) :
+            base(nodeType_, span_, fileIndex_), specifiers(Specifiers.none), id(), typeParameters(), refinement(), constraints(), axioms()
+        {
+        }
+        public ConceptNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, IdentifierNode* id_) :
+            base(NodeType.conceptNode, span_, fileIndex_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
+        {
+            id->SetParent(this);
+        }
+        public ConceptNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, IdentifierNode* id_) :
+            base(nodeType_, span_, fileIndex_), specifiers(specifiers_), id(id_), typeParameters(), refinement(), constraints(), axioms()
+        {
+            id->SetParent(this);
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public int Arity() const
+        {
+            return typeParameters.Count();
+        }
+        public const NodeList<IdentifierNode>& TypeParameters() const
+        {
+            return typeParameters;
+        }
+        public ConceptIdNode* Refinement()
+        {
+            return refinement.Get();
+        }
+        public const NodeList<ConstraintNode>& Constraints() const
+        {
+            return constraints;
+        }
+        public const NodeList<AxiomNode>& Axioms() const
+        {
+            return axioms;
+        }
+        public void AddTypeParameter(IdentifierNode* typeParameter)
+        {
+            typeParameter->SetParent(this);
+            typeParameters.Add(typeParameter);
+        }
+        public void SetRefinement(ConceptIdNode* refinement_)
+        {
+            refinement.Reset(refinement_);
+            refinement->SetParent(this);
+        }
+        public void AddConstraint(ConstraintNode* constraint)
+        {
+            constraint->SetParent(this);
+            constraints.Add(constraint);
+        }
+        public void AddAxiom(AxiomNode* axiom_)
+        {
+            axiom_->SetParent(this);
+            axioms.Add(axiom_);
+        }
+        public override bool IsConceptNode() const
+        {
+            return true;
+        }
+        public virtual bool IsCommonConceptNode() const
+        {
+            return false;
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ConceptNode* clone = new ConceptNode(GetSpan(), FileIndex(), specifiers, cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int nt = typeParameters.Count();
+            for (int i = 0; i < nt; ++i)
+            {
+                clone->AddTypeParameter(cast<IdentifierNode*>(typeParameters[i]->Clone(cloneContext)));
+            }
+            if (!refinement.IsNull())
+            {
+                clone->SetRefinement(cast<ConceptIdNode*>(refinement->Clone(cloneContext)));
+            }
+            int nc = constraints.Count();
+            for (int i = 0; i < nc; ++i)
+            {
+                clone->AddConstraint(cast<ConstraintNode*>(constraints[i]->Clone(cloneContext)));
+            }
+            int na = axioms.Count();
+            for (int i = 0; i < na; ++i)
+            {
+                clone->AddAxiom(cast<AxiomNode*>(axioms[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = typeParameters.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasRefinement = refinement != null;
+            result = writer.GetBinaryWriter().Write(hasRefinement);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasRefinement)
+            {
+                result = writer.Write(refinement.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            result = constraints.Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return axioms.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            result = typeParameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            typeParameters.SetParent(this);
+            auto hasRefinementResult = reader.GetBinaryReader().ReadBool();
+            if (hasRefinementResult.Error())
+            {
+                return Result<bool>(ErrorId(hasRefinementResult.GetErrorId()));
+            }
+            bool hasRefinement = hasRefinementResult.Value();
+            if (hasRefinement)
+            {
+                auto refinementResult = reader.ReadConceptIdNode();
+                if (refinementResult.Error())
+                {
+                    return Result<bool>(ErrorId(refinementResult.GetErrorId()));
+                }
+                refinement.Reset(refinementResult.Value());
+                refinement->SetParent(this);
+            }
+            result = constraints.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            constraints.SetParent(this);
+            result = axioms.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            axioms.SetParent(this);
+            return Result<bool>(true);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<IdentifierNode> typeParameters;
+        private UniquePtr<ConceptIdNode> refinement;
+        private NodeList<ConstraintNode> constraints;
+        private NodeList<AxiomNode> axioms;
+    }
+
+    public abstract class IntrinsicConstraintNode : ConstraintNode
+    {
+        public IntrinsicConstraintNode(NodeType nodeType_, const System.Lex.Span& span_, int fileIndex_) : base(nodeType_, span_, fileIndex_)
+        {
+        }
+    }
+
+    public class SameConstraintNode : IntrinsicConstraintNode
+    {
+        public SameConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.sameConstraintNode, span_, fileIndex_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new SameConstraintNode(GetSpan(), FileIndex());
+        }
+    }
+
+    public class DerivedConstraintNode : IntrinsicConstraintNode
+    {
+        public DerivedConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.derivedConstraintNode, span_, fileIndex_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new DerivedConstraintNode(GetSpan(), FileIndex());
+        }
+    }
+
+    public class ConvertibleConstraintNode : IntrinsicConstraintNode
+    {
+        public ConvertibleConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.convertibleConstraintNode, span_, fileIndex_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ConvertibleConstraintNode(GetSpan(), FileIndex());
+        }
+    }
+
+    public class ExplicitlyConvertibleConstraintNode : IntrinsicConstraintNode
+    {
+        public ExplicitlyConvertibleConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.explicitlyConvertibleConstraintNode, span_, fileIndex_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new ExplicitlyConvertibleConstraintNode(GetSpan(), FileIndex());
+        }
+    }
+
+    public class CommonConstraintNode : IntrinsicConstraintNode
+    {
+        public CommonConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.commonConstraintNode, span_, fileIndex_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new CommonConstraintNode(GetSpan(), FileIndex());
+        }
+    }
+
+    public class NonreferenceTypeConstraintNode : IntrinsicConstraintNode
+    {
+        public NonreferenceTypeConstraintNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.nonreferenceTypeConstraintNode, span_, fileIndex_)
+        {
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new NonreferenceTypeConstraintNode(GetSpan(), FileIndex());
+        }
+    }
+
+    public class SameConceptNode : ConceptNode
+    {
+        public SameConceptNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.sameConceptNode, span_, fileIndex_, Specifiers.public_, new IdentifierNode(span_, fileIndex_, u"Same"))
+        {
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"T"));
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"U"));
+            AddConstraint(new SameConstraintNode(span_, fileIndex_));
+        }
+        public override bool IsIntrinsicConceptNode() const
+        {
+            return true;
+        }
+    }
+
+    public class DerivedConceptNode : ConceptNode
+    {
+        public DerivedConceptNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.derivedConceptNode, span_, fileIndex_, Specifiers.public_, new IdentifierNode(span_, fileIndex_, u"Derived"))
+        {
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"T"));
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"U"));
+            AddConstraint(new DerivedConstraintNode(span_, fileIndex_));
+        }
+        public override bool IsIntrinsicConceptNode() const
+        {
+            return true;
+        }
+    }
+
+    public class ConvertibleConceptNode : ConceptNode
+    {
+        public ConvertibleConceptNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.convertibleConceptNode, span_, fileIndex_, Specifiers.public_,
+            new IdentifierNode(span_, fileIndex_, u"Convertible"))
+        {
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"T"));
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"U"));
+            AddConstraint(new ConvertibleConstraintNode(span_, fileIndex_));
+        }
+        public override bool IsIntrinsicConceptNode() const
+        {
+            return true;
+        }
+    }
+
+    public class ExplicitlyConvertibleConceptNode : ConceptNode
+    {
+        public ExplicitlyConvertibleConceptNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.explicitlyConvertibleConceptNode, span_, fileIndex_, Specifiers.public_,
+            new IdentifierNode(span_, fileIndex_, u"ExplicitlyConvertible"))
+        {
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"T"));
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"U"));
+            AddConstraint(new ExplicitlyConvertibleConstraintNode(span_, fileIndex_));
+        }
+        public override bool IsIntrinsicConceptNode() const
+        {
+            return true;
+        }
+    }
+
+    public class CommonConceptNode : ConceptNode
+    {
+        public CommonConceptNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.commonConceptNode, span_, fileIndex_, Specifiers.public_,
+            new IdentifierNode(span_, fileIndex_, u"Common"))
+        {
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"T"));
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"U"));
+            AddConstraint(new CommonConstraintNode(span_, fileIndex_));
+        }
+        public override bool IsCommonConceptNode() const
+        {
+            return true;
+        }
+        public override bool IsIntrinsicConceptNode() const
+        {
+            return true;
+        }
+    }
+
+    public class NonreferenceTypeConceptNode : ConceptNode
+    {
+        public NonreferenceTypeConceptNode(const System.Lex.Span& span_, int fileIndex_) :
+            base(NodeType.nonreferenceTypeConceptNode, span_, fileIndex_, Specifiers.public_,
+            new IdentifierNode(span_, fileIndex_, u"NonreferenceType"))
+        {
+            AddTypeParameter(new IdentifierNode(span_, fileIndex_, u"T"));
+            AddConstraint(new NonreferenceTypeConstraintNode(span_, fileIndex_));
+        }
+        public override bool IsIntrinsicConceptNode() const
+        {
+            return true;
+        }
+    }
+
+} // namespace cm.ast

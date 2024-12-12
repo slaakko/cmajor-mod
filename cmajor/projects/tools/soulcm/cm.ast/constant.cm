@@ -1,0 +1,171 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class ConstantNode : Node
+    {
+        public ConstantNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.constantNode, span_, fileIndex_), specifiers(Specifiers.none)
+        {
+        }
+        public ConstantNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, Node* typeExpr_, IdentifierNode* id_, Node* value_) :
+            base(NodeType.constantNode, span_, fileIndex_), specifiers(specifiers_), typeExpr(typeExpr_), id(id_), value(value_)
+        {
+            typeExpr->SetParent(this);
+            id->SetParent(this);
+            if (!value.IsNull())
+            {
+                value->SetParent(this);
+            }
+        }
+        public const Node* TypeExpr() const
+        {
+            return typeExpr.Get();
+        }
+        public Node* TypeExpr()
+        {
+            return typeExpr.Get();
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public const Node* Value() const
+        {
+            return value.Get();
+        }
+        public Node* Value()
+        {
+            return value.Get();
+        }
+        public void SetStrValue(const ustring& strValue_)
+        {
+            strValue = strValue_;
+        }
+        public const ustring& StrValue() const
+        {
+            return strValue;
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            Node* clonedValue = null;
+            if (!value.IsNull())
+            {
+                clonedValue = value->Clone(cloneContext);
+            }
+            return new ConstantNode(GetSpan(), FileIndex(), specifiers, typeExpr->Clone(cloneContext), cast<IdentifierNode*>(id->Clone(cloneContext)), clonedValue);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(typeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasValue = !value.IsNull();
+            result = writer.GetBinaryWriter().Write(hasValue);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasValue)
+            {
+                result = writer.Write(value.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return writer.GetBinaryWriter().Write(strValue);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto typeExprResult = reader.ReadNode();
+            if (typeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(typeExprResult.GetErrorId()));
+            }
+            typeExpr.Reset(typeExprResult.Value());
+            typeExpr->SetParent(this);
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            auto hasValueResult = reader.GetBinaryReader().ReadBool();
+            if (hasValueResult.Error())
+            {
+                return Result<bool>(ErrorId(hasValueResult.GetErrorId()));
+            }
+            bool hasValue = hasValueResult.Value();
+            if (hasValue)
+            {
+                auto valueResult = reader.ReadNode();
+                if (valueResult.Error())
+                {
+                    return Result<bool>(ErrorId(valueResult.GetErrorId()));
+                }
+                value.Reset(valueResult.Value());
+                value->SetParent(this);
+            }
+            auto strValueResult = reader.GetBinaryReader().ReadUString();
+            if (strValueResult.Error())
+            {
+                return Result<bool>(ErrorId(strValueResult.GetErrorId()));
+            }
+            strValue = strValueResult.Value();
+            return Result<bool>(true);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<Node> typeExpr;
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<Node> value;
+        private ustring strValue;
+    }
+
+} // namespace cm.ast

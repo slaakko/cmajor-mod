@@ -364,7 +364,7 @@ namespace System
             }
             else
             {
-                int errorId = AllocateError("invalid UTF-32 code point: index=" + ToString(index));
+                int errorId = AllocateError("invalid UTF-32 code point (" + ToString(x) + "): index=" + ToString(index));
                 return Result<string>(ErrorId(errorId));
             }
             ++index;

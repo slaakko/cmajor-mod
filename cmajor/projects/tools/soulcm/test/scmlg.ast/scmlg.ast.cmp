@@ -1,0 +1,13 @@
+project scmlg.ast;
+target=library;
+reference <../cm.ast/cm.ast.cmp>;
+source <action.cm>;
+source <collection.cm>;
+source <expression.cm>;
+source <file.cm>;
+source <keyword.cm>;
+source <lexer.cm>;
+source <rule.cm>;
+source <scmlg_file.cm>;
+source <token.cm>;
+source <variable.cm>;

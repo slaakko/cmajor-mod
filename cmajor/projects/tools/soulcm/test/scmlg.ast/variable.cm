@@ -1,0 +1,27 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmlg.ast
+{
+    public class Variable
+    {
+        public Variable(const cm.ast.Node* type_, const string& name_) : type(type_), name(name_)
+        {
+        }
+        public inline cm.ast.Node* Type() const
+        {
+            return type.Get();
+        }
+        public const string& Name() const
+        {
+            return name;
+        }
+        private UniquePtr<cm.ast.Node> type;
+        private string name;
+    }
+}
+

@@ -1,0 +1,64 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmlg.ast
+{
+    public class Rule
+    {
+        public Rule(const string& expr_, cm.ast.CompoundStatementNode* code_, int action_, int line_) :
+            index(-1), expr(expr_), code(code_), action(action_), line(line_), collection(null), nfaIndex(-1)
+        {
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        public void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public const string& Expr() const
+        {
+            return expr;
+        }
+        public cm.ast.CompoundStatementNode* Code() const
+        {
+            return code.Get();
+        }
+        public inline int Action() const
+        {
+            return action;
+        }
+        public inline int Line() const
+        {
+            return line;
+        }
+        public void SetCollection(Collection* collection_)
+        {
+            collection = collection_;
+        }
+        public inline Collection* GetCollection() const
+        {
+            return collection;
+        }
+        public inline int NfaIndex() const
+        {
+            return nfaIndex;
+        }
+        public void SetNfaIndex(int nfaIndex_)
+        {
+            nfaIndex = nfaIndex_;
+        }
+        private int index;
+        private string expr;
+        private UniquePtr<cm.ast.CompoundStatementNode> code;
+        private int action;
+        private int line;
+        private Collection* collection;
+        private int nfaIndex;
+    }
+}

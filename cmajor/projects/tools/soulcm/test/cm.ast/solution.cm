@@ -1,0 +1,482 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using System.IO;
+using System.Text;
+
+namespace cm.ast
+{
+    public class ByProjectName : Rel<UniquePtr<Project>>
+    {
+        public inline bool operator()(const UniquePtr<Project>& left, const UniquePtr<Project>& right)
+        {
+            return left->Name() < right->Name();
+        }
+    }
+
+    internal Result<bool> Visit(List<ustring>& order, const ustring& projectName, HashSet<ustring>& visited, HashSet<ustring>& tempVisit, HashMap<ustring,
+        ProjectDependencyDeclaration*>& dependencyMap, Solution* solution)
+    {
+        if (tempVisit.CFind(projectName) == tempVisit.CEnd())
+        {
+            if (visited.CFind(projectName) == visited.CEnd())
+            {
+                tempVisit.Insert(projectName);
+                HashMap<ustring, ProjectDependencyDeclaration*>.ConstIterator it = dependencyMap.CFind(projectName);
+                if (it != dependencyMap.CEnd())
+                {
+                    ProjectDependencyDeclaration* dependencyDeclaration = it->second;
+                    for (const ustring& dependentProject : dependencyDeclaration->DependsOnProjects())
+                    {
+                        Visit(order, dependentProject, visited, tempVisit, dependencyMap, solution);
+                    }
+                    tempVisit.Remove(projectName);
+                    visited.Insert(projectName);
+                    order.Add(projectName);
+                }
+                else
+                {
+                    auto utf8Result = ToUtf8(projectName);
+                    if (utf8Result.Error())
+                    {
+                        return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                    }
+                    auto solutionResult = ToUtf8(solution->Name());
+                    if (solutionResult.Error())
+                    {
+                        return Result<bool>(ErrorId(solutionResult.GetErrorId()));
+                    }
+                    auto fullPathResult = GetFullPath(solution->FilePath());
+                    if (fullPathResult.Error())
+                    {
+                        return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
+                    }
+                    string errorMessage = "project '" + utf8Result.Value() + "' not found in dependencies of solution '" + solutionResult.Value() +
+                        "' (" + fullPathResult.Value() + ")";
+                    int errorId = AllocateError(errorMessage);
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+        }
+        else
+        {
+            auto utf8Result = ToUtf8(projectName);
+            if (utf8Result.Error())
+            {
+                return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+            }
+            auto solutionResult = ToUtf8(solution->Name());
+            if (solutionResult.Error())
+            {
+                return Result<bool>(ErrorId(solutionResult.GetErrorId()));
+            }
+            auto fullPathResult = GetFullPath(solution->FilePath());
+            if (fullPathResult.Error())
+            {
+                return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
+            }
+            string errorMessage = "circular project dependency '" + utf8Result.Value() + "' detected in dependencies of solution '" + solutionResult.Value() +
+                "' (" + fullPathResult.Value() + ")";
+            int errorId = AllocateError(errorMessage);
+            return Result<bool>(ErrorId(errorId));
+        }
+        return Result<bool>(true);
+    }
+
+    public enum SolutionDeclarationType
+    {
+        projectDeclaration, activeProjectDeclaration, activeBackEndDeclaration, dependencyDeclaration
+    }
+
+    public abstract class SolutionDeclaration
+    {
+        public SolutionDeclaration(SolutionDeclarationType declarationType_) : declarationType(declarationType_)
+        {
+        }
+        public default virtual ~SolutionDeclaration();
+        public SolutionDeclarationType GetDeclarationType() const
+        {
+            return declarationType;
+        }
+        private SolutionDeclarationType declarationType;
+    }
+
+    public class SolutionProjectDeclaration : SolutionDeclaration
+    {
+        public SolutionProjectDeclaration(const string& filePath_) : base(SolutionDeclarationType.projectDeclaration), filePath(filePath_)
+        {
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        private string filePath;
+    }
+
+    public class SolutionActiveProjectDeclaration : SolutionDeclaration
+    {
+        public SolutionActiveProjectDeclaration(const ustring& activeProjectName_) :
+            base(SolutionDeclarationType.activeProjectDeclaration), activeProjectName(activeProjectName_)
+        {
+        }
+        public const ustring& ActiveProjectName() const
+        {
+            return activeProjectName;
+        }
+        private ustring activeProjectName;
+    }
+
+    public class SolutionActiveBackEndDeclaration : SolutionDeclaration
+    {
+        public SolutionActiveBackEndDeclaration(const ustring& activeBackEnd_) : 
+            base(SolutionDeclarationType.activeBackEndDeclaration), activeBackEnd(activeBackEnd_)
+        {
+        }
+        public const ustring& ActiveBackEnd() const
+        {
+            return activeBackEnd;
+        }
+        private ustring activeBackEnd;
+    }
+
+    public class ProjectDependencyDeclaration  : SolutionDeclaration
+    {
+        public ProjectDependencyDeclaration(const ustring& projectName_) : base(SolutionDeclarationType.dependencyDeclaration), projectName(projectName_)
+        {
+        }
+        public const ustring& ProjectName() const
+        {
+            return projectName;
+        }
+        public void AddDependency(const ustring& dependsOn)
+        {
+            dependsOnProjects.Add(dependsOn);
+        }
+        public const List<ustring>& DependsOnProjects() const
+        {
+            return dependsOnProjects;
+        }
+        private ustring projectName;
+        private List<ustring> dependsOnProjects;
+    }
+
+    public class Solution
+    {
+        public Solution(const ustring& name_, const string& filePath_) : name(name_), filePath(Path.MakeCanonical(filePath_)), basePath(Path.GetDirectoryName(filePath))
+        {
+        }
+        public const ustring& Name() const
+        {
+            return name;
+        }
+        public const string& FilePath() const
+        {
+            return filePath;
+        }
+        public const string& BasePath() const
+        {
+            return basePath;
+        }
+        public const List<string>& ProjectFilePaths() const
+        {
+            return projectFilePaths;
+        }
+        public const List<string>& RelativeProjectFilePaths() const
+        {
+            return relativeProjectFilePaths;
+        }
+        public const ustring& ActiveProjectName() const
+        {
+            return activeProjectName;
+        }
+        public void SetActiveProject(Project* activeProject_)
+        {
+            activeProject = activeProject_;
+            activeProjectName = activeProject->Name();
+        }
+        public Project* ActiveProject() const
+        {
+            return activeProject;
+        }
+        public void AddProject(UniquePtr<Project>&& project)
+        {
+            projects.Add(Rvalue(project));
+        }
+        public const List<UniquePtr<Project>>& Projects() const
+        {
+            return projects;
+        }
+        public void AddDeclaration(SolutionDeclaration* declaration)
+        {
+            declarations.Add(UniquePtr<SolutionDeclaration>(declaration));
+        }
+        public Result<bool> ResolveDeclarations()
+        {
+            for (const UniquePtr<SolutionDeclaration>& declaration : declarations)
+            {
+                bool unknown = false;
+                switch (declaration->GetDeclarationType())
+                {
+                    case SolutionDeclarationType.projectDeclaration:
+                    {
+                        SolutionProjectDeclaration* solutionProjectDeclaration = cast<SolutionProjectDeclaration*>(declaration.Get());
+                        string filePath = Path.MakeCanonical(solutionProjectDeclaration->FilePath());
+                        relativeProjectFilePaths.Add(filePath);
+                        if (Path.IsRelative(filePath))
+                        {
+                            filePath = Path.Combine(basePath, filePath);
+                        }
+                        string extension = Path.GetExtension(filePath);
+                        if (extension != ".cmp")
+                        {
+                            string errorMessage = "invalid project file extension '" + extension + "' (not .cmp)";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        auto existsResult = File.Exists(filePath);
+                        if (existsResult.Error())
+                        {
+                            return Result<bool>(ErrorId(existsResult.GetErrorId()));
+                        }
+                        if (!existsResult.Value())
+                        {
+                            string errorMessage = "project file '" + filePath + "' not found";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<bool>(ErrorId(errorId));
+                        }
+                        auto projectFilePathResult = GetFullPath(filePath);
+                        if (projectFilePathResult.Error())
+                        {
+                            return Result<bool>(ErrorId(projectFilePathResult.GetErrorId()));
+                        }
+                        string projectFilePath = projectFilePathResult.Value();
+                        if (Find(projectFilePaths.CBegin(), projectFilePaths.CEnd(), projectFilePath) == projectFilePaths.CEnd())
+                        {
+                            projectFilePaths.Add(projectFilePath);
+                        }
+                        break;
+                    }
+                    case SolutionDeclarationType.activeProjectDeclaration:
+                    {
+                        SolutionActiveProjectDeclaration* activeProjectDeclaration = cast<SolutionActiveProjectDeclaration*>(declaration.Get());
+                        activeProjectName = activeProjectDeclaration->ActiveProjectName();
+                        break;
+                    }
+                    case SolutionDeclarationType.activeBackEndDeclaration:
+                    {
+                        SolutionActiveBackEndDeclaration* activeBackEndDeclaration = cast<SolutionActiveBackEndDeclaration*>(declaration.Get());
+                        activeBackEnd = activeBackEndDeclaration->ActiveBackEnd();
+                        break;
+                    }
+                    case SolutionDeclarationType.dependencyDeclaration:
+                    {
+                        ProjectDependencyDeclaration* dependencyDeclaration = cast<ProjectDependencyDeclaration*>(declaration.Get());
+                        dependencyMap[dependencyDeclaration->ProjectName()] = dependencyDeclaration;
+                        break;
+                    }
+                    default:
+                    {
+                        unknown = true;
+                        break;
+                    }
+                }
+                if (unknown)
+                {
+                    string errorMessage = "unknown solution declaration";
+                    int errorId = AllocateError(errorMessage);
+                    return Result<bool>(ErrorId(errorId));
+                }
+            }
+            return Result<bool>(true);
+        }
+        public Result<List<Project*>> CreateBuildOrder()
+        {
+            AddDependencies();
+            List<Project*> buildOrder;
+            HashMap<ustring, Project*> projectMap;
+            for (const UniquePtr<Project>& project : projects)
+            {
+                projectMap[project->Name()] = project.Get();
+            }
+            List<ustring> order;
+            HashSet<ustring> visited;
+            HashSet<ustring> tempVisit;
+            for (const UniquePtr<Project>& project : projects)
+            {
+                if (visited.CFind(project->Name()) == visited.CEnd())
+                {
+                    Visit(order, project->Name(), visited, tempVisit, dependencyMap, this);
+                }
+            }
+            for (const ustring& projectName : order)
+            {
+                HashMap<ustring, Project*>.ConstIterator it = projectMap.CFind(projectName);
+                if (it != projectMap.CEnd())
+                {
+                    buildOrder.Add(it->second);
+                }
+                else
+                {
+                    auto projectNameResult = ToUtf8(projectName);
+                    if (projectNameResult.Error())
+                    {
+                        return Result<List<Project*>>(ErrorId(projectNameResult.GetErrorId()));
+                    }
+                    auto nameResult = ToUtf8(Name());
+                    if (nameResult.Error())
+                    {
+                        return Result<List<Project*>>(ErrorId(nameResult.GetErrorId()));
+                    }
+                    auto filePathResult = GetFullPath(FilePath());
+                    if (filePathResult.Error())
+                    {
+                        return Result<List<Project*>>(ErrorId(filePathResult.GetErrorId()));
+                    }
+                    string errorMessage = "project name '" + projectNameResult.Value() + "' not found in solution '" + nameResult.Value() + "' (" +
+                        filePathResult.Value() + ")";
+                    int errorId = AllocateError(errorMessage);
+                    return Result<List<Project*>>(ErrorId(errorId));
+                }
+            }
+            return buildOrder;
+        }
+        private void AddDependencies()
+        {
+            for (const UniquePtr<Project>& project : projects)
+            {
+                ProjectDependencyDeclaration* dependencyDeclaration = null;
+                HashMap<ustring, ProjectDependencyDeclaration*>.ConstIterator it = dependencyMap.CFind(project->Name());
+                if (it != dependencyMap.CEnd())
+                {
+                    dependencyDeclaration = it->second;
+                }
+                else
+                {
+                    ProjectDependencyDeclaration* additionalDeclaration = new ProjectDependencyDeclaration(project->Name());
+                    additionalDependencyDeclarations.Add(UniquePtr<ProjectDependencyDeclaration>(additionalDeclaration));
+                    dependencyDeclaration = additionalDeclaration;
+                    dependencyMap[project->Name()] = dependencyDeclaration;
+                }
+                for (const UniquePtr<Project>& projectToCheck : projects)
+                {
+                    if (projectToCheck != project)
+                    {
+                        if (project->DependsOn(projectToCheck.Get()))
+                        {
+                            project->AddDependsOnProject(projectToCheck.Get());
+                            if (Find(dependencyDeclaration->DependsOnProjects().CBegin(), dependencyDeclaration->DependsOnProjects().CEnd(), projectToCheck->Name()) == dependencyDeclaration->DependsOnProjects().CEnd())
+                            {
+                                dependencyDeclaration->AddDependency(projectToCheck->Name());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        public void SortByProjectName()
+        {
+            Sort(projects.Begin(), projects.End(), ByProjectName());
+        }
+        public bool HasProject(const ustring& projectName) const
+        {
+            for (const UniquePtr<Project>& project : projects)
+            {
+                if (project->Name() == projectName) return true;
+            }
+            return false;
+        }
+        public Result<bool> Save()
+        {
+            auto writerResult = File.CreateText(filePath);
+            if (writerResult.Error())
+            {
+                return Result<bool>(ErrorId(writerResult.GetErrorId()));
+            }
+            StreamWriter& writer = writerResult.Value();
+            CodeFormatter formatter(writer);
+            auto nameResult = ToUtf8(name);
+            if (nameResult.Error())
+            {
+                return Result<bool>(ErrorId(nameResult.GetErrorId()));
+            }
+            formatter.WriteLine("solution " + nameResult.Value() + ";");
+            string solutionDir = Path.GetDirectoryName(filePath);
+            relativeProjectFilePaths.Clear();
+            for (const UniquePtr<Project>& project : projects)
+            {
+                string projectFilePath = project->FilePath();
+                string projectDir = Path.GetDirectoryName(projectFilePath);
+                auto relativeProjectDirResult = MakeRelativeDirPath(projectDir, solutionDir);
+                if (relativeProjectDirResult.Error())
+                {
+                    return Result<bool>(ErrorId(relativeProjectDirResult.GetErrorId()));
+                }
+                string relativeProjectDir = relativeProjectDirResult.Value();
+                string relativeProjectFilePath = Path.Combine(relativeProjectDir, Path.GetFileName(projectFilePath));
+                relativeProjectFilePaths.Add(relativeProjectFilePath);
+            }
+            for (const string& relativeProjectFilePath : relativeProjectFilePaths)
+            {
+                formatter.WriteLine("project <" + relativeProjectFilePath + ">;");
+            }
+            if (activeProject != null)
+            {
+                auto activeProjectResult = ToUtf8(activeProject->Name());
+                if (activeProjectResult.Error())
+                {
+                    return Result<bool>(ErrorId(activeProjectResult.GetErrorId()));
+                }
+                formatter.WriteLine("activeProject " + activeProjectResult.Value() + ";");
+            }
+            if (!activeBackEnd.IsEmpty())
+            {
+                auto activeBackEndResult = ToUtf8(activeBackEnd);
+                if (activeBackEndResult.Error())
+                {
+                    return Result<bool>(ErrorId(activeBackEndResult.GetErrorId()));
+                }
+                formatter.WriteLine("activeBackEnd=" + activeBackEndResult.Value() + ";");
+            }
+            for (const UniquePtr<Project>& project : projects)
+            {
+                auto saveResult = project->Save();
+                if (saveResult.Error())
+                {
+                    return Result<bool>(ErrorId(saveResult.GetErrorId()));
+                }
+            }
+            return Result<bool>(true);
+        }
+        public void RemoveProject(Project* project)
+        {
+            for (List<UniquePtr<Project>>.Iterator it = projects.Begin(); it != projects.End(); ++it)
+            {
+                if (it->Get() == project)
+                {
+                    if (project == activeProject)
+                    {
+                        activeProject = null;
+                    }
+                    projects.Remove(it);
+                    break;
+                }
+            }
+        }
+        private ustring name;
+        private string filePath;
+        private string basePath;
+        private List<string> projectFilePaths;
+        private List<string> relativeProjectFilePaths;
+        private ustring activeProjectName;
+        private Project* activeProject;
+        private ustring activeBackEnd;
+        private List<UniquePtr<Project>> projects;
+        private List<UniquePtr<SolutionDeclaration>> declarations;
+        private HashMap<ustring, ProjectDependencyDeclaration*> dependencyMap;
+        private List<UniquePtr<ProjectDependencyDeclaration>> additionalDependencyDeclarations;
+    }
+}

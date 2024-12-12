@@ -1,0 +1,51 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg.ast
+{
+    public class Using
+    {
+        public Using(const string& ns_, const System.Lex.Span& span_, int fileIndex_) : ns(ns_), span(span_), fileIndex(fileIndex_)
+        {
+        }
+        public const string& Ns() const
+        {
+            return ns;
+        }
+        public const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public string GrammarName() const
+        {
+            string grammarName;
+            List<string> components = ns.Split('.');
+            for (long i = 0; i < components.Count() - 1; ++i)
+            {
+                if (i > 0)
+                {
+                    grammarName.Append(".");
+                }
+                grammarName.Append(components[i]);
+            }
+            return grammarName;
+        }
+        public string RuleName() const
+        {
+            List<string> components = ns.Split('.');
+            return components.Back();
+        }
+        private string ns;
+        private System.Lex.Span span;
+        private int fileIndex;
+    }
+}

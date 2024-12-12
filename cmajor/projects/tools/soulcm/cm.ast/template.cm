@@ -1,0 +1,275 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class TemplateIdNode : Node
+    {
+        public TemplateIdNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.templateIdNode, span_, fileIndex_)
+        {
+        }
+        public TemplateIdNode(const System.Lex.Span& span_, int fileIndex_, Node* primary_) : base(NodeType.templateIdNode, span_, fileIndex_), primary(primary_)
+        {
+            primary->SetParent(this);
+        }
+        public Node* Primary()
+        {
+            return primary.Get();
+        }
+        public const NodeList<Node>& TemplateArguments() const
+        {
+            return templateArguments;
+        }
+        public inline int Arity() const
+        {
+            return cast<int>(templateArguments.Count());
+        }
+        public void AddTemplateArgument(Node* templateArgument)
+        {
+            templateArgument->SetParent(this);
+            templateArguments.Add(templateArgument);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            TemplateIdNode* clone = new TemplateIdNode(GetSpan(), FileIndex(), primary->Clone(cloneContext));
+            int n = templateArguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                Node* templateArgument = templateArguments[i];
+                clone->AddTemplateArgument(templateArgument->Clone(cloneContext));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(primary.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return templateArguments.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto primaryResult = reader.ReadNode();
+            if (primaryResult.Error())
+            {
+                return Result<bool>(ErrorId(primaryResult.GetErrorId()));
+            }
+            primary.Reset(primaryResult.Value());
+            primary->SetParent(this);
+            result = templateArguments.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            templateArguments.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override Result<string> ToString() const
+        {
+            auto primaryResult = primary->ToString();
+            if (primaryResult.Error())
+            {
+                return primaryResult;
+            }
+            string s = primaryResult.Value();
+            s.Append("<");
+            int n = templateArguments.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                {
+                    s.Append(", ");
+                }
+                auto templateArgumentResult = templateArguments[i]->ToString();
+                if (templateArgumentResult.Error())
+                {
+                    return templateArgumentResult;
+                }
+                s.Append(templateArgumentResult.Value());
+            }
+            s.Append(">");
+            return Result<string>(s);
+        }
+        private UniquePtr<Node> primary;
+        private NodeList<Node> templateArguments;
+    }
+
+    public class TemplateParameterNode : Node
+    {
+        public TemplateParameterNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.templateParameterNode, span_, fileIndex_), id()
+        {
+        }
+        public TemplateParameterNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* id_, Node* defaultTemplateArgument_) :
+            base(NodeType.templateParameterNode, span_, fileIndex_), id(id_), defaultTemplateArgument(defaultTemplateArgument_)
+        {
+            id->SetParent(this);
+            if (!defaultTemplateArgument.IsNull())
+            {
+                defaultTemplateArgument->SetParent(this);
+            }
+        }
+        public const IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public IdentifierNode* Id()
+        {
+            return id.Get();
+        }
+        public const Node* DefaultTemplateArgument() const
+        {
+            return defaultTemplateArgument.Get();
+        }
+        public Node* DefaultTemplateArgument()
+        {
+            return defaultTemplateArgument.Get();
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            Node* clonedDefaultTemplateArgument = null;
+            if (!defaultTemplateArgument.IsNull())
+            {
+                clonedDefaultTemplateArgument = defaultTemplateArgument->Clone(cloneContext);
+            }
+            return new TemplateParameterNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(id->Clone(cloneContext)), clonedDefaultTemplateArgument);
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasDefaultTemplateArgument = !defaultTemplateArgument.IsNull();
+            result = writer.GetBinaryWriter().Write(hasDefaultTemplateArgument);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasDefaultTemplateArgument)
+            {
+                result = writer.Write(defaultTemplateArgument.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            auto hasDefaultTemplateArgumentResult = reader.GetBinaryReader().ReadBool();
+            if (hasDefaultTemplateArgumentResult.Error())
+            {
+                return Result<bool>(ErrorId(hasDefaultTemplateArgumentResult.GetErrorId()));
+            }
+            bool hasDefaultTemplateArgument = hasDefaultTemplateArgumentResult.Value();
+            if (hasDefaultTemplateArgument)
+            {
+                auto defaultTemplateArgumentResult = reader.ReadNode();
+                if (defaultTemplateArgumentResult.Error())
+                {
+                    return Result<bool>(ErrorId(defaultTemplateArgumentResult.GetErrorId()));
+                }
+                defaultTemplateArgument.Reset(defaultTemplateArgumentResult.Value());
+                defaultTemplateArgument->SetParent(this);
+            }
+            return Result<bool>(true);
+        }
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<Node> defaultTemplateArgument;
+    }
+
+    public class FullInstantiationRequestNode : Node
+    {
+        public FullInstantiationRequestNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.fullInstantiationRequestNode, span_, fileIndex_), templateId()
+        {
+        }
+        public FullInstantiationRequestNode(const System.Lex.Span& span_, int fileIndex_, TemplateIdNode* templateId_) :
+            base(NodeType.fullInstantiationRequestNode, span_, fileIndex_), templateId(templateId_)
+        {
+            templateId->SetParent(this);
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            return new FullInstantiationRequestNode(GetSpan(), FileIndex(), cast<TemplateIdNode*>(templateId->Clone(cloneContext)));
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            return templateId->Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto templateIdResult = reader.ReadTemplateIdNode();
+            if (templateIdResult.Error())
+            {
+                return Result<bool>(ErrorId(templateIdResult.GetErrorId()));
+            }
+            templateId.Reset(templateIdResult.Value());
+            templateId->SetParent(this);
+            return Result<bool>(true);
+        }
+        public inline TemplateIdNode* TemplateId() const
+        {
+            return templateId.Get();
+        }
+        private UniquePtr<TemplateIdNode> templateId;
+    }
+
+} // namespace cm.ast

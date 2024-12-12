@@ -1,0 +1,92 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmlg.ast
+{
+    public class Keyword
+    {
+        public Keyword(const string& str_, const string& tokenName_, long tokenId_) : str(str_), tokenName(tokenName_), tokenId(tokenId_), collection(null)
+        {
+        }
+        public Keyword(const string& str_, const string& tokenName_) : str(str_), tokenName(tokenName_), tokenId(-1), collection(null)
+        {
+        }
+        public const string& Str() const
+        {
+            return str;
+        }
+        public const string& TokenName() const
+        {
+            return tokenName;
+        }
+        public inline long TokenId() const
+        {
+            return tokenId;
+        }
+        public void SetTokenId(long tokenId_)
+        {
+            tokenId = tokenId_;
+        }
+        public void SetCollection(Collection* collection_)
+        {
+            collection = collection_;
+        }
+        public inline Collection* GetCollection() const
+        {
+            return collection;
+        }
+        private string str;
+        private string tokenName;
+        private long tokenId;
+        private Collection* collection;
+    }
+
+    public class KeywordCollection : Collection
+    {
+        public KeywordCollection(const string& name_) : base(CollectionKind.keywordCollection, name_)
+        {
+        }
+        public void AddKeyword(Keyword* keyword)
+        {
+            keywords.Add(UniquePtr<Keyword>(keyword));
+            keyword->SetCollection(this);
+        }
+        public const List<UniquePtr<Keyword>>& Keywords() const
+        {
+            return keywords;
+        }
+        private List<UniquePtr<Keyword>> keywords;
+    }
+
+    public class KeywordFile : File
+    {
+        public KeywordFile(const string& filePath_) : base(FileKind.keywordFile, filePath_)
+        {
+        }
+        public void SetKeywordCollection(KeywordCollection* keywordCollection_)
+        {
+            keywordCollection.Reset(keywordCollection_);
+            keywordCollection->SetFile(this);
+        }
+        public inline KeywordCollection* GetKeywordCollection() const
+        {
+            return keywordCollection.Get();
+        }
+        public void AddUsing(const string& nsName)
+        {
+            usings.Add(nsName);
+        }
+        public const List<string>& Usings() const
+        {
+            return usings;
+        }
+        private UniquePtr<KeywordCollection> keywordCollection;
+        private List<string> usings;
+    }
+}
+

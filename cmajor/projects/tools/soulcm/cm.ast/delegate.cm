@@ -1,0 +1,236 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class DelegateNode : Node
+    {
+        public DelegateNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.delegateNode, span_, fileIndex_),
+            specifiers(Specifiers.none), returnTypeExpr(), id(), parameters()
+        {
+        }
+        public DelegateNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
+            base(NodeType.delegateNode, span_, fileIndex_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
+        {
+            returnTypeExpr->SetParent(this);
+            id->SetParent(this);
+        }
+        public Node* ReturnTypeExpr() const
+        {
+            return returnTypeExpr.Get();
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public const NodeList<ParameterNode>& Parameters() const
+        {
+            return parameters;
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            DelegateNode* clone = new DelegateNode(GetSpan(), FileIndex(), specifiers, returnTypeExpr->Clone(cloneContext), cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddParameter(cast<ParameterNode*>(parameters[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(returnTypeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return parameters.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto returnTypeExprResult = reader.ReadNode();
+            if (returnTypeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(returnTypeExprResult.GetErrorId()));
+            }
+            returnTypeExpr.Reset(returnTypeExprResult.Value());
+            returnTypeExpr->SetParent(this);
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            result = parameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            parameters.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddParameter(ParameterNode* parameter)
+        {
+            parameter->SetParent(this);
+            parameters.Add(parameter);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<Node> returnTypeExpr;
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<ParameterNode> parameters;
+    }
+
+    public class ClassDelegateNode : Node
+    {
+        public ClassDelegateNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.classDelegateNode, span_, fileIndex_),
+            specifiers(Specifiers.none), returnTypeExpr(), id(), parameters()
+        {
+        }
+        public ClassDelegateNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, Node* returnTypeExpr_, IdentifierNode* id_) :
+            base(NodeType.classDelegateNode, span_, fileIndex_), specifiers(specifiers_), returnTypeExpr(returnTypeExpr_), id(id_), parameters()
+        {
+            returnTypeExpr->SetParent(this);
+            id->SetParent(this);
+        }
+        public Node* ReturnTypeExpr() const
+        {
+            return returnTypeExpr.Get();
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public const NodeList<ParameterNode>& Parameters() const
+        {
+            return parameters;
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            ClassDelegateNode* clone = new ClassDelegateNode(GetSpan(), FileIndex(), specifiers,
+                returnTypeExpr->Clone(cloneContext), cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int n = parameters.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddParameter(cast<ParameterNode*>(parameters[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(returnTypeExpr.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            return parameters.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto returnTypeExprResult = reader.ReadNode();
+            if (returnTypeExprResult.Error())
+            {
+                return Result<bool>(ErrorId(returnTypeExprResult.GetErrorId()));
+            }
+            returnTypeExpr.Reset(returnTypeExprResult.Value());
+            returnTypeExpr->SetParent(this);
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            result = parameters.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            parameters.SetParent(this);
+            return Result<bool>(true);
+        }
+        public override void AddParameter(ParameterNode* parameter)
+        {
+            parameter->SetParent(this);
+            parameters.Add(parameter);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<Node> returnTypeExpr;
+        private UniquePtr<IdentifierNode> id;
+        private NodeList<ParameterNode> parameters;
+    }
+
+} // namespace cm.ast

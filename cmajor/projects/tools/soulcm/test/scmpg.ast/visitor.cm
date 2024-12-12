@@ -1,0 +1,122 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmpg.ast
+{
+    public class Visitor
+    {
+        public virtual void Visit(ChoiceParser& parser) {}
+        public virtual void Visit(SwitchParser& parser) {}
+        public virtual void Visit(CaseParser& parser) {}
+        public virtual void Visit(SequenceParser& parser) {}
+        public virtual void Visit(DifferenceParser& parser) {}
+        public virtual void Visit(ListParser& parser) {}
+        public virtual void Visit(LookaheadParser& parser) {}
+        public virtual void Visit(KleeneParser& parser) {}
+        public virtual void Visit(PositiveParser& parser) {}
+        public virtual void Visit(OptionalParser& parser) {}
+        public virtual void Visit(ActionParser& parser) {}
+        public virtual void Visit(NonterminalParser& parser) {}
+        public virtual void Visit(EmptyParser& parser) {}
+        public virtual void Visit(AnyParser& parser) {}
+        public virtual void Visit(TokenParser& parser) {}
+        public virtual void Visit(CharParser& parser) {}
+        public virtual void Visit(StringParser& parser) {}
+        public virtual void Visit(CharSetParser& parser) {}
+        public virtual void Visit(GroupParser& parser) {}
+        public virtual void Visit(RuleParser& rule) {}
+        public virtual void Visit(GrammarParser& grammar) {}
+        public virtual void Visit(ParserFile& parserFile) {}
+        public virtual void Visit(ScmpgFile& spgFile) {}
+    }
+
+    public class DefaultVisitor : Visitor
+    {
+        public override void Visit(ChoiceParser& parser)
+        {
+            parser.Left()->Accept(*this);
+            parser.Right()->Accept(*this);
+        }
+        public override void Visit(SwitchParser& parser)
+        {
+            for (const auto& caseParser : parser.CaseParsers())
+            {
+                caseParser->Accept(*this);
+            }
+        }
+        public override void Visit(CaseParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(SequenceParser& parser)
+        {
+            parser.Left()->Accept(*this);
+            parser.Right()->Accept(*this);
+        }
+        public override void Visit(DifferenceParser& parser)
+        {
+            parser.Left()->Accept(*this);
+            parser.Right()->Accept(*this);
+        }
+        public override void Visit(ListParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(LookaheadParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(KleeneParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(PositiveParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(OptionalParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(ActionParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(GroupParser& parser)
+        {
+            parser.Child()->Accept(*this);
+        }
+        public override void Visit(RuleParser& parser)
+        {
+            parser.Definition()->Accept(*this);
+        }
+        public override void Visit(GrammarParser& grammar)
+        {
+            for (const auto& rule : grammar.Rules())
+            {
+                rule->Accept(*this);
+            }
+        }
+        public override void Visit(ParserFile& parserFile)
+        {
+            for (const auto& grammar : parserFile.Grammars())
+            {
+                grammar->Accept(*this);
+            }
+        }
+        public override void Visit(ScmpgFile& scmpgFile)
+        {
+            for (const auto& parserFile : scmpgFile.ParserFiles())
+            {
+                parserFile->Accept(*this);
+            }
+        }
+    }
+
+} // namespace scmpg.ast
+

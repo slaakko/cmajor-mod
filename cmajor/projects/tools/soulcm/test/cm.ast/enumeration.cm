@@ -1,0 +1,304 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace cm.ast
+{
+    public class EnumTypeNode : Node
+    {
+        public EnumTypeNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.enumTypeNode, span_, fileIndex_)
+        {
+        }
+        public EnumTypeNode(const System.Lex.Span& span_, int fileIndex_, Specifiers specifiers_, IdentifierNode* id_) :
+            base(NodeType.enumTypeNode, span_, fileIndex_), specifiers(specifiers_), id(id_)
+        {
+            id->SetParent(this);
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public Node* GetUnderlyingType() const
+        {
+            return underlyingType.Get();
+        }
+        public const NodeList<EnumConstantNode>& Constants() const
+        {
+            return constants;
+        }
+        public void AddConstant(EnumConstantNode* constant)
+        {
+            constant->SetParent(this);
+            constants.Add(constant);
+        }
+        public EnumConstantNode* GetLastConstant() const
+        {
+            int n = constants.Count();
+            if (n > 0)
+            {
+                return constants[n - 1];
+            }
+            return null;
+        }
+        public void SetUnderlyingType(Node* underlyingType_)
+        {
+            underlyingType.Reset(underlyingType_);
+            underlyingType->SetParent(this);
+        }
+        public override Specifiers GetSpecifiers() const
+        {
+            return specifiers;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            EnumTypeNode* clone = new EnumTypeNode(GetSpan(), FileIndex(), specifiers, cast<IdentifierNode*>(id->Clone(cloneContext)));
+            int n = constants.Count();
+            for (int i = 0; i < n; ++i)
+            {
+                clone->AddConstant(cast<EnumConstantNode*>(constants[i]->Clone(cloneContext)));
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(specifiers);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            bool hasUnderlyingType = underlyingType != null;
+            result = writer.GetBinaryWriter().Write(hasUnderlyingType);
+            if (result.Error())
+            {
+                return result;
+            }
+            if (hasUnderlyingType)
+            {
+                result = writer.Write(underlyingType.Get());
+                if (result.Error())
+                {
+                    return result;
+                }
+            }
+            return constants.Write(writer);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto specifiersResult = reader.ReadSpecifiers();
+            if (specifiersResult.Error())
+            {
+                return Result<bool>(ErrorId(specifiersResult.GetErrorId()));
+            }
+            specifiers = specifiersResult.Value();
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            auto hasUnderlyingTypeResult = reader.GetBinaryReader().ReadBool();
+            if (hasUnderlyingTypeResult.Error())
+            {
+                return Result<bool>(ErrorId(hasUnderlyingTypeResult.GetErrorId()));
+            }
+            bool hasUnderlyingType = hasUnderlyingTypeResult.Value();
+            if (hasUnderlyingType)
+            {
+                auto underlyingTypeResult = reader.ReadNode();
+                if (underlyingTypeResult.Error())
+                {
+                    return Result<bool>(ErrorId(underlyingTypeResult.GetErrorId()));
+                }
+                underlyingType.Reset(underlyingTypeResult.Value());
+            }
+            result = constants.Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            constants.SetParent(this);
+            return Result<bool>(true);
+        }
+        private Specifiers specifiers;
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<Node> underlyingType;
+        private NodeList<EnumConstantNode> constants;
+    }
+
+    public class EnumConstantNode : Node
+    {
+        public EnumConstantNode(const System.Lex.Span& span_, int fileIndex_) : base(NodeType.enumConstantNode, span_, fileIndex_), hasValue(false)
+        {
+        }
+        public EnumConstantNode(const System.Lex.Span& span_, int fileIndex_, IdentifierNode* id_, Node* value_) :
+            base(NodeType.enumConstantNode, span_, fileIndex_), id(id_), value(value_), hasValue(false)
+        {
+            id->SetParent(this);
+            if (!value.IsNull())
+            {
+                value->SetParent(this);
+            }
+        }
+        public Node* GetValue() const
+        {
+            return value.Get();
+        }
+        public IdentifierNode* Id() const
+        {
+            return id.Get();
+        }
+        public void SetHasValue()
+        {
+            hasValue = true;
+        }
+        public bool HasValue() const
+        {
+            return hasValue;
+        }
+        public void SetStrValue(const ustring& strValue_)
+        {
+            strValue = strValue_;
+        }
+        public const ustring& StrValue() const
+        {
+            return strValue;
+        }
+        public override Node* Clone(CloneContext& cloneContext) const
+        {
+            EnumConstantNode* clone = new EnumConstantNode(GetSpan(), FileIndex(), cast<IdentifierNode*>(id->Clone(cloneContext)), value->Clone(cloneContext));
+            if (hasValue)
+            {
+                clone->SetHasValue();
+            }
+            return clone;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Write(AstWriter& writer)
+        {
+            auto result = base->Write(writer);
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(id.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.Write(value.Get());
+            if (result.Error())
+            {
+                return result;
+            }
+            result = writer.GetBinaryWriter().Write(hasValue);
+            if (result.Error())
+            {
+                return result;
+            }
+            return writer.GetBinaryWriter().Write(strValue);
+        }
+        public override Result<bool> Read(AstReader& reader)
+        {
+            auto result = base->Read(reader);
+            if (result.Error())
+            {
+                return result;
+            }
+            auto idResult = reader.ReadIdentifierNode();
+            if (idResult.Error())
+            {
+                return Result<bool>(ErrorId(idResult.GetErrorId()));
+            }
+            id.Reset(idResult.Value());
+            id->SetParent(this);
+            auto valueResult = reader.ReadNode();
+            if (valueResult.Error())
+            {
+                return Result<bool>(ErrorId(valueResult.GetErrorId()));
+            }
+            value.Reset(valueResult.Value());
+            value->SetParent(this);
+            auto hasValueResult = reader.GetBinaryReader().ReadBool();
+            if (hasValueResult.Error())
+            {
+                return Result<bool>(ErrorId(hasValueResult.GetErrorId()));
+            }
+            hasValue = hasValueResult.Value();
+            auto strValueResult = reader.GetBinaryReader().ReadUString();
+            if (strValueResult.Error())
+            {
+                return Result<bool>(ErrorId(strValueResult.GetErrorId()));
+            }
+            strValue = strValueResult.Value();
+            return Result<bool>(true);
+        }
+        private UniquePtr<IdentifierNode> id;
+        private UniquePtr<Node> value;
+        private bool hasValue;
+        private ustring strValue;
+    }
+
+    public Node* MakeNextEnumConstantValue(const System.Lex.Span& span, int fileIndex, EnumTypeNode* enumType)
+    {
+        EnumConstantNode* lastConstant = enumType->GetLastConstant();
+        if ((lastConstant != null))
+        {
+            Node* lastValue = lastConstant->GetValue();
+            if ((lastValue != null))
+            {
+                CloneContext cloneContext;
+                Node* clonedValue = lastValue->Clone(cloneContext);
+                if ((enumType->GetUnderlyingType() != null))
+                {
+                    if (enumType->GetUnderlyingType()->IsUnsignedTypeNode())
+                    {
+                        return new AddNode(span, fileIndex, clonedValue, new ByteLiteralNode(span, 1u));
+                    }
+                }
+                return new AddNode(span, fileIndex, clonedValue, new SByteLiteralNode(span, 1));
+            }
+            else
+            {
+                Panic("last constant returned null value");
+            }
+        }
+        else
+        {
+            if ((enumType->GetUnderlyingType() != null))
+            {
+                if (enumType->GetUnderlyingType()->IsUnsignedTypeNode())
+                {
+                    return new ByteLiteralNode(span, fileIndex, 0u);
+                }
+            }
+            return new SByteLiteralNode(span, fileIndex, 0);
+        }
+    }
+
+} // namespace cm.ast

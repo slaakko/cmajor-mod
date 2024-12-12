@@ -1,0 +1,57 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmlg.ast
+{
+    public enum CollectionKind
+    {
+        tokenCollection, keywordCollection, expressionCollection, lexer
+    }
+
+    public class Collection
+    {
+        public Collection(CollectionKind kind_, const string& name_) : kind(kind_), name(name_), file(null)
+        {
+        }
+        public default virtual ~Collection();
+        public inline CollectionKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsTokenCollection() const
+        {
+            return kind == CollectionKind.tokenCollection;
+        }
+        public inline bool IsKeywordCollection() const
+        {
+            return kind == CollectionKind.keywordCollection;
+        }
+        public inline bool IsExpressionCollection() const
+        {
+            return kind == CollectionKind.expressionCollection;
+        }
+        public inline bool IsLexer() const
+        {
+            return kind == CollectionKind.lexer;
+        }
+        public const string& Name() const
+        {
+            return name;
+        }
+        public void SetFile(File* file_)
+        {
+            file = file_;
+        }
+        public inline File* GetFile() const
+        {
+            return file;
+        }
+        private CollectionKind kind;
+        private string name;
+        private File* file;
+    }
+}

@@ -1,0 +1,77 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace scmpg.ast
+{
+    public enum ParamVarKind
+    {
+        parameter, variable
+    }
+
+    public abstract class ParamVar
+    {
+        public ParamVar(const ParamVarKind kind_, const System.Lex.Span& span_, int fileIndex_, cm.ast.Node* type_, const string& name_) :
+            kind(kind_), span(span_), fileIndex(fileIndex_), type(type_), name(name_)
+        {
+        }
+        public default virtual ~ParamVar();
+        public abstract ParamVar* Clone() const;
+        public inline ParamVarKind Kind() const
+        {
+            return kind;
+        }
+        public const System.Lex.Span& Span() const
+        {
+            return span;
+        }
+        public inline int FileIndex() const
+        {
+            return fileIndex;
+        }
+        public cm.ast.Node* Type() const
+        {
+            return type.Get();
+        }
+        public const string& Name() const
+        {
+            return name;
+        }
+        private ParamVarKind kind;
+        private System.Lex.Span span;
+        private int fileIndex;
+        private UniquePtr<cm.ast.Node> type;
+        private string name;
+    }
+
+    public class Parameter : ParamVar
+    {
+        public Parameter(const System.Lex.Span& span_, int fileIndex_, cm.ast.Node* type_, const string& name_) :
+            base(ParamVarKind.parameter, span_, fileIndex_, type_, name_)
+        {
+        }
+        public override ParamVar* Clone() const
+        {
+            cm.ast.CloneContext cloneContext;
+            return new Parameter(Span(), FileIndex(), Type()->Clone(cloneContext), Name());
+        }
+    }
+
+    public class Variable : ParamVar
+    {
+        public Variable(const System.Lex.Span& span_, int fileIndex_, cm.ast.Node* type_, const string& name_) :
+            base(ParamVarKind.variable, span_, fileIndex_, type_, name_)
+        {
+        }
+        public override ParamVar* Clone() const
+        {
+            cm.ast.CloneContext cloneContext;
+            return new Variable(Span(), FileIndex(), Type()->Clone(cloneContext), Name());
+        }
+    }
+
+} // namespace scmpg.ast
+

@@ -1,0 +1,90 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace scmlg.ast
+{
+    public class Expression
+    {
+        public Expression(const string& id_, const string& value_, int line_) : index(-1), id(id_), value(value_), line(line_), collection(null)
+        {
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        public void SetIndex(int index_)
+        {
+            index = index_;
+        }
+        public const string& Id() const
+        {
+            return id;
+        }
+        public const string& Value() const
+        {
+            return value;
+        }
+        public const string& FileName() const
+        {
+            File* file = collection->GetFile();
+            return file->FilePath();
+        }
+        public inline int Line() const
+        {
+            return line;
+        }
+        public inline Collection* GetCollection() const
+        {
+            return collection;
+        }
+        public void SetCollection(Collection* collection_)
+        {
+            collection = collection_;
+        }
+        private int index;
+        private string id;
+        private string value;
+        private int line;
+        private Collection* collection;
+    }
+
+    public class ExpressionCollection : Collection
+    {
+        public ExpressionCollection(const string& name_) : base(CollectionKind.expressionCollection, name_)
+        {
+        }
+        public void AddExpression(Expression* expression)
+        {
+            expressions.Add(UniquePtr<Expression>(expression));
+            expression->SetCollection(this);
+        }
+        public const List<UniquePtr<Expression>>& Expressions() const
+        {
+            return expressions;
+        }
+        private List<UniquePtr<Expression>> expressions;
+    }
+
+    public class ExpressionFile : File
+    {
+        public ExpressionFile(const string& filePath_) : base(FileKind.expressionFile, filePath_)
+        {
+        }
+        public void SetExpressionCollection(ExpressionCollection* expressionCollection_)
+        {
+            expressionCollection.Reset(expressionCollection_);
+            expressionCollection->SetFile(this);
+        }
+        public inline ExpressionCollection* GetExpressionCollection() const
+        {
+            return expressionCollection.Get();
+        }
+        private UniquePtr<ExpressionCollection> expressionCollection;
+    }
+}
+
