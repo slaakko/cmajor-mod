@@ -1,0 +1,1173 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+using scmlg.ast;
+
+namespace re.ast
+{
+    public abstract class ExpressionParser
+    {
+        public ExpressionParser()
+        {
+        }
+        public default virtual ~ExpressionParser();
+        public abstract Result<Nfa> Parse(const string& expression, Context* context, const string& fileName, int line);
+    }
+
+    public class Context
+    {
+        public Context(bool empty_) :
+            empty(empty_),
+            debug(false),
+            fileName(),
+            nextNfaStateId(0),
+            nextDfaStateId(0),
+            ruleIndex(-1),
+            classIndex(0),
+            any(),
+            epsilon(eps),
+            idStart(null),
+            idCont(null),
+            masterNfaIndex(-1),
+            expressions(null),
+            currentExpression(null),
+            expressionParser(null)
+        {
+            if (!empty)
+            {
+                idStart = new Class(classIndex);
+                idCont = new Class(classIndex + 1);
+                classIndex = classIndex + 2;
+                symbols.Add(idStart);
+                symbols.Add(idCont);
+                idStart->SetName("{idstart}");
+                idStart->AddSymbol(MakeRange(cast<uchar>(65), cast<uchar>(90)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(95), cast<uchar>(95)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(97), cast<uchar>(122)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(170), cast<uchar>(170)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(181), cast<uchar>(181)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(186), cast<uchar>(186)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(192), cast<uchar>(214)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(216), cast<uchar>(246)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(248), cast<uchar>(705)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(710), cast<uchar>(721)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(736), cast<uchar>(740)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(748), cast<uchar>(748)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(750), cast<uchar>(750)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(880), cast<uchar>(884)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(886), cast<uchar>(887)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(890), cast<uchar>(893)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(895), cast<uchar>(895)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(902), cast<uchar>(902)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(904), cast<uchar>(906)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(908), cast<uchar>(908)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(910), cast<uchar>(929)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(931), cast<uchar>(1013)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1015), cast<uchar>(1153)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1162), cast<uchar>(1327)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1329), cast<uchar>(1366)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1369), cast<uchar>(1369)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1376), cast<uchar>(1416)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1488), cast<uchar>(1514)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1519), cast<uchar>(1522)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1568), cast<uchar>(1610)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1646), cast<uchar>(1647)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1649), cast<uchar>(1747)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1749), cast<uchar>(1749)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1765), cast<uchar>(1766)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1774), cast<uchar>(1775)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1786), cast<uchar>(1788)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1791), cast<uchar>(1791)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1808), cast<uchar>(1808)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1810), cast<uchar>(1839)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1869), cast<uchar>(1957)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1969), cast<uchar>(1969)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(1994), cast<uchar>(2026)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2036), cast<uchar>(2037)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2042), cast<uchar>(2042)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2048), cast<uchar>(2069)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2074), cast<uchar>(2074)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2084), cast<uchar>(2084)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2088), cast<uchar>(2088)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2112), cast<uchar>(2136)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2144), cast<uchar>(2154)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2208), cast<uchar>(2228)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2230), cast<uchar>(2237)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2308), cast<uchar>(2361)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2365), cast<uchar>(2365)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2384), cast<uchar>(2384)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2392), cast<uchar>(2401)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2417), cast<uchar>(2432)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2437), cast<uchar>(2444)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2447), cast<uchar>(2448)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2451), cast<uchar>(2472)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2474), cast<uchar>(2480)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2482), cast<uchar>(2482)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2486), cast<uchar>(2489)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2493), cast<uchar>(2493)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2510), cast<uchar>(2510)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2524), cast<uchar>(2525)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2527), cast<uchar>(2529)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2544), cast<uchar>(2545)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2556), cast<uchar>(2556)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2565), cast<uchar>(2570)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2575), cast<uchar>(2576)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2579), cast<uchar>(2600)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2602), cast<uchar>(2608)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2610), cast<uchar>(2611)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2613), cast<uchar>(2614)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2616), cast<uchar>(2617)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2649), cast<uchar>(2652)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2654), cast<uchar>(2654)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2674), cast<uchar>(2676)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2693), cast<uchar>(2701)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2703), cast<uchar>(2705)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2707), cast<uchar>(2728)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2730), cast<uchar>(2736)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2738), cast<uchar>(2739)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2741), cast<uchar>(2745)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2749), cast<uchar>(2749)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2768), cast<uchar>(2768)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2784), cast<uchar>(2785)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2809), cast<uchar>(2809)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2821), cast<uchar>(2828)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2831), cast<uchar>(2832)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2835), cast<uchar>(2856)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2858), cast<uchar>(2864)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2866), cast<uchar>(2867)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2869), cast<uchar>(2873)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2877), cast<uchar>(2877)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2908), cast<uchar>(2909)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2911), cast<uchar>(2913)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2929), cast<uchar>(2929)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2947), cast<uchar>(2947)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2949), cast<uchar>(2954)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2958), cast<uchar>(2960)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2962), cast<uchar>(2965)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2969), cast<uchar>(2970)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2972), cast<uchar>(2972)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2974), cast<uchar>(2975)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2979), cast<uchar>(2980)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2984), cast<uchar>(2986)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(2990), cast<uchar>(3001)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3024), cast<uchar>(3024)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3077), cast<uchar>(3084)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3086), cast<uchar>(3088)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3090), cast<uchar>(3112)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3114), cast<uchar>(3129)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3133), cast<uchar>(3133)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3160), cast<uchar>(3162)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3168), cast<uchar>(3169)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3200), cast<uchar>(3200)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3205), cast<uchar>(3212)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3214), cast<uchar>(3216)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3218), cast<uchar>(3240)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3242), cast<uchar>(3251)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3253), cast<uchar>(3257)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3261), cast<uchar>(3261)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3294), cast<uchar>(3294)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3296), cast<uchar>(3297)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3313), cast<uchar>(3314)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3333), cast<uchar>(3340)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3342), cast<uchar>(3344)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3346), cast<uchar>(3386)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3389), cast<uchar>(3389)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3406), cast<uchar>(3406)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3412), cast<uchar>(3414)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3423), cast<uchar>(3425)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3450), cast<uchar>(3455)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3461), cast<uchar>(3478)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3482), cast<uchar>(3505)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3507), cast<uchar>(3515)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3517), cast<uchar>(3517)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3520), cast<uchar>(3526)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3585), cast<uchar>(3632)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3634), cast<uchar>(3635)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3648), cast<uchar>(3654)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3713), cast<uchar>(3714)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3716), cast<uchar>(3716)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3718), cast<uchar>(3722)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3724), cast<uchar>(3747)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3749), cast<uchar>(3749)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3751), cast<uchar>(3760)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3762), cast<uchar>(3763)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3773), cast<uchar>(3773)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3776), cast<uchar>(3780)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3782), cast<uchar>(3782)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3804), cast<uchar>(3807)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3840), cast<uchar>(3840)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3904), cast<uchar>(3911)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3913), cast<uchar>(3948)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(3976), cast<uchar>(3980)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4096), cast<uchar>(4138)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4159), cast<uchar>(4159)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4176), cast<uchar>(4181)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4186), cast<uchar>(4189)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4193), cast<uchar>(4193)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4197), cast<uchar>(4198)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4206), cast<uchar>(4208)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4213), cast<uchar>(4225)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4238), cast<uchar>(4238)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4256), cast<uchar>(4293)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4295), cast<uchar>(4295)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4301), cast<uchar>(4301)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4304), cast<uchar>(4346)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4348), cast<uchar>(4680)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4682), cast<uchar>(4685)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4688), cast<uchar>(4694)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4696), cast<uchar>(4696)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4698), cast<uchar>(4701)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4704), cast<uchar>(4744)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4746), cast<uchar>(4749)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4752), cast<uchar>(4784)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4786), cast<uchar>(4789)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4792), cast<uchar>(4798)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4800), cast<uchar>(4800)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4802), cast<uchar>(4805)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4808), cast<uchar>(4822)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4824), cast<uchar>(4880)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4882), cast<uchar>(4885)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4888), cast<uchar>(4954)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(4992), cast<uchar>(5007)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5024), cast<uchar>(5109)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5112), cast<uchar>(5117)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5121), cast<uchar>(5740)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5743), cast<uchar>(5759)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5761), cast<uchar>(5786)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5792), cast<uchar>(5866)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5870), cast<uchar>(5880)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5888), cast<uchar>(5900)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5902), cast<uchar>(5905)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5920), cast<uchar>(5937)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5952), cast<uchar>(5969)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5984), cast<uchar>(5996)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(5998), cast<uchar>(6000)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6016), cast<uchar>(6067)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6103), cast<uchar>(6103)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6108), cast<uchar>(6108)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6176), cast<uchar>(6264)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6272), cast<uchar>(6312)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6314), cast<uchar>(6314)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6320), cast<uchar>(6389)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6400), cast<uchar>(6430)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6480), cast<uchar>(6509)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6512), cast<uchar>(6516)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6528), cast<uchar>(6571)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6576), cast<uchar>(6601)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6656), cast<uchar>(6678)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6688), cast<uchar>(6740)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6823), cast<uchar>(6823)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6917), cast<uchar>(6963)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(6981), cast<uchar>(6987)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7043), cast<uchar>(7072)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7086), cast<uchar>(7087)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7098), cast<uchar>(7141)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7168), cast<uchar>(7203)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7245), cast<uchar>(7247)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7258), cast<uchar>(7293)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7296), cast<uchar>(7304)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7312), cast<uchar>(7354)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7357), cast<uchar>(7359)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7401), cast<uchar>(7404)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7406), cast<uchar>(7411)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7413), cast<uchar>(7414)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7418), cast<uchar>(7418)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7424), cast<uchar>(7615)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7680), cast<uchar>(7957)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7960), cast<uchar>(7965)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(7968), cast<uchar>(8005)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8008), cast<uchar>(8013)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8016), cast<uchar>(8023)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8025), cast<uchar>(8025)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8027), cast<uchar>(8027)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8029), cast<uchar>(8029)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8031), cast<uchar>(8061)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8064), cast<uchar>(8116)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8118), cast<uchar>(8124)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8126), cast<uchar>(8126)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8130), cast<uchar>(8132)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8134), cast<uchar>(8140)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8144), cast<uchar>(8147)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8150), cast<uchar>(8155)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8160), cast<uchar>(8172)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8178), cast<uchar>(8180)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8182), cast<uchar>(8188)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8305), cast<uchar>(8305)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8319), cast<uchar>(8319)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8336), cast<uchar>(8348)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8450), cast<uchar>(8450)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8455), cast<uchar>(8455)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8458), cast<uchar>(8467)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8469), cast<uchar>(8469)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8472), cast<uchar>(8477)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8484), cast<uchar>(8484)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8486), cast<uchar>(8486)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8488), cast<uchar>(8488)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8490), cast<uchar>(8505)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8508), cast<uchar>(8511)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8517), cast<uchar>(8521)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8526), cast<uchar>(8526)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(8544), cast<uchar>(8584)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11264), cast<uchar>(11310)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11312), cast<uchar>(11358)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11360), cast<uchar>(11492)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11499), cast<uchar>(11502)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11506), cast<uchar>(11507)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11520), cast<uchar>(11557)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11559), cast<uchar>(11559)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11565), cast<uchar>(11565)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11568), cast<uchar>(11623)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11631), cast<uchar>(11631)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11648), cast<uchar>(11670)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11680), cast<uchar>(11686)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11688), cast<uchar>(11694)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11696), cast<uchar>(11702)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11704), cast<uchar>(11710)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11712), cast<uchar>(11718)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11720), cast<uchar>(11726)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11728), cast<uchar>(11734)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(11736), cast<uchar>(11742)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12293), cast<uchar>(12295)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12321), cast<uchar>(12329)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12337), cast<uchar>(12341)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12344), cast<uchar>(12348)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12353), cast<uchar>(12438)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12443), cast<uchar>(12447)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12449), cast<uchar>(12538)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12540), cast<uchar>(12543)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12549), cast<uchar>(12591)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12593), cast<uchar>(12686)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12704), cast<uchar>(12730)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(12784), cast<uchar>(12799)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(13312), cast<uchar>(19893)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(19968), cast<uchar>(40943)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(40960), cast<uchar>(42124)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42192), cast<uchar>(42237)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42240), cast<uchar>(42508)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42512), cast<uchar>(42527)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42538), cast<uchar>(42539)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42560), cast<uchar>(42606)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42623), cast<uchar>(42653)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42656), cast<uchar>(42735)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42775), cast<uchar>(42783)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42786), cast<uchar>(42888)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42891), cast<uchar>(42943)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42946), cast<uchar>(42950)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(42999), cast<uchar>(43009)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43011), cast<uchar>(43013)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43015), cast<uchar>(43018)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43020), cast<uchar>(43042)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43072), cast<uchar>(43123)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43138), cast<uchar>(43187)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43250), cast<uchar>(43255)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43259), cast<uchar>(43259)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43261), cast<uchar>(43262)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43274), cast<uchar>(43301)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43312), cast<uchar>(43334)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43360), cast<uchar>(43388)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43396), cast<uchar>(43442)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43471), cast<uchar>(43471)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43488), cast<uchar>(43492)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43494), cast<uchar>(43503)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43514), cast<uchar>(43518)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43520), cast<uchar>(43560)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43584), cast<uchar>(43586)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43588), cast<uchar>(43595)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43616), cast<uchar>(43638)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43642), cast<uchar>(43642)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43646), cast<uchar>(43695)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43697), cast<uchar>(43697)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43701), cast<uchar>(43702)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43705), cast<uchar>(43709)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43712), cast<uchar>(43712)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43714), cast<uchar>(43714)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43739), cast<uchar>(43741)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43744), cast<uchar>(43754)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43762), cast<uchar>(43764)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43777), cast<uchar>(43782)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43785), cast<uchar>(43790)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43793), cast<uchar>(43798)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43808), cast<uchar>(43814)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43816), cast<uchar>(43822)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43824), cast<uchar>(43866)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43868), cast<uchar>(43879)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(43888), cast<uchar>(44002)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(44032), cast<uchar>(55203)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(55216), cast<uchar>(55238)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(55243), cast<uchar>(55291)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(63744), cast<uchar>(64109)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64112), cast<uchar>(64217)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64256), cast<uchar>(64262)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64275), cast<uchar>(64279)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64285), cast<uchar>(64285)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64287), cast<uchar>(64296)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64298), cast<uchar>(64310)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64312), cast<uchar>(64316)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64318), cast<uchar>(64318)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64320), cast<uchar>(64321)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64323), cast<uchar>(64324)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64326), cast<uchar>(64433)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64467), cast<uchar>(64829)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64848), cast<uchar>(64911)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(64914), cast<uchar>(64967)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65008), cast<uchar>(65019)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65136), cast<uchar>(65140)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65142), cast<uchar>(65276)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65313), cast<uchar>(65338)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65345), cast<uchar>(65370)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65382), cast<uchar>(65470)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65474), cast<uchar>(65479)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65482), cast<uchar>(65487)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65490), cast<uchar>(65495)));
+                idStart->AddSymbol(MakeRange(cast<uchar>(65498), cast<uchar>(65500)));
+                idCont->SetName("{idcont}");
+                idCont->AddSymbol(MakeRange(cast<uchar>(48), cast<uchar>(57)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65), cast<uchar>(90)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(95), cast<uchar>(95)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(97), cast<uchar>(122)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(170), cast<uchar>(170)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(181), cast<uchar>(181)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(183), cast<uchar>(183)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(186), cast<uchar>(186)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(192), cast<uchar>(214)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(216), cast<uchar>(246)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(248), cast<uchar>(705)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(710), cast<uchar>(721)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(736), cast<uchar>(740)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(748), cast<uchar>(748)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(750), cast<uchar>(750)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(768), cast<uchar>(884)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(886), cast<uchar>(887)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(890), cast<uchar>(893)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(895), cast<uchar>(895)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(902), cast<uchar>(906)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(908), cast<uchar>(908)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(910), cast<uchar>(929)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(931), cast<uchar>(1013)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1015), cast<uchar>(1153)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1155), cast<uchar>(1159)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1162), cast<uchar>(1327)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1329), cast<uchar>(1366)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1369), cast<uchar>(1369)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1376), cast<uchar>(1416)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1425), cast<uchar>(1469)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1471), cast<uchar>(1471)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1473), cast<uchar>(1474)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1476), cast<uchar>(1477)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1479), cast<uchar>(1479)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1488), cast<uchar>(1514)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1519), cast<uchar>(1522)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1552), cast<uchar>(1562)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1568), cast<uchar>(1641)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1646), cast<uchar>(1747)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1749), cast<uchar>(1756)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1759), cast<uchar>(1768)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1770), cast<uchar>(1788)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1791), cast<uchar>(1791)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1808), cast<uchar>(1866)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1869), cast<uchar>(1969)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(1984), cast<uchar>(2037)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2042), cast<uchar>(2042)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2045), cast<uchar>(2045)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2048), cast<uchar>(2093)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2112), cast<uchar>(2139)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2144), cast<uchar>(2154)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2208), cast<uchar>(2228)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2230), cast<uchar>(2237)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2259), cast<uchar>(2273)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2275), cast<uchar>(2403)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2406), cast<uchar>(2415)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2417), cast<uchar>(2435)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2437), cast<uchar>(2444)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2447), cast<uchar>(2448)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2451), cast<uchar>(2472)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2474), cast<uchar>(2480)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2482), cast<uchar>(2482)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2486), cast<uchar>(2489)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2492), cast<uchar>(2500)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2503), cast<uchar>(2504)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2507), cast<uchar>(2510)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2519), cast<uchar>(2519)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2524), cast<uchar>(2525)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2527), cast<uchar>(2531)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2534), cast<uchar>(2545)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2556), cast<uchar>(2556)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2558), cast<uchar>(2558)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2561), cast<uchar>(2563)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2565), cast<uchar>(2570)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2575), cast<uchar>(2576)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2579), cast<uchar>(2600)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2602), cast<uchar>(2608)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2610), cast<uchar>(2611)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2613), cast<uchar>(2614)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2616), cast<uchar>(2617)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2620), cast<uchar>(2620)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2622), cast<uchar>(2626)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2631), cast<uchar>(2632)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2635), cast<uchar>(2637)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2641), cast<uchar>(2641)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2649), cast<uchar>(2652)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2654), cast<uchar>(2654)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2662), cast<uchar>(2677)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2689), cast<uchar>(2691)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2693), cast<uchar>(2701)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2703), cast<uchar>(2705)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2707), cast<uchar>(2728)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2730), cast<uchar>(2736)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2738), cast<uchar>(2739)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2741), cast<uchar>(2745)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2748), cast<uchar>(2757)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2759), cast<uchar>(2761)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2763), cast<uchar>(2765)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2768), cast<uchar>(2768)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2784), cast<uchar>(2787)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2790), cast<uchar>(2799)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2809), cast<uchar>(2815)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2817), cast<uchar>(2819)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2821), cast<uchar>(2828)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2831), cast<uchar>(2832)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2835), cast<uchar>(2856)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2858), cast<uchar>(2864)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2866), cast<uchar>(2867)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2869), cast<uchar>(2873)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2876), cast<uchar>(2884)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2887), cast<uchar>(2888)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2891), cast<uchar>(2893)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2902), cast<uchar>(2903)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2908), cast<uchar>(2909)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2911), cast<uchar>(2915)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2918), cast<uchar>(2927)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2929), cast<uchar>(2929)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2946), cast<uchar>(2947)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2949), cast<uchar>(2954)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2958), cast<uchar>(2960)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2962), cast<uchar>(2965)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2969), cast<uchar>(2970)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2972), cast<uchar>(2972)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2974), cast<uchar>(2975)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2979), cast<uchar>(2980)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2984), cast<uchar>(2986)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(2990), cast<uchar>(3001)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3006), cast<uchar>(3010)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3014), cast<uchar>(3016)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3018), cast<uchar>(3021)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3024), cast<uchar>(3024)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3031), cast<uchar>(3031)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3046), cast<uchar>(3055)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3072), cast<uchar>(3084)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3086), cast<uchar>(3088)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3090), cast<uchar>(3112)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3114), cast<uchar>(3129)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3133), cast<uchar>(3140)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3142), cast<uchar>(3144)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3146), cast<uchar>(3149)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3157), cast<uchar>(3158)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3160), cast<uchar>(3162)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3168), cast<uchar>(3171)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3174), cast<uchar>(3183)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3200), cast<uchar>(3203)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3205), cast<uchar>(3212)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3214), cast<uchar>(3216)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3218), cast<uchar>(3240)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3242), cast<uchar>(3251)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3253), cast<uchar>(3257)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3260), cast<uchar>(3268)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3270), cast<uchar>(3272)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3274), cast<uchar>(3277)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3285), cast<uchar>(3286)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3294), cast<uchar>(3294)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3296), cast<uchar>(3299)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3302), cast<uchar>(3311)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3313), cast<uchar>(3314)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3328), cast<uchar>(3331)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3333), cast<uchar>(3340)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3342), cast<uchar>(3344)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3346), cast<uchar>(3396)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3398), cast<uchar>(3400)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3402), cast<uchar>(3406)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3412), cast<uchar>(3415)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3423), cast<uchar>(3427)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3430), cast<uchar>(3439)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3450), cast<uchar>(3455)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3458), cast<uchar>(3459)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3461), cast<uchar>(3478)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3482), cast<uchar>(3505)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3507), cast<uchar>(3515)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3517), cast<uchar>(3517)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3520), cast<uchar>(3526)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3530), cast<uchar>(3530)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3535), cast<uchar>(3540)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3542), cast<uchar>(3542)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3544), cast<uchar>(3551)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3558), cast<uchar>(3567)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3570), cast<uchar>(3571)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3585), cast<uchar>(3642)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3648), cast<uchar>(3662)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3664), cast<uchar>(3673)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3713), cast<uchar>(3714)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3716), cast<uchar>(3716)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3718), cast<uchar>(3722)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3724), cast<uchar>(3747)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3749), cast<uchar>(3749)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3751), cast<uchar>(3773)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3776), cast<uchar>(3780)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3782), cast<uchar>(3782)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3784), cast<uchar>(3789)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3792), cast<uchar>(3801)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3804), cast<uchar>(3807)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3840), cast<uchar>(3840)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3864), cast<uchar>(3865)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3872), cast<uchar>(3881)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3893), cast<uchar>(3893)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3895), cast<uchar>(3895)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3897), cast<uchar>(3897)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3902), cast<uchar>(3911)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3913), cast<uchar>(3948)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3953), cast<uchar>(3972)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3974), cast<uchar>(3991)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(3993), cast<uchar>(4028)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4038), cast<uchar>(4038)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4096), cast<uchar>(4169)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4176), cast<uchar>(4253)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4256), cast<uchar>(4293)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4295), cast<uchar>(4295)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4301), cast<uchar>(4301)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4304), cast<uchar>(4346)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4348), cast<uchar>(4680)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4682), cast<uchar>(4685)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4688), cast<uchar>(4694)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4696), cast<uchar>(4696)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4698), cast<uchar>(4701)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4704), cast<uchar>(4744)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4746), cast<uchar>(4749)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4752), cast<uchar>(4784)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4786), cast<uchar>(4789)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4792), cast<uchar>(4798)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4800), cast<uchar>(4800)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4802), cast<uchar>(4805)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4808), cast<uchar>(4822)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4824), cast<uchar>(4880)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4882), cast<uchar>(4885)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4888), cast<uchar>(4954)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4957), cast<uchar>(4959)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4969), cast<uchar>(4977)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(4992), cast<uchar>(5007)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5024), cast<uchar>(5109)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5112), cast<uchar>(5117)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5121), cast<uchar>(5740)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5743), cast<uchar>(5759)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5761), cast<uchar>(5786)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5792), cast<uchar>(5866)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5870), cast<uchar>(5880)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5888), cast<uchar>(5900)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5902), cast<uchar>(5908)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5920), cast<uchar>(5940)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5952), cast<uchar>(5971)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5984), cast<uchar>(5996)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(5998), cast<uchar>(6000)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6002), cast<uchar>(6003)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6016), cast<uchar>(6099)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6103), cast<uchar>(6103)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6108), cast<uchar>(6109)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6112), cast<uchar>(6121)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6155), cast<uchar>(6157)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6160), cast<uchar>(6169)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6176), cast<uchar>(6264)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6272), cast<uchar>(6314)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6320), cast<uchar>(6389)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6400), cast<uchar>(6430)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6432), cast<uchar>(6443)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6448), cast<uchar>(6459)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6470), cast<uchar>(6509)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6512), cast<uchar>(6516)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6528), cast<uchar>(6571)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6576), cast<uchar>(6601)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6608), cast<uchar>(6618)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6656), cast<uchar>(6683)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6688), cast<uchar>(6750)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6752), cast<uchar>(6780)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6783), cast<uchar>(6793)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6800), cast<uchar>(6809)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6823), cast<uchar>(6823)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6832), cast<uchar>(6845)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6912), cast<uchar>(6987)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(6992), cast<uchar>(7001)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7019), cast<uchar>(7027)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7040), cast<uchar>(7155)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7168), cast<uchar>(7223)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7232), cast<uchar>(7241)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7245), cast<uchar>(7293)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7296), cast<uchar>(7304)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7312), cast<uchar>(7354)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7357), cast<uchar>(7359)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7376), cast<uchar>(7378)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7380), cast<uchar>(7418)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7424), cast<uchar>(7673)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7675), cast<uchar>(7957)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7960), cast<uchar>(7965)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(7968), cast<uchar>(8005)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8008), cast<uchar>(8013)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8016), cast<uchar>(8023)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8025), cast<uchar>(8025)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8027), cast<uchar>(8027)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8029), cast<uchar>(8029)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8031), cast<uchar>(8061)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8064), cast<uchar>(8116)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8118), cast<uchar>(8124)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8126), cast<uchar>(8126)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8130), cast<uchar>(8132)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8134), cast<uchar>(8140)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8144), cast<uchar>(8147)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8150), cast<uchar>(8155)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8160), cast<uchar>(8172)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8178), cast<uchar>(8180)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8182), cast<uchar>(8188)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8255), cast<uchar>(8256)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8276), cast<uchar>(8276)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8305), cast<uchar>(8305)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8319), cast<uchar>(8319)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8336), cast<uchar>(8348)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8400), cast<uchar>(8412)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8417), cast<uchar>(8417)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8421), cast<uchar>(8432)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8450), cast<uchar>(8450)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8455), cast<uchar>(8455)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8458), cast<uchar>(8467)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8469), cast<uchar>(8469)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8472), cast<uchar>(8477)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8484), cast<uchar>(8484)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8486), cast<uchar>(8486)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8488), cast<uchar>(8488)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8490), cast<uchar>(8505)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8508), cast<uchar>(8511)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8517), cast<uchar>(8521)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8526), cast<uchar>(8526)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(8544), cast<uchar>(8584)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11264), cast<uchar>(11310)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11312), cast<uchar>(11358)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11360), cast<uchar>(11492)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11499), cast<uchar>(11507)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11520), cast<uchar>(11557)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11559), cast<uchar>(11559)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11565), cast<uchar>(11565)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11568), cast<uchar>(11623)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11631), cast<uchar>(11631)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11647), cast<uchar>(11670)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11680), cast<uchar>(11686)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11688), cast<uchar>(11694)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11696), cast<uchar>(11702)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11704), cast<uchar>(11710)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11712), cast<uchar>(11718)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11720), cast<uchar>(11726)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11728), cast<uchar>(11734)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11736), cast<uchar>(11742)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(11744), cast<uchar>(11775)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12293), cast<uchar>(12295)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12321), cast<uchar>(12335)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12337), cast<uchar>(12341)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12344), cast<uchar>(12348)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12353), cast<uchar>(12438)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12441), cast<uchar>(12447)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12449), cast<uchar>(12538)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12540), cast<uchar>(12543)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12549), cast<uchar>(12591)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12593), cast<uchar>(12686)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12704), cast<uchar>(12730)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(12784), cast<uchar>(12799)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(13312), cast<uchar>(19893)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(19968), cast<uchar>(40943)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(40960), cast<uchar>(42124)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42192), cast<uchar>(42237)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42240), cast<uchar>(42508)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42512), cast<uchar>(42539)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42560), cast<uchar>(42607)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42612), cast<uchar>(42621)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42623), cast<uchar>(42737)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42775), cast<uchar>(42783)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42786), cast<uchar>(42888)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42891), cast<uchar>(42943)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42946), cast<uchar>(42950)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(42999), cast<uchar>(43047)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43072), cast<uchar>(43123)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43136), cast<uchar>(43205)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43216), cast<uchar>(43225)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43232), cast<uchar>(43255)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43259), cast<uchar>(43259)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43261), cast<uchar>(43309)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43312), cast<uchar>(43347)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43360), cast<uchar>(43388)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43392), cast<uchar>(43456)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43471), cast<uchar>(43481)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43488), cast<uchar>(43518)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43520), cast<uchar>(43574)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43584), cast<uchar>(43597)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43600), cast<uchar>(43609)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43616), cast<uchar>(43638)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43642), cast<uchar>(43714)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43739), cast<uchar>(43741)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43744), cast<uchar>(43759)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43762), cast<uchar>(43766)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43777), cast<uchar>(43782)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43785), cast<uchar>(43790)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43793), cast<uchar>(43798)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43808), cast<uchar>(43814)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43816), cast<uchar>(43822)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43824), cast<uchar>(43866)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43868), cast<uchar>(43879)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(43888), cast<uchar>(44010)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(44012), cast<uchar>(44013)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(44016), cast<uchar>(44025)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(44032), cast<uchar>(55203)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(55216), cast<uchar>(55238)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(55243), cast<uchar>(55291)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(63744), cast<uchar>(64109)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64112), cast<uchar>(64217)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64256), cast<uchar>(64262)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64275), cast<uchar>(64279)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64285), cast<uchar>(64296)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64298), cast<uchar>(64310)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64312), cast<uchar>(64316)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64318), cast<uchar>(64318)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64320), cast<uchar>(64321)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64323), cast<uchar>(64324)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64326), cast<uchar>(64433)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64467), cast<uchar>(64829)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64848), cast<uchar>(64911)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(64914), cast<uchar>(64967)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65008), cast<uchar>(65019)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65024), cast<uchar>(65039)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65056), cast<uchar>(65071)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65075), cast<uchar>(65076)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65101), cast<uchar>(65103)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65136), cast<uchar>(65140)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65142), cast<uchar>(65276)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65296), cast<uchar>(65305)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65313), cast<uchar>(65338)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65343), cast<uchar>(65343)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65345), cast<uchar>(65370)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65382), cast<uchar>(65470)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65474), cast<uchar>(65479)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65482), cast<uchar>(65487)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65490), cast<uchar>(65495)));
+                idCont->AddSymbol(MakeRange(cast<uchar>(65498), cast<uchar>(65500)));
+            }
+        }
+        public ~Context()
+        {
+            for (NfaState* state : nfaStates)
+            {
+                delete state;
+            }
+            for (DfaState* state : dfaStates)
+            {
+                delete state;
+            }
+            for (Symbol* symbol : symbols)
+            {
+                delete symbol;
+            }
+            for (Class* cls : canonicalClasses)
+            {
+                delete cls;
+            }
+        }
+        public void SetDebug(bool debug_)
+        {
+            debug = debug_;
+        }
+        public inline bool GetDebug() const
+        {
+            return debug;
+        }
+        public const string& FileName() const
+        {
+            return fileName;
+        }
+        public void SetFileName(const string& fileName_)
+        {
+            fileName = fileName_;
+        }
+        public NfaState* MakeNfaState()
+        {
+            NfaState* state = new NfaState(nextNfaStateId++, ruleIndex);
+            nfaStates.Add(state);
+            nfaStateMap[state->Id()] = state;
+            return state;
+        }
+        public const List<NfaState*>& NfaStates() const
+        {
+            return nfaStates;
+        }
+        public Result<NfaState*> GetNfaState(int nfaStateId) const
+        {
+            auto it = nfaStateMap.Find(nfaStateId);
+            if (it != nfaStateMap.End())
+            {
+                return Result<NfaState*>(it->second);
+            }
+            else
+            {
+                string errorMessage = "NFA state " + ToString(nfaStateId) + " not found";
+                int errorId = AllocateError(errorMessage);
+                return Result<NfaState*>(ErrorId(errorId));
+            }
+        }
+        public DfaState* MakeDfaState(const List<int>& nfaStates)
+        {
+            List<int> s(nfaStates);
+            Sort(s);
+            for (DfaState* state : dfaStates)
+            {
+                if (state->NfaStateIds() == s)
+                {
+                    return state;
+                }
+            }
+            DfaState* state = new DfaState(nextDfaStateId++, s);
+            dfaStates.Add(state);
+            return state;
+        }
+        public Symbol* MakeChar(uchar c)
+        {
+            auto it = charSymbols.Find(c);
+            if (it != charSymbols.End())
+            {
+                return it->second;
+            }
+            Symbol* symbol = new CharSymbol(c);
+            symbol->DontSetContained();
+            symbols.Add(symbol);
+            charSymbols[c] = symbol;
+            return symbol;
+        }
+        public Symbol* MakeAny()
+        {
+            return &any;
+        }
+        public Symbol* MakeEpsilon()
+        {
+            return &epsilon;
+        }
+        public Range* MakeRange(uchar start, uchar end)
+        {
+            Range range(start, end);
+            auto it = rangeSymbols.Find(range);
+            if (it != rangeSymbols.End())
+            {
+                return cast<Range*>(it->second);
+            }
+            Range* symbol = new Range(start, end);
+            symbols.Add(symbol);
+            rangeSymbols[range] = symbol;
+            return symbol;
+        }
+        public Class* MakeClass()
+        {
+            Class* cls = new Class(classIndex++);
+            symbols.Add(cls);
+            return cls;
+        }
+        public Class* MakeIdStart()
+        {
+            return idStart;
+        }
+        public Class* MakeIdCont()
+        {
+            return idCont;
+        }
+        public void SetTokens(scmlg.ast.Tokens* tokens_)
+        {
+            tokens = tokens_;
+        }
+        public scmlg.ast.Tokens* GetTokens() const
+        {
+            return tokens;
+        }
+        public void SetKeywords(scmlg.ast.Keywords* keywords_)
+        {
+            keywords = keywords_;
+        }
+        public scmlg.ast.Keywords* GetKeywords() const
+        {
+            return keywords;
+        }
+        public void SetExpressions(scmlg.ast.Expressions* expressions_)
+        {
+            expressions = expressions_;
+        }
+        public scmlg.ast.Expressions* GetExpressions() const
+        {
+            return expressions;
+        }
+        public void SetLexer(scmlg.ast.Lexer* lexer_)
+        {
+            lexer = lexer_;
+        }
+        public scmlg.ast.Lexer* GetLexer() const
+        {
+            return lexer;
+        }
+        public void SetExpressionParser(ExpressionParser* expressionParser_)
+        {
+            expressionParser = expressionParser_;
+        }
+        public ExpressionParser* GetExpressionParser() const
+        {
+            return expressionParser;
+        }
+        public Result<Nfa> MakeExpr(const string& id)
+        {
+            if (id == "idstart")
+            {
+                return Result<Nfa>(MakeNfa(*this, MakeIdStart()));
+            }
+            else if (id == "idcont")
+            {
+                return Result<Nfa>(MakeNfa(*this, MakeIdCont()));
+            }
+            else
+            {
+                if (expressions != null)
+                {
+                    scmlg.ast.Expression* expression = expressions->GetExpression(id);
+                    if (expression != null)
+                    {
+                        if (currentExpression != null)
+                        {
+                            if (expression->Index() >= currentExpression->Index())
+                            {
+                                string errorMessage = "expression '" + currentExpression->Id() + "' depends on forward reference '" + expression->Id() + "'";
+                                int errorId = AllocateError(errorMessage);
+                                return Result<Nfa>(ErrorId(errorId));
+                            }
+                        }
+                        if (expressionParser != null)
+                        {
+                            scmlg.ast.Expression* prevExpression = currentExpression;
+                            currentExpression = expression;
+                            // Console.Error() << "> parsing expression " << id << endl();
+                            Result<Nfa> nfaResult = expressionParser->Parse(expression->Value(), this, expression->FileName(), expression->Line());
+                            // System.Text.CodeFormatter formatter(Console.Error());
+                            // nfaResult.Value().Print(formatter);
+                            currentExpression = prevExpression;
+                            // Console.Error() << "< expression " << id << " parsed" << endl();
+                            return nfaResult;
+                        }
+                        else
+                        {
+                            string errorMessage = "expression parser not set";
+                            int errorId = AllocateError(errorMessage);
+                            return Result<Nfa>(ErrorId(errorId));
+                        }
+                    }
+                    else
+                    {
+                        string errorMessage = "expression '" + id + "' not found";
+                        int errorId = AllocateError(errorMessage);
+                        return Result<Nfa>(ErrorId(errorId));
+                    }
+                }
+                else
+                {
+                    string errorMessage = "expressions not set";
+                    int errorId = AllocateError(errorMessage);
+                    return Result<Nfa>(ErrorId(errorId));
+                }
+            }
+        }
+        public void AddToSymbols(Symbol* symbol)
+        {
+            symbols.Add(symbol);
+        }
+        public List<Symbol*>& Symbols() const
+        {
+            return symbols;
+        }
+        public void AddCanonicalClass(Class* cls)
+        {
+            canonicalClasses.Add(cls);
+        }
+        public List<Class*>& CanonicalClasses() const
+        {
+            return canonicalClasses;
+        }
+        public void AddToPartition(Class* cls)
+        {
+            partition.Add(cls);
+        }
+        public const List<Class*>& Partition() const
+        {
+            return partition;
+        }
+        public int AddNfa(Nfa* nfa)
+        {
+            int index = cast<int>(nfas.Count());
+            nfas.Add(UniquePtr<Nfa>(nfa));
+            nfaMap[index] = nfa;
+            return index;
+        }
+        public Result<Nfa*> GetNfa(int index) const
+        {
+            auto it = nfaMap.Find(index);
+            if (it != nfaMap.End())
+            {
+                return it->second;
+            }
+            else
+            {
+                string errorMessage = "NFA " + ToString(index) + " not found";
+                int errorId = AllocateError(errorMessage);
+                return Result<Nfa*>(ErrorId(errorId));
+            }
+        }
+        public void SetMasterNfaIndex(int masterNfaIndex_)
+        {
+            masterNfaIndex = masterNfaIndex_;
+        }
+        public inline int MasterNfaIndex() const
+        {
+            return masterNfaIndex;
+        }
+        public void SetDfa(Dfa&& dfa_)
+        {
+            dfa = dfa_;
+        }
+        public inline const Dfa& GetDfa() const
+        {
+            return dfa;
+        }
+        private bool empty;
+        private bool debug;
+        private string fileName;
+        private int nextNfaStateId;
+        private int nextDfaStateId;
+        private int ruleIndex;
+        private int classIndex;
+        private List<NfaState*> nfaStates;
+        private Map<int, NfaState*> nfaStateMap;
+        private List<DfaState*> dfaStates;
+        private List<Symbol*> symbols;
+        private List<Class*> canonicalClasses;
+        private List<Class*> partition;
+        private Map<uchar, Symbol*> charSymbols;
+        private Map<Range, Symbol*> rangeSymbols;
+        private Any any;
+        private CharSymbol epsilon;
+        private Class* idStart;
+        private Class* idCont;
+        private List<UniquePtr<Nfa>> nfas;
+        private Map<int, Nfa*> nfaMap;
+        private int masterNfaIndex;
+        private scmlg.ast.Tokens* tokens;
+        private scmlg.ast.Keywords* keywords;
+        private scmlg.ast.Expressions* expressions;
+        private scmlg.ast.Lexer* lexer;
+        private scmlg.ast.Expression* currentExpression;
+        private ExpressionParser* expressionParser;
+        private Dfa dfa;
+    }
+}

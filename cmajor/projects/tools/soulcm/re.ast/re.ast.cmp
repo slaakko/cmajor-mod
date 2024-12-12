@@ -1,0 +1,8 @@
+project re.ast;
+target=library;
+reference <../scmlg.ast/scmlg.ast.cmp>;
+source <context.cm>;
+source <dfa.cm>;
+source <nfa.cm>;
+source <symbol.cm>;
+source <visitor.cm>;

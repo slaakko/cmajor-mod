@@ -1,0 +1,298 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace re.ast
+{
+    public class DfaState
+    {
+        public DfaState(int id_, const List<int>& nfaStateIds_) : id(id_), nfaStateIds(nfaStateIds_), next(), marked(false), accept(false), ruleIndex(-1)
+        {
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public inline bool IsMarked() const
+        {
+            return marked;
+        }
+        public void Mark()
+        {
+            marked = true;
+        }
+        public inline bool Accept() const
+        {
+            return accept;
+        }
+        public void SetAccept(bool accept_)
+        {
+            accept = accept_;
+        }
+        public inline int RuleIndex() const
+        {
+            return ruleIndex;
+        }
+        public void SetRuleIndex(int ruleIndex_)
+        {
+            ruleIndex = ruleIndex_;
+        }
+        public const List<int>& NfaStateIds() const
+        {
+            return nfaStateIds;
+        }
+        public void AddNext(DfaState* next_)
+        {
+            next.Add(next_);
+        }
+        public DfaState* Next(int i)
+        {
+            if (i >= 0 && i < next.Count())
+            {
+                return next[i];
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public Result<bool> Print(Context& context, System.Text.CodeFormatter& formatter)
+        {
+            string str = "STATE " + ToString(id);
+            str.Append(" [");
+            bool first = true;
+            for (int nfaStateId : nfaStateIds)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    str.Append(", ");
+                }
+                str.Append(ToString(nfaStateId));
+            }
+            str.Append("]");
+            if (accept)
+            {
+                str.Append(" : ACCEPT");
+            }
+            if (ruleIndex != -1)
+            {
+                str.Append(" : RULE=" + ToString(ruleIndex));
+            }
+            formatter.WriteLine(str);
+            formatter.IncIndent();
+            long n = next.Count();
+            for (long i = 0; i < n; ++i)
+            {
+                if (next[i] != null)
+                {
+                    Class* cls = context.Partition()[i];
+                    auto result = cls->PrintId(formatter);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    if (cls->Ranges().Count() == 1)
+                    {
+                        formatter.Write(":");
+                        auto result = (*(cls->Ranges().Begin())).Print(formatter);
+                        if (result.Error())
+                        {
+                            return Result<bool>(ErrorId(result.GetErrorId()));
+                        }
+                    }
+                    DfaState* dfaState = next[i];
+                    formatter.WriteLine(" -> STATE " + ToString(dfaState->Id()));
+                }
+            }
+            formatter.DecIndent();
+            return Result<bool>(true);
+        }
+        private int id;
+        private List<int> nfaStateIds;
+        private List<DfaState*> next;
+        private bool marked;
+        private bool accept;
+        private int ruleIndex;
+    }
+
+    public class Dfa
+    {
+        public Dfa()
+        {
+        }
+        public void AddState(DfaState* state)
+        {
+            states.Add(state);
+        }
+        public const List<DfaState*>& States() const
+        {
+            return states;
+        }
+        public Result<bool> Finalize(Context& context)
+        {
+            for (DfaState* state : states)
+            {
+                for (auto nfaStateId : state->NfaStateIds())
+                {
+                    auto nfaStateResult = context.GetNfaState(nfaStateId);
+                    if (nfaStateResult.Error())
+                    {
+                        return Result<bool>(ErrorId(nfaStateResult.GetErrorId()));
+                    }
+                    NfaState* nfaState = nfaStateResult.Value();
+                    if (nfaState->Accept())
+                    {
+                        state->SetAccept(true);
+                        if (state->RuleIndex() == -1 || (nfaState->RuleIndex() != -1 && nfaState->RuleIndex() < state->RuleIndex()))
+                        {
+                            state->SetRuleIndex(nfaState->RuleIndex());
+                        }
+                    }
+                }
+            }
+            return Result<bool>(true);
+        }
+        public Result<bool> Print(Context& context, System.Text.CodeFormatter& formatter)
+        {
+            for (DfaState* state : states)
+            {
+                auto result = state->Print(context, formatter);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            formatter.WriteLine();
+            return Result<bool>(true);
+        }
+        private List<DfaState*> states;
+    }
+
+    public Result<List<int>> EpsilonClosure(Context& context, const List<int>& stateIds)
+    {
+        Stack<int> stack;
+        for (int state : stateIds)
+        {
+            stack.Push(state);
+        }
+        List<int> epsilonClosure = stateIds;
+        while (!stack.IsEmpty())
+        {
+            int s = stack.Pop();
+            auto stateResult = context.GetNfaState(s);
+            if (stateResult.Error())
+            {
+                return Result<List<int>>(ErrorId(stateResult.GetErrorId()));
+            }
+            NfaState* state = stateResult.Value();
+            List<NfaState*> u = state->Next(eps);
+            for (NfaState* vs : u)
+            {
+                int v = vs->Id();
+                if (Find(epsilonClosure.Begin(), epsilonClosure.End(), v) == epsilonClosure.End())
+                {
+                    epsilonClosure.Add(v);
+                    stack.Push(v);
+                }
+            }
+        }
+        return Result<List<int>>(epsilonClosure);
+    }
+
+    public Result<List<int>> EpsilonClosure(Context& context, int nfaStateId)
+    {
+        List<int> states(1, nfaStateId);
+        return EpsilonClosure(context, states);
+    }
+
+    public Result<List<int>> Move(Context& context, const List<int>& stateIds, uchar c)
+    {
+        List<int> next;
+        for (int stateId : stateIds)
+        {
+            auto stateResult = context.GetNfaState(stateId);
+            if (stateResult.Error())
+            {
+                return Result<List<int>>(ErrorId(stateResult.GetErrorId()));
+            }
+            NfaState* state = stateResult.Value();
+            List<NfaState*> n = state->Next(c);
+            for (NfaState* sn : n)
+            {
+                int s = sn->Id();
+                if (Find(next.Begin(), next.End(), s) == next.End())
+                {
+                    next.Add(s);
+                }
+            }
+        }
+        return Result<List<int>>(next);
+    }
+
+    public Result<Dfa> Compile(Context& context, Nfa& nfa)
+    {
+        Dfa dfa;
+        auto startResult = EpsilonClosure(context, nfa.Start()->Id());
+        if (startResult.Error())
+        {
+            return Result<Dfa>(ErrorId(startResult.GetErrorId()));
+        }
+        List<int> start = startResult.Value();
+        DfaState* s = context.MakeDfaState(start);
+        s->Mark();
+        Stack<DfaState*> stack;
+        stack.Push(s);
+        while (!stack.IsEmpty())
+        {
+            DfaState* state = stack.Pop();
+            dfa.AddState(state);
+            for (Class* cls : context.Partition())
+            {
+                if (!cls->Chars().IsEmpty())
+                {
+                    uchar c = cls->Chars()[0];
+                    auto moveResult = Move(context, state->NfaStateIds(), c);
+                    if (moveResult.Error())
+                    {
+                        return Result<Dfa>(ErrorId(moveResult.GetErrorId()));
+                    }
+                    List<int> move = moveResult.Value();
+                    auto nextResult = EpsilonClosure(context, move);
+                    if (nextResult.Error())
+                    {
+                        return Result<Dfa>(ErrorId(nextResult.GetErrorId()));
+                    }
+                    List<int> next = nextResult.Value();
+                    if (next.IsEmpty())
+                    {
+                        state->AddNext(null);
+                    }
+                    else
+                    {
+                        DfaState* n = context.MakeDfaState(next);
+                        state->AddNext(n);
+                        if (!n->IsMarked())
+                        {
+                            n->Mark();
+                            stack.Push(n);
+                        }
+                    }
+                }
+            }
+        }
+        auto finalizeResult = dfa.Finalize(context);
+        if (finalizeResult.Error())
+        {
+            return Result<Dfa>(ErrorId(finalizeResult.GetErrorId()));
+        }
+        return Result<Dfa>(Rvalue(dfa));
+    }
+}

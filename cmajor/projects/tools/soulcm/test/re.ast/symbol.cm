@@ -1,0 +1,866 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace re.ast
+{
+    public const uchar eps = '\0';
+
+    public enum SymbolKind
+    {
+        charSymbol, anySymbol, rangeSymbol, classSymbol
+    }
+
+    public abstract class Symbol
+    {
+        public Symbol(SymbolKind kind_) : kind(kind_), contained(false), dontSetContained(false), errorId(0)
+        {
+        }
+        public default virtual ~Symbol();
+        public inline SymbolKind Kind() const
+        {
+            return kind;
+        }
+        public inline bool IsChar() const
+        {
+            return kind == SymbolKind.charSymbol;
+        }
+        public inline bool IsAny() const
+        {
+            return kind == SymbolKind.anySymbol;
+        }
+        public inline bool IsRange() const
+        {
+            return kind == SymbolKind.rangeSymbol;
+        }
+        public inline bool IsClass() const
+        {
+            return kind == SymbolKind.classSymbol;
+        }
+        public abstract bool Match(uchar c) const;
+        public abstract void Accept(Visitor& visitor);
+        public abstract Result<bool> Print(System.Text.CodeFormatter& formatter);
+        public abstract Result<bool> PrintId(System.Text.CodeFormatter& formatter);
+        public void SetName(const string& name_)
+        {
+            name = name_;
+        }
+        public inline bool Contained() const
+        {
+            return contained;
+        }
+        public void SetContained()
+        {
+            if (!dontSetContained)
+            {
+                contained = true;
+            }
+        }
+        public void DontSetContained()
+        {
+            dontSetContained = true;
+        }
+        public inline bool Error() const
+        {
+            return errorId != 0;
+        }
+        public inline void SetErrorId(int errorId_)
+        {
+            errorId = errorId_;
+        }
+        public inline int GetErrorId() const
+        {
+            return errorId;
+        }
+        private SymbolKind kind;
+        private string name;
+        private bool contained;
+        private bool dontSetContained;
+        private int errorId;
+    }
+
+    public class CharSymbol : Symbol
+    {
+        public CharSymbol(uchar chr_) : base(SymbolKind.charSymbol), chr(chr_)
+        {
+            ustring str(chr);
+            auto utf8Result = ToUtf8(str);
+            if (utf8Result.Error())
+            {
+                SetErrorId(utf8Result.GetErrorId());
+            }
+            else
+            {
+                SetName("(" + utf8Result.Value() + ")");
+            }
+        }
+        public inline uchar Chr() const
+        {
+            return chr;
+        }
+        public override bool Match(uchar c) const
+        {
+            return chr == c;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Print(System.Text.CodeFormatter& formatter)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            if (chr == eps)
+            {
+                formatter.Write("EPS");
+            }
+            else
+            {
+                auto result = CharStr(chr);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+                ustring str = result.Value();
+                auto utf8Result = ToUtf8(str);
+                if (utf8Result.Error())
+                {
+                    return Result<bool>(ErrorId(utf8Result.GetErrorId()));
+                }
+                formatter.Write(utf8Result.Value());
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> PrintId(System.Text.CodeFormatter& formatter)
+        {
+            return Print(formatter);
+        }
+        private uchar chr;
+    }
+
+    public class Any : Symbol
+    {
+        public Any() : base(SymbolKind.anySymbol)
+        {
+            SetName("*");
+        }
+        public override bool Match(uchar c) const
+        {
+            return true;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Print(System.Text.CodeFormatter& formatter)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            formatter.Write(".");
+            return Result<bool>(true);
+        }
+        public override Result<bool> PrintId(System.Text.CodeFormatter& formatter)
+        {
+            return Print(formatter);
+        }
+    }
+
+    public class Range : Symbol
+    {
+        public Range(uchar start_, uchar end_) : base(SymbolKind.rangeSymbol), start(start_), end(end_)
+        {
+            ustring s(start);
+            auto startResult = ToUtf8(s);
+            if (startResult.Error())
+            {
+                SetErrorId(startResult.GetErrorId());
+            }
+            ustring e(end);
+            auto endResult = ToUtf8(e);
+            if (endResult.Error())
+            {
+                SetErrorId(endResult.GetErrorId());
+            }
+            SetName("(" + startResult.Value() + "-" + endResult.Value()+ ")");
+        }
+        public inline bool IsEmpty() const
+        {
+            return start > end;
+        }
+        public inline uchar Start() const
+        {
+            return start;
+        }
+        public inline uchar End() const
+        {
+            return end;
+        }
+        public override bool Match(uchar c) const
+        {
+            return c >= start && c <= end;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Print(System.Text.CodeFormatter& formatter)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            auto hexStart = ToHexString(cast<uint>(start));
+            if (hexStart.Error())
+            {
+                return Result<bool>(ErrorId(hexStart.GetErrorId()));
+            }
+            formatter << "U" << hexStart.Value();
+            if (end != start)
+            {
+                auto hexEnd = ToHexString(cast<uint>(end));
+                if (hexEnd.Error())
+                {
+                    return Result<bool>(ErrorId(hexEnd.GetErrorId()));
+                }
+                formatter << ".." << "U" << hexEnd.Value();
+            }
+            formatter << ":";
+            auto startResult = CharStr(start);
+            if (startResult.Error())
+            {
+                return Result<bool>(ErrorId(startResult.GetErrorId()));
+            }
+            auto utf8StartResult = ToUtf8(startResult.Value());
+            if (utf8StartResult.Error())
+            {
+                return Result<bool>(ErrorId(utf8StartResult.GetErrorId()));
+            }
+            formatter.Write(utf8StartResult.Value());
+            if (end != start)
+            {
+                formatter.Write("..");
+                auto endResult = CharStr(end);
+                if (endResult.Error())
+                {
+                    return Result<bool>(ErrorId(endResult.GetErrorId()));
+                }
+                auto utf8EndResult = ToUtf8(endResult.Value());
+                if (utf8EndResult.Error())
+                {
+                    return Result<bool>(ErrorId(utf8EndResult.GetErrorId()));
+                }
+                formatter.Write(utf8EndResult.Value());
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> PrintId(System.Text.CodeFormatter& formatter)
+        {
+            return Print(formatter);
+        }
+        private uchar start;
+        private uchar end;
+    }
+
+    public bool operator==(const Range& left, const Range& right)
+    {
+        return left.Start() == right.Start() && left.End() == right.End();
+    }
+
+    public bool operator<(const Range& left, const Range& right)
+    {
+        if (left.Start() < right.Start()) return true;
+        if (left.Start() > right.Start()) return false;
+        return left.End() < right.End();
+    }
+
+    public bool Intersect(const Range& left, const Range& right)
+    {
+        if (left.IsEmpty() || right.IsEmpty())
+        {
+            return false;
+        }
+        if (left.Start() <= right.Start())
+        {
+            return right.Start() >= left.Start() && right.Start() <= left.End();
+        }
+        else
+        {
+            return left.Start() >= right.Start() && left.Start() <= right.End();
+        }
+    }
+
+    public Range operator&(const Range& left, const Range& right)
+    {
+        if (Intersect(left, right))
+        {
+            Range intersection(Max(left.Start(), right.Start()), Min(left.End(), right.End()));
+            return intersection;
+        }
+        return Range(cast<uchar>(1), cast<uchar>(0));
+    }
+
+    public List<Range> operator-(const Range& left, const Range& right)
+    {
+        List<Range> ranges;
+        if (right.Start() <= left.Start() && right.End() >= left.End())
+        {
+            return ranges;
+        }
+        else if (right.Start() > left.End() || right.End() < left.Start())
+        {
+            ranges.Add(left);
+        }
+        else
+        {
+            if (right.Start() >= left.Start() && right.Start() <= left.End())
+            {
+                if (left.Start() <= cast<uchar>(cast<int>(right.Start()) - 1))
+                {
+                    ranges.Add(Range(left.Start(), cast<uchar>(cast<int>(right.Start()) - 1)));
+                }
+            }
+            if (right.End() >= left.Start() && right.End() <= left.End())
+            {
+                if (cast<uchar>(cast<int>(right.End()) + 1) <= left.End())
+                {
+                    ranges.Add(Range(cast<uchar>(cast<int>(right.End()) + 1), left.End()));
+                }
+            }
+        }
+        return ranges;
+    }
+
+    public List<Range> operator~(const Range& range)
+    {
+        List<Range> result;
+        if (range.Start() > cast<uchar>(1))
+        {
+            result.Add(Range(cast<uchar>(1), cast<uchar>(cast<int>(range.Start()) - 1)));
+        }
+        if (cast<int>(range.End()) < 0x110000u)
+        {
+            result.Add(Range(cast<uchar>(cast<int>(range.End()) + 1), cast<uchar>(0x10FFFF)));
+        }
+        return result;
+    }
+
+    public class Class : Symbol
+    {
+        public Class(int index_) : base(SymbolKind.classSymbol), index(index_), inverse(false)
+        {
+            SetName("[" + ToString(index) + "]");
+        }
+        public void SetIndex(int index_)
+        {
+            index = index_;
+            SetName("[" + ToString(index) + "]");
+        }
+        public inline int Index() const
+        {
+            return index;
+        }
+        public inline bool Inverse() const
+        {
+            return inverse;
+        }
+        public void SetInverse()
+        {
+            inverse = true;
+        }
+        public const List<Symbol*>& Symbols() const
+        {
+            return symbols;
+        }
+        public void AddSymbol(Symbol* symbol)
+        {
+            symbol->SetContained();
+            symbols.Add(symbol);
+        }
+        public inline bool IsEmpty() const
+        {
+            return symbols.IsEmpty();
+        }
+        public const List<uchar>& Chars() const
+        {
+            return chars;
+        }
+        public void AddChar(uchar chr)
+        {
+            chars.Add(chr);
+        }
+        public const LinkedList<Range>& Ranges() const
+        {
+            return ranges;
+        }
+        public LinkedList<Range>& Ranges()
+        {
+            return ranges;
+        }
+        public void AddRange(const Range& range)
+        {
+            ranges.Add(range);
+        }
+        public Class* Clone() const
+        {
+            Class* cls = new Class(-1);
+            for (Symbol* symbol : symbols)
+            {
+                cls->AddSymbol(symbol);
+            }
+            for (uchar c : chars)
+            {
+                cls->AddChar(c);
+            }
+            return cls;
+        }
+        public Result<Class*> MakeCanonical(Context& context)
+        {
+            if (Error())
+            {
+                return Result<Class*>(ErrorId(GetErrorId()));
+            }
+            List<Range> rangeList;
+            Class* canonicalClass = new Class(-1);
+            for (Symbol* symbol : symbols)
+            {
+                if (symbol->IsChar())
+                {
+                    CharSymbol* chr = cast<CharSymbol*>(symbol);
+                    ranges.Add(Range(chr->Chr(), chr->Chr()));
+                }
+                else if (symbol->IsRange())
+                {
+                    Range* range = cast<Range*>(symbol);
+                    rangeList.Add(*range);
+                }
+                else if (symbol->IsAny())
+                {
+                    int errorId = AllocateError("class contains any");
+                    return Result<Class*>(ErrorId(errorId));
+                }
+                else if (symbol->IsClass())
+                {
+                    int errorId = AllocateError("class contains class");
+                    return Result<Class*>(ErrorId(errorId));
+                }
+            }
+            for (const Range& range : rangeList)
+            {
+                canonicalClass->AddRange(range);
+            }
+            if (inverse)
+            {
+                canonicalClass->MakeInverse(context);
+            }
+            return Result<Class*>(canonicalClass);
+        }
+        public void MakeMinimal(Context& context)
+        {
+            List<Range> rangeList;
+            for (const Range& range : ranges)
+            {
+                rangeList.Add(range);
+            }
+            ranges.Clear();
+            Sort(rangeList);
+            auto e = Unique(rangeList.Begin(), rangeList.End());
+            rangeList.Remove(e, rangeList.End());
+            bool changed = true;
+            while (changed)
+            {
+                changed = false;
+                List<Range> combinedRanges;
+                for (long i = 0; i < rangeList.Count(); ++i)
+                {
+                    bool combined = false;
+                    Range current = rangeList[i];
+                    if (i > 0)
+                    {
+                        Range left = rangeList[i - 1];
+                        if (cast<int>(left.End()) + 1 == cast<int>(current.Start()))
+                        {
+                            combinedRanges.Add(Range(left.Start(), current.End()));
+                            combined = true;
+                        }
+                    }
+                    if (i < rangeList.Count() - 1)
+                    {
+                        Range right = rangeList[i + 1];
+                        if (cast<int>(current.End()) + 1 == cast<int>(right.Start()))
+                        {
+                            combinedRanges.Add(Range(current.Start(), right.End()));
+                            combined = true;
+                        }
+                    }
+                    if (combined)
+                    {
+                        changed = true;
+                    }
+                    else
+                    {
+                        combinedRanges.Add(current);
+                    }
+                }
+                Sort(combinedRanges);
+                auto e = Unique(combinedRanges.Begin(), combinedRanges.End());
+                combinedRanges.Remove(e, combinedRanges.End());
+                Swap(rangeList, combinedRanges);
+            }
+            symbols.Clear();
+            chars.Clear();
+            for (const Range& range : rangeList)
+            {
+                if (range.IsEmpty()) continue;
+                ranges.Add(range);
+                if (chars.IsEmpty())
+                {
+                    AddChar(range.Start());
+                }
+            }
+        }
+        public void MakeInverse(Context& context)
+        {
+            List<Range> rangeList;
+            for (const Range& range : ranges)
+            {
+                rangeList.Add(range);
+            }
+            ranges.Clear();
+            List<Range> inverseRanges;
+            inverseRanges.Add(Range(cast<uchar>(1), cast<uchar>(0x10FFFF)));
+            for (const Range& range : rangeList)
+            {
+                List<Range> newInverse;
+                for (const Range& i : inverseRanges)
+                {
+                    if (Intersect(range, i))
+                    {
+                        Range intersection = range & i;
+                        Range left = Range(i.Start(), cast<uchar>(cast<int>(intersection.Start()) - 1));
+                        if (!left.IsEmpty())
+                        {
+                            newInverse.Add(left);
+                        }
+                        Range right = Range(cast<uchar>(cast<int>(intersection.End()) + 1), i.End());
+                        if (!right.IsEmpty())
+                        {
+                            newInverse.Add(right);
+                        }
+                    }
+                    else
+                    {
+                        newInverse.Add(i);
+                    }
+                }
+                Swap(inverseRanges, newInverse);
+            }
+            symbols.Clear();
+            chars.Clear();
+            for (const Range& range : inverseRanges)
+            {
+                ranges.Add(range);
+                if (chars.IsEmpty())
+                {
+                    AddChar(range.Start());
+                }
+            }
+            MakeMinimal(context);
+            inverse = false;
+        }
+        public override bool Match(uchar c) const
+        {
+            bool match = false;
+            for (Symbol* symbol : symbols)
+            {
+                if (symbol->Match(c))
+                {
+                    match = true;
+                    break;
+                }
+            }
+            return match != inverse;
+        }
+        public override void Accept(Visitor& visitor)
+        {
+            visitor.Visit(*this);
+        }
+        public override Result<bool> Print(System.Text.CodeFormatter& formatter)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            if (ranges.IsEmpty())
+            {
+                formatter << "#" << Format(ToString(index), 5, FormatWidth.exact, FormatJustify.right, '0') << ":";
+                formatter.Write("[");
+                if (inverse)
+                {
+                    formatter.Write("^");
+                }
+                bool first = true;
+                for (Symbol* symbol : symbols)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        formatter.Write(", ");
+                    }
+                    auto result = symbol->Print(formatter);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                }
+                formatter.WriteLine("]");
+            }
+            else
+            {
+                for (auto& range : ranges)
+                {
+                    formatter << "#" << Format(ToString(index), 5, FormatWidth.exact, FormatJustify.right, '0') << ":";
+                    auto result = range.Print(formatter);
+                    if (result.Error())
+                    {
+                        return Result<bool>(ErrorId(result.GetErrorId()));
+                    }
+                    formatter << endl();
+                }
+            }
+            return Result<bool>(true);
+        }
+        public override Result<bool> PrintId(System.Text.CodeFormatter& formatter)
+        {
+            if (Error())
+            {
+                return Result<bool>(ErrorId(GetErrorId()));
+            }
+            formatter << "CLASS(" << index << ")";
+            return Result<bool>(true);
+        }
+        private int index;
+        private bool inverse;
+        private List<Symbol*> symbols;
+        private List<uchar> chars;
+        private LinkedList<Range> ranges;
+    }
+
+    public bool operator==(const Class& left, const Class& right)
+    {
+        if (left.Symbols().Count() != right.Symbols().Count()) return false;
+        long n = left.Symbols().Count();
+        for (long i = 0; i < n; ++i)
+        {
+            Symbol* leftSymbol = left.Symbols()[i];
+            Symbol* rightSymbol = right.Symbols()[i];
+            if (leftSymbol->IsRange() && rightSymbol->IsRange())
+            {
+                const Range* leftRange = cast<const Range*>(leftSymbol);
+                const Range* rightRange = cast<const Range*>(rightSymbol);
+                if (!(*leftRange == *rightRange))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public class RangeEndLess : Rel<Range>
+    {
+        public bool operator()(const Range& left, const Range& right) const
+        {
+            if (left.End() < right.End()) return true;
+            if (left.End() > right.End()) return false;
+            return left.Start() < right.Start();
+        }
+    }
+    public bool Intersect(const Class& left, const Class& right)
+    {
+        for (Symbol* leftSymbol : left.Symbols())
+        {
+            if (leftSymbol->IsRange())
+            {
+                Range* leftRange = cast<Range*>(leftSymbol);
+                for (Symbol* rightSymbol : right.Symbols())
+                {
+                    if (rightSymbol->IsRange())
+                    {
+                        Range* rightRange = cast<Range*>(rightSymbol);
+                        if (Intersect(*leftRange, *rightRange))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public Class* MakeIntertersection(const Class& left, const Class& right, Context& context)
+    {
+        List<Range> leftRanges;
+        for (Symbol* leftSymbol : left.Symbols())
+        {
+            if (leftSymbol->IsRange())
+            {
+                Range* leftRange = cast<Range*>(leftSymbol);
+                leftRanges.Add(*leftRange);
+            }
+        }
+        List<Range> rightRanges;
+        for (Symbol* rightSymbol : right.Symbols())
+        {
+            if (rightSymbol->IsRange())
+            {
+                Range* rightRange = cast<Range*>(rightSymbol);
+                rightRanges.Add(*rightRange);
+            }
+        }
+        List<Range> intersection;
+        for (const Range& left : leftRanges)
+        {
+            auto start = LowerBound(rightRanges.Begin(), rightRanges.End(), left);
+            auto end = UpperBound(rightRanges.Begin(), rightRanges.End(), left, RangeEndLess());
+            if (start != rightRanges.Begin())
+            {
+                --start;
+            }
+            if (end < rightRanges.End())
+            {
+                ++end;
+            }
+            for (auto i = start; i != end; ++i)
+            {
+                const Range& right = *i;
+                if (left == right)
+                {
+                    intersection.Add(left);
+                    break;
+                }
+                else if (Intersect(left, right))
+                {
+                    intersection.Add(left & right);
+                }
+            }
+        }
+        Sort(intersection);
+        auto e = Unique(intersection.Begin(), intersection.End());
+        intersection.Remove(e, intersection.End());
+        Class* cls = context.MakeClass();
+        for (const Range& i : intersection)
+        {
+            cls->AddSymbol(context.MakeRange(i.Start(), i.End()));
+            if (cls->Chars().IsEmpty())
+            {
+                cls->AddChar(i.Start());
+            }
+        }
+        return cls;
+    }
+
+    Class* MakeDifference(const Class& left, const Class& right, Context& context)
+    {
+        List<Range> leftRanges;
+        for (Symbol* leftSymbol : left.Symbols())
+        {
+            if (leftSymbol->IsRange())
+            {
+                Range* leftRange = cast<Range*>(leftSymbol);
+                leftRanges.Add(*leftRange);
+            }
+        }
+        List<Range> rightRanges;
+        for (Symbol* rightSymbol : right.Symbols())
+        {
+            if (rightSymbol->IsRange())
+            {
+                Range* rightRange = cast<Range*>(rightSymbol);
+                rightRanges.Add(*rightRange);
+            }
+        }
+        List<Range> difference;
+        for (const Range& left : leftRanges)
+        {
+            bool found = false;
+            List<Range> diffs;
+            auto start = LowerBound(rightRanges.Begin(), rightRanges.End(), left);
+            auto end = UpperBound(rightRanges.Begin(), rightRanges.End(), left, RangeEndLess());
+            if (start != rightRanges.Begin())
+            {
+                --start;
+            }
+            if (end < rightRanges.End())
+            {
+                ++end;
+            }
+            for (auto i = start; i != end; ++i)
+            {
+                const Range& right = *i;
+                if (left == right)
+                {
+                    found = true;
+                    break;
+                }
+                else
+                {
+                    if (Intersect(left, right))
+                    {
+                        Range intersection = left & right;
+                        Range l = Range(left.Start(), cast<uchar>(cast<int>(intersection.Start()) - 1));
+                        if (!l.IsEmpty())
+                        {
+                            diffs.Add(l);
+                        }
+                        Range r = Range(cast<uchar>(cast<int>(intersection.End()) + 1), left.End());
+                        if (!r.IsEmpty())
+                        {
+                            diffs.Add(r);
+                        }
+                    }
+                }
+            }
+            if (!found)
+            {
+                if (diffs.IsEmpty())
+                {
+                    difference.Add(left);
+                }
+                else
+                {
+                    for (const Range& diff : diffs)
+                    {
+                        difference.Add(diff);
+                    }
+                }
+            }
+        }
+        Class* d = context.MakeClass();
+        for (const Range& r : difference)
+        {
+            d->AddSymbol(context.MakeRange(r.Start(), r.End()));
+            if (d->Chars().IsEmpty())
+            {
+                d->AddChar(r.Start());
+            }
+        }
+        d->MakeMinimal(context);
+        return d;
+    }
+}

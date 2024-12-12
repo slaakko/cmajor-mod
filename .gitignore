@@ -22,6 +22,7 @@ bind
 *.release
 *.log
 *.ast
+!re.ast
 *.classmap
 *.classmap.debug.txt
 lib

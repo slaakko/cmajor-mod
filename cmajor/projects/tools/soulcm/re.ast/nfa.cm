@@ -1,0 +1,303 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace re.ast
+{
+    public class NfaEdge
+    {
+        public NfaEdge(Symbol* symbol_, NfaState* next_) : symbol(symbol_), next(next_)
+        {
+        }
+        public inline Symbol* GetSymbol() const
+        {
+            return symbol;
+        }
+        public inline NfaState* Next() const
+        {
+            return next;
+        }
+        public Result<bool> Print(System.Text.CodeFormatter& formatter)
+        {
+            auto result = symbol->Print(formatter);
+            if (result.Error())
+            {
+                return Result<bool>(ErrorId(result.GetErrorId()));
+            }
+            auto writeResult = formatter.WriteLine(" -> " + ToString(next->Id()));
+            if (writeResult.Error()) return writeResult;
+            return Result<bool>(true);
+        }
+        public void Visit(List<NfaState*>& states, Set<NfaState*>& visited)
+        {
+            if (visited.Find(next) != visited.End()) return;
+            visited.Insert(next);
+            next->Visit(states, visited);
+        }
+        private Symbol* symbol;
+        private NfaState* next;
+    }
+
+    public class NfaState
+    {
+        public NfaState(int id_, int ruleIndex_) : id(id_), ruleIndex(ruleIndex_), accept(false)
+        {
+        }
+        public inline int Id() const
+        {
+            return id;
+        }
+        public inline int RuleIndex() const
+        {
+            return ruleIndex;
+        }
+        public void SetRuleIndex(int ruleIndex_)
+        {
+            ruleIndex = ruleIndex_;
+        }
+        public inline bool Accept() const
+        {
+            return accept;
+        }
+        public void SetAccept(bool accept_)
+        {
+            accept = accept_;
+        }
+        public const List<NfaEdge>& Edges() const
+        {
+            return edges;
+        }
+        public void AddEdge(const NfaEdge& edge)
+        {
+            edges.Add(edge);
+            edge.Next()->AddPrev(this);
+        }
+        public void AddPrev(NfaState* prev_)
+        {
+            prev.Insert(prev_);
+        }
+        public void SetEdges(const List<NfaEdge>& edges_)
+        {
+            edges = edges_;
+            for (NfaEdge& edge : edges)
+            {
+                edge.Next()->AddPrev(this);
+            }
+        }
+        public List<NfaState*> Next(uchar c)
+        {
+            List<NfaState*> next;
+            for (const auto& edge : edges)
+            {
+                Symbol* symbol = edge.GetSymbol();
+                if (symbol->Match(c))
+                {
+                    if (edge.Next() == null) continue;
+                    next.Add(edge.Next());
+                }
+            }
+            return next;
+        }
+        public Result<bool> Print(System.Text.CodeFormatter& formatter)
+        {
+            string str = ToString(id);
+            if (ruleIndex != -1)
+            {
+                str.Append(" : RULE=").Append(ToString(ruleIndex));
+            }
+            if (accept)
+            {
+                str.Append(" : ACCEPT");
+            }
+            if (!prev.IsEmpty())
+            {
+                str.Append(" : prev:");
+                for (NfaState* p : prev)
+                {
+                    str.Append(" ").Append(ToString(p->Id()));
+                }
+            }
+            auto result = formatter.WriteLine(str);
+            if (result.Error()) return result;
+            formatter.IncIndent();
+            for (NfaEdge& edge : edges)
+            {
+                auto result = edge.Print(formatter);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            formatter.DecIndent();
+            return Result<bool>(true);
+        }
+        public void Visit(List<NfaState*>& states, Set<NfaState*>& visited)
+        {
+            states.Add(this);
+            for (auto& edge : edges)
+            {
+                edge.Visit(states, visited);
+            }
+        }
+        private int id;
+        private int ruleIndex;
+        private bool accept;
+        private List<NfaEdge> edges;
+        private Set<NfaState*> prev;
+    }
+
+    public class NfaStateIdLess : Rel<NfaState*>
+    {
+        public bool operator()(NfaState* left, NfaState* right) const
+        {
+            return left->Id() < right->Id();
+        }
+    }
+
+    public class Nfa
+    {
+        public Nfa()
+        {
+        }
+        public Nfa(NfaState* start_, NfaState* end_) : start(start_), end(end_)
+        {
+        }
+        public inline NfaState* Start() const
+        {
+            return start;
+        }
+        public void SetStart(NfaState* start_)
+        {
+            start = start_;
+        }
+        public inline NfaState* End() const
+        {
+            return end;
+        }
+        public void SetEnd(NfaState* end_)
+        {
+            end = end_;
+        }
+        public void GetStates()
+        {
+            Set<NfaState*> visited;
+            if (start != null)
+            {
+                visited.Insert(start);
+                start->Visit(states, visited);
+            }
+        }
+        public Result<bool> Print(System.Text.CodeFormatter& formatter)
+        {
+            if (states.IsEmpty())
+            {
+                GetStates();
+                Sort(states.Begin(), states.End(), NfaStateIdLess());
+            }
+            auto result = formatter.WriteLine("NFA begin");
+            if (result.Error()) return result;
+            for (NfaState* state : states)
+            {
+                auto result = state->Print(formatter);
+                if (result.Error())
+                {
+                    return Result<bool>(ErrorId(result.GetErrorId()));
+                }
+            }
+            result = formatter.WriteLine("NFA end");
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
+        private NfaState* start;
+        private NfaState* end;
+        private List<NfaState*> states;
+    }
+
+    public Nfa MakeNfa(Context& context, Symbol* symbol)
+    {
+        NfaState* start = context.MakeNfaState();
+        NfaState* end = context.MakeNfaState();
+        end->SetAccept(true);
+        start->AddEdge(NfaEdge(symbol, end));
+        return Nfa(start, end);
+    }
+
+    public Nfa Cat(const Nfa& left, const Nfa& right)
+    {
+        Nfa cat(left);
+        NfaState* leftEnd = cat.End();
+        leftEnd->SetAccept(false);
+        NfaState* rightStart = right.Start();
+        rightStart->SetRuleIndex(-1);
+        leftEnd->SetEdges(rightStart->Edges());
+        cat.SetEnd(right.End());
+        return cat;
+    }
+
+    public Nfa Alt(Context& context, const Nfa& left, const Nfa& right)
+    {
+        NfaState* leftStart = left.Start();
+        NfaState* leftEnd = left.End();
+        NfaState* rightStart = right.Start();
+        NfaState* rightEnd = right.End();
+        NfaState* start = context.MakeNfaState();
+        NfaState* end = context.MakeNfaState();
+        end->SetAccept(true);
+        start->AddEdge(NfaEdge(context.MakeEpsilon(), leftStart));
+        start->AddEdge(NfaEdge(context.MakeEpsilon(), rightStart));
+        Nfa alt;
+        alt.SetStart(start);
+        leftEnd->SetAccept(false);
+        leftEnd->AddEdge(NfaEdge(context.MakeEpsilon(), end));
+        rightEnd->SetAccept(false);
+        rightEnd->AddEdge(NfaEdge(context.MakeEpsilon(), end));
+        alt.SetEnd(end);
+        return alt;
+    }
+
+    public Nfa Kleene(Context& context, const Nfa& nfa)
+    {
+        Nfa kleene;
+        NfaState* start = context.MakeNfaState();
+        NfaState* end = context.MakeNfaState();
+        end->SetAccept(true);
+        start->AddEdge(NfaEdge(context.MakeEpsilon(), end));
+        kleene.SetStart(start);
+        NfaState* nfaStart = nfa.Start();
+        start->AddEdge(NfaEdge(context.MakeEpsilon(), nfaStart));
+        NfaState* nfaEnd = nfa.End();
+        nfaEnd->SetAccept(false);
+        nfaEnd->AddEdge(NfaEdge(context.MakeEpsilon(), end));
+        nfaEnd->AddEdge(NfaEdge(context.MakeEpsilon(), nfaStart));
+        kleene.SetEnd(end);
+        return kleene;
+    }
+
+    public Nfa Pos(Context& context, const Nfa& nfa)
+    {
+        Nfa pos;
+        NfaState* start = context.MakeNfaState();
+        NfaState* end = context.MakeNfaState();
+        end->SetAccept(true);
+        pos.SetStart(start);
+        NfaState* nfaStart = nfa.Start();
+        start->AddEdge(NfaEdge(context.MakeEpsilon(), nfaStart));
+        NfaState* nfaEnd = nfa.End();
+        nfaEnd->SetAccept(false);
+        nfaEnd->AddEdge(NfaEdge(context.MakeEpsilon(), end));
+        nfaEnd->AddEdge(NfaEdge(context.MakeEpsilon(), nfaStart));
+        pos.SetEnd(end);
+        return pos;
+    }
+
+    public Nfa Opt(Context& context, const Nfa& nfa)
+    {
+        Nfa opt(nfa);
+        opt.Start()->AddEdge(NfaEdge(context.MakeEpsilon(), opt.End()));
+        return opt;
+    }
+}
