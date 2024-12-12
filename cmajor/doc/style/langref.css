@@ -18,6 +18,12 @@ span.kw
     font-weight: bold;
 }
 
+span.bold
+{
+    font-weight: bold;
+    color: #a31515;
+}
+
 span.rule
 {
     font-family: serif;

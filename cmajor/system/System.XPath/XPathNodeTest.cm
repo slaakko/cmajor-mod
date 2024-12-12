@@ -89,7 +89,7 @@ namespace System.XPath
 
     public class PILiteralNodeTest : NodeTest
     {
-        public PILiteralNodeTest(Literal* literal_) : base(NodeTestKind.piLiteralTest), literal(literal_)
+        public explicit PILiteralNodeTest(Literal* literal_) : base(NodeTestKind.piLiteralTest), literal(literal_)
         {
         }
         public inline Literal* GetLiteral() const

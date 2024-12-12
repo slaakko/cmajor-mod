@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Compiler User Guide</title>
+    <link href="../style/langref.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <h1>Compiler User Guide</h1>
+
+    <p>
+        The Cmajor project contains four compilers: <span class="bold">cmc</span>, <span class="bold">cppcmc</span>, <span class="bold">masmcmc</span> and 
+        <span class="bold">cmcmc</span> all of which can be accessed from the <span class="bold">cmcode</span> IDE.
+        The first three are implemented in C++ and share a common front-end. The fourth is written entirely in Cmajor.
+    </p>
+
+    <p>
+        The front-end parses each Cmajor source file and generates an abstract syntax tree from it. Then it generates a bound tree representation from the syntax tree.
+    </p>
+
+    <h2>
+        cmc
+    </h2>
+
+    <p>
+        The <span class="bold">cmc</span> back-end processes the bound syntax tree produced by the front-end and generates LLVM intermediate code from it. 
+        The intermediate code is compiled to object code and object code is archived to libraries by calling LLVM libraries.
+        Programs are linked by calling <span class="bold">clang++</span>.
+    </p>
+
+    <h2>
+        cppcmc
+    </h2>
+
+    <p>
+        The <span class="bold">cppcmc</span> back-end processes the bound syntax tree produced by the front-end and generates very primitive C++ from it.
+        The generated C++ is comparable to intermediate code more than hand-written source code. Each C++ file is then compiled to object code by calling <span class="bold">g++</span>.
+        The object code files are archived to libraries by calling <span class="bold">ar</span>. Programs are linked by calling <span class="bold">g++</span>.
+        This back-end has some support for source-level debugging in the <span class="bold">cmcode</span> IDE.
+    </p>
+
+    <h2>
+        masmcmc
+    </h2>
+
+    <p>
+        The <span class="bold">masmcmc</span> back-end processes the bound syntax tree produced by the front-end and generates Cmajor intermediate code from it. The intermediate files have <span class="bold">.i</span> suffix.
+        The intermediate code is compiled to x64 assembly code by the back-end. The back-end generates <span class="bold">.vcxproj</span> project files that references the assembly files and
+        compiles the assembly files to object code by calling <span class="bold">MSBuild</span> that calls <span class="bold">msvc</span> and MASM.
+        The object code files are archived to libraries and programs are linked by calling <span class="bold">MSBuild</span> that calls <span class="bold">msvc</span> and linker.
+        This back-end supports assembly-level debugging by means of opening the <span class="bold">.vcxproj</span> project files in Visual Studio.
+    </p>
+
+    <h2>
+        cmcmc
+    </h2>
+
+    <p>
+        The <span class="bold">cmcmc</span> compiler parses each Cmajor source file and generates an abstract syntax tree from it. It then generates bound tree representation from the syntax tree and
+        generates Cmajor intermediate code from the bound tree.
+        The intermediate code is compiled to x64 assembly code by the compiler. The compiles generates <span class="bold">.vcxproj</span> project files that references the assembly files and
+        compiles the assembly files to object code by calling <span class="bold">MSBuild</span>.
+        The object code files are archived to libraries and programs are linked by calling <span class="bold">MSBuild</span>.
+        This compiler supports assembly-level debugging by means of opening the <span class="bold">.vcxproj</span> project files in Visual Studio.
+        The source code of the compiler is included in the installation package.
+    </p>
+
+</body>
