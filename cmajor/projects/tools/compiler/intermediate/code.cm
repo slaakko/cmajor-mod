@@ -6,10 +6,6 @@
 using System;
 using System.Collections;
 
-public cdecl void IFoo()
-{
-}
-
 namespace intermediate
 {
     public enum OpCode : byte
@@ -276,6 +272,7 @@ namespace intermediate
         }
         public inline void SetInst(Instruction* inst_)
         {
+            #assert(this != null);
             inst = inst_;
         }
         private int reg;
@@ -285,18 +282,13 @@ namespace intermediate
     public abstract class Instruction : Component
     {
         public Instruction(const System.Lex.Span& span_, Type* type_, OpCode opCode_) :
-            base(ValueKind.instruction, span_, type_), opCode(opCode_), index(-1), sourceLineNumber(0), regValueIndex(-1), assemblyIndex(-1), leader(false)
+            base(ValueKind.instruction, span_, type_), opCode(opCode_), index(-1), sourceLineNumber(0), regValueIndex(-1), assemblyIndex(-1)
         {
         }
         public bool IsLeader() const
         {
-            if (leader) return true;
             BasicBlock* basicBlock = Parent();
-            return this == basicBlock->FirstInstruction();
-        }
-        public inline void SetLeader()
-        {
-            leader = true;
+            return this == basicBlock->Leader();
         }
         public string Name()
         {
@@ -536,6 +528,27 @@ namespace intermediate
         {
             return opCode == OpCode.ret;
         }
+        public inline bool IsNopInstruction() const
+        {
+            return opCode == OpCode.nop;
+        }
+        public inline bool IsJumpInstruction() const
+        {
+            return opCode == OpCode.jmp;
+        }
+        public inline bool IsBranchInstruction() const
+        {
+            return opCode == OpCode.branch;
+        }
+        public bool IsRetVoid() const
+        {
+            if (IsRetInstruction())
+            {
+                RetInstruction* ret = cast<RetInstruction*>(this);
+                return ret->ReturnValue() == null;
+            }
+            return false;
+        }
         public bool IsTerminator() const
         {
             switch (opCode)
@@ -605,7 +618,6 @@ namespace intermediate
         private int regValueIndex;
         private int assemblyIndex;
         private List<Instruction*> users;
-        bool leader;
     }
 
     public class StoreInstruction : Instruction
@@ -2405,6 +2417,16 @@ namespace intermediate
         {
             return cast<Instruction*>(instructions.LastChild());
         }
+        public Instruction* Leader() const
+        {
+            Instruction* leader = FirstInstruction();
+            while (leader != null && (leader->IsNopInstruction() || leader->IsLocalInstruction()))
+            {
+                leader = leader->Next();
+            }
+            #assert(leader != null);
+            return leader;
+        }
         public bool IsLast() const
         {
             Function* fn = Parent();
@@ -2579,6 +2601,7 @@ namespace intermediate
             {
                 if (bb->IsEmpty())
                 {
+                    bb = bb->Next();
                     continue;
                 }
                 if (first)

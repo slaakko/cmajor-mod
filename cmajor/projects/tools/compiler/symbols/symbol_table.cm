@@ -10,11 +10,11 @@ using cm.ast;
 
 namespace symbols
 {
-    public Module* m = null;
+    public Module* m;
 
     public class SymbolTable
     {
-        public SymbolTable(Module* module_) :
+        public explicit SymbolTable(Module* module_) :
             module(module_), globalNs(System.Lex.Span(), ustring()), container(&globalNs), instantiatingTemplate(false), currentFileIndex(-1), currentModuleId(),
             parameterIndex(0), declarationBlockIndex(0), currentClass(null), axiomNumber(0)
         {
@@ -467,6 +467,7 @@ namespace symbols
         public void BeginClass(ClassNode& classNode)
         {
             ClassTypeSymbol* classTypeSymbol = new ClassTypeSymbol(classNode.GetSpan(), classNode.Id()->Str());
+            classTypeSymbol->SetParent(container);
             classTypeSymbol->SetGroupName(classNode.Id()->Str());
             currentClassStack.Push(currentClass);
             currentClass = classTypeSymbol;
@@ -560,6 +561,7 @@ namespace symbols
         public Result<bool> BeginConstructor(SymbolsContext& context, ConstructorNode& constructorNode, int functionIndex)
         {
             ConstructorSymbol* constructorSymbol = new ConstructorSymbol(constructorNode.GetSpan(), u"@constructor");
+            constructorSymbol->SetParent(container);
             constructorSymbol->SetIndex(functionIndex);
             SetFunctionIdFor(constructorSymbol);
             if ((constructorNode.GetSpecifiers() & Specifiers.constexpr_) != Specifiers.none)
@@ -622,6 +624,7 @@ namespace symbols
         public Result<bool> BeginDestructor(SymbolsContext& context, DestructorNode& destructorNode, int functionIndex)
         {
             DestructorSymbol* destructorSymbol = new DestructorSymbol(destructorNode.GetSpan(), u"@destructor");
+            destructorSymbol->SetParent(container);
             destructorSymbol->SetIndex(functionIndex);
             SetFunctionIdFor(destructorSymbol);
             destructorSymbol->SetHasSource();
@@ -679,6 +682,7 @@ namespace symbols
         public Result<bool> BeginMemberFunction(SymbolsContext& context, MemberFunctionNode& memberFunctionNode, int functionIndex)
         {
             MemberFunctionSymbol* memberFunctionSymbol = new MemberFunctionSymbol(memberFunctionNode.GetSpan(), memberFunctionNode.GroupId());
+            memberFunctionSymbol->SetParent(container);
             memberFunctionSymbol->SetIndex(functionIndex);
             SetFunctionIdFor(memberFunctionSymbol);
             if ((memberFunctionNode.GetSpecifiers() & Specifiers.constexpr_) != Specifiers.none)
@@ -766,6 +770,7 @@ namespace symbols
         public Result<bool> BeginConversionFunction(SymbolsContext& context, ConversionFunctionNode& conversionFunctionNode, int functionIndex)
         {
             ConversionFunctionSymbol* conversionFunctionSymbol = new ConversionFunctionSymbol(conversionFunctionNode.GetSpan(), u"@conversion");
+            conversionFunctionSymbol->SetParent(container);
             conversionFunctionSymbol->SetIndex(functionIndex);
             SetFunctionIdFor(conversionFunctionSymbol);
             if ((conversionFunctionNode.GetSpecifiers() & Specifiers.constexpr_) != Specifiers.none)
@@ -839,6 +844,7 @@ namespace symbols
         public Result<bool> AddMemberVariable(MemberVariableNode& memberVariableNode, SymbolsContext& context)
         {
             MemberVariableSymbol* memberVariableSymbol = new MemberVariableSymbol(memberVariableNode.GetSpan(), memberVariableNode.Id()->Str());
+            memberVariableSymbol->SetParent(container);
             if ((memberVariableNode.GetSpecifiers() & Specifiers.static_) != Specifiers.none)
             {
                 memberVariableSymbol->SetStatic();
@@ -863,6 +869,7 @@ namespace symbols
         public Result<bool> BeginDelegate(DelegateNode& delegateNode, SymbolsContext& context)
         {
             DelegateTypeSymbol* delegateTypeSymbol = new DelegateTypeSymbol(delegateNode.GetSpan(), delegateNode.Id()->Str());
+            delegateTypeSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 delegateTypeSymbol->SetFileIndex(currentFileIndex);
@@ -891,6 +898,7 @@ namespace symbols
         public Result<bool> BeginClassDelegate(ClassDelegateNode& classDelegateNode, SymbolsContext& context)
         {
             ClassDelegateTypeSymbol* classDelegateTypeSymbol = new ClassDelegateTypeSymbol(classDelegateNode.GetSpan(), classDelegateNode.Id()->Str());
+            classDelegateTypeSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 classDelegateTypeSymbol->SetFileIndex(currentFileIndex);
@@ -919,6 +927,7 @@ namespace symbols
         public Result<bool> AddTemplateParameter(TemplateParameterNode* templateParameterNode, SymbolsContext& context)
         {
             TemplateParameterSymbol* templateParameterSymbol = new TemplateParameterSymbol(templateParameterNode->GetSpan(), templateParameterNode->Id()->Str());
+            templateParameterSymbol->SetParent(container);
             if (templateParameterNode->DefaultTemplateArgument() != null)
             {
                 templateParameterSymbol->SetHasDefault();
@@ -935,6 +944,7 @@ namespace symbols
         public Result<bool> AddTemplateParameter(IdentifierNode* identifierNode, SymbolsContext& context)
         {
             TemplateParameterSymbol* templateParameterSymbol = new TemplateParameterSymbol(identifierNode->GetSpan(), identifierNode->Str());
+            templateParameterSymbol->SetParent(container);
             templateParameterSymbol->SetSourceFile(currentSourceFile);
             templateParameterSymbol->SetModule(module);
             SetTypeIdFor(templateParameterSymbol);
@@ -961,6 +971,7 @@ namespace symbols
                 artificialId = true;
             }
             ParameterSymbol* parameterSymbol = new ParameterSymbol(parameterNode.GetSpan(), parameterName);
+            parameterSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 parameterSymbol->SetFileIndex(currentFileIndex);
@@ -985,6 +996,7 @@ namespace symbols
         public void BeginConcept(ConceptNode& conceptNode, bool hasSource)
         {
             ConceptSymbol* conceptSymbol = new ConceptSymbol(conceptNode.GetSpan(), conceptNode.Id()->Str());
+            conceptSymbol->SetParent(container);
             if (hasSource)
             {
                 conceptSymbol->SetHasSource();
@@ -1030,6 +1042,7 @@ namespace symbols
                 axiomId = Rvalue(result.Value());
             }
             AxiomSymbol* axiomSymbol = new AxiomSymbol(axiomNode.GetSpan(), axiomId);
+            axiomSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 axiomSymbol->SetFileIndex(currentFileIndex);
@@ -1060,6 +1073,7 @@ namespace symbols
             auto utf32result = ToUtf32(ToString(GetNextDeclarationBlockIndex()));
             if (utf32result.Error()) return Result<bool>(ErrorId(utf32result.GetErrorId()));
             DeclarationBlockSymbol* declarationBlockSymbol = new DeclarationBlockSymbol(node.GetSpan(), u"@locals" + utf32result.Value());
+            declarationBlockSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 declarationBlockSymbol->SetFileIndex(currentFileIndex);
@@ -1086,6 +1100,7 @@ namespace symbols
         public Result<bool> BeginEnumType(EnumTypeNode& enumTypeNode, SymbolsContext& context)
         {
             EnumTypeSymbol* enumTypeSymbol = new EnumTypeSymbol(enumTypeNode.GetSpan(), enumTypeNode.Id()->Str());
+            enumTypeSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 enumTypeSymbol->SetFileIndex(currentFileIndex);
@@ -1113,6 +1128,7 @@ namespace symbols
         public Result<bool> AddEnumConstant(EnumConstantNode& enumConstantNode, SymbolsContext& context)
         {
             EnumConstantSymbol* enumConstantSymbol = new EnumConstantSymbol(enumConstantNode.GetSpan(), enumConstantNode.Id()->Str());
+            enumConstantSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 enumConstantSymbol->SetFileIndex(currentFileIndex);
@@ -1134,6 +1150,7 @@ namespace symbols
         public Result<bool> AddConstant(ConstantNode& constantNode, SymbolsContext& context)
         {
             ConstantSymbol* constantSymbol = new ConstantSymbol(constantNode.GetSpan(), constantNode.Id()->Str());
+            constantSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 constantSymbol->SetFileIndex(currentFileIndex);
@@ -1158,6 +1175,7 @@ namespace symbols
         public Result<bool> AddAliasType(TypedefNode& typedefNode, SymbolsContext& context)
         {
             AliasTypeSymbol* aliasTypeSymbol = new AliasTypeSymbol(typedefNode.GetSpan(), typedefNode.Id()->Str());
+            aliasTypeSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 aliasTypeSymbol->SetFileIndex(currentFileIndex);
@@ -1179,6 +1197,7 @@ namespace symbols
         public Result<bool> AddLocalVariable(ConstructionStatementNode& constructionStatementNode, SymbolsContext& context)
         {
             LocalVariableSymbol* localVariableSymbol = new LocalVariableSymbol(constructionStatementNode.GetSpan(), constructionStatementNode.Id()->Str());
+            localVariableSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 localVariableSymbol->SetFileIndex(currentFileIndex);
@@ -1200,6 +1219,7 @@ namespace symbols
         public Result<bool> AddGlobalVariable(GlobalVariableNode& globalVariableNode, SymbolsContext& context)
         {
             GlobalVariableSymbol* globalVariableSymbol = new GlobalVariableSymbol(globalVariableNode.GetSpan(), globalVariableNode.Id()->Str());
+            globalVariableSymbol->SetParent(container);
             if (instantiatingTemplate)
             {
                 globalVariableSymbol->SetFileIndex(currentFileIndex);
@@ -1297,7 +1317,8 @@ namespace symbols
             }
             return Result<TypeSymbol*>(derivedType);
         }
-        public ClassTemplateSpecializationSymbol* MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const List<TypeSymbol*>& templateArgumentTypes)
+        public Result<ClassTemplateSpecializationSymbol*> MakeClassTemplateSpecialization(ClassTypeSymbol* classTemplate, const List<TypeSymbol*>& templateArgumentTypes,
+            SymbolsContext& context)
         {
             LockGuard<RecursiveMutex> lock(GetModule()->Lock());
             ClassTemplateSpecializationKey key(classTemplate, templateArgumentTypes);
@@ -1305,35 +1326,39 @@ namespace symbols
             if (it != classTemplateSpecializationMap.End())
             {
                 ClassTemplateSpecializationSymbol* classTemplateSpecialization = it->second;
-                return classTemplateSpecialization;
+                return Result<ClassTemplateSpecializationSymbol*>(classTemplateSpecialization);
             }
-            ustring classTemplateSpecializationName = MakeClassTemplateSpecializationName(classTemplate, templateArgumentTypes);
+            Result<ustring> classTemplateSpecializationNameResult = MakeClassTemplateSpecializationName(classTemplate, templateArgumentTypes, context);
+            if (classTemplateSpecializationNameResult.Error()) return Result<ClassTemplateSpecializationSymbol*>(ErrorId(classTemplateSpecializationNameResult.GetErrorId()));
+            ustring classTemplateSpecializationName = Rvalue(classTemplateSpecializationNameResult.Value());
             ClassTemplateSpecializationSymbol* classTemplateSpecialization = new ClassTemplateSpecializationSymbol(classTemplate->Span(), classTemplateSpecializationName,
                 classTemplate, templateArgumentTypes);
             SetTypeIdFor(classTemplateSpecialization);
             classTemplateSpecialization->SetGroupName(classTemplate->GroupName());
             classTemplateSpecializationMap[key] = classTemplateSpecialization;
-            classTemplateSpecialization->SetParent(&globalNs);
+            classTemplateSpecialization->SetParent(classTemplate->Parent());
             classTemplateSpecialization->SetFileIndex(classTemplate->FileIndex());
             classTemplateSpecialization->SetModuleId(classTemplate->ModuleId());
             classTemplateSpecialization->SetModule(module);
             classTemplateSpecializations.Add(UniquePtr<ClassTemplateSpecializationSymbol>(classTemplateSpecialization));
             ++numSpecializationsNew;
-            return classTemplateSpecialization;
+            return Result<ClassTemplateSpecializationSymbol*>(classTemplateSpecialization);
         }
-        public ClassTemplateSpecializationSymbol* CopyClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source)
+        public Result<ClassTemplateSpecializationSymbol*> CopyClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source, SymbolsContext& context)
         {
             LockGuard<RecursiveMutex> lock(GetModule()->Lock());
             ClassTypeSymbol* classTemplate = source->ClassTemplate();
             const List<TypeSymbol*>& templateArgumentTypes = source->TemplateArgumentTypes();
             ClassTemplateSpecializationKey key(classTemplate, templateArgumentTypes);
-            ustring classTemplateSpecializationName = MakeClassTemplateSpecializationName(classTemplate, templateArgumentTypes);
+            Result<ustring> classTemplateSpecializationNameResult = MakeClassTemplateSpecializationName(classTemplate, templateArgumentTypes, context);
+            if (classTemplateSpecializationNameResult.Error()) return Result<ClassTemplateSpecializationSymbol*>(ErrorId(classTemplateSpecializationNameResult.GetErrorId()));
+            ustring classTemplateSpecializationName = Rvalue(classTemplateSpecializationNameResult.Value());
             ClassTemplateSpecializationSymbol* copy = new ClassTemplateSpecializationSymbol(
                 source->Span(), classTemplateSpecializationName, classTemplate, templateArgumentTypes);
             copy->SetTypeId(source->TypeId());
             copy->SetGroupName(classTemplate->GroupName());
             classTemplateSpecializationMap[key] = copy;
-            copy->SetParent(&globalNs);
+            copy->SetParent(classTemplate->Parent());
             copy->SetFileIndex(source->FileIndex());
             copy->SetModuleId(source->ModuleId());
             copy->SetModule(module);
@@ -1345,7 +1370,7 @@ namespace symbols
             derivedTypeMap[copy->TypeId()].Clear();
             specializationCopyMap[source] = copy;
             ++numSpecializationsCopied;
-            return copy;
+            return Result<ClassTemplateSpecializationSymbol*>(copy);
         }
         public ClassTemplateSpecializationSymbol* GetCurrentClassTemplateSpecialization(ClassTemplateSpecializationSymbol* source)
         {

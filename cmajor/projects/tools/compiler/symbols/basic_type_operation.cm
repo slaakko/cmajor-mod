@@ -1934,7 +1934,7 @@ namespace symbols
         result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2wchar, context);
         if (result.Error()) return result;
 
-        FunctionSymbol* ushort2uchar = new BasicTypeExplicitSignExtensionOperation(rootSpan, u"ushort2uchar", ushortType, ucharType, context);
+        FunctionSymbol* ushort2uchar = new BasicTypeExplicitZeroExtensionOperation(rootSpan, u"ushort2uchar", ushortType, ucharType, context);
         if (ushort2uchar->Error()) return Result<bool>(ErrorId(ushort2uchar->GetErrorId()));
         result = symbolTable->AddFunctionSymbolToGlobalScope(ushort2uchar, context);
         if (result.Error()) return result;

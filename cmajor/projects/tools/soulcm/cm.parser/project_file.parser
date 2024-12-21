@@ -15,7 +15,7 @@ parser cm.parser.ProjectFileParser
     using cm.parser.ContainerFileParser.FilePath;
     using cm.parser.ContainerFileParser.ProjectKeyword;
 
-    ProjectFile(const string& config, cm.ast.BackEnd backend, const string& toolChain, var UniquePtr<cm.ast.Project> projectFile) : cm.ast.Project*
+    ProjectFile(const string& config, cm.ast.BackEnd backend, const string& toolChain, const string& profile, var UniquePtr<cm.ast.Project> projectFile) : cm.ast.Project*
         ::=
         (
             empty{ lexer.vars.matchFilePath = true; }
@@ -23,7 +23,7 @@ parser cm.parser.ProjectFileParser
             QualifiedId:projectName
             SEMICOLON
             {
-                projectFile.Reset(new cm.ast.Project(projectName, lexer.FileName(), config, backend, toolChain));
+                projectFile.Reset(new cm.ast.Project(projectName, lexer.FileName(), config, backend, toolChain, profile));
             }
             (
                 Declaration:declaration{ projectFile->AddDeclaration(declaration); }

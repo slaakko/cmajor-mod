@@ -5,7 +5,7 @@
 
 using System;
 using System.Collections;
- 
+
 namespace System.Ascii
 {
     public enum CharClass : ushort
@@ -23,7 +23,7 @@ namespace System.Ascii
         punct = 1u << 7u,
         space = 1u << 8u
     }
-    
+
     public class CharClassTable
     {
         static CharClassTable() : instance(new CharClassTable())
@@ -64,6 +64,6 @@ namespace System.Ascii
             }
         }
         private static UniquePtr<CharClassTable> instance;
-        private CharClass[cast<long>(MaxValue<byte>()) + 1] table;
+        private CharClass[256] table;
     }
 }

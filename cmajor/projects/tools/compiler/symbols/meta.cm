@@ -55,7 +55,7 @@ namespace symbols
 
     public class IntrinsicTypes
     {
-        public IntrinsicTypes(SymbolTable* symbolTable) : errorId(0)
+        public explicit IntrinsicTypes(SymbolTable* symbolTable) : errorId(0)
         {
             Result<TypeSymbol*> boolTypeResult = symbolTable->GetTypeByName(u"bool");
             if (boolTypeResult.Error())

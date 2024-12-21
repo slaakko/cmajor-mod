@@ -10,9 +10,9 @@ using cm.ast;
 
 namespace symbols
 {
-    public FunctionSymbol* f = null;
+    public FunctionSymbol* f;
 
-    internal FunctionSymbol* currentFunctionSymbol = null;
+    internal FunctionSymbol* currentFunctionSymbol;
 
     public inline FunctionSymbol* GetCurrentFunctionSymbol()
     {
@@ -204,6 +204,57 @@ namespace symbols
         public override ustring TypeString() const
         {
              return u"function";
+        }
+        public override ustring FullName() const
+        {
+            ustring fullName;
+            ustring parentFullName = Parent()->FullName();
+            fullName.Append(parentFullName);
+            if (!parentFullName.IsEmpty())
+            {
+                fullName.Append('.');
+            }
+            fullName.Append(GroupName());
+            if (!templateArgumentTypes.IsEmpty())
+            {
+                fullName.Append('<');
+                bool first = true;
+                for (TypeSymbol* type : templateArgumentTypes)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        fullName.Append(u", ");
+                    }
+                    fullName.Append(type->FullName());
+                }
+                fullName.Append('>');
+            }
+            fullName.Append('(');
+            bool first = true;
+            for (ParameterSymbol* parameter : parameters)
+            {
+                if (first)
+                {
+                    first = false;
+                }
+                else
+                {
+                    fullName.Append(u", ");
+                }
+                fullName.Append(parameter->Type()->FullName());
+                fullName.Append(' ');
+                fullName.Append(parameter->Name());
+            }
+            fullName.Append(')');
+            if (IsConst())
+            {
+                fullName.Append(u" const");
+            }
+            return fullName;
         }
         public inline const Uuid& FunctionId() const
         {
@@ -777,7 +828,7 @@ namespace symbols
         {
             auto result = base->Write(writer);
             if (result.Error()) return result;
-            #assert(functionId != Uuid());
+            #assert(!functionId.IsNil());
             result = writer.GetBinaryWriter().Write(functionId);
             if (result.Error()) return result;
             result = writer.GetBinaryWriter().Write(groupName);
@@ -946,7 +997,7 @@ namespace symbols
                 if (conversionDistanceResult.Error()) return Result<bool>(ErrorId(conversionDistanceResult.GetErrorId()));
                 conversionDistance = conversionDistanceResult.Value();
             }
-            if (returnTypeId != Uuid() || functionTemplateId != Uuid() || !templateArgumentTypeIds.IsEmpty() || IsConversion())
+            if (!returnTypeId.IsNil() || !functionTemplateId.IsNil() || !templateArgumentTypeIds.IsEmpty() || IsConversion())
             {
                 reader.AddToSymbolResolutionList(this);
             }
@@ -958,13 +1009,13 @@ namespace symbols
         {
             Result<bool> baseResolveResult = base->Resolve(symbolTable);
             if (baseResolveResult.Error()) return baseResolveResult;
-            if (returnTypeId != Uuid())
+            if (!returnTypeId.IsNil())
             {
                 auto typeSymbolResult = symbolTable->GetType(returnTypeId);
                 if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
                 returnType = typeSymbolResult.Value();
             }
-            if (functionTemplateId != Uuid())
+            if (!functionTemplateId.IsNil())
             {
                 Result<FunctionSymbol*> functionSymbolResult = symbolTable->GetFunction(functionTemplateId);
                 if (functionSymbolResult.Error()) return Result<bool>(ErrorId(functionSymbolResult.GetErrorId()));

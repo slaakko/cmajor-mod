@@ -50,6 +50,15 @@ int main(int argc, const char** argv)
                     }
                     SetConfig(components[1]);
                 }
+                else if (components[0] == "--opt")
+                {
+                    Result<bool> result = optimizer.Optimizer.Instance().SetCurrentProfile(components[1]);
+                    if (result.Error())
+                    {
+                        LogMessage(-1, result.GetErrorMessage());
+                        return 1;
+                    }
+                }
                 else
                 {
                     LogMessage(-1, "unknown option '" + arg + "'");
@@ -113,6 +122,15 @@ int main(int argc, const char** argv)
                         return 1;
                     }
                     SetConfig(components[1]);
+                }
+                else if (components[0] == "O")
+                {
+                    Result<bool> result = optimizer.Optimizer.Instance().SetCurrentProfile(components[1]);
+                    if (result.Error())
+                    {
+                        LogMessage(-1, result.GetErrorMessage());
+                        return 1;
+                    }
                 }
                 else
                 {

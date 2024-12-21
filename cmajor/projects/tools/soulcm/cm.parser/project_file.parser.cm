@@ -10,7 +10,7 @@ namespace cm.parser
 {
     public static class ProjectFileParser<LexerT>
     {
-        public static System.Result<System.UniquePtr<cm.ast.Project>> Parse(LexerT& lexer, const string& config, cm.ast.BackEnd backend, const string& toolChain)
+        public static System.Result<System.UniquePtr<cm.ast.Project>> Parse(LexerT& lexer, const string& config, cm.ast.BackEnd backend, const string& toolChain, const string& profile)
         {
             System.UniquePtr<cm.ast.Project> value;
             #if (DEBUG)
@@ -29,7 +29,7 @@ namespace cm.parser
             {
                 return System.Result<System.UniquePtr<cm.ast.Project>>(System.ErrorId(incResult0.GetErrorId())); 
             }
-            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ProjectFile(lexer, config, backend, toolChain);
+            System.Result<System.Parsing.Match> matchResult = cm.parser.ProjectFileParser<LexerT>.ProjectFile(lexer, config, backend, toolChain, profile);
             if (matchResult.Error())
             {
                 return System.Result<System.UniquePtr<cm.ast.Project>>(System.ErrorId(matchResult.GetErrorId()));
@@ -63,7 +63,7 @@ namespace cm.parser
                 return System.Result<System.UniquePtr<cm.ast.Project>>(lexer.GetFarthestError()); 
             }
         }
-        public static System.Result<System.Parsing.Match> ProjectFile(LexerT& lexer, const string& config, cm.ast.BackEnd backend, const string& toolChain)
+        public static System.Result<System.Parsing.Match> ProjectFile(LexerT& lexer, const string& config, cm.ast.BackEnd backend, const string& toolChain, const string& profile)
         {
             #if (DEBUG)
             long parser_debug_match_pos = 0;
@@ -170,7 +170,7 @@ namespace cm.parser
                                     }
                                     if (match.hit)
                                     {
-                                        projectFile.Reset(new cm.ast.Project(projectName->value, lexer.FileName(), config, backend, toolChain));
+                                        projectFile.Reset(new cm.ast.Project(projectName->value, lexer.FileName(), config, backend, toolChain, profile));
                                     }
                                     *parentMatch10 = match;
                                 }

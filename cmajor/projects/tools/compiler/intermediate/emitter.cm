@@ -870,12 +870,7 @@ namespace intermediate
             Result<bool> result = codeGenerator.Emit(movInst);
             if (result.Error()) return result;
         }
-        int targetLabelId = codeGenerator.ExitLabelId();
-        assembly.Instruction* jmpInst = new assembly.Instruction(assembly.OpCode.JMP);
-        jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(targetLabelId)));
-        Result<bool> result = codeGenerator.Emit(jmpInst);
-        if (result.Error()) return result;
-        return Result<bool>(true);
+        return codeGenerator.EmitJumpToExit(inst);
     }
 
     [nodiscard]
@@ -914,12 +909,7 @@ namespace intermediate
             Result<bool> result = codeGenerator.Emit(movInst);
             if (result.Error()) return result;
         }
-        int targetLabelId = codeGenerator.ExitLabelId();
-        assembly.Instruction* jmpInst = new assembly.Instruction(assembly.OpCode.JMP);
-        jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(targetLabelId)));
-        Result<bool> result = codeGenerator.Emit(jmpInst);
-        if (result.Error()) return result;
-        return Result<bool>(true);
+        return codeGenerator.EmitJumpToExit(inst);
     }
 
     [nodiscard]

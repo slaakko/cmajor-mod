@@ -17,7 +17,7 @@ namespace build
         {
             LogMessage(systemInstallModule->LogStreamId(), "Installing system libraries...");
         }
-        auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm");
+        auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
         if (systemLibDirResult.Error()) return Result<bool>(ErrorId(systemLibDirResult.GetErrorId()));
         string systemLibDir = Rvalue(systemLibDirResult.Value());
         System.IO.Directory.CreateDirectories(systemLibDir);
@@ -73,7 +73,7 @@ namespace build
         {
             LogMessage(systemInstallWindowsModule->LogStreamId(), "Installing system libraries (Windows)...");
         }
-        auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm");
+        auto systemLibDirResult = CmajorSystemLibDir(GetConfig(), BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
         if (systemLibDirResult.Error()) return Result<bool>(ErrorId(systemLibDirResult.GetErrorId()));
         string systemLibDir = Rvalue(systemLibDirResult.Value());
         System.IO.Directory.CreateDirectories(systemLibDir);

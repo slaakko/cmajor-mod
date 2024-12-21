@@ -10,9 +10,13 @@ namespace symbols
 {
     public Result<bool> MakeClassIndexFile(const Set<ClassTypeSymbol*>& polymorphicClasses, const string& classIndexFilePath)
     {
+        string classIndexTextFilePath = System.IO.Path.ChangeExtension(classIndexFilePath, ".txt");
         Result<System.IO.BinaryWriter> writerResult = System.IO.File.CreateBinary(classIndexFilePath);
         if (writerResult.Error()) return Result<bool>(ErrorId(writerResult.GetErrorId()));
+        Result<System.IO.StreamWriter> streamWriterResult = System.IO.File.CreateText(classIndexTextFilePath);
+        if (streamWriterResult.Error()) return Result<bool>(ErrorId(streamWriterResult.GetErrorId()));
         System.IO.BinaryWriter& writer = writerResult.Value();
+        System.IO.StreamWriter& textWriter = streamWriterResult.Value();
         Uuid nilUuid;
         Result<bool> result = writer.Write(cast<int>(polymorphicClasses.Count()));
         if (result.Error()) return result;
@@ -20,18 +24,41 @@ namespace symbols
         {
             result = writer.Write(cls->TypeId());
             if (result.Error()) return result;
+            Result<string> typeIdStrResult = ToString(cls->TypeId());
+            if (typeIdStrResult.Error()) return Result<bool>(ErrorId(typeIdStrResult.GetErrorId()));
+            string typeIdStr = Rvalue(typeIdStrResult.Value());
+            result = textWriter.Write(typeIdStr);
+            if (result.Error()) return result;
             ClassTypeSymbol* baseClass = cls->BaseClass();
-            if (baseClass != null)
+            if (baseClass != null && baseClass->IsPolymorphic())
             {
                 result = writer.Write(baseClass->TypeId());
+                if (result.Error()) return result;
+                result = textWriter.Write(" ");
+                if (result.Error()) return result;
+                Result<string> typeIdStrResult = ToString(baseClass->TypeId());
+                if (typeIdStrResult.Error()) return Result<bool>(ErrorId(typeIdStrResult.GetErrorId()));
+                string typeIdStr = Rvalue(typeIdStrResult.Value());
+                result = textWriter.Write(typeIdStr);
                 if (result.Error()) return result;
             }
             else
             {
                 result = writer.Write(nilUuid);
                 if (result.Error()) return result;
+                result = textWriter.Write(" ");
+                if (result.Error()) return result;
+                Result<string> typeIdStrResult = ToString(nilUuid);
+                if (typeIdStrResult.Error()) return Result<bool>(ErrorId(typeIdStrResult.GetErrorId()));
+                string typeIdStr = Rvalue(typeIdStrResult.Value());
+                result = textWriter.Write(typeIdStr);
+                if (result.Error()) return result;
             }
             result = writer.Write(cls->FullName());
+            if (result.Error()) return result;
+            result = textWriter.Write(" ");
+            if (result.Error()) return result;
+            result = textWriter.WriteLine(cls->FullName());
             if (result.Error()) return result;
         }
         return Result<bool>(true);

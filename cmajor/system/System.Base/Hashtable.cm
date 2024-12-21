@@ -98,7 +98,7 @@ namespace System.Collections
         }
         return seed;
     }
-    
+
     public class Hasher<T> : UnaryFun<T, ulong>
     {
         public inline ulong operator()(const T& x) const
@@ -161,7 +161,7 @@ namespace System.Collections
             #assert(bucket != null);
             return &(bucket->Value());
         }
-        public inline Self& operator++()
+        public Self& operator++()
         {
             #assert(bucket != null && table != null);
             Bucket<ValueType>* old = bucket;
@@ -176,6 +176,10 @@ namespace System.Collections
                 {
                     bucket = table->GetBucket(index);
                     ++index;
+                }
+                if (bucket == old)
+                {
+                    bucket = null;
                 }
             }
             return *this;

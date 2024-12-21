@@ -105,9 +105,9 @@ void EmitJumpTableSwitch(cmajor::masm::intermediate::SwitchInstruction& inst, cm
     addInst->AddOperand(jumpReg);
     addInst->AddOperand(jumpTabAddrReg);
     codeGenerator.Emit(addInst);
-    cmajor::masm::assembly::Instruction* jmpIst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JMP);
-    jmpIst->AddOperand(jumpReg);
-    codeGenerator.Emit(jmpIst);
+    cmajor::masm::assembly::Instruction* jmpInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::JMP);
+    jmpInst->AddOperand(jumpReg);
+    codeGenerator.Emit(jmpInst);
     for (int64_t i = 0; i < count; ++i)
     {
         cmajor::masm::assembly::Instruction* offsetInst = new cmajor::masm::assembly::Instruction(cmajor::masm::assembly::OpCode::DD);

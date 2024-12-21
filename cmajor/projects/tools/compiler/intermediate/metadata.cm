@@ -220,7 +220,7 @@ namespace intermediate
 
     public class Metadata
     {
-        public Metadata(Context* context_) : context(context_)
+        public explicit Metadata(Context* context_) : context(context_)
         {
         }
         [nodiscard]

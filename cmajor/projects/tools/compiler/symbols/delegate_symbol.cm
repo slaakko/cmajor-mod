@@ -7,10 +7,6 @@ using System;
 using System.Collections;
 using cm.ast;
 
-void Break()
-{
-}
-
 namespace symbols
 {
     public class DelegateTypeSymbol : TypeSymbol

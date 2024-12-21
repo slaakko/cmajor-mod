@@ -566,11 +566,6 @@ namespace symbols
         public inline Result<intermediate.Value*> CreateCall(intermediate.FunctionType* functionType, intermediate.Value* callee, const List<intermediate.Value*>& args)
         {
             context.SetCallIndex(callIndex);
-            if (callee->ToString() == "@destructor_Result_62B3A15C29798091EA164AEB113428FDDE1E40F7")
-            {
-                Console.Out() << "CALL INDEX=" << callIndex << endl();
-                Break();
-            }
             return context.CreateCall(functionType, callee, args);
         }
         public inline Result<bool> CreateBranch(intermediate.Value* cond, intermediate.BasicBlock* trueBlock, intermediate.BasicBlock* falseBlock)

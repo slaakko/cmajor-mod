@@ -246,7 +246,7 @@ namespace symbols
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            if (refinedConceptId != Uuid())
+            if (!refinedConceptId.IsNil())
             {
                 Result<ConceptSymbol*> refinedConceptResult = symbolTable->GetConcept(refinedConceptId);
                 if (refinedConceptResult.Error()) return Result<bool>(ErrorId(refinedConceptResult.GetErrorId()));

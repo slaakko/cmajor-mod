@@ -24,6 +24,7 @@ namespace binder
         }
         public inline FunctionSymbol* GetFunctionSymbol() const
         {
+            #assert(this != null);
             return functionSymbol;
         }
         public void SetBody(UniquePtr<BoundCompoundStatement>&& body_)
@@ -77,7 +78,10 @@ namespace binder
                                     if (instanceResult.Error())
                                     {
                                         LockGuard<RecursiveMutex> lock(compileUnit->GetModule()->Lock());
-                                        ClassTemplateSpecializationSymbol* copy = compileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization);
+                                        Result<ClassTemplateSpecializationSymbol*> copyResult =
+                                            compileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization, context);
+                                        if (copyResult.Error()) return Result<bool>(ErrorId(copyResult.GetErrorId()));
+                                        ClassTemplateSpecializationSymbol* copy = copyResult.Value();
                                         Result<bool> bindResult = compileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
                                             copy, compileUnit->GetSymbolTable()->GlobalNs().GetContainerScope(), node);
                                         if (bindResult.Error()) return Result<bool>(ErrorId(bindResult.GetErrorId()));

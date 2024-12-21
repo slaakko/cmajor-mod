@@ -78,6 +78,10 @@ namespace symbols
         {
             return classTemplate->GroupName();
         }
+        public override ustring FullName() const
+        {
+            return Name();
+        }
         public override bool IsExportSymbol() const
         {
             return base->IsExportSymbol();
@@ -123,7 +127,7 @@ namespace symbols
             {
                 Result<Uuid> typeIdResult = reader.GetBinaryReader().ReadUuid();
                 if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
-                if (typeIdResult.Value() != Uuid())
+                if (!typeIdResult.Value().IsNil())
                 {
                     templateArgumentTypeTypeIds.Add(typeIdResult.Value());
                 }
@@ -148,6 +152,7 @@ namespace symbols
                 int errorId = MakeError("class type expected", FullSpan());
                 return Result<bool>(ErrorId(errorId));
             }
+            SetParent(classTemplate->Parent());
             templateArgumentTypes.Clear();
             int n = cast<int>(templateArgumentTypeTypeIds.Count());
             for (int i = 0; i < n; ++i)
@@ -227,24 +232,29 @@ namespace symbols
         {
             return fileScope.Release();
         }
-        public override TypeSymbol* UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
+        public override Result<TypeSymbol*> UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
         {
             List<TypeSymbol*> targetTemplateArgumentTypes;
             int n = cast<int>(templateArgumentTypes.Count());
             for (int i = 0; i < n; ++i)
             {
                 TypeSymbol* type = templateArgumentTypes[i];
-                TypeSymbol* templateArgumentType = type->UnifyTemplateArgumentType(templateParameterMap, context);
+                Result<TypeSymbol*> templateArgumentTypeResult = type->UnifyTemplateArgumentType(templateParameterMap, context);
+                if (templateArgumentTypeResult.Error()) return templateArgumentTypeResult;
+                TypeSymbol* templateArgumentType = templateArgumentTypeResult.Value();
                 if (templateArgumentType != null)
                 {
                     targetTemplateArgumentTypes.Add(templateArgumentType);
                 }
                 else
                 {
-                    return null;
+                    return Result<TypeSymbol*>(cast<TypeSymbol*>(null));;
                 }
             }
-            return context.RootModule()->GetSymbolTable()->MakeClassTemplateSpecialization(classTemplate, targetTemplateArgumentTypes);
+            Result<ClassTemplateSpecializationSymbol*> specializationResult =
+                context.RootModule()->GetSymbolTable()->MakeClassTemplateSpecialization(classTemplate, targetTemplateArgumentTypes, context);
+            if (specializationResult.Error()) return Result<TypeSymbol*>(ErrorId(specializationResult.GetErrorId()));
+            return Result<TypeSymbol*>(specializationResult.Value());
         }
         [nodiscard]
         public override Result<bool> ComputeMangledName()
@@ -267,10 +277,7 @@ namespace symbols
             fn.Append(constraintStr);
             for (TypeSymbol* templateArgumentType : TemplateArgumentTypes())
             {
-                Result<string> fullNameResult = ToUtf8(templateArgumentType->BaseType()->FullName());
-                if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
-                fn.Append('.').Append(fullNameResult.Value());
-                fullNameResult = ToUtf8(templateArgumentType->FullName());
+                Result<string> fullNameResult = ToUtf8(templateArgumentType->FullName());
                 if (fullNameResult.Error()) return Result<bool>(ErrorId(fullNameResult.GetErrorId()));
                 fn.Append('.').Append(fullNameResult.Value());
             }
@@ -292,9 +299,13 @@ namespace symbols
         private string digestSource;
     }
 
-    public ustring MakeClassTemplateSpecializationName(ClassTypeSymbol* classTemplate, const List<TypeSymbol*>& templateArgumentTypes)
+    public Result<ustring> MakeClassTemplateSpecializationName(ClassTypeSymbol* classTemplate, const List<TypeSymbol*>& templateArgumentTypes, SymbolsContext& context)
     {
-        ustring name = classTemplate->GroupName();
+        Result<NamespaceSymbol*> nsResult = classTemplate->Ns(context);
+        if (nsResult.Error()) return Result<ustring>(ErrorId(nsResult.GetErrorId()));
+        ustring nsName = nsResult.Value()->FullName();
+        ustring name = nsName;
+        name.Append('.').Append(classTemplate->GroupName());
         name.Append('<');
         int n = cast<int>(templateArgumentTypes.Count());
         for (int i = 0; i < n; ++i)
@@ -306,7 +317,7 @@ namespace symbols
             name.Append(templateArgumentTypes[i]->FullName());
         }
         name.Append('>');
-        return name;
+        return Result<ustring>(name);
     }
 }
 

@@ -158,9 +158,9 @@ namespace symbols
         {
             return Result<TypeSymbol*>(cast<TypeSymbol*>(null));
         }
-        public virtual TypeSymbol* UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
+        public virtual Result<TypeSymbol*> UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
         {
-            return null;
+            return Result<TypeSymbol*>(cast<TypeSymbol*>(null));
         }
         public virtual Result<TypeSymbol*> AddConst(SymbolsContext& context)
         {
@@ -190,7 +190,7 @@ namespace symbols
         {
             auto result = base->Write(writer);
             if (result.Error()) return result;
-            #assert(typeId != Uuid());
+            #assert(!typeId.IsNil());
             result = writer.GetBinaryWriter().Write(typeId);
             if (result.Error()) return result;
             return Result<bool>(true);

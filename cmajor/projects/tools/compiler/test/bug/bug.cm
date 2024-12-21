@@ -1,7 +1,11 @@
 using System;
 
+int Increment(int& x)
+{
+    return x++;
+}
+
 void main()
 {
-    UniquePtr<string> x;
-    x.Reset(new string("foo"));
+    
 }

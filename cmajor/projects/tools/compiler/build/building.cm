@@ -96,7 +96,7 @@ namespace build
         bool upToDate = false;
         if (!GetGlobalFlag(GlobalFlags.rebuild))
         {
-            Result<string> systemModuleFilePathResult = CmajorSystemModuleFilePath(config, BackEnd.cm, "cm");
+            Result<string> systemModuleFilePathResult = CmajorSystemModuleFilePath(config, BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
             if (systemModuleFilePathResult.Error())
             {
                 return Result<bool>(ErrorId(systemModuleFilePathResult.GetErrorId()));
@@ -538,6 +538,8 @@ namespace build
             {
                 return Result<bool>(ErrorId(projectResult.GetErrorId()));
             }
+            Project* project = projectResult.Value().Get();
+            Console.Out() << "PROJECT " << project->ModuleFilePath() << endl();
             solution->AddProject(Rvalue(projectResult.Value()));
         }
         Result<List<Project*>> buildOrderResult = solution->CreateBuildOrder();

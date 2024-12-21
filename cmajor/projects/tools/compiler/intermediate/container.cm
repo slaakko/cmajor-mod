@@ -9,7 +9,7 @@ namespace intermediate
 {
     public class ComponentContainer
     {
-        public ComponentContainer(Component* parent_) : firstChild(null), lastChild(null), parent(parent_)
+        public explicit ComponentContainer(Component* parent_) : firstChild(null), lastChild(null), parent(parent_)
         {
         }
         public virtual ~ComponentContainer()

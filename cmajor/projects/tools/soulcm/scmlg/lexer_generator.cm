@@ -290,18 +290,15 @@ namespace scmlg
         Lexer* lexer = context.GetLexer();
         string classMapName = lexer->Name() + ".classmap";
         string classMapFileName = Path.Combine(root, classMapName);
-        auto writerResult = System.IO.File.CreateBinary(classMapFileName);
-        if (writerResult.Error())
-        {
-            return Result<string>(ErrorId(writerResult.GetErrorId()));
-        }
-        BinaryWriter& writer = writerResult.Value();
+        Result<BinaryWriter> writerResult = System.IO.File.CreateBinary(classMapFileName);
+        if (writerResult.Error()) return Result<string>(ErrorId(writerResult.GetErrorId()));
+        BinaryWriter writer = Rvalue(writerResult.Value());
         int size = cast<int>(classMapList.Count());
-        auto result = writer.Write(size);
+        Result<bool> result = writer.Write(size);
         if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
         for (int x : classMapList)
         {
-            result = writer.Write(x);
+            Result<bool> result = writer.Write(x);
             if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
         }
         if (verbose)
@@ -311,29 +308,20 @@ namespace scmlg
         if (context.GetDebug())
         {
             string classMapDebugFileName = Path.Combine(root, classMapName + ".debug.txt");
-            auto result = System.IO.File.CreateText(classMapDebugFileName);
-            if (result.Error())
-            {
-                return Result<string>(ErrorId(result.GetErrorId()));
-            }
-            StreamWriter& writer = result.Value();
+            Result<System.IO.StreamWriter> textWriterResult = System.IO.File.CreateText(classMapDebugFileName);
+            if (textWriterResult.Error()) return Result<string>(ErrorId(textWriterResult.GetErrorId()));
+            StreamWriter writer = Rvalue(textWriterResult.Value());
             for (uint i = 1u; i < 0x110000u; ++i)
             {
                 string line;
-                auto hex = ToHexString(i);
-                if (hex.Error())
-                {
-                    return Result<string>(ErrorId(hex.GetErrorId()));
-                }
-                line.Append("U").Append(hex.Value()).Append(":C").Append(Format(ToString(i), 5, FormatWidth.exact, FormatJustify.right, '0'));
-                auto utf8 = ToUtf8(ustring(cast<uchar>(i)));
-                if (utf8.Error())
-                {
-                    return Result<string>(ErrorId(utf8.GetErrorId()));
-                }
-                line.Append(":").Append("'").Append(utf8.Value()).Append("'");
+                Result<string> hexResult = ToHexString(i);
+                if (hexResult.Error()) return Result<string>(ErrorId(hexResult.GetErrorId()));
+                line.Append("U").Append(hexResult.Value()).Append(":C").Append(Format(ToString(i), 5, FormatWidth.exact, FormatJustify.right, '0'));
+                Result<string> utf8Result = ToUtf8(ustring(cast<uchar>(i)));
+                if (utf8Result.Error()) return Result<string>(ErrorId(utf8Result.GetErrorId()));
+                line.Append(":").Append("'").Append(utf8Result.Value()).Append("'");
                 line.Append(":").Append("#").Append(ToString(classMapList[i]));
-                auto result = writer.WriteLine(line);
+                Result<bool> result = writer.WriteLine(line);
                 if (result.Error()) return Result<string>(ErrorId(result.GetErrorId()));
             }
             if (verbose)

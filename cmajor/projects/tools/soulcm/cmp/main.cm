@@ -33,7 +33,7 @@ Result<bool> ParseProjectFiles(cm.ast.Solution* solution, bool verbose, bool deb
         {
             Console.Out() << "> " << projectFile << endl();
         }
-        auto result = ParseProjectFile(projectFile, "debug", cm.ast.BackEnd.cm, "cm");
+        auto result = ParseProjectFile(projectFile, "debug", cm.ast.BackEnd.cm, "cm", "0");
         if (result.Error())
         {
             return Result<bool>(ErrorId(result.GetErrorId()));
@@ -127,7 +127,7 @@ int main(int argc, const char** argv)
         }
         else if (file.EndsWith(".cmp"))
         {
-            auto result = ParseProjectFile(file, "debug", cm.ast.BackEnd.cm, "cm");
+            auto result = ParseProjectFile(file, "debug", cm.ast.BackEnd.cm, "cm", "0");
             if (result.Error())
             {
                 Console.Error() << result.GetErrorMessage() << endl();

@@ -1,0 +1,221 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace optimizer
+{
+    public class OptimizingCodeGenerator : intermediate.CodeGenerator
+    {
+        public OptimizingCodeGenerator(Context* context_, const string& assemblyFilePath_) : base(context_, assemblyFilePath_)
+        {
+        }
+        [nodiscard]
+        public override Result<bool> Emit(assembly.Instruction* assemblyInstruction)
+        {
+            UniquePtr<assembly.Instruction> inst(assemblyInstruction);
+            if (HasOptimization(Optimizations.xor))
+            {
+                switch (inst->GetOpCode())
+                {
+                    case assembly.OpCode.MOV:
+                    {
+                        if (inst->Operands().Count() == 2)
+                        {
+                            assembly.Value* operand1 = inst->Operands()[0];
+                            assembly.Value* operand2 = inst->Operands()[1];
+                            if (operand2->IsIntegerLiteral())
+                            {
+                                assembly.IntegerLiteral* integerLiteral = cast<assembly.IntegerLiteral*>(operand2);
+                                if (integerLiteral->GetValue() == 0)
+                                {
+                                    if (operand1->IsRegister())
+                                    {
+                                        assembly.Register* reg = cast<assembly.Register*>(operand1);
+                                        switch (reg->RegKind())
+                                        {
+                                            case assembly.RegisterKind.al:
+                                            case assembly.RegisterKind.bl:
+                                            case assembly.RegisterKind.cl:
+                                            case assembly.RegisterKind.dl:
+                                            case assembly.RegisterKind.sil:
+                                            case assembly.RegisterKind.dil:
+                                            case assembly.RegisterKind.bpl:
+                                            case assembly.RegisterKind.spl:
+                                            case assembly.RegisterKind.r8b:
+                                            case assembly.RegisterKind.r9b:
+                                            case assembly.RegisterKind.r10b:
+                                            case assembly.RegisterKind.r11b:
+                                            case assembly.RegisterKind.r12b:
+                                            case assembly.RegisterKind.r13b:
+                                            case assembly.RegisterKind.r14b:
+                                            case assembly.RegisterKind.r15b:
+                                            case assembly.RegisterKind.ax:
+                                            case assembly.RegisterKind.bx:
+                                            case assembly.RegisterKind.cx:
+                                            case assembly.RegisterKind.dx:
+                                            case assembly.RegisterKind.si:
+                                            case assembly.RegisterKind.di:
+                                            case assembly.RegisterKind.bp:
+                                            case assembly.RegisterKind.sp:
+                                            case assembly.RegisterKind.r8w:
+                                            case assembly.RegisterKind.r9w:
+                                            case assembly.RegisterKind.r10w:
+                                            case assembly.RegisterKind.r11w:
+                                            case assembly.RegisterKind.r12w:
+                                            case assembly.RegisterKind.r13w:
+                                            case assembly.RegisterKind.r14w:
+                                            case assembly.RegisterKind.r15w:
+                                            case assembly.RegisterKind.eax:
+                                            case assembly.RegisterKind.ebx:
+                                            case assembly.RegisterKind.ecx:
+                                            case assembly.RegisterKind.edx:
+                                            case assembly.RegisterKind.esi:
+                                            case assembly.RegisterKind.edi:
+                                            case assembly.RegisterKind.ebp:
+                                            case assembly.RegisterKind.esp:
+                                            case assembly.RegisterKind.r8d:
+                                            case assembly.RegisterKind.r9d:
+                                            case assembly.RegisterKind.r10d:
+                                            case assembly.RegisterKind.r11d:
+                                            case assembly.RegisterKind.r12d:
+                                            case assembly.RegisterKind.r13d:
+                                            case assembly.RegisterKind.r14d:
+                                            case assembly.RegisterKind.r15d:
+                                            case assembly.RegisterKind.rax:
+                                            case assembly.RegisterKind.rbx:
+                                            case assembly.RegisterKind.rcx:
+                                            case assembly.RegisterKind.rdx:
+                                            case assembly.RegisterKind.rsi:
+                                            case assembly.RegisterKind.rdi:
+                                            case assembly.RegisterKind.rbp:
+                                            case assembly.RegisterKind.rsp:
+                                            case assembly.RegisterKind.r8:
+                                            case assembly.RegisterKind.r9:
+                                            case assembly.RegisterKind.r10:
+                                            case assembly.RegisterKind.r11:
+                                            case assembly.RegisterKind.r12:
+                                            case assembly.RegisterKind.r13:
+                                            case assembly.RegisterKind.r14:
+                                            case assembly.RegisterKind.r15:
+                                            case assembly.RegisterKind.ah:
+                                            case assembly.RegisterKind.bh:
+                                            case assembly.RegisterKind.ch:
+                                            case assembly.RegisterKind.dh:
+                                            {
+                                                return EmitXorInst(inst->Label(), reg);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+            return base->Emit(inst.Release());
+        }
+        public override void Visit(intermediate.SwitchInstruction& inst)
+        {
+            inst.SetAssemblyIndex(AssemblyFunction()->Index());
+            if (HasOptimization(Optimizations.jumpTableSwitch))
+            {
+                if (inst.CaseTargets().Count() <= jumpTableSwitchThreshold)
+                {
+                    base->Visit(inst);
+                }
+                else
+                {
+                    Result<bool> result = EmitJumpTableSwitch(inst, *this);
+                    if (result.Error())
+                    {
+                        SetErrorId(result.GetErrorId());
+                        return;
+                    }
+                }
+            }
+            else
+            {
+                base->Visit(inst);
+            }
+        }
+        public override void Visit(intermediate.JmpInstruction& inst)
+        {
+            inst.SetAssemblyIndex(AssemblyFunction()->Index());
+            if (HasOptimization(Optimizations.jump))
+            {
+                intermediate.BasicBlock* bb = inst.Parent();
+                intermediate.BasicBlock* next = bb->Next();
+                if (next != null)
+                {
+                    if (inst.TargetBasicBlock() == next)
+                    {
+                        return;
+                    }
+                }
+            }
+            base->Visit(inst);
+        }
+        public override void Visit(intermediate.RetInstruction& inst)
+        {
+            inst.SetAssemblyIndex(AssemblyFunction()->Index());
+            if (HasOptimization(Optimizations.jump))
+            {
+                BasicBlock* bb = inst.Parent();
+                if (bb->IsLast() && inst.IsLeader() && inst.ReturnValue() == null)
+                {
+                    ResetLeader();
+                    return;
+                }
+            }
+            base->Visit(inst);
+        }
+        public override void Visit(intermediate.NoOperationInstruction& inst)
+        {
+            inst.SetAssemblyIndex(AssemblyFunction()->Index());
+            if (HasOptimization(Optimizations.removeNops))
+            {
+                return;
+            }
+            base->Visit(inst);
+        }
+        public override int ExitLabelId() const
+        {
+            if (HasOptimization(Optimizations.jump))
+            {
+                BasicBlock* lastBB = CurrentFunction()->LastBasicBlock();
+                if (lastBB->Leader()->IsRetVoid())
+                {
+                    return lastBB->Id();
+                }
+            }
+            return base->ExitLabelId();
+        }
+        [nodiscard]
+        public override Result<bool> EmitJumpToExit(Instruction& retInst)
+        {
+            if (HasOptimization(Optimizations.jump))
+            {
+                intermediate.BasicBlock* bb = retInst.Parent();
+                if (bb->IsLast())
+                {
+                    return Result<bool>(true);
+                }
+            }
+            return base->EmitJumpToExit(retInst);
+        }
+        [nodiscard]
+        private Result<bool> EmitXorInst(const string& label, assembly.Register* reg)
+        {
+            assembly.Instruction* xorInst = new assembly.Instruction(assembly.OpCode.XOR);
+            xorInst->SetLabel(label);
+            xorInst->AddOperand(reg);
+            xorInst->AddOperand(reg);
+            return Emit(xorInst);
+        }
+    }
+}
+

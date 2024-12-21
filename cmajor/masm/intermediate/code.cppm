@@ -61,7 +61,6 @@ public:
     Instruction* Prev() { return static_cast<Instruction*>(PrevSibling()); }
     OpCode GetOpCode() const { return opCode; }
     bool IsLeader() const;
-    void SetLeader() { leader = true; }
     bool IsTerminator() const;
     bool IsValueInstruction() const;
     bool IsUnaryInstruction() const;
@@ -77,6 +76,8 @@ public:
     bool IsProcedureCallInstruction() const { return opCode == OpCode::procedure_call; }
     bool IsRetInstruction() const { return opCode == OpCode::ret; }
     bool IsJumpInstruction() const { return opCode == OpCode::jmp; }
+    bool IsBranchInstruction() const { return opCode == OpCode::branch; }
+    bool IsNopInstruction() const { return opCode == OpCode::nop; }
     bool RequiresLocalRegister() const;
     virtual bool IsFloatingPointInstruction() const { return false; }
     std::vector<BasicBlock*> Successors() const;
@@ -101,7 +102,6 @@ private:
     int regValueIndex;
     int assemblyIndex;
     std::vector<Instruction*> users;
-    bool leader;
 };
 
 class StoreInstruction : public Instruction
@@ -652,6 +652,7 @@ public:
     BasicBlock* Prev() { return static_cast<BasicBlock*>(PrevSibling()); }
     Instruction* FirstInstruction() { return static_cast<Instruction*>(instructions.FirstChild()); }
     Instruction* LastInstruction() { return static_cast<Instruction*>(instructions.LastChild()); }
+    Instruction* Leader() const;
     bool IsLast() const;
     void AddInstruction(Instruction* instruction);
     void AddInstruction(Instruction* instruction, bool mapInstruction);

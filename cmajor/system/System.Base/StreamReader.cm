@@ -10,10 +10,10 @@ namespace System.IO
 {
     public class StreamReader : IOBase
     {
-        public StreamReader() : base(), stream(null), buffered(false), eos(false)
+        public StreamReader() : base(), stream(null), buffer(-1), buffered(false), eos(false)
         {
         }
-        public StreamReader(Stream* stream_) : base(), stream(stream_), buffered(false), eos(false)
+        public StreamReader(Stream* stream_) : base(), stream(stream_), buffer(-1), buffered(false), eos(false)
         {
             if (stream != null && stream->Error())
             {
@@ -22,6 +22,11 @@ namespace System.IO
         }
         suppress StreamReader(const StreamReader&);
         suppress void operator=(const StreamReader&);
+        public StreamReader(StreamReader&& that) : base(), stream(that.stream), streams(Rvalue(that.streams)), buffer(that.buffer), buffered(that.buffered), eos(that.eos)
+        {
+            that.stream = null;
+        }
+        public default void operator=(StreamReader&&);
         public override ~StreamReader()
         {
             long n = streams.Count();
@@ -30,7 +35,7 @@ namespace System.IO
                 streams[i].Reset();
             }
         }
-        public Stream* GetStream()
+        public inline Stream* GetStream()
         {
             return stream;
         }
@@ -173,14 +178,18 @@ namespace System.IO
                 return Result<int>(x.Value());
             }
         }
+        public inline bool Buffered() const
+        {
+            return buffered;
+        }
         public inline bool EndOfStream() const
         {
             return eos;
         }
         private Stream* stream;
         private List<UniquePtr<Stream>> streams;
-        private bool buffered;
         private int buffer;
+        private bool buffered;
         private bool eos;
     }
 }

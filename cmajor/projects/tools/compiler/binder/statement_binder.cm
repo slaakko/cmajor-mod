@@ -638,6 +638,11 @@ namespace binder
                             UniquePtr<BoundExpression>(new BoundFunctionCall(compoundStatementNode.GetSpan(), currentClass->GetClassTypeSymbol()->StaticConstructor())))));
                     }
                 }
+                DestroyTemporaries();
+                if (!statement.IsNull())
+                {
+                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(statement.Release()));
+                }
             }
             ++compoundLevel;
             int n = cast<int>(compoundStatementNode.Statements().Count());
@@ -648,13 +653,8 @@ namespace binder
                 statementNode->Accept(*this);
                 if (Error()) return;
                 #assert(!statement.IsNull());
+                DestroyTemporaries();
                 boundCompoundStatement->AddStatement(Rvalue(statement));
-                if (currentFunction->HasTemporaryDestructorCalls())
-                {
-                    BoundDestroyTemporariesStatement* boundDestroyTemporariesStatement = new BoundDestroyTemporariesStatement(currentFunction->GetTemporaryDestructorCalls());
-                    boundCompoundStatement->AddStatement(UniquePtr<BoundStatement>(boundDestroyTemporariesStatement));
-                    currentFunction->ClearTemporaryDestructorCalls();
-                }
             }
             --compoundLevel;
             if (compoundLevel == 0 && currentDestructorSymbol != null && currentDestructorNode != null)
@@ -1015,6 +1015,7 @@ namespace binder
             ifStatementNode.ThenS()->Accept(*this);
             if (Error()) return;
             #assert(!statement.IsNull());
+            DestroyTemporaries();
             BoundStatement* thenS = statement.Release();
             BoundStatement* elseS = null;
             if (ifStatementNode.ElseS() != null)
@@ -1022,6 +1023,7 @@ namespace binder
                 ifStatementNode.ElseS()->Accept(*this);
                 if (Error()) return;
                 #assert(!statement.IsNull());
+                DestroyTemporaries();
                 elseS = statement.Release();
             }
             if (!s.IsNull())
@@ -1072,6 +1074,7 @@ namespace binder
             whileStatementNode.Statement()->Accept(*this);
             if (Error()) return;
             #assert(!statement.IsNull());
+            DestroyTemporaries();
             BoundStatement* stmt = statement.Release();
             if (!s.IsNull())
             {
@@ -1121,6 +1124,7 @@ namespace binder
             doStatementNode.Statement()->Accept(*this);
             if (Error()) return;
             #assert(!statement.IsNull());
+            DestroyTemporaries();
             BoundStatement* stmt = statement.Release();
             if (!s.IsNull())
             {
@@ -1144,6 +1148,7 @@ namespace binder
             forStatementNode.InitS()->Accept(*this);
             if (Error()) return;
             #assert(!statement.IsNull());
+            DestroyTemporaries();
             UniquePtr<BoundStatement> initS(statement.Release());
             UniquePtr<BoundExpression> condition;
             if (forStatementNode.Condition() != null)
@@ -1200,11 +1205,13 @@ namespace binder
             forStatementNode.LoopS()->Accept(*this);
             if (Error()) return;
             #assert(!statement.IsNull());
+            DestroyTemporaries();
             UniquePtr<BoundStatement> loopS(statement.Release());
             loopS->SetForLoopStatementNode();
             forStatementNode.ActionS()->Accept(*this);
             if (Error()) return;
             #assert(!statement.IsNull());
+            DestroyTemporaries();
             UniquePtr<BoundStatement> actionS(statement.Release());
             if (!s.IsNull())
             {
@@ -1925,6 +1932,7 @@ namespace binder
                 }
                 statementNode->Accept(*this);
                 if (Error()) return;
+                DestroyTemporaries();
                 boundCaseStatement->AddStatement(Rvalue(statement));
             }
             if (!terminated)
@@ -1980,6 +1988,7 @@ namespace binder
                 }
                 statementNode->Accept(*this);
                 if (Error()) return;
+                DestroyTemporaries();
                 boundDefaultStatement->AddStatement(Rvalue(statement));
             }
             if (!terminated)
@@ -2188,6 +2197,7 @@ namespace binder
                         StatementNode* statement = conditionalCompilationStatementNode.IfPart()->Statements()[i];
                         statement->Accept(*this);
                         if (Error()) return;
+                        DestroyTemporaries();
                     }
                 }
                 else
@@ -2216,6 +2226,7 @@ namespace binder
                                 StatementNode* statement = elifPart->Statements()[i];
                                 statement->Accept(*this);
                                 if (Error()) return;
+                                DestroyTemporaries();
                             }
                         }
                         else
@@ -2240,6 +2251,7 @@ namespace binder
                                 StatementNode* statement = elsePart->Statements()[i];
                                 statement->Accept(*this);
                                 if (Error()) return;
+                                DestroyTemporaries();
                             }
                         }
                         else
@@ -2293,6 +2305,15 @@ namespace binder
                     fullInstantiationRequestNode.GetFullSpan());
                 SetErrorId(errorId);
                 return;
+            }
+        }
+        public void DestroyTemporaries()
+        {
+            if (currentFunction->HasTemporaryDestructorCalls())
+            {
+                BoundDestroyTemporariesStatement* boundDestroyTemporariesStatement = new BoundDestroyTemporariesStatement(currentFunction->GetTemporaryDestructorCalls());
+                AddStatement(boundDestroyTemporariesStatement);
+                currentFunction->ClearTemporaryDestructorCalls();
             }
         }
         public void AddStatement(BoundStatement* boundStatement)
@@ -2476,6 +2497,10 @@ namespace binder
         {
             currentMemberFunctionSymbol = currentMemberFunctionSymbol_;
             currentMemberFunctionNode = currentMemberFunctionNode_;
+        }
+        public inline void SetStatement(BoundStatement* statement_)
+        {
+            statement.Reset(statement_);
         }
         public inline BoundStatement* ReleaseStatement()
         {

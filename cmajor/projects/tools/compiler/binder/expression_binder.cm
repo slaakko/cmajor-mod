@@ -551,7 +551,14 @@ namespace binder
                                     return;
                                 }
                             }
-                            ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable->MakeClassTemplateSpecialization(classTypeSymbol, templateArgumentTypes);
+                            Result<ClassTemplateSpecializationSymbol*> classTemplateSpecializationResult =
+                                symbolTable->MakeClassTemplateSpecialization(classTypeSymbol, templateArgumentTypes, context);
+                            if (classTemplateSpecializationResult.Error())
+                            {
+                                SetErrorId(classTemplateSpecializationResult.GetErrorId());
+                                return;
+                            }
+                            ClassTemplateSpecializationSymbol* classTemplateSpecialization = classTemplateSpecializationResult.Value();
                             if (!classTemplateSpecialization->IsBound())
                             {
                                 Result<bool> result = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
@@ -592,7 +599,14 @@ namespace binder
                                 return;
                             }
                         }
-                        ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable->MakeClassTemplateSpecialization(classTypeSymbol, templateArgumentTypes);
+                        Result<ClassTemplateSpecializationSymbol*> classTemplateSpecializationResult =
+                            symbolTable->MakeClassTemplateSpecialization(classTypeSymbol, templateArgumentTypes, context);
+                        if (classTemplateSpecializationResult.Error())
+                        {
+                            SetErrorId(classTemplateSpecializationResult.GetErrorId());
+                            return;
+                        }
+                        ClassTemplateSpecializationSymbol* classTemplateSpecialization = classTemplateSpecializationResult.Value();
                         if (!classTemplateSpecialization->IsBound())
                         {
                             Result<bool> result = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
@@ -1209,18 +1223,38 @@ namespace binder
         }
         public override void Visit(DisjunctionNode& disjunctionNode)
         {
+            BoundStatement* prevStatement = statementBinder->ReleaseStatement();
             Result<UniquePtr<BoundExpression>> leftResult = BindExpression(disjunctionNode.Left(), boundCompileUnit, boundFunction, containerScope, statementBinder);
             if (leftResult.Error())
             {
                 SetErrorId(leftResult.GetErrorId());
                 return;
             }
+            statementBinder->DestroyTemporaries();
+            BoundStatement* statement = statementBinder->ReleaseStatement();
+            if (statement != null)
+            {
+                #assert(statement->IsBoundDestroyTemporariesStatement());
+                BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
+                leftResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            statementBinder->SetStatement(prevStatement);
+            prevStatement = statementBinder->ReleaseStatement();
             Result<UniquePtr<BoundExpression>> rightResult = BindExpression(disjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
             if (rightResult.Error())
             {
                 SetErrorId(leftResult.GetErrorId());
                 return;
             }
+            statementBinder->DestroyTemporaries();
+            statement = statementBinder->ReleaseStatement();
+            if (statement != null)
+            {
+                #assert(statement->IsBoundDestroyTemporariesStatement());
+                BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
+                rightResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            statementBinder->SetStatement(prevStatement);
             Result<TypeSymbol*> boolResult = symbolTable->GetTypeByName(u"bool");
             if (boolResult.Error())
             {
@@ -1241,18 +1275,38 @@ namespace binder
         }
         public override void Visit(ConjunctionNode& conjunctionNode)
         {
+            BoundStatement* prevStatement = statementBinder->ReleaseStatement();
             Result<UniquePtr<BoundExpression>> leftResult = BindExpression(conjunctionNode.Left(), boundCompileUnit, boundFunction, containerScope, statementBinder);
             if (leftResult.Error())
             {
                 SetErrorId(leftResult.GetErrorId());
                 return;
             }
+            statementBinder->DestroyTemporaries();
+            BoundStatement* statement = statementBinder->ReleaseStatement();
+            if (statement != null)
+            {
+                #assert(statement->IsBoundDestroyTemporariesStatement());
+                BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
+                leftResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            statementBinder->SetStatement(prevStatement);
+            prevStatement = statementBinder->ReleaseStatement();
             Result<UniquePtr<BoundExpression>> rightResult = BindExpression(conjunctionNode.Right(), boundCompileUnit, boundFunction, containerScope, statementBinder);
             if (rightResult.Error())
             {
                 SetErrorId(leftResult.GetErrorId());
                 return;
             }
+            statementBinder->DestroyTemporaries();
+            statement = statementBinder->ReleaseStatement();
+            if (statement != null)
+            {
+                #assert(statement->IsBoundDestroyTemporariesStatement());
+                BoundDestroyTemporariesStatement* destroyTemporariesStatement = cast<BoundDestroyTemporariesStatement*>(statement);
+                rightResult.Value()->SetBoundDestroyTemporariesStatement(destroyTemporariesStatement);
+            }
+            statementBinder->SetStatement(prevStatement);
             Result<TypeSymbol*> boolResult = symbolTable->GetTypeByName(u"bool");
             if (boolResult.Error())
             {
@@ -3043,11 +3097,11 @@ namespace binder
             castNode.SourceExpr()->Accept(*this);
             if (Error()) return;
             TypeSymbol* sourceType = expression->Type();
-            switch (targetType->GetValueKind())
+            switch (sourceType->GetValueKind())
             {
                 case ValueKind.floatValue:
                 {
-                    switch (sourceType->GetValueKind())
+                    switch (targetType->GetValueKind())
                     {
                         case ValueKind.boolValue:
                         {
@@ -3090,7 +3144,7 @@ namespace binder
                 }
                 case ValueKind.doubleValue:
                 {
-                    switch (sourceType->GetValueKind())
+                    switch (targetType->GetValueKind())
                     {
                         case ValueKind.boolValue:
                         {
@@ -4267,12 +4321,12 @@ namespace binder
                                         classPtr.Reset(new BoundConversion(node->GetSpan(), UniquePtr<BoundExpression>(classPtr.Release()), conversionFn));
                                     }
                                 }
-                                MemberExpressionTypeSymbol* memberExpressionType = new MemberExpressionTypeSymbol(node->GetSpan(), expression->Type()->Name());
-                                BoundMemberExpression* bme = new BoundMemberExpression(node->GetSpan(), UniquePtr<BoundExpression>(classPtr.Release()),
-                                    Rvalue(expression), memberExpressionType);
-                                memberExpressionType->SetBoundMemberExpression(bme);
-                                expression.Reset(bme);
                             }
+                            MemberExpressionTypeSymbol* memberExpressionType = new MemberExpressionTypeSymbol(node->GetSpan(), expression->Type()->Name());
+                            BoundMemberExpression* bme = new BoundMemberExpression(node->GetSpan(), UniquePtr<BoundExpression>(classPtr.Release()),
+                                Rvalue(expression), memberExpressionType);
+                            memberExpressionType->SetBoundMemberExpression(bme);
+                            expression.Reset(bme);
                         }
                         else if (expression->IsBoundMemberVariable())
                         {

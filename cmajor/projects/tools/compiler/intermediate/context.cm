@@ -182,7 +182,7 @@ namespace intermediate
             }
             else
             {
-                int errorId = AllocateError("structure or array type expected");
+                int errorId = AllocateError("structure or array type expected. note: type is '" + type->Name() + "'");
                 return Result<Value*>(ErrorId(errorId));
             }
             Instruction* inst = new ElemAddrInstruction(System.Lex.Span(), currentFunction->MakeNextRegValue(type), ptr, index);

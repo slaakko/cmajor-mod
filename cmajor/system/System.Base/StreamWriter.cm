@@ -34,7 +34,12 @@ namespace System.IO
         }
         suppress StreamWriter(const StreamWriter&);
         suppress void operator=(const StreamWriter&);
-        public Stream* GetStream()
+        public StreamWriter(StreamWriter&& that) : stream(that.stream), streams(Rvalue(that.streams))
+        {
+            that.stream = null;
+        }
+        public default void operator=(StreamWriter&&);
+        public inline Stream* GetStream()
         {
             return stream;
         }

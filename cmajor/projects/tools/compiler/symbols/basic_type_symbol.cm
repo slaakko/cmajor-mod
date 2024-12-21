@@ -103,43 +103,43 @@ namespace symbols
         {
             Result<bool> baseResolveResult = base->Resolve(symbolTable);
             if (baseResolveResult.Error()) return baseResolveResult;
-            if (defaultConstructorId != Uuid())
+            if (!defaultConstructorId.IsNil())
             {
                 Result<FunctionSymbol*> defaultConstructorResult = symbolTable->GetFunction(defaultConstructorId);
                 if (defaultConstructorResult.Error()) return Result<bool>(ErrorId(defaultConstructorResult.GetErrorId()));
                 defaultConstructor = defaultConstructorResult.Value();
             }
-            if (copyConstructorId != Uuid())
+            if (!copyConstructorId.IsNil())
             {
                 Result<FunctionSymbol*> copyConstructorResult = symbolTable->GetFunction(copyConstructorId);
                 if (copyConstructorResult.Error()) return Result<bool>(ErrorId(copyConstructorResult.GetErrorId()));
                 copyConstructor = copyConstructorResult.Value();
             }
-            if (moveConstructorId != Uuid())
+            if (!moveConstructorId.IsNil())
             {
                 Result<FunctionSymbol*> moveConstructorResult = symbolTable->GetFunction(moveConstructorId);
                 if (moveConstructorResult.Error()) return Result<bool>(ErrorId(moveConstructorResult.GetErrorId()));
                 moveConstructor = moveConstructorResult.Value();
             }
-            if (copyAssignmentId != Uuid())
+            if (!copyAssignmentId.IsNil())
             {
                 Result<FunctionSymbol*> copyAssignmentResult = symbolTable->GetFunction(copyAssignmentId);
                 if (copyAssignmentResult.Error()) return Result<bool>(ErrorId(copyAssignmentResult.GetErrorId()));
                 copyAssignment = copyAssignmentResult.Value();
             }
-            if (moveAssignmentId != Uuid())
+            if (!moveAssignmentId.IsNil())
             {
                 Result<FunctionSymbol*> moveAssignmentResult = symbolTable->GetFunction(moveAssignmentId);
                 if (moveAssignmentResult.Error()) return Result<bool>(ErrorId(moveAssignmentResult.GetErrorId()));
                 moveAssignment = moveAssignmentResult.Value();
             }
-            if (returnFnId != Uuid())
+            if (!returnFnId.IsNil())
             {
                 Result<FunctionSymbol*> returnFnResult = symbolTable->GetFunction(returnFnId);
                 if (returnFnResult.Error()) return Result<bool>(ErrorId(returnFnResult.GetErrorId()));
                 returnFn = returnFnResult.Value();
             }
-            if (equalityOpId != Uuid())
+            if (!equalityOpId.IsNil())
             {
                 Result<FunctionSymbol*> equalityOpResult = symbolTable->GetFunction(equalityOpId);
                 if (equalityOpResult.Error()) return Result<bool>(ErrorId(equalityOpResult.GetErrorId()));

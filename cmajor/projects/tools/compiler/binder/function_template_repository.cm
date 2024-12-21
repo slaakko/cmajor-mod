@@ -57,7 +57,7 @@ namespace binder
 
     public class FunctionTemplateRepository
     {
-        public FunctionTemplateRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        public explicit FunctionTemplateRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
         {
         }
         public Result<FunctionSymbol*> Instantiate(FunctionSymbol* functionTemplate, const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMapping, Node* node)

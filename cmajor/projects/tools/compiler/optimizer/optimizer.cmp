@@ -1,0 +1,8 @@
+project optimizer;
+target=library;
+reference <../assembly/assembly.cmp>;
+reference <../intermediate/intermediate.cmp>;
+source <jump_optimizer.cm>;
+source <opt_emitter.cm>;
+source <optimize.cm>;
+source <optimizing_code_generator.cm>;

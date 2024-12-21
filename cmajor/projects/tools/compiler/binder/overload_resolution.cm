@@ -684,7 +684,10 @@ namespace binder
                         {
                             ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(bestFn->Parent());
                             LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
-                            ClassTemplateSpecializationSymbol* copy = boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization);
+                            Result<ClassTemplateSpecializationSymbol*> copyResult = boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(
+                                specialization, boundCompileUnit->Context());
+                            if (copyResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(copyResult.GetErrorId()));
+                            ClassTemplateSpecializationSymbol* copy = copyResult.Value();
                             Result<bool> bindResult = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
                                 copy, boundCompileUnit->GetSymbolTable()->GlobalNs().GetContainerScope(), node);
                             if (bindResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(bindResult.GetErrorId()));
@@ -822,17 +825,16 @@ namespace binder
                             return Result<UniquePtr<BoundFunctionCall>>(ErrorId(errorId));
                         }
                         singleBest = fn;
-                        if (GetCallIndex() == 2776)
-                        {
-                            Console.Out() << "SINGLE BEST " << singleBest->FullName() << endl();
-                        }
                     }
                     Result<FunctionSymbol*> result = boundCompileUnit->GetClassTemplateRepository()->Instantiate(singleBest, containerScope, currentFunction, node);
                     if (result.Error())
                     {
                         ClassTemplateSpecializationSymbol* specialization = cast<ClassTemplateSpecializationSymbol*>(singleBest->Parent());
                         LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
-                        ClassTemplateSpecializationSymbol* copy = boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization);
+                        Result<ClassTemplateSpecializationSymbol*> copyResult =
+                            boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization, boundCompileUnit->Context());
+                        if (copyResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(copyResult.GetErrorId()));
+                        ClassTemplateSpecializationSymbol* copy = copyResult.Value();
                         Result<bool> bindResult = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
                             copy, boundCompileUnit->GetSymbolTable()->GlobalNs().GetContainerScope(), node);
                         if (bindResult.Error()) return Result<UniquePtr<BoundFunctionCall>>(ErrorId(bindResult.GetErrorId()));
@@ -1427,8 +1429,9 @@ namespace binder
         for (int i = 0; i < n; ++i)
         {
             TypeSymbol* type = targetClassTemplateSpecialization->TemplateArgumentTypes()[i];
-            TypeSymbol* templateArgumentType = type->BaseType()->UnifyTemplateArgumentType(
-                functionMatch.TemplateParameterMap(), context);
+            Result<TypeSymbol*> templateArgumentTypeResult = type->BaseType()->UnifyTemplateArgumentType(functionMatch.TemplateParameterMap(), context);
+            if (templateArgumentTypeResult.Error()) return Result<bool>(templateArgumentTypeResult.GetErrorId());
+            TypeSymbol* templateArgumentType = templateArgumentTypeResult.Value();
             if (templateArgumentType != null)
             {
                 targetTemplateArguments.Add(templateArgumentType);
@@ -1438,8 +1441,10 @@ namespace binder
                 return Result<bool>(false);
             }
         }
-        TypeSymbol* plainTargetType = boundCompileUnit->GetSymbolTable()->MakeClassTemplateSpecialization(targetClassTemplateSpecialization->ClassTemplate(),
-            targetTemplateArguments);
+        Result<ClassTemplateSpecializationSymbol*> specializationResult =
+            boundCompileUnit->GetSymbolTable()->MakeClassTemplateSpecialization(targetClassTemplateSpecialization->ClassTemplate(), targetTemplateArguments, context);
+        if (specializationResult.Error()) return Result<bool>(ErrorId(specializationResult.GetErrorId()));
+        TypeSymbol* plainTargetType = specializationResult.Value();
         Result<TypeSymbol*> derivedTypeResult = boundCompileUnit->GetSymbolTable()->MakeDerivedType(context, plainTargetType, targetType->GetDerivations());
         if (derivedTypeResult.Error())
         {

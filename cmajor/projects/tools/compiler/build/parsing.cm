@@ -158,7 +158,7 @@ namespace build
 
     public Result<UniquePtr<Project>> ParseProjectFile(const string& projectFilePath)
     {
-        return ParseProjectFile(projectFilePath, GetConfig(), cm.ast.BackEnd.cm, "cm");
+        return ParseProjectFile(projectFilePath, GetConfig(), cm.ast.BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
     }
 
     public Result<UniquePtr<Solution>> ParseSolutionFile(const string& solutionFilePath)

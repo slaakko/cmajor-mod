@@ -1223,7 +1223,6 @@ namespace scmpg
             if (verbose)
             {
                 Console.Out() << "> " << parserFile.FilePath() << endl();
-                Console.Out() << "generating code..." << endl();
             }
             sn = 0;
             string fileName = parserFile.FilePath() + ".cm";
@@ -1327,6 +1326,10 @@ namespace scmpg
     public Result<bool> GenerateCode(scmpg.ast.ScmpgFile* scmpgFile, bool verbose, const string& version, System.Lex.FileMap& fileMap)
     {
         CodeGenerator codeGenerator(scmpgFile, verbose, version, fileMap);
+        if (verbose)
+        {
+            Console.Out() << "generating code..." << endl();
+        }
         scmpgFile->Accept(codeGenerator);
         if (codeGenerator.Error())
         {

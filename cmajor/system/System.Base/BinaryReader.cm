@@ -16,6 +16,11 @@ namespace System.IO
         }
         suppress BinaryReader(const BinaryReader&);
         suppress void operator=(const BinaryReader&);
+        public BinaryReader(BinaryReader&& that) : stream(that.stream), streams(Rvalue(that.streams))
+        {
+            that.stream = null;
+        }
+        public default void operator=(BinaryReader&&);
         public override ~BinaryReader()
         {
             long n = streams.Count();

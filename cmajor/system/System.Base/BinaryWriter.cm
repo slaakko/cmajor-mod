@@ -30,6 +30,11 @@ namespace System.IO
         }
         suppress BinaryWriter(const BinaryWriter&);
         suppress void operator=(const BinaryWriter&);
+        public BinaryWriter(BinaryWriter&& that) : stream(that.stream), streams(Rvalue(that.streams))
+        {
+            that.stream = null;
+        }
+        public default void operator=(BinaryWriter&&);
         public Stream* GetStream()
         {
             return stream;

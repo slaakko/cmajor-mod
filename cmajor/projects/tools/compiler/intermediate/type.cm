@@ -87,6 +87,14 @@ namespace intermediate
         public virtual void Accept(Visitor& visitor)
         {
         }
+        public void SetComment(const string& comment_)
+        {
+            comment = comment_;
+        }
+        public inline const string& Comment() const
+        {
+            return comment;
+        }
         [nodiscard]
         public Result<bool> Write(System.Text.CodeFormatter& formatter)
         {
@@ -285,6 +293,7 @@ namespace intermediate
         private System.Lex.Span span;
         private TypeKind kind;
         private int id;
+        private string comment;
     }
 
     public class VoidType : Type
@@ -639,6 +648,13 @@ namespace intermediate
             }
             result = formatter.Write(" }");
             if (result.Error()) return result;
+            if (!Comment().IsEmpty())
+            {
+                result = formatter.Write(" // ");
+                if (result.Error()) return result;
+                result = formatter.Write(Comment());
+                if (result.Error()) return result;
+            }
             return Result<bool>(true);
         }
         public override string Name() const

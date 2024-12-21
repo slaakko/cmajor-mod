@@ -291,7 +291,7 @@ std::u32string MakeDerivedTypeName(TypeSymbol* baseType, const TypeDerivationRec
     {
         derivedTypeName.append(1, U' ');
     }
-    derivedTypeName.append(baseType->Name());
+    derivedTypeName.append(baseType->FullName());
     for (Derivation derivation : derivationRec.derivations)
     {
         switch (derivation)

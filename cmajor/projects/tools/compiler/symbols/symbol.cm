@@ -387,6 +387,7 @@ namespace symbols
         }
         public inline bool IsClassGroupSymbol() const
         {
+            #assert(this != null);
             return kind == SymbolKind.classGroupSymbol;
         }
         public inline bool IsClassTypeSymbol() const
@@ -800,6 +801,7 @@ namespace symbols
         }
         public inline Symbol* Parent() const
         {
+            #assert(this != null);
             return parent;
         }
         public inline void SetParent(Symbol* parent_)

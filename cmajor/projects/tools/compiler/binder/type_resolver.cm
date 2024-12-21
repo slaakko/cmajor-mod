@@ -411,7 +411,14 @@ namespace binder
                     return;
                 }
             }
-            ClassTemplateSpecializationSymbol* classTemplateSpecialization = symbolTable->MakeClassTemplateSpecialization(classTemplate, templateArgumentTypes);
+            Result<ClassTemplateSpecializationSymbol*> classTemplateSpecializationResult =
+                symbolTable->MakeClassTemplateSpecialization(classTemplate, templateArgumentTypes, context);
+            if (classTemplateSpecializationResult.Error())
+            {
+                errorId = classTemplateSpecializationResult.GetErrorId();
+                return;
+            }
+            ClassTemplateSpecializationSymbol* classTemplateSpecialization = classTemplateSpecializationResult.Value();
             if (!classTemplateSpecialization->IsBound())
             {
                 auto result = classTemplateRepository->BindClassTemplateSpecialization(classTemplateSpecialization, containerScope, &templateIdNode);

@@ -14,7 +14,7 @@ namespace binder
         boundSequenceStatement, boundCompoundStatement, boundReturnStatement, boundIfStatement, boundWhileStatement, boundDoStatement, boundForStatement,
         boundSwitchStatement, boundCaseStatement, boundDefaultStatement, boundGotoCaseStatement, boundGotoDefaultStatement, boundBreakStatement, boundContinueStatement,
         boundGotoStatement, boundConstructionStatement, boundAssignmentStatement, boundExpressionStatement, boundInitializationStatement, boundEmptyStatement,
-        boundSetVmtPtrStatement,
+        boundSetVmtPtrStatement, boundDestroyTemporariesStatement,
         boundParameter, boundLocalVariable, boundMemberVariable, boundConstant, boundEnumConstant, boundLiteral, boundTemporary, boundBitcast, boundFunctionPtr,
         boundConstructAndReturnTemporary, boundClassOrClassDelegateConversionResult,
         boundFunctionCall, boundDelegateCall, boundClassDelegateCall, boundConversion, boundSizeOfExpression, boundAddressOfExpression, boundDereferenceExpression,
@@ -68,6 +68,10 @@ namespace binder
         public inline bool IsBoundIfStatement() const
         {
             return kind == BoundNodeKind.boundIfStatement;
+        }
+        public inline bool IsBoundDestroyTemporariesStatement() const
+        {
+            return kind == BoundNodeKind.boundDestroyTemporariesStatement;
         }
         public inline bool IsAddressOfExpression() const
         {

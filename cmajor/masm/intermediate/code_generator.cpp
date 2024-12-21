@@ -2692,10 +2692,6 @@ void CodeGenerator::Visit(BasicBlock& basicBlock)
     leader = true;
     while (inst)
     {
-        if (leader)
-        {
-            inst->SetLeader();
-        }
         currentInst = inst;
         if (inst->IsArgInstruction() || inst->IsProcedureCallInstruction() || inst->IsFunctionCallInstruction())
         {

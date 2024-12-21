@@ -669,7 +669,9 @@ namespace binder
                 if (instantiatedConversionResult.Error())
                 {
                     LockGuard<RecursiveMutex> lock(boundCompileUnit->GetModule()->Lock());
-                    ClassTemplateSpecializationSymbol* copy = boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization);
+                    Result<ClassTemplateSpecializationSymbol*> copyResult = boundCompileUnit->GetSymbolTable()->CopyClassTemplateSpecialization(specialization, context);
+                    if (copyResult.Error()) return Result<FunctionSymbol*>(ErrorId(copyResult.GetErrorId()));
+                    ClassTemplateSpecializationSymbol* copy = copyResult.Value();
                     Result<bool> bindResult = boundCompileUnit->GetClassTemplateRepository()->BindClassTemplateSpecialization(
                         copy, boundCompileUnit->GetSymbolTable()->GlobalNs().GetContainerScope(), node);
                     if (bindResult.Error()) return Result<FunctionSymbol*>(ErrorId(bindResult.GetErrorId()));

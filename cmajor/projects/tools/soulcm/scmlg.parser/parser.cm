@@ -11,132 +11,107 @@ namespace scmlg.parser
 {
     public Result<UniquePtr<scmlg.ast.ScmlgFile>> ParseScmlgFile(const string& scmlgFilePath)
     {
-        auto scmlgFileContentResult = System.IO.File.ReadAllText(scmlgFilePath);
+        Result<string> scmlgFileContentResult = System.IO.File.ReadAllText(scmlgFilePath);
         if (scmlgFileContentResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.ScmlgFile>>(ErrorId(scmlgFileContentResult.GetErrorId()));
         }
-        const string& scmlgFileContent = scmlgFileContentResult.Value();
-        auto utf32Result = ToUtf32(scmlgFileContent);
+        string scmlgFileContent = Rvalue(scmlgFileContentResult.Value());
+        Result<ustring> utf32Result = ToUtf32(scmlgFileContent);
         if (utf32Result.Error())
         {
             return Result<UniquePtr<scmlg.ast.ScmlgFile>>(ErrorId(utf32Result.GetErrorId()));
         }
-        const ustring& content = utf32Result.Value();
+        ustring content = Rvalue(utf32Result.Value());
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, scmlgFilePath);
         lexer.SetRuleNameMapPtr(scmlg.parser.GetRuleNameMapPtr());
-        auto parseResult = scmlg.parser.ScmlgFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
-        if (parseResult.Error())
-        {
-            return Result<UniquePtr<scmlg.ast.ScmlgFile>>(ErrorId(parseResult.GetErrorId()));
-        }
-        return Result<UniquePtr<scmlg.ast.ScmlgFile>>(Rvalue(parseResult.Value()));
+        return scmlg.parser.ScmlgFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
     }
 
     public Result<UniquePtr<scmlg.ast.TokenFile>> ParseTokenFile(const string& tokenFilePath)
     {
-        auto tokenFileContentResult = System.IO.File.ReadAllText(tokenFilePath);
+        Result<string> tokenFileContentResult = System.IO.File.ReadAllText(tokenFilePath);
         if (tokenFileContentResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.TokenFile>>(ErrorId(tokenFileContentResult.GetErrorId()));
         }
-        const string& tokenFileContent = tokenFileContentResult.Value();
-        auto utf32Result = ToUtf32(tokenFileContent);
+        string tokenFileContent = Rvalue(tokenFileContentResult.Value());
+        Result<ustring> utf32Result = ToUtf32(tokenFileContent);
         if (utf32Result.Error())
         {
             return Result<UniquePtr<scmlg.ast.TokenFile>>(ErrorId(utf32Result.GetErrorId()));
         }
-        const ustring& content = utf32Result.Value();
+        ustring content = Rvalue(utf32Result.Value());
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, tokenFilePath);
         lexer.SetRuleNameMapPtr(scmlg.parser.GetRuleNameMapPtr());
-        auto parseResult = scmlg.parser.TokenFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
-        if (parseResult.Error())
-        {
-            return Result<UniquePtr<scmlg.ast.TokenFile>>(ErrorId(parseResult.GetErrorId()));
-        }
-        return Result<UniquePtr<scmlg.ast.TokenFile>>(Rvalue(parseResult.Value()));
+        return scmlg.parser.TokenFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
     }
 
     public Result<UniquePtr<scmlg.ast.KeywordFile>> ParseKeywordFile(const string& keywordFilePath)
     {
-        auto keywordFileContentResult = System.IO.File.ReadAllText(keywordFilePath);
+        Result<string> keywordFileContentResult = System.IO.File.ReadAllText(keywordFilePath);
         if (keywordFileContentResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.KeywordFile>>(ErrorId(keywordFileContentResult.GetErrorId()));
         }
-        const string& keywordFileContent = keywordFileContentResult.Value();
-        auto utf32Result = ToUtf32(keywordFileContent);
+        string keywordFileContent = Rvalue(keywordFileContentResult.Value());
+        Result<ustring> utf32Result = ToUtf32(keywordFileContent);
         if (utf32Result.Error())
         {
             return Result<UniquePtr<scmlg.ast.KeywordFile>>(ErrorId(utf32Result.GetErrorId()));
         }
-        const ustring& content = utf32Result.Value();
+        ustring content = Rvalue(utf32Result.Value());
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, keywordFilePath);
         lexer.SetRuleNameMapPtr(scmlg.parser.GetRuleNameMapPtr());
-        auto parseResult = scmlg.parser.KeywordFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
-        if (parseResult.Error())
-        {
-            return Result<UniquePtr<scmlg.ast.KeywordFile>>(ErrorId(parseResult.GetErrorId()));
-        }
-        return Result<UniquePtr<scmlg.ast.KeywordFile>>(Rvalue(parseResult.Value()));
+        return scmlg.parser.KeywordFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
     }
 
     public Result<UniquePtr<scmlg.ast.ExpressionFile>> ParseExpressionFile(const string& expressionFilePath)
     {
-        auto expressionFileContentResult = System.IO.File.ReadAllText(expressionFilePath);
+        Result<string> expressionFileContentResult = System.IO.File.ReadAllText(expressionFilePath);
         if (expressionFileContentResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.ExpressionFile>>(ErrorId(expressionFileContentResult.GetErrorId()));
         }
-        const string& expressionFileContent = expressionFileContentResult.Value();
-        auto utf32Result = ToUtf32(expressionFileContent);
+        string expressionFileContent = Rvalue(expressionFileContentResult.Value());
+        Result<ustring> utf32Result = ToUtf32(expressionFileContent);
         if (utf32Result.Error())
         {
             return Result<UniquePtr<scmlg.ast.ExpressionFile>>(ErrorId(utf32Result.GetErrorId()));
         }
-        const ustring& content = utf32Result.Value();
+        ustring content = Rvalue(utf32Result.Value());
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, expressionFilePath);
         lexer.SetRuleNameMapPtr(scmlg.parser.GetRuleNameMapPtr());
-        auto parseResult = scmlg.parser.ExpressionFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
-        if (parseResult.Error())
-        {
-            return Result<UniquePtr<scmlg.ast.ExpressionFile>>(ErrorId(parseResult.GetErrorId()));
-        }
-        return Result<UniquePtr<scmlg.ast.ExpressionFile>>(Rvalue(parseResult.Value()));
+        return scmlg.parser.ExpressionFileParser<cm.lexer.CmajorLexer>.Parse(lexer);
     }
 
     public Result<UniquePtr<scmlg.ast.LexerFile>> ParseLexerFile(const string& lexerFilePath)
     {
-        auto lexerFileContentResult = System.IO.File.ReadAllText(lexerFilePath);
+        Result<string> lexerFileContentResult = System.IO.File.ReadAllText(lexerFilePath);
         if (lexerFileContentResult.Error())
         {
             return Result<UniquePtr<scmlg.ast.LexerFile>>(ErrorId(lexerFileContentResult.GetErrorId()));
         }
-        const string& lexerFileContent = lexerFileContentResult.Value();
-        auto utf32Result = ToUtf32(lexerFileContent);
+        string lexerFileContent = Rvalue(lexerFileContentResult.Value());
+        Result<ustring> utf32Result = ToUtf32(lexerFileContent);
         if (utf32Result.Error())
         {
             return Result<UniquePtr<scmlg.ast.LexerFile>>(ErrorId(utf32Result.GetErrorId()));
         }
-        const ustring& content = utf32Result.Value();
+        ustring content = Rvalue(utf32Result.Value());
         uchar* start = content.Chars();
         uchar* end = content.Chars() + content.Length();
         cm.lexer.CmajorLexer lexer(start, end, lexerFilePath);
         lexer.SetRuleNameMapPtr(scmlg.parser.GetRuleNameMapPtr());
         cm.parser.Context context;
-        auto parseResult = scmlg.parser.LexerFileParser<cm.lexer.CmajorLexer>.Parse(lexer, &context);
-        if (parseResult.Error())
-        {
-            return Result<UniquePtr<scmlg.ast.LexerFile>>(ErrorId(parseResult.GetErrorId()));
-        }
-        return Result<UniquePtr<scmlg.ast.LexerFile>>(Rvalue(parseResult.Value()));
+        return scmlg.parser.LexerFileParser<cm.lexer.CmajorLexer>.Parse(lexer, &context);
     }
 }

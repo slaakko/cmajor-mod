@@ -43,16 +43,16 @@ namespace symbols
         {
             return Result<TypeSymbol*>(that);
         }
-        public override TypeSymbol* UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
+        public override Result<TypeSymbol*> UnifyTemplateArgumentType(const Map<TemplateParameterSymbol*, TypeSymbol*>& templateParameterMap, SymbolsContext& context)
         {
             auto it = templateParameterMap.Find(this);
             if (it != templateParameterMap.End())
             {
-                return it->second;
+                return Result<TypeSymbol*>(it->second);
             }
             else
             {
-                return null;
+                return Result<TypeSymbol*>(cast<TypeSymbol*>(null));
             }
         }
         private bool hasDefault;

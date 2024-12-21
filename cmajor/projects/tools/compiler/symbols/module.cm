@@ -151,7 +151,7 @@ namespace symbols
 
     public class ModuleDependency
     {
-        public ModuleDependency(Module* module_) : module(module_)
+        public explicit ModuleDependency(Module* module_) : module(module_)
         {
         }
         public inline Module* GetModule() const
@@ -946,7 +946,7 @@ namespace symbols
                 string moduleFilePath;
                 if (!rootModule->IsSystemModule())
                 {
-                    auto libDirResult = CmajorSystemLibDir(config, BackEnd.cm, "cm");
+                    auto libDirResult = CmajorSystemLibDir(config, BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
                     if (libDirResult.Error()) return Result<bool>(ErrorId(libDirResult.GetErrorId()));
                     string cmajorSystemLibDir = Rvalue(libDirResult.Value());
                     moduleFilePath = System.IO.Path.Combine(cmajorSystemLibDir, moduleFileName);
@@ -1007,7 +1007,7 @@ namespace symbols
                 string moduleFilePath;
                 if (!rootModule->IsSystemModule())
                 {
-                    auto libDirResult = CmajorSystemLibDir(config, BackEnd.cm, "cm");
+                    auto libDirResult = CmajorSystemLibDir(config, BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
                     if (libDirResult.Error()) return Result<bool>(ErrorId(libDirResult.GetErrorId()));
                     string cmajorSystemLibDir = Rvalue(libDirResult.Value());
                     moduleFilePath = System.IO.Path.Combine(cmajorSystemLibDir, moduleFileName);
@@ -1072,13 +1072,13 @@ namespace symbols
                 first = false;
                 if (target == Target.winguiapp || target == Target.winapp || target == Target.winlib)
                 {
-                    auto result = CmajorSystemWindowsModuleFilePath(GetConfig(), BackEnd.cm, "cm");
+                    auto result = CmajorSystemWindowsModuleFilePath(GetConfig(), BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
                     if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
                     allReferences.Add(result.Value());
                 }
                 else
                 {
-                    auto result = CmajorSystemModuleFilePath(GetConfig(), BackEnd.cm, "cm");
+                    auto result = CmajorSystemModuleFilePath(GetConfig(), BackEnd.cm, "cm", optimizer.Optimizer.Instance().CurrentProfile());
                     if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
                     allReferences.Add(result.Value());
                 }

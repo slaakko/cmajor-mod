@@ -1195,7 +1195,10 @@ namespace symbols
             emitter.SetCurrentBasicBlock(init);
             result = targetArrayObject->Load(emitter, OperationFlags.addr);
             if (result.Error()) return result;
-            intermediate.Value* targetArrayPtr = emitter.Stack().Pop();
+            intermediate.Value* targetArrayPtrPtr = emitter.Stack().Pop();
+            Result<intermediate.Value*> loadResult = emitter.CreateLoad(targetArrayPtrPtr);
+            if (loadResult.Error()) return Result<bool>(ErrorId(loadResult.GetErrorId()));
+            intermediate.Value* targetArrayPtr = loadResult.Value();
             result = sourceArrayObject->Load(emitter, OperationFlags.none);
             if (result.Error()) return result;
             intermediate.Value* sourceArrayPtr = emitter.Stack().Pop();

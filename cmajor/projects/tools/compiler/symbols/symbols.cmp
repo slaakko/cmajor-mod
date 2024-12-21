@@ -5,6 +5,7 @@ reference <../../soulcm/cm.ast/cm.ast.cmp>;
 reference <../../soulcm/cm.lexer/cm.lexer.cmp>;
 reference <../../soulcm/cm.parser/cm.parser.cmp>;
 reference <../intermediate/intermediate.cmp>;
+reference <../optimizer/optimizer.cmp>;
 source <alias_type_symbol.cm>;
 source <array_type_symbol.cm>;
 source <basic_type_operation.cm>;

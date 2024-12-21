@@ -132,6 +132,7 @@ namespace codegen
                 return;
             }
             intermediate.Context intermediateContext;
+            intermediate.Context optimizationContext;
             intermediate.Context* finalContext = &intermediateContext;
             result = intermediate.Parse(boundCompileUnit.GetModule()->LogStreamId(), intermediateFilePath, &intermediateContext, GetGlobalFlag(GlobalFlags.verbose));
             if (result.Error())
@@ -146,9 +147,30 @@ namespace codegen
                 return;
             }
             UniquePtr<intermediate.CodeGenerator> codeGenerator;
-            if (GetGlobalFlag(GlobalFlags.release))
+            if (GetGlobalFlag(GlobalFlags.release) && optimizer.Optimizer.Instance().CurrentProfile() != "0")
             {
-                // todo
+                optimizer.Optimize(&intermediateContext);
+                intermediateContext.GetCompileUnit()->SetFilePath(optimizedIntermediateFilePath);
+                result = intermediateContext.GetCompileUnit()->Write();
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                result = intermediate.Parse(boundCompileUnit.GetModule()->LogStreamId(), optimizedIntermediateFilePath, &optimizationContext, GetGlobalFlag(GlobalFlags.verbose));
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                result = intermediate.Verify(&optimizationContext);
+                if (result.Error())
+                {
+                    SetErrorId(result.GetErrorId());
+                    return;
+                }
+                finalContext = &optimizationContext;
+                codeGenerator.Reset(new optimizer.OptimizingCodeGenerator(finalContext, boundCompileUnit.AsmFilePath()));
             }
             else
             {
@@ -175,7 +197,7 @@ namespace codegen
         public override void Visit(BoundClass& boundClass)
         {
             ClassTypeSymbol* classType = boundClass.GetClassTypeSymbol();
-            if (classType->IsPolymorphic())
+            if (classType->IsPolymorphic() && !boundClass.IsInlineFunctionContainer())
             {
                 Result<intermediate.Value*> vmtResult = classType->VmtObject(emitter, true);
                 if (vmtResult.Error())
@@ -184,11 +206,14 @@ namespace codegen
                     return;
                 }
             }
-            Result<intermediate.Value*> staticResult = classType->StaticObject(emitter, true);
-            if (staticResult.Error())
+            if (!boundClass.IsInlineFunctionContainer())
             {
-                SetErrorId(staticResult.GetErrorId());
-                return;
+                Result<intermediate.Value*> staticResult = classType->StaticObject(emitter, true);
+                if (staticResult.Error())
+                {
+                    SetErrorId(staticResult.GetErrorId());
+                    return;
+                }
             }
             int n = cast<int>(boundClass.Members().Count());
             for (int i = 0; i < n; ++i)
@@ -1967,6 +1992,7 @@ namespace codegen
                 int errorId = MakeError("target for labeled statement not found", labeledStatement->FullSpan());
                 return Result<bool>(ErrorId(errorId));
             }
+            return Result<bool>(true);
         }
         private void SetSpan(const System.Lex.Span& span)
         {

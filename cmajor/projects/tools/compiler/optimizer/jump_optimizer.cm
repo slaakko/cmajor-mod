@@ -1,0 +1,67 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+
+namespace optimizer
+{
+    public void OptimizeJumps(intermediate.Function* fn)
+    {
+        intermediate.BasicBlock* bb = fn->FirstBasicBlock();
+        while (bb != null)
+        {
+            intermediate.Instruction* terminator = bb->LastInstruction();
+            if (terminator->IsJumpInstruction())
+            {
+                intermediate.JmpInstruction* jmp = cast<intermediate.JmpInstruction*>(terminator);
+                intermediate.BasicBlock* target = jmp->TargetBasicBlock();
+                intermediate.BasicBlock* firstTarget = target;
+                intermediate.Instruction* leader = target->Leader();
+                while (leader->IsJumpInstruction())
+                {
+                    intermediate.JmpInstruction* jmpLeader = cast<intermediate.JmpInstruction*>(leader);
+                    target = jmpLeader->TargetBasicBlock();
+                    leader = target->Leader();
+                }
+                if (target != firstTarget)
+                {
+                    jmp->SetTargetBasicBlock(target);
+                }
+            }
+            else if (terminator->IsBranchInstruction())
+            {
+                intermediate.BranchInstruction* branch = cast<intermediate.BranchInstruction*>(terminator);
+                intermediate.BasicBlock* trueTarget = branch->TrueTargetBasicBlock();
+                intermediate.BasicBlock* firstTrueTarget = trueTarget;
+                intermediate.Instruction* trueLeader = trueTarget->Leader();
+                while (trueLeader->IsJumpInstruction())
+                {
+                    intermediate.JmpInstruction* jmpLeader = cast<intermediate.JmpInstruction*>(trueLeader);
+                    trueTarget = jmpLeader->TargetBasicBlock();
+                    trueLeader = trueTarget->Leader();
+                }
+                if (trueTarget != firstTrueTarget)
+                {
+                    branch->SetTrueTargetBasicBlock(trueTarget);
+                }
+                intermediate.BasicBlock* falseTarget = branch->FalseTargetBasicBlock();
+                intermediate.BasicBlock* firstFalseTarget = falseTarget;
+                intermediate.Instruction* falseLeader = falseTarget->Leader();
+                while (falseLeader->IsJumpInstruction())
+                {
+                    intermediate.JmpInstruction* jmpLeader = cast<intermediate.JmpInstruction*>(falseLeader);
+                    falseTarget = jmpLeader->TargetBasicBlock();
+                    falseLeader = falseTarget->Leader();
+                }
+                if (falseTarget != firstFalseTarget)
+                {
+                    branch->SetFalseTargetBasicBlock(falseTarget);
+                }
+            }
+            bb = bb->Next();
+        }
+    }
+}
+

@@ -185,6 +185,7 @@ namespace binder
                 bool rightSubsumeThat = right->Subsume(that);
                 return leftSubsumeThat && rightSubsumeThat;
             }
+            return false;
         }
     }
 
@@ -232,6 +233,7 @@ namespace binder
                 bool righSubsumeThat = right->Subsume(that);
                 return leftSubsumeThat || righSubsumeThat;
             }
+            return false;
         }
     }
 

@@ -1,0 +1,163 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace optimizer
+{
+    public const int jumpTableSwitchThreshold = 4;
+    public const int maxJumpTableEntries = 1024;
+
+    public class CaseLess : Rel<intermediate.CaseTarget>
+    {
+        public inline bool operator()(const intermediate.CaseTarget& left, const intermediate.CaseTarget& right) const
+        {
+            return left.caseValue->GetIntegerValue() < right.caseValue->GetIntegerValue();
+        }
+    }
+
+    [nodiscard]
+    public Result<bool> EmitJumpTableSwitch(intermediate.SwitchInstruction& inst, intermediate.CodeGenerator& codeGenerator)
+    {
+        for (const intermediate.CaseTarget& caseTarget : inst.CaseTargets())
+        {
+            if (!caseTarget.caseValue->IsIntegerValue())
+            {
+                return intermediate.EmitSwitch(inst, codeGenerator);
+            }
+        }
+        assembly.AssemblyContext* assemblyContext = codeGenerator.GetAssemblyContext();
+        int size = cast<int>(inst.Cond()->GetType()->Size());
+        List<intermediate.CaseTarget> caseTargets = inst.CaseTargets();
+        Sort(caseTargets, CaseLess());
+        Result<assembly.Register*> rcxResult = assemblyContext->GetGlobalReg(size, assembly.RegisterGroupKind.rcx);
+        if (rcxResult.Error()) return Result<bool>(ErrorId(rcxResult.GetErrorId()));
+        Result<assembly.Register*> condRegResult = intermediate.MakeIntegerRegOperand(inst.Cond(), rcxResult.Value(), codeGenerator);
+        if (condRegResult.Error()) return Result<bool>(ErrorId(condRegResult.GetErrorId()));
+        assembly.Register* condReg = condRegResult.Value();
+        long low = caseTargets.Front().caseValue->GetIntegerValue();
+        long count = caseTargets.Back().caseValue->GetIntegerValue() - low + 1;
+        if (count > maxJumpTableEntries)
+        {
+            return intermediate.EmitSwitch(inst, codeGenerator);
+        }
+        if (low != 0)
+        {
+            assembly.Instruction* subInst = new assembly.Instruction(assembly.OpCode.SUB);
+            subInst->AddOperand(condReg);
+            if (low > 0xFFFFFFFF)
+            {
+                assembly.Instruction* movRaxInst = new assembly.Instruction(assembly.OpCode.MOV);
+                Result<assembly.Register*> raxResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rax);
+                if (raxResult.Error()) return Result<bool>(ErrorId(raxResult.GetErrorId()));
+                movRaxInst->AddOperand(raxResult.Value());
+                Result<assembly.IntegerLiteral*> lowResult = assemblyContext->MakeIntegerLiteral(low, 8);
+                if (lowResult.Error()) return Result<bool>(ErrorId(lowResult.GetErrorId()));
+                movRaxInst->AddOperand(lowResult.Value());
+                Result<bool> result = codeGenerator.Emit(movRaxInst);
+                if (result.Error()) return result;
+                subInst->AddOperand(raxResult.Value());
+            }
+            else
+            {
+                Result<assembly.IntegerLiteral*> lowResult = assemblyContext->MakeIntegerLiteral(low, size);
+                if (lowResult.Error()) return Result<bool>(ErrorId(lowResult.GetErrorId()));
+                subInst->AddOperand(lowResult.Value());
+            }
+            Result<bool> result = codeGenerator.Emit(subInst);
+            if (result.Error()) return result;
+        }
+        Map<long, int> caseMap;
+        for (const intermediate.CaseTarget& caseTarget : inst.CaseTargets())
+        {
+            long value = caseTarget.caseValue->GetIntegerValue() - low;
+            int targetLabelId = caseTarget.targetLabelId;
+            caseMap[value] = targetLabelId;
+        }
+        assembly.Instruction* cmpInst = new assembly.Instruction(assembly.OpCode.CMP);
+        cmpInst->AddOperand(condReg);
+        Result<assembly.IntegerLiteral*> countResult = assemblyContext->MakeIntegerLiteral(count, size);
+        if (countResult.Error()) return Result<bool>(ErrorId(countResult.GetErrorId()));
+        cmpInst->AddOperand(countResult.Value());
+        Result<bool> result = codeGenerator.Emit(cmpInst);
+        if (result.Error()) return result;
+        assembly.Instruction* jaeIst = new assembly.Instruction(assembly.OpCode.JAE);
+        jaeIst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.DefaultTargetBlock()->Id())));
+        result = codeGenerator.Emit(jaeIst);
+        if (result.Error()) return result;
+        assembly.Register* condReg8 = assemblyContext->GetRegisterPool()->GetRegisterGroup(condReg->Group(), true)->GetReg(8);
+        if (condReg->Size() == 4)
+        {
+            assembly.Instruction* movInst = new assembly.Instruction(assembly.OpCode.MOV);
+            movInst->AddOperand(condReg);
+            movInst->AddOperand(condReg);
+            result = codeGenerator.Emit(movInst);
+            if (result.Error()) return result;
+        }
+        else if (condReg->Size() != 8)
+        {
+            assembly.Instruction* movzxInst = new assembly.Instruction(assembly.OpCode.MOVZX);
+            movzxInst->AddOperand(condReg8);
+            movzxInst->AddOperand(condReg);
+            result = codeGenerator.Emit(movzxInst);
+            if (result.Error()) return result;
+        }
+        string jumpTabLabel = "@jmptab" + ToString(assemblyContext->GetNextJumpTabLabelId());
+        assembly.Instruction* setJumpTabAddrInst = new assembly.Instruction(assembly.OpCode.LEA);
+        Result<assembly.Register*> jumpTabAddrRegResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rbx);
+        if (jumpTabAddrRegResult.Error()) return Result<bool>(ErrorId(jumpTabAddrRegResult.GetErrorId()));
+        assembly.Register* jumpTabAddrReg = jumpTabAddrRegResult.Value();
+        setJumpTabAddrInst->AddOperand(jumpTabAddrReg);
+        setJumpTabAddrInst->AddOperand(assemblyContext->MakeSymbol(jumpTabLabel));
+        result = codeGenerator.Emit(setJumpTabAddrInst);
+        if (result.Error()) return result;
+        assembly.Instruction* movSxdInst = new assembly.Instruction(assembly.OpCode.MOVSXD);
+        Result<assembly.Register*> jumpRegResult = assemblyContext->GetGlobalReg(8, assembly.RegisterGroupKind.rax);
+        if (jumpRegResult.Error()) return Result<bool>(ErrorId(jumpRegResult.GetErrorId()));
+        assembly.Register* jumpReg = jumpRegResult.Value();
+        movSxdInst->AddOperand(jumpReg);
+        Result<assembly.IntegerLiteral*> fourLiteralResult = assemblyContext->MakeIntegerLiteral(4, 4);
+        if (fourLiteralResult.Error()) return Result<bool>(ErrorId(fourLiteralResult.GetErrorId()));
+        assembly.IntegerLiteral* fourLiteral = fourLiteralResult.Value();
+        assembly.Value* content = assemblyContext->MakeContent(assemblyContext->MakeBinaryExpr(jumpTabAddrReg,
+            assemblyContext->MakeBinaryExpr(condReg8, fourLiteral, assembly.Operator.mul), assembly.Operator.add));
+        Result<assembly.Value*> sizeResult = assemblyContext->MakeSizePrefix(4, content);
+        if (sizeResult.Error()) return Result<bool>(ErrorId(sizeResult.GetErrorId()));
+        movSxdInst->AddOperand(sizeResult.Value());
+        result = codeGenerator.Emit(movSxdInst);
+        if (result.Error()) return result;
+        assembly.Instruction* addInst = new assembly.Instruction(assembly.OpCode.ADD);
+        addInst->AddOperand(jumpReg);
+        addInst->AddOperand(jumpTabAddrReg);
+        result = codeGenerator.Emit(addInst);
+        if (result.Error()) return result;
+        assembly.Instruction* jmpInst = new assembly.Instruction(assembly.OpCode.JMP);
+        jmpInst->AddOperand(jumpReg);
+        result = codeGenerator.Emit(jmpInst);
+        if (result.Error()) return result;
+        for (long i = 0; i < count; ++i)
+        {
+            assembly.Instruction* offsetInst = new assembly.Instruction(assembly.OpCode.DD);
+            if (i == 0)
+            {
+                offsetInst->SetLabel(jumpTabLabel);
+                offsetInst->SetWriteln();
+            }
+            int targetLabelId = inst.DefaultTargetLabelId();
+            auto it = caseMap.Find(i);
+            if (it != caseMap.End())
+            {
+                targetLabelId = it->second;
+            }
+            offsetInst->AddOperand(assemblyContext->MakeBinaryExpr(assemblyContext->MakeSymbol("@" + ToString(targetLabelId)),
+                assemblyContext->MakeSymbol(jumpTabLabel), assembly.Operator.sub));
+            result = codeGenerator.Emit(offsetInst);
+            if (result.Error()) return result;
+        }
+        return Result<bool>(true);
+    }
+}
+

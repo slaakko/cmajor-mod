@@ -11,7 +11,7 @@ namespace binder
 {
     public class InlineFunctionRepository
     {
-        public InlineFunctionRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        public explicit InlineFunctionRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
         {
         }
         public Result<FunctionSymbol*> Instantiate(FunctionSymbol* inlineFunction, ContainerScope* containerScope, Node* node)
@@ -121,7 +121,7 @@ namespace binder
             symbolTable->SetCurrentSourceFile(boundCompileUnit->SourceFile());
             InstantiationGuard instantiationGuard(symbolTable, inlineFunction->FileIndex(), inlineFunction->ModuleId());
             Symbol* parent = inlineFunction->Parent();
-            if (parent->IsClassTypeSymbol() && !parent->IsClassTemplateSpecializationSymbol())
+            if (!parent->IsClassTypeSymbol())
             {
                 Result<bool> createResult = CreateSymbols(globalNs.Get(), symbolTable, boundCompileUnit->Context(), null, null, true);
                 if (createResult.Error()) return Result<FunctionSymbol*>(ErrorId(createResult.GetErrorId()));

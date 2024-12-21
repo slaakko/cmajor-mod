@@ -78,7 +78,7 @@ namespace scmpg
                         errorId = errorMessageResult.GetErrorId();
                         return;
                     }
-                    string errorMessage = errorMessageResult.Value();
+                    string errorMessage = Rvalue(errorMessageResult.Value());
                     auto referenceMessageResult = System.Lex.MakeMessage("see reference", span, fileIndex, fileMap);
                     if (referenceMessageResult.Error())
                     {

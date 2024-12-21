@@ -160,7 +160,7 @@
     <ClCompile Include="optimize.cppm" />
     <ClCompile Include="optimizing_code_generator.cpp" />
     <ClCompile Include="optimizing_code_generator.cppm" />
-    <ClCompile Include="optmizer.cppm" />
+    <ClCompile Include="optimizer.cppm" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\util\util.vcxproj">

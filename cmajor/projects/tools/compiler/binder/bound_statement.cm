@@ -677,7 +677,8 @@ namespace binder
 
     public class BoundDestroyTemporariesStatement : BoundStatement
     {
-        public BoundDestroyTemporariesStatement(List<UniquePtr<BoundFunctionCall>>&& temporaryDestructorCalls_)
+        public BoundDestroyTemporariesStatement(List<UniquePtr<BoundFunctionCall>>&& temporaryDestructorCalls_) :
+            base(System.Lex.Span(), BoundNodeKind.boundDestroyTemporariesStatement)
         {
             temporaryDestructorCalls = temporaryDestructorCalls_;
         }

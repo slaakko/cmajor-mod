@@ -158,12 +158,9 @@ namespace System.IO
             {
                 return Result<string>(reader.GetErrorId());
             }
-            auto content = reader.Value().ReadToEnd();
-            if (content.Error())
-            {
-                return Result<string>(ErrorId(content.GetErrorId()));
-            }
-            string contentValue = Rvalue(content.Value());
+            Result<string> contentResult = reader.Value().ReadToEnd();
+            if (contentResult.Error()) return contentResult;
+            string contentValue = Rvalue(contentResult.Value());
             if (contentValue.Length() >= 3 && cast<byte>(contentValue[0]) == 0xEFu && cast<byte>(contentValue[1]) == 0xBBu && cast<byte>(contentValue[2]) == 0xBFu)
             {
                 return Result<string>(contentValue.Substring(3));

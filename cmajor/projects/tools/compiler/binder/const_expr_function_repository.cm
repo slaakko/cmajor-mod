@@ -11,7 +11,7 @@ namespace binder
 {
     public class ConstExprFunctionRepository
     {
-        public ConstExprFunctionRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        public explicit ConstExprFunctionRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
         {
         }
         public Result<FunctionNode*> GetFunctionNode(FunctionSymbol* constExprFunctionSymbol, Node* node)

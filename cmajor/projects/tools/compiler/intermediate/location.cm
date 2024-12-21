@@ -8,10 +8,6 @@ using System.Collections;
 
 namespace intermediate
 {
-    internal void Break()
-    {
-    }
-
     public enum Locations
     {
         none = 0, reg = 1 << 0, frame = 1 << 1

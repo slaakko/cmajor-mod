@@ -1,0 +1,93 @@
+// =================================
+// Copyright (c) 2024 Seppo Laakko
+// Distributed under the MIT license
+// =================================
+
+using System;
+using System.Collections;
+
+namespace optimizer
+{
+    public enum Optimizations : ulong
+    {
+        none = 0u,
+        xor = 1u << 0u,
+        jump = 1u << 1u,
+        removeNops = 1u << 2u,
+        jumpTableSwitch = 1u << 3u,
+        inln = 1u << 4u,
+        o0 = none,
+        o1 = xor | jump | removeNops | jumpTableSwitch,
+        o2 = xor | jump | removeNops | jumpTableSwitch | inln,
+        o3 = xor | jump | removeNops | jumpTableSwitch | inln
+    }
+
+    internal Optimizations currentOptimizations = Optimizations.o2;
+
+    public inline void SetOptimizations(Optimizations optimizations)
+    {
+        currentOptimizations = optimizations;
+    }
+
+    public inline bool HasOptimization(Optimizations optimization)
+    {
+        return (currentOptimizations & optimization) != Optimizations.none;
+    }
+
+    public class Optimizer
+    {
+        static Optimizer() : instance(new Optimizer())
+        {
+        }
+        public static Optimizer& Instance()
+        {
+            return *instance;
+        }
+        private Optimizer()
+        {
+            profileMap["0"] = Optimizations.o0;
+            profileMap["1"] = Optimizations.o1;
+            profileMap["2"] = Optimizations.o2;
+            profileMap["3"] = Optimizations.o3;
+            currentProfile = "2";
+        }
+        public inline const string& CurrentProfile() const
+        {
+            return currentProfile;
+        }
+        [nodiscard]
+        public Result<bool> SetCurrentProfile(const string& profile)
+        {
+            auto it = profileMap.Find(profile);
+            if (it != profileMap.End())
+            {
+                currentProfile = profile;
+                SetOptimizations(it->second);
+            }
+            else
+            {
+                int errorId = AllocateError("optimization profile '" + profile + "' not found");
+                return Result<bool>(ErrorId(errorId));
+            }
+            return Result<bool>(true);
+        }
+        private static UniquePtr<Optimizer> instance;
+        private Map<string, Optimizations> profileMap;
+        private string currentProfile;
+    }
+
+    public void Optimize(intermediate.Context* intermediateContext)
+    {
+        intermediate.Code* code = intermediateContext->GetCode();
+        intermediate.Function* fn = code->FirstFunction();
+        while (fn != null)
+        {
+            if (HasOptimization(Optimizations.jump))
+            {
+                OptimizeJumps(fn);
+            }
+            fn = fn->Next();
+        }
+    }
+}
+

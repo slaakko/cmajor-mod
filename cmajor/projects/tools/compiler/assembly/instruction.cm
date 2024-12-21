@@ -384,6 +384,10 @@ namespace assembly
         {
             writeln = true;
         }
+        public inline const List<Value*>& Operands() const
+        {
+            return operands;
+        }
         public void AddOperand(Value* operand)
         {
             if (!operand->IsEmpty())

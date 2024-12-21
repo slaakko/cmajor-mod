@@ -55,7 +55,7 @@ namespace System.Windows
 
     public class PathComponentEventArgs
     {
-        public PathComponentEventArgs(PathComponent* pathComponent_) : pathComponent(pathComponent_), errorId(0)
+        public explicit PathComponentEventArgs(PathComponent* pathComponent_) : pathComponent(pathComponent_), errorId(0)
         {
         }
         public PathComponent* pathComponent;

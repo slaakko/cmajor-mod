@@ -108,7 +108,7 @@ void AddToUsesVec(std::vector<Instruction*>& uses, Value* value)
 }
 
 Instruction::Instruction(const soul::ast::Span& span_, Type* type_, OpCode opCode_) : 
-    Value(span_, ValueKind::instruction, type_), opCode(opCode_), index(-1), regValueIndex(-1), assemblyIndex(-1), leader(false)
+    Value(span_, ValueKind::instruction, type_), opCode(opCode_), index(-1), regValueIndex(-1), assemblyIndex(-1)
 {
 }
 
@@ -130,9 +130,8 @@ std::string Instruction::Name() const
 
 bool Instruction::IsLeader() const
 {
-    if (leader) return true;
     BasicBlock* basicBlock = Parent();
-    return this == basicBlock->FirstInstruction();
+    return this == basicBlock->Leader();
 }
 
 bool Instruction::IsTerminator() const
@@ -2209,6 +2208,17 @@ int BasicBlock::IndexOf(Instruction* x)
 Function* BasicBlock::Parent() const
 {
     return static_cast<Function*>(GetContainer()->Parent());
+}
+
+Instruction* BasicBlock::Leader() const
+{
+    Instruction* leader = const_cast<BasicBlock*>(this)->FirstInstruction();
+    while (leader && (leader->IsNopInstruction() || leader->IsLocalInstruction()))
+    {
+        leader = leader->Next();
+    }
+    Assert(leader, "leader is null");
+    return leader;
 }
 
 void BasicBlock::Write(util::CodeFormatter& formatter)

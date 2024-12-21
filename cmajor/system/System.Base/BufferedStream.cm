@@ -64,9 +64,17 @@ namespace System.IO
         }
         suppress BufferedStream(const BufferedStream&);
         suppress void operator=(const BufferedStream&);
+        public BufferedStream(BufferedStream&& that) : baseStream(that.baseStream), buffer(Rvalue(that.buffer)), pos(that.pos), bytesAvailable(that.bytesAvailable), end(that.end)
+        {
+            that.baseStream = null;
+        }
+        public default void operator=(BufferedStream&&);
         public override ~BufferedStream()
         {
-            Flush();
+            if (baseStream != null)
+            {
+                Flush();
+            }
         }
         [nodiscard]
         public override Result<int> ReadByte()

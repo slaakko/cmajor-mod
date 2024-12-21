@@ -161,7 +161,7 @@ namespace symbols
         {
             derivedTypeName.Append(' ');
         }
-        derivedTypeName.Append(baseType->Name());
+        derivedTypeName.Append(baseType->FullName());
         if (HasLvalueReferenceDerivation(derivations))
         {
             derivedTypeName.Append('&');
@@ -191,6 +191,10 @@ namespace symbols
         public override ustring TypeString() const
         {
              return u"derived_type";
+        }
+        public override ustring FullName() const
+        {
+            return Name();
         }
         public override TypeSymbol* BaseType() const
         {

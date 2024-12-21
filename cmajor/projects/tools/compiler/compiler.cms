@@ -8,6 +8,7 @@ project <../soulcm/cm.parser/cm.parser.cmp>;
 project <cmcmc/cmcmc.cmp>;
 project <codegen/codegen.cmp>;
 project <intermediate/intermediate.cmp>;
+project <optimizer/optimizer.cmp>;
 project <symbols/symbols.cmp>;
-activeProject cm.ast;
+activeProject intermediate;
 activeBackEnd=masm;

@@ -2997,6 +2997,13 @@ namespace symbols
             reader.AddToValueResolutionList(this);
             return Result<bool>(true);
         }
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(typeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            type = typeResult.Value();
+            return Result<bool>(true);
+        }
         public override Value* Clone() const
         {
             List<UniquePtr<Value>> clonedElementValues;
@@ -3080,6 +3087,13 @@ namespace symbols
             if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
             typeId = typeIdResult.Value();
             reader.AddToValueResolutionList(this);
+            return Result<bool>(true);
+        }
+        public override Result<bool> Resolve(SymbolTable* symbolTable)
+        {
+            Result<TypeSymbol*> typeResult = symbolTable->GetType(typeId);
+            if (typeResult.Error()) return Result<bool>(ErrorId(typeResult.GetErrorId()));
+            type = typeResult.Value();
             return Result<bool>(true);
         }
         public override Value* Clone() const
@@ -3277,7 +3291,7 @@ namespace symbols
 
     public class IntegralValue
     {
-        public IntegralValue(Value* value_) : value(value_)
+        public explicit IntegralValue(Value* value_) : value(value_)
         {
         }
         public inline Value* GetValue() const

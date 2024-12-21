@@ -78,7 +78,22 @@ namespace binder
             int errorId = MakeError("cannot convert argument to value", node->GetFullSpan());
             return Result<UniquePtr<Value>>(ErrorId(errorId));
         }
+        public void SetBoundDestroyTemporariesStatement(BoundDestroyTemporariesStatement* destroyTemporariesStatement_)
+        {
+            destroyTemporariesStatement.Reset(destroyTemporariesStatement_);
+        }
+        [nodiscard]
+        public Result<bool> DestroyTemporaries(Emitter& emitter)
+        {
+            if (destroyTemporariesStatement != null)
+            {
+                Result<bool> result = destroyTemporariesStatement->Execute(emitter);
+                if (result.Error()) return result;
+            }
+            return Result<bool>(true);
+        }
         private BoundExpressionFlags flags;
+        private UniquePtr<BoundDestroyTemporariesStatement> destroyTemporariesStatement;
     }
 
     public class BoundParameter : BoundExpression
@@ -395,6 +410,8 @@ namespace binder
                 intermediate.Value* value = loadResult.Value();
                 emitter.Stack().Push(value);
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         [nodiscard]
@@ -459,6 +476,8 @@ namespace binder
                 }
                 return Result<bool>(true);
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         public inline MemberVariableSymbol* GetMemberVariableSymbol() const
@@ -1164,6 +1183,8 @@ namespace binder
                 }
                 emitter.Stack().Push(value);
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         [nodiscard]
@@ -1220,6 +1241,8 @@ namespace binder
                     if (storeResult.Error()) return storeResult;
                 }
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         public void AddArgument(UniquePtr<BoundExpression>&& argument)
@@ -1321,6 +1344,8 @@ namespace binder
                 }
                 emitter.Stack().Push(value);
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         [nodiscard]
@@ -1362,6 +1387,8 @@ namespace binder
                 Result<bool> storeResult = emitter.CreateStore(value, ptr);
                 if (storeResult.Error()) return storeResult;
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         public void AddArgument(UniquePtr<BoundExpression>&& argument)
@@ -1433,6 +1460,8 @@ namespace binder
                 }
                 emitter.Stack().Push(value);
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         [nodiscard]
@@ -1474,6 +1503,8 @@ namespace binder
                 Result<bool> storeResult = emitter.CreateStore(value, ptr);
                 if (storeResult.Error()) return storeResult;
             }
+            Result<bool> result = DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         public void AddArgument(UniquePtr<BoundExpression>&& argument)
@@ -1774,11 +1805,7 @@ namespace binder
             if (loadResult.Error()) return loadResult;
             intermediate.Value* thisPtr = emitter.Stack().Pop();
             TypeSymbol* exprType = expr->Type();
-            #assert(exprType->IsPointerType());
-            Result<TypeSymbol*> baseTypResult = exprType->RemovePointer(emitter.GetSymbolsContext());
-            if (baseTypResult.Error()) return Result<bool>(ErrorId(baseTypResult.GetErrorId()));
-            TypeSymbol* baseType = baseTypResult.Value();
-            TypeSymbol* leftType = baseType;
+            TypeSymbol* leftType = exprType->BaseType();
             #assert(leftType->IsClassTypeSymbol());
             ClassTypeSymbol* leftClassType = cast<ClassTypeSymbol*>(leftType);
             Result<ClassTypeSymbol*> leftVmtPtrHolderClassResult = leftClassType->VmtPtrHolderClass();
@@ -1883,11 +1910,7 @@ namespace binder
             if (loadResult.Error()) return loadResult;
             intermediate.Value* thisPtr = emitter.Stack().Pop();
             TypeSymbol* exprType = expr->Type();
-            #assert(exprType->IsPointerType());
-            Result<TypeSymbol*> baseTypResult = exprType->RemovePointer(emitter.GetSymbolsContext());
-            if (baseTypResult.Error()) return Result<bool>(ErrorId(baseTypResult.GetErrorId()));
-            TypeSymbol* baseType = baseTypResult.Value();
-            TypeSymbol* leftType = baseType;
+            TypeSymbol* leftType = exprType->BaseType();
             #assert(leftType->IsClassTypeSymbol());
             ClassTypeSymbol* leftClassType = cast<ClassTypeSymbol*>(leftType);
             Result<ClassTypeSymbol*> leftVmtPtrHolderClassResult = leftClassType->VmtPtrHolderClass();
@@ -2208,6 +2231,8 @@ namespace binder
             loadResult = left->Load(emitter, OperationFlags.none);
             if (loadResult.Error()) return loadResult;
             intermediate.Value* leftValue = emitter.Stack().Pop();
+            Result<bool> result = left->DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             intermediate.BasicBlock* trueBlock = emitter.CreateBasicBlock();
             intermediate.BasicBlock* rightBlock = emitter.CreateBasicBlock();
             intermediate.BasicBlock* falseBlock = emitter.CreateBasicBlock();
@@ -2218,6 +2243,8 @@ namespace binder
             loadResult = right->Load(emitter, OperationFlags.none);
             if (loadResult.Error()) return loadResult;
             intermediate.Value* rightValue = emitter.Stack().Pop();
+            result = right->DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             branchResult = emitter.CreateBranch(rightValue, trueBlock, falseBlock);
             if (branchResult.Error()) return branchResult;
             emitter.SetCurrentBasicBlock(trueBlock);
@@ -2291,6 +2318,8 @@ namespace binder
             loadResult = left->Load(emitter, OperationFlags.none);
             if (loadResult.Error()) return loadResult;
             intermediate.Value* leftValue = emitter.Stack().Pop();
+            Result<bool> result = left->DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             intermediate.BasicBlock* trueBlock = emitter.CreateBasicBlock();
             intermediate.BasicBlock* rightBlock = emitter.CreateBasicBlock();
             intermediate.BasicBlock* falseBlock = emitter.CreateBasicBlock();
@@ -2301,6 +2330,8 @@ namespace binder
             loadResult = right->Load(emitter, OperationFlags.none);
             if (loadResult.Error()) return loadResult;
             intermediate.Value* rightValue = emitter.Stack().Pop();
+            result = right->DestroyTemporaries(emitter);
+            if (result.Error()) return result;
             branchResult = emitter.CreateBranch(rightValue, trueBlock, falseBlock);
             if (branchResult.Error()) return branchResult;
             emitter.SetCurrentBasicBlock(trueBlock);

@@ -166,7 +166,7 @@ namespace cm.ast
                     clone->AddMember(member->Clone(cloneContext));
                 }
             }
-            if (moduleId != Uuid())
+            if (!moduleId.IsNil())
             {
                 clone->SetModuleId(moduleId);
             }
@@ -178,7 +178,7 @@ namespace cm.ast
         }
         public override const Uuid& ModuleId() const
         {
-            if (moduleId != Uuid())
+            if (!moduleId.IsNil())
             {
                 return moduleId;
             }

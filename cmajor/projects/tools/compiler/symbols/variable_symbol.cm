@@ -54,7 +54,7 @@ namespace symbols
         {
             Result<bool> baseResolveResult = base->Resolve(symbolTable);
             if (baseResolveResult.Error()) return baseResolveResult;
-            if (typeId != Uuid())
+            if (!typeId.IsNil())
             {
                 auto typeSymbolResult = symbolTable->GetType(typeId);
                 if (typeSymbolResult.Error()) return Result<bool>(ErrorId(typeSymbolResult.GetErrorId()));
@@ -432,7 +432,8 @@ namespace symbols
 
     public class VariableValueSymbol : VariableSymbol
     {
-        public VariableValueSymbol(const System.Lex.Span& span_, const ustring& name_, UniquePtr<Value>&& value_) : base(SymbolKind.variableValueSymbol, span_, name_)
+        public VariableValueSymbol(const System.Lex.Span& span_, const ustring& name_, UniquePtr<Value>&& value_) :
+            base(SymbolKind.variableValueSymbol, span_, name_), value(value_)
         {
         }
         public override ustring TypeString() const

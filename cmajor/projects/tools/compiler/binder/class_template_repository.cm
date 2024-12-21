@@ -29,7 +29,7 @@ namespace binder
 
     public class ClassTemplateRepository
     {
-        public ClassTemplateRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        public explicit ClassTemplateRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -423,6 +423,14 @@ namespace binder
             Result<bool> mangleResult = memberFunctionSymbol->ComputeMangledName();
             if (mangleResult.Error()) return Result<FunctionSymbol*>(ErrorId(mangleResult.GetErrorId()));
             master->SetInstantiatedName(memberFunctionSymbol->MangledName(), context);
+            if (memberFunctionSymbol->MangledName() == u"member_function_Destroy_List_458FDEA637AA59ED5266DFE80D872C284F2261DB")
+            {
+                Result<string> thisParamNameResult = ToUtf8(memberFunctionSymbol->GetThisParam()->Type()->FullName());
+                Console.Out() << "MEMBER FUNCTION " << memberFunctionSymbol->FullName() << " : " << thisParamNameResult.Value() << endl();
+                int errorId = AllocateError("SPECIALIZATION");
+                Console.Out() << GetErrorMessage(errorId) << endl();
+                Foo();
+            }
             boundCompileUnit->SetCanReuse(memberFunctionSymbol);
             symbolTable->BeginContainer(memberFunctionSymbol);
             symbolTable->MapNode(functionInstanceNode, memberFunctionSymbol);

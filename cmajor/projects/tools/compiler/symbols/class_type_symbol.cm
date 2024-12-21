@@ -444,6 +444,11 @@ namespace symbols
                 if (typeIdResult.Error()) return Result<bool>(ErrorId(typeIdResult.GetErrorId()));
                 staticLayoutIds.Add(typeIdResult.Value());
             }
+            if (IsPolymorphic() && !IsPrototypeTemplateSpecialization())
+            {
+                Result<bool> result = reader.GetSymbolTable()->AddPolymorphicClass(this);
+                if (result.Error()) return Result<bool>(ErrorId(result.GetErrorId()));
+            }
             reader.AddToSymbolResolutionList(this);
             return Result<bool>(true);
         }
@@ -451,15 +456,14 @@ namespace symbols
         {
             Result<bool> baseResolveResult = base->Resolve(symbolTable);
             if (baseResolveResult.Error()) return baseResolveResult;
-            Uuid nilUuid;
-            if (baseClassId != nilUuid)
+            if (!baseClassId.IsNil())
             {
                 Result<TypeSymbol*> baseClassResult = symbolTable->GetType(baseClassId);
                 if (baseClassResult.Error()) return Result<bool>(ErrorId(baseClassResult.GetErrorId()));
                 #assert(baseClassResult.Value()->IsClassTypeSymbol());
                 baseClass = cast<ClassTypeSymbol*>(baseClassResult.Value());
             }
-            if (defaultConstructorId != nilUuid)
+            if (!defaultConstructorId.IsNil())
             {
                 Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(defaultConstructorId);
                 if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
@@ -474,7 +478,7 @@ namespace symbols
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            if (copyConstructorId != nilUuid)
+            if (!copyConstructorId.IsNil())
             {
                 Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(copyConstructorId);
                 if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
@@ -489,7 +493,7 @@ namespace symbols
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            if (moveConstructorId != nilUuid)
+            if (!moveConstructorId.IsNil())
             {
                 Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(moveConstructorId);
                 if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
@@ -504,7 +508,7 @@ namespace symbols
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            if (copyAssignmentId != nilUuid)
+            if (!copyAssignmentId.IsNil())
             {
                 Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(copyAssignmentId);
                 if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
@@ -519,7 +523,7 @@ namespace symbols
                     return Result<bool>(ErrorId(errorId));
                 }
             }
-            if (moveAssignmentId != nilUuid)
+            if (!moveAssignmentId.IsNil())
             {
                 Result<FunctionSymbol*> functionResult = symbolTable->GetFunction(moveAssignmentId);
                 if (functionResult.Error()) return Result<bool>(ErrorId(functionResult.GetErrorId()));
@@ -1169,6 +1173,10 @@ namespace symbols
                     Result<intermediate.StructureType*> structureIrTypeResult = emitter.GetStructureType(memberTypes);
                     if (structureIrTypeResult.Error()) return Result<intermediate.Type*>(ErrorId(structureIrTypeResult.GetErrorId()));
                     irType = structureIrTypeResult.Value();
+                    Result<string> fullNameResult = ToUtf8(FullName());
+                    if (fullNameResult.Error()) return Result<intermediate.Type*>(ErrorId(fullNameResult.GetErrorId()));
+                    string fullName = Rvalue(fullNameResult.Value());
+                    irType->SetComment(fullName);
                     emitter.SetIrTypeByTypeId(TypeId(), irType);
                 }
                 else
@@ -1347,7 +1355,7 @@ namespace symbols
             if (create && !VmtEmitted())
             {
                 SetVmtEmitted();
-                const Uuid& typeId = TypeId();
+                Uuid typeId = TypeId();
                 ulong typeId1 = typeId.LeftHalf();
                 ulong typeId2 = typeId.RightHalf();
                 List<intermediate.Value*> vmtArray;

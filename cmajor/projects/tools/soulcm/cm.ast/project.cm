@@ -75,7 +75,7 @@ namespace cm.ast
         return Result<string>(cmajorRootDir);
     }
 
-    public Result<string> CmajorSystemLibDir(const string& config, BackEnd backend, const string& toolChain)
+    public Result<string> CmajorSystemLibDir(const string& config, BackEnd backend, const string& toolChain, const string& profile)
     {
         auto cmajorRootDirResult = CmajorRootDir();
         if (cmajorRootDirResult.Error())
@@ -101,7 +101,14 @@ namespace cm.ast
         }
         else if (backend == BackEnd.cm)
         {
-            return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cm"), config));
+            if (config == "debug")
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cm"), config));
+            }
+            else
+            {
+                return GetFullPath(Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(cmajorRootDir, "system"), "lib"), "cm"), config), profile));
+            }
         }
         else
         {
@@ -109,9 +116,9 @@ namespace cm.ast
         }
     }
 
-    public Result<string> CmajorSystemModuleFilePath(const string& config, BackEnd backend, const string& toolChain)
+    public Result<string> CmajorSystemModuleFilePath(const string& config, BackEnd backend, const string& toolChain, const string& profile)
     {
-        auto libDirResult = CmajorSystemLibDir(config, backend, toolChain);
+        auto libDirResult = CmajorSystemLibDir(config, backend, toolChain, profile);
         if (libDirResult.Error())
         {
             return libDirResult;
@@ -119,9 +126,9 @@ namespace cm.ast
         return GetFullPath(Path.Combine(libDirResult.Value(), "System.cmm"));
     }
 
-    public Result<string> CmajorSystemWindowsModuleFilePath(const string& config, BackEnd backend, const string& toolChain)
+    public Result<string> CmajorSystemWindowsModuleFilePath(const string& config, BackEnd backend, const string& toolChain, const string& profile)
     {
-        auto libDirResult = CmajorSystemLibDir(config, backend, toolChain);
+        auto libDirResult = CmajorSystemLibDir(config, backend, toolChain, profile);
         if (libDirResult.Error())
         {
             return libDirResult;
@@ -314,8 +321,8 @@ namespace cm.ast
 
     public class Project : System.IO.IOBase
     {
-        public Project(const ustring& name_, const string& filePath_, const string& config_, BackEnd backend_, const string& toolChain_) :
-            name(name_), filePath(Path.MakeCanonical(filePath_)), config(config_), backend(backend_), toolChain(toolChain_),
+        public Project(const ustring& name_, const string& filePath_, const string& config_, BackEnd backend_, const string& toolChain_, const string& profile_) :
+            name(name_), filePath(Path.MakeCanonical(filePath_)), config(config_), backend(backend_), toolChain(toolChain_), profile(profile_),
             sourceBasePath(Path.GetDirectoryName(filePath))
         {
             string backEndStr = BackEndStr(backend);
@@ -334,7 +341,7 @@ namespace cm.ast
             {
                 outDirBasePath = sourceBasePath;
             }
-            auto systemLibDirResult = CmajorSystemLibDir(config, backend, toolChain);
+            auto systemLibDirResult = CmajorSystemLibDir(config, backend, toolChain, profile);
             if (systemLibDirResult.Error())
             {
                 SetErrorId(systemLibDirResult.GetErrorId());
@@ -346,8 +353,17 @@ namespace cm.ast
             {
                 moduleFilePath = outDirBasePath;
             }
-            auto fullPathResult = GetFullPath(Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(moduleFilePath, "lib"), backEndStr), config),
-                Path.GetFileName(filePath)), ".cmm"));
+            Result<string> fullPathResult;
+            if (config == "debug")
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(moduleFilePath, "lib"),
+                    backEndStr), config), Path.GetFileName(filePath)), ".cmm"));
+            }
+            else
+            {
+                fullPathResult = GetFullPath(Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(moduleFilePath, "lib"),
+                    backEndStr), config), profile), Path.GetFileName(filePath)), ".cmm"));
+            }
             if (fullPathResult.Error())
             {
                 SetErrorId(fullPathResult.GetErrorId());
@@ -869,8 +885,18 @@ namespace cm.ast
                                 referencePath = Path.Combine(outDirBasePath, referencePath);
                             }
                             string backEndStr = BackEndStr(backend);
-                            auto fullPathResult = GetFullPath(
-                                Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(referencePath, "lib"), backEndStr), config), fileName), ".cmm"));
+                            Result<string> fullPathResult;
+                            if (config == "debug")
+                            {
+                                fullPathResult = GetFullPath(
+                                    Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(referencePath, "lib"), backEndStr), config), fileName), ".cmm"));
+                            }
+                            else
+                            {
+                                fullPathResult = GetFullPath(
+                                    Path.ChangeExtension(Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(referencePath, "lib"), backEndStr), config), profile),
+                                        fileName), ".cmm"));
+                            }
                             if (fullPathResult.Error())
                             {
                                 return Result<bool>(ErrorId(fullPathResult.GetErrorId()));
@@ -1107,6 +1133,7 @@ namespace cm.ast
         private BackEnd backend;
         private Target target;
         private string toolChain;
+        private string profile;
         private string sourceBasePath;
         private string outDirBasePath;
         private string systemLibDir;

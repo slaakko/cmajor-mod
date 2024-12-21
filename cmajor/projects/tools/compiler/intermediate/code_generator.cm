@@ -34,9 +34,9 @@ namespace intermediate
         {
             return registerAllocator;
         }
-        public int ExitLabelId() const
+        public virtual int ExitLabelId() const
         {
-            return currentInst->Parent()->Parent()->LastBasicBlock()->Id() + 1;
+            return currentFunction->LastBasicBlock()->Id() + 1;
         }
         public inline assembly.Function* AssemblyFunction() const
         {
@@ -67,6 +67,17 @@ namespace intermediate
             }
             assemblyFunction->AddInstruction(assemblyInstruction);
             if (Error()) return Result<bool>(ErrorId(GetErrorId()));
+            return Result<bool>(true);
+        }
+        [nodiscard]
+        public virtual Result<bool> EmitJumpToExit(Instruction& retInst)
+        {
+            int targetLabelId = ExitLabelId();
+            assembly.Instruction* jmpInst = new assembly.Instruction(assembly.OpCode.JMP);
+            assembly.AssemblyContext* assemblyContext = GetAssemblyContext();
+            jmpInst->AddOperand(assemblyContext->MakeSymbol("@" + ToString(targetLabelId)));
+            Result<bool> result = Emit(jmpInst);
+            if (result.Error()) return result;
             return Result<bool>(true);
         }
         public void EmitDataValue(UniquePtr<assembly.Value>&& dataValue, assembly.OpCode dataOpCode)
@@ -176,11 +187,6 @@ namespace intermediate
                 Result<bool> result = function.VisitBasicBlocks(*this);
                 if (result.Error()) return;
                 assemblyFunction->SetActivePart(assembly.FunctionPart.prologue);
-                if (function.Name() == "constructor_CmajorLexer_194A926F6047E157C0EDFBA2C0E4AE3208F307BF")
-                {
-                    linearScanRregisterAllocator->GetFrame().Dump();
-                    Break();
-                }
                 result = EmitPrologue(*this);
                 if (result.Error())
                 {
@@ -202,10 +208,6 @@ namespace intermediate
             leader = true;
             while (inst != null)
             {
-                if (leader)
-                {
-                    inst->SetLeader();
-                }
                 currentInst = inst;
                 if (inst->IsArgInstruction() || inst->IsProcedureCallInstruction() || inst->IsFunctionCallInstruction())
                 {
@@ -933,6 +935,10 @@ namespace intermediate
         public void Error(const string& message)
         {
             SetErrorId(intermediate.Error(message, Span(), context));
+        }
+        public inline void ResetLeader()
+        {
+            leader = false;
         }
         private Context* context;
         private assembly.File file;

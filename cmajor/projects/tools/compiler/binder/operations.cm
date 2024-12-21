@@ -114,7 +114,7 @@ namespace binder
 
     public class PointerDefaultConstructorOperation : Operation
     {
-        public PointerDefaultConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 1, boundCompileUnit_)
+        public explicit PointerDefaultConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 1, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -213,7 +213,7 @@ namespace binder
 
     public class PointerCopyConstructorOperation : Operation
     {
-        public PointerCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit PointerCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -338,7 +338,7 @@ namespace binder
 
     public class PointerMoveConstructorOperation : Operation
     {
-        public PointerMoveConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit PointerMoveConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -445,7 +445,7 @@ namespace binder
 
     public class PointerCopyAssignmentOperation : Operation
     {
-        public PointerCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit PointerCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -567,7 +567,7 @@ namespace binder
 
     public class PointerMoveAssignmentOperation : Operation
     {
-        public PointerMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit PointerMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -664,7 +664,7 @@ namespace binder
 
     public class PointerReturnOperation : Operation
     {
-        public PointerReturnOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@return", 1, boundCompileUnit_)
+        public explicit PointerReturnOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@return", 1, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -750,7 +750,7 @@ namespace binder
 
     public class PointerPlusOffsetOperation : Operation
     {
-        public PointerPlusOffsetOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator+", 2, boundCompileUnit_)
+        public explicit PointerPlusOffsetOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator+", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -857,7 +857,7 @@ namespace binder
 
     public class OffsetPlusPointerOperation : Operation
     {
-        public OffsetPlusPointerOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator+", 2, boundCompileUnit_)
+        public explicit OffsetPlusPointerOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator+", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -967,7 +967,7 @@ namespace binder
 
     public class PointerMinusOffsetOperation : Operation
     {
-        public PointerMinusOffsetOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator-", 2, boundCompileUnit_)
+        public explicit PointerMinusOffsetOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator-", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1073,7 +1073,7 @@ namespace binder
 
     public class PointerMinusPointerOperation : Operation
     {
-        public PointerMinusPointerOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator-", 2, boundCompileUnit_)
+        public explicit PointerMinusPointerOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator-", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1174,7 +1174,7 @@ namespace binder
 
     public class PointerEqualOperation : Operation
     {
-        public PointerEqualOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator==", 2, boundCompileUnit_)
+        public explicit PointerEqualOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator==", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1275,7 +1275,7 @@ namespace binder
 
     public class PointerLessOperation : Operation
     {
-        public PointerLessOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator<", 2, boundCompileUnit_)
+        public explicit PointerLessOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator<", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1367,7 +1367,7 @@ namespace binder
 
     public class PointerArrowOperation : Operation
     {
-        public PointerArrowOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator->", 1, boundCompileUnit_)
+        public explicit PointerArrowOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator->", 1, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1458,7 +1458,7 @@ namespace binder
 
     public class LvalueReferenceCopyConstructorOperation : Operation
     {
-        public LvalueReferenceCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit LvalueReferenceCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1551,7 +1551,7 @@ namespace binder
 
     public class LvalueReferenceCopyAssignmentOperation : Operation
     {
-        public LvalueReferenceCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit LvalueReferenceCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1690,7 +1690,7 @@ namespace binder
 
     public class LvalueReferenceMoveAssignmentOperation : Operation
     {
-        public LvalueReferenceMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit LvalueReferenceMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1796,7 +1796,7 @@ namespace binder
 
     public class LvalueReferenceReturnOperation : Operation
     {
-        public LvalueReferenceReturnOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@return", 1, boundCompileUnit_)
+        public explicit LvalueReferenceReturnOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@return", 1, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1880,7 +1880,7 @@ namespace binder
 
     public class RvalueReferenceCopyConstructorOperation : Operation
     {
-        public RvalueReferenceCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit RvalueReferenceCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -1982,7 +1982,7 @@ namespace binder
 
     public class RvalueReferenceCopyAssignmentOperation : Operation
     {
-        public RvalueReferenceCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit RvalueReferenceCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2066,7 +2066,7 @@ namespace binder
 
     public class RvalueReferenceReturnOperation : Operation
     {
-        public RvalueReferenceReturnOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@return", 1, boundCompileUnit_)
+        public explicit RvalueReferenceReturnOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@return", 1, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2100,7 +2100,7 @@ namespace binder
 
     public class ArrayDefaultConstructorOperation : Operation
     {
-        public ArrayDefaultConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 1, boundCompileUnit_)
+        public explicit ArrayDefaultConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 1, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2164,7 +2164,7 @@ namespace binder
 
     public class ArrayCopyConstructorOperation : Operation
     {
-        public ArrayCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit ArrayCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2264,7 +2264,7 @@ namespace binder
 
     public class ArrayMoveConstructorOperation : Operation
     {
-        public ArrayMoveConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit ArrayMoveConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2349,7 +2349,7 @@ namespace binder
 
     public class ArrayCopyAssignmentOperation : Operation
     {
-        public ArrayCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit ArrayCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2449,7 +2449,7 @@ namespace binder
 
     public class ArrayMoveAssignmentOperation : Operation
     {
-        public ArrayMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit ArrayMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2522,7 +2522,7 @@ namespace binder
 
     public class ArrayElementAccessOperation : Operation
     {
-        public ArrayElementAccessOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator[]", 2, boundCompileUnit_)
+        public explicit ArrayElementAccessOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator[]", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2614,7 +2614,7 @@ namespace binder
 
     public class ClassDefaultConstructorOperation : Operation
     {
-        public ClassDefaultConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 1, boundCompileUnit_)
+        public explicit ClassDefaultConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 1, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -2898,7 +2898,7 @@ namespace binder
 
     public class ClassCopyConstructorOperation : Operation
     {
-        public ClassCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit ClassCopyConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -3262,7 +3262,7 @@ namespace binder
 
     public class ClassMoveConstructorOperation : Operation
     {
-        public ClassMoveConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
+        public explicit ClassMoveConstructorOperation(BoundCompileUnit* boundCompileUnit_) : base(u"@constructor", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -3632,7 +3632,7 @@ namespace binder
 
     public class ClassCopyAssignmentOperation : Operation
     {
-        public ClassCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit ClassCopyAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -3930,7 +3930,7 @@ namespace binder
 
     public class ClassMoveAssignmentOperation : Operation
     {
-        public ClassMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
+        public explicit ClassMoveAssignmentOperation(BoundCompileUnit* boundCompileUnit_) : base(u"operator=", 2, boundCompileUnit_)
         {
         }
         [nodiscard]
@@ -4225,7 +4225,7 @@ namespace binder
 
     public class OperationRepository
     {
-        public OperationRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
+        public explicit OperationRepository(BoundCompileUnit* boundCompileUnit_) : boundCompileUnit(boundCompileUnit_)
         {
             Add(new PointerDefaultConstructorOperation(boundCompileUnit));
             Add(new PointerCopyConstructorOperation(boundCompileUnit));
