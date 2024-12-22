@@ -1947,13 +1947,7 @@ namespace intermediate
         orInstruction->AddOperand(operandReg);
         Result<bool> result = codeGenerator.Emit(orInstruction);
         if (result.Error()) return result;
-        assembly.Instruction* jnzInstruction = new assembly.Instruction(assembly.OpCode.JNZ);
-        jnzInstruction->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.TrueTargetBasicBlock()->Id())));
-        result = codeGenerator.Emit(jnzInstruction);
-        if (result.Error()) return result;
-        assembly.Instruction* jmpInstruction = new assembly.Instruction(assembly.OpCode.JMP);
-        jmpInstruction->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.FalseTargetBasicBlock()->Id())));
-        result = codeGenerator.Emit(jmpInstruction);
+        result = codeGenerator.EmitBranchJumps(inst);
         if (result.Error()) return result;
         return Result<bool>(true);
     }

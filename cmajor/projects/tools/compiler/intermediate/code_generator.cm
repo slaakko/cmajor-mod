@@ -940,6 +940,20 @@ namespace intermediate
         {
             leader = false;
         }
+        [nodiscard]
+        public virtual Result<bool> EmitBranchJumps(BranchInstruction& inst)
+        {
+            assembly.Instruction* jnzInstruction = new assembly.Instruction(assembly.OpCode.JNZ);
+            assembly.AssemblyContext* assemblyContext = GetAssemblyContext();
+            jnzInstruction->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.TrueTargetBasicBlock()->Id())));
+            Result<bool> result = Emit(jnzInstruction);
+            if (result.Error()) return result;
+            assembly.Instruction* jmpInstruction = new assembly.Instruction(assembly.OpCode.JMP);
+            jmpInstruction->AddOperand(assemblyContext->MakeSymbol("@" + ToString(inst.FalseTargetBasicBlock()->Id())));
+            result = Emit(jmpInstruction);
+            if (result.Error()) return result;
+            return Result<bool>(true);
+        }
         private Context* context;
         private assembly.File file;
         private Function* currentFunction;

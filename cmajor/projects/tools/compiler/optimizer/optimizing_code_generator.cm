@@ -208,6 +208,23 @@ namespace optimizer
             return base->EmitJumpToExit(retInst);
         }
         [nodiscard]
+        public override Result<bool> EmitBranchJumps(BranchInstruction& inst)
+        {
+            if (HasOptimization(Optimizations.jump))
+            {
+                intermediate.BasicBlock* bb = inst.Parent();
+                if (inst.TrueTargetBasicBlock() == bb->Next())
+                {
+                    assembly.Instruction* jzInstruction = new assembly.Instruction(assembly.OpCode.JZ);
+                    jzInstruction->AddOperand(GetAssemblyContext()->MakeSymbol("@" + ToString(inst.FalseTargetBasicBlock()->Id())));
+                    Result<bool> result = Emit(jzInstruction);
+                    if (result.Error()) return result;
+                    return Result<bool>(true);
+                }
+            }
+            return base->EmitBranchJumps(inst);
+        }
+        [nodiscard]
         private Result<bool> EmitXorInst(const string& label, assembly.Register* reg)
         {
             assembly.Instruction* xorInst = new assembly.Instruction(assembly.OpCode.XOR);
