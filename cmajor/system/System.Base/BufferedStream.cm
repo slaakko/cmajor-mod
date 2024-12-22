@@ -52,7 +52,7 @@ namespace System.IO
         public BufferedStream() : base(), baseStream(null), buffer(), pos(buffer.Size()), bytesAvailable(0), end(0)
         {
         }
-        public BufferedStream(Stream* baseStream_) : this(baseStream_, 4096)
+        public explicit BufferedStream(Stream* baseStream_) : this(baseStream_, 4096)
         {
         }
         public BufferedStream(Stream* baseStream_, long bufferSize_) : base(), baseStream(baseStream_), buffer(bufferSize_), pos(buffer.Size()), bytesAvailable(0), end(0)

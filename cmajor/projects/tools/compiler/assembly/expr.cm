@@ -63,7 +63,7 @@ namespace assembly
 
     public class Content : UnaryExpr
     {
-        public Content(Value* value_) : base(ValueKind.content, value_, "[" + value_->ToString() + "]")
+        public explicit Content(Value* value_) : base(ValueKind.content, value_, "[" + value_->ToString() + "]")
         {
         }
         public override string ToString() const
@@ -84,7 +84,7 @@ namespace assembly
         }
         return string();
     }
-    
+
     public class SizePrefix : UnaryExpr
     {
         public SizePrefix(int size_, Value* value_) : base(ValueKind.sizePrefix, value_, SizePrefixStr(size_, value_)), size(size_)

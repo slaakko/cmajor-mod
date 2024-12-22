@@ -130,6 +130,7 @@ namespace build
             result = GenerateCode(boundCompileUnit.Get());
             if (result.Error()) return result;
             asmFilePaths.Add(boundCompileUnit->AsmFilePath());
+            boundCompileUnit.Reset();
         }
         return Result<bool>(true);
     }

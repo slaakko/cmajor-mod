@@ -82,6 +82,10 @@ namespace build
         }
         bool systemLibraryInstalled = false;
         string config = GetConfig();
+        if (GetGlobalFlag(GlobalFlags.release))
+        {
+            config.Append('/').Append(optimizer.Optimizer.Instance().CurrentProfile());
+        }
         auto projectNameResult = ToUtf8(project->Name());
         if (projectNameResult.Error())
         {
@@ -516,6 +520,10 @@ namespace build
     {
         Set<string> builtProjects;
         string config = GetConfig();
+        if (GetGlobalFlag(GlobalFlags.release))
+        {
+            config.Append('/').Append(optimizer.Optimizer.Instance().CurrentProfile());
+        }
         if (GetGlobalFlag(GlobalFlags.clean))
         {
             LogMessage(-1, "Cleaning solution '" + solutionFilePath + "' using " + config + " configuration.");
